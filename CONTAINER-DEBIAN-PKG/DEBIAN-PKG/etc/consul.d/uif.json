@@ -1,0 +1,20 @@
+{
+  "service": {
+    "id": "ui",
+    "name": "ui",
+    "tags": [
+      "ui"
+    ],
+    "port": 80
+  },
+  "check": {
+    "id": "ui",
+    "name": "HTTP API",
+    "http": "http://127.0.0.1/",
+    "method": "GET",
+    "interval": "30s",
+    "timeout": "2s"
+  },
+  "enable_syslog": true,
+  "log_level": "info"
+}

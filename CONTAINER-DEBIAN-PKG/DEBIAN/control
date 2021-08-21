@@ -1,0 +1,7 @@
+Package: automation-interface-ui-container
+Version: RELEASE
+Architecture: amd64
+Depends: podman, buildah, runc
+Maintainer: LumIT A-Team, automation@lumit.it
+Homepage: https://www.lumit.it
+Description: Automation Interface UI, container image

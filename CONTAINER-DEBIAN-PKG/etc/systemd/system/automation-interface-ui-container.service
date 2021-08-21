@@ -1,0 +1,13 @@
+[Unit]
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/ui-container.sh start
+ExecStop=/usr/bin/ui-container.sh stop
+KillMode=process
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

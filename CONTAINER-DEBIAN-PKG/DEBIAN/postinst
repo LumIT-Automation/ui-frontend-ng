@@ -1,0 +1,31 @@
+#!/bin/bash
+
+set -e
+
+printf "\n* Container postinst...\n"
+if [ "$1" == "configure" ]; then
+    printf "\n* Building podman image...\n"
+    cd /usr/lib/ui
+
+    # Build container image.
+    buildah bud -t ui .
+
+    # First container run: associate name, bind ports, define init process, ...
+    podman run --name ui -dt localhost/ui /sbin/init
+
+    printf "\n* Starting Container Service on HOST...\n"
+    systemctl daemon-reload
+
+    systemctl start automation-interface-ui-container # (upon installation, container is already run, so this line is actually redundant).
+    systemctl enable automation-interface-ui-container
+
+    # syslog-ng seems going into a catatonic state while updating a package: restarting the whole thing.
+    if dpkg -l | grep automation-interface-log | grep -q ^ii; then
+        if systemctl list-unit-files | grep -q syslog-ng.service; then
+            systemctl restart syslog-ng || true # on host.
+            podman exec ui systemctl restart syslog-ng # on this container.
+        fi
+    fi
+fi
+
+exit 0

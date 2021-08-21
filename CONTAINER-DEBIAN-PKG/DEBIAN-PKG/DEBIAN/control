@@ -1,0 +1,8 @@
+Package: automation-interface-ui
+Version: RELEASE
+Architecture: all
+Depends: apache2 (>= 2.4.38), dnsutils (>= 1:9.11.5), consul (>= 1.0), syslog-ng (>= 3.19), unattended-upgrades (>=1.11.2)
+Conflicts: exim4-base
+Maintainer: LumIT A-Team
+Homepage: https://www.lumit.it
+Description: Automation Interface WebUI (commit: GITCOMMIT).

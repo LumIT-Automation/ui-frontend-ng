@@ -1,0 +1,9 @@
+########################
+# Log paths
+########################
+# locals
+log { source(s_src); filter(f_match_APACHE_ACCESS_UIF); rewrite(r_apache_a_uif); destination(d_apache_a_uif); };
+log { source(s_src); filter(f_match_APACHE_ERROR_UIF); rewrite(r_apache_e_uif); destination(d_apache_e_uif); };
+log { source(s_src); filter(f_match_YARN_UIF); rewrite(r_yarn_uif); destination(d_yarn_uif); };
+log { source(s_src); filter(f_match_CONSUL_AG_UIF); rewrite(r_consul_ag_uif); destination(d_consul_ag_uif); };
+log { source(s_src); filter(f_local5_UPGRADES_UIF); rewrite(r_upgrades_uif); destination(d_upgrades_uif); };

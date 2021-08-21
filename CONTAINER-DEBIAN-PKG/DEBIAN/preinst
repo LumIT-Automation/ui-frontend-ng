@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+printf "\n* Container preinst...\n"
+printf "\n* Cleanup...\n"
+if podman ps | awk '{print $2}' | grep -q ^localhost/ui$; then
+    podman stop ui
+fi
+
+if podman images | awk '{print $1}' | grep -q ^localhost/ui$; then
+    podman rmi -f ui
+fi
+
+exit 0
