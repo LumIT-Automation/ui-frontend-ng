@@ -6,7 +6,7 @@ import {connect} from "react-redux";
 import '../sider.css';
 import { Menu } from 'antd';
 import { Layout, Divider, Button } from 'antd';
-import { HomeOutlined, SettingOutlined, MenuUnfoldOutlined, MenuFoldOutlined } from '@ant-design/icons';
+import { HomeOutlined, SettingOutlined, MenuUnfoldOutlined, MenuFoldOutlined, NotificationOutlined } from '@ant-design/icons';
 import Icon from '@ant-design/icons';
 
 import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
@@ -59,10 +59,15 @@ class CustomSider extends Component {
     <img src={LoadbalancerSVG} alt="LoadbalancerSVG"/>
   );
 
+  //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
+  //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
+
   render(){
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
+    //<Sider width={150} className="site-layout-background" trigger={null}>
     return (
-      <Sider width={150} className="site-layout-background" trigger={null}>
+
+      <Sider width={230} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
             {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
           </Button>
@@ -71,30 +76,34 @@ class CustomSider extends Component {
           mode="inline"
           style={{ borderRight: 0 }}
         >
-          <Menu.Item key="homepage" ><Link to="/">HOME</Link></Menu.Item>
+          <Menu.Item key="homepage" icon={<HomeOutlined />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="ipam"><Link to="/ipam/">IPAM</Link></Menu.Item>
+          <Menu.Item key="ipam" icon={<HomeOutlined />}><Link to="/ipam/">IPAM</Link></Menu.Item>
           <Menu.Divider/>
-          <Menu.Item key="switch"><Link to="/switch/">SWITCH</Link></Menu.Item>
+
+          <Menu.Item key="switch" icon={<HomeOutlined />}><Link to="/switch/">SWITCH</Link></Menu.Item>
           <Menu.Divider/>
-          <Menu.Item key="firewall"><Link to="/firewall/">FIREWALL</Link></Menu.Item>
+
+          <Menu.Item key="firewall" icon={<HomeOutlined />}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
           <Menu.Divider/>
-          <Menu.Item key="f5"><Link to="/f5/">F5</Link></Menu.Item>
+
+          <Menu.Item key="f5" icon={<HomeOutlined />}><Link to="/f5/">F5</Link></Menu.Item>
           <Menu.Divider/>
+
           { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-            <Menu.Item key="certificates"><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
+            <Menu.Item key="certificates" icon={<HomeOutlined />}><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
             :
             null
           }
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="workflows"><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+          <Menu.Item key="workflows" icon={<HomeOutlined />}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           { this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any) ?
             <React.Fragment>
-              <Menu.Item key="assets"><Link to="/assets/">ASSETS</Link></Menu.Item>
+              <Menu.Item key="assets" icon={<HomeOutlined />}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
@@ -106,14 +115,14 @@ class CustomSider extends Component {
 
           { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
             <React.Fragment>
-              <Menu.Item key="permissions"><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
+              <Menu.Item key="permissions" icon={<HomeOutlined />}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
              null
           }
 
-          <Menu.Item key="settings"><Link to="/settings/">SETTINGS</Link></Menu.Item>
+          <Menu.Item key="settings" icon={<HomeOutlined />}><Link to="/settings/">SETTINGS</Link></Menu.Item>
         </Menu>
       </Sider>
     )
