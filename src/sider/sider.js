@@ -11,6 +11,7 @@ import Icon from '@ant-design/icons';
 
 import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
 import IpSVG from '../svg/ip-address-svgrepo-com.svg'
+
 import NetworkSVG from '../svg/layer-3-switch.svg'
 import LoadbalancerSVG from '../svg/loadbalancer.svg'
 
@@ -47,16 +48,16 @@ class CustomSider extends Component {
   };
 
   firewallIcon = () => (
-    <img src={FirewallSVG} alt="FirewallSVG" />
+    <img src={FirewallSVG} alt="FirewallSVG" width="15" height="15" color="red" />
   );
   ipIcon = () => (
-    <img src={IpSVG} alt="IpSVG"/>
+    <img src={IpSVG} alt="IpSVG" width="15" height="15"/>
   );
   networkIcon = () => (
     <img src={NetworkSVG} alt="NetworkSVG"/>
   );
   loadbalancerIcon = () => (
-    <img src={LoadbalancerSVG} alt="LoadbalancerSVG"/>
+    <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="15" height="15"/>
   );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
@@ -79,16 +80,16 @@ class CustomSider extends Component {
           <Menu.Item key="homepage" icon={<HomeOutlined />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="ipam" icon={<HomeOutlined />}><Link to="/ipam/">IPAM</Link></Menu.Item>
+          <Menu.Item key="ipam" icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
           <Menu.Divider/>
 
           <Menu.Item key="switch" icon={<HomeOutlined />}><Link to="/switch/">SWITCH</Link></Menu.Item>
           <Menu.Divider/>
 
-          <Menu.Item key="firewall" icon={<HomeOutlined />}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
+          <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
           <Menu.Divider/>
 
-          <Menu.Item key="f5" icon={<HomeOutlined />}><Link to="/f5/">F5</Link></Menu.Item>
+          <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
           <Menu.Divider/>
 
           { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
