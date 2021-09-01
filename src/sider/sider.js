@@ -6,15 +6,26 @@ import {connect} from "react-redux";
 import '../sider.css';
 import { Menu } from 'antd';
 import { Layout, Divider, Button } from 'antd';
-import { HomeOutlined, SettingOutlined, MenuUnfoldOutlined, MenuFoldOutlined, NotificationOutlined } from '@ant-design/icons';
+import { HomeOutlined,
+  SettingOutlined,
+  MenuUnfoldOutlined,
+  MenuFoldOutlined,
+  NotificationOutlined,
+  ApartmentOutlined,
+  FastForwardOutlined
+
+ } from '@ant-design/icons';
+
 import Icon from '@ant-design/icons';
 
 import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
 import IpSVG from '../svg/ip-address-svgrepo-com.svg'
-
 import NetworkSVG from '../svg/layer-3-switch.svg'
 import LoadbalancerSVG from '../svg/loadbalancer.svg'
 import F5SVG from '../svg/f5_Networks-Logo.wine.svg'
+import CertSVG from '../svg/certificates.svg'
+import ItemsSVG from '../svg/items.svg'
+import MyIcon from '../svg/ipIcon.js'
 
 const { Sider } = Layout;
 
@@ -49,19 +60,22 @@ class CustomSider extends Component {
   };
 
   firewallIcon = () => (
-    <img src={FirewallSVG} alt="FirewallSVG" width="30" height="30" color="red" />
+    <img src={FirewallSVG} alt="FirewallSVG" width="40" height="40" color="red" />
   );
   ipIcon = () => (
-    <img src={IpSVG} alt="IpSVG" width="30" height="30"/>
+    <img src={IpSVG} alt="IpSVG" width="40" height="40"/>
   );
   networkIcon = () => (
     <img src={NetworkSVG} alt="NetworkSVG"/>
   );
   loadbalancerIcon = () => (
-    <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="30" height="30"/>
+    <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="40" height="40"/>
   );
-  f5Icon = () => (
-      <img src={F5SVG} alt="LoadbalancerSVG" width="30" height="30" />
+  certIcon = () => (
+      <img src={CertSVG} alt="certificatesSVG" width="40" height="40" />
+  );
+  itemsIcon = () => (
+      <img src={ItemsSVG} alt="certificatesSVG" width="40" height="40" />
   );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
@@ -72,7 +86,7 @@ class CustomSider extends Component {
     //<Sider width={150} className="site-layout-background" trigger={null}>
     return (
 
-      <Sider width={230} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
+      <Sider width={250} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
             {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
           </Button>
@@ -81,13 +95,13 @@ class CustomSider extends Component {
           mode="inline"
           style={{ borderRight: 0 }}
         >
-          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'30px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+          <Menu.Item key="homepage" height={35} icon={<HomeOutlined style={{fontSize:'40px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="ipam" icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
+          <Menu.Item key="ipam" height={350} icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
           <Menu.Divider/>
 
-          <Menu.Item key="switch" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
+          <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'40px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
           <Menu.Divider/>
 
           <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
@@ -97,18 +111,18 @@ class CustomSider extends Component {
           <Menu.Divider/>
 
           { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-            <Menu.Item key="certificates" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
+            <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
             :
             null
           }
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="workflows" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+          <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'40px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           { this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any) ?
             <React.Fragment>
-              <Menu.Item key="assets" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/assets/">ASSETS</Link></Menu.Item>
+              <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
@@ -120,14 +134,14 @@ class CustomSider extends Component {
 
           { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
             <React.Fragment>
-              <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
+              <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'40px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
              null
           }
 
-          <Menu.Item key="settings" icon={<HomeOutlined style={{fontSize:'30px'}}/>}><Link to="/settings/">SETTINGS</Link></Menu.Item>
+          <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize:'40px'}}/>}><Link to="/settings/">SETTINGS</Link></Menu.Item>
         </Menu>
       </Sider>
     )
