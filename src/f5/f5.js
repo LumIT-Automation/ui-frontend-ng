@@ -9,6 +9,7 @@ import Error from '../error'
 import AssetSelector from './assetSelector'
 import Nodes from './nodes/manager'
 import Monitors from './monitors/manager'
+import Pools from './pools/manager'
 import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
 import CertificateAndKey from './certificates/container'
@@ -109,6 +110,12 @@ class F5 extends React.Component {
             { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
               <TabPane tab="Monitors" key="Monitors">
                 <Monitors/>
+              </TabPane>
+              : null
+            }
+            { this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any) ?
+              <TabPane tab="Pools" key="Pools">
+                <Pools/>
               </TabPane>
               : null
             }

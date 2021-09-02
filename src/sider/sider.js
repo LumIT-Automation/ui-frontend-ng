@@ -95,10 +95,10 @@ class CustomSider extends Component {
           mode="inline"
           style={{ borderRight: 0 }}
         >
-          <Menu.Item key="homepage" height={35} icon={<HomeOutlined style={{fontSize:'40px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'40px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="ipam" height={350} icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
+          <Menu.Item key="ipam" icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
           <Menu.Divider/>
 
           <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'40px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>

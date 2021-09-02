@@ -6,11 +6,12 @@ import Error from '../../error'
 
 import { setNodesList } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
 import { LoadingOutlined } from '@ant-design/icons';
 
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -29,7 +30,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class Add extends React.Component {
+class Modify extends React.Component {
 
   constructor(props) {
     super(props);
@@ -57,6 +58,8 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let body = Object.assign({}, this.props.obj)
+    this.setState({body: body})
   }
 
   genericValidator = e => {
@@ -65,16 +68,73 @@ class Add extends React.Component {
 
     switch(e.target.id) {
 
-      case 'name':
+      case 'tlsverify':
         if (e.target.value) {
-          body.name = e.target.value
-          delete errors.nameError
+          body.tlsverify = e.target.value
+          delete errors.tlsverifyError
         }
         else {
-          errors.nameError = 'error'
+          errors.tlsverifyError = 'error'
         }
         this.setState({body: body, errors: errors})
         break
+
+      case 'datacenter':
+        if (e.target.value) {
+        body.datacenter = e.target.value
+          delete errors.datacenterError
+        }
+        else {
+          errors.datacenterError = 'error'
+        }
+        this.setState({body: body, errors: errors})
+        break
+
+      case 'environment':
+        if (e.target.value) {
+          body.environment = e.target.value
+          delete errors.environmentError
+        }
+        else {
+          errors.environmentError = 'error'
+        }
+        this.setState({body: body, errors: errors})
+        break
+
+      case 'position':
+        if (e.target.value) {
+          body.position = e.target.value
+          delete errors.positionError
+        }
+        else {
+          errors.positionError = 'error'
+        }
+        this.setState({body: body, errors: errors})
+        break
+
+      case 'username':
+        if (e.target.value) {
+          body.username = e.target.value
+          delete errors.usernameError
+        }
+        else {
+          errors.usernameError = 'error'
+        }
+        this.setState({body: body, errors: errors})
+        break
+
+      case 'password':
+        if (e.target.value) {
+          body.password = e.target.value
+          delete errors.passwordError
+        }
+        else {
+          errors.passwordError = 'error'
+        }
+        this.setState({body: body, errors: errors})
+        break
+
+
       default:
 
     }
@@ -121,26 +181,13 @@ class Add extends React.Component {
       default:
         //
     }
+
+
+
   }
 
-  setStatus = e => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
-
-    if (e) {
-      body.session = e[0]
-      body.state = e[1]
-      delete errors.sessionError
-      delete errors.stateError
-      }
-      else {
-        errors.sessionError = 'error'
-        errors.stateError = 'error'
-      }
-      this.setState({body: body, errors: errors})
-  }
-
-  addNode = async () => {
+  modifyNode = async () => {
+    console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -150,20 +197,27 @@ class Add extends React.Component {
 
     else {
       this.setState({message: null});
+
       const body = {
         "data":
           {
             "address": this.state.body.address,
-            "name": this.state.body.name,
-            "session": this.state.body.session,
-            "state": this.state.body.state
+            "connectionLimit": 10,
+            "dynamicRatio": 1,
+            "fqdn": {
+                "addressFamily": "ipv4",
+                "interval": "1000",
+                "downInterval": 113
+            },
+            "logging": "enabled",
+            "monitor": "default",
+            "rateLimit": "0",
+            "ratio": 1
           }
         }
 
-      this.setState({loading: true})
-
       let rest = new Rest(
-        "POST",
+        "PATCH",
         resp => {
           this.setState({loading: false, success: true}, () => this.fetchNodes())
           this.success()
@@ -173,17 +227,23 @@ class Add extends React.Component {
           this.setState({error: error})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token, body )
     }
   }
 
+  resetError = () => {
+    this.setState({ error: null})
+  }
+
   fetchNodes = async () => {
+
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
         this.props.dispatch(setNodesList(resp))
+        //console.log(resp)
       },
       error => {
         this.setState({loading: false})
@@ -198,10 +258,6 @@ class Add extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -210,16 +266,18 @@ class Add extends React.Component {
   }
 
 
+
+
   render() {
     return (
       <Space direction='vertical'>
 
-          <Button type="primary" onClick={() => this.details()}>
-            Add Node
-          </Button>
+        <Button type="primary" onClick={() => this.details()}>
+          Modify Node
+        </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD NODE</p>}
+          title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -232,14 +290,18 @@ class Add extends React.Component {
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
-             title="Added"
+             title="Updated"
            />
         }
         { !this.state.loading && !this.state.success &&
           <Form
             {...layout}
             name="basic"
-            initialValues={{ remember: true }}
+            initialValues={{
+              remember: true,
+              address: this.state.body.address,
+              name: this.state.body.name
+            }}
             onFinish={null}
             onFinishFailed={null}
           >
@@ -251,31 +313,17 @@ class Add extends React.Component {
               help={this.state.errors.addressError ? 'Please input a valid ipv4' : null }
             >
               {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
-              <Input id='address' placeholder="address" onBlur={e => this.ipHostnameValidator(e)} />
+              <Input id='address' onBlur={e => this.ipHostnameValidator(e)} />
             </Form.Item>
 
             <Form.Item
-              label="Name"
+              label="NAME"
               name="name"
               key="name"
-              validateStatus={this.state.errors.mameError}
+              validateStatus={this.state.errors.nameError}
               help={this.state.errors.nameError ? 'Please input a valid name' : null }
             >
-              <Input id='name' placeholder="name" onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Session"
-              name="session"
-              key="session"
-              validateStatus={this.state.errors.sessionError}
-              help={this.state.errors.sessionError ? 'Please select session' : null }
-            >
-              <Select onChange={a => this.setStatus(a)}>
-                <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
-              </Select>
+              <Input id='fqdn' onBlur={e => this.ipHostnameValidator(e)}/>
             </Form.Item>
 
             {this.state.message ?
@@ -295,14 +343,16 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addNode()}>
-                Add Node
+              <Button type="primary" onClick={() => this.modifyNode()}>
+                Modify Node
               </Button>
             </Form.Item>
 
           </Form>
         }
+
         </Modal>
+
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
 
@@ -318,4 +368,4 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes
-}))(Add);
+}))(Modify);

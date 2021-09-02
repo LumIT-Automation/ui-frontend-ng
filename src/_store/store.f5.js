@@ -32,6 +32,10 @@ const f5Slice = createSlice({
         setNodesList: (state, action) => {
           state.nodes = action.payload.data.items
         },
+        setPoolsList: (state, action) => {
+          console.log(action.payload.data.items)
+          state.pools = action.payload.data.items
+        },
         setMonitorsList: (state, action) => {
           state.monitors = action.payload.data.items
         },
@@ -67,6 +71,7 @@ export const {
   selectPartition,
   setNodesList,
   setMonitorsList,
+  setPoolsList,
   setPoolList,
   setProfilesList,
   setVirtualServersList,
