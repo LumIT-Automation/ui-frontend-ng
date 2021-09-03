@@ -120,8 +120,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.nodes)
-    console.log(this.props.monitors)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

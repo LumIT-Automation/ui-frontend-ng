@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setNodesList } from '../../_store/store.f5'
+import { setPoolsList } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -42,39 +42,39 @@ class Delete extends React.Component {
   }
 
 
-  deleteNode = async node => {
+  deletePool = async pool => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchNodes())
+        this.setState({loading: false, success: true}, () => this.fetchPools())
       },
       error => {
         this.setState({loading: false, success: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token )
   }
 
   resetError = () => {
     this.setState({ error: null})
   }
 
-  fetchNodes = async () => {
+  fetchPools = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
+        this.props.dispatch(setPoolsList(resp))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   //Close and Error
@@ -96,7 +96,7 @@ class Delete extends React.Component {
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE NODE</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE POOL</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -122,7 +122,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteNode(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deletePool(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -151,5 +151,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
+  pools: state.f5.pools
 }))(Delete);

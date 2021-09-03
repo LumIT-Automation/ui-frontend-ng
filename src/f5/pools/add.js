@@ -123,19 +123,18 @@ class Add extends React.Component {
     }
   }
 
-  setStatus = e => {
+  setMonitor = e => {
+    console.log('eeeeeeeeee')
+    console.log(e)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.session = e[0]
-      body.state = e[1]
-      delete errors.sessionError
-      delete errors.stateError
+      body.monitor = e
+      delete errors.monitorError
       }
       else {
-        errors.sessionError = 'error'
-        errors.stateError = 'error'
+        errors.moitorError = 'error'
       }
       this.setState({body: body, errors: errors})
   }
@@ -153,8 +152,8 @@ class Add extends React.Component {
       const body = {
         "data":
         {
-            "name": "POOL",
-            "monitor": "/Common/MONITOR"
+            "name": this.state.body.name,
+            "monitor": this.state.body.monitor
         }
       }
 
@@ -258,10 +257,13 @@ class Add extends React.Component {
               validateStatus={this.state.errors.sessionError}
               help={this.state.errors.sessionError ? 'Please select session' : null }
             >
-              <Select onChange={a => this.setStatus(a)}>
-                <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
+              <Select onChange={p => this.setMonitor(p)} style={{ width: 200 }}>
+
+                {this.props.monitors ? this.props.monitors.map((p, i) => {
+                  return (
+                    <Select.Option  key={i} value={p.fullPath}>{p.name}</Select.Option>
+                  )
+              }) : null}
               </Select>
             </Form.Item>
 
