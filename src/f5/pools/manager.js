@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setPoolsList } from '../../_store/store.f5'
+import { setNodesList, setMonitorsList, setPoolsList } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -34,8 +34,14 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.partition ) {
+    if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
       this.fetchPools()
+      if (this.props.authorizations.nodes_get || this.props.authorizations.any ) {
+        this.fetchNodes()
+      }
+      if (this.props.authorizations.monitors_get || this.props.authorizations.any ) {
+        this.fetchMonitors()
+      }
     }
   }
 
@@ -46,6 +52,8 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if  (prevProps.partition !== this.props.partition)  {
         this.fetchPools()
+        this.fetchNodes()
+        this.fetchMonitors()
     }
     /*if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
@@ -53,6 +61,41 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+  }
+
+  fetchNodes = async () => {
+    console.log('rrrrrr')
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setNodesList(resp))
+        //console.log(resp)
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+  }
+
+  fetchMonitors = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setMonitorsList(resp))
+        //console.log(resp)
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/tcp-half-open/`, this.props.token)
   }
 
   fetchPools = async () => {
@@ -77,7 +120,8 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.token)
+    console.log(this.props.nodes)
+    console.log(this.props.monitors)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -111,5 +155,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  nodes: state.f5.nodes,
+  monitors: state.f5.monitors,
   pools: state.f5.pools
 }))(Manager);

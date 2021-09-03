@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setNodesList } from '../../_store/store.f5'
+import { setPoolsList } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -59,7 +59,7 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
-  genericValidator = e => {
+  nameSetValidator = e => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -140,7 +140,7 @@ class Add extends React.Component {
       this.setState({body: body, errors: errors})
   }
 
-  addNode = async () => {
+  addPool = async () => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -152,20 +152,18 @@ class Add extends React.Component {
       this.setState({message: null});
       const body = {
         "data":
-          {
-            "address": this.state.body.address,
-            "name": this.state.body.name,
-            "session": this.state.body.session,
-            "state": this.state.body.state
-          }
+        {
+            "name": "POOL",
+            "monitor": "/Common/MONITOR"
         }
+      }
 
       this.setState({loading: true})
 
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchNodes())
+          this.setState({loading: false, success: true}, () => this.fetchPools())
           this.success()
         },
         error => {
@@ -173,24 +171,24 @@ class Add extends React.Component {
           this.setState({error: error})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token, body)
     }
   }
 
-  fetchNodes = async () => {
+  fetchPools = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
+        this.props.dispatch(setPoolsList(resp))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   success = () => {
@@ -215,11 +213,11 @@ class Add extends React.Component {
       <Space direction='vertical'>
 
           <Button type="primary" onClick={() => this.details()}>
-            Add Node
+            Add Pool
           </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>ADD POOL</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -244,24 +242,13 @@ class Add extends React.Component {
             onFinishFailed={null}
           >
             <Form.Item
-              label="Address"
-              name="address"
-              key="address"
-              validateStatus={this.state.errors.addressError}
-              help={this.state.errors.addressError ? 'Please input a valid ipv4' : null }
-            >
-              {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
-              <Input id='address' placeholder="address" onBlur={e => this.ipHostnameValidator(e)} />
-            </Form.Item>
-
-            <Form.Item
               label="Name"
               name="name"
               key="name"
               validateStatus={this.state.errors.mameError}
               help={this.state.errors.nameError ? 'Please input a valid name' : null }
             >
-              <Input id='name' placeholder="name" onBlur={e => this.genericValidator(e)}/>
+              <Input id='name' placeholder="name" onBlur={e => this.nameSetValidator(e)}/>
             </Form.Item>
 
             <Form.Item
@@ -295,8 +282,8 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addNode()}>
-                Add Node
+              <Button type="primary" onClick={() => this.addPool()}>
+                Add Pool
               </Button>
             </Form.Item>
 
@@ -317,5 +304,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
+  nodes: state.f5.nodes,
+  monitors: state.f5.monitors,
+  pools: state.f5.pools
 }))(Add);

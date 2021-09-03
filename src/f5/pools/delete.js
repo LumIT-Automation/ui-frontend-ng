@@ -91,7 +91,7 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Node
+          Delete Pool
         </Button>
 
 

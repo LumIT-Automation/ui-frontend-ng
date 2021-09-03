@@ -34,7 +34,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.partition ) {
+    if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
       this.fetchNodes()
     }
   }
