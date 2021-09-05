@@ -7,7 +7,7 @@ import { setVirtualServersList } from '../../_store/store.f5'
 
 
 import List from './list'
-import Add from './add'
+//import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -81,7 +81,7 @@ class Manager extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
-        { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+        {/* ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
            this.props.authorizations && (this.props.authorizations.virtualServers_post || this.props.authorizations.any) ?
             <div>
               <br/>
@@ -91,7 +91,7 @@ class Manager extends React.Component {
             null
           :
           null
-        }
+        */}
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
           this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>

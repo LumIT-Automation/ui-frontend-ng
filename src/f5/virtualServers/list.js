@@ -124,7 +124,6 @@ class List extends React.Component {
     this.setState({ error: null})
   }
 
-
   render() {
     console.log(this.props.virtualServers)
 
@@ -165,35 +164,19 @@ class List extends React.Component {
        ...this.getColumnSearchProps('ipProtocol'),
       },
       {
-        title: 'Modify',
+        title: 'Pool',
         align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.virtualServer_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
+        dataIndex: 'pool',
+        key: 'pool',
+       ...this.getColumnSearchProps('pool'),
       },
       {
-        title: 'Delete',
+        title: 'sourceAddressTranslation',
         align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.virtualServer_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      }
+        dataIndex: ['sourceAddressTranslation', 'type'],
+        key: 'sourceAddressTranslation',
+       //...this.getColumnSearchProps(['sourceAddressTranslation', 'type']),
+      },
     ];
 
 

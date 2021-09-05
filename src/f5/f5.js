@@ -12,7 +12,7 @@ import Monitors from './monitors/manager'
 import Pools from './pools/manager'
 import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
-import CertificateAndKey from './certificates/container'
+//import CertificateAndKey from './certificates/container'
 
 import { setAssetList, cleanUp } from '../_store/store.f5'
 
@@ -131,12 +131,12 @@ class F5 extends React.Component {
               </TabPane>
               : null
             }
-            { this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
+            {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
               <TabPane tab="Certificates" key="4">
                 <CertificateAndKey/>
               </TabPane>
               : null
-            }
+            */}
 
           </Tabs>
 

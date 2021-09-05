@@ -251,13 +251,13 @@ class Add extends React.Component {
             </Form.Item>
 
             <Form.Item
-              label="Session"
-              name="session"
-              key="session"
-              validateStatus={this.state.errors.sessionError}
-              help={this.state.errors.sessionError ? 'Please select session' : null }
+              label="Monitor"
+              name="monitor"
+              key="monitor"
+              validateStatus={this.state.errors.monitorError}
+              help={this.state.errors.monitorError ? 'Please select monitor' : null }
             >
-              <Select onChange={p => this.setMonitor(p)} style={{ width: 200 }}>
+              <Select onChange={p => this.setMonitor(p)} >
 
                 {this.props.monitors ? this.props.monitors.map((p, i) => {
                   return (
