@@ -200,7 +200,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.assetList}
+          dataSource={this.props.infobloxAssetList}
           bordered
           rowKey="id"
           //pagination={false}
@@ -215,6 +215,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  assetList: state.f5.assetList,
+  infobloxAssetList: state.infoblox.infobloxAssetList,
   authorizations: state.authorizations.f5
 }))(List);

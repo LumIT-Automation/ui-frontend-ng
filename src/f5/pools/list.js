@@ -197,6 +197,13 @@ slowRampTime: 10
        ...this.getColumnSearchProps('monitor'),
       },
       {
+        title: 'LoadBalancingMode',
+        align: 'center',
+        dataIndex: 'loadBalancingMode',
+        key: 'loadBalancingMode',
+       ...this.getColumnSearchProps('loadBalancingMode'),
+      },
+      {
         title: 'Delete',
         align: 'center',
         dataIndex: 'delete',

@@ -5,6 +5,7 @@ import authorizationsReducer from './store.authorizations'
 import permissionsReducer from './store.permissions'
 
 import f5Reducer from './store.f5'
+import infobloxReducer from './store.infoblox'
 import workflowsReducer from './store.workflows'
 
 /*
@@ -18,6 +19,7 @@ export default configureStore({
         authorizations: authorizationsReducer,
         permissions: permissionsReducer,
         f5: f5Reducer,
+        infoblox: infobloxReducer,
         workflows: workflowsReducer
     }
 })

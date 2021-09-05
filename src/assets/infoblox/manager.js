@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
+import List from './list'
+import Add from './add'
 import Delete from './delete'
 import Modify from './modify'
 
@@ -17,7 +19,7 @@ Asset is a table that receives assetList: state.f5.assetList from the store and 
 */
 
 
-class List extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
@@ -127,86 +129,22 @@ class List extends React.Component {
 
   render() {
 
-    const columns = [
-      {
-        title: 'FQDN',
-        align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
-      },
-      {
-        title: 'Address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
-      },
-      {
-        title: 'Environment',
-        align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        ...this.getColumnSearchProps('environment'),
-      },
-      {
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-       ...this.getColumnSearchProps('datacenter'),
-      },
-      {
-        title: 'Position',
-        align: 'center',
-        dataIndex: 'position',
-        key: 'position',
-        ...this.getColumnSearchProps('position'),
-      },
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      }
-    ];
-
-
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Table
-          columns={columns}
-          dataSource={this.props.assetList}
-          bordered
-          rowKey="id"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
+
+        { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
+        <div>
+          <br/>
+          <Add/>
+        </div>
+        : null }
+
+        <br/>
+
+        <div>
+          <List/>
+        </div>
+
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
 
@@ -217,4 +155,4 @@ class List extends React.Component {
 export default connect((state) => ({
   assetList: state.f5.assetList,
   authorizations: state.authorizations.f5
-}))(List);
+}))(Manager);

@@ -4,9 +4,12 @@ import { Tabs, Space, Spin, Form, Input, Button, Table } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import Container from './f5/container'
+import InfobloxManager from './infoblox/manager'
 
 import Rest from "../_helpers/Rest";
 import { setAssetList, cleanUp } from '../_store/store.f5'
+import { setInfobloxAssetList } from '../_store/store.infoblox'
+
 
 import Error from '../error'
 
@@ -46,6 +49,7 @@ class Assets extends React.Component {
   componentDidMount() {
     if (this.props.token) {
       this.fetchAssets()
+      this.fetchInfobloxAssets()
     }
   }
 
@@ -77,6 +81,23 @@ class Assets extends React.Component {
     await rest.doXHR("f5/assets/", this.props.token)
   }
 
+  fetchInfobloxAssets = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log('resp')
+        this.setState({loading: false})
+        this.props.dispatch(setInfobloxAssetList( resp ))
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -85,13 +106,18 @@ class Assets extends React.Component {
   render() {
 
     //console.log(this.props.permissions)
+    console.log(this.props.infobloxAssetList)
 
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
         <Tabs type="card" destroyInactiveTabPane={true}>
-          <TabPane tab="F5" key="2">
+          <TabPane tab="F5" key="f5">
             {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <Container/> }
+          </TabPane>
+
+          <TabPane tab="Infoblox" key="infoblox">
+            {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <InfobloxManager/> }
           </TabPane>
         </Tabs>
 
@@ -105,5 +131,6 @@ class Assets extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList
+  assetList: state.f5.assetList,
+  infobloxAssetList: state.infoblox.infobloxAssetList
 }))(Assets);
