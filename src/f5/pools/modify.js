@@ -4,9 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setNodesList } from '../../_store/store.f5'
+import { setPoolsList } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -186,7 +186,50 @@ class Modify extends React.Component {
 
   }
 
-  modifyNode = async () => {
+  setLbMethod = e => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+
+    switch (e) {
+      case 'round-robin':
+        body.lbMethod = 'round-robin'
+        delete errors.lbMethodError
+        break
+      case 'least-connections-member':
+        body.lbMethod = 'least-connections-member'
+        delete errors.lbMethodError
+        break
+      case 'observed-member':
+        body.lbMethod = 'observed-member'
+        delete errors.lbMethodError
+        break
+      case 'predictive-member':
+        body.lbMethod = 'predictive-member'
+        delete errors.lbMethodError
+        break
+      default:
+        errors.lbMethodError = 'error'
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+  setMonitor = e => {
+    console.log('eeeeeeeeee')
+    console.log(e)
+    let body = Object.assign({}, this.state.body);
+    let errors = Object.assign({}, this.state.errors);
+
+    if (e) {
+      body.monitor = e
+      delete errors.monitorError
+      }
+      else {
+        errors.moitorError = 'error'
+      }
+      this.setState({body: body, errors: errors})
+  }
+
+  modifyPool = async () => {
     console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
@@ -201,25 +244,15 @@ class Modify extends React.Component {
       const body = {
         "data":
           {
-            "address": this.state.body.address,
-            "connectionLimit": 10,
-            "dynamicRatio": 1,
-            "fqdn": {
-                "addressFamily": "ipv4",
-                "interval": "1000",
-                "downInterval": 113
-            },
-            "logging": "enabled",
-            "monitor": "default",
-            "rateLimit": "0",
-            "ratio": 1
+            "monitor": this.state.body.monitor,
+            "loadBalancingMode": this.state.body.lbMethod
           }
         }
 
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchNodes())
+          this.setState({loading: false, success: true}, () => this.fetchPools())
           this.success()
         },
         error => {
@@ -227,7 +260,7 @@ class Modify extends React.Component {
           this.setState({error: error})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token, body )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, body )
     }
   }
 
@@ -235,14 +268,14 @@ class Modify extends React.Component {
     this.setState({ error: null})
   }
 
-  fetchNodes = async () => {
+  fetchPools = async () => {
 
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
+        this.props.dispatch(setPoolsList(resp))
         //console.log(resp)
       },
       error => {
@@ -250,7 +283,7 @@ class Modify extends React.Component {
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   success = () => {
@@ -273,11 +306,11 @@ class Modify extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" onClick={() => this.details()}>
-          Modify Node
+          Modify Pool
         </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>MODIFY POOL</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -299,32 +332,43 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              address: this.state.body.address,
-              name: this.state.body.name
+              lbMethod: this.state.body.lbMethod,
+              monitor: this.state.body.monitor
             }}
             onFinish={null}
             onFinishFailed={null}
           >
-            <Form.Item
-              label="Address"
-              name="address"
-              key="address"
-              validateStatus={this.state.errors.addressError}
-              help={this.state.errors.addressError ? 'Please input a valid ipv4' : null }
-            >
-              {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
-              <Input id='address' onBlur={e => this.ipHostnameValidator(e)} />
-            </Form.Item>
+          <Form.Item
+            label="Load Balancing Method"
+            name='lbMethod'
+            key="lbMethod"
+            validateStatus={this.state.errors.lbMethodError}
+            help={this.state.errors.lbMethodError ? 'Please input a valid Loadbalancing Method' : null }
+          >
+            <Select id='lbMethod' onChange={a => this.setLbMethod(a)}>
+              <Select.Option key={'round-robin'} value={'round-robin'}>round-robin</Select.Option>
+              <Select.Option key={'least-connections-member'} value={'least-connections-member'}>least-connections-member</Select.Option>
+              <Select.Option key={'observed-member'} value={'observed-member'}>observed-member</Select.Option>
+              <Select.Option key={'predictive-member'} value={'predictive-member'}>predictive-member</Select.Option>
+            </Select>
+          </Form.Item>
 
-            <Form.Item
-              label="NAME"
-              name="name"
-              key="name"
-              validateStatus={this.state.errors.nameError}
-              help={this.state.errors.nameError ? 'Please input a valid name' : null }
-            >
-              <Input id='fqdn' onBlur={e => this.ipHostnameValidator(e)}/>
-            </Form.Item>
+          <Form.Item
+            label="Monitor"
+            name="monitor"
+            key="monitor"
+            validateStatus={this.state.errors.monitorError}
+            help={this.state.errors.monitorError ? 'Please select monitor' : null }
+          >
+            <Select onChange={p => this.setMonitor(p)} >
+
+              {this.props.monitors ? this.props.monitors.map((p, i) => {
+                return (
+                  <Select.Option  key={i} value={p.fullPath}>{p.name}</Select.Option>
+                )
+            }) : null}
+            </Select>
+          </Form.Item>
 
             {this.state.message ?
               <Form.Item
@@ -343,8 +387,8 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.modifyNode()}>
-                Modify Node
+              <Button type="primary" onClick={() => this.modifyPool()}>
+                Modify Pool
               </Button>
             </Form.Item>
 
@@ -367,5 +411,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
+  nodes: state.f5.nodes,
+  monitors: state.f5.monitors,
+  pools: state.f5.pools
 }))(Modify);

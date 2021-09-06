@@ -127,60 +127,6 @@ class List extends React.Component {
 
   render() {
 
-    /*
-    allowNat: "yes"
-​​
-allowSnat: "yes"
-​​
-fullPath: "/Common/GPino_vs_pool"
-​​
-generation: 364
-​​
-ignorePersistedWeight: "disabled"
-​​
-ipTosToClient: "pass-through"
-​​
-ipTosToServer: "pass-through"
-​​
-linkQosToClient: "pass-through"
-​​
-linkQosToServer: "pass-through"
-​​
-loadBalancingMode: "round-robin"
-​​
-membersReference: Object { link: "https://localhost/mgmt/tm/ltm/pool/~Common~GPino_vs_pool/members?ver=15.1.2.1", isSubcollection: true }
-​​
-minActiveMembers: 0
-​​
-minUpMembers: 0
-​​
-minUpMembersAction: "failover"
-​​
-minUpMembersChecking: "disabled"
-​​
-monitor: "/Common/https"
-​​
-name: "GPino_vs_pool"
-​​
-partition: "Common"
-​​
-queueDepthLimit: 0
-​​
-queueOnConnectionLimit: "disabled"
-​​
-queueTimeLimit: 0
-​​
-reselectTries: 0
-​​
-selfLink: "https://localhost/mgmt/tm/ltm/pool/~Common~GPino_vs_pool?ver=15.1.2.1"
-​​
-serviceDownAction: "none"
-​​
-slowRampTime: 10
-
-
-    */
-
     const columns = [
       {
         title: 'Name',
@@ -202,6 +148,21 @@ slowRampTime: 10
         dataIndex: 'loadBalancingMode',
         key: 'loadBalancingMode',
        ...this.getColumnSearchProps('loadBalancingMode'),
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.pool_modify || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
       },
       {
         title: 'Delete',
