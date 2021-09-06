@@ -123,6 +123,33 @@ class Add extends React.Component {
     }
   }
 
+  setLbMethod = e => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+
+    switch (e) {
+      case 'round-robin':
+        body.lbMethod = 'round-robin'
+        delete errors.lbMethodError
+        break
+      case 'least-connections-member':
+        body.lbMethod = 'least-connections-member'
+        delete errors.lbMethodError
+        break
+      case 'observed-member':
+        body.lbMethod = 'observed-member'
+        delete errors.lbMethodError
+        break
+      case 'predictive-member':
+        body.lbMethod = 'predictive-member'
+        delete errors.lbMethodError
+        break
+      default:
+        errors.lbMethodError = 'error'
+    }
+    this.setState({body: body, errors: errors})
+  }
+
   setMonitor = e => {
     console.log('eeeeeeeeee')
     console.log(e)
@@ -153,7 +180,8 @@ class Add extends React.Component {
         "data":
         {
             "name": this.state.body.name,
-            "monitor": this.state.body.monitor
+            "monitor": this.state.body.monitor,
+            "loadBalancingMode": this.state.body.lbMethod
         }
       }
 
@@ -208,6 +236,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.props.pools)
     return (
       <Space direction='vertical'>
 
@@ -248,6 +277,21 @@ class Add extends React.Component {
               help={this.state.errors.nameError ? 'Please input a valid name' : null }
             >
               <Input id='name' placeholder="name" onBlur={e => this.nameSetValidator(e)}/>
+            </Form.Item>
+
+            <Form.Item
+              label="Load Balancing Method"
+              name='lbMethod'
+              key="lbMethod"
+              validateStatus={this.state.errors.lbMethodError}
+              help={this.state.errors.lbMethodError ? 'Please input a valid Loadbalancing Method' : null }
+            >
+              <Select id='lbMethod' onChange={a => this.setLbMethod(a)}>
+                <Select.Option key={'round-robin'} value={'round-robin'}>round-robin</Select.Option>
+                <Select.Option key={'least-connections-member'} value={'least-connections-member'}>least-connections-member</Select.Option>
+                <Select.Option key={'observed-member'} value={'observed-member'}>observed-member</Select.Option>
+                <Select.Option key={'predictive-member'} value={'predictive-member'}>predictive-member</Select.Option>
+              </Select>
             </Form.Item>
 
             <Form.Item
