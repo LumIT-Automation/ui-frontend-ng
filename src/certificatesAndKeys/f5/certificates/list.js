@@ -1,13 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import Error from '../../../error'
 
-import Rest from "../../_helpers/Rest";
-import { setCertificatesList } from '../../_store/store.f5'
-import Error from '../../error'
-
-import List from './list'
-import Add from './add'
+import Delete from './delete'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -20,7 +16,7 @@ Asset is a table that receives assetList: state.f5.assetList from the store and 
 */
 
 
-class Container extends React.Component {
+class List extends React.Component {
 
   constructor(props) {
     super(props);
@@ -32,9 +28,6 @@ class Container extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.partition) {
-      this.fetchCertificates()
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -42,9 +35,6 @@ class Container extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
-      this.fetchCertificates()
-    }
   }
 
   componentWillUnmount() {
@@ -127,23 +117,7 @@ class Container extends React.Component {
   handleReset = clearFilters => {
     clearFilters();
     this.setState({ searchText: '' });
-  }
-
-  fetchCertificates = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setCertificatesList( resp ))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
-  }
+  };
 
   resetError = () => {
     this.setState({ error: null})
@@ -151,24 +125,58 @@ class Container extends React.Component {
 
 
   render() {
-    console.log(this.props.certificates)
+
+    const columns = [
+      {
+        title: 'NAME',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'ISSUER',
+        align: 'center',
+        dataIndex: ['apiRawValues','issuer'],
+        key: 'issuer',
+        ...this.getColumnSearchProps('issuer'),
+      },
+      {
+        title: 'EXPIRATION',
+        align: 'center',
+        dataIndex: ['apiRawValues','expiration'],
+        key: ['apiRawValues','expiration'],
+       ...this.getColumnSearchProps('expiration'),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.certificate_delete || this.props.authorizations.any) ?
+            <Delete name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
+      }
+    ];
+
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
-        { this.props.authorizations && (this.props.authorizations.certificates_post || this.props.authorizations.any) ?
-        <div>
-          <br/>
-          <Add/>
-        </div>
-        : null }
-
-        <br/>
-
-        <div>
-          <List/>
-        </div>
-
+        <Table
+          columns={columns}
+          dataSource={this.props.certificates}
+          bordered
+          rowKey="name"
+          //pagination={false}
+          pagination={{ pageSize: 10 }}
+          style={{marginBottom: 10}}
+        />
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
 
@@ -182,4 +190,4 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   certificates: state.f5.certificates
-}))(Container);
+}))(List);

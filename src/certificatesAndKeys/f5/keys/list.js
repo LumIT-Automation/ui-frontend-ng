@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+import Error from '../../../error'
 
 import Delete from './delete'
 
@@ -155,7 +155,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.certificate_delete || this.props.authorizations.any) ?
+            { this.props.authorizations && (this.props.authorizations.key_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -170,7 +170,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.certificates}
+          dataSource={this.props.keys}
           bordered
           rowKey="name"
           //pagination={false}
@@ -189,5 +189,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  certificates: state.f5.certificates
+  keys: state.f5.keys
 }))(List);

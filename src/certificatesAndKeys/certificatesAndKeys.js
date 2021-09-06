@@ -4,7 +4,8 @@ import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 import AssetSelector from './assetSelector'
-import Manager from './f5/manager'
+import CertificatesManager from './f5/certificates/manager'
+import KeysManager from './f5/keys/manager'
 
 import Rest from "../_helpers/Rest";
 import { setAssetList, cleanUp } from '../_store/store.f5'
@@ -98,7 +99,28 @@ class CertificatesAndKeys extends React.Component {
                 <AssetSelector />
               </div>
             <Divider/>
-              <Manager/>
+            <Tabs type="card" destroyInactiveTabPane={true}>
+              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
+                <TabPane tab="Certificates" key="Certificates">
+                  <CertificatesManager/>
+                </TabPane>
+                : null
+              }
+              { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
+                <TabPane tab="Keys" key="Keys">
+                  <KeysManager/>
+                </TabPane>
+                : null
+              }
+              {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
+                <TabPane tab="Certificates" key="4">
+                  <CertificateAndKey/>
+                </TabPane>
+                : null
+              */}
+
+            </Tabs>
+
             </React.Fragment>
             }
           </TabPane>

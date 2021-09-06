@@ -48,6 +48,9 @@ const f5Slice = createSlice({
         setCertificatesList: (state, action) => {
           state.certificates = action.payload.data.items
         },
+        setKeysList: (state, action) => {
+          state.keys = action.payload.data.items
+        },
         setPoolList: (state, action) => {
           state.currentPoolList = action.payload.data.items
           //state.currentPoolList = undefined
@@ -76,6 +79,7 @@ export const {
   setProfilesList,
   setVirtualServersList,
   setCertificatesList,
+  setKeysList,
   cleanUp
 } = actions
 

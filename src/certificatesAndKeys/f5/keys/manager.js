@@ -1,10 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
-import Modify from './modify'
-import Delete from './delete'
+import Rest from "../../../_helpers/Rest";
+import { setKeysList } from '../../../_store/store.f5'
+import Error from '../../../error'
+
+import List from './list'
+import Add from './add'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -17,7 +20,7 @@ Asset is a table that receives assetList: state.f5.assetList from the store and 
 */
 
 
-class List extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
@@ -29,6 +32,10 @@ class List extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.asset && this.props.partition) {
+      this.fetchKeys()
+      console.log('Keys mount')
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -36,6 +43,10 @@ class List extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
+      this.fetchKeys()
+      console.log('Keys update')
+    }
   }
 
   componentWillUnmount() {
@@ -118,7 +129,23 @@ class List extends React.Component {
   handleReset = clearFilters => {
     clearFilters();
     this.setState({ searchText: '' });
-  };
+  }
+
+  fetchKeys = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setKeysList( resp ))
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
+  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -126,73 +153,24 @@ class List extends React.Component {
 
 
   render() {
-
-    const columns = [
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-      },
-      {
-        title: 'Monitor',
-        align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-       ...this.getColumnSearchProps('monitor'),
-      },
-      {
-        title: 'LoadBalancingMode',
-        align: 'center',
-        dataIndex: 'loadBalancingMode',
-        key: 'loadBalancingMode',
-       ...this.getColumnSearchProps('loadBalancingMode'),
-      },
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      }
-    ];
-
+    console.log(this.props.keys)
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Table
-          columns={columns}
-          dataSource={this.props.pools}
-          bordered
-          rowKey="name"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
+
+        { this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+        <div>
+          <br/>
+          <Add/>
+        </div>
+        : null }
+
+        <br/>
+
+        <div>
+          <List/>
+        </div>
+
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
 
@@ -205,5 +183,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  pools: state.f5.pools
-}))(List);
+  keys: state.f5.keys
+}))(Manager);

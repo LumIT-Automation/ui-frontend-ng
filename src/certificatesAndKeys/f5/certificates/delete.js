@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from "../../../_helpers/Rest"
+import Error from '../../../error'
 
-import { setAssetList } from '../../_store/store.f5'
+import { setCertificatesList } from '../../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -42,39 +42,45 @@ class Delete extends React.Component {
   }
 
 
-  deleteAsset = async asset => {
+  deleteCertificate = async cert => {
+
+    let l = cert.name.split('/')
+    let partition  = l[1]
+    let certName  = l[2]
+
+    console.log(certName)
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true})
-        setTimeout( () => this.fetchAssets(), 1000)
-        setTimeout( () => this.closeModal(), 1100)
+        this.setState({loading: false, success: true}, () => this.fetchCertificates())
       },
       error => {
         this.setState({loading: false, success: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/asset/${asset.id}/`, this.props.token )
+    await rest.doXHR(`f5/${this.props.asset.id}/${partition}/certificate/${certName}/`, this.props.token )
+  }
 
+  fetchCertificates = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setCertificatesList( resp ))
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
   }
 
   resetError = () => {
     this.setState({ error: null})
-  }
-
-  fetchAssets = async () => {
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setAssetList( resp ))
-      },
-      error => {
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR("f5/assets/", this.props.token)
   }
 
   //Close and Error
@@ -91,12 +97,12 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
+          Delete Certificate
         </Button>
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE CERTIFICATE</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -122,7 +128,10 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteAsset(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deleteCertificate(this.props.obj)}>
+
+                  {//}<Button type="primary" onClick={() => console.log(this.props.obj)}>
+                  }
                     YES
                   </Button>
                 </Col>
