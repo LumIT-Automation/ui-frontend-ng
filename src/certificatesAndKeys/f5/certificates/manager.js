@@ -32,7 +32,7 @@ class CertificatesManager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.partition) {
+    if (this.props.asset) {
       this.fetchCertificates()
       console.log('Cert mount')
     }

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setCertificatesList } from '../../../_store/store.f5'
+import { setKeysList } from '../../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -42,41 +42,41 @@ class Delete extends React.Component {
   }
 
 
-  deleteCertificate = async cert => {
+  deleteKey = async key => {
 
-    let l = cert.name.split('/')
+    let l = key.name.split('/')
     let partition  = l[1]
-    let certName  = l[2]
+    let keyName  = l[2]
 
-    console.log(certName)
+    console.log(keyName)
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchCertificates())
+        this.setState({loading: false, success: true}, () => this.fetchKeys())
       },
       error => {
         this.setState({loading: false, success: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${partition}/certificate/${certName}/`, this.props.token )
+    await rest.doXHR(`f5/${this.props.asset.id}/${partition}/key/${keyName}/`, this.props.token )
   }
 
-  fetchCertificates = async () => {
+  fetchKeys = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setCertificatesList( resp ))
+        this.props.dispatch(setKeysList( resp ))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
   }
 
   resetError = () => {
@@ -97,12 +97,12 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Certificate
+          Delete Key
         </Button>
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE CERTIFICATE</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE KEY</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -128,7 +128,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteCertificate(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deleteKey(this.props.obj)}>
 
                   {//}<Button type="primary" onClick={() => console.log(this.props.obj)}>
                   }

@@ -204,7 +204,7 @@ class Add extends React.Component {
           </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD CERTIFICATE</p>}
+          title={<p style={{textAlign: 'center'}}>ADD KEY</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
