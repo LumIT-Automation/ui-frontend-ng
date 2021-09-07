@@ -86,9 +86,13 @@ class App extends Component {
   deleteCookies = (token, username) => {
     return new Promise( (resolve, reject) => {
       try {
+        console.log(document.cookie.search("token"))
         document.cookie = `${token}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
         document.cookie = `${username}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
-        resolve()
+        console.log(document.cookie.search("token"))
+        if ( document.cookie.search("token") === -1 && document.cookie.search("username") === -1  ) {
+          resolve()
+        }
       }
       catch(e) {
         reject(e)

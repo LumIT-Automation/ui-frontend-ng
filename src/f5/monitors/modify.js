@@ -39,7 +39,8 @@ class Modify extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      body: {},
+      monitorFullList: []
     };
   }
 
@@ -119,14 +120,13 @@ class Modify extends React.Component {
         "PATCH",
         resp => {
           this.setState({loading: false, success: true}, () => this.fetchMonitors())
-          this.success()
         },
         error => {
           this.setState({loading: false, success: false})
           this.setState({error: error})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/tcp-half-open/${this.props.obj.name}/`, this.props.token, body )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token, body )
     }
   }
 
@@ -134,22 +134,44 @@ class Modify extends React.Component {
     this.setState({ error: null})
   }
 
-  fetchMonitors = async () => {
+  fetchMonitors =  () => {
+    let list = ['tcp', 'tcp-half-open', 'http']
+    list.forEach(type => {
+      this.fetchMonitorsType(type)
+    }
+  )
+    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
+  }
 
+  fetchMonitorsType = async (type) => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setMonitorsList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/tcp-half-open/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+  }
+
+  addToList = (resp, type) => {
+    let mon = Object.assign([], resp.data.items);
+    let newList = []
+    let currentList = Object.assign([], this.state.monitorFullList);
+    let l = []
+
+    mon.forEach(m => {
+      Object.assign(m, {type: type});
+      l.push(m)
+    })
+
+    newList = currentList.concat(l);
+    this.setState({monitorFullList: newList})
+    this.props.dispatch(setMonitorsList(newList))
   }
 
   success = () => {

@@ -29,12 +29,14 @@ class Manager extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
-      error: null
+      error: null,
+      monitorFullList: []
     };
   }
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+      //this.fetchMonitors()
       this.fetchMonitors()
     }
   }
@@ -45,6 +47,7 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
+      //this.fetchMonitors()
       this.fetchMonitors()
     }
     /*if (this.props.authorizations !== prevProps.authorizations) {
@@ -55,21 +58,45 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchMonitors = async () => {
+
+  fetchMonitors =  () => {
+    let list = ['tcp', 'tcp-half-open', 'http']
+    list.forEach(type => {
+      this.fetchMonitorsType(type)
+    }
+  )
+    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
+  }
+
+  fetchMonitorsType = async (type) => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setMonitorsList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/tcp-half-open/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+  }
+
+  addToList = (resp, type) => {
+    let mon = Object.assign([], resp.data.items);
+    let newList = []
+    let currentList = Object.assign([], this.state.monitorFullList);
+    let l = []
+
+    mon.forEach(m => {
+      Object.assign(m, {type: type});
+      l.push(m)
+    })
+
+    newList = currentList.concat(l);
+    this.setState({monitorFullList: newList})
+    this.props.dispatch(setMonitorsList(newList))
   }
 
   resetError = () => {
@@ -78,6 +105,7 @@ class Manager extends React.Component {
 
 
   render() {
+//    console.log(this.state.body.monitorFullList)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

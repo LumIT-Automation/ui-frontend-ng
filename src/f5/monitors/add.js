@@ -38,7 +38,8 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      body: {},
+      monitorFullList: []
     };
   }
 
@@ -153,20 +154,44 @@ class Add extends React.Component {
     }
   }
 
-  fetchMonitors = async () => {
+  fetchMonitors =  () => {
+    let list = ['tcp', 'tcp-half-open', 'http']
+    list.forEach(type => {
+      this.fetchMonitorsType(type)
+    }
+  )
+    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
+  }
+
+  fetchMonitorsType = async (type) => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setMonitorsList(resp))
+        this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
         this.setState({loading: false})
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.body.monitorType}/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+  }
+
+  addToList = (resp, type) => {
+    let mon = Object.assign([], resp.data.items);
+    let newList = []
+    let currentList = Object.assign([], this.state.monitorFullList);
+    let l = []
+
+    mon.forEach(m => {
+      Object.assign(m, {type: type});
+      l.push(m)
+    })
+
+    newList = currentList.concat(l);
+    this.setState({monitorFullList: newList})
+    this.props.dispatch(setMonitorsList(newList))
   }
 
   success = () => {
@@ -238,6 +263,9 @@ class Add extends React.Component {
             >
               <Select onChange={a => this.setMonitorType(a)}>
                 <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
+                <Select.Option key={'tcp'} value={'tcp'}>tcp</Select.Option>
+                <Select.Option key={'http'} value={'http'}>http</Select.Option>
+                <Select.Option key={'https'} value={'https'}>https</Select.Option>
               </Select>
             </Form.Item>
 
