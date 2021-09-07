@@ -44,13 +44,10 @@ class Workflows extends React.Component {
       message:'',
       list: [
         {
-          service: 'F5 - Create Layer 4 No SNAT'
+          service: 'F5 - Create Service'
         },
         {
-          service: 'F5 - Delete Layer 4 No SNAT'
-        },
-        {
-          service: 'F5 - Delete Layer 7'
+          service: 'F5 - Delete Service'
         },
         {
           service: 'F5 - Pool Maintenance'

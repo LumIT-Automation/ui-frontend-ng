@@ -29,7 +29,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class DeleteL7 extends React.Component {
+class DeleteF5Service extends React.Component {
 
   constructor(props) {
     super(props);
@@ -176,4 +176,4 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes
-}))(DeleteL7);
+}))(DeleteF5Service);

@@ -4,11 +4,11 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import CreateL4NoSnat from './create-layer4-noSnat'
-import DeleteL4NoSnat from './delete-layer4-noSnat'
-import DeleteL7 from './delete-layer7'
-import PoolMainenance from './poolMaintenance/manager'
 import AssetSelector from './assetSelector'
+import CreateF5ervice from './createF5Service'
+import DeleteF5ervice from './deleteF5Service'
+import PoolMainenance from './poolMaintenance/manager'
+
 
 import { Space, Modal, Table, Result, List, Button, Divider, Alert } from 'antd';
 
@@ -88,19 +88,14 @@ class ModalCustom extends React.Component {
 
   ComponentToRender = () => {
     switch (this.props.obj.service) {
-      case 'F5 - Create Layer 4 No SNAT':
+      case 'F5 - Create Service':
         return (
-          <CreateL4NoSnat/>
+          <CreateF5ervice/>
         )
         break
-      case 'F5 - Delete Layer 4 No SNAT':
+      case 'F5 - Delete Service':
         return (
-          <DeleteL4NoSnat/>
-        )
-        break
-      case 'F5 - Delete Layer 7':
-        return (
-          <DeleteL7/>
+          <DeleteF5ervice/>
         )
         break
       case 'F5 - Pool Maintenance':
