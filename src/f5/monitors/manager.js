@@ -44,7 +44,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevProps.partition !== this.props.partition) {
+    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
       this.fetchMonitors()
     }
     /*if (this.props.authorizations !== prevProps.authorizations) {
