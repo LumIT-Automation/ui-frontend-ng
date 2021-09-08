@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setMonitorsList } from '../../_store/store.f5'
+import { setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -142,7 +142,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchMonitors())
+          this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
           this.success()
         },
         error => {
@@ -152,46 +152,6 @@ class Add extends React.Component {
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.body.monitorType}/`, this.props.token, body)
     }
-  }
-
-  fetchMonitors =  () => {
-    let list = ['tcp', 'tcp-half-open', 'http']
-    list.forEach(type => {
-      this.fetchMonitorsType(type)
-    }
-  )
-    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
-  }
-
-  fetchMonitorsType = async (type) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.addToList(resp, type))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-  }
-
-  addToList = (resp, type) => {
-    let mon = Object.assign([], resp.data.items);
-    let newList = []
-    let currentList = Object.assign([], this.state.monitorFullList);
-    let l = []
-
-    mon.forEach(m => {
-      Object.assign(m, {type: type});
-      l.push(m)
-    })
-
-    newList = currentList.concat(l);
-    this.setState({monitorFullList: newList})
-    this.props.dispatch(setMonitorsList(newList))
   }
 
   success = () => {
@@ -276,7 +236,7 @@ class Add extends React.Component {
               validateStatus={this.state.errors.intervalError}
               help={this.state.errors.intervalError ? 'Please input a valid interval' : null }
             >
-              <Input id='name' placeholder="name" onBlur={e => this.setInterval(e)}/>
+              <Input id='interval' placeholder="interval seconds" onBlur={e => this.setInterval(e)}/>
             </Form.Item>
 
             <Form.Item
@@ -286,7 +246,7 @@ class Add extends React.Component {
               validateStatus={this.state.errors.timeoutError}
               help={this.state.errors.timeoutError ? 'Please set a valid timeout' : null }
             >
-              <Input id='timeout' placeholder="timeout" onBlur={e => this.setTimeout(e)}/>
+              <Input id='timeout' placeholder="timeout seconds" onBlur={e => this.setTimeout(e)}/>
             </Form.Item>
 
             {this.state.message ?

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setMonitorsList } from '../../_store/store.f5'
+import { setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -49,7 +49,7 @@ class Delete extends React.Component {
       "DELETE",
       resp => {
         //this.setState({loading: false, success: true})
-        this.setState({loading: false, success: true}, () => this.fetchMonitors())
+        this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
       },
       error => {
         this.setState({loading: false, success: false})
@@ -57,47 +57,6 @@ class Delete extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
-  }
-
-
-  fetchMonitors =  () => {
-    let list = ['tcp', 'tcp-half-open', 'http']
-    list.forEach(type => {
-      this.fetchMonitorsType(type)
-    }
-  )
-    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
-  }
-
-  fetchMonitorsType = async (type) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.addToList(resp, type))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-  }
-
-  addToList = (resp, type) => {
-    let mon = Object.assign([], resp.data.items);
-    let newList = []
-    let currentList = Object.assign([], this.state.monitorFullList);
-    let l = []
-
-    mon.forEach(m => {
-      Object.assign(m, {type: type});
-      l.push(m)
-    })
-
-    newList = currentList.concat(l);
-    this.setState({monitorFullList: newList})
-    this.props.dispatch(setMonitorsList(newList))
   }
 
   resetError = () => {

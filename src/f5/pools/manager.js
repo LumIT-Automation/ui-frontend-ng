@@ -64,7 +64,6 @@ class Manager extends React.Component {
   }
 
   fetchNodes = async () => {
-    console.log('rrrrrr')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
@@ -82,7 +81,7 @@ class Manager extends React.Component {
   }
 
   fetchMonitors =  () => {
-    let list = ['tcp', 'tcp-half-open', 'http']
+    let list = ['tcp', 'tcp-half-open', 'http', 'https']
     list.forEach(type => {
       this.fetchMonitorsType(type)
     }

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setMonitorsList } from '../../_store/store.f5'
+import { setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -50,6 +50,11 @@ class Manager extends React.Component {
       //this.fetchMonitors()
       this.fetchMonitors()
     }
+    if (this.props.monitorsFetchStatus === 'updated') {
+      this.fetchMonitors()
+      this.props.dispatch(setMonitorsFetchStatus(''))
+    }
+
     /*if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
     }*/
@@ -60,7 +65,10 @@ class Manager extends React.Component {
 
 
   fetchMonitors =  () => {
-    let list = ['tcp', 'tcp-half-open', 'http']
+    let blank = []
+    this.props.dispatch(setMonitorsList(blank))
+    this.setState({monitorFullList: []})
+    let list = ['tcp', 'tcp-half-open', 'http', 'https']
     list.forEach(type => {
       this.fetchMonitorsType(type)
     }
@@ -140,5 +148,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors
+  monitors: state.f5.monitors,
+  monitorsFetchStatus: state.f5.monitorsFetchStatus
 }))(Manager);
