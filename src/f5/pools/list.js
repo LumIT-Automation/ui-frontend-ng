@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import "./custom.css"
 import Error from '../../error'
 
 import Modify from './modify'

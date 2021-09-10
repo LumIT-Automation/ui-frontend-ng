@@ -60,22 +60,22 @@ class CustomSider extends Component {
   };
 
   firewallIcon = () => (
-    <img src={FirewallSVG} alt="FirewallSVG" width="40" height="40" color="red" />
+    <img src={FirewallSVG} alt="FirewallSVG" width="20" height="20" color="red" />
   );
   ipIcon = () => (
-    <img src={IpSVG} alt="IpSVG" width="40" height="40"/>
+    <img src={IpSVG} alt="IpSVG" width="20" height="20"/>
   );
   networkIcon = () => (
     <img src={NetworkSVG} alt="NetworkSVG"/>
   );
   loadbalancerIcon = () => (
-    <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="40" height="40"/>
+    <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="20" height="20"/>
   );
   certIcon = () => (
-      <img src={CertSVG} alt="certificatesSVG" width="40" height="40" />
+      <img src={CertSVG} alt="certificatesSVG" width="20" height="20" />
   );
   itemsIcon = () => (
-      <img src={ItemsSVG} alt="certificatesSVG" width="40" height="40" />
+      <img src={ItemsSVG} alt="certificatesSVG" width="20" height="20" />
   );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
@@ -95,13 +95,13 @@ class CustomSider extends Component {
           mode="inline"
           style={{ borderRight: 0 }}
         >
-          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'40px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           <Menu.Item key="ipam" icon={this.ipIcon()}><Link to="/ipam/">IPAM</Link></Menu.Item>
           <Menu.Divider/>
 
-          <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'40px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
+          <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'20px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
           <Menu.Divider/>
 
           <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
@@ -117,7 +117,7 @@ class CustomSider extends Component {
           }
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'40px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+          <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           { this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any) ?
@@ -134,14 +134,14 @@ class CustomSider extends Component {
 
           { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
             <React.Fragment>
-              <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'40px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
+              <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
              null
           }
 
-          <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize:'40px'}}/>}><Link to="/settings/">SETTINGS</Link></Menu.Item>
+          <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/settings/">SETTINGS</Link></Menu.Item>
         </Menu>
       </Sider>
     )

@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 import { setNodesList, setMonitorsList, setPoolsList } from '../../_store/store.f5'
@@ -81,6 +82,9 @@ class Manager extends React.Component {
   }
 
   fetchMonitors =  () => {
+    let blank = []
+    this.props.dispatch(setMonitorsList(blank))
+    this.setState({monitorFullList: []})
     let list = ['tcp', 'tcp-half-open', 'http', 'https']
     list.forEach(type => {
       this.fetchMonitorsType(type)
