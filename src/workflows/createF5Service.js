@@ -42,7 +42,6 @@ class CreateF5Service extends React.Component {
       message:'',
       nodesNumber: 0,
       nodes: [],
-      newList: [],
       body: {
         service: 'F5 - Create Service',
         source: "0.0.0.0/0",
@@ -335,18 +334,19 @@ class CreateF5Service extends React.Component {
 
   removeNodesId = () => {
     let list = Object.assign([], this.state.nodes);
+    let body = Object.assign([], this.state.body);
     let newList = []
 
     list.forEach((item, i) => {
       newList.push({name: item.name, address: item.address})
     })
-    console.log(newList)
-    this.setState({newList: newList})
+
+    body.nodes = newList
 
     if (this.state.body.serviceType === 'L4') {
-      this.createL4Service()
+      this.setState({body: body}, () => this.createL4Service())
     } else if (this.state.body.serviceType === 'L7') {
-      this.createL7Service()
+      this.setState({body: body}, () => this.createL7Service())
     }
   }
 
@@ -356,9 +356,6 @@ class CreateF5Service extends React.Component {
     let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
 
-
-    console.log(this.state.newList)
-    return
     this.setState({message: null});
 
     const b = {
@@ -502,8 +499,7 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.nodes)
-    console.log(this.state.body)
+    console.log(this.state.newList)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
