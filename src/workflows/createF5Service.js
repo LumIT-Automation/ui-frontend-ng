@@ -6,7 +6,7 @@ import Error from '../error'
 
 import { setCertificatesList, setKeysList } from '../_store/store.f5'
 
-import { Space, Form, Input, Result, Button, Select, Spin } from 'antd'
+import { Space, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
@@ -40,10 +40,12 @@ class CreateF5Service extends React.Component {
       error: null,
       errors: {},
       message:'',
+      nodesNumber: 0,
+      nodes: [],
+      newList: [],
       body: {
         service: 'F5 - Create Service',
         source: "0.0.0.0/0",
-        nodesNumber: 0,
         nodes: []
       }
     };
@@ -266,54 +268,20 @@ class CreateF5Service extends React.Component {
   }
 
   oneMoreNode = () => {
+    let nodesNumber = this.state.nodesNumber
+    let nodes = this.state.nodes
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
 
-    body.nodesNumber = body.nodesNumber + 1
+    nodesNumber = nodesNumber + 1
+    nodes.push({id: nodesNumber})
     delete errors.nodesNumberError
-    this.setState({body: body, errors: errors})
+    this.setState({nodesNumber: nodesNumber, errors: errors, body: body})
   }
 
-  setNodesNumber = e => {
-    let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
 
-    if (isNaN(e.target.value)) {
-      errors.nodesNumberError = 'error'
-    }
-    else {
-      body.nodesNumber = e.target.value
-      delete errors.nodesNumberError
-    }
-    this.setState({body: body, errors: errors})
-  }
-
-  renderNodes = () => {
-    let list = []
-    for (let i = 0; i < this.state.body.nodesNumber; i++) {
-      list.push(
-        <React.Fragment key={i}>
-          <Input key={i} id='node' style={{display: 'block'}} onBlur={e => this.setNode(e)} />
-          <br/>
-        </React.Fragment>
-      )
-    }
-    return (
-      <Form.Item
-      label="Nodes"
-      name='nodes'
-      key="nodes"
-      validateStatus={this.state.errors.nodesError}
-      help={this.state.errors.nodesError ? 'Please input a valid ip' : null }
-      >
-        {list}
-      </Form.Item>
-
-    )
-  }
-
-  setNode = e => {
-    let body = Object.assign({}, this.state.body);
+  setNodeAddress = (nodeId, e) => {
+    let nodes = Object.assign([], this.state.nodes);
     let errors = Object.assign({}, this.state.errors);
     const regex = new RegExp();
 
@@ -322,21 +290,75 @@ class CreateF5Service extends React.Component {
     const ipv4Regex = new RegExp(validIpAddressRegex);
 
     if (ipv4Regex.test(ipv4)) {
-      body.nodes.push({name: `${ipv4}`, address: ipv4})
+      let index = nodes.findIndex((obj => obj.id == nodeId))
+      nodes[index].address = ipv4
+      delete errors.nodeAddressError
+    }
+    else {
+      errors.nodeAddressError = 'error'
+    }
+    this.setState({nodes: nodes, errors: errors})
+  }
+
+  setNodeName = (nodeId, e) => {
+    let nodes = Object.assign([], this.state.nodes);
+    let errors = Object.assign({}, this.state.errors);
+    const regex = new RegExp();
+
+    const name = e.target.value
+
+    if (name) {
+      let index = nodes.findIndex((obj => obj.id == nodeId))
+      nodes[index].name = name
+      delete errors.nodeNameError
+    }
+    else {
+      errors.nodeNameError = 'error'
+    }
+    this.setState({nodes: nodes, errors: errors})
+  }
+
+  removeNode = (nodeId) => {
+    let nodes = Object.assign([], this.state.nodes);
+    let errors = Object.assign({}, this.state.errors);
+
+    if (nodeId) {
+      let index = nodes.findIndex((obj => obj.id == nodeId))
+      nodes.splice(index, 1)
       delete errors.nodesError
     }
     else {
       errors.nodesError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({nodes: nodes, errors: errors})
+  }
+
+  removeNodesId = () => {
+    let list = Object.assign([], this.state.nodes);
+    let newList = []
+
+    list.forEach((item, i) => {
+      newList.push({name: item.name, address: item.address})
+    })
+    console.log(newList)
+    this.setState({newList: newList})
+
+    if (this.state.body.serviceType === 'L4') {
+      this.createL4Service()
+    } else if (this.state.body.serviceType === 'L7') {
+      this.createL7Service()
+    }
   }
 
 
   createL4Service = async () => {
-    console.log(this.state.body)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
+
+
+    console.log(this.state.newList)
+    return
     this.setState({message: null});
 
     const b = {
@@ -388,7 +410,6 @@ class CreateF5Service extends React.Component {
   }
 
   createL7Service = async () => {
-    console.log(this.state.body)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
@@ -481,6 +502,8 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+    console.log(this.state.nodes)
+    console.log(this.state.body)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
@@ -651,8 +674,49 @@ class CreateF5Service extends React.Component {
             }
           </Form.Item>
 
+          {
+            this.state.nodes.map((n, i) => {
+              let a = 'address' + n.id
+              let na = 'name' + n.id
+              let r = 'remove' + n.id
+              return (
+                <React.Fragment>
+                <Form.Item
+                  label="Address"
+                  name={a}
+                  key={a}
+                  validateStatus={this.state.errors.nodeAddressError}
+                  help={this.state.errors.nodeAddressError ? 'Please input a valid IP' : null }
+                >
+                  <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setNodeAddress(n.id, e)} />
+                </Form.Item>
+                <Form.Item
+                  label="Name"
+                  name={na}
+                  key={na}
+                  validateStatus={this.state.errors.nodeNameError}
+                  help={this.state.errors.nodeNameError ? 'Please input a valid name' : null }
+                >
+                  <Input id={na} style={{display: 'block'}} onBlur={e => this.setNodeName(n.id, e)} />
 
-            {this.state.body.nodesNumber ? this.renderNodes() : null }
+                </Form.Item>
+                <Form.Item
+                  label="Remove node"
+                  name={r}
+                  key={r}
+                  validateStatus={this.state.errors.removeNodeError}
+                  help={this.state.errors.removeNodeError ? 'Please input a valid number of nodes' : null }
+                >
+                  <Button type="danger" onClick={() => this.removeNode(n.id)}>
+                    -
+                  </Button>
+                  <Divider/>
+                </Form.Item>
+
+                </React.Fragment>
+              )
+            })
+          }
 
           </React.Fragment>
           :
@@ -665,20 +729,9 @@ class CreateF5Service extends React.Component {
             name="button"
             key="button"
           >
-            { this.state.body.serviceType === 'L7' ?
-              <Button type="primary" onClick={() => this.createL7Service()}>
-                Create L7 Service
-              </Button>
-              :
-              null
-            }
-            { this.state.body.serviceType === 'L4' ?
-              <Button type="primary" onClick={() => this.createL4Service()}>
-                Create L4 Service
-              </Button>
-              :
-              null
-            }
+            <Button type="primary" onClick={() => this.removeNodesId()}>
+              Create Service
+            </Button>
           </Form.Item>
 
         </Form>
