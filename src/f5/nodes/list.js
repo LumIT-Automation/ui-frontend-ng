@@ -126,7 +126,6 @@ class List extends React.Component {
 
 
   render() {
-
     const columns = [
       {
         title: 'Name',

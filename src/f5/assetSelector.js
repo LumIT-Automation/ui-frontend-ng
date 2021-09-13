@@ -115,6 +115,26 @@ class AssetSelector extends React.Component {
     this.props.dispatch(selectPartition(p))
   }
 
+  assetString = () => {
+    if (this.props.asset) {
+      let a = `${this.props.asset.fqdn} - ${this.props.asset.address }`
+      return a
+    }
+    else {
+      return null
+    }
+  }
+
+  envString = () => {
+    if (this.state.environment) {
+      let e = this.state.environment
+      return e
+    }
+    else {
+      return null
+    }
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -129,10 +149,15 @@ class AssetSelector extends React.Component {
               labelCol={{ span: 25 }}
               wrapperCol={{ span: 40 }}
               layout="inline"
-              initialValues={{ size: 'default' }}
+              initialValues={{
+                size: 'default',
+                environment: this.envString(),
+                asset: this.assetString(),
+                partition: this.props.partition
+              }}
               size={'default'}
             >
-              <Form.Item label="Environment">
+              <Form.Item name='environment' label="Environment">
                 <Select onChange={e => this.setEnvironment(e)} style={{ width: 200 }}>
 
                   {this.state.environments.map((n, i) => {
@@ -144,7 +169,7 @@ class AssetSelector extends React.Component {
 
               </Form.Item>
 
-              <Form.Item label="Asset">
+              <Form.Item name='asset' label="Asset">
                 <Select onChange={a => this.setAsset(a)} style={{ width: 350 }}>
 
                   {this.state.envAssets.map((n, i) => {
@@ -156,7 +181,7 @@ class AssetSelector extends React.Component {
 
               </Form.Item>
 
-              <Form.Item label="Partition">
+              <Form.Item name='partition' label="Partition">
                 <Select onChange={p => this.setPartition(p)} style={{ width: 200 }}>
 
                   {this.props.assetPartitions ? this.props.assetPartitions.map((p, i) => {
