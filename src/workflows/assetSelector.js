@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { selectAsset, setPartitions, selectPartition, setPoolList } from '../_store/store.f5'
+import { setEnvironment, selectAsset, setPartitions, selectPartition, setPoolList } from '../_store/store.f5'
 import Error from '../error'
 
 import "antd/dist/antd.css"
@@ -83,6 +83,7 @@ class AssetSelector extends React.Component {
 
   setEnvironment = e => {
     this.setState({ environment: e }, () => this.setEnvAssets(e))
+    this.props.dispatch(setEnvironment(e))
   }
 
   setEnvAssets = e => {
@@ -126,8 +127,8 @@ class AssetSelector extends React.Component {
   }
 
   envString = () => {
-    if (this.state.environment) {
-      let e = this.state.environment
+    if (this.props.environment) {
+      let e = this.props.environment
       return e
     }
     else {
@@ -207,6 +208,7 @@ class AssetSelector extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
+  environment: state.f5.environment,
   assetList: state.f5.assetList,
   asset: state.f5.asset,
   assetPartitions: state.f5.assetPartitions,

@@ -17,6 +17,9 @@ const f5Slice = createSlice({
     name: 'f5',
     initialState: {},
     reducers: {
+        setEnvironment: (state, action) => {
+          state.environment = action.payload
+        },
         setAssetList: (state, action) => {
           state.assetList = action.payload.data.items
         },
@@ -70,6 +73,7 @@ const f5Slice = createSlice({
 const { actions, reducer } = f5Slice;
 
 export const {
+  setEnvironment,
   setAssetList,
   selectAsset,
   setPartitions,
