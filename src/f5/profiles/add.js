@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setProfilesList } from '../../_store/store.f5'
+import { setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -110,7 +110,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchProfiles())
+          this.setState({loading: false, success: true}, () => this.props.dispatch(setProfilesFetchStatus('updated')))
           this.success()
         },
         error => {
@@ -120,22 +120,6 @@ class Add extends React.Component {
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.state.body.profileType}/`, this.props.token, body)
     }
-  }
-
-  fetchProfiles = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setProfilesList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.state.body.profileType}/`, this.props.token)
   }
 
   success = () => {

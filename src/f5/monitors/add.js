@@ -221,11 +221,12 @@ class Add extends React.Component {
               validateStatus={this.state.errors.monitorTypeError}
               help={this.state.errors.monitorTypeError ? 'Please select monitor type' : null }
             >
-              <Select onChange={a => this.setMonitorType(a)}>
-                <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
-                <Select.Option key={'tcp'} value={'tcp'}>tcp</Select.Option>
-                <Select.Option key={'http'} value={'http'}>http</Select.Option>
-                <Select.Option key={'https'} value={'https'}>https</Select.Option>
+              <Select onChange={p => this.setMonitorType(p)} >
+                {this.props.monitorsTypeList ? this.props.monitorsTypeList.map((m, i) => {
+                  return (
+                    <Select.Option  key={i} value={m}>{m}</Select.Option>
+                  )
+              }) : null}
               </Select>
             </Form.Item>
 
@@ -288,5 +289,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors
+  monitors: state.f5.monitors,
+  monitorsTypeList: state.f5.monitorsTypeList
 }))(Add);
