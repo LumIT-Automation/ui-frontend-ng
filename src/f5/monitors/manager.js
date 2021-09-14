@@ -59,19 +59,6 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  storeSetter = resp => {
-    return new Promise( (resolve, reject) => {
-      try {
-        this.props.dispatch(setMonitorsTypeList( resp ))
-        if ( this.props.monitorsTypeList  ) {
-          resolve(this.props.monitorsTypeList)
-        }
-      }
-      catch(e) {
-        reject(e)
-      }
-    })
-  }
 
   fetchMonitorsTypeList = async () => {
     this.setState({loading: true})
@@ -86,6 +73,20 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
+  }
+
+  storeSetter = resp => {
+    return new Promise( (resolve, reject) => {
+      try {
+        this.props.dispatch(setMonitorsTypeList( resp ))
+        if ( this.props.monitorsTypeList  ) {
+          resolve(this.props.monitorsTypeList)
+        }
+      }
+      catch(e) {
+        reject(e)
+      }
+    })
   }
 
   fetchMonitors =  () => {
