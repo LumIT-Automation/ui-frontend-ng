@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolsList } from '../../_store/store.f5'
+import { setPoolsList, setPoolsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Divider } from 'antd';
 
@@ -153,8 +153,6 @@ class Add extends React.Component {
   }
 
   setMonitor = e => {
-    console.log('eeeeeeeeee')
-    console.log(e)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -195,6 +193,46 @@ class Add extends React.Component {
     this.setState({nodes: nodes, errors: errors})
   }
 
+  setMemberName = (name, id) => {
+    let nodes = Object.assign([], this.state.nodes);
+    let errors = Object.assign({}, this.state.errors);
+    //const regex = new RegExp();
+
+    //const ipv4 = m
+    //const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+    //const ipv4Regex = new RegExp(validIpAddressRegex);
+
+    //if (ipv4Regex.test(ipv4)) {
+    if (name) {
+      let index = nodes.findIndex((obj => obj.id == id))
+      //nodes[index].address = ipv4
+      nodes[index].name = name
+      delete errors.memberNameError
+    }
+    else {
+      errors.memberNameError = 'error'
+    }
+    this.setState({nodes: nodes, errors: errors})
+  }
+
+  setMemberPort = (p, id) => {
+    let nodes = Object.assign([], this.state.nodes);
+    let errors = Object.assign({}, this.state.errors);
+    const regex = new RegExp();
+
+    const port = p.target.value
+
+    if (isNaN(port)) {
+      errors.memberPortError = 'error'
+    }
+    else {
+      let index = nodes.findIndex((obj => obj.id == id))
+      nodes[index].port = port
+      delete errors.memberPortError
+    }
+    this.setState({nodes: nodes, errors: errors})
+  }
+
   addPool = async () => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
@@ -219,7 +257,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchPools())
+          this.setState({loading: false, success: true}, () => this.addPoolMembers())
           this.success()
         },
         error => {
@@ -231,25 +269,54 @@ class Add extends React.Component {
     }
   }
 
-  fetchPools = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setPoolsList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+  addPoolMembers = async () => {
+    this.state.nodes.forEach(m => {
+      this.setState({message: null});
+      const body = {
+        "data":
+          {
+            "name": `${m.name}:${m.port}`,
+            "connectionLimit": 0,
+            "dynamicRatio": 1,
+            "ephemeral": "false",
+            "inheritProfile": "enabled",
+            "logging": "disabled",
+            "monitor": "default",
+            "priorityGroup": 0,
+            "rateLimit": "disabled",
+            "ratio": 1,
+            "state": "up",
+            "fqdn": {
+                "autopopulate": "disabled"
+            }
+          }
       }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
+      this.setState({loading: true})
+      this.addPoolMember(body)
+    })
+
+    this.success()
+  }
+
+  addPoolMember = async (body) => {
+      let rest = new Rest(
+        "POST",
+        resp => {
+          this.setState({loading: false, success: true})
+        },
+        error => {
+          this.setState({loading: false, success: false})
+          this.setState({error: error})
+        }
+      )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.body.name}/members/`, this.props.token, body)
   }
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
+    setTimeout( () => this.props.dispatch(setPoolsFetchStatus('updated')), 2050)
+    setTimeout( () => this.closeModal(), 2100)
+
   }
 
   resetError = () => {
@@ -265,7 +332,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.props.pools)
     return (
       <Space direction='vertical'>
 
@@ -330,8 +396,7 @@ class Add extends React.Component {
               validateStatus={this.state.errors.monitorError}
               help={this.state.errors.monitorError ? 'Please select monitor' : null }
             >
-              <Select onChange={p => this.setMonitor(p)} >
-
+              <Select onChange={m => this.setMonitor(m)} >
                 {this.props.monitors ? this.props.monitors.map((p, i) => {
                   return (
                     <Select.Option  key={i} value={p.fullPath}>{p.name}</Select.Option>
@@ -358,25 +423,34 @@ class Add extends React.Component {
               this.state.nodes.map((n, i) => {
                 let a = 'address' + n.id
                 let na = 'name' + n.id
+                let pa = 'port' + n.id
                 let r = 'remove' + n.id
                 return (
                   <React.Fragment>
                   <Form.Item
-                    label="Name"
+                    label="Member"
                     name={na}
                     key={na}
-                    validateStatus={this.state.errors.nodeNameError}
-                    help={this.state.errors.nodeNameError ? 'Please input a valid name' : null }
+                    validateStatus={this.state.errors.memberNameError}
+                    help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
                   >
-                    <Select onChange={p => this.setMonitor(p)} >
-
+                    <Select onChange={m => this.setMemberName(m, n.id)} >
                       {this.props.nodes ? this.props.nodes.map((p, i) => {
                         return (
-                          <Select.Option  key={i} value={p.id}>{p.address}</Select.Option>
+                          <Select.Option key={i} value={p.name}>{p.address} - {p.name}</Select.Option>
                         )
                     }) : null}
                     </Select>
 
+                  </Form.Item>
+                  <Form.Item
+                    label="Port"
+                    name={pa}
+                    key={pa}
+                    validateStatus={this.state.errors.memberPortError}
+                    help={this.state.errors.memberPortError ? 'Please input a valid name' : null }
+                  >
+                    <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(e, n.id)}/>
                   </Form.Item>
                   <Form.Item
                     label="Remove node"

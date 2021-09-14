@@ -106,7 +106,6 @@ class Manager extends React.Component {
         this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
-        console.log(error)
         this.setState({loading: false, error: error})
       }
     )
@@ -134,7 +133,6 @@ class Manager extends React.Component {
 
 
   render() {
-//    console.log(this.state.body.monitorFullList)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

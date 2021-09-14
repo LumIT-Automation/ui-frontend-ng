@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolsList } from '../../_store/store.f5'
+import { setPoolsList, setPoolsFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -47,7 +47,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchPools())
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
       },
       error => {
         this.setState({loading: false, success: false})
@@ -59,22 +59,6 @@ class Delete extends React.Component {
 
   resetError = () => {
     this.setState({ error: null})
-  }
-
-  fetchPools = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setPoolsList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   //Close and Error

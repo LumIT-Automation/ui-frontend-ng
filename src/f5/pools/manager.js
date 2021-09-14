@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setNodesList, setMonitorsList, setPoolsList } from '../../_store/store.f5'
+import { setNodesList, setMonitorsList, setPoolsList, setPoolsFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -56,6 +56,12 @@ class Manager extends React.Component {
         this.fetchNodes()
         this.fetchMonitors()
     }
+    if (this.props.poolsFetchStatus === 'updated') {
+      this.fetchPools()
+      this.fetchNodes()
+      this.fetchMonitors()
+      this.props.dispatch(setPoolsFetchStatus(''))
+    }
     /*if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
     }*/
@@ -69,9 +75,7 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
       },
       error => {
         this.setState({loading: false})
@@ -181,5 +185,6 @@ export default connect((state) => ({
   partition: state.f5.partition,
   nodes: state.f5.nodes,
   monitors: state.f5.monitors,
-  pools: state.f5.pools
+  pools: state.f5.pools,
+  poolsFetchStatus: state.f5.poolsFetchStatus
 }))(Manager);

@@ -47,6 +47,9 @@ const f5Slice = createSlice({
         setPoolsList: (state, action) => {
           state.pools = action.payload.data.items
         },
+        setPoolsFetchStatus: (state, action) => {
+          state.poolsFetchStatus = action.payload
+        },
         setProfilesTypeList: (state, action) => {
           state.profilesTypeList = action.payload.data.items
         },
@@ -93,6 +96,7 @@ export const {
   setMonitorsFetchStatus,
   setPoolsList,
   setPoolList,
+  setPoolsFetchStatus,
   setProfilesTypeList,
   setProfilesList,
   setProfilesFetchStatus,
