@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setProfilesList } from '../../_store/store.f5'
+import { setProfilesTypeList, setProfilesList } from '../../_store/store.f5'
 
 
 import List from './list'

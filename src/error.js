@@ -133,7 +133,7 @@ class Error extends Component {
             break
 
           case 500:
-            return <Result status={cod} title={cod} />
+            return <Result title={'500'} />
             break
           case 502:
             return <Result title={cod} />

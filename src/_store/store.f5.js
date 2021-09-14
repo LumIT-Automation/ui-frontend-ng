@@ -35,6 +35,9 @@ const f5Slice = createSlice({
         setNodesList: (state, action) => {
           state.nodes = action.payload.data.items
         },
+        setMonitorsTypeList: (state, action) => {
+          state.monitorsTypeList = action.payload.data.items
+        },
         setMonitorsList: (state, action) => {
           state.monitors = action.payload
         },
@@ -79,6 +82,7 @@ export const {
   setPartitions,
   selectPartition,
   setNodesList,
+  setMonitorsTypeList,
   setMonitorsList,
   setMonitorsFetchStatus,
   setPoolsList,

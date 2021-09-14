@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
+import { setMonitorsTypeList, setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -37,7 +37,8 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
       //this.fetchMonitors()
-      this.fetchMonitors()
+      this.fetchMonitorsTypeList()
+      //this.fetchMonitors()
     }
   }
 
@@ -48,10 +49,11 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
       //this.fetchMonitors()
-      this.fetchMonitors()
+      this.fetchMonitorsTypeList()
+      //this.fetchMonitors()
     }
     if (this.props.monitorsFetchStatus === 'updated') {
-      this.fetchMonitors()
+      this.fetchMonitorsTypeList()
       this.props.dispatch(setMonitorsFetchStatus(''))
     }
 
@@ -63,13 +65,42 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
+  storeSetter = resp => {
+    return new Promise( (resolve, reject) => {
+      try {
+        this.props.dispatch(setMonitorsTypeList( resp ))
+        if ( this.props.monitorsTypeList  ) {
+          resolve(this.props.monitorsTypeList)
+        }
+      }
+      catch(e) {
+        reject(e)
+      }
+    })
+  }
+
+  fetchMonitorsTypeList = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        //this.props.dispatch(setMonitorsTypeList( resp ))
+        this.storeSetter(resp).then(this.fetchMonitors())
+      },
+      error => {
+        this.setState({loading: false, error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
+  }
 
   fetchMonitors =  () => {
     let blank = []
     this.props.dispatch(setMonitorsList(blank))
     this.setState({monitorFullList: []})
-    let list = ['tcp', 'tcp-half-open', 'http', 'https']
-    list.forEach(type => {
+    //let list = ['tcp', 'tcp-half-open', 'http', 'https']
+    this.props.monitorsTypeList.forEach(type => {
       this.fetchMonitorsType(type)
     }
   )
@@ -81,11 +112,13 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('respppppppppppppppp')
+        console.log(resp)
         this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        console.log(error)
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
@@ -103,8 +136,8 @@ class Manager extends React.Component {
     })
 
     newList = currentList.concat(l);
-    this.setState({monitorFullList: newList})
-    this.props.dispatch(setMonitorsList(newList))
+    this.setState({monitorFullList: newList}, () => this.props.dispatch(setMonitorsList(newList)))
+
   }
 
   resetError = () => {
@@ -148,6 +181,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  monitorsTypeList: state.f5.monitorsTypeList,
   monitors: state.f5.monitors,
   monitorsFetchStatus: state.f5.monitorsFetchStatus
 }))(Manager);

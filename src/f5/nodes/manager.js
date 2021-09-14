@@ -65,8 +65,7 @@ class Manager extends React.Component {
         //console.log(resp)
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)

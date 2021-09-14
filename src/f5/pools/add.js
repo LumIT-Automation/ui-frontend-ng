@@ -6,7 +6,7 @@ import Error from '../../error'
 
 import { setPoolsList } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Divider } from 'antd';
 
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -38,6 +38,8 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
+      nodesNumber: 0,
+      nodes: [],
       body: {}
     };
   }
@@ -164,6 +166,33 @@ class Add extends React.Component {
         errors.moitorError = 'error'
       }
       this.setState({body: body, errors: errors})
+  }
+
+  oneMoreNode = () => {
+    let nodesNumber = this.state.nodesNumber
+    let nodes = this.state.nodes
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+
+    nodesNumber = nodesNumber + 1
+    nodes.push({id: nodesNumber})
+    delete errors.nodesNumberError
+    this.setState({nodesNumber: nodesNumber, errors: errors, body: body})
+  }
+
+  removeNode = (nodeId) => {
+    let nodes = Object.assign([], this.state.nodes);
+    let errors = Object.assign({}, this.state.errors);
+
+    if (nodeId) {
+      let index = nodes.findIndex((obj => obj.id == nodeId))
+      nodes.splice(index, 1)
+      delete errors.nodesError
+    }
+    else {
+      errors.nodesError = 'error'
+    }
+    this.setState({nodes: nodes, errors: errors})
   }
 
   addPool = async () => {
@@ -310,6 +339,62 @@ class Add extends React.Component {
               }) : null}
               </Select>
             </Form.Item>
+
+            <Form.Item
+              label="One more node"
+              name='nodesNumber'
+              key="nodesNumber"
+              validateStatus={this.state.errors.nodesNumberError}
+              help={this.state.errors.nodesNumberError ? 'Please input a valid number of nodes' : null }
+            >
+              <Button type="primary" onClick={() => this.oneMoreNode()}>
+                +
+              </Button>
+              {//<Input id='nodesNumber' onBlur={e => this.setNodesNumber(e)} />
+              }
+            </Form.Item>
+
+            {
+              this.state.nodes.map((n, i) => {
+                let a = 'address' + n.id
+                let na = 'name' + n.id
+                let r = 'remove' + n.id
+                return (
+                  <React.Fragment>
+                  <Form.Item
+                    label="Name"
+                    name={na}
+                    key={na}
+                    validateStatus={this.state.errors.nodeNameError}
+                    help={this.state.errors.nodeNameError ? 'Please input a valid name' : null }
+                  >
+                    <Select onChange={p => this.setMonitor(p)} >
+
+                      {this.props.nodes ? this.props.nodes.map((p, i) => {
+                        return (
+                          <Select.Option  key={i} value={p.id}>{p.address}</Select.Option>
+                        )
+                    }) : null}
+                    </Select>
+
+                  </Form.Item>
+                  <Form.Item
+                    label="Remove node"
+                    name={r}
+                    key={r}
+                    validateStatus={this.state.errors.removeNodeError}
+                    help={this.state.errors.removeNodeError ? 'Please input a valid number of nodes' : null }
+                  >
+                    <Button type="danger" onClick={() => this.removeNode(n.id)}>
+                      -
+                    </Button>
+                    <Divider/>
+                  </Form.Item>
+
+                  </React.Fragment>
+                )
+              })
+            }
 
             {this.state.message ?
               <Form.Item
