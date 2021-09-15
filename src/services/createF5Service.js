@@ -6,7 +6,7 @@ import Error from '../error'
 
 import { setCertificatesList, setKeysList } from '../_store/store.f5'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
@@ -343,18 +343,17 @@ class CreateF5Service extends React.Component {
     this.setState({members: members, errors: errors})
   }
 
-  setMemberPort = (p, id) => {
+  setMemberPort = (memberId, p) => {
     let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
-    const port = p.target.value
+    const port = parseInt(p.target.value)
 
     if (isNaN(port)) {
       errors.memberPortError = 'error'
     }
     else {
-      let index = members.findIndex((obj => obj.id == id))
+      let index = members.findIndex((obj => obj.id == memberId))
       members[index].port = port
       delete errors.memberPortError
     }
@@ -382,7 +381,7 @@ class CreateF5Service extends React.Component {
     let newList = []
 
     list.forEach((item, i) => {
-      newList.push({name: item.name, address: item.address})
+      newList.push({name: item.name, address: item.address, port: item.port})
     })
 
     body.members = newList
@@ -467,24 +466,24 @@ class CreateF5Service extends React.Component {
         },
         "profiles": [
             {
-                "name": "tcp-wan-optimized_SERVICENAMEL7",
+                "name": `tcp-wan-optimized_${serviceName}`,
                 "type": "tcp",
                 "defaultsFrom": "/Common/tcp-wan-optimized",
                 "context": "clientside"
             },
             {
-                "name": "tcp-lan-optimized_PROFILENAMEL7",
+                "name": `tcp-lan-optimized_${serviceName}`,
                 "type": "tcp",
                 "defaultsFrom": "/Common/tcp-lan-optimized",
                 "context": "serverside"
             },
             {
-                "name": "http_PROFILENAMEL7",
+                "name": `http_${serviceName}`,
                 "type": "http",
                 "defaultsFrom": "/Common/http"
             },
             {
-                "name": "client-ssl_PROFILENAMEL7",
+                "name": `client-ssl_${serviceName}`,
                 "type": "client-ssl",
                 "cert": this.state.body.certificateName,
                 "key": this.state.body.keyName,
@@ -543,7 +542,6 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.newList)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
@@ -691,7 +689,7 @@ class CreateF5Service extends React.Component {
             </Select>
           </Form.Item>
 
-          { this.state.body.serviceType === 'L7' ?
+          { this.state.body.monitorType === 'http' ?
             <Form.Item
               label="Monitor send string"
               name='monitorSendString'
@@ -699,13 +697,13 @@ class CreateF5Service extends React.Component {
               validateStatus={this.state.errors.monitorSendStringError}
               help={this.state.errors.monitorSendStringError ? 'Please input a valid monitor send string' : null }
             >
-              <TextArea id='monitorSendString' rows={4} onChange={e => this.setMonitorSendString(e)} />
+              <Input.TextArea rows={4} onChange={e => this.setMonitorSendString(e)} />
             </Form.Item>
             :
             null
           }
 
-          { this.state.body.serviceType === 'L7' ?
+          { this.state.body.monitorType === 'http' ?
             <Form.Item
               label="Monitor receive string"
               name='monitorReceiveString'
@@ -713,7 +711,7 @@ class CreateF5Service extends React.Component {
               validateStatus={this.state.errors.monitorReceiveStringError}
               help={this.state.errors.monitorReceiveStringError ? 'Please input a valid monitor receive string' : null }
             >
-              <TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
+              <Input.TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
             </Form.Item>
             :
             null
@@ -768,7 +766,7 @@ class CreateF5Service extends React.Component {
                   validateStatus={this.state.errors.memberPortError}
                   help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
                 >
-                  <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(e, n.id)}/>
+                  <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(n.id, e)}/>
                 </Form.Item>
 
                 <Form.Item
