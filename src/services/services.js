@@ -33,7 +33,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class Workflows extends React.Component {
+class Service extends React.Component {
 
   constructor(props) {
     super(props);
@@ -236,4 +236,4 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
   assetList: state.f5.assetList
-}))(Workflows);
+}))(Service);

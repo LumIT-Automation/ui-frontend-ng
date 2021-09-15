@@ -40,12 +40,12 @@ class CreateF5Service extends React.Component {
       error: null,
       errors: {},
       message:'',
-      nodesNumber: 0,
-      nodes: [],
+      membersNumber: 0,
+      members: [],
       body: {
         service: 'F5 - Create Service',
         source: "0.0.0.0/0",
-        nodes: []
+        members: []
       }
     };
   }
@@ -203,7 +203,7 @@ class CreateF5Service extends React.Component {
     }
     this.setState({body: body, errors: errors})
   }
-
+/*
   setDestinationPoolPort = e => {
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
@@ -217,7 +217,7 @@ class CreateF5Service extends React.Component {
     }
     this.setState({body: body, errors: errors})
   }
-
+*/
   setLbMethod = e => {
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
@@ -254,33 +254,59 @@ class CreateF5Service extends React.Component {
         body.monitorType = 'tcp-half-open'
         delete errors.monitorTypeError
         break
-      case '25':
-
+      case 'http':
+        body.monitorType = 'http'
+        delete errors.monitorTypeError
         break
-      case '26':
 
-        break
       default:
         errors.monitorTypeError = 'error'
     }
     this.setState({body: body, errors: errors})
   }
 
-  oneMoreNode = () => {
-    let nodesNumber = this.state.nodesNumber
-    let nodes = this.state.nodes
+  setMonitorSendString = e => {
+    let body = Object.assign({}, this.state.body);
+    let errors = Object.assign({}, this.state.errors);
+
+    if (e.target.value) {
+      body.monitorSendString = e.target.value
+      delete errors.monitorSendStringError
+    }
+    else {
+      errors.monitorSendStringError = 'error'
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+  setMonitorReceiveString = e => {
+    let body = Object.assign({}, this.state.body);
+    let errors = Object.assign({}, this.state.errors);
+
+    if (e.target.value) {
+      body.monitorReceiveString = e.target.value
+      delete errors.monitorReceiveStringError
+    }
+    else {
+      errors.moonitorReceiveStringError = 'error'
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+  oneMoreMember = () => {
+    let membersNumber = this.state.membersNumber
+    let members = this.state.members
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
 
-    nodesNumber = nodesNumber + 1
-    nodes.push({id: nodesNumber})
-    delete errors.nodesNumberError
-    this.setState({nodesNumber: nodesNumber, errors: errors, body: body})
+    membersNumber = membersNumber + 1
+    members.push({id: membersNumber})
+    delete errors.membersNumberError
+    this.setState({membersNumber: membersNumber, errors: errors, body: body})
   }
 
-
-  setNodeAddress = (nodeId, e) => {
-    let nodes = Object.assign([], this.state.nodes);
+  setMemberAddress = (memberId, e) => {
+    let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
     const regex = new RegExp();
 
@@ -289,51 +315,69 @@ class CreateF5Service extends React.Component {
     const ipv4Regex = new RegExp(validIpAddressRegex);
 
     if (ipv4Regex.test(ipv4)) {
-      let index = nodes.findIndex((obj => obj.id == nodeId))
-      nodes[index].address = ipv4
-      delete errors.nodeAddressError
+      let index = members.findIndex((obj => obj.id == memberId))
+      members[index].address = ipv4
+      delete errors.memberAddressError
     }
     else {
-      errors.nodeAddressError = 'error'
+      errors.memberAddressError = 'error'
     }
-    this.setState({nodes: nodes, errors: errors})
+    this.setState({members: members, errors: errors})
   }
 
-  setNodeName = (nodeId, e) => {
-    let nodes = Object.assign([], this.state.nodes);
+  setMemberName = (memberId, e) => {
+    let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
     const regex = new RegExp();
 
     const name = e.target.value
 
     if (name) {
-      let index = nodes.findIndex((obj => obj.id == nodeId))
-      nodes[index].name = name
-      delete errors.nodeNameError
+      let index = members.findIndex((obj => obj.id == memberId))
+      members[index].name = name
+      delete errors.memberNameError
     }
     else {
-      errors.nodeNameError = 'error'
+      errors.memberNameError = 'error'
     }
-    this.setState({nodes: nodes, errors: errors})
+    this.setState({members: members, errors: errors})
   }
 
-  removeNode = (nodeId) => {
-    let nodes = Object.assign([], this.state.nodes);
+  setMemberPort = (p, id) => {
+    let members = Object.assign([], this.state.members);
+    let errors = Object.assign({}, this.state.errors);
+    const regex = new RegExp();
+
+    const port = p.target.value
+
+    if (isNaN(port)) {
+      errors.memberPortError = 'error'
+    }
+    else {
+      let index = members.findIndex((obj => obj.id == id))
+      members[index].port = port
+      delete errors.memberPortError
+    }
+    this.setState({members: members, errors: errors})
+  }
+
+  removeMember = (memberId) => {
+    let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
 
-    if (nodeId) {
-      let index = nodes.findIndex((obj => obj.id == nodeId))
-      nodes.splice(index, 1)
-      delete errors.nodesError
+    if (memberId) {
+      let index = members.findIndex((obj => obj.id == memberId))
+      members.splice(index, 1)
+      delete errors.membersError
     }
     else {
-      errors.nodesError = 'error'
+      errors.membersError = 'error'
     }
-    this.setState({nodes: nodes, errors: errors})
+    this.setState({members: members, errors: errors})
   }
 
-  removeNodesId = () => {
-    let list = Object.assign([], this.state.nodes);
+  removeMembersId = () => {
+    let list = Object.assign([], this.state.members);
     let body = Object.assign([], this.state.body);
     let newList = []
 
@@ -341,7 +385,7 @@ class CreateF5Service extends React.Component {
       newList.push({name: item.name, address: item.address})
     })
 
-    body.nodes = newList
+    body.members = newList
 
     if (this.state.body.serviceType === 'L4') {
       this.setState({body: body}, () => this.createL4Service())
@@ -377,14 +421,13 @@ class CreateF5Service extends React.Component {
         ],
         "pool": {
             "name": `pool_${serviceName}`,
-            "port": this.state.body.destinationPoolPort,
-            "loadBalancingMode": this.state.body.lbMethod
+            "loadBalancingMode": this.state.body.lbMethod,
+            "nodes": this.state.body.members
         },
         "monitor": {
             "name": `${this.state.body.monitorType}_${serviceName}`,
             "type": this.state.body.monitorType
-        },
-        "nodes": this.state.body.nodes
+        }
       }
     }
 
@@ -451,14 +494,15 @@ class CreateF5Service extends React.Component {
         ],
         "pool": {
             "name": `pool_${serviceName}`,
-            "port": this.state.body.destinationPoolPort,
-            "loadBalancingMode": this.state.body.lbMethod
+            "loadBalancingMode": this.state.body.lbMethod,
+            "nodes": this.state.body.members
         },
         "monitor": {
             "name": `${this.state.body.monitorType}_${serviceName}`,
-            "type": this.state.body.monitorType
-        },
-        "nodes": this.state.body.nodes
+            "type": this.state.body.monitorType,
+            "send": `${this.state.body.monitorSendString}`,
+            "recv": `${this.state.body.monitorReceiveString}`
+        }
       }
     }
 
@@ -620,16 +664,6 @@ class CreateF5Service extends React.Component {
           }
 
           <Form.Item
-            label="Destination Pool Port"
-            name='destinationPoolPort'
-            key="destinationPoolPort"
-            validateStatus={this.state.errors.destinationPoolPortError}
-            help={this.state.errors.destinationPoolPortError ? 'Please input a valid destination Pool Port' : null }
-          >
-            <Input id='destinationPoolPort' onBlur={e => this.setDestinationPoolPort(e)} />
-          </Form.Item>
-
-          <Form.Item
             label="Load Balancing Method"
             name='lbMethod'
             key="lbMethod"
@@ -651,29 +685,59 @@ class CreateF5Service extends React.Component {
             validateStatus={this.state.errors.monitorTypeError}
             help={this.state.errors.monitorTypeError ? 'Please input a valid Monitor Type' : null }
           >
-            <Select id='lbMethod' onChange={a => this.setMonitorType(a)}>
+            <Select id='monitorType' onChange={a => this.setMonitorType(a)}>
               <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
+              <Select.Option key={'http'} value={'http'}>http</Select.Option>
             </Select>
           </Form.Item>
 
+          { this.state.body.serviceType === 'L7' ?
+            <Form.Item
+              label="Monitor send string"
+              name='monitorSendString'
+              key="monitorSendString"
+              validateStatus={this.state.errors.monitorSendStringError}
+              help={this.state.errors.monitorSendStringError ? 'Please input a valid monitor send string' : null }
+            >
+              <TextArea id='monitorSendString' rows={4} onChange={e => this.setMonitorSendString(e)} />
+            </Form.Item>
+            :
+            null
+          }
+
+          { this.state.body.serviceType === 'L7' ?
+            <Form.Item
+              label="Monitor receive string"
+              name='monitorReceiveString'
+              key="monitorReceiveString"
+              validateStatus={this.state.errors.monitorReceiveStringError}
+              help={this.state.errors.monitorReceiveStringError ? 'Please input a valid monitor receive string' : null }
+            >
+              <TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
+            </Form.Item>
+            :
+            null
+          }
+
           <Form.Item
-            label="One more node"
-            name='nodesNumber'
-            key="nodesNumber"
-            validateStatus={this.state.errors.nodesNumberError}
-            help={this.state.errors.nodesNumberError ? 'Please input a valid number of nodes' : null }
+            label="One more member"
+            name='membersNumber'
+            key="membersNumber"
+            validateStatus={this.state.errors.membersNumberError}
+            help={this.state.errors.membersNumberError ? 'Please input a valid number of members' : null }
           >
-            <Button type="primary" onClick={() => this.oneMoreNode()}>
+            <Button type="primary" onClick={() => this.oneMoreMember()}>
               +
             </Button>
-            {//<Input id='nodesNumber' onBlur={e => this.setNodesNumber(e)} />
+            {//<Input id='membersNumber' onBlur={e => this.setMembersNumber(e)} />
             }
           </Form.Item>
 
           {
-            this.state.nodes.map((n, i) => {
+            this.state.members.map((n, i) => {
               let a = 'address' + n.id
               let na = 'name' + n.id
+              let pa = 'port' + n.id
               let r = 'remove' + n.id
               return (
                 <React.Fragment>
@@ -681,29 +745,40 @@ class CreateF5Service extends React.Component {
                   label="Address"
                   name={a}
                   key={a}
-                  validateStatus={this.state.errors.nodeAddressError}
-                  help={this.state.errors.nodeAddressError ? 'Please input a valid IP' : null }
+                  validateStatus={this.state.errors.memberAddressError}
+                  help={this.state.errors.memberAddressError ? 'Please input a valid IP' : null }
                 >
-                  <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setNodeAddress(n.id, e)} />
+                  <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setMemberAddress(n.id, e)} />
                 </Form.Item>
+
                 <Form.Item
                   label="Name"
                   name={na}
                   key={na}
-                  validateStatus={this.state.errors.nodeNameError}
-                  help={this.state.errors.nodeNameError ? 'Please input a valid name' : null }
+                  validateStatus={this.state.errors.memberNameError}
+                  help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
                 >
-                  <Input id={na} style={{display: 'block'}} onBlur={e => this.setNodeName(n.id, e)} />
-
+                  <Input id={na} style={{display: 'block'}} onBlur={e => this.setMemberName(n.id, e)} />
                 </Form.Item>
+
                 <Form.Item
-                  label="Remove node"
+                  label="Port"
+                  name={pa}
+                  key={pa}
+                  validateStatus={this.state.errors.memberPortError}
+                  help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
+                >
+                  <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(e, n.id)}/>
+                </Form.Item>
+
+                <Form.Item
+                  label="Remove member"
                   name={r}
                   key={r}
-                  validateStatus={this.state.errors.removeNodeError}
-                  help={this.state.errors.removeNodeError ? 'Please input a valid number of nodes' : null }
+                  validateStatus={this.state.errors.removeMemberError}
+                  help={this.state.errors.removeMemberError ? 'Please input a valid number of members' : null }
                 >
-                  <Button type="danger" onClick={() => this.removeNode(n.id)}>
+                  <Button type="danger" onClick={() => this.removeMember(n.id)}>
                     -
                   </Button>
                   <Divider/>
@@ -725,7 +800,7 @@ class CreateF5Service extends React.Component {
             name="button"
             key="button"
           >
-            <Button type="primary" onClick={() => this.removeNodesId()}>
+            <Button type="primary" onClick={() => this.removeMembersId()}>
               Create Service
             </Button>
           </Form.Item>

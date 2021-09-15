@@ -16,7 +16,7 @@ import CustomBreadcrumb from './breadcrumb'
 import Homepage from './home/homepage'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
-import Workflows from './workflows/workflows'
+import Service from './services/services'
 import Assets from './assets/assets'
 import Permissions from './permissions/permissions'
 
@@ -149,7 +149,7 @@ class App extends Component {
                     <Route exact path='/' component={Homepage}/>
                     <Route path='/f5/' component={F5}/>
                     <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
-                    <Route path='/workflows/' component={Workflows}/>
+                    <Route path='/services/' component={Service}/>
                     <Route path='/assets/' component={Assets}/>
 
                     { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?

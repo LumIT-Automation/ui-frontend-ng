@@ -448,7 +448,7 @@ class Add extends React.Component {
                     name={pa}
                     key={pa}
                     validateStatus={this.state.errors.memberPortError}
-                    help={this.state.errors.memberPortError ? 'Please input a valid name' : null }
+                    help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
                   >
                     <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(e, n.id)}/>
                   </Form.Item>

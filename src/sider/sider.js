@@ -117,7 +117,7 @@ class CustomSider extends Component {
           }
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+          <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           { this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any) ?
