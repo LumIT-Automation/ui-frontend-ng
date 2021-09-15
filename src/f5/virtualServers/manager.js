@@ -60,9 +60,7 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setVirtualServersList(resp))
-        console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setVirtualServersList(resp)))
       },
       error => {
         this.setState({loading: false})

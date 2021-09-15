@@ -91,7 +91,6 @@ class Modify extends React.Component {
   }
 
   modifyVirtualServer = async () => {
-    console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -135,14 +134,13 @@ class Modify extends React.Component {
   }
 
   fetchVirtualServers = async () => {
-
     this.setState({loading: true})
+
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setVirtualServersList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setVirtualServersList(resp)))
+
       },
       error => {
         this.setState({loading: false})

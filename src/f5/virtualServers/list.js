@@ -125,8 +125,6 @@ class List extends React.Component {
   }
 
   render() {
-    console.log(this.props.virtualServers)
-
     const columns = [
       {
         title: 'Name',

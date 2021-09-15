@@ -34,7 +34,6 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset) {
       this.fetchKeys()
-      console.log('Keys mount')
     }
   }
 
@@ -45,7 +44,6 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
       this.fetchKeys()
-      console.log('Keys update')
     }
   }
 
@@ -153,8 +151,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.keys)
-
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

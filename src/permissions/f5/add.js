@@ -58,7 +58,6 @@ class Add extends React.Component {
   }
 
   onSearch = (searchText) => {
-    console.log(this.props.igIdentifiers)
     let items = Object.assign([], this.props.igIdentifiers)
     let options = []
 

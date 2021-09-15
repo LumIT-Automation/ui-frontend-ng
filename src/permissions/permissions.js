@@ -62,9 +62,6 @@ class Permissions extends React.Component {
 
 
   render() {
-
-    //console.log(this.props.permissions)
-
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 

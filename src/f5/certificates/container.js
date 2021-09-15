@@ -92,7 +92,6 @@ class CertificateAndKey extends React.Component {
 
     var file = e.target.files[0];
     if (!file) {
-      console.log("no file, return")
       return;
     }
     var reader = new FileReader();

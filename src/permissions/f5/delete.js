@@ -59,8 +59,8 @@ class Delete extends React.Component {
   }
 
   fetchPermissions = async () => {
-    console.log('fetchpermissionsDopoDelete')
     this.setState({loading: true})
+
     let rest = new Rest(
       "GET",
       resp => {
@@ -69,15 +69,13 @@ class Delete extends React.Component {
         this.permissionsInRows()
         },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR(`f5/permissions/`, this.props.token)
   }
 
   permissionsInRows = () => {
-    console.log('RowsermissionsDopoDelete')
     let permissions = Object.assign([], this.props.f5Permissions)
     let list = []
 

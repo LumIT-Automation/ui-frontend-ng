@@ -18,7 +18,6 @@ const workflowsSlice = createSlice({
     initialState: {},
     reducers: {
         setWorkflowStatus: (state, action) => {
-          console.log(action.payload)
           state.workflowStatus = action.payload
         }
     }

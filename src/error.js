@@ -64,7 +64,6 @@ class Error extends Component {
 
   logout = () => {
     this.deleteCookies('token', 'username').then( this.props.dispatch( logout() ) )
-    //this.deleteCookies('token', 'username').then( t => console.log(t) )
   }
 
 
@@ -106,8 +105,6 @@ class Error extends Component {
 
     let e = () => {
       if(this.props.error) {
-        console.log(this.props.error)
-        console.error(this.props.error)
         let cod = this.props.error.status
 
         switch(cod) {

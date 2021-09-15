@@ -181,13 +181,9 @@ class Modify extends React.Component {
       default:
         //
     }
-
-
-
   }
 
   modifyNode = async () => {
-    console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -241,9 +237,7 @@ class Modify extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
       },
       error => {
         this.setState({loading: false})

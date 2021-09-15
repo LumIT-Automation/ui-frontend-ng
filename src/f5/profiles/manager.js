@@ -76,8 +76,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-
-        console.log(resp)
         this.setState({loading: false})
         this.storeSetter(resp).then(this.fetchProfiles())
       },
@@ -105,7 +103,6 @@ class Manager extends React.Component {
         this.setState({loading: false}, () => this.addToList(resp, type))
       },
       error => {
-        console.log(error)
         this.setState({loading: false, error: error})
       }
     )

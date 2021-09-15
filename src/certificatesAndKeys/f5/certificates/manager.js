@@ -34,7 +34,6 @@ class CertificatesManager extends React.Component {
   componentDidMount() {
     if (this.props.asset) {
       this.fetchCertificates()
-      console.log('Cert mount')
     }
   }
 
@@ -45,7 +44,6 @@ class CertificatesManager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
       this.fetchCertificates()
-      console.log('Cert update')
     }
   }
 
@@ -153,8 +151,6 @@ class CertificatesManager extends React.Component {
 
 
   render() {
-    console.log(this.props.certificates)
-
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

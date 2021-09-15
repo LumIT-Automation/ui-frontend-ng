@@ -91,7 +91,6 @@ class Modify extends React.Component {
   }
 
   modifyProfile = async () => {
-    console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -140,9 +139,7 @@ class Modify extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setProfilesList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setProfilesList(resp)))
       },
       error => {
         this.setState({loading: false})

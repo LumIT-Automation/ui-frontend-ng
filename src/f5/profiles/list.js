@@ -126,8 +126,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.profiles)
-
     const columns = [
       {
         title: 'Name',

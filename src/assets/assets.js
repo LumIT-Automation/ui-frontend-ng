@@ -86,7 +86,6 @@ class Assets extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('resp')
         this.setState({loading: false})
         this.props.dispatch(setInfobloxAssetList( resp ))
       },
@@ -104,10 +103,6 @@ class Assets extends React.Component {
 
 
   render() {
-
-    //console.log(this.props.permissions)
-    console.log(this.props.infobloxAssetList)
-
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 

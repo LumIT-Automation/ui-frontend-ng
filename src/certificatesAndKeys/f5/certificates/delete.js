@@ -48,7 +48,6 @@ class Delete extends React.Component {
     let partition  = l[1]
     let certName  = l[2]
 
-    console.log(certName)
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -129,9 +128,6 @@ class Delete extends React.Component {
               <Row>
                 <Col span={2} offset={10}>
                   <Button type="primary" onClick={() => this.deleteCertificate(this.props.obj)}>
-
-                  {//}<Button type="primary" onClick={() => console.log(this.props.obj)}>
-                  }
                     YES
                   </Button>
                 </Col>

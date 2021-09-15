@@ -51,10 +51,6 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*if (prevState.body.assetId !== this.state.body.assetId) {
-      console.log(this.state.body.assetId)
-      this.fetchAssetPartitions(this.state.body.assetId)
-    }*/
   }
 
   componentWillUnmount() {

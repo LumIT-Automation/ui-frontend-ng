@@ -214,8 +214,6 @@ class Modify extends React.Component {
   }
 
   setMonitor = e => {
-    console.log('eeeeeeeeee')
-    console.log(e)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -230,7 +228,6 @@ class Modify extends React.Component {
   }
 
   modifyPool = async () => {
-    console.log(this.props.obj.name)
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -269,18 +266,15 @@ class Modify extends React.Component {
   }
 
   fetchPools = async () => {
-
     this.setState({loading: true})
+
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setPoolsList(resp))
-        //console.log(resp)
+        this.setState({loading: false}, () => this.props.dispatch(setPoolsList(resp)))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
