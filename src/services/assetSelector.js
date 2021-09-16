@@ -67,6 +67,9 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
+    this.props.dispatch(setEnvironment(null))
+    this.props.dispatch(selectAsset(null))
+    this.props.dispatch(selectPartition(null))
   }
 
   setEnvironmentList = () => {
@@ -151,10 +154,7 @@ class AssetSelector extends React.Component {
               wrapperCol={{ span: 40 }}
               layout="inline"
               initialValues={{
-                size: 'default',
-                environment: this.envString(),
-                asset: this.assetString(),
-                partition: this.props.partition
+                size: 'default'
               }}
               size={'default'}
             >

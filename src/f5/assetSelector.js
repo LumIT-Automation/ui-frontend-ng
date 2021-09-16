@@ -67,6 +67,9 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
+    this.props.dispatch(setEnvironment(null))
+    this.props.dispatch(selectAsset(null))
+    this.props.dispatch(selectPartition(null))
   }
 
   setEnvironmentList = () => {

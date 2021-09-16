@@ -151,7 +151,7 @@ class List extends React.Component {
        ...this.getColumnSearchProps('loadBalancingMode'),
       },
       {
-        title: 'Modify',
+        title: 'Details and modify',
         align: 'center',
         dataIndex: 'modify',
         key: 'modify',

@@ -4,9 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolsList } from '../../_store/store.f5'
+import { setPoolsList, setPoolsFetchStatus } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Table, Divider } from 'antd';
 
 import { LoadingOutlined } from '@ant-design/icons';
 
@@ -249,7 +249,7 @@ class Modify extends React.Component {
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchPools())
+          this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
           this.success()
         },
         error => {
@@ -265,21 +265,6 @@ class Modify extends React.Component {
     this.setState({ error: null})
   }
 
-  fetchPools = async () => {
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setPoolsList(resp)))
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
-  }
-
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -293,14 +278,136 @@ class Modify extends React.Component {
   }
 
 
-
-
   render() {
+
+    const columns = [
+      {
+        title: 'Member',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+      },
+      {
+        title: 'Address',
+        align: 'center',
+        dataIndex: 'address',
+        key: 'address',
+      },
+      {
+        title: 'State',
+        align: 'center',
+        dataIndex: 'state',
+        key: 'state',
+      },
+      {
+        title: 'Session',
+        align: 'center',
+        dataIndex: 'session',
+        key: 'session',
+      },/*
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        render(name, record) {
+          return {
+            props: {
+              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+            },
+            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+          };
+        }
+      },*/
+      {
+        title: 'Enable',
+        align: 'center',
+        dataIndex: 'enable',
+        key: 'enable',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => null}>
+              Enable
+            </Button>
+          </Space>
+        ),
+      },
+      {
+        title: 'Disable',
+        align: 'center',
+        dataIndex: 'disable',
+        key: 'disable',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => null}>
+              Disable
+            </Button>
+          </Space>
+        ),
+      },
+      {
+        title: 'Force Offline',
+        align: 'center',
+        dataIndex: 'foff',
+        key: 'foff',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => null}>
+              Force Offline
+            </Button>
+          </Space>
+        ),
+      },
+      {
+        title: 'Connections',
+        align: 'center',
+        dataIndex: 'connections',
+        key: 'connections',
+      },/*
+      {
+        title: '',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isMonitored ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },*//*
+      {
+        title: "Amount",
+        dataIndex: "amount",
+        width: 100,
+        render(text, record) {
+          return {
+            props: {
+              style: { background: 51 > 50 ? "red" : "green" }
+            },
+            children: <div>{text}</div>
+          };
+        }
+      },*//*
+      {
+        title: 'Monitoring',
+        align: 'center',
+        dataIndex: 'monitoring',
+        key: 'monitoring',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => null}>
+              { obj.isMonitored ? 'STOP' : 'START' }
+            </Button>
+          </Space>
+        ),
+      },*/
+    ];
+
     return (
       <Space direction='vertical'>
 
         <Button type="primary" onClick={() => this.details()}>
-          Modify Pool
+          Details and Modify
         </Button>
 
         <Modal
@@ -311,7 +418,7 @@ class Modify extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
         >
         { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
@@ -363,6 +470,17 @@ class Modify extends React.Component {
             }) : null}
             </Select>
           </Form.Item>
+
+            <Table
+              dataSource={this.state.renderedMembers}
+              columns={columns}
+              pagination={false}
+              rowKey="name"
+              //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
+            />
+
+            <Divider/>
+
 
             {this.state.message ?
               <Form.Item
