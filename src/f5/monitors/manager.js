@@ -91,25 +91,50 @@ class Manager extends React.Component {
 
   fetchMonitors =  () => {
     let blank = []
-    this.props.dispatch(setMonitorsList(blank))
-    this.setState({monitorFullList: []})
-    this.props.monitorsTypeList.forEach(type => {
-      this.fetchMonitorsType(type)
-    })
+    this.setState({monitorFullList: []}, () => this.props.dispatch(setMonitorsList(blank)))
+    //this.props.monitorsTypeList.forEach(type => {
+      //this.fetchMonitorsType(type)
+      this.myAsyncLoopFunction()
+    //})
   }
+
+  myAsyncLoopFunction = async () => {
+  const allAsyncResults = []
+  let list = []
+
+  for (const item of this.props.monitorsTypeList) {
+    const asyncResult = await this.fetchMonitorsType(item)
+    console.log(asyncResult)
+    list = []
+    asyncResult.data.items.forEach(m => {
+      Object.assign(m, {type: item});
+      list.push(m)
+      allAsyncResults.push(m)
+    })
+    console.log(list)
+    //allAsyncResults.push(list)
+  }
+  this.setState({loading: false})
+  console.log(allAsyncResults)
+  //return allAsyncResults
+  this.setState({monitorFullList: allAsyncResults}, () => this.props.dispatch(setMonitorsList(allAsyncResults)))
+}
 
   fetchMonitorsType = async (type) => {
     this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.addToList(resp, type))
+        //this.setState({loading: false}, () => this.addToList(resp, type))
+        r = resp
       },
       error => {
         this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+    return r
   }
 
   addToList = (resp, type) => {
