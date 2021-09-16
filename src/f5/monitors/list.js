@@ -29,6 +29,7 @@ class List extends React.Component {
   }
 
   componentDidMount() {
+    console.log('list mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -39,6 +40,7 @@ class List extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('list unmount')
   }
 
 

@@ -35,9 +35,13 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    console.log('manager mount')
+    console.log(this.props.monitors)
     if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
       //this.fetchMonitors()
-      this.fetchMonitorsTypeList()
+      if (!this.props.monitors) {
+        this.fetchMonitorsTypeList()
+      }
       //this.fetchMonitors()
     }
   }
@@ -57,6 +61,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('manager unmount')
   }
 
 
@@ -104,20 +109,14 @@ class Manager extends React.Component {
 
   for (const item of this.props.monitorsTypeList) {
     const asyncResult = await this.fetchMonitorsType(item)
-    console.log(asyncResult)
     list = []
     asyncResult.data.items.forEach(m => {
       Object.assign(m, {type: item});
       list.push(m)
       allAsyncResults.push(m)
     })
-    console.log(list)
-    //allAsyncResults.push(list)
   }
-  this.setState({loading: false})
-  console.log(allAsyncResults)
-  //return allAsyncResults
-  this.setState({monitorFullList: allAsyncResults}, () => this.props.dispatch(setMonitorsList(allAsyncResults)))
+  this.setState({loading: false, monitorFullList: allAsyncResults}, () => this.props.dispatch(setMonitorsList(allAsyncResults)))
 }
 
   fetchMonitorsType = async (type) => {
@@ -136,7 +135,7 @@ class Manager extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
     return r
   }
-
+/*
   addToList = (resp, type) => {
     let mon = Object.assign([], resp.data.items);
     let newList = []
@@ -151,7 +150,7 @@ class Manager extends React.Component {
     newList = currentList.concat(l);
     this.setState({monitorFullList: newList}, () => this.props.dispatch(setMonitorsList(newList)))
   }
-
+*/
   resetError = () => {
     this.setState({ error: null})
   }
