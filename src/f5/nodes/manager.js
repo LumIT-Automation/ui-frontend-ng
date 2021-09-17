@@ -35,7 +35,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-      this.fetchNodes()
+      //this.fetchNodes()
     }
   }
 
@@ -45,7 +45,7 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
-        this.fetchNodes()
+        //this.fetchNodes()
     }
     /*if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
@@ -92,7 +92,7 @@ class Manager extends React.Component {
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-        this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          this.props.nodesLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
         :
         <Alert message="Asset and Partition not set" type="error" />
       }
@@ -109,5 +109,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
+    nodesLoading: state.f5.nodesLoading,
   nodes: state.f5.nodes
 }))(Manager);

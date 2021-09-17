@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setNodesList } from '../../_store/store.f5'
+import { setNodesFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -41,17 +41,15 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-
   deleteNode = async node => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchNodes())
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setNodesFetchStatus('updated')))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token )
@@ -59,22 +57,6 @@ class Delete extends React.Component {
 
   resetError = () => {
     this.setState({ error: null})
-  }
-
-  fetchNodes = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
   }
 
   //Close and Error

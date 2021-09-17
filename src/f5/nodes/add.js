@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setNodesList } from '../../_store/store.f5'
+import { setNodesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -165,32 +165,15 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchNodes())
+          this.setState({success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
           this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setNodesFetchStatus('updated')))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body)
     }
-  }
-
-  fetchNodes = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setNodesList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
   }
 
   success = () => {

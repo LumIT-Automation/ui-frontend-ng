@@ -51,6 +51,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(prevProps.partition)
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
       this.fetchMonitorsTypeList()
     }

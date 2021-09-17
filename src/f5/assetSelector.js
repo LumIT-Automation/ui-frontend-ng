@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { setEnvironment, selectAsset, setPartitions, selectPartition, setPoolList } from '../_store/store.f5'
+import { setEnvironment, selectAsset, setPartitions, selectPartition, setPoolList, resetObjects } from '../_store/store.f5'
 import Error from '../error'
 
 import "antd/dist/antd.css"
@@ -70,6 +70,7 @@ class AssetSelector extends React.Component {
     this.props.dispatch(setEnvironment(null))
     this.props.dispatch(selectAsset(null))
     this.props.dispatch(selectPartition(null))
+    //this.props.dispatch(resetObjects())
   }
 
   setEnvironmentList = () => {
@@ -101,6 +102,7 @@ class AssetSelector extends React.Component {
       return a.address === address
     })
     this.props.dispatch(selectAsset(asset))
+    this.props.dispatch(selectPartition(null))
     this.fetchAssetPartitions(asset.id)
   }
 
@@ -116,6 +118,7 @@ class AssetSelector extends React.Component {
   }
 
   setPartition = p => {
+    //this.props.dispatch(resetObjects())
     this.props.dispatch(selectPartition(p))
   }
 
@@ -155,9 +158,7 @@ class AssetSelector extends React.Component {
               layout="inline"
               initialValues={{
                 size: 'default',
-                environment: this.envString(),
-                asset: this.assetString(),
-                partition: this.props.partition
+                partition: null
               }}
               size={'default'}
             >
@@ -186,7 +187,7 @@ class AssetSelector extends React.Component {
               </Form.Item>
 
               <Form.Item name='partition' label="Partition">
-                <Select onChange={p => this.setPartition(p)} style={{ width: 200 }}>
+                <Select onSelect={p => this.setPartition(p)} style={{ width: 200 }}>
 
                   {this.props.assetPartitions ? this.props.assetPartitions.map((p, i) => {
                   return (

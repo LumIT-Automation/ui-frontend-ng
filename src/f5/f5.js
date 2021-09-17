@@ -14,7 +14,14 @@ import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
 //import CertificateAndKey from './certificates/container'
 
-import { setAssetList, cleanUp } from '../_store/store.f5'
+import {
+  setAssetList,
+  setNodesLoading,
+  setNodesList,
+  setNodesFetchStatus,
+  cleanUp
+
+} from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -52,6 +59,9 @@ class F5 extends React.Component {
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchAssets()
+      if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+        this.fetchNodes()
+      }
     }
   }
 
@@ -64,10 +74,18 @@ class F5 extends React.Component {
     if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
     }
+    if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+      this.fetchNodes()
+    }
+    if ( (this.props.nodesFetchStatus === 'updated') ) {
+      console.log('updateeeeeeeeeeee')
+      this.fetchNodes()
+      this.props.dispatch(setNodesFetchStatus(''))
+    }
   }
 
   componentWillUnmount() {
-    //this.props.dispatch(cleanUp())
+    console.log('f5 eeee unmount')
   }
 
 
@@ -87,13 +105,36 @@ class F5 extends React.Component {
     await rest.doXHR("f5/assets/", this.props.token)
   }
 
+  fetchNodes = async () => {
+    this.props.dispatch(setNodesLoading(true))
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
+        this.props.dispatch(setNodesLoading(false))
+      },
+      error => {
+        this.setState({error: error}, () => this.props.dispatch(setNodesLoading(false)))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
 
 
   render() {
-
+    //console.log('this.props.assetList')
+    //console.log(this.props.assetList)
+    console.log('this.props.asset')
+    console.log(this.props.asset)
+    console.log('this.props.partition')
+    console.log(this.props.partition)
+    //console.log('this.props.nodes')
+    //console.log(this.props.nodes)
     return (
       <React.Fragment>
         <AssetSelector/>
@@ -151,5 +192,9 @@ class F5 extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList
+  assetList: state.f5.assetList,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  nodes: state.f5.nodes,
+  nodesFetchStatus: state.f5.nodesFetchStatus
 }))(F5);
