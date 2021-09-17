@@ -222,7 +222,7 @@ class Add extends React.Component {
               help={this.state.errors.monitorTypeError ? 'Please select monitor type' : null }
             >
               <Select onChange={p => this.setMonitorType(p)} >
-                {this.props.monitorsTypeList ? this.props.monitorsTypeList.map((m, i) => {
+                {this.props.monitorTypes ? this.props.monitorTypes.map((m, i) => {
                   return (
                     <Select.Option  key={i} value={m}>{m}</Select.Option>
                   )
@@ -290,5 +290,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors,
-  monitorsTypeList: state.f5.monitorsTypeList
+  monitorTypes: state.f5.monitorTypes
 }))(Add);

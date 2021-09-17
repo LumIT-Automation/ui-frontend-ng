@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../../_helpers/Rest";
-import { setCertificatesList } from '../../../_store/store.f5'
+import { setCertificates } from '../../../_store/store.f5'
 import Error from '../../../error'
 
 import List from './list'
@@ -135,7 +135,7 @@ class CertificatesManager extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setCertificatesList( resp ))
+        this.props.dispatch(setCertificates( resp ))
       },
       error => {
         this.setState({loading: false})

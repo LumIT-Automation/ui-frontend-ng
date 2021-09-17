@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setCertificatesList, setKeysList } from '../_store/store.f5'
+import { setCertificates, setKeys } from '../_store/store.f5'
 
 import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -75,7 +75,7 @@ class CreateF5Service extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setCertificatesList( resp ))
+        this.props.dispatch(setCertificates( resp ))
       },
       error => {
         this.setState({loading: false})
@@ -91,7 +91,7 @@ class CreateF5Service extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setKeysList( resp ))
+        this.props.dispatch(setKeys( resp ))
       },
       error => {
         this.setState({loading: false})

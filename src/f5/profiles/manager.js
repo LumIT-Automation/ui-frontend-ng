@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setProfilesTypeList, setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
+import { setProfileTypes, setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -60,9 +60,9 @@ class Manager extends React.Component {
   storeSetter = resp => {
     return new Promise( (resolve, reject) => {
       try {
-        this.props.dispatch(setProfilesTypeList( resp ))
-        if ( this.props.profilesTypeList  ) {
-          resolve(this.props.profilesTypeList)
+        this.props.dispatch(setProfileTypes( resp ))
+        if ( this.props.profileTypes  ) {
+          resolve(this.props.profileTypes)
         }
       }
       catch(e) {
@@ -90,7 +90,7 @@ class Manager extends React.Component {
     let blank = []
     this.props.dispatch(setProfilesList(blank))
     this.setState({profileFullList: []})
-    this.props.profilesTypeList.forEach(type => {
+    this.props.profileTypes.forEach(type => {
       this.fetchProfilesType(type)
     })
   }
@@ -164,7 +164,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  profilesTypeList: state.f5.profilesTypeList,
+  profileTypes: state.f5.profileTypes,
   profiles: state.f5.profiles,
   profilesFetchStatus: state.f5.profilesFetchStatus
 }))(Manager);

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import Modify from './modify'
+//import Modify from './modify'
 import Delete from './delete'
 
 import { Table, Input, Button, Space, Spin } from 'antd';

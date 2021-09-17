@@ -190,7 +190,7 @@ class Add extends React.Component {
               help={this.state.errors.profileTypeError ? 'Please select profile type' : null }
             >
               <Select onChange={a => this.setProfileType(a)}>
-                {this.props.profilesTypeList ? this.props.profilesTypeList.map((m, i) => {
+                {this.props.profileTypes ? this.props.profileTypes.map((m, i) => {
                   return (
                     <Select.Option  key={i} value={m}>{m}</Select.Option>
                   )
@@ -237,6 +237,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  profilesTypeList: state.f5.profilesTypeList,
+  profileTypes: state.f5.profileTypes,
   profiles: state.f5.profiles
 }))(Add);

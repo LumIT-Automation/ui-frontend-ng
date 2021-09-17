@@ -39,15 +39,22 @@ const f5Slice = createSlice({
         setNodesLoading: (state, action) => {
           state.nodesLoading = action.payload
         },
-        setNodesList: (state, action) => {
+        setNodes: (state, action) => {
           state.nodes = action.payload.data.items
         },
         setNodesFetchStatus: (state, action) => {
           state.nodesFetchStatus = action.payload
         },
 
-        setMonitorsTypeList: (state, action) => {
-          state.monitorsTypeList = action.payload.data.items
+        setMonitorTypesLoading: (state, action) => {
+          state.monitorTypesLoading = action.payload.data.items
+        },
+        setMonitorTypes: (state, action) => {
+          state.monitorTypes = action.payload.data.items
+        },
+
+        setMonitorsLoading: (state, action) => {
+          state.monitorsLoading = action.payload
         },
         setMonitorsList: (state, action) => {
           state.monitors = action.payload
@@ -59,15 +66,15 @@ const f5Slice = createSlice({
         setPoolsLoading: (state, action) => {
           state.poolsLoading = action.payload
         },
-        setPoolsList: (state, action) => {
+        setPools: (state, action) => {
           state.pools = action.payload.data.items
         },
         setPoolsFetchStatus: (state, action) => {
           state.poolsFetchStatus = action.payload
         },
 
-        setProfilesTypeList: (state, action) => {
-          state.profilesTypeList = action.payload.data.items
+        setProfileTypes: (state, action) => {
+          state.profileTypes = action.payload.data.items
         },
         setProfilesList: (state, action) => {
           state.profiles = action.payload
@@ -81,7 +88,7 @@ const f5Slice = createSlice({
         setVirtualServersLoading: (state, action) => {
           state.virtualServersLoading = action.payload
         },
-        setVirtualServersList: (state, action) => {
+        setVirtualServers: (state, action) => {
           state.virtualServers = action.payload.data.items
         },
         setVirtualServersFetchStatus: (state, action) => {
@@ -90,10 +97,10 @@ const f5Slice = createSlice({
 
 
 
-        setCertificatesList: (state, action) => {
+        setCertificates: (state, action) => {
           state.certificates = action.payload.data.items
         },
-        setKeysList: (state, action) => {
+        setKeys: (state, action) => {
           state.keys = action.payload.data.items
         },
 
@@ -109,7 +116,9 @@ const f5Slice = createSlice({
           state.nodes = null
           state.nodesFetchStatus = null
 
-          state.monitorsTypeList = null
+          state.monitorTypes = null
+          state.monitorsTypeLoading
+
           state.monitorsLoading= null
           state.monitors = null
           state.monitorsFetchStatus = null
@@ -118,7 +127,7 @@ const f5Slice = createSlice({
           state.pools = null
           state.poolsFetchStatus = null
 
-          state.profilesTypeList = null
+          state.profileTypes = null
           state.profiles = null
           state.profilesFetchStatus = null
 
@@ -151,28 +160,31 @@ export const {
 
 
   setNodesLoading,
-  setNodesList,
+  setNodes,
   setNodesFetchStatus,
 
-  setMonitorsTypeList,
+  setMonitorsTypeLoading,
+  setMonitorTypes,
+
+  setMonitorsLoading,
   setMonitorsList,
   setMonitorsFetchStatus,
 
   setPoolsLoading,
-  setPoolsList,
+  setPools,
   setPoolList,
   setPoolsFetchStatus,
 
-  setProfilesTypeList,
+  setProfileTypes,
   setProfilesList,
   setProfilesFetchStatus,
 
   setVirtualServersLoading,
-  setVirtualServersList,
+  setVirtualServers,
   setVirtualServersFetchStatus,
 
-  setCertificatesList,
-  setKeysList,
+  setCertificates,
+  setKeys,
 
   resetObjects,
   cleanUp

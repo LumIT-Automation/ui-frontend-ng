@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setVirtualServersList } from '../../_store/store.f5'
+import { setVirtualServers } from '../../_store/store.f5'
 
 
 import List from './list'

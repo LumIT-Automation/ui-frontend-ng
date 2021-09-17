@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setAssetList, setKeysList } from '../../../_store/store.f5'
+import { setAssetList, setKeys } from '../../../_store/store.f5'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../../_store/store.permissions'
 
 //import { fetchNetworks, requestIp } from '../actions/ipamActions'
@@ -165,7 +165,7 @@ class Add extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setKeysList( resp ))
+        this.props.dispatch(setKeys( resp ))
       },
       error => {
         this.setState({loading: false})

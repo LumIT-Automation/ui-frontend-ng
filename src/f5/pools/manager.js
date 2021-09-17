@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setNodesList, setMonitorsList, setPoolsList, setPoolsFetchStatus } from '../../_store/store.f5'
+import { setMonitorsList, setPools, setPoolsFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'

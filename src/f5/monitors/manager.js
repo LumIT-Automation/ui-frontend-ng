@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setMonitorsTypeList, setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
+import { setMonitorTypes, setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 
 import List from './list'
@@ -84,9 +84,9 @@ class Manager extends React.Component {
   storeSetter = resp => {
     return new Promise( (resolve, reject) => {
       try {
-        this.props.dispatch(setMonitorsTypeList( resp ))
-        if ( this.props.monitorsTypeList  ) {
-          resolve(this.props.monitorsTypeList)
+        this.props.dispatch(setMonitorTypes( resp ))
+        if ( this.props.monitorTypes  ) {
+          resolve(this.props.monitorTypes)
         }
       }
       catch(e) {
@@ -98,7 +98,7 @@ class Manager extends React.Component {
   fetchMonitors =  () => {
     let blank = []
     this.setState({monitorFullList: []}, () => this.props.dispatch(setMonitorsList(blank)))
-    //this.props.monitorsTypeList.forEach(type => {
+    //this.props.monitorTypes.forEach(type => {
       //this.fetchMonitorsType(type)
       this.myAsyncLoopFunction()
     //})
@@ -108,7 +108,7 @@ class Manager extends React.Component {
   const allAsyncResults = []
   let list = []
 
-  for (const item of this.props.monitorsTypeList) {
+  for (const item of this.props.monitorTypes) {
     const asyncResult = await this.fetchMonitorsType(item)
     list = []
     asyncResult.data.items.forEach(m => {
@@ -192,7 +192,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorsTypeList: state.f5.monitorsTypeList,
+  monitorTypes: state.f5.monitorTypes,
   monitors: state.f5.monitors,
   monitorsFetchStatus: state.f5.monitorsFetchStatus
 }))(Manager);

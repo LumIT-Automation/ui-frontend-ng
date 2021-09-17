@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setCertificatesList } from '../../../_store/store.f5'
+import { setCertificates } from '../../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -68,7 +68,7 @@ class Delete extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setCertificatesList( resp ))
+        this.props.dispatch(setCertificates( resp ))
       },
       error => {
         this.setState({loading: false})

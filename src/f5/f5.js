@@ -16,17 +16,19 @@ import VirtualServers from './virtualServers/manager'
 
 import {
   setAssetList,
+
   setNodesLoading,
-  setNodesList,
+  setNodes,
   setNodesFetchStatus,
 
   setPoolsLoading,
-  setPoolsList,
+  setPools,
   setPoolsFetchStatus,
 
   setVirtualServersLoading,
-  setVirtualServersList,
+  setVirtualServers,
   setVirtualServersFetchStatus,
+
   cleanUp
 
 } from '../_store/store.f5'
@@ -133,7 +135,7 @@ class F5 extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({error: false}, () => this.props.dispatch(setNodesList(resp)))
+        this.setState({error: false}, () => this.props.dispatch(setNodes(resp)))
         this.props.dispatch(setNodesLoading(false))
       },
       error => {
@@ -148,7 +150,7 @@ class F5 extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({error: false}, () => this.props.dispatch(setPoolsList(resp)))
+        this.setState({error: false}, () => this.props.dispatch(setPools(resp)))
         this.props.dispatch(setPoolsLoading(false))
       },
       error => {
@@ -163,7 +165,7 @@ class F5 extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({error: false}, () => this.props.dispatch(setVirtualServersList(resp)))
+        this.setState({error: false}, () => this.props.dispatch(setVirtualServers(resp)))
         this.props.dispatch(setVirtualServersLoading(false))
       },
       error => {
@@ -179,14 +181,6 @@ class F5 extends React.Component {
 
 
   render() {
-    //console.log('this.props.assetList')
-    //console.log(this.props.assetList)
-    console.log('this.props.asset')
-    console.log(this.props.asset)
-    console.log('this.props.partition')
-    console.log(this.props.partition)
-    //console.log('this.props.nodes')
-    //console.log(this.props.nodes)
     return (
       <React.Fragment>
         <AssetSelector/>
@@ -249,6 +243,8 @@ export default connect((state) => ({
   partition: state.f5.partition,
   nodes: state.f5.nodes,
   nodesFetchStatus: state.f5.nodesFetchStatus,
+  monitors: state.f5.monitors,
+  monitorsFetchStatus: state.f5.monitorsFetchStatus,
   pools: state.f5.pools,
   poolsFetchStatus: state.f5.poolsFetchStatus,
   virtualServers: state.f5.virtualServers,

@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../../_helpers/Rest";
-import { setKeysList } from '../../../_store/store.f5'
+import { setKeys } from '../../../_store/store.f5'
 import Error from '../../../error'
 
 import List from './list'
@@ -135,7 +135,7 @@ class Manager extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setKeysList( resp ))
+        this.props.dispatch(setKeys( resp ))
       },
       error => {
         this.setState({loading: false})

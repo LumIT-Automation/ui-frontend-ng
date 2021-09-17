@@ -29,10 +29,10 @@ const infobloxSlice = createSlice({
         selectPartition: (state, action) => {
           state.partition = action.payload
         },
-        setNodesList: (state, action) => {
+        setNodes: (state, action) => {
           state.nodes = action.payload.data.items
         },
-        setPoolsList: (state, action) => {
+        setPools: (state, action) => {
           state.pools = action.payload.data.items
         },
         setMonitorsList: (state, action) => {
@@ -41,10 +41,10 @@ const infobloxSlice = createSlice({
         setProfilesList: (state, action) => {
           state.profiles = action.payload.data.items
         },
-        setVirtualServersList: (state, action) => {
+        setVirtualServers: (state, action) => {
           state.virtualServers = action.payload.data.items
         },
-        setCertificatesList: (state, action) => {
+        setCertificates: (state, action) => {
           state.certificates = action.payload.data.items
         },
         setPoolList: (state, action) => {
@@ -68,13 +68,13 @@ export const {
   selectAsset,
   setPartitions,
   selectPartition,
-  setNodesList,
+  setNodes,
   setMonitorsList,
-  setPoolsList,
+  setPools,
   setPoolList,
   setProfilesList,
-  setVirtualServersList,
-  setCertificatesList,
+  setVirtualServers,
+  setCertificates,
   cleanUp
 } = actions
 
