@@ -34,6 +34,8 @@ const f5Slice = createSlice({
         },
 
 
+
+
         setNodesLoading: (state, action) => {
           state.nodesLoading = action.payload
         },
@@ -74,10 +76,20 @@ const f5Slice = createSlice({
           state.profilesFetchStatus = action.payload
         },
 
+
+
+        setVirtualServersLoading: (state, action) => {
+          state.virtualServersLoading = action.payload
+        },
         setVirtualServersList: (state, action) => {
           state.virtualServers = action.payload.data.items
         },
-        
+        setVirtualServersFetchStatus: (state, action) => {
+          state.virtualServersFetchStatus = action.payload
+        },
+
+
+
         setCertificatesList: (state, action) => {
           state.certificates = action.payload.data.items
         },
@@ -92,18 +104,31 @@ const f5Slice = createSlice({
 
         resetObjects: (state, action) => {
           console.log('reset')
+
+          state.nodesLoading= null
           state.nodes = null
+          state.nodesFetchStatus = null
+
           state.monitorsTypeList = null
+          state.monitorsLoading= null
           state.monitors = null
           state.monitorsFetchStatus = null
+
+          state.poolsLoading = null
           state.pools = null
           state.poolsFetchStatus = null
+
           state.profilesTypeList = null
           state.profiles = null
           state.profilesFetchStatus = null
+
+          state.virtualServersLoading = null
           state.virtualServers = null
+          state.virtualServersFetchStatus = null
+
           state.certificates = null
           state.keys = null
+
           state.currentPoolList = null
         },
 
@@ -142,7 +167,10 @@ export const {
   setProfilesList,
   setProfilesFetchStatus,
 
+  setVirtualServersLoading,
   setVirtualServersList,
+  setVirtualServersFetchStatus,
+
   setCertificatesList,
   setKeysList,
 

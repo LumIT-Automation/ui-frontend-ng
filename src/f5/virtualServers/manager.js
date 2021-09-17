@@ -34,9 +34,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    /*
     if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.partition ) {
       this.fetchVirtualServers()
     }
+    */
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -44,6 +46,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
       this.fetchVirtualServers()
     }
@@ -53,21 +56,6 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-  }
-
-  fetchVirtualServers = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setVirtualServersList(resp)))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
   }
 
   resetError = () => {
@@ -92,7 +80,7 @@ class Manager extends React.Component {
         */}
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          this.props.virtualServersLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -110,5 +98,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  pools: state.f5.pools,
+  virtualServersLoading: state.f5.virtualServersLoading,
   virtualServers: state.f5.virtualServers
 }))(Manager);

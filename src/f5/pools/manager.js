@@ -111,8 +111,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes,
-  monitors: state.f5.monitors,
   pools: state.f5.pools,
   poolsLoading: state.f5.poolsLoading
 }))(Manager);

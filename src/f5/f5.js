@@ -19,9 +19,14 @@ import {
   setNodesLoading,
   setNodesList,
   setNodesFetchStatus,
+
   setPoolsLoading,
   setPoolsList,
   setPoolsFetchStatus,
+
+  setVirtualServersLoading,
+  setVirtualServersList,
+  setVirtualServersFetchStatus,
   cleanUp
 
 } from '../_store/store.f5'
@@ -68,6 +73,9 @@ class F5 extends React.Component {
       if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchPools()
       }
+      if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+        this.fetchVirtualServers()
+      }
     }
   }
 
@@ -83,21 +91,24 @@ class F5 extends React.Component {
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
       this.fetchNodes()
       this.fetchPools()
+      this.fetchVirtualServers()
     }
     if ( (this.props.nodesFetchStatus === 'updated') ) {
-      console.log('updateeeeeeeeeeee')
       this.fetchNodes()
       this.props.dispatch(setNodesFetchStatus(''))
     }
     if ( (this.props.poolsFetchStatus === 'updated') ) {
-      console.log('updateeeeeeeeeeee')
       this.fetchPools()
       this.props.dispatch(setPoolsFetchStatus(''))
+    }
+    if ( (this.props.virtualServersFetchStatus === 'updated') ) {
+      this.fetchVirtualServers()
+      this.props.dispatch(setVirtualServersFetchStatus(''))
     }
   }
 
   componentWillUnmount() {
-    console.log('f5 eeee unmount')
+    console.log('f5 unmount')
   }
 
 
@@ -145,6 +156,21 @@ class F5 extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
+  }
+
+  fetchVirtualServers = async () => {
+    this.props.dispatch(setVirtualServersLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({error: false}, () => this.props.dispatch(setVirtualServersList(resp)))
+        this.props.dispatch(setVirtualServersLoading(false))
+      },
+      error => {
+        this.setState({error: error}, () => this.props.dispatch(setVirtualServersLoading(false)))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
   }
 
   resetError = () => {
@@ -224,5 +250,7 @@ export default connect((state) => ({
   nodes: state.f5.nodes,
   nodesFetchStatus: state.f5.nodesFetchStatus,
   pools: state.f5.pools,
-  poolsFetchStatus: state.f5.poolsFetchStatus
+  poolsFetchStatus: state.f5.poolsFetchStatus,
+  virtualServers: state.f5.virtualServers,
+  virtualServersFetchStatus: state.f5.virtualServersFetchStatus
 }))(F5);
