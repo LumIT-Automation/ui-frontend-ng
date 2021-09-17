@@ -36,13 +36,13 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-      this.fetchPools()
+      /*this.fetchPools()
       if (this.props.authorizations.nodes_get || this.props.authorizations.any ) {
         this.fetchNodes()
       }
       if (this.props.authorizations.monitors_get || this.props.authorizations.any ) {
         this.fetchMonitors()
-      }
+      }*/
     }
   }
 
@@ -51,6 +51,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
   if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
         this.fetchPools()
         this.fetchNodes()
@@ -65,83 +66,10 @@ class Manager extends React.Component {
     /*if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchAssets()
     }*/
+
   }
 
   componentWillUnmount() {
-  }
-
-  fetchNodes = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
-  }
-
-  fetchMonitors =  () => {
-    let blank = []
-    this.props.dispatch(setMonitorsList(blank))
-    this.setState({monitorFullList: []})
-    let list = ['tcp', 'tcp-half-open', 'http', 'https']
-    list.forEach(type => {
-      this.fetchMonitorsType(type)
-    }
-  )
-    //this.props.dispatch(setMonitorsList(this.state.body.monitorFullList))
-  }
-
-  fetchMonitorsType = async (type) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.addToList(resp, type))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-  }
-
-  addToList = (resp, type) => {
-    let mon = Object.assign([], resp.data.items);
-    let newList = []
-    let currentList = Object.assign([], this.state.monitorFullList);
-    let l = []
-
-    mon.forEach(m => {
-      Object.assign(m, {type: type});
-      l.push(m)
-    })
-
-    newList = currentList.concat(l);
-    this.setState({monitorFullList: newList})
-    this.props.dispatch(setMonitorsList(newList))
-  }
-
-  fetchPools = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setPoolsList(resp))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   resetError = () => {
@@ -166,7 +94,7 @@ class Manager extends React.Component {
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-        this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+        this.props.poolsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
         :
         <Alert message="Asset and Partition not set" type="error" />
       }
@@ -186,5 +114,5 @@ export default connect((state) => ({
   nodes: state.f5.nodes,
   monitors: state.f5.monitors,
   pools: state.f5.pools,
-  poolsFetchStatus: state.f5.poolsFetchStatus
+  poolsLoading: state.f5.poolsLoading
 }))(Manager);

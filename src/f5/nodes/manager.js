@@ -55,21 +55,6 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchNodes = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
-
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
-  }
-
   resetError = () => {
     this.setState({ error: null})
   }
@@ -109,6 +94,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-    nodesLoading: state.f5.nodesLoading,
+  nodesLoading: state.f5.nodesLoading,
   nodes: state.f5.nodes
 }))(Manager);

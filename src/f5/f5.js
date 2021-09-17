@@ -19,6 +19,9 @@ import {
   setNodesLoading,
   setNodesList,
   setNodesFetchStatus,
+  setPoolsLoading,
+  setPoolsList,
+  setPoolsFetchStatus,
   cleanUp
 
 } from '../_store/store.f5'
@@ -62,6 +65,9 @@ class F5 extends React.Component {
       if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchNodes()
       }
+      if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+        this.fetchPools()
+      }
     }
   }
 
@@ -76,11 +82,17 @@ class F5 extends React.Component {
     }
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
       this.fetchNodes()
+      this.fetchPools()
     }
     if ( (this.props.nodesFetchStatus === 'updated') ) {
       console.log('updateeeeeeeeeeee')
       this.fetchNodes()
       this.props.dispatch(setNodesFetchStatus(''))
+    }
+    if ( (this.props.poolsFetchStatus === 'updated') ) {
+      console.log('updateeeeeeeeeeee')
+      this.fetchPools()
+      this.props.dispatch(setPoolsFetchStatus(''))
     }
   }
 
@@ -107,11 +119,10 @@ class F5 extends React.Component {
 
   fetchNodes = async () => {
     this.props.dispatch(setNodesLoading(true))
-    this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setNodesList(resp)))
+        this.setState({error: false}, () => this.props.dispatch(setNodesList(resp)))
         this.props.dispatch(setNodesLoading(false))
       },
       error => {
@@ -119,6 +130,21 @@ class F5 extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+  }
+
+  fetchPools = async () => {
+    this.props.dispatch(setPoolsLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({error: false}, () => this.props.dispatch(setPoolsList(resp)))
+        this.props.dispatch(setPoolsLoading(false))
+      },
+      error => {
+        this.setState({error: error}, () => this.props.dispatch(setPoolsLoading(false)))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
 
   resetError = () => {
@@ -196,5 +222,7 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  nodesFetchStatus: state.f5.nodesFetchStatus
+  nodesFetchStatus: state.f5.nodesFetchStatus,
+  pools: state.f5.pools,
+  poolsFetchStatus: state.f5.poolsFetchStatus
 }))(F5);

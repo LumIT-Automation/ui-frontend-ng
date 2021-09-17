@@ -165,7 +165,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
+          this.setState({loading: false, error: false, success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
           this.success()
         },
         error => {

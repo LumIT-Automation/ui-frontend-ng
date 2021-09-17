@@ -126,14 +126,6 @@ class List extends React.Component {
 
 
   render() {
-    //console.log('this.props.assetList')
-    //console.log(this.props.assetList)
-    console.log('this.props.asset')
-    console.log(this.props.asset)
-    console.log('this.props.partition')
-    console.log(this.props.partition)
-    //console.log('this.props.nodes')
-    //console.log(this.props.nodes)
     const columns = [
       {
         title: 'Name',
