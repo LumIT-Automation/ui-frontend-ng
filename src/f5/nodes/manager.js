@@ -34,9 +34,8 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-      //this.fetchNodes()
-    }
+    this.fetchNodes()
+      .then(resp => console.log(resp))
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -53,6 +52,20 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+  }
+
+  fetchNodes = async () => {
+
+    let rest = new Rest(
+      "GET",
+      resp => {
+      },
+      error => {
+
+      }
+    )
+    let response = await rest.doXHR(`f5/2/Common/nodes/`, this.props.token)
+    return response
   }
 
   resetError = () => {

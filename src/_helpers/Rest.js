@@ -114,6 +114,7 @@ class Rest {
               json = await response.json();
               if (json && json.data) {
                 this.onSuccess(json);
+                return json
               }
               else {
 

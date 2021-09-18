@@ -36,8 +36,6 @@ class Manager extends React.Component {
 
   componentDidMount() {
     console.log('manager mount')
-    this.uno()
-    /*
     console.log(this.props.monitors)
     if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
       //this.fetchMonitors()
@@ -46,7 +44,6 @@ class Manager extends React.Component {
       }
       //this.fetchMonitors()
     }
-    */
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -54,7 +51,6 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
     console.log(prevProps.partition)
     if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
       this.fetchMonitorsTypeList()
@@ -63,24 +59,10 @@ class Manager extends React.Component {
       this.fetchMonitorsTypeList()
       this.props.dispatch(setMonitorsFetchStatus(''))
     }
-    */
   }
 
   componentWillUnmount() {
     console.log('manager unmount')
-  }
-
-
-  uno = async () => {
-
-    let monitorTypes = await this.fetchMonitorsTypeList()
-
-    let monitors = await this.mapLoop(monitorTypes.data.items)
-
-    this.setState({loading: false})
-
-
-    this.props.dispatch(setMonitorsList(monitors))
   }
 
 
@@ -90,55 +72,85 @@ class Manager extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        //this.storeSetter(resp).then(this.fetchMonitors())
+        this.storeSetter(resp).then(this.fetchMonitors())
       },
       error => {
         this.setState({loading: false, error: error})
       }
     )
-    let result = await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
-    return result
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
   }
 
-  mapLoop = async types => {
-    console.log('map loop')
-
-    const promises = types.map(async type => {
-      const resp = await this.fetchMonitorsType(type)
-      resp.data.items.forEach(item => {
-        Object.assign(item, {type: type});
-      })
-      return resp
+  storeSetter = resp => {
+    return new Promise( (resolve, reject) => {
+      try {
+        this.props.dispatch(setMonitorTypes( resp ))
+        if ( this.props.monitorTypes  ) {
+          resolve(this.props.monitorTypes)
+        }
+      }
+      catch(e) {
+        reject(e)
+      }
     })
-
-    const response = await Promise.all(promises)
-    //console.log(response)
-
-    let list = []
-    response.forEach(r => {
-      r.data.items.forEach(m => {
-       list.push(m)
-      })
-    })
-    return list
   }
+
+  fetchMonitors =  () => {
+    let blank = []
+    this.setState({monitorFullList: []}, () => this.props.dispatch(setMonitorsList(blank)))
+
+      this.myAsyncLoopFunction()
+
+  }
+
+  myAsyncLoopFunction = async () => {
+  const allAsyncResults = []
+  let list = []
+
+  for (const item of this.props.monitorTypes) {
+    const asyncResult = await this.fetchMonitorsType(item)
+    list = []
+    asyncResult.data.items.forEach(m => {
+      Object.assign(m, {type: item});
+      list.push(m)
+      allAsyncResults.push(m)
+    })
+  }
+  this.setState({loading: false, monitorFullList: allAsyncResults}, () => this.props.dispatch(setMonitorsList(allAsyncResults)))
+}
 
   fetchMonitorsType = async (type) => {
     this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
         //this.setState({loading: false}, () => this.addToList(resp, type))
-        //r = resp
+        r = resp
       },
       error => {
         this.setState({loading: false, error: error})
       }
     )
-    let response = await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-    return response
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+    return r
   }
+/*
+  addToList = (resp, type) => {
+    let mon = Object.assign([], resp.data.items);
+    let newList = []
+    let currentList = Object.assign([], this.state.monitorFullList);
+    let l = []
 
+    mon.forEach(m => {
+      Object.assign(m, {type: type});
+      l.push(m)
+    })
+
+    newList = currentList.concat(l);
+    this.setState({monitorFullList: newList}, () => this.props.dispatch(setMonitorsList(newList)))
+  }
+*/
   resetError = () => {
     this.setState({ error: null})
   }
