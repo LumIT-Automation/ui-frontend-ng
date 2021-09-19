@@ -22,6 +22,10 @@ import {
   setNodes,
   setNodesFetchStatus,
 
+  setMonitorsLoading,
+  setMonitors,
+  setMonitorsFetchStatus,
+
   setPoolsLoading,
   setPools,
   setPoolsFetchStatus,
@@ -73,6 +77,9 @@ class F5 extends React.Component {
       if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchNodes()
       }
+      if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+        this.fetchMonitors()
+      }
       if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchPools()
       }
@@ -93,12 +100,17 @@ class F5 extends React.Component {
     }
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
       this.fetchNodes()
+      this.fetchMonitors()
       this.fetchPools()
       this.fetchVirtualServers()
     }
     if ( (this.props.nodesFetchStatus === 'updated') ) {
       this.fetchNodes()
       this.props.dispatch(setNodesFetchStatus(''))
+    }
+    if ( (this.props.monitorsFetchStatus === 'updated') ) {
+      this.fetchMonitors()
+      this.props.dispatch(setMonitorsFetchStatus(''))
     }
     if ( (this.props.poolsFetchStatus === 'updated') ) {
       this.fetchPools()
@@ -120,12 +132,10 @@ class F5 extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setAssetList( resp ))
+        this.setState({loading: false}, () => this.props.dispatch(setAssetList( resp )))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -144,6 +154,74 @@ class F5 extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+  }
+
+  fetchMonitors = async () => {
+    this.props.dispatch(setMonitorsLoading(true))
+
+    let monitorTypes = await this.fetchMonitorsTypeList()
+
+    let monitors = await this.mapLoop(monitorTypes.data.items)
+
+    this.props.dispatch(setMonitorsLoading(false))
+    //console.log(monitors)
+    this.props.dispatch(setMonitors(monitors))
+  }
+
+
+  fetchMonitorsTypeList = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
+    return r
+  }
+
+  mapLoop = async types => {
+    console.log('map loop')
+
+    const promises = types.map(async type => {
+      const resp = await this.fetchMonitorsByType(type)
+      resp.data.items.forEach(item => {
+        Object.assign(item, {type: type});
+      })
+      return resp
+    })
+
+    const response = await Promise.all(promises)
+    //console.log(response)
+
+    let list = []
+    response.forEach(r => {
+      r.data.items.forEach(m => {
+       list.push(m)
+      })
+    })
+    return list
+  }
+
+  fetchMonitorsByType = async (type) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = resp
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+    return r
   }
 
   fetchPools = async () => {

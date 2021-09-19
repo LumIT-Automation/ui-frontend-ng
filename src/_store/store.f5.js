@@ -46,17 +46,10 @@ const f5Slice = createSlice({
           state.nodesFetchStatus = action.payload
         },
 
-        setMonitorTypesLoading: (state, action) => {
-          state.monitorTypesLoading = action.payload.data.items
-        },
-        setMonitorTypes: (state, action) => {
-          state.monitorTypes = action.payload.data.items
-        },
-
         setMonitorsLoading: (state, action) => {
           state.monitorsLoading = action.payload
         },
-        setMonitorsList: (state, action) => {
+        setMonitors: (state, action) => {
           state.monitors = action.payload
         },
         setMonitorsFetchStatus: (state, action) => {
@@ -116,9 +109,6 @@ const f5Slice = createSlice({
           state.nodes = null
           state.nodesFetchStatus = null
 
-          state.monitorTypes = null
-          state.monitorsTypeLoading
-
           state.monitorsLoading= null
           state.monitors = null
           state.monitorsFetchStatus = null
@@ -163,11 +153,8 @@ export const {
   setNodes,
   setNodesFetchStatus,
 
-  setMonitorsTypeLoading,
-  setMonitorTypes,
-
   setMonitorsLoading,
-  setMonitorsList,
+  setMonitors,
   setMonitorsFetchStatus,
 
   setPoolsLoading,

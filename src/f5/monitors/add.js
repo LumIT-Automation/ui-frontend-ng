@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
+import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -146,8 +146,7 @@ class Add extends React.Component {
           this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, success: false, error: error}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.body.monitorType}/`, this.props.token, body)

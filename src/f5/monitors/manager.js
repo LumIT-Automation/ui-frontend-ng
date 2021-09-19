@@ -3,8 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setMonitorTypes, setMonitorsList, setMonitorsFetchStatus } from '../../_store/store.f5'
-
 
 import List from './list'
 import Add from './add'
@@ -35,18 +33,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('manager mount')
-    this.uno()
-    /*
-    console.log(this.props.monitors)
-    if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-      //this.fetchMonitors()
-      if (!this.props.monitors) {
-        this.fetchMonitorsTypeList()
-      }
-      //this.fetchMonitors()
-    }
-    */
+
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -54,89 +41,10 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
-    console.log(prevProps.partition)
-    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
-      this.fetchMonitorsTypeList()
-    }
-    if (this.props.monitorsFetchStatus === 'updated') {
-      this.fetchMonitorsTypeList()
-      this.props.dispatch(setMonitorsFetchStatus(''))
-    }
-    */
+
   }
 
   componentWillUnmount() {
-    console.log('manager unmount')
-  }
-
-
-  uno = async () => {
-
-    let monitorTypes = await this.fetchMonitorsTypeList()
-
-    let monitors = await this.mapLoop(monitorTypes.data.items)
-
-    this.setState({loading: false})
-
-
-    this.props.dispatch(setMonitorsList(monitors))
-  }
-
-
-  fetchMonitorsTypeList = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        //this.storeSetter(resp).then(this.fetchMonitors())
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    let result = await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
-    return result
-  }
-
-  mapLoop = async types => {
-    console.log('map loop')
-
-    const promises = types.map(async type => {
-      const resp = await this.fetchMonitorsType(type)
-      resp.data.items.forEach(item => {
-        Object.assign(item, {type: type});
-      })
-      return resp
-    })
-
-    const response = await Promise.all(promises)
-    //console.log(response)
-
-    let list = []
-    response.forEach(r => {
-      r.data.items.forEach(m => {
-       list.push(m)
-      })
-    })
-    return list
-  }
-
-  fetchMonitorsType = async (type) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        //this.setState({loading: false}, () => this.addToList(resp, type))
-        //r = resp
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    let response = await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-    return response
   }
 
   resetError = () => {
@@ -161,7 +69,7 @@ class Manager extends React.Component {
         }
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          this.props.monitorsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -179,7 +87,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorTypes: state.f5.monitorTypes,
   monitors: state.f5.monitors,
-  monitorsFetchStatus: state.f5.monitorsFetchStatus
+  monitorsLoading: state.f5.monitorsLoading
 }))(Manager);
