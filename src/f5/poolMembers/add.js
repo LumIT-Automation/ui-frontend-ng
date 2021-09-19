@@ -334,8 +334,8 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button style={{marginLeft: '400px'}} type="primary" onClick={() => this.details()}>
-            Add Pool
+          <Button style={{marginLeft: '200px'}} type="primary" onClick={() => this.details()}>
+            Add Member
           </Button>
 
         <Modal

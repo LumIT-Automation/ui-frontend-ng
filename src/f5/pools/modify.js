@@ -474,6 +474,30 @@ class Modify extends React.Component {
             </Select>
           </Form.Item>
 
+          {this.state.message ?
+            <Form.Item
+              wrapperCol={ {offset: 8, span: 16 }}
+              name="message"
+              key="message"
+            >
+              <p style={{color: 'red'}}>{this.state.message}</p>
+            </Form.Item>
+
+            : null
+          }
+
+          <Form.Item
+            wrapperCol={ {offset: 8, span: 16 }}
+            name="button"
+            key="button"
+          >
+            <Button type="primary" onClick={() => this.modifyPool()}>
+              Modify Pool
+            </Button>
+          </Form.Item>
+
+          <Divider/>
+
           <Form.Item
             label="Members"
             name="memebers"
@@ -484,30 +508,10 @@ class Modify extends React.Component {
           >
             <PoolMembers obj={this.props.obj}/>
           </Form.Item>
-            <Divider/>
 
 
-            {this.state.message ?
-              <Form.Item
-                wrapperCol={ {offset: 8, span: 16 }}
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
 
-              : null
-            }
 
-            <Form.Item
-              wrapperCol={ {offset: 8, span: 16 }}
-              name="button"
-              key="button"
-            >
-              <Button type="primary" onClick={() => this.modifyPool()}>
-                Modify Pool
-              </Button>
-            </Form.Item>
 
           </Form>
         }
