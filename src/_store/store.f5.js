@@ -69,6 +69,16 @@ const f5Slice = createSlice({
           state.poolsFetchStatus = action.payload
         },
 
+        setPoolMembersLoading: (state, action) => {
+          state.poolMembersLoading = action.payload
+        },
+        setPoolMembers: (state, action) => {
+          state.poolMembers = action.payload.data.items
+        },
+        setPoolMembersFetchStatus: (state, action) => {
+          state.poolMembersFetchStatus = action.payload
+        },
+
         setProfileTypes: (state, action) => {
           state.profileTypes = action.payload
         },
@@ -103,8 +113,8 @@ const f5Slice = createSlice({
           state.keys = action.payload.data.items
         },
 
-        setPoolList: (state, action) => {
-          state.currentPoolList = action.payload.data.items
+        setCurrentPools: (state, action) => {
+          state.currentPools = action.payload.data.items
           //state.currentPoolList = undefined
         },
 
@@ -124,6 +134,10 @@ const f5Slice = createSlice({
           state.pools = null
           state.poolsFetchStatus = null
 
+          state.poolMembersLoading = null
+          state.poolMembers = null
+          state.poolMembersFetchStatus = null
+
           state.profileTypes = null
           state.profilesLoading = null
           state.profiles = null
@@ -136,7 +150,7 @@ const f5Slice = createSlice({
           state.certificates = null
           state.keys = null
 
-          state.currentPoolList = null
+          state.currentPools = null
         },
 
         cleanUp: (state, action) => {
@@ -168,8 +182,12 @@ export const {
 
   setPoolsLoading,
   setPools,
-  setPoolList,
+  setCurrentPools,
   setPoolsFetchStatus,
+
+  setPoolMembersLoading,
+  setPoolMembers,
+  setPoolMembersFetchStatus,
 
   setProfileTypes,
   setProfilesLoading,

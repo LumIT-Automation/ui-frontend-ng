@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { setEnvironment, selectAsset, setPartitions, selectPartition, setPoolList, resetObjects } from '../_store/store.f5'
+import { setEnvironment, selectAsset, setPartitions, selectPartition, resetObjects } from '../_store/store.f5'
 import Error from '../error'
 
 import "antd/dist/antd.css"

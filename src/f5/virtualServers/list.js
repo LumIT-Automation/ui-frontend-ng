@@ -169,6 +169,27 @@ class List extends React.Component {
        ...this.getColumnSearchProps('pool'),
       },
       {
+        title: 'Profiles',
+        align: 'center',
+        dataIndex: 'profiles',
+        key: 'profiles',
+       ...this.getColumnSearchProps('profiles'),
+      },
+      {
+        title: 'Policies',
+        align: 'center',
+        dataIndex: 'policies',
+        key: 'policies',
+       ...this.getColumnSearchProps('policies'),
+      },
+      {
+        title: 'iRules',
+        align: 'center',
+        dataIndex: 'irules',
+        key: 'irules',
+       ...this.getColumnSearchProps('irules'),
+      },
+      {
         title: 'sourceAddressTranslation',
         align: 'center',
         dataIndex: ['sourceAddressTranslation', 'type'],

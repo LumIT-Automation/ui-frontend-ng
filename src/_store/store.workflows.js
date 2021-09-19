@@ -7,7 +7,6 @@ It has a name, an initial state, and several methods that set the state,
   selectAsset
   setPartitions
   selectPartition
-  setPoolList
   cleanUp
 Methods (called actions) must be exported.
 */

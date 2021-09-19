@@ -124,6 +124,8 @@ class PoolsTable extends React.Component {
 
 
   render() {
+    console.log(this.props.pools)
+    console.log(this.props.currentPools)
 
     const columns = [
       {
@@ -167,7 +169,7 @@ class PoolsTable extends React.Component {
     return (
         <Table
           columns={columns}
-          dataSource={this.props.currentPoolList}
+          dataSource={this.props.currentPools}
           bordered
           rowKey="name"
           pagination={{ pageSize: 10 }}
@@ -179,10 +181,11 @@ class PoolsTable extends React.Component {
 
 
 export default connect((state) => ({
-  currentPoolList: state.f5.currentPoolList,
+  currentPools: state.f5.currentPools,
   token: state.ssoAuth.token,
   assetList: state.f5.assetList,
   asset: state.f5.asset,
   assetPartitions: state.f5.assetPartitions,
   partition: state.f5.partition,
+  pools: state.f5.pools
 }))(PoolsTable);

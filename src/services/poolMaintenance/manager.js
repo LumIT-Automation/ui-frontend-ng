@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../../_helpers/Rest";
-import { selectAsset, setPartitions, selectPartition, setPoolList } from '../../_store/store.f5'
+import { selectAsset, setPartitions, selectPartition, setCurrentPools } from '../../_store/store.f5'
 import PoolsTable from './poolsTable'
 import Error from '../../error'
 
@@ -81,7 +81,7 @@ class Container extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setPoolList( resp ))
+        this.props.dispatch(setCurrentPools( resp ))
       },
       error => {
         this.setState({loading: false})
@@ -97,6 +97,7 @@ class Container extends React.Component {
 
 
   render() {
+    console.log(this.props.currentPools)
     return (
         <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -118,4 +119,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   assetPartitions: state.f5.assetPartitions,
   partition: state.f5.partition,
+  currentPools: state.f5.currentPools
 }))(Container);
