@@ -5,6 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import  { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -34,6 +35,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
+    if (this.props.obj) {
+      this.props.dispatch(setPoolMembersLoading(true))
+      this.fetchPoolMembers(this.props.obj.name)
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -41,6 +47,10 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update')
+    if (this.props.obj) {
+      console.log(this.props.obj.name)
+    }
   }
 
   componentWillUnmount() {
@@ -50,8 +60,31 @@ class Manager extends React.Component {
     this.setState({ error: null})
   }
 
+  fetchPoolMembers = async (name) => {
+    console.log('fetchPollMembers')
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        //this.setFetchedMembers(resp.data.items)
+        r = resp
+        this.props.dispatch(setPoolMembersLoading(false))
+        this.setState({error: false}, () => this.props.dispatch(setPoolMembers(resp)))
+      },
+      error => {
+        console.error(error)
+        this.setState({error: error})
+        this.props.dispatch(setPoolMembersLoading(false))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
+    return r
+  }
+
 
   render() {
+    console.log('manager poolMebers')
+    console.log(this.props.obj)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -68,7 +101,7 @@ class Manager extends React.Component {
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-        this.props.poolsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+        this.props.poolMembersLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List obj={this.props.obj}/>
         :
         <Alert message="Asset and Partition not set" type="error" />
       }
@@ -85,5 +118,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  poolsLoading: state.f5.poolsLoading
+  poolMembersLoading: state.f5.poolMembersLoading
 }))(Manager);

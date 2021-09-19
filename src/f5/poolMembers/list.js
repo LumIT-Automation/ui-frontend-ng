@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import Modify from './modify'
+
 import Delete from './delete'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
@@ -120,79 +120,150 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+
+  enableMember = async (member) => {
+    const body = { "data": { "state": "user-up", "session":"user-enabled" } }
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+      },
+      error => {
+        console.error(error)
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body)
+  }
+
+  disableMember = async (member) => {
+    const body = {"data":{"state":"user-up", "session":"user-disabled"}}
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+      },
+      error => {
+        console.error(error)
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+  }
+
+  forceOfflineMember = async (member) => {
+    const body = {"data":{"state":"user-down", "session":"user-disabled"}}
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+      },
+      error => {
+        console.error(error)
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
 
 
   render() {
+    console.log('members list')
+    console.log(this.props.obj)
 
     const columns = [
       {
-        title: 'Name',
+        title: 'Member',
         align: 'center',
         dataIndex: 'name',
         key: 'name',
-        ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'Monitor',
+        title: 'Address',
         align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-       ...this.getColumnSearchProps('monitor'),
+        dataIndex: 'address',
+        key: 'address',
       },
       {
-        title: 'LoadBalancingMode',
+        title: 'State',
         align: 'center',
-        dataIndex: 'loadBalancingMode',
-        key: 'loadBalancingMode',
-       ...this.getColumnSearchProps('loadBalancingMode'),
+        dataIndex: 'state',
+        key: 'state',
       },
       {
-        title: 'Details and modify',
+        title: 'Session',
         align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
+        dataIndex: 'session',
+        key: 'session',
+      },
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        render(name, record) {
+          return {
+            props: {
+              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+            },
+            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+          };
+        }
+      },
+      {
+        title: 'Enable',
+        align: 'center',
+        dataIndex: 'enable',
+        key: 'enable',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
+            <Button type="primary" onClick={() => this.enableMember(obj)}>
+              Enable
+            </Button>
           </Space>
         ),
       },
       {
-        title: 'Delete',
+        title: 'Disable',
         align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
+        dataIndex: 'disable',
+        key: 'disable',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
+            <Button type="primary" onClick={() => this.disableMember(obj)}>
+              Disable
+            </Button>
           </Space>
         ),
-      }
+      },
+      {
+        title: 'Force Offline',
+        align: 'center',
+        dataIndex: 'foff',
+        key: 'foff',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => this.forceOfflineMember(obj)}>
+              Force Offline
+            </Button>
+          </Space>
+        ),
+      },
     ];
 
-
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Table
-          columns={columns}
-          dataSource={this.props.pools}
-          bordered
-          rowKey="name"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
+      <Space>
+          <Table
+            dataSource={this.props.poolMembers}
+            columns={columns}
+            pagination={false}
+            rowKey="name"
+            //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
+          />
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
 
@@ -205,5 +276,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  pools: state.f5.pools
+  poolMembers: state.f5.poolMembers
 }))(List);

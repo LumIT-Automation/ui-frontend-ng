@@ -139,7 +139,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.props.profileTypes)
     return (
       <Space direction='vertical'>
 

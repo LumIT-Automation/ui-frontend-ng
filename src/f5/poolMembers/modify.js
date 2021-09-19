@@ -4,8 +4,6 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import PoolMembers from '../poolMembers/manager'
-
 import { setPools, setPoolsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Table, Divider } from 'antd';
@@ -406,7 +404,6 @@ class Modify extends React.Component {
     ];
 
     return (
-
       <Space direction='vertical'>
 
         <Button type="primary" onClick={() => this.details()}>
@@ -474,7 +471,13 @@ class Modify extends React.Component {
             </Select>
           </Form.Item>
 
-          <PoolMembers obj={this.props.obj}/>
+            <Table
+              dataSource={this.state.renderedMembers}
+              columns={columns}
+              pagination={false}
+              rowKey="name"
+              //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
+            />
 
             <Divider/>
 

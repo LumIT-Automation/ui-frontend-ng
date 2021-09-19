@@ -4,8 +4,6 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-
-
 import List from './list'
 import Add from './add'
 
