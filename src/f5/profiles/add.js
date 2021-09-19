@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
+import { setProfilesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -114,8 +114,7 @@ class Add extends React.Component {
           this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setProfilesFetchStatus('updated')))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.state.body.profileType}/`, this.props.token, body)
@@ -140,6 +139,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.props.profileTypes)
     return (
       <Space direction='vertical'>
 
@@ -194,7 +194,10 @@ class Add extends React.Component {
                   return (
                     <Select.Option  key={i} value={m}>{m}</Select.Option>
                   )
-              }) : null}
+                })
+                :
+                null
+                }
               </Select>
             </Form.Item>
 

@@ -46,6 +46,9 @@ const f5Slice = createSlice({
           state.nodesFetchStatus = action.payload
         },
 
+        setMonitorTypes: (state, action) => {
+          state.monitorTypes = action.payload
+        },
         setMonitorsLoading: (state, action) => {
           state.monitorsLoading = action.payload
         },
@@ -67,9 +70,12 @@ const f5Slice = createSlice({
         },
 
         setProfileTypes: (state, action) => {
-          state.profileTypes = action.payload.data.items
+          state.profileTypes = action.payload
         },
-        setProfilesList: (state, action) => {
+        setProfilesLoading: (state, action) => {
+          state.profilesLoading = action.payload
+        },
+        setProfiles: (state, action) => {
           state.profiles = action.payload
         },
         setProfilesFetchStatus: (state, action) => {
@@ -109,6 +115,7 @@ const f5Slice = createSlice({
           state.nodes = null
           state.nodesFetchStatus = null
 
+          state.monitorTypes= null
           state.monitorsLoading= null
           state.monitors = null
           state.monitorsFetchStatus = null
@@ -118,6 +125,7 @@ const f5Slice = createSlice({
           state.poolsFetchStatus = null
 
           state.profileTypes = null
+          state.profilesLoading = null
           state.profiles = null
           state.profilesFetchStatus = null
 
@@ -153,6 +161,7 @@ export const {
   setNodes,
   setNodesFetchStatus,
 
+  setMonitorTypes,
   setMonitorsLoading,
   setMonitors,
   setMonitorsFetchStatus,
@@ -163,7 +172,8 @@ export const {
   setPoolsFetchStatus,
 
   setProfileTypes,
-  setProfilesList,
+  setProfilesLoading,
+  setProfiles,
   setProfilesFetchStatus,
 
   setVirtualServersLoading,

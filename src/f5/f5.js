@@ -9,7 +9,6 @@ import Error from '../error'
 import AssetSelector from './assetSelector'
 import Nodes from './nodes/manager'
 import Monitors from './monitors/manager'
-import MonitorsOld from './monitorsOld/manager'
 import Pools from './pools/manager'
 import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
@@ -22,6 +21,7 @@ import {
   setNodes,
   setNodesFetchStatus,
 
+  setMonitorTypes,
   setMonitorsLoading,
   setMonitors,
   setMonitorsFetchStatus,
@@ -29,6 +29,11 @@ import {
   setPoolsLoading,
   setPools,
   setPoolsFetchStatus,
+
+  setProfileTypes,
+  setProfilesLoading,
+  setProfiles,
+  setProfilesFetchStatus,
 
   setVirtualServersLoading,
   setVirtualServers,
@@ -83,6 +88,9 @@ class F5 extends React.Component {
       if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchPools()
       }
+      if (this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
+        this.fetchProfiles()
+      }
       if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchVirtualServers()
       }
@@ -102,6 +110,7 @@ class F5 extends React.Component {
       this.fetchNodes()
       this.fetchMonitors()
       this.fetchPools()
+      this.fetchProfiles()
       this.fetchVirtualServers()
     }
     if ( (this.props.nodesFetchStatus === 'updated') ) {
@@ -115,6 +124,10 @@ class F5 extends React.Component {
     if ( (this.props.poolsFetchStatus === 'updated') ) {
       this.fetchPools()
       this.props.dispatch(setPoolsFetchStatus(''))
+    }
+    if ( (this.props.profilesFetchStatus === 'updated') ) {
+      this.fetchProfiles()
+      this.props.dispatch(setProfilesFetchStatus(''))
     }
     if ( (this.props.virtualServersFetchStatus === 'updated') ) {
       this.fetchVirtualServers()
@@ -156,18 +169,17 @@ class F5 extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
   }
 
+
   fetchMonitors = async () => {
     this.props.dispatch(setMonitorsLoading(true))
 
     let monitorTypes = await this.fetchMonitorsTypeList()
+    this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
 
-    let monitors = await this.mapLoop(monitorTypes.data.items)
-
+    let monitors = await this.monitorsLoop(monitorTypes.data.items)
     this.props.dispatch(setMonitorsLoading(false))
-    //console.log(monitors)
     this.props.dispatch(setMonitors(monitors))
   }
-
 
   fetchMonitorsTypeList = async () => {
     let r
@@ -185,8 +197,7 @@ class F5 extends React.Component {
     return r
   }
 
-  mapLoop = async types => {
-    console.log('map loop')
+  monitorsLoop = async types => {
 
     const promises = types.map(async type => {
       const resp = await this.fetchMonitorsByType(type)
@@ -224,6 +235,7 @@ class F5 extends React.Component {
     return r
   }
 
+
   fetchPools = async () => {
     this.props.dispatch(setPoolsLoading(true))
     let rest = new Rest(
@@ -238,6 +250,76 @@ class F5 extends React.Component {
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
   }
+
+
+  fetchProfiles = async () => {
+    this.props.dispatch(setProfilesLoading(true))
+
+    let profileTypes = await this.fetchProfilesTypeList()
+    this.props.dispatch(setProfileTypes(profileTypes.data.items))
+
+    let profiles = await this.profilesLoop(profileTypes.data.items)
+    this.props.dispatch(setProfilesLoading(false))
+    this.props.dispatch(setProfiles(profiles))
+  }
+
+  fetchProfilesTypeList = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
+    return r
+  }
+
+  profilesLoop = async types => {
+
+    const promises = types.map(async type => {
+      const resp = await this.fetchProfilesByType(type)
+      resp.data.items.forEach(item => {
+        Object.assign(item, {type: type});
+      })
+      return resp
+    })
+
+    const response = await Promise.all(promises)
+    console.log(response)
+
+    let list = []
+    response.forEach(r => {
+      r.data.items.forEach(m => {
+       list.push(m)
+      })
+    })
+    //console.log(list)
+
+    return list
+  }
+
+  fetchProfilesByType = async (type) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = resp
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${type}/`, this.props.token)
+    return r
+  }
+
+
 
   fetchVirtualServers = async () => {
     this.props.dispatch(setVirtualServersLoading(true))
@@ -276,12 +358,6 @@ class F5 extends React.Component {
             { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
               <TabPane tab="Monitors" key="Monitors">
                 <Monitors/>
-              </TabPane>
-              : null
-            }
-            { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
-              <TabPane tab="Monitors Old" key="MonitorsOld">
-                <MonitorsOld/>
               </TabPane>
               : null
             }
@@ -326,12 +402,19 @@ export default connect((state) => ({
   assetList: state.f5.assetList,
   asset: state.f5.asset,
   partition: state.f5.partition,
+
   nodes: state.f5.nodes,
   nodesFetchStatus: state.f5.nodesFetchStatus,
+
   monitors: state.f5.monitors,
   monitorsFetchStatus: state.f5.monitorsFetchStatus,
+
   pools: state.f5.pools,
   poolsFetchStatus: state.f5.poolsFetchStatus,
+
+  profiles: state.f5.profiles,
+  profilesFetchStatus: state.f5.profilesFetchStatus,
+
   virtualServers: state.f5.virtualServers,
   virtualServersFetchStatus: state.f5.virtualServersFetchStatus
 }))(F5);

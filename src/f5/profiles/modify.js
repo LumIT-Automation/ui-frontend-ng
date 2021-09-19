@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setProfilesList } from '../../_store/store.f5'
+import { setProfilesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -117,12 +117,11 @@ class Modify extends React.Component {
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState({loading: false, success: true}, () => this.fetchProfiles())
+          this.setState( {loading: false, success: true}, () => this.props.dispatch(setProfilesFetchStatus('updated')) )
           this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setProfilesFetchStatus('updated')))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/fastl4/${this.props.obj.name}/`, this.props.token, body )
@@ -131,22 +130,6 @@ class Modify extends React.Component {
 
   resetError = () => {
     this.setState({ error: null})
-  }
-
-  fetchProfiles = async () => {
-
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setProfilesList(resp)))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/fastl4/`, this.props.token)
   }
 
   success = () => {
@@ -160,8 +143,6 @@ class Modify extends React.Component {
       visible: false,
     })
   }
-
-
 
 
   render() {

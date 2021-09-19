@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
+import { setProfilesFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -50,8 +50,7 @@ class Delete extends React.Component {
         this.setState( {loading: false, success: true}, () => this.props.dispatch(setProfilesFetchStatus('updated')) )
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setProfilesFetchStatus('updated')))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )

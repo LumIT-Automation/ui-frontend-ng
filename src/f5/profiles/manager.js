@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setProfileTypes, setProfilesList, setProfilesFetchStatus } from '../../_store/store.f5'
+
 
 
 import List from './list'
@@ -35,9 +35,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any ) && this.props.partition ) {
-      this.fetchProfilesTypeList()
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,13 +42,6 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
-      this.fetchProfilesTypeList()
-    }
-    if (this.props.profilesFetchStatus === 'updated') {
-      this.fetchProfilesTypeList()
-      this.props.dispatch(setProfilesFetchStatus(''))
-    }
   }
 
   componentWillUnmount() {
@@ -71,58 +61,6 @@ class Manager extends React.Component {
     })
   }
 
-  fetchProfilesTypeList = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.storeSetter(resp).then(this.fetchProfiles())
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
-  }
-
-  fetchProfiles =  () => {
-    let blank = []
-    this.props.dispatch(setProfilesList(blank))
-    this.setState({profileFullList: []})
-    this.props.profileTypes.forEach(type => {
-      this.fetchProfilesType(type)
-    })
-  }
-
-  fetchProfilesType = async (type) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.addToList(resp, type))
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${type}/`, this.props.token)
-  }
-
-  addToList = (resp, type) => {
-    let mon = Object.assign([], resp.data.items);
-    let newList = []
-    let currentList = Object.assign([], this.state.profileFullList);
-    let l = []
-
-    mon.forEach(m => {
-      Object.assign(m, {type: type});
-      l.push(m)
-    })
-
-    newList = currentList.concat(l);
-    this.setState({profileFullList: newList}, () => this.props.dispatch(setProfilesList(newList)))
-  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -146,7 +84,7 @@ class Manager extends React.Component {
         }
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          this.props.profilesLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -164,7 +102,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  profileTypes: state.f5.profileTypes,
   profiles: state.f5.profiles,
-  profilesFetchStatus: state.f5.profilesFetchStatus
+  profilesLoading: state.f5.profilesLoading
 }))(Manager);
