@@ -262,6 +262,7 @@ class List extends React.Component {
             columns={columns}
             pagination={false}
             rowKey="name"
+            style={{marginLeft: '200px'}}
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}

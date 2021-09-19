@@ -474,8 +474,16 @@ class Modify extends React.Component {
             </Select>
           </Form.Item>
 
-          <PoolMembers obj={this.props.obj}/>
-
+          <Form.Item
+            label="Members"
+            name="memebers"
+            key="members"
+            noStyle={true}
+            validateStatus={this.state.errors.monitorError}
+            help={this.state.errors.monitorError ? 'Please select monitor' : null }
+          >
+            <PoolMembers obj={this.props.obj}/>
+          </Form.Item>
             <Divider/>
 
 
