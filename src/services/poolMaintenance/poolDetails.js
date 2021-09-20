@@ -127,7 +127,6 @@ class PoolDetails extends React.Component {
         this.setFetchedMembers(resp.data.items)
       },
       error => {
-        console.error(error)
         this.setState({error: error})
       }
     )
@@ -211,7 +210,6 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        console.error(error)
         this.setState({error: error})
       }
     )
@@ -226,7 +224,6 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        console.error(error)
         this.setState({error: error})
       }
     )
@@ -241,7 +238,6 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        console.error(error)
         this.setState({error: error})
       }
     )
@@ -304,7 +300,6 @@ class PoolDetails extends React.Component {
         this.refreshStats(member, resp.data)
       },
       error => {
-        console.error(error)
         this.setState({error: error})
       }
     )

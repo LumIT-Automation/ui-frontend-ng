@@ -136,7 +136,6 @@ class F5 extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('f5 unmount')
   }
 
 
@@ -208,7 +207,6 @@ class F5 extends React.Component {
     })
 
     const response = await Promise.all(promises)
-    //console.log(response)
 
     let list = []
     response.forEach(r => {
@@ -290,7 +288,6 @@ class F5 extends React.Component {
     })
 
     const response = await Promise.all(promises)
-    console.log(response)
 
     let list = []
     response.forEach(r => {
@@ -298,7 +295,6 @@ class F5 extends React.Component {
        list.push(m)
       })
     })
-    //console.log(list)
 
     return list
   }

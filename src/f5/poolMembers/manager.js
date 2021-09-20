@@ -35,7 +35,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
     if (this.props.obj) {
       this.props.dispatch(setPoolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
@@ -47,8 +46,8 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update')
     if (this.props.poolMembersFetchStatus  === 'updated') {
+      this.props.dispatch(setPoolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
       this.props.dispatch(setPoolMembersFetchStatus(''))
     }
@@ -63,34 +62,26 @@ class Manager extends React.Component {
 
 
   fetchPoolMembers = async (name) => {
-    console.log('fetchPollMembers')
-    let r
     let rest = new Rest(
       "GET",
       resp => {
-        //this.setFetchedMembers(resp.data.items)
-        r = resp
         this.props.dispatch(setPoolMembersLoading(false))
         this.setState({error: false}, () => this.props.dispatch(setPoolMembers(resp)))
       },
       error => {
-        r = error
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
-    return r
   }
 
 
   render() {
-    console.log('manager poolMebers')
-    console.log(this.props.obj)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.authorizations && (this.props.authorizations.pools_post || this.props.authorizations.any) ?
+         this.props.authorizations && (this.props.authorizations.poolMembers_post || this.props.authorizations.any) ?
           <div>
             <br/>
             <Add obj={this.props.obj}/>

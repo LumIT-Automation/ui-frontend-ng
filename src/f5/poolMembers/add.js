@@ -62,7 +62,6 @@ class Add extends React.Component {
   }
 
   setMemberName = (name) => {
-    console.log(name)
     let errors = Object.assign({}, this.state.errors);
     if (name) {
       this.setState({name: name, errors: errors})
@@ -77,7 +76,6 @@ class Add extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     let port = e.target.value
-    console.log(port)
     if (isNaN(port)) {
       errors.memberPortError = 'error'
     }
@@ -150,8 +148,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.name)
-    console.log(this.state.port)
     return (
       <Space direction='vertical'>
 
@@ -210,10 +206,6 @@ class Add extends React.Component {
               >
                 <Input placeholder='port' onBlur={e => this.setMemberPort(e)}/>
               </Form.Item>
-
-                )
-              })
-            }
 
             {this.state.message ?
               <Form.Item

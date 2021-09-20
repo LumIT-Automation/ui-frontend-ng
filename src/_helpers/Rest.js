@@ -67,7 +67,6 @@ class Rest {
               }
               else {
                 this.onError(
-                  //console.error(response)
                   {
                     message: "No data received"
                   }
@@ -88,7 +87,6 @@ class Rest {
 
           catch (error) {
             this.onError(
-              //console.error(response)
               {
                 message: error.message,
                 name: error.name,
@@ -126,7 +124,6 @@ class Rest {
             }
             else {
               json = await response.json();
-              //console.error(response)
 
               this.onError(
                 {
@@ -141,7 +138,6 @@ class Rest {
           }
 
           catch (error) {
-            //console.error(error)
             this.onError(
               {
                 message: error.message,
@@ -172,7 +168,7 @@ class Rest {
             else {
               json = await response.json();
               //this.onError("HTTP " + response.status + " received.");
-              //console.error(response)
+
               this.onError(
                 {
                   status: response.status,
@@ -186,7 +182,6 @@ class Rest {
           }
 
           catch (error) {
-            //console.error(error)
             this.onError(
               {
                 message: error.message,
@@ -213,7 +208,6 @@ class Rest {
               this.onSuccess(response);
             }
             else {
-              //console.log('response not ok')
               this.onError(
                 {
                   status: response.status,
@@ -229,7 +223,6 @@ class Rest {
 
           catch (error) {
             this.onError(
-              //console.error(response)
               {
                 message: error.message,
                 name: error.name,
@@ -270,7 +263,6 @@ class Rest {
 
           catch (error) {
             this.onError(
-              //console.error(response)
               {
                 message: error.message,
                 name: error.name,

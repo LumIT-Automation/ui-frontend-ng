@@ -439,7 +439,6 @@ class CreateF5Service extends React.Component {
         this.success()
       },
       error => {
-        console.error(error)
         this.setState({loading: false, success: false})
         this.setState({error: error})
       }

@@ -50,7 +50,7 @@ class Delete extends React.Component {
         this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
       },
       error => {
-        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
+        this.setState({error: error}, () => this.props.dispatch(setPoolsLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token )

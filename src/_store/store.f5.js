@@ -119,7 +119,6 @@ const f5Slice = createSlice({
         },
 
         resetObjects: (state, action) => {
-          console.log('reset')
 
           state.nodesLoading= null
           state.nodes = null

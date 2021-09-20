@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolsFetchStatus } from '../../_store/store.f5'
+import { setPoolMembersFetchStatus, setPoolMembersLoading } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -42,18 +42,19 @@ class Delete extends React.Component {
   }
 
 
-  deletePool = async pool => {
-    this.setState({loading: true})
+  deletePoolMember = async pool => {
+    this.props.dispatch(setPoolMembersLoading(true))
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
+        this.setState({success: true, error: false}, () => this.props.dispatch(setPoolMembersFetchStatus('updated')))
+        this.props.dispatch(setPoolMembersLoading(false))
       },
       error => {
-        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.poolName}/member/${this.props.obj.name}/`, this.props.token )
   }
 
   resetError = () => {
@@ -69,12 +70,11 @@ class Delete extends React.Component {
 
 
   render() {
-
     return (
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Pool
+          Delete Pool Member
         </Button>
 
 
@@ -105,7 +105,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deletePool(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deletePoolMember(this.props.obj)}>
                     YES
                   </Button>
                 </Col>

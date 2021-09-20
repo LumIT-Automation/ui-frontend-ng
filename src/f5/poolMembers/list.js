@@ -1,8 +1,11 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+
+import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
 
 import Delete from './delete'
 
@@ -24,11 +27,17 @@ class List extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
+      poolMembers: null,
+      renderedMembers: null,
       error: null
     };
   }
 
   componentDidMount() {
+    if (this.props.obj && (this.state.poolMembers === null)) {
+
+      this.fetchPoolMembers(this.props.obj.name)
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -36,10 +45,17 @@ class List extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.poolMembersFetchStatus  === 'updated') {
+      this.props.dispatch(setPoolMembersLoading(true))
+      this.fetchPoolMembers(this.props.obj.name)
+      this.props.dispatch(setPoolMembersFetchStatus(''))
+    }
   }
 
   componentWillUnmount() {
   }
+
+
 
 
   getColumnSearchProps = dataIndex => ({
@@ -120,17 +136,63 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  fetchPoolMembers = async (name) => {
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setPoolMembersLoading(false))
+        this.setState({error: false, poolMembers: resp.data.items}, () => this.setRenderedMembers())
+      },
+      error => {
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
+  }
+
+
+  setRenderedMembers = () => {
+
+    const current = Object.assign([], this.state.poolMembers);
+
+    const newCurrent = current.map( m => {
+      let n
+      if (m.state === 'up' && m.session === 'monitor-enabled') {
+        n = Object.assign(m, {status: 'enabled', color: '#90ee90'})
+      }
+      else if (m.state === 'up' && m.session === 'user-disabled') {
+        n = Object.assign(m, {status: 'disabled', color: 'black'})
+      }
+      else if (m.state === 'checking' && m.session === 'user-disabled') {
+        n = Object.assign(m, {status: 'checking', color: 'blue'})
+      }
+      else if (m.state === 'down' && m.session === 'monitor-enabled') {
+        n = Object.assign(m, {status: 'checking', color: 'red'})
+      }
+      else if (m.state === 'down' && m.session === 'user-enabled') {
+        n = Object.assign(m, {status: 'rechecking', color: 'blue'})
+      }
+      else if (m.state === 'user-down' && m.session === 'user-disabled') {
+        n = Object.assign(m, {status: 'Force offline', color: 'black'})
+      }
+      else {
+        n = Object.assign(m, {status: 'other', color: 'grey' })
+      }
+      return n
+    })
+    this.setState({renderedMembers: newCurrent})
+  }
+
 
   enableMember = async (member) => {
     const body = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        console.error(error)
-        this.setState({error: error})
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body)
@@ -141,11 +203,10 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        console.error(error)
-        this.setState({error: error})
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
@@ -156,11 +217,10 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        console.error(error)
-        this.setState({error: error})
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
@@ -172,8 +232,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log('members list')
-    console.log(this.props.obj)
 
     const columns = [
       {
@@ -253,12 +311,27 @@ class List extends React.Component {
           </Space>
         ),
       },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.poolMember_delete || this.props.authorizations.any) ?
+            <Delete name={name} obj={obj} poolName={this.props.obj.name} />
+            :
+            '-'
+          }
+          </Space>
+        ),
+      }
     ];
 
     return (
       <Space>
           <Table
-            dataSource={this.props.poolMembers}
+            dataSource={this.state.renderedMembers}
             columns={columns}
             pagination={false}
             rowKey="name"

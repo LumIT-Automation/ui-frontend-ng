@@ -56,7 +56,6 @@ class Error extends Component {
         resolve()
       }
       catch(e) {
-        console.error(e)
         reject(e)
       }
     })

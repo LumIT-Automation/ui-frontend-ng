@@ -124,8 +124,6 @@ class PoolsTable extends React.Component {
 
 
   render() {
-    console.log(this.props.pools)
-    console.log(this.props.currentPools)
 
     const columns = [
       {
