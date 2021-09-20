@@ -257,8 +257,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, error: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')) )
-          this.success()
+          this.setState({loading: false, error: false}, () => this.addPoolMembers())
         },
         error => {
           this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
@@ -301,11 +300,11 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true})
+          this.setState({loading: false, error: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')) )
+          this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.body.name}/members/`, this.props.token, body)
@@ -313,9 +312,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPoolsFetchStatus('updated')), 2050)
     setTimeout( () => this.closeModal(), 2100)
-
   }
 
   resetError = () => {

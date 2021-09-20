@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import  { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
+import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -48,8 +48,9 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log('update')
-    if (this.props.obj) {
-      console.log(this.props.obj.name)
+    if (this.props.poolMembersFetchStatus  === 'updated') {
+      this.fetchPoolMembers(this.props.obj.name)
+      this.props.dispatch(setPoolMembersFetchStatus(''))
     }
   }
 
@@ -59,6 +60,7 @@ class Manager extends React.Component {
   resetError = () => {
     this.setState({ error: null})
   }
+
 
   fetchPoolMembers = async (name) => {
     console.log('fetchPollMembers')
@@ -72,9 +74,8 @@ class Manager extends React.Component {
         this.setState({error: false}, () => this.props.dispatch(setPoolMembers(resp)))
       },
       error => {
-        console.error(error)
-        this.setState({error: error})
-        this.props.dispatch(setPoolMembersLoading(false))
+        r = error
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
@@ -92,7 +93,7 @@ class Manager extends React.Component {
          this.props.authorizations && (this.props.authorizations.pools_post || this.props.authorizations.any) ?
           <div>
             <br/>
-            <Add/>
+            <Add obj={this.props.obj}/>
           </div>
           :
           null
@@ -118,5 +119,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  poolMembersLoading: state.f5.poolMembersLoading
+  poolMembersLoading: state.f5.poolMembersLoading,
+  poolMembersFetchStatus: state.f5.poolMembersFetchStatus
 }))(Manager);
