@@ -7,12 +7,18 @@ import Rest from "../_helpers/Rest";
 import Error from '../error'
 
 import AssetSelector from './assetSelector'
+import Containers from './containers/manager'
 import Networks from './networks/manager'
+
 
 //import CertificateAndKey from './certificates/container'
 
 import {
   setInfobloxAssets,
+
+  setContainersLoading,
+  setContainers,
+  setContainersFetchStatus,
 
   setNetworksLoading,
   setNetworks,
@@ -58,7 +64,10 @@ class Infoblox extends React.Component {
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchInfobloxAssets()
-      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.asset  ) {
+      if (this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any ) && this.props.infobloxAsset  ) {
+        this.fetchContainers()
+      }
+      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.infobloxAsset  ) {
         this.fetchNetworks()
       }
     }
@@ -73,8 +82,13 @@ class Infoblox extends React.Component {
     if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchInfobloxAssets()
     }
-    if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+    if ( ((prevProps.infobloxAsset !== this.props.infobloxAsset) && (this.props.infobloxAsset !== null)) ) {
+      this.fetchContainers()
       this.fetchNetworks()
+    }
+    if ( (this.props.containersFetchStatus === 'updated') ) {
+      this.fetchContainers()
+      this.props.dispatch(setContainersFetchStatus(''))
     }
     if ( (this.props.networksFetchStatus === 'updated') ) {
       this.fetchNetworks()
@@ -87,6 +101,7 @@ class Infoblox extends React.Component {
 
 
   fetchInfobloxAssets = async () => {
+    console.log('fetcho assets')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
@@ -100,12 +115,30 @@ class Infoblox extends React.Component {
     await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
+  fetchContainers = async () => {
+    console.log('fetcho containers')
+    this.props.dispatch(setContainersLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({error: false}, () => this.props.dispatch(setContainers(resp)) )
+        this.props.dispatch(setContainersLoading(false))
+      },
+      error => {
+        this.setState({error: error}, () => this.props.dispatch(setContainersLoading(false)))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.infobloxAsset.id}/network-containers/`, this.props.token)
+  }
+
   fetchNetworks = async () => {
+    console.log('fetcho networks')
     this.props.dispatch(setNetworksLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({error: false}, () => this.props.dispatch(setNetworks(resp)))
+        console.log(resp)
+        this.setState({error: false}, () => this.props.dispatch(setNetworks(resp)) )
         this.props.dispatch(setNetworksLoading(false))
       },
       error => {
@@ -122,8 +155,6 @@ class Infoblox extends React.Component {
 
 
   render() {
-    console.log('infoblox')
-    console.log(this.props.infobloxAsset)
     return (
       <React.Fragment>
         <AssetSelector/>
@@ -131,6 +162,12 @@ class Infoblox extends React.Component {
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
 
           <Tabs type="card" destroyInactiveTabPane={true}>
+            { this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any) ?
+              <TabPane tab="Containers" key="Containers">
+                <Containers/>
+              </TabPane>
+              : null
+            }
             { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
               <TabPane tab="Networks" key="Networks">
                 <Networks/>
@@ -157,5 +194,8 @@ export default connect((state) => ({
 
   networks: state.infoblox.networks,
   networksFetchStatus: state.infoblox.networksFetchStatus,
+
+  containers: state.infoblox.containers,
+  containersFetchStatus: state.infoblox.containersFetchStatus,
 
 }))(Infoblox);

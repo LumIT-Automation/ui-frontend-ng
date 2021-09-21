@@ -5,9 +5,11 @@ import Error from '../../error'
 
 //import Modify from './modify'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space, Spin, Collapse } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
+
+const { Panel } = Collapse
 
 
 
@@ -156,7 +158,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.networks}
+          dataSource={this.props.containers}
           bordered
           rowKey="network"
           //pagination={false}
@@ -175,5 +177,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.infoblox,
   infobloxAsset: state.infoblox.infobloxAsset,
 
-  networks: state.infoblox.networks
+  containers: state.infoblox.containers
 }))(List);

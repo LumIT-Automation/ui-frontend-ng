@@ -1,18 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
-/*
-create Slice creates a small piece of the store, in this case the slice for the balancers.
-It has a name, an initial state, and several methods that set the state,
-  setAssetList
-  selectAsset
-  setPartitions
-  selectPartition
-  setPoolList
-  cleanUp
-Methods (called actions) must be exported.
-*/
-
-
 const infobloxSlice = createSlice({
     name: 'infoblox',
     initialState: {},
@@ -34,18 +21,27 @@ const infobloxSlice = createSlice({
         },
 
         setInfobloxAsset: (state, action) => {
-          console.log('store')
           state.infobloxAsset = action.payload
         },
 
         setNetworksLoading: (state, action) => {
-          state.infobloxAssetsLoading = action.payload
+          state.networksLoading = action.payload
         },
         setNetworks: (state, action) => {
-          state.infobloxAssets = action.payload.data.items
+          state.networks = action.payload.data
         },
         setNetworksFetchStatus: (state, action) => {
-          state.infobloxAssetsFetchStatus = action.payload
+          state.networksFetchStatus = action.payload
+        },
+
+        setContainersLoading: (state, action) => {
+          state.containersLoading = action.payload
+        },
+        setContainers: (state, action) => {
+          state.containers = action.payload.data
+        },
+        ssetContainersFetchStatus: (state, action) => {
+          state.containersFetchStatus = action.payload
         },
 
 
@@ -79,7 +75,9 @@ export const {
   setNetworks,
   setNetworksFetchStatus,
 
-  selectAsset,
+  setContainersLoading,
+  setContainers,
+  setContainersFetchStatus,
 
   cleanUp
 } = actions

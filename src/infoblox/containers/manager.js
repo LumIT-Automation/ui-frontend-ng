@@ -62,7 +62,7 @@ class Manager extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
       { (this.props.infobloxAsset && this.props.infobloxAsset.id ) ?
-          this.props.networksLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          this.props.containersLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
         :
         <Alert message="Asset not set" type="error" />
       }
@@ -79,7 +79,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   infobloxAsset: state.infoblox.infobloxAsset,
 
-  networksLoading: state.infoblox.networksLoading,
-  networks: state.infoblox.networks
-  
+  containersLoading: state.infoblox.containersLoading,
+  containers: state.infoblox.containers
+
 }))(Manager);
