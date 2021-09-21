@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetList } from '../../_store/store.infoblox'
+import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
@@ -233,38 +233,22 @@ class Add extends React.Component {
           }
         }
 
-      this.setState({loading: true})
+      this.props.dispatch(setInfobloxAssetsLoading( true ))
 
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true})
-          this.fetchInfobloxAssets()
+          this.props.dispatch(setInfobloxAssetsLoading( false ))
+          this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
           this.success()
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.props.dispatch(setInfobloxAssetsLoading( false ))
+          this.setState({success: false, error: error})
         }
       )
       await rest.doXHR(`infoblox/assets/`, this.props.token, body )
     }
-  }
-
-  fetchInfobloxAssets = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setInfobloxAssetList( resp ))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
   success = () => {

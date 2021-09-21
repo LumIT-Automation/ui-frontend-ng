@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setPoolMembersFetchStatus, setPoolMembersLoading } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -42,22 +42,19 @@ class Delete extends React.Component {
   }
 
 
-  deleteAsset = async asset => {
-    this.props.dispatch(setInfobloxAssetsLoading( true ))
+  deletePoolMember = async pool => {
+    this.props.dispatch(setPoolMembersLoading(true))
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
-        this.success()
+        this.setState({success: true, error: false}, () => this.props.dispatch(setPoolMembersFetchStatus('updated')))
+        this.props.dispatch(setPoolMembersLoading(false))
       },
       error => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: false, error: error})
+        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
-    await rest.doXHR(`infoblox/asset/${asset.id}/`, this.props.token )
-
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.poolName}/member/${this.props.obj.name}/`, this.props.token )
   }
 
   resetError = () => {
@@ -73,17 +70,16 @@ class Delete extends React.Component {
 
 
   render() {
-
     return (
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
+          Delete Pool Member
         </Button>
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE POOL</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -109,7 +105,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteAsset(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deletePoolMember(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -135,4 +131,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  pools: state.f5.pools
 }))(Delete);

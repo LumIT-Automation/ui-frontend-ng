@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
+//import Modify from './modify'
 import Delete from './delete'
-import Modify from './modify'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -126,14 +126,13 @@ class List extends React.Component {
 
 
   render() {
-
     const columns = [
       {
-        title: 'FQDN',
+        title: 'Name',
         align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
       },
       {
         title: 'Address',
@@ -143,40 +142,25 @@ class List extends React.Component {
         ...this.getColumnSearchProps('address'),
       },
       {
-        title: 'Environment',
+        title: 'Session',
         align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        ...this.getColumnSearchProps('environment'),
+        dataIndex: 'session',
+        key: 'session',
+       ...this.getColumnSearchProps('session'),
       },
       {
-        title: 'Datacenter',
+        title: 'Status',
         align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-       ...this.getColumnSearchProps('datacenter'),
+        dataIndex: 'state',
+        key: 'state',
+       ...this.getColumnSearchProps('state'),
       },
       {
-        title: 'Position',
+        title: 'Monitor',
         align: 'center',
-        dataIndex: 'position',
-        key: 'position',
-        ...this.getColumnSearchProps('position'),
-      },
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
+        dataIndex: 'monitor',
+        key: 'monitor',
+        ...this.getColumnSearchProps('monitor'),
       },
       {
         title: 'Delete',
@@ -185,7 +169,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
+            { this.props.authorizations && (this.props.authorizations.node_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -200,9 +184,9 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.infobloxAssets}
+          dataSource={this.props.nodes}
           bordered
-          rowKey="id"
+          rowKey="name"
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
@@ -215,6 +199,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  infobloxAssets: state.infoblox.infobloxAssets,
-  authorizations: state.authorizations.f5
+  token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  nodes: state.f5.nodes
 }))(List);

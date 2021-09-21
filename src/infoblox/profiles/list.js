@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import Delete from './delete'
 import Modify from './modify'
+import Delete from './delete'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -126,43 +126,21 @@ class List extends React.Component {
 
 
   render() {
-
     const columns = [
       {
-        title: 'FQDN',
+        title: 'Name',
         align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'Address',
+        title: 'Type',
         align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
-      },
-      {
-        title: 'Environment',
-        align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        ...this.getColumnSearchProps('environment'),
-      },
-      {
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-       ...this.getColumnSearchProps('datacenter'),
-      },
-      {
-        title: 'Position',
-        align: 'center',
-        dataIndex: 'position',
-        key: 'position',
-        ...this.getColumnSearchProps('position'),
-      },
+        dataIndex: 'type',
+        key: 'type',
+       ...this.getColumnSearchProps('type'),
+     },/*
       {
         title: 'Modify',
         align: 'center',
@@ -170,14 +148,14 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
+           { this.props.authorizations && (this.props.authorizations.profile_patch || this.props.authorizations.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
           }
           </Space>
         ),
-      },
+      },*/
       {
         title: 'Delete',
         align: 'center',
@@ -185,7 +163,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
+            { this.props.authorizations && (this.props.authorizations.profile_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -200,9 +178,9 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.infobloxAssets}
+          dataSource={this.props.profiles}
           bordered
-          rowKey="id"
+          rowKey="name"
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
@@ -215,6 +193,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  infobloxAssets: state.infoblox.infobloxAssets,
-  authorizations: state.authorizations.f5
+  token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  profiles: state.f5.profiles
 }))(List);

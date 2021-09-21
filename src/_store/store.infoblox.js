@@ -17,12 +17,31 @@ const infobloxSlice = createSlice({
     name: 'infoblox',
     initialState: {},
     reducers: {
-        setInfobloxAssetList: (state, action) => {
-          state.infobloxAssetList = action.payload.data.items
+
+
+        setInfobloxAssetsLoading: (state, action) => {
+          state.infobloxAssetsLoading = action.payload
         },
+        setInfobloxAssets: (state, action) => {
+          state.infobloxAssets = action.payload.data.items
+        },
+        setInfobloxAssetsFetchStatus: (state, action) => {
+          state.infobloxAssetsFetchStatus = action.payload
+        },
+
+
+
+
         selectAsset: (state, action) => {
           state.asset = action.payload
         },
+
+
+
+
+
+
+
         setPartitions: (state, action) => {
           state.assetPartitions = action.payload.data.items
         },
@@ -64,7 +83,11 @@ const infobloxSlice = createSlice({
 const { actions, reducer } = infobloxSlice;
 
 export const {
-  setInfobloxAssetList,
+
+  setInfobloxAssetsLoading,
+  setInfobloxAssets,
+  setInfobloxAssetsFetchStatus,
+
   selectAsset,
   setPartitions,
   selectPartition,

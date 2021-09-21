@@ -6,6 +6,7 @@ import Error from './error'
 
 import { logout } from './_store/store.auth'
 import { setAuthorizations } from './_store/store.authorizations'
+import { setInfobloxAssets, setInfobloxAssetsFetchStatus } from './_store/store.infoblox'
 
 import { Layout, Avatar, Divider, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -14,6 +15,7 @@ import CustomSider from './sider/sider'
 import CustomBreadcrumb from './breadcrumb'
 
 import Homepage from './home/homepage'
+import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 import Service from './services/services'
@@ -58,11 +60,11 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
   }
 
   componentWillUnmount() {
   }
+
 
   resetPassword = () => {
     /*
@@ -104,7 +106,6 @@ class App extends Component {
   }
 
   render() {
-
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?
@@ -147,6 +148,7 @@ class App extends Component {
                   <Switch>
 
                     <Route exact path='/' component={Homepage}/>
+                    <Route path='/infoblox/' component={Infoblox}/>
                     <Route path='/f5/' component={F5}/>
                     <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
                     <Route path='/services/' component={Service}/>
@@ -181,5 +183,8 @@ export default connect((state) => ({
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  permissions: state.permissions
+  permissions: state.permissions,
+  infobloxAssetsLoading: state.infoblox.infobloxAssetsLoading,
+  infobloxAssets: state.infoblox.infobloxAssets,
+  infobloxAssetsFetchStatus: state.infoblox.infobloxAssetsFetchStatus,
 }))(App);

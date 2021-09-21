@@ -5,8 +5,6 @@ import Error from '../../error'
 
 import List from './list'
 import Add from './add'
-import Delete from './delete'
-import Modify from './modify'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -128,7 +126,8 @@ class Manager extends React.Component {
 
 
   render() {
-
+    console.log('infoblox manager')
+    console.log(this.props.infobloxAssets)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -153,6 +152,6 @@ class Manager extends React.Component {
 }
 
 export default connect((state) => ({
-  assetList: state.f5.assetList,
-  authorizations: state.authorizations.f5
+  infobloxAssets: state.infoblox.infobloxAssets,
+  authorizations: state.authorizations.infoblox
 }))(Manager);

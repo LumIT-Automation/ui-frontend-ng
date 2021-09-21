@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setNodesFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -41,23 +41,18 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-
-  deleteAsset = async asset => {
-    this.props.dispatch(setInfobloxAssetsLoading( true ))
+  deleteNode = async node => {
+    this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
-        this.success()
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
       },
       error => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: false, error: error})
+        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setNodesFetchStatus('updated')))
       }
     )
-    await rest.doXHR(`infoblox/asset/${asset.id}/`, this.props.token )
-
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token )
   }
 
   resetError = () => {
@@ -78,12 +73,12 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
+          Delete Node
         </Button>
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE NODE</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -109,7 +104,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteAsset(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deleteNode(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -135,4 +130,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  nodes: state.f5.nodes
 }))(Delete);

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -21,6 +21,7 @@ class Delete extends React.Component {
     this.state = {
       visible: false,
       error: null,
+      monitorFullList: []
     };
   }
 
@@ -42,22 +43,19 @@ class Delete extends React.Component {
   }
 
 
-  deleteAsset = async asset => {
-    this.props.dispatch(setInfobloxAssetsLoading( true ))
+  deleteMonitor = async monitor => {
+    this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
-        this.success()
+        //this.setState({loading: false, success: true})
+        this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
       },
       error => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: false, error: error})
+        this.setState( {loading: false, error: error, success: false}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
       }
     )
-    await rest.doXHR(`infoblox/asset/${asset.id}/`, this.props.token )
-
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
   }
 
   resetError = () => {
@@ -78,12 +76,12 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
+          Delete Monitor
         </Button>
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>DELETE MONITOR</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -109,7 +107,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteAsset(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.deleteMonitor(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -135,4 +133,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  monitors: state.f5.monitors
 }))(Delete);

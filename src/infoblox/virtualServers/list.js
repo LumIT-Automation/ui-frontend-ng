@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import Delete from './delete'
-import Modify from './modify'
+//import Modify from './modify'
+//import Delete from './delete'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -124,75 +124,78 @@ class List extends React.Component {
     this.setState({ error: null})
   }
 
-
   render() {
-
     const columns = [
       {
-        title: 'FQDN',
+        title: 'Name',
         align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'Address',
+        title: 'Type',
         align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
+        dataIndex: 'type',
+        key: 'type',
+       ...this.getColumnSearchProps('type'),
       },
       {
-        title: 'Environment',
+        title: 'Destination',
         align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        ...this.getColumnSearchProps('environment'),
+        dataIndex: 'destination',
+        key: 'destination',
+       ...this.getColumnSearchProps('destination'),
+       },
+       {
+         title: 'Subnet Mask',
+         align: 'center',
+         dataIndex: 'mask',
+         key: 'mask',
+        ...this.getColumnSearchProps('mask'),
       },
       {
-        title: 'Datacenter',
+        title: 'IP Protocol',
         align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-       ...this.getColumnSearchProps('datacenter'),
+        dataIndex: 'ipProtocol',
+        key: 'ipProtocol',
+       ...this.getColumnSearchProps('ipProtocol'),
       },
       {
-        title: 'Position',
+        title: 'Pool',
         align: 'center',
-        dataIndex: 'position',
-        key: 'position',
-        ...this.getColumnSearchProps('position'),
+        dataIndex: 'pool',
+        key: 'pool',
+       ...this.getColumnSearchProps('pool'),
       },
       {
-        title: 'Modify',
+        title: 'Profiles',
         align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
+        dataIndex: 'profiles',
+        key: 'profiles',
+       ...this.getColumnSearchProps('profiles'),
       },
       {
-        title: 'Delete',
+        title: 'Policies',
         align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      }
+        dataIndex: 'policies',
+        key: 'policies',
+       ...this.getColumnSearchProps('policies'),
+      },
+      {
+        title: 'iRules',
+        align: 'center',
+        dataIndex: 'irules',
+        key: 'irules',
+       ...this.getColumnSearchProps('irules'),
+      },
+      {
+        title: 'sourceAddressTranslation',
+        align: 'center',
+        dataIndex: ['sourceAddressTranslation', 'type'],
+        key: 'sourceAddressTranslation',
+       //...this.getColumnSearchProps(['sourceAddressTranslation', 'type']),
+      },
     ];
 
 
@@ -200,9 +203,9 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.infobloxAssets}
+          dataSource={this.props.virtualServers}
           bordered
-          rowKey="id"
+          rowKey="name"
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
@@ -215,6 +218,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  infobloxAssets: state.infoblox.infobloxAssets,
-  authorizations: state.authorizations.f5
+  token: state.ssoAuth.token,
+  authorizations: state.authorizations.f5,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+  virtualServers: state.f5.virtualServers
 }))(List);
