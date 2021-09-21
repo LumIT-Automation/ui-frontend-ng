@@ -7,41 +7,20 @@ import Rest from "../_helpers/Rest";
 import Error from '../error'
 
 import AssetSelector from './assetSelector'
-import Nodes from './nodes/manager'
-import Monitors from './monitors/manager'
-import Pools from './pools/manager'
-import Profiles from './profiles/manager'
-import VirtualServers from './virtualServers/manager'
+import Networks from './networks/manager'
+
 //import CertificateAndKey from './certificates/container'
 
 import {
-  setAssetList,
+  setInfobloxAssets,
 
-  setNodesLoading,
-  setNodes,
-  setNodesFetchStatus,
-
-  setMonitorTypes,
-  setMonitorsLoading,
-  setMonitors,
-  setMonitorsFetchStatus,
-
-  setPoolsLoading,
-  setPools,
-  setPoolsFetchStatus,
-
-  setProfileTypes,
-  setProfilesLoading,
-  setProfiles,
-  setProfilesFetchStatus,
-
-  setVirtualServersLoading,
-  setVirtualServers,
-  setVirtualServersFetchStatus,
+  setNetworksLoading,
+  setNetworks,
+  setNetworksFetchStatus,
 
   cleanUp
 
-} from '../_store/store.f5'
+} from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -52,22 +31,22 @@ const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 /*
-This is the parent component of the f5 category.
+This is the parent component of the infoblox category.
 
 At mount it calls /assets/ to get the list of assets present in udb and it sets it in the store.
 The other components will recive as props:
-  state.f5.assets
+  state.infoblox.assets
 
 Then render sub Tabs
 
 if there is a error (no assetList in the response) renders Error component.
 It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
 
-At the unmount it reset state.f5 in the store.
+At the unmount it reset state.infoblox in the store.
 */
 
 
-class F5 extends React.Component {
+class Infoblox extends React.Component {
 
   constructor(props) {
     super(props);
@@ -78,21 +57,9 @@ class F5 extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchAssets()
-      if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-        this.fetchNodes()
-      }
-      if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-        this.fetchMonitors()
-      }
-      if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-        this.fetchPools()
-      }
-      if (this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-        this.fetchProfiles()
-      }
-      if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
-        this.fetchVirtualServers()
+      this.fetchInfobloxAssets()
+      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.asset  ) {
+        this.fetchNetworks()
       }
     }
   }
@@ -104,34 +71,14 @@ class F5 extends React.Component {
   componentDidUpdate(prevProps, prevState) {
 
     if (this.props.authorizations !== prevProps.authorizations) {
-      this.fetchAssets()
+      this.fetchInfobloxAssets()
     }
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-      this.fetchNodes()
-      this.fetchMonitors()
-      this.fetchPools()
-      this.fetchProfiles()
-      this.fetchVirtualServers()
+      this.fetchNetworks()
     }
-    if ( (this.props.nodesFetchStatus === 'updated') ) {
-      this.fetchNodes()
-      this.props.dispatch(setNodesFetchStatus(''))
-    }
-    if ( (this.props.monitorsFetchStatus === 'updated') ) {
-      this.fetchMonitors()
-      this.props.dispatch(setMonitorsFetchStatus(''))
-    }
-    if ( (this.props.poolsFetchStatus === 'updated') ) {
-      this.fetchPools()
-      this.props.dispatch(setPoolsFetchStatus(''))
-    }
-    if ( (this.props.profilesFetchStatus === 'updated') ) {
-      this.fetchProfiles()
-      this.props.dispatch(setProfilesFetchStatus(''))
-    }
-    if ( (this.props.virtualServersFetchStatus === 'updated') ) {
-      this.fetchVirtualServers()
-      this.props.dispatch(setVirtualServersFetchStatus(''))
+    if ( (this.props.networksFetchStatus === 'updated') ) {
+      this.fetchNetworks()
+      this.props.dispatch(setNetworksFetchStatus(''))
     }
   }
 
@@ -139,198 +86,35 @@ class F5 extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  fetchInfobloxAssets = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setAssetList( resp )))
+        this.setState({loading: false}, () => this.props.dispatch(setInfobloxAssets( resp )))
       },
       error => {
         this.setState({loading: false, error: error})
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
-  fetchNodes = async () => {
-    this.props.dispatch(setNodesLoading(true))
+  fetchNetworks = async () => {
+    this.props.dispatch(setNetworksLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({error: false}, () => this.props.dispatch(setNodes(resp)))
-        this.props.dispatch(setNodesLoading(false))
+        this.setState({error: false}, () => this.props.dispatch(setNetworks(resp)))
+        this.props.dispatch(setNetworksLoading(false))
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setNodesLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(setNetworksLoading(false)))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.infobloxAsset.id}/networks/`, this.props.token)
   }
 
-
-  fetchMonitors = async () => {
-    this.props.dispatch(setMonitorsLoading(true))
-
-    let monitorTypes = await this.fetchMonitorsTypeList()
-    this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
-
-    let monitors = await this.monitorsLoop(monitorTypes.data.items)
-    this.props.dispatch(setMonitorsLoading(false))
-    this.props.dispatch(setMonitors(monitors))
-  }
-
-  fetchMonitorsTypeList = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.setState({error: error})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
-    return r
-  }
-
-  monitorsLoop = async types => {
-
-    const promises = types.map(async type => {
-      const resp = await this.fetchMonitorsByType(type)
-      resp.data.items.forEach(item => {
-        Object.assign(item, {type: type});
-      })
-      return resp
-    })
-
-    const response = await Promise.all(promises)
-
-    let list = []
-    response.forEach(r => {
-      r.data.items.forEach(m => {
-       list.push(m)
-      })
-    })
-    return list
-  }
-
-  fetchMonitorsByType = async (type) => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.setState({error: error})
-        r = resp
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
-    return r
-  }
-
-
-  fetchPools = async () => {
-    this.props.dispatch(setPoolsLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({error: false}, () => this.props.dispatch(setPools(resp)))
-        this.props.dispatch(setPoolsLoading(false))
-      },
-      error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolsLoading(false)))
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
-  }
-
-
-  fetchProfiles = async () => {
-    this.props.dispatch(setProfilesLoading(true))
-
-    let profileTypes = await this.fetchProfilesTypeList()
-    this.props.dispatch(setProfileTypes(profileTypes.data.items))
-
-    let profiles = await this.profilesLoop(profileTypes.data.items)
-    this.props.dispatch(setProfilesLoading(false))
-    this.props.dispatch(setProfiles(profiles))
-  }
-
-  fetchProfilesTypeList = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.setState({error: error})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
-    return r
-  }
-
-  profilesLoop = async types => {
-
-    const promises = types.map(async type => {
-      const resp = await this.fetchProfilesByType(type)
-      resp.data.items.forEach(item => {
-        Object.assign(item, {type: type});
-      })
-      return resp
-    })
-
-    const response = await Promise.all(promises)
-
-    let list = []
-    response.forEach(r => {
-      r.data.items.forEach(m => {
-       list.push(m)
-      })
-    })
-
-    return list
-  }
-
-  fetchProfilesByType = async (type) => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.setState({error: error})
-        r = resp
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${type}/`, this.props.token)
-    return r
-  }
-
-
-
-  fetchVirtualServers = async () => {
-    this.props.dispatch(setVirtualServersLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({error: false}, () => this.props.dispatch(setVirtualServers(resp)))
-        this.props.dispatch(setVirtualServersLoading(false))
-      },
-      error => {
-        this.setState({error: error}, () => this.props.dispatch(setVirtualServersLoading(false)))
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
-  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -338,6 +122,8 @@ class F5 extends React.Component {
 
 
   render() {
+    console.log('infoblox')
+    console.log(this.props.infobloxAsset)
     return (
       <React.Fragment>
         <AssetSelector/>
@@ -345,42 +131,12 @@ class F5 extends React.Component {
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
 
           <Tabs type="card" destroyInactiveTabPane={true}>
-            { this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any) ?
-              <TabPane tab="Nodes" key="Nodes">
-                <Nodes/>
+            { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+              <TabPane tab="Networks" key="Networks">
+                <Networks/>
               </TabPane>
               : null
             }
-            { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
-              <TabPane tab="Monitors" key="Monitors">
-                <Monitors/>
-              </TabPane>
-              : null
-            }
-            { this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any) ?
-              <TabPane tab="Pools" key="Pools">
-                <Pools/>
-              </TabPane>
-              : null
-            }
-            { this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any) ?
-              <TabPane tab="Profiles" key="Profiles">
-                <Profiles/>
-              </TabPane>
-              : null
-            }
-            { this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any) ?
-              <TabPane tab="Virtual Servers" key="VirtualServers">
-                <VirtualServers/>
-              </TabPane>
-              : null
-            }
-            {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
-              <TabPane tab="Certificates" key="4">
-                <CertificateAndKey/>
-              </TabPane>
-              : null
-            */}
 
           </Tabs>
 
@@ -394,23 +150,12 @@ class F5 extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList,
-  asset: state.f5.asset,
-  partition: state.f5.partition,
+  authorizations: state.authorizations.infoblox,
 
-  nodes: state.f5.nodes,
-  nodesFetchStatus: state.f5.nodesFetchStatus,
+  infobloxAsset: state.infoblox.infobloxAsset,
+  partition: state.infoblox.partition,
 
-  monitors: state.f5.monitors,
-  monitorsFetchStatus: state.f5.monitorsFetchStatus,
+  networks: state.infoblox.networks,
+  networksFetchStatus: state.infoblox.networksFetchStatus,
 
-  pools: state.f5.pools,
-  poolsFetchStatus: state.f5.poolsFetchStatus,
-
-  profiles: state.f5.profiles,
-  profilesFetchStatus: state.f5.profilesFetchStatus,
-
-  virtualServers: state.f5.virtualServers,
-  virtualServersFetchStatus: state.f5.virtualServersFetchStatus
-}))(F5);
+}))(Infoblox);

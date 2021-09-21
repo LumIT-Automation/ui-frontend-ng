@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
+//import { setNodesList } from '../../_store/store.f5'
+
 
 import List from './list'
 import Add from './add'
@@ -27,13 +29,11 @@ class Manager extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
-      error: null,
-      monitorFullList: []
+      error: null
     };
   }
 
   componentDidMount() {
-
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -41,7 +41,12 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
+    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
+        //this.fetchNodes()
+    }
+    /*if (this.props.authorizations !== prevProps.authorizations) {
+      this.fetchAssets()
+    }*/
   }
 
   componentWillUnmount() {
@@ -53,27 +58,28 @@ class Manager extends React.Component {
 
 
   render() {
+    console.log('networks ')
+    console.log(this.props.infobloxAsset)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
-        { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-           this.props.authorizations && (this.props.authorizations.monitors_post || this.props.authorizations.any) ?
-            <div>
-              <br/>
-              <Add/>
-            </div>
-            :
-            null
+      { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+         this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
+          <div>
+            <br/>
+            <Add/>
+          </div>
           :
           null
-        }
+        :
+        null
+      }
 
-        { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.props.monitorsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
-          :
-          <Alert message="Asset and Partition not set" type="error" />
-        }
-
+      { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+          this.props.nodesLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+        :
+        <Alert message="Asset and Partition not set" type="error" />
+      }
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
@@ -85,8 +91,8 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  asset: state.f5.asset,
+  infobloxAsset: state.infoblox.infobloxAsset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors,
-  monitorsLoading: state.f5.monitorsLoading
+  nodesLoading: state.f5.nodesLoading,
+  nodes: state.f5.nodes
 }))(Manager);

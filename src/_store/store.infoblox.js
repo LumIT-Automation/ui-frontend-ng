@@ -19,6 +19,10 @@ const infobloxSlice = createSlice({
     reducers: {
 
 
+        setInfobloxEnvironment: (state, action) => {
+          state.infobloxEnvironment = action.payload
+        },
+
         setInfobloxAssetsLoading: (state, action) => {
           state.infobloxAssetsLoading = action.payload
         },
@@ -29,11 +33,19 @@ const infobloxSlice = createSlice({
           state.infobloxAssetsFetchStatus = action.payload
         },
 
+        setInfobloxAsset: (state, action) => {
+          console.log('store')
+          state.infobloxAsset = action.payload
+        },
 
-
-
-        selectAsset: (state, action) => {
-          state.asset = action.payload
+        setNetworksLoading: (state, action) => {
+          state.infobloxAssetsLoading = action.payload
+        },
+        setNetworks: (state, action) => {
+          state.infobloxAssets = action.payload.data.items
+        },
+        setNetworksFetchStatus: (state, action) => {
+          state.infobloxAssetsFetchStatus = action.payload
         },
 
 
@@ -41,35 +53,6 @@ const infobloxSlice = createSlice({
 
 
 
-
-        setPartitions: (state, action) => {
-          state.assetPartitions = action.payload.data.items
-        },
-        selectPartition: (state, action) => {
-          state.partition = action.payload
-        },
-        setNodes: (state, action) => {
-          state.nodes = action.payload.data.items
-        },
-        setPools: (state, action) => {
-          state.pools = action.payload.data.items
-        },
-        setMonitorsList: (state, action) => {
-          state.monitors = action.payload.data.items
-        },
-        setProfilesList: (state, action) => {
-          state.profiles = action.payload.data.items
-        },
-        setVirtualServers: (state, action) => {
-          state.virtualServers = action.payload.data.items
-        },
-        setCertificates: (state, action) => {
-          state.certificates = action.payload.data.items
-        },
-        setPoolList: (state, action) => {
-          state.currentPoolList = action.payload.data.items
-          //state.currentPoolList = undefined
-        },
 
 
         cleanUp: (state, action) => {
@@ -84,20 +67,20 @@ const { actions, reducer } = infobloxSlice;
 
 export const {
 
+  setInfobloxEnvironment,
+
   setInfobloxAssetsLoading,
   setInfobloxAssets,
   setInfobloxAssetsFetchStatus,
 
+  setInfobloxAsset,
+
+  setNetworksLoading,
+  setNetworks,
+  setNetworksFetchStatus,
+
   selectAsset,
-  setPartitions,
-  selectPartition,
-  setNodes,
-  setMonitorsList,
-  setPools,
-  setPoolList,
-  setProfilesList,
-  setVirtualServers,
-  setCertificates,
+
   cleanUp
 } = actions
 
