@@ -14,8 +14,6 @@ import { UserOutlined } from '@ant-design/icons';
 import CustomSider from './sider/sider'
 import CustomBreadcrumb from './breadcrumb'
 
-import Concerto from './Concerto'
-
 import Homepage from './home/homepage'
 import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
@@ -46,7 +44,7 @@ It performs the following functions:
 */
 
 
-class App extends Component {
+class Concerto extends Component {
 
   constructor(props) {
     super(props);
@@ -55,7 +53,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    console.log('monto app')
+    console.log('Concerto mounted')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -66,7 +64,7 @@ class App extends Component {
   }
 
   componentWillUnmount() {
-    console.log('unmont app')
+    console.log('Concerto unmounted')
   }
 
 
@@ -84,7 +82,7 @@ class App extends Component {
     await rest.doXHR(`authorizations/`, this.props.token)
     */
   }
-/*
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -92,12 +90,16 @@ class App extends Component {
   deleteCookies = (token, username) => {
     return new Promise( (resolve, reject) => {
       try {
-        document.cookie = `${token}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
-        document.cookie = `${username}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
+        //document.cookie = `${token}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=https://10.0.111.10 `
+        //document.cookie = `${username}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=https://10.0.111.10 `
+        //document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure";
+        //document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure";
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
 
-        if ( document.cookie.search("token") === -1 && document.cookie.search("username") === -1  ) {
+        //if ( document.cookie.search("token") === -1 && document.cookie.search("username") === -1  ) {
           resolve()
-        }
+        //}
       }
       catch(e) {
         reject(e)
@@ -106,10 +108,13 @@ class App extends Component {
   }
 
   logout = () => {
+    console.log('this.logout')
+    window.localStorage.removeItem('myCat');
+    window.localStorage.setItem('myCat', 'Gerry');
     this.deleteCookies('token', 'username').then( this.props.dispatch( logout() ) )
-  }*/
+  }
 
-  render() {/*
+  render() {
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?
@@ -119,12 +124,10 @@ class App extends Component {
         <Menu.Divider />
         <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
       </Menu>
-    )*/
+    )
 
     if (this.props.authenticated) {
       return (
-        <Concerto/>
-        /*
         <Layout style={{overflow: 'initial'}}>
           <Header className="header">
             <div>
@@ -173,9 +176,7 @@ class App extends Component {
 
           {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
         </Layout>
-        */
       );
-
     }
 
     // Hide this component.
@@ -195,4 +196,4 @@ export default connect((state) => ({
   infobloxAssetsLoading: state.infoblox.infobloxAssetsLoading,
   infobloxAssets: state.infoblox.infobloxAssets,
   infobloxAssetsFetchStatus: state.infoblox.infobloxAssetsFetchStatus,
-}))(App);
+}))(Concerto);

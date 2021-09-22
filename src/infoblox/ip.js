@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+//import Error from '../../error'
 import { DownOutlined } from '@ant-design/icons';
 
 //import Modify from './modify'
 
-import { Table, Input, Button, Space, Spin, Collapse, Badge, Menu, Dropdown } from 'antd';
+import { Table, Input, Button, Space, Spin, Collapse, Badge, Menu, Modal } from 'antd';
 
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -20,7 +20,7 @@ Asset is a table that receives assetList: state.infoblox.assetList from the stor
 */
 
 
-class List extends React.Component {
+class Ip extends React.Component {
 
   constructor(props) {
     super(props);
@@ -42,6 +42,10 @@ class List extends React.Component {
   }
 
   componentWillUnmount() {
+  }
+
+  details = () => {
+    this.setState({visible: true})
   }
 
 
@@ -127,76 +131,12 @@ class List extends React.Component {
     this.setState({ error: null})
   }
 
-  expandedRowRender = () => {
-    const columns = [
-      { title: 'Date', dataIndex: 'date', key: 'date' },
-      { title: 'Name', dataIndex: 'name', key: 'name' },
-      {
-        title: 'Status',
-        key: 'state',
-        render: () => (
-          <span>
-            <Badge status="success" />
-            Finished
-          </span>
-        ),
-      },
-      { title: 'Upgrade Status', dataIndex: 'upgradeNum', key: 'upgradeNum' },
-      {
-        title: 'Action',
-        dataIndex: 'operation',
-        key: 'operation',
-        render: () => (
-          <Space size="middle">
-            <a>Pause</a>
-            <a>Stop</a>
-            <Dropdown overlay={menu}>
-              <a>
-                More <DownOutlined />
-              </a>
-            </Dropdown>
-          </Space>
-        ),
-      },
-    ];
-
-    const data = [];
-    for (let i = 0; i < 3; ++i) {
-      data.push({
-        key: i,
-        date: '2014-12-24 23:12:00',
-        name: 'This is production name',
-        upgradeNum: 'Upgraded: 56',
-      });
-    }
-    return <Table columns={columns} dataSource={data} pagination={false} />;
-  };
-
 
   render() {
-    const columns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Platform', dataIndex: 'platform', key: 'platform' },
-    { title: 'Version', dataIndex: 'version', key: 'version' },
-    { title: 'Upgraded', dataIndex: 'upgradeNum', key: 'upgradeNum' },
-    { title: 'Creator', dataIndex: 'creator', key: 'creator' },
-    { title: 'Date', dataIndex: 'createdAt', key: 'createdAt' },
-    { title: 'Action', key: 'operation', render: () => <a>Publish</a> },
-  ];
 
-  const data = [];
-  for (let i = 0; i < 3; ++i) {
-    data.push({
-      key: i,
-      name: 'Screem',
-      platform: 'iOS',
-      version: '10.3.4.5654',
-      upgradeNum: 500,
-      creator: 'Jack',
-      createdAt: '2014-12-24 23:12:00',
-    });
-  }
-    /*
+
+
+
     const columns = [
       {
         title: 'Network',
@@ -222,28 +162,34 @@ class List extends React.Component {
           </Space>
         ),
       }
-    ];*/
+    ];
 
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        {/*
+        <Button type="primary" onClick={() => this.details()}>
+          IP
+        </Button>
+        <Modal
+          title={<p style={{textAlign: 'center'}}>ADD NODE</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={750}
+        >
           <Table
-          columns={columns}
-          dataSource={this.props.containers}
-          bordered
-          rowKey="network"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
-        */}
-        <Table
-          
-          columns={columns}
-          expandable={ this.expandedRowRender }
-          dataSource={data}
-        />
+            columns={columns}
+            dataSource={null}
+            bordered
+            rowKey="name"
+            //pagination={false}
+            pagination={{ pageSize: 10 }}
+            style={{marginBottom: 10}}
+          />
+        </Modal>
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
 
@@ -256,4 +202,4 @@ export default connect((state) => ({
   authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers
-}))(List);
+}))(Ip);

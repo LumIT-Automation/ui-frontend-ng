@@ -173,7 +173,6 @@ class List extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.infoblox,
-  infobloxAsset: state.infoblox.infobloxAsset,
 
   networks: state.infoblox.networks
 }))(List);

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import { DownOutlined } from '@ant-design/icons';
 
-//import Modify from './modify'
+import Ip from '../ip'
 
 import { Table, Input, Button, Space, Spin, Collapse, Badge, Menu, Dropdown } from 'antd';
 
@@ -130,34 +130,7 @@ class List extends React.Component {
   expandedRowRender = () => {
     const columns = [
       { title: 'Date', dataIndex: 'date', key: 'date' },
-      { title: 'Name', dataIndex: 'name', key: 'name' },
-      {
-        title: 'Status',
-        key: 'state',
-        render: () => (
-          <span>
-            <Badge status="success" />
-            Finished
-          </span>
-        ),
-      },
-      { title: 'Upgrade Status', dataIndex: 'upgradeNum', key: 'upgradeNum' },
-      {
-        title: 'Action',
-        dataIndex: 'operation',
-        key: 'operation',
-        render: () => (
-          <Space size="middle">
-            <a>Pause</a>
-            <a>Stop</a>
-            <Dropdown overlay={menu}>
-              <a>
-                More <DownOutlined />
-              </a>
-            </Dropdown>
-          </Space>
-        ),
-      },
+
     ];
 
     const data = [];
@@ -165,8 +138,7 @@ class List extends React.Component {
       data.push({
         key: i,
         date: '2014-12-24 23:12:00',
-        name: 'This is production name',
-        upgradeNum: 'Upgraded: 56',
+
       });
     }
     return <Table columns={columns} dataSource={data} pagination={false} />;
@@ -174,28 +146,47 @@ class List extends React.Component {
 
 
   render() {
+    console.log(this.props.containers)
+
+    const expandedRowRender = () => {
     const columns = [
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Platform', dataIndex: 'platform', key: 'platform' },
-    { title: 'Version', dataIndex: 'version', key: 'version' },
-    { title: 'Upgraded', dataIndex: 'upgradeNum', key: 'upgradeNum' },
-    { title: 'Creator', dataIndex: 'creator', key: 'creator' },
-    { title: 'Date', dataIndex: 'createdAt', key: 'createdAt' },
-    { title: 'Action', key: 'operation', render: () => <a>Publish</a> },
-  ];
+      { title: 'Network', dataIndex: 'network', key: 'network' },
+      {
+         title: 'IP',
+         dataIndex: 'ip',
+         key: 'ip',
+         render: (name, obj)  => (
+           <Space size="small">
+             <Button type="primary" name='IP' />
+           </Space>
+         ),
+       },
+    ];
+
+    const data = [];
+    for (let i = 0; i < 3; ++i) {
+      data.push({
+        key: i,
+        network: '10.20.30.40/24',
+        ip: true
+      });
+    }
+    return <Table columns={columns} dataSource={data} pagination={false} />;
+  };
+
+    const containerColumns = [
+      { title: 'Container', dataIndex: 'container', key: 'container' },
+    ];
 
   const data = [];
-  for (let i = 0; i < 3; ++i) {
-    data.push({
-      key: i,
-      name: 'Screem',
-      platform: 'iOS',
-      version: '10.3.4.5654',
-      upgradeNum: 500,
-      creator: 'Jack',
-      createdAt: '2014-12-24 23:12:00',
-    });
-  }
+    this.props.containers.forEach( c => {
+      //console.log(c)
+      let network = c.network
+      data.push({
+        key: network,
+        container: network,
+      })
+    })
     /*
     const columns = [
       {
@@ -239,9 +230,9 @@ class List extends React.Component {
         />
         */}
         <Table
-          
-          columns={columns}
-          expandable={ this.expandedRowRender }
+
+          columns={containerColumns}
+          expandable={{ expandedRowRender }}
           dataSource={data}
         />
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}

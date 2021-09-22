@@ -7,7 +7,7 @@ import Rest from "../_helpers/Rest";
 import Error from '../error'
 
 import AssetSelector from './assetSelector'
-import Containers from './containers/manager'
+import Containers from './containersTemp/manager'
 import Networks from './networks/manager'
 
 

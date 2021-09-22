@@ -25,7 +25,7 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.infobloxAssets) {
+    if (this.props.assets) {
       this.setEnvironmentList()
     }
   }
@@ -35,7 +35,7 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.infobloxAssets !== prevProps.infobloxAssets) {
+    if (this.props.assets !== prevProps.assets) {
       this.setEnvironmentList()
     }
   }
@@ -47,7 +47,7 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   setEnvironmentList = () => {
-    const items = Object.assign([], this.props.infobloxAssets)
+    const items = Object.assign([], this.props.assets)
     const list = items.map( e => {
       return e.environment
     })
@@ -64,22 +64,22 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   setEnvAssets = e => {
-    let envAssets = this.props.infobloxAssets.filter( a => {
+    let envAssets = this.props.assets.filter( a => {
       return a.environment === e
     })
     this.setState({ envAssets: envAssets })
   }
 
   setAsset = address => {
-    let asset = this.props.infobloxAssets.find( a => {
+    let asset = this.props.assets.find( a => {
       return a.address === address
     })
     this.props.dispatch(setInfobloxAsset(asset))
   }
 
   assetString = () => {
-    if (this.props.infobloxAsset) {
-      let a = `${this.props.infobloxAsset.fqdn} - ${this.props.infobloxAsset.address }`
+    if (this.props.asset) {
+      let a = `${this.props.asset.fqdn} - ${this.props.asset.address }`
       return a
     }
     else {
@@ -156,6 +156,6 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.infoblox,
   environment: state.infoblox.environment,
-  infobloxAssets: state.infoblox.infobloxAssets,
-  infobloxAsset: state.infoblox.infobloxAsset,
+  assets: state.infoblox.infobloxAssets,
+  asset: state.infoblox.infobloxAsset,
 }))(InfobloxAssetSelector);
