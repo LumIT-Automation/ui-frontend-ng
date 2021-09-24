@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { Component, } from "react";
 import { Provider} from 'react-redux';
 
-import Login from './Login'
 import App from './App';
 
 import store from './_store/store'
@@ -32,7 +31,6 @@ class Index extends Component {
   render() {
     return (
       <Provider store={store}>
-        <Login/>
         <App/>
       </Provider>
     );

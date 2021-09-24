@@ -6,23 +6,13 @@ import { Layout, Form, Input, Button, Row, Col, Card } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 import Rest from "./_helpers/Rest";
+import Error from './error'
+
 import { login } from './_store/store.auth'
-import { setAuthorizations } from './_store/store.authorizations'
 
 import 'antd/dist/antd.css';
 
 const { Header } = Layout;
-
-/*
-The first thing Login does is to see if the token and username cookies are present.
-If username and token cookie are present Login sets them in the store using the login method of the auth slice.
-In this way state.auth is virtually persistent to the reload of the page.
-
-Otherwise it presents the authentication form, which if properly filled out makes the call to /auth/api/v1/token/
-
-if the answer is correct, it sets the store and cookies.
-In case of an error, print the error in a card.
-*/
 
 
 class Login extends Component {
@@ -32,37 +22,10 @@ class Login extends Component {
     this.state = {
       errors: "",
     }
-/*
-    // Check if token already saved: in this case no login is needed.
-    let token, username;
 
-
-
-    try {
-      token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
-      username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
-
-      if (token && username) {
-        // Update the store.
-        this.props.dispatch(login({
-          authenticated: true,
-          username: username,
-          token: token
-        })
-      )
-      }
-      setTimeout(() => this.fetchAuthorizations(), 200)
-
-    }
-    catch (e) {
-      ;
-    }*/
   }
 
   componentDidMount() {
-    this.isAuthenticated()
-    .then( this.fetchAuthorizations() )
-    .catch(() => this.render())
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -70,37 +33,12 @@ class Login extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.token && this.props.authenticated ) {
-      this.fetchAuthorizations()
-    }
   }
 
   componentWillUnmount() {
   }
 
-  isAuthenticated = () => {
-    return new Promise( (resolve, reject) => {
-      let token, username;
-      try {
-        token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
-        username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
 
-        if (token && username) {
-          // Update the store.
-          this.props.dispatch(login({
-            authenticated: true,
-            username: username,
-            token: token
-          })
-        )
-        }
-        resolve()
-      }
-      catch (e) {
-        reject(e)
-      }
-    })
-  }
 
   onFormSubmit = async data => {
     // XHR for token.
@@ -123,7 +61,7 @@ class Login extends Component {
           document.cookie = "token="+response.access;
           document.cookie = "username="+data.username;
 
-          this.fetchAuthorizations()
+          //this.fetchAuthorizations()
         },
 
         error => {
@@ -140,24 +78,8 @@ class Login extends Component {
     }
   }
 
-  fetchAuthorizations = async () => {
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setAuthorizations( resp ))
-      },
-      error => {
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`authorizations/`, this.props.token)
-  }
-
-
   render() {
 
-
-    if (!this.props.authenticated) {
       if (!this.state.errors) {
         return (
           <Layout>
@@ -236,16 +158,11 @@ class Login extends Component {
           </Layout>
         );
       }
-    }
 
-    // Hide this component.
-    else {
-      return null;
-    }
+
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
-  authenticated: state.ssoAuth.authenticated
+
 }))(Login);

@@ -30,19 +30,6 @@ import {connect} from "react-redux";
 const { Header, Content } = Layout;
 
 
-/*
-App receives authenticated and username from the store and maps them as props.
-
-If the user is authenticated, the App component is rendered.
-It contains all the app's components.
-
-It performs the following functions:
-  provides the Header that provides the possibility to Logout,
-  provides the Sider that contains the links to the pages,
-  has the Routes to render the components that match the url,
-  wraps all components with the BrowserRouter, thus providing methods in each component's props.
-*/
-
 
 class Concerto extends Component {
 
@@ -54,6 +41,8 @@ class Concerto extends Component {
 
   componentDidMount() {
     console.log('Concerto mounted')
+    console.log('chiedo authorization')
+    this.fetchAuthorizations()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -67,6 +56,20 @@ class Concerto extends Component {
     console.log('Concerto unmounted')
   }
 
+
+  fetchAuthorizations = async () => {
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log(resp)
+        this.props.dispatch(setAuthorizations( resp ))
+      },
+      error => {
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`authorizations/`, this.props.token)
+  }
 
   resetPassword = () => {
     /*
@@ -90,16 +93,9 @@ class Concerto extends Component {
   deleteCookies = (token, username) => {
     return new Promise( (resolve, reject) => {
       try {
-        //document.cookie = `${token}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=https://10.0.111.10 `
-        //document.cookie = `${username}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=https://10.0.111.10 `
-        //document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure";
-        //document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=None; Secure";
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-
-        //if ( document.cookie.search("token") === -1 && document.cookie.search("username") === -1  ) {
-          resolve()
-        //}
+        resolve()
       }
       catch(e) {
         reject(e)
@@ -108,11 +104,9 @@ class Concerto extends Component {
   }
 
   logout = () => {
-    console.log('this.logout')
-    window.localStorage.removeItem('myCat');
-    window.localStorage.setItem('myCat', 'Gerry');
     this.deleteCookies('token', 'username').then( this.props.dispatch( logout() ) )
   }
+
 
   render() {
     const menu = (
@@ -126,74 +120,70 @@ class Concerto extends Component {
       </Menu>
     )
 
-    if (this.props.authenticated) {
-      return (
-        <Layout style={{overflow: 'initial'}}>
-          <Header className="header">
-            <div>
-              <Dropdown overlay={menu} trigger={['click']}>
-                <Avatar
-                style={{float: "right", marginTop: '15px'}}
-                icon={<UserOutlined/>}
-                //onClick={() => this.logout()}
-                >
-                </Avatar>
-              </Dropdown>
-              <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
-            </div>
-          </Header>
-          <BrowserRouter>
-            <Layout>
-              <CustomSider/>
-              <Layout style={{padding: '0 24px 24px'}}>
+    return (
+      <Layout style={{overflow: 'initial'}}>
+        <Header className="header">
+          <div>
+            <Dropdown overlay={menu} trigger={['click']}>
+              <Avatar
+              style={{float: "right", marginTop: '15px'}}
+              icon={<UserOutlined/>}
+              //onClick={() => this.logout()}
+              >
+              </Avatar>
+            </Dropdown>
+            <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
+          </div>
+        </Header>
+        <BrowserRouter>
+          <Layout>
+            <CustomSider/>
+            <Layout style={{padding: '0 24px 24px'}}>
 
-                <Content
-                  className="site-layout-background"
-                  style={{
-                    margin: '3vh 0vw 0vh 0vw',
-                    minHeight: '100vh',
-                  }}
-                >
-                  <Switch>
+              <Content
+                className="site-layout-background"
+                style={{
+                  margin: '3vh 0vw 0vh 0vw',
+                  minHeight: '100vh',
+                }}
+              >
+                <Switch>
 
-                    <Route exact path='/' component={Homepage}/>
-                    <Route path='/infoblox/' component={Infoblox}/>
-                    <Route path='/f5/' component={F5}/>
-                    <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
-                    <Route path='/services/' component={Service}/>
-                    <Route path='/assets/' component={Assets}/>
+                  <Route exact path='/' component={Homepage}/>
+                  <Route path='/infoblox/' component={Infoblox}/>
+                  <Route path='/f5/' component={F5}/>
+                  <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
+                  <Route path='/services/' component={Service}/>
+                  <Route path='/assets/' component={Assets}/>
 
-                    { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
-                      <Route path='/permissions/' component={Permissions}/>
-                      : null
-                    }
+                  { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
+                    <Route path='/permissions/' component={Permissions}/>
+                    : null
+                  }
 
-                  </Switch>
-                </Content>
-              </Layout>
+                </Switch>
+              </Content>
             </Layout>
-          </BrowserRouter>
+          </Layout>
+        </BrowserRouter>
 
-          {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
-        </Layout>
-      );
-    }
-
-    // Hide this component.
-    else {
-      return null;
+        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+      </Layout>
+    )
     }
 
   }
-}
+
 
 export default connect((state) => ({
   authenticated: state.ssoAuth.authenticated,
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  permissions: state.permissions,
+  //permissions: state.permissions,
+  /*
   infobloxAssetsLoading: state.infoblox.infobloxAssetsLoading,
   infobloxAssets: state.infoblox.infobloxAssets,
   infobloxAssetsFetchStatus: state.infoblox.infobloxAssetsFetchStatus,
+  */
 }))(Concerto);
