@@ -23,6 +23,21 @@ const f5Slice = createSlice({
         setAssetList: (state, action) => {
           state.assetList = action.payload.data.items
         },
+
+        setAssetsLoading: (state, action) => {
+          console.log('store asset loading')
+          console.log(action.payload)
+          state.assetsLoading = action.payload
+        },
+        setAssets: (state, action) => {
+          console.log('store asset')
+          console.log(action.payload.data.items)
+          state.assets = action.payload.data.items
+        },
+        setAssetsFetchStatus: (state, action) => {
+          state.assetsFetchStatus = action.payload
+        },
+
         selectAsset: (state, action) => {
           state.asset = action.payload
         },
@@ -165,6 +180,11 @@ const { actions, reducer } = f5Slice;
 export const {
   setEnvironment,
   setAssetList,
+
+  setAssetsLoading,
+  setAssets,
+  setAssetsFetchStatus,
+
   selectAsset,
   setPartitions,
   selectPartition,

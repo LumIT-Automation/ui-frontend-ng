@@ -3,14 +3,8 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
-import F5Manager from './f5/container'
-import InfobloxManager from './infoblox/manager'
-
-import Rest from "../_helpers/Rest";
-import { setAssetList, cleanUp } from '../_store/store.f5'
-import { setInfobloxAssetsLoading, setInfobloxAssets, setInfobloxAssetsFetchStatus } from '../_store/store.infoblox'
-
-
+import F5 from './f5/manager'
+import Infoblox from './infoblox/manager'
 import Error from '../error'
 
 import 'antd/dist/antd.css';
@@ -47,11 +41,6 @@ class Assets extends React.Component {
   }
 
   componentDidMount() {
-    console.log('assets')
-    if (this.props.token) {
-      this.fetchF5Assets()
-      this.fetchInfobloxAssets()
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -59,44 +48,10 @@ class Assets extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.infobloxAssetsFetchStatus === 'updated') ) {
-      this.fetchInfobloxAssets()
-      this.props.dispatch(setInfobloxAssetsFetchStatus(''))
-    }
   }
 
   componentWillUnmount() {
-    this.props.dispatch(cleanUp())
-  }
 
-
-  fetchF5Assets = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setAssetList( resp )))
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR("f5/assets/", this.props.token)
-  }
-
-  fetchInfobloxAssets = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setInfobloxAssets( resp )))
-        console.log(resp)
-      },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
   resetError = () => {
@@ -105,19 +60,24 @@ class Assets extends React.Component {
 
 
   render() {
-    console.log('assets')
-    console.log(this.props.infobloxAssets)
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
         <Tabs type="card" destroyInactiveTabPane={true}>
-          <TabPane tab="F5" key="f5">
-            {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <F5Manager/> }
-          </TabPane>
-
-          <TabPane tab="Infoblox" key="infoblox">
-            {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <InfobloxManager/> }
-          </TabPane>
+          { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
+            <TabPane tab="F5" key="f5">
+              {this.props.f5assetsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <F5/> }
+            </TabPane>
+            :
+            null
+          }
+          { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
+            <TabPane tab="Infoblox" key="infoblox">
+              {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
+            </TabPane>
+            :
+            null
+          }
         </Tabs>
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
@@ -128,10 +88,8 @@ class Assets extends React.Component {
 
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList,
-  infobloxAssetsLoading: state.infoblox.infobloxAssetsLoading,
-  infobloxAssets: state.infoblox.infobloxAssets,
-  infobloxAssetsFetchStatus: state.infoblox.infobloxAssetsFetchStatus
+  f5auth: state.authorizations.f5,
+  infobloxAuth: state.authorizations.infoblox,
+  f5assetsLoading: state.f5.assetsLoading,
+  infobloxAssetsLoading: state.infoblox.assetsLoading
 }))(Assets);

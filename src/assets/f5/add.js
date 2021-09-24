@@ -275,9 +275,9 @@ class Add extends React.Component {
 
 
     return (
-      <Space direction='vertical'>
+      <Space direction='vertical' style={{display: 'inline-block'}}>
 
-          <Button type="primary" onClick={() => this.details()}>
+          <Button type="primary" onClick={() => this.details()} style={{display: 'inline-block'}}>
             Add Asset
           </Button>
 

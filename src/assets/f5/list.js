@@ -13,7 +13,7 @@ import { SearchOutlined } from '@ant-design/icons';
 
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+Asset is a table that receives assets: state.f5.assets from the store and render it.
 */
 
 
@@ -170,7 +170,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
+           { this.props.f5auth && (this.props.f5auth.asset_patch || this.props.f5auth.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -185,7 +185,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
+            { this.props.f5auth && (this.props.f5auth.asset_delete || this.props.f5auth.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -200,7 +200,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.assetList}
+          dataSource={this.props.assets}
           bordered
           rowKey="id"
           //pagination={false}
@@ -215,6 +215,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  assetList: state.f5.assetList,
-  authorizations: state.authorizations.f5
+  assets: state.f5.assets,
+  f5auth: state.authorizations.f5
 }))(List);

@@ -40,6 +40,7 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
+    console.log('monto Concerto')
     this.fetchAuthorizations()
   }
 
@@ -93,8 +94,6 @@ class Concerto extends Component {
 
 
   render() {
-    console.log('rrrrrrrrr')
-    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?
@@ -171,9 +170,8 @@ class Concerto extends Component {
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
       </Layout>
     )
-    }
-
   }
+}
 
 
 export default connect((state) => ({
