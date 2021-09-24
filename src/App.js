@@ -21,7 +21,6 @@ class App extends Component {
   }
 
   componentDidMount() {
-    console.log('monto app')
     this.isAuthenticated()
   }
 
@@ -33,7 +32,6 @@ class App extends Component {
   }
 
   componentWillUnmount() {
-    console.log('unmont app')
   }
 
   isAuthenticated = () => {

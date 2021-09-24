@@ -40,8 +40,6 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    console.log('Concerto mounted')
-    console.log('chiedo authorization')
     this.fetchAuthorizations()
   }
 
@@ -53,7 +51,6 @@ class Concerto extends Component {
   }
 
   componentWillUnmount() {
-    console.log('Concerto unmounted')
   }
 
 
@@ -61,7 +58,6 @@ class Concerto extends Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(setAuthorizations( resp ))
       },
       error => {
@@ -72,18 +68,6 @@ class Concerto extends Component {
   }
 
   resetPassword = () => {
-    /*
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setAuthorizations( resp ))
-      },
-      error => {
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`authorizations/`, this.props.token)
-    */
   }
 
   resetError = () => {
@@ -109,6 +93,8 @@ class Concerto extends Component {
 
 
   render() {
+    console.log('rrrrrrrrr')
+    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?
@@ -149,14 +135,29 @@ class Concerto extends Component {
               >
                 <Switch>
 
+
                   <Route exact path='/' component={Homepage}/>
-                  <Route path='/infoblox/' component={Infoblox}/>
-                  <Route path='/f5/' component={F5}/>
-                  <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
+
+                  { this.props.authorizations && (this.props.authorizations.infoblox || this.props.authorizations.any) ?
+                    <Route path='/infoblox/' component={Infoblox}/>
+                    : null
+                  }
+
+                  { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+                    <Route path='/f5/' component={F5}/>
+                    : null
+                  }
+
+                  { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+                    <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
+                    : null
+                  }
+
                   <Route path='/services/' component={Service}/>
+
                   <Route path='/assets/' component={Assets}/>
 
-                  { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
+                  { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
                     <Route path='/permissions/' component={Permissions}/>
                     : null
                   }
@@ -176,14 +177,9 @@ class Concerto extends Component {
 
 
 export default connect((state) => ({
-  authenticated: state.ssoAuth.authenticated,
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  //permissions: state.permissions,
-  /*
-  infobloxAssetsLoading: state.infoblox.infobloxAssetsLoading,
-  infobloxAssets: state.infoblox.infobloxAssets,
-  infobloxAssetsFetchStatus: state.infoblox.infobloxAssetsFetchStatus,
-  */
+  authorizations: state.authorizations,
+  f5auth: state.authorizations.f5,
+  infobloxAuth: state.authorizations.infoblox,
 }))(Concerto);

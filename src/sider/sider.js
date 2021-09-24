@@ -82,6 +82,7 @@ class CustomSider extends Component {
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
 
   render(){
+
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
     return (
@@ -95,22 +96,44 @@ class CustomSider extends Component {
           mode="inline"
           style={{ borderRight: 0 }}
         >
+
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
-          <Menu.Divider/>
 
-          <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'20px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
-          <Menu.Divider/>
+          { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
+            <React.Fragment>
+              <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
 
-          <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
-          <Menu.Divider/>
+          { this.props.f5auth && (this.props.authorizations.cisco || this.props.f5auth.any) ?
+            <React.Fragment>
+              <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'20px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
 
-          <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
-          <Menu.Divider/>
+          { this.props.f5auth && (this.props.authorizations.fortinet || this.props.f5auth.any) ?
+            <React.Fragment>
+              <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
 
-          { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
+          { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+            <React.Fragment>
+              <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
+
+          { this.props.f5auth && (this.props.f5auth.certificates_get || this.props.f5auth.any) ?
             <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
             :
             null
@@ -120,7 +143,7 @@ class CustomSider extends Component {
           <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
-          { this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any) ?
+          { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
@@ -132,7 +155,7 @@ class CustomSider extends Component {
 
 
 
-          { this.props.authorizations && (this.props.authorizations.permission_identityGroups_get || this.props.authorizations.any) ?
+          { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
@@ -150,9 +173,7 @@ class CustomSider extends Component {
 }
 
 export default connect((state) => ({
-  authenticated: state.ssoAuth.authenticated,
-  username: state.ssoAuth.username,
-  token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  permissions: state.permissions
+  authorizations: state.authorizations,
+  f5auth: state.authorizations.f5,
+  infobloxAuth: state.authorizations.infoblox,
 }))(CustomSider);
