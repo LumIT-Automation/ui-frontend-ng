@@ -5,15 +5,13 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setPoolsLoading, setPools, setPoolsFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -34,6 +32,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.pools) {
+        this.fetchPools()
+      }
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -41,9 +44,37 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.pools) {
+        this.fetchPools()
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.fetchPools()
+      }
+      if ( (this.props.poolsFetchStatus === 'updated') ) {
+        this.fetchPools()
+        this.props.dispatch(setPoolsFetchStatus(''))
+      }
+    }
   }
 
   componentWillUnmount() {
+  }
+
+
+  fetchPools = async () => {
+    this.props.dispatch(setPoolsLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setPools(resp))
+      },
+      error => {
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
+    this.props.dispatch(setPoolsLoading(false))
   }
 
   resetError = () => {
@@ -54,13 +85,10 @@ class Manager extends React.Component {
   render() {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
+        <br/>
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.authorizations && (this.props.authorizations.pools_post || this.props.authorizations.any) ?
-          <div>
-            <br/>
+         this.props.f5auth && (this.props.f5auth.pools_post || this.props.f5auth.any) ?
             <Add/>
-          </div>
           :
           null
         :
@@ -68,7 +96,7 @@ class Manager extends React.Component {
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-        this.props.poolsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+        <List/>
         :
         <Alert message="Asset and Partition not set" type="error" />
       }
@@ -82,8 +110,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
+  f5auth: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  poolsLoading: state.f5.poolsLoading
+  pools: state.f5.pools,
+  poolsFetchStatus: state.f5.poolsFetchStatus
 }))(Manager);

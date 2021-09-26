@@ -1,6 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
@@ -11,9 +12,6 @@ import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
-
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -65,7 +63,6 @@ class Manager extends React.Component {
 
 
   fetchNodes = async () => {
-    console.log('fetchnodes')
     this.props.dispatch(setNodesLoading(true))
     let rest = new Rest(
       "GET",
@@ -86,8 +83,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log('nodes manager')
-    console.log(this.props.nodes)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
