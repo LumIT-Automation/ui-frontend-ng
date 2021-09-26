@@ -1,17 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
+
+import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -33,7 +33,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.monitors) {
+        this.fetchMonitors()
+      }
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -41,10 +45,85 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.monitors) {
+        this.fetchMonitors()
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.fetchMonitors()
+      }
+      if ( (this.props.monitorsFetchStatus === 'updated') ) {
+        this.fetchMonitors()
+        this.props.dispatch(setMonitorsFetchStatus(''))
+      }
+    }
   }
 
   componentWillUnmount() {
+  }
+
+  fetchMonitors = async () => {
+    this.props.dispatch(setMonitorsLoading(true))
+
+    let monitorTypes = await this.fetchMonitorsTypeList()
+    this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
+
+    let monitors = await this.monitorsLoop(monitorTypes.data.items)
+    this.props.dispatch(setMonitorsLoading(false))
+    this.props.dispatch(setMonitors(monitors))
+  }
+
+  fetchMonitorsTypeList = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
+    return r
+  }
+
+  monitorsLoop = async types => {
+
+    const promises = types.map(async type => {
+      const resp = await this.fetchMonitorsByType(type)
+      resp.data.items.forEach(item => {
+        Object.assign(item, {type: type});
+      })
+      return resp
+    })
+
+    const response = await Promise.all(promises)
+
+    let list = []
+    response.forEach(r => {
+      r.data.items.forEach(m => {
+       list.push(m)
+      })
+    })
+    return list
+  }
+
+  fetchMonitorsByType = async (type) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
+    return r
   }
 
   resetError = () => {
@@ -55,13 +134,10 @@ class Manager extends React.Component {
   render() {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
+        <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
            this.props.authorizations && (this.props.authorizations.monitors_post || this.props.authorizations.any) ?
-            <div>
-              <br/>
               <Add/>
-            </div>
             :
             null
           :
@@ -69,7 +145,7 @@ class Manager extends React.Component {
         }
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.props.monitorsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -88,5 +164,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors,
-  monitorsLoading: state.f5.monitorsLoading
+  monitorsFetchStatus: state.f5.monitorsFetchStatus
 }))(Manager);

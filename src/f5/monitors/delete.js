@@ -7,9 +7,10 @@ import Error from '../../error'
 import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -48,11 +49,10 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        //this.setState({loading: false, success: true})
-        this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
+        this.setState({loading: false, success: true}, () =>  this.props.dispatch(setMonitorsFetchStatus('updated')) )
       },
       error => {
-        this.setState( {loading: false, error: error, success: false}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
+        this.setState({loading: false, success: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
@@ -75,9 +75,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Monitor
-        </Button>
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
 
         <Modal
@@ -90,7 +88,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"
@@ -133,8 +131,6 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors
 }))(Delete);

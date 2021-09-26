@@ -8,9 +8,9 @@ import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -142,11 +142,10 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
-          this.success()
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState({loading: false, success: false, error: error}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.body.monitorType}/`, this.props.token, body)
@@ -155,6 +154,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setMonitorsFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -174,9 +174,7 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button type="primary" onClick={() => this.details()}>
-            Add Monitors
-          </Button>
+          <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD MONITOR</p>}
@@ -188,7 +186,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -288,6 +286,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors,
   monitorTypes: state.f5.monitorTypes
 }))(Add);

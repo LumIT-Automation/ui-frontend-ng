@@ -8,9 +8,9 @@ import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 /*
@@ -115,15 +115,15 @@ class Modify extends React.Component {
           }
         }
 
+      this.setState({loading: true})
+
       let rest = new Rest(
         "PATCH",
         resp => {
-          //this.setState({loading: false, success: true}, () => this.fetchMonitors())
-          this.setState( {loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
-          //this.setState({loading: false, success: true}, () => this.props.dispatch(setMonitorsFetchStatus('updated')))
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState( {loading: false, error: error, success: false}, () => this.props.dispatch(setMonitorsFetchStatus('updated')) )
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token, body )
@@ -136,7 +136,8 @@ class Modify extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.closeModal(), 4050)
+    setTimeout( () => this.props.dispatch(setMonitorsFetchStatus('updated')), 2030)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
@@ -153,9 +154,7 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>
-          Modify Monitor
-        </Button>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>MODIFY MONITOR</p>}
@@ -167,7 +166,7 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -244,7 +243,6 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors

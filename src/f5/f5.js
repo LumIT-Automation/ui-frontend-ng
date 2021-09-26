@@ -17,14 +17,12 @@ import VirtualServers from './virtualServers/manager'
 import {
   setAssetList,
   setNodesFetchStatus,
+  setMonitorsFetchStatus,
   setPoolsFetchStatus,
   setVirtualServersFetchStatus,
 
 
   setMonitorTypes,
-  setMonitorsLoading,
-  setMonitors,
-  setMonitorsFetchStatus,
 
   setProfileTypes,
   setProfilesLoading,
@@ -79,9 +77,11 @@ class F5 extends React.Component {
         this.fetchNodes()
       }
       */
+      /*
       if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchMonitors()
       }
+      */
       /*
       if (this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchPools()
@@ -107,7 +107,7 @@ class F5 extends React.Component {
     }
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
       //this.fetchNodes()
-      this.fetchMonitors()
+      //this.fetchMonitors()
       //this.fetchPools()
       this.fetchProfiles()
       //this.fetchVirtualServers()
@@ -118,10 +118,13 @@ class F5 extends React.Component {
       this.props.dispatch(setNodesFetchStatus(''))
     }
     */
+    /*
     if ( (this.props.monitorsFetchStatus === 'updated') ) {
       this.fetchMonitors()
       this.props.dispatch(setMonitorsFetchStatus(''))
-    }/*
+    }
+    */
+    /*
     if ( (this.props.poolsFetchStatus === 'updated') ) {
       this.fetchPools()
       this.props.dispatch(setPoolsFetchStatus(''))
@@ -172,6 +175,7 @@ class F5 extends React.Component {
   }
 */
 
+/*
   fetchMonitors = async () => {
     this.props.dispatch(setMonitorsLoading(true))
 
@@ -235,6 +239,7 @@ class F5 extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
     return r
   }
+*/
 
 /*
   fetchPools = async () => {
@@ -339,6 +344,10 @@ class F5 extends React.Component {
     this.props.dispatch(setNodesFetchStatus('updated'))
   }
 
+  monitorsRefresh = () => {
+    this.props.dispatch(setMonitorsFetchStatus('updated'))
+  }
+
   poolsRefresh = () => {
     this.props.dispatch(setPoolsFetchStatus('updated'))
   }
@@ -367,8 +376,8 @@ class F5 extends React.Component {
               : null
             }
             { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
-              <TabPane tab="Monitors" key="Monitors">
-                <Monitors/>
+                <TabPane key="Monitors" tab=<span>Monitors <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.monitorsRefresh()}/></span>>
+                {this.props.monitorsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Monitors/> }
               </TabPane>
               : null
             }
@@ -415,14 +424,9 @@ export default connect((state) => ({
   partition: state.f5.partition,
 
   nodesLoading: state.f5.nodesLoading,
+  monitorsLoading: state.f5.monitorsLoading,
   poolsLoading: state.f5.poolsLoading,
   virtualServersLoading: state.f5.virtualServersLoading,
-  //nodesFetchStatus: state.f5.nodesFetchStatus,
-
-  monitors: state.f5.monitors,
-  monitorsFetchStatus: state.f5.monitorsFetchStatus,
-
-  //poolsFetchStatus: state.f5.poolsFetchStatus,
 
   profiles: state.f5.profiles,
   profilesFetchStatus: state.f5.profilesFetchStatus,
