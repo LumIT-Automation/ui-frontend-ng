@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
@@ -8,9 +8,9 @@ import { setProfilesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 /*
@@ -114,14 +114,15 @@ class Modify extends React.Component {
           }
         }
 
+      this.setState({loading: true})
+
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState( {loading: false, success: true}, () => this.props.dispatch(setProfilesFetchStatus('updated')) )
-          this.success()
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setProfilesFetchStatus('updated')))
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/fastl4/${this.props.obj.name}/`, this.props.token, body )
@@ -134,6 +135,7 @@ class Modify extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setProfilesFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -149,9 +151,7 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>
-          Modify Profile
-        </Button>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
@@ -163,7 +163,7 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -240,7 +240,6 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   profiles: state.f5.profiles

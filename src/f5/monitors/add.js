@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
@@ -8,7 +8,7 @@ import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
@@ -174,7 +174,7 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD MONITOR</p>}
@@ -283,7 +283,6 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitorTypes: state.f5.monitorTypes

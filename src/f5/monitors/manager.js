@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
+import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetchStatus } from '../../_store/store.f5'
@@ -10,8 +10,8 @@ import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetchStatu
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Table, Input, Button, Space, Spin, Alert } from 'antd'
+import Highlighter from 'react-highlight-words'
 
 
 

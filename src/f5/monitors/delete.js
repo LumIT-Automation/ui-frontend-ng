@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
@@ -6,7 +6,7 @@ import Error from '../../error'
 
 import { setMonitorsFetchStatus } from '../../_store/store.f5'
 
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
+import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -76,7 +76,6 @@ class Delete extends React.Component {
       <Space direction='vertical'>
 
         <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
-
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE MONITOR</p>}

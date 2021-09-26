@@ -1,17 +1,18 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest";
+
+import Rest from "../../_helpers/Rest"
 import Error from '../../error'
+
+import { setProfileTypes, setProfilesLoading, setProfiles, setProfilesFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { Table, Input, Button, Space, Spin, Alert } from 'antd'
+import Highlighter from 'react-highlight-words'
+
 
 
 
@@ -33,6 +34,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.profiles) {
+        this.fetchProfiles()
+      }
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -40,23 +46,86 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.profiles) {
+        this.fetchProfiles()
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.fetchProfiles()
+      }
+      if ( (this.props.profilesFetchStatus === 'updated') ) {
+        this.fetchProfiles()
+        this.props.dispatch(setProfilesFetchStatus(''))
+      }
+    }
   }
 
   componentWillUnmount() {
   }
 
-  storeSetter = resp => {
-    return new Promise( (resolve, reject) => {
-      try {
-        this.props.dispatch(setProfileTypes( resp ))
-        if ( this.props.profileTypes  ) {
-          resolve(this.props.profileTypes)
-        }
+  fetchProfiles = async () => {
+    this.props.dispatch(setProfilesLoading(true))
+
+    let profileTypes = await this.fetchProfilesTypeList()
+    this.props.dispatch(setProfileTypes(profileTypes.data.items))
+
+    let profiles = await this.profilesLoop(profileTypes.data.items)
+    this.props.dispatch(setProfilesLoading(false))
+    this.props.dispatch(setProfiles(profiles))
+  }
+
+  fetchProfilesTypeList = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
       }
-      catch(e) {
-        reject(e)
-      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
+    return r
+  }
+
+  profilesLoop = async types => {
+
+    const promises = types.map(async type => {
+      const resp = await this.fetchProfilesByType(type)
+      resp.data.items.forEach(item => {
+        Object.assign(item, {type: type});
+      })
+      return resp
     })
+
+    const response = await Promise.all(promises)
+
+    let list = []
+    response.forEach(r => {
+      r.data.items.forEach(m => {
+       list.push(m)
+      })
+    })
+
+    return list
+  }
+
+  fetchProfilesByType = async (type) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.setState({error: error})
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${type}/`, this.props.token)
+    return r
   }
 
 
@@ -68,13 +137,10 @@ class Manager extends React.Component {
   render() {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
+        <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
            this.props.authorizations && (this.props.authorizations.profiles_post || this.props.authorizations.any) ?
-            <div>
-              <br/>
-              <Add/>
-            </div>
+            <Add/>
             :
             null
           :
@@ -82,7 +148,7 @@ class Manager extends React.Component {
         }
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.props.profilesLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -101,5 +167,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   profiles: state.f5.profiles,
-  profilesLoading: state.f5.profilesLoading
+  profilesFetchStatus: state.f5.profilesFetchStatus
 }))(Manager);

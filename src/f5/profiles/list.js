@@ -193,9 +193,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  asset: state.f5.asset,
-  partition: state.f5.partition,
   profiles: state.f5.profiles
 }))(List);
