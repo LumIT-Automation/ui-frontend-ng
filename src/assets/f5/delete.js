@@ -7,9 +7,11 @@ import Error from '../../error'
 import { setAssetList } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+
+
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -90,10 +92,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
-        </Button>
-
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}

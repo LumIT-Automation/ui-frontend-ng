@@ -40,7 +40,6 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    console.log('monto Concerto')
     this.fetchAuthorizations()
   }
 
@@ -137,7 +136,7 @@ class Concerto extends Component {
 
                   <Route exact path='/' component={Homepage}/>
 
-                  { this.props.authorizations && (this.props.authorizations.infoblox || this.props.authorizations.any) ?
+                  { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
                     <Route path='/infoblox/' component={Infoblox}/>
                     : null
                   }

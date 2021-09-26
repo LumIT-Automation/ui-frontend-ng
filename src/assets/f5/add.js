@@ -8,9 +8,13 @@ import { setAssetList } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
+import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -275,11 +279,9 @@ class Add extends React.Component {
 
 
     return (
-      <Space direction='vertical' style={{display: 'inline-block'}}>
+      <Space direction='vertical' >
 
-          <Button type="primary" onClick={() => this.details()} style={{display: 'inline-block'}}>
-            Add Asset
-          </Button>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD ASSET</p>}
@@ -291,7 +293,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"

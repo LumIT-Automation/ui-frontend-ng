@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
@@ -11,25 +10,11 @@ import 'antd/dist/antd.css';
 import '../App.css'
 
 const { TabPane } = Tabs;
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-//const { Search } = Input;
 
+import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-/*
-This is the parent component of the f5 category.
-
-At mount it calls /assets/ to get the list of assets present in udb and it sets it in the store.
-The other components will recive as props:
-  state.f5.assets
-
-Then render sub Tabs
-
-if there is a error (no assetList in the response) renders Error component.
-It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
-
-At the unmount it reset state.f5 in the store.
-*/
-
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 
 class Assets extends React.Component {
 
@@ -65,15 +50,17 @@ class Assets extends React.Component {
 
         <Tabs type="card" destroyInactiveTabPane={true}>
           { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
-            <TabPane tab="F5" key="f5">
-              {this.props.f5assetsLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <F5/> }
+            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => alert('ciao')}/></span>>
+              {this.props.f5assetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+                <F5/>
+            }
             </TabPane>
             :
             null
           }
-          { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
+          { this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any) ?
             <TabPane tab="Infoblox" key="infoblox">
-              {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
+              {this.props.infobloxAssetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
             </TabPane>
             :
             null

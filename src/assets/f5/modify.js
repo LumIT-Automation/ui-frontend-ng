@@ -8,9 +8,9 @@ import { setAssetList } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
+import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 /*
@@ -268,10 +268,8 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>
-          Modify Asset
-        </Button>
-
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        
         <Modal
           title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
           centered
