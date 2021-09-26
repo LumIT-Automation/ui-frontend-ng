@@ -8,9 +8,9 @@ import { setPools, setPoolsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Table, Divider } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 /*
@@ -406,9 +406,7 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>
-          Details and Modify
-        </Button>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>MODIFY POOL</p>}
@@ -420,7 +418,7 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"

@@ -8,9 +8,9 @@ import { setPoolMembersFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Divider } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -151,9 +151,7 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button style={{marginLeft: '200px'}} type="primary" onClick={() => this.details()}>
-            Add Member
-          </Button>
+        <Button icon={addIcon} style={{marginLeft: '200px'}} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD POOL</p>}
@@ -165,7 +163,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -243,7 +241,6 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
