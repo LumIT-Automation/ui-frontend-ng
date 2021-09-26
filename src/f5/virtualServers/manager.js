@@ -1,19 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { setVirtualServers } from '../../_store/store.f5'
 
+import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 //import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -34,11 +32,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    /*
-    if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.partition ) {
-      this.fetchVirtualServers()
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.virtualServers) {
+        this.fetchVirtualServers()
+      }
     }
-    */
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,16 +44,36 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
-    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
-      this.fetchVirtualServers()
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.virtualServers) {
+        this.fetchVirtualServers()
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.fetchVirtualServers()
+      }
+      if ( (this.props.virtualServersFetchStatus === 'updated') ) {
+        this.fetchVirtualServers()
+        this.props.dispatch(setVirtualServersFetchStatus(''))
+      }
     }
-    /*if (this.props.authorizations !== prevProps.authorizations) {
-      this.fetchAssets()
-    }*/
   }
 
   componentWillUnmount() {
+  }
+
+  fetchVirtualServers = async () => {
+    this.props.dispatch(setVirtualServersLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setVirtualServers(resp))
+      },
+      error => {
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
+    this.props.dispatch(setVirtualServersLoading(false))
   }
 
   resetError = () => {
@@ -67,20 +85,9 @@ class Manager extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
-        {/* ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-           this.props.authorizations && (this.props.authorizations.virtualServers_post || this.props.authorizations.any) ?
-            <div>
-              <br/>
-              <Add/>
-            </div>
-            :
-            null
-          :
-          null
-        */}
 
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.props.virtualServersLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
+          <List/>
           :
           <Alert message="Asset and Partition not set" type="error" />
         }
@@ -95,10 +102,8 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  pools: state.f5.pools,
-  virtualServersLoading: state.f5.virtualServersLoading,
-  virtualServers: state.f5.virtualServers
+  virtualServers: state.f5.virtualServers,
+  virtualServersFetchStatus: state.f5.virtualServersFetchStatus
 }))(Manager);

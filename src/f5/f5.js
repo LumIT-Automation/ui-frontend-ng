@@ -18,22 +18,18 @@ import {
   setAssetList,
   setNodesFetchStatus,
   setPoolsFetchStatus,
+  setVirtualServersFetchStatus,
+
 
   setMonitorTypes,
   setMonitorsLoading,
   setMonitors,
   setMonitorsFetchStatus,
 
-
-
   setProfileTypes,
   setProfilesLoading,
   setProfiles,
   setProfilesFetchStatus,
-
-  setVirtualServersLoading,
-  setVirtualServers,
-  setVirtualServersFetchStatus,
 
   cleanUp
 
@@ -93,9 +89,10 @@ class F5 extends React.Component {
       if (this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchProfiles()
       }
+      /*
       if (this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchVirtualServers()
-      }
+      }*/
     }
   }
 
@@ -113,7 +110,7 @@ class F5 extends React.Component {
       this.fetchMonitors()
       //this.fetchPools()
       this.fetchProfiles()
-      this.fetchVirtualServers()
+      //this.fetchVirtualServers()
     }
     /*
     if ( (this.props.nodesFetchStatus === 'updated') ) {
@@ -133,10 +130,12 @@ class F5 extends React.Component {
       this.fetchProfiles()
       this.props.dispatch(setProfilesFetchStatus(''))
     }
+    /*
     if ( (this.props.virtualServersFetchStatus === 'updated') ) {
       this.fetchVirtualServers()
       this.props.dispatch(setVirtualServersFetchStatus(''))
     }
+    */
   }
 
   componentWillUnmount() {
@@ -320,7 +319,7 @@ class F5 extends React.Component {
   }
 
 
-
+/*
   fetchVirtualServers = async () => {
     this.props.dispatch(setVirtualServersLoading(true))
     let rest = new Rest(
@@ -335,13 +334,17 @@ class F5 extends React.Component {
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
   }
-
+*/
   nodesRefresh = () => {
     this.props.dispatch(setNodesFetchStatus('updated'))
   }
 
   poolsRefresh = () => {
     this.props.dispatch(setPoolsFetchStatus('updated'))
+  }
+
+  virtualServersRefresh = () => {
+    this.props.dispatch(setVirtualServersFetchStatus('updated'))
   }
 
   resetError = () => {
@@ -382,8 +385,8 @@ class F5 extends React.Component {
               : null
             }
             { this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any) ?
-              <TabPane tab="Virtual Servers" key="VirtualServers">
-                <VirtualServers/>
+              <TabPane key="Virtual Servers" tab=<span>Virtual Servers <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.virtualServersRefresh()}/></span>>
+                {this.props.virtualServersLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <VirtualServers/> }
               </TabPane>
               : null
             }
@@ -413,6 +416,7 @@ export default connect((state) => ({
 
   nodesLoading: state.f5.nodesLoading,
   poolsLoading: state.f5.poolsLoading,
+  virtualServersLoading: state.f5.virtualServersLoading,
   //nodesFetchStatus: state.f5.nodesFetchStatus,
 
   monitors: state.f5.monitors,
@@ -423,6 +427,4 @@ export default connect((state) => ({
   profiles: state.f5.profiles,
   profilesFetchStatus: state.f5.profilesFetchStatus,
 
-  virtualServers: state.f5.virtualServers,
-  virtualServersFetchStatus: state.f5.virtualServersFetchStatus
 }))(F5);
