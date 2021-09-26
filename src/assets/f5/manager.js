@@ -47,9 +47,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.f5AssetsFetchStatus === 'updated') ) {
+    if ( (this.props.assetsFetchStatus === 'updated') ) {
       this.fetchF5Assets()
-      this.props.dispatch(setF5AssetsFetchStatus(''))
+      this.props.dispatch(setAssetsFetchStatus(''))
     }
   }
 
@@ -101,5 +101,6 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   f5auth: state.authorizations.f5,
-  assets: state.f5.assets
+  assets: state.f5.assets,
+  assetsFetchStatus: state.f5.assetsFetchStatus
 }))(Manager);

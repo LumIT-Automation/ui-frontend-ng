@@ -25,13 +25,9 @@ const f5Slice = createSlice({
         },
 
         setAssetsLoading: (state, action) => {
-          console.log('store asset loading')
-          console.log(action.payload)
           state.assetsLoading = action.payload
         },
         setAssets: (state, action) => {
-          console.log('store asset')
-          console.log(action.payload.data.items)
           state.assets = action.payload.data.items
         },
         setAssetsFetchStatus: (state, action) => {

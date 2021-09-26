@@ -4,13 +4,12 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setAssetList } from '../../_store/store.f5'
+import { setAssetsFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons';
 
-
-
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -43,19 +42,15 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-
   deleteAsset = async asset => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true})
-        setTimeout( () => this.fetchAssets(), 1000)
-        setTimeout( () => this.closeModal(), 1100)
+        this.setState({loading: false, success: true}, () =>  this.props.dispatch(setAssetsFetchStatus('updated')) )
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({loading: false, success: false, error: error})
       }
     )
     await rest.doXHR(`f5/asset/${asset.id}/`, this.props.token )
@@ -64,19 +59,6 @@ class Delete extends React.Component {
 
   resetError = () => {
     this.setState({ error: null})
-  }
-
-  fetchAssets = async () => {
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setAssetList( resp ))
-      },
-      error => {
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR("f5/assets/", this.props.token)
   }
 
   //Close and Error
@@ -104,7 +86,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"

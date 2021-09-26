@@ -6,15 +6,18 @@ import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 import Error from '../error'
 
+import { setAssetsFetchStatus as f5AssetsRefresh } from '../_store/store.f5'
+
 import 'antd/dist/antd.css';
 import '../App.css'
 
 const { TabPane } = Tabs;
 
-import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
+
+
 
 class Assets extends React.Component {
 
@@ -43,6 +46,11 @@ class Assets extends React.Component {
     this.setState({ error: null})
   }
 
+  f5AssetsRefresh = () => {
+    this.props.dispatch(f5AssetsRefresh('updated'))
+  }
+
+
 
   render() {
     return (
@@ -50,7 +58,7 @@ class Assets extends React.Component {
 
         <Tabs type="card" destroyInactiveTabPane={true}>
           { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
-            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => alert('ciao')}/></span>>
+            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
               {this.props.f5assetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
                 <F5/>
             }

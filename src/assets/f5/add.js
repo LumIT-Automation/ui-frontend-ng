@@ -4,17 +4,14 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setAssetList } from '../../_store/store.f5'
+import { setAssetsFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
-import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
+
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
@@ -229,37 +226,19 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true})
-          this.fetchAssets()
-          this.success()
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState({loading: false, success: false})
-          this.setState({error: error})
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`f5/assets/`, this.props.token, body )
     }
   }
 
-  fetchAssets = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setAssetList( resp ))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR("f5/assets/", this.props.token)
-  }
-
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setAssetsFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -410,7 +389,7 @@ class Add extends React.Component {
               key="button"
             >
               <Button type="primary" onClick={() => this.addAsset()}>
-                Add Asset
+                ADD
               </Button>
             </Form.Item>
 
