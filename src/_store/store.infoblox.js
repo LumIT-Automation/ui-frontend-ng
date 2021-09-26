@@ -6,56 +6,50 @@ const infobloxSlice = createSlice({
     reducers: {
 
 
-        setInfobloxEnvironment: (state, action) => {
-          state.infobloxEnvironment = action.payload
-        },
+      setEnvironment: (state, action) => {
+        state.environment = action.payload
+      },
 
-        setInfobloxAssetsLoading: (state, action) => {
-          state.infobloxAssetsLoading = action.payload
-        },
-        setInfobloxAssets: (state, action) => {
-          state.infobloxAssets = action.payload.data.items
-        },
-        setInfobloxAssetsFetchStatus: (state, action) => {
-          state.infobloxAssetsFetchStatus = action.payload
-        },
+      setAssetsLoading: (state, action) => {
+        state.assetsLoading = action.payload
+      },
+      setAssets: (state, action) => {
+        state.assets = action.payload.data.items
+      },
+      setAssetsFetchStatus: (state, action) => {
+        state.assetsFetchStatus = action.payload
+      },
 
-        setInfobloxAsset: (state, action) => {
-          state.infobloxAsset = action.payload
-        },
+      setAsset: (state, action) => {
+        state.asset = action.payload
+      },
 
-        setNetworksLoading: (state, action) => {
-          state.networksLoading = action.payload
-        },
-        setNetworks: (state, action) => {
-          state.networks = action.payload.data
-        },
-        setNetworksFetchStatus: (state, action) => {
-          state.networksFetchStatus = action.payload
-        },
+      setNetworksLoading: (state, action) => {
+        state.networksLoading = action.payload
+      },
+      setNetworks: (state, action) => {
+        state.networks = action.payload.data
+      },
+      setNetworksFetchStatus: (state, action) => {
+        state.networksFetchStatus = action.payload
+      },
 
-        setContainersLoading: (state, action) => {
-          state.containersLoading = action.payload
-        },
-        setContainers: (state, action) => {
-          state.containers = action.payload.data
-        },
-        ssetContainersFetchStatus: (state, action) => {
-          state.containersFetchStatus = action.payload
-        },
-
-
+      setContainersLoading: (state, action) => {
+        state.containersLoading = action.payload
+      },
+      setContainers: (state, action) => {
+        state.containers = action.payload.data
+      },
+      ssetContainersFetchStatus: (state, action) => {
+        state.containersFetchStatus = action.payload
+      },
 
 
-
-
-
-
-        cleanUp: (state, action) => {
-          for (const l in state) {
-            state[l] = null
-          }
+      cleanUp: (state, action) => {
+        for (const l in state) {
+          state[l] = null
         }
+      }
     }
 })
 
@@ -63,13 +57,13 @@ const { actions, reducer } = infobloxSlice;
 
 export const {
 
-  setInfobloxEnvironment,
+  setEnvironment,
 
-  setInfobloxAssetsLoading,
-  setInfobloxAssets,
-  setInfobloxAssetsFetchStatus,
+  setAssetsLoading,
+  setAssets,
+  setAssetsFetchStatus,
 
-  setInfobloxAsset,
+  setAsset,
 
   setNetworksLoading,
   setNetworks,

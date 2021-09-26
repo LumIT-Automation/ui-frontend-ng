@@ -170,7 +170,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
+           { this.props.infobloxAuth && (this.props.infobloxAuth.asset_patch || this.props.infobloxAuth.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -185,7 +185,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
+            { this.props.infobloxAuth && (this.props.infobloxAuth.asset_delete || this.props.infobloxAuth.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -200,7 +200,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.infobloxAssets}
+          dataSource={this.props.assets}
           bordered
           rowKey="id"
           //pagination={false}
@@ -215,6 +215,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  infobloxAssets: state.infoblox.infobloxAssets,
-  authorizations: state.authorizations.f5
+  assets: state.infoblox.assets,
+  infobloxAuth: state.authorizations.infoblox
 }))(List);

@@ -7,6 +7,7 @@ import Infoblox from './infoblox/manager'
 import Error from '../error'
 
 import { setAssetsFetchStatus as f5AssetsRefresh } from '../_store/store.f5'
+import { setAssetsFetchStatus as infobloxAssetsRefresh } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -50,6 +51,9 @@ class Assets extends React.Component {
     this.props.dispatch(f5AssetsRefresh('updated'))
   }
 
+  infobloxAssetsRefresh = () => {
+    this.props.dispatch(infobloxAssetsRefresh('updated'))
+  }
 
 
   render() {
@@ -67,7 +71,7 @@ class Assets extends React.Component {
             null
           }
           { this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any) ?
-            <TabPane tab="Infoblox" key="infoblox">
+            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxAssetsRefresh()}/></span>>
               {this.props.infobloxAssetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
             </TabPane>
             :

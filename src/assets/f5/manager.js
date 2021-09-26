@@ -12,14 +12,6 @@ import Add from './add'
 import { Table, Input, Button, Space, Spin, Divider } from 'antd';
 import Highlighter from 'react-highlight-words';
 
-import { Icon, LoadingOutlined, PlusOutlined, ReloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
-const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
-
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -38,7 +30,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.assets) {
-      this.fetchF5Assets()
+      this.fetchAssets()
     }
   }
 
@@ -48,7 +40,7 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if ( (this.props.assetsFetchStatus === 'updated') ) {
-      this.fetchF5Assets()
+      this.fetchAssets()
       this.props.dispatch(setAssetsFetchStatus(''))
     }
   }
@@ -56,7 +48,7 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchF5Assets = async () => {
+  fetchAssets = async () => {
     this.props.dispatch(setAssetsLoading(true))
     let rest = new Rest(
       "GET",

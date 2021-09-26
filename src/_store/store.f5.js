@@ -34,6 +34,24 @@ const f5Slice = createSlice({
           state.assetsFetchStatus = action.payload
         },
 
+        setAsset: (state, action) => {
+          state.asset = action.payload
+        },
+
+        setPartitionsLoading: (state, action) => {
+          state.partitionsLoading = action.payload
+        },
+        setPartitions: (state, action) => {
+          state.partitions = action.payload.data.items
+        },
+        setPartitionsFetchStatus: (state, action) => {
+          state.partitionsFetchStatus = action.payload
+        },
+/*
+        setPartition: (state, action) => {
+          state.partition = action.payload
+        },
+*/
         selectAsset: (state, action) => {
           state.asset = action.payload
         },
@@ -180,6 +198,14 @@ export const {
   setAssetsLoading,
   setAssets,
   setAssetsFetchStatus,
+
+  setAsset,
+
+  setPartitionsLoading,
+  //setPartitions,
+  setPartitionsFetchStatus,
+
+  setPartition,
 
   selectAsset,
   setPartitions,

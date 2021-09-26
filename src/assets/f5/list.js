@@ -170,7 +170,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.f5auth && (this.props.f5auth.asset_patch || this.props.f5auth.any) ?
+           { this.props.f5Auth && (this.props.f5Auth.asset_patch || this.props.f5Auth.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -185,7 +185,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.f5auth && (this.props.f5auth.asset_delete || this.props.f5auth.any) ?
+            { this.props.f5Auth && (this.props.f5Auth.asset_delete || this.props.f5Auth.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -216,5 +216,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   assets: state.f5.assets,
-  f5auth: state.authorizations.f5
+  f5Auth: state.authorizations.f5
 }))(List);

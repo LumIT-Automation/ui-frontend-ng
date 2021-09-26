@@ -1,15 +1,16 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setAssetsFetchStatus } from '../../_store/store.infoblox'
 
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -43,17 +44,14 @@ class Delete extends React.Component {
 
 
   deleteAsset = async asset => {
-    this.props.dispatch(setInfobloxAssetsLoading( true ))
+    this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
-        this.success()
+        this.setState({loading: false, success: true}, () =>  this.props.dispatch(setAssetsFetchStatus('updated')) )
       },
       error => {
-        this.props.dispatch(setInfobloxAssetsLoading( false ))
-        this.setState({success: false, error: error})
+        this.setState({loading: false, success: false, error: error})
       }
     )
     await rest.doXHR(`infoblox/asset/${asset.id}/`, this.props.token )
@@ -77,10 +75,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Asset
-        </Button>
-
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
@@ -92,7 +87,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"

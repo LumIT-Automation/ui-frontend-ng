@@ -4,13 +4,13 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setInfobloxAssetsLoading, setInfobloxAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setAssetsFetchStatus } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 /*
@@ -213,17 +213,15 @@ class Modify extends React.Component {
           }
         }
 
-      this.props.dispatch(setInfobloxAssetsLoading( true ))
+      this.setState({loading: true})
+
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.props.dispatch(setInfobloxAssetsLoading( false ))
-          this.setState({success: true, error: false}, () => this.props.dispatch(setInfobloxAssetsFetchStatus( 'updated' )))
-          this.success()
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.props.dispatch(setInfobloxAssetsLoading( false ))
-          this.setState({success: false, error: error})
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`infoblox/asset/${this.props.obj.id}/`, this.props.token, body )
@@ -236,6 +234,7 @@ class Modify extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setAssetsFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -254,9 +253,8 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>
-          Modify Asset
-        </Button>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+
 
         <Modal
           title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
@@ -268,7 +266,7 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
