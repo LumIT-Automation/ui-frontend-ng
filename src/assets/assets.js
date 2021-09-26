@@ -60,7 +60,7 @@ class Assets extends React.Component {
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        <Tabs type="card" destroyInactiveTabPane={true}>
+        <Tabs type="card">
           { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
             <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
               {this.props.f5assetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :

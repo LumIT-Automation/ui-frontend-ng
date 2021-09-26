@@ -3,15 +3,15 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-//import { setNodesList } from '../../_store/store.f5'
 
+import { setNodesLoading, setNodes, setNodesFetchStatus } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Alert } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+
 import { LoadingOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -34,6 +34,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.nodes) {
+        this.fetchNodes()
+      }
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -41,15 +46,38 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( ((prevProps.asset !== this.props.asset) && this.props.partition) || (this.props.asset && (prevProps.partition !== this.props.partition)) ) {
-        //this.fetchNodes()
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.nodes) {
+        this.fetchNodes()
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.fetchNodes()
+      }
+      if ( (this.props.nodesFetchStatus === 'updated') ) {
+        this.fetchNodes()
+        this.props.dispatch(setNodesFetchStatus(''))
+      }
     }
-    /*if (this.props.authorizations !== prevProps.authorizations) {
-      this.fetchAssets()
-    }*/
   }
 
   componentWillUnmount() {
+  }
+
+
+  fetchNodes = async () => {
+    console.log('fetchnodes')
+    this.props.dispatch(setNodesLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setNodes(resp))
+      },
+      error => {
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    this.props.dispatch(setNodesLoading(false))
   }
 
   resetError = () => {
@@ -58,25 +86,24 @@ class Manager extends React.Component {
 
 
   render() {
+    console.log('nodes manager')
+    console.log(this.props.nodes)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
+        <br/>
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
-          <div>
-            <br/>
+         this.props.f5auth && (this.props.f5auth.nodes_post || this.props.f5auth.any) ?
             <Add/>
-          </div>
+            :
+            null
           :
           null
-        :
-        null
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          this.props.nodesLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List/>
-        :
-        <Alert message="Asset and Partition not set" type="error" />
+          <List/>
+          :
+          <Alert message="Asset and Partition not set" type="error" />
       }
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
@@ -88,9 +115,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
+  f5auth: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodesLoading: state.f5.nodesLoading,
-  nodes: state.f5.nodes
+  nodes: state.f5.nodes,
+  nodesFetchStatus: state.f5.nodesFetchStatus
 }))(Manager);

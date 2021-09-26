@@ -63,12 +63,13 @@ const f5Slice = createSlice({
         },
 
 
-
-
         setNodesLoading: (state, action) => {
+          console.log(action.payload)
           state.nodesLoading = action.payload
         },
         setNodes: (state, action) => {
+          console.log('nodes store')
+          console.log(action.payload.data.items)
           state.nodes = action.payload.data.items
         },
         setNodesFetchStatus: (state, action) => {

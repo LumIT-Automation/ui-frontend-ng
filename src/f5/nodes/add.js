@@ -8,10 +8,9 @@ import { setNodesFetchStatus } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -165,11 +164,10 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, error: false, success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
-          this.success()
+          this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setNodesFetchStatus('updated')))
+          this.setState({loading: false, success: false, error: error})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body)
@@ -178,6 +176,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setNodesFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -197,9 +196,7 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button type="primary" onClick={() => this.details()}>
-            Add Node
-          </Button>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD NODE</p>}
@@ -211,7 +208,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -297,8 +294,6 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
 }))(Add);

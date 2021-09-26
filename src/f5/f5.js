@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+
 
 import Rest from "../_helpers/Rest";
 import Error from '../error'
@@ -17,8 +17,10 @@ import VirtualServers from './virtualServers/manager'
 import {
   setAssetList,
 
+/*
   setNodesLoading,
   setNodes,
+  */
   setNodesFetchStatus,
 
   setMonitorTypes,
@@ -47,7 +49,10 @@ import 'antd/dist/antd.css';
 import '../App.css'
 
 const { TabPane } = Tabs;
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 //const { Search } = Input;
 
 
@@ -79,9 +84,11 @@ class F5 extends React.Component {
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchAssets()
+      /*
       if (this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchNodes()
       }
+      */
       if (this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any ) && this.props.asset && this.props.partition ) {
         this.fetchMonitors()
       }
@@ -107,16 +114,18 @@ class F5 extends React.Component {
       this.fetchAssets()
     }
     if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-      this.fetchNodes()
+      //this.fetchNodes()
       this.fetchMonitors()
       this.fetchPools()
       this.fetchProfiles()
       this.fetchVirtualServers()
     }
+    /*
     if ( (this.props.nodesFetchStatus === 'updated') ) {
       this.fetchNodes()
       this.props.dispatch(setNodesFetchStatus(''))
     }
+    */
     if ( (this.props.monitorsFetchStatus === 'updated') ) {
       this.fetchMonitors()
       this.props.dispatch(setMonitorsFetchStatus(''))
@@ -152,7 +161,7 @@ class F5 extends React.Component {
     )
     await rest.doXHR("f5/assets/", this.props.token)
   }
-
+/*
   fetchNodes = async () => {
     this.props.dispatch(setNodesLoading(true))
     let rest = new Rest(
@@ -167,7 +176,7 @@ class F5 extends React.Component {
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
   }
-
+*/
 
   fetchMonitors = async () => {
     this.props.dispatch(setMonitorsLoading(true))
@@ -332,22 +341,29 @@ class F5 extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
   }
 
+  nodesRefresh = () => {
+    console.log('nodes refresh')
+    this.props.dispatch(setNodesFetchStatus('updated'))
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
 
 
   render() {
+    console.log('f5')
+    console.log(this.props.nodesLoading)
     return (
       <React.Fragment>
         <AssetSelector/>
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
 
-          <Tabs type="card" destroyInactiveTabPane={true}>
+          <Tabs type="card">
             { this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any) ?
-              <TabPane tab="Nodes" key="Nodes">
-                <Nodes/>
+              <TabPane key="Nodes" tab=<span>Nodes <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.nodesRefresh()}/></span>>
+                {this.props.nodesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Nodes/> }
               </TabPane>
               : null
             }
@@ -399,7 +415,7 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-  nodes: state.f5.nodes,
+  nodesLoading: state.f5.nodesLoading,
   nodesFetchStatus: state.f5.nodesFetchStatus,
 
   monitors: state.f5.monitors,

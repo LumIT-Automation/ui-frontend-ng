@@ -7,9 +7,10 @@ import Error from '../../error'
 import { setNodesFetchStatus } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -49,7 +50,7 @@ class Delete extends React.Component {
         this.setState({loading: false, success: true}, () => this.props.dispatch(setNodesFetchStatus('updated')) )
       },
       error => {
-        this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setNodesFetchStatus('updated')))
+        this.setState({loading: false, error: error, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token )
@@ -72,10 +73,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Node
-        </Button>
-
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE NODE</p>}
@@ -87,7 +85,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"
@@ -130,8 +128,6 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
 }))(Delete);

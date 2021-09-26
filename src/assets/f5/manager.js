@@ -48,20 +48,20 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
+
   fetchAssets = async () => {
     this.props.dispatch(setAssetsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssetsLoading(false))
-        this.props.dispatch(setAssets( resp ))
+        this.props.dispatch(setAssets( resp )) 
       },
       error => {
-        this.props.dispatch(setAssetsLoading(false))
         this.setState({error: error})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
+    this.props.dispatch(setAssetsLoading(false))
   }
 
   resetError = () => {

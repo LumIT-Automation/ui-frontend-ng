@@ -5,7 +5,6 @@ import Login from './Login'
 import Concerto from './Concerto'
 import { login } from './_store/store.auth'
 
-
 import './App.css';
 import 'antd/dist/antd.css';
 import {connect} from "react-redux";
@@ -34,6 +33,7 @@ class App extends Component {
   componentWillUnmount() {
   }
 
+
   isAuthenticated = () => {
     return new Promise( (resolve, reject) => {
       let token, username;
@@ -58,18 +58,18 @@ class App extends Component {
     })
   }
 
-  render() {
 
+  render() {
     if (this.props.authenticated) {
       return <Concerto/>
     }
-
     else {
       return <Login/>;
     }
-
   }
 }
+
+
 
 export default connect((state) => ({
   authenticated: state.ssoAuth.authenticated,

@@ -54,15 +54,14 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssetsLoading(false))
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.props.dispatch(setAssetsLoading(false))
         this.setState({error: error})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
+    this.props.dispatch(setAssetsLoading(false))
   }
 
   resetError = () => {
