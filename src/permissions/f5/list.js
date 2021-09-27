@@ -13,7 +13,7 @@ import Modify from './modify'
 import Delete from './delete'
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 
@@ -227,7 +227,7 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   authorizations: state.authorizations.f5,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
 }))(List);

@@ -11,7 +11,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 const layout = {
@@ -214,7 +214,7 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   authorizations: state.authorizations.f5,
   identityGroups: state.authorizations.identityGroups,
   igIdentifiers: state.authorizations.igIdentifiers,

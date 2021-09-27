@@ -13,9 +13,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
+
 
 const layout = {
   labelCol: { span: 8 },

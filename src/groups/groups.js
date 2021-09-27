@@ -13,23 +13,7 @@ import '../App.css'
 
 const { TabPane } = Tabs;
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-//const { Search } = Input;
 
-
-/*
-This is the parent component of the loadbalancer category.
-
-At mount it calls /assets/ to get the list of assets present in udb and it sets it in the store.
-The other components will recive as props:
-  state.loadbalancer.assets
-
-Then render sub Tabs
-
-if there is a error (no assetList in the response) renders Error component.
-It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
-
-At the unmount it reset state.loadbalancer in the store.
-*/
 
 
 class Groups extends React.Component {

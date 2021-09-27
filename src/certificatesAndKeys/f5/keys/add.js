@@ -6,7 +6,6 @@ import Error from '../../../error'
 
 import { setKeysFetchStatus } from '../../../_store/store.f5'
 
-//import { fetchNetworks, requestIp } from '../actions/ipamActions'
 
 
 import { Form, Input, Button, Select, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
@@ -15,9 +14,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const { TextArea } = Input
 
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
+
 
 const layout = {
   labelCol: { span: 8 },

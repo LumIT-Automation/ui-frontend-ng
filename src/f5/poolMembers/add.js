@@ -12,9 +12,7 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
+
 
 const layout = {
   labelCol: { span: 8 },

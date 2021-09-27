@@ -12,7 +12,7 @@ import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 class Delete extends React.Component {

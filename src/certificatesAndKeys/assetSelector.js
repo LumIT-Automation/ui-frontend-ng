@@ -12,6 +12,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
+
 class AssetSelector extends React.Component {
 
   constructor(props) {

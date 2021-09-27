@@ -11,11 +11,6 @@ import { SearchOutlined } from '@ant-design/icons';
 
 
 
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
-
-
 class List extends React.Component {
 
   constructor(props) {

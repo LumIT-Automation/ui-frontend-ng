@@ -21,23 +21,7 @@ const { TabPane } = Tabs;
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
-//const { Search } = Input;
 
-
-/*
-This is the parent component of the f5 category.
-
-At mount it calls /assets/ to get the list of assets present in udb and it sets it in the store.
-The other components will recive as props:
-  state.f5.assets
-
-Then render sub Tabs
-
-if there is a error (no assetList in the response) renders Error component.
-It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
-
-At the unmount it reset state.f5 in the store.
-*/
 
 
 class CertificatesAndKeys extends React.Component {
@@ -98,7 +82,7 @@ class CertificatesAndKeys extends React.Component {
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        <Tabs type="card" destroyInactiveTabPane={true}>
+        <Tabs type="card">
           <TabPane tab="F5" key="2">
             {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
             <React.Fragment>
@@ -106,7 +90,7 @@ class CertificatesAndKeys extends React.Component {
                 <AssetSelector />
               </div>
             <Divider/>
-            <Tabs type="card" destroyInactiveTabPane={true}>
+            <Tabs type="card">
               { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
                 <TabPane key="Certificates"tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
                   {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <CertificatesManager/> }

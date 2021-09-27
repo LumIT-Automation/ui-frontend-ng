@@ -26,7 +26,7 @@ The other components will recive as props:
 
 Then render sub Tabs
 
-if there is a error (no assetList in the response) renders Error component.
+if there is a error (no assets in the response) renders Error component.
 It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
 
 At the unmount it reset state.f5 in the store.

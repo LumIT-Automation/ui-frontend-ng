@@ -14,7 +14,7 @@ const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 const layout = {

@@ -21,7 +21,7 @@ const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 
@@ -198,7 +198,7 @@ class PermissionsTab extends React.Component {
       if (superAdmins.find(s => s.dn === dn) ) {
         continue
       }
-      let asset = this.props.assetList.find(a => a.id === permissions[p].partition.asset_id)
+      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
       let permissionId = permissions[p].id
       let name = permissions[p].identity_group_name
       let role = permissions[p].role
@@ -246,7 +246,7 @@ class PermissionsTab extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   authorizations: state.authorizations.f5,
   identityGroups: state.authorizations.identityGroups,
   igIdentifiers: state.authorizations.igIdentifiers,

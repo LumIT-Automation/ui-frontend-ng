@@ -17,7 +17,7 @@ const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 

@@ -12,7 +12,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 class Delete extends React.Component {
@@ -80,7 +80,7 @@ class Delete extends React.Component {
     let list = []
 
     for ( let p in permissions) {
-      let asset = this.props.assetList.find(a => a.id === permissions[p].partition.asset_id)
+      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
       let permissionId = permissions[p].id
       let name = permissions[p].identity_group_name
       let dn = permissions[p].identity_group_identifier
@@ -179,7 +179,7 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   f5Permissions: state.permissions.f5Permissions,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
 }))(Delete);

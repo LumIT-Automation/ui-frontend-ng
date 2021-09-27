@@ -14,13 +14,6 @@ import { Table, Input, Button, Space, Spin, Alert } from 'antd'
 import Highlighter from 'react-highlight-words'
 
 
-
-
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
-
-
 class Manager extends React.Component {
 
   constructor(props) {

@@ -14,7 +14,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 const layout = {
@@ -215,7 +215,7 @@ class Modify extends React.Component {
     let list = []
 
     for ( let p in permissions) {
-      let asset = this.props.assetList.find(a => a.id === permissions[p].partition.asset_id)
+      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
       let permissionId = permissions[p].id
       let name = permissions[p].identity_group_name
       let dn = permissions[p].identity_group_identifier
@@ -311,7 +311,7 @@ class Modify extends React.Component {
                 key="asset"
               >
                 <Select id='asset' onChange={id => this.setAsset(id) }>
-                  {this.props.assetList ? this.props.assetList.map((a, i) => {
+                  {this.props.assets ? this.props.assets.map((a, i) => {
                   return (
                     <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
                   )
@@ -385,7 +385,7 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   f5Permissions: state.permissions.f5Permissions,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
 }))(Modify);

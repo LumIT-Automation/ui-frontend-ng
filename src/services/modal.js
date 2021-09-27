@@ -20,7 +20,7 @@ const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 const layout = {
@@ -156,7 +156,7 @@ class ModalCustom extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   asset: state.f5.asset,
   partition: state.f5.partition,
   workflowStatus: state.workflows.workflowStatus

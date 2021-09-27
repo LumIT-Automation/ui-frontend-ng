@@ -181,7 +181,7 @@ class PoolsTable extends React.Component {
 export default connect((state) => ({
   currentPools: state.f5.currentPools,
   token: state.ssoAuth.token,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   asset: state.f5.asset,
   partitions: state.f5.partitions,
   partition: state.f5.partition,

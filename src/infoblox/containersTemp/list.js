@@ -15,10 +15,6 @@ const { Panel } = Collapse
 
 
 
-/*
-Asset is a table that receives assetList: state.infoblox.assetList from the store and render it.
-*/
-
 
 class List extends React.Component {
 

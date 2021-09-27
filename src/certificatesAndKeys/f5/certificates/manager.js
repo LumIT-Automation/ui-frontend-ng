@@ -15,9 +15,6 @@ import Highlighter from 'react-highlight-words'
 
 
 
-/*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
-*/
 
 
 class CertificatesManager extends React.Component {

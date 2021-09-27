@@ -17,7 +17,7 @@ import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 /*
-Asset is a table that receives assetList: state.f5.assetList from the store and render it.
+
 */
 
 const layout = {
@@ -235,5 +235,5 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList
+  assets: state.f5.assets
 }))(Service);
