@@ -10,8 +10,8 @@ import { setCertificatesLoading, setCertificates, setCertificatesFetchStatus } f
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Table, Input, Button, Space, Spin, Alert } from 'antd'
+import Highlighter from 'react-highlight-words'
 
 
 

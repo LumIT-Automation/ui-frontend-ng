@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
@@ -10,10 +10,10 @@ import { setCertificatesFetchStatus } from '../../../_store/store.f5'
 
 
 import { Form, Input, Button, Select, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const { TextArea } = Input;
+const { TextArea } = Input
 
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.

@@ -1,15 +1,16 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setKeys } from '../../../_store/store.f5'
+import { setKeysFetchStatus } from '../../../_store/store.f5'
 
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 /*
 Asset is a table that receives assetList: state.f5.assetList from the store and render it.
 */
@@ -52,31 +53,15 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchKeys())
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setKeysFetchStatus('updated')) )
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${partition}/key/${keyName}/`, this.props.token )
   }
 
-  fetchKeys = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setKeys( resp ))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
-  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -95,10 +80,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Key
-        </Button>
-
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE KEY</p>}
@@ -110,7 +92,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"
@@ -153,7 +135,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
-  partition: state.f5.partition
 }))(Delete);

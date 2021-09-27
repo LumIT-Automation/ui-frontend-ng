@@ -1,17 +1,18 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../../_helpers/Rest";
-import { setKeys } from '../../../_store/store.f5'
+import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
+
+import { setKeysLoading, setKeys, setKeysFetchStatus } from '../../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { Table, Input, Button, Space, Spin, Alert } from 'antd'
+import Highlighter from 'react-highlight-words'
+
 
 
 
@@ -33,7 +34,9 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset) {
-      this.fetchKeys()
+      if (!this.props.keys) {
+        this.fetchKeys()
+      }
     }
   }
 
@@ -42,8 +45,17 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
-      this.fetchKeys()
+    if (this.props.asset) {
+      if (!this.props.keys) {
+        this.fetchKeys()
+      }
+      if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
+        this.fetchKeys()
+      }
+      if ( (this.props.keysFetchStatus === 'updated') ) {
+        this.fetchKeys()
+        this.props.dispatch(setKeysFetchStatus(''))
+      }
     }
   }
 
@@ -51,98 +63,21 @@ class Manager extends React.Component {
   }
 
 
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
-  });
 
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = clearFilters => {
-    clearFilters();
-    this.setState({ searchText: '' });
-  }
 
   fetchKeys = async () => {
-    this.setState({loading: true})
+    this.props.dispatch(setKeysLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
         this.props.dispatch(setKeys( resp ))
       },
       error => {
-        this.setState({loading: false})
         this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
+    this.props.dispatch(setKeysLoading(false))
   }
 
   resetError = () => {
@@ -153,19 +88,21 @@ class Manager extends React.Component {
   render() {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
-        { this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
-        <div>
-          <br/>
-          <Add/>
-        </div>
-        : null }
-
         <br/>
+        { (this.props.asset && this.props.asset.id ) ?
+           this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+              <Add/>
+              :
+              null
+            :
+            null
+        }
 
-        <div>
-          <List/>
-        </div>
+        { (this.props.asset && this.props.asset.id ) ?
+            <List/>
+            :
+            <Alert message="Asset not set" type="error" />
+        }
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
       </Space>
@@ -178,6 +115,6 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
-  partition: state.f5.partition,
-  keys: state.f5.keys
+  keys: state.f5.keys,
+  keysFetchStatus: state.f5.keysFetchStatus
 }))(Manager);
