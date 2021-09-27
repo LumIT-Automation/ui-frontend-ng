@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
@@ -200,5 +200,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   nodes: state.f5.nodes,
-  authorizations: state.authorizations.f5,  
+  authorizations: state.authorizations.f5,
 }))(List);

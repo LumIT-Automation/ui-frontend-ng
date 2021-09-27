@@ -4,15 +4,15 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setAssetList, setCertificates } from '../../../_store/store.f5'
-import { setF5Permissions, setF5PermissionsBeauty } from '../../../_store/store.permissions'
+import { setCertificatesFetchStatus } from '../../../_store/store.f5'
 
 //import { fetchNetworks, requestIp } from '../actions/ipamActions'
 
 
 import { Form, Input, Button, Select, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const { TextArea } = Input;
 
 /*
@@ -123,12 +123,10 @@ class Add extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, success: true}, () => this.fetchCertificates())
-        this.success()
+        this.setState({loading: false, success: true}, () => this.success() )
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({loading: false, success: false, error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token, body )
@@ -159,24 +157,10 @@ class Add extends React.Component {
     }
   }
 
-  fetchCertificates = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setCertificates( resp ))
-      },
-      error => {
-        this.setState({loading: false})
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
-  }
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setCertificatesFetchStatus('updated')), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -198,9 +182,7 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button type="primary" onClick={() => this.details()}>
-            Add Certificate
-          </Button>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD CERTIFICATE</p>}
@@ -212,7 +194,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
         { !this.state.loading && this.state.success &&
           <Result
              status="success"
@@ -291,7 +273,5 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
-  partition: state.f5.partition
 }))(Add);

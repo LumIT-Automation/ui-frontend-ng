@@ -1,22 +1,26 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+
+import Rest from "../_helpers/Rest"
+import Error from '../error'
 
 import AssetSelector from './assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
-import Rest from "../_helpers/Rest";
-import { setAssetList, cleanUp } from '../_store/store.f5'
 
-import Error from '../error'
+import { setAssets, setCertificatesFetchStatus, setKeysFetchStatus } from '../_store/store.f5'
+
+
 
 import 'antd/dist/antd.css';
 import '../App.css'
 
 const { TabPane } = Tabs;
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 //const { Search } = Input;
 
 
@@ -46,7 +50,7 @@ class CertificatesAndKeys extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.token) {
+    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchAssets()
     }
   }
@@ -59,7 +63,6 @@ class CertificatesAndKeys extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.dispatch(cleanUp())
   }
 
 
@@ -68,15 +71,22 @@ class CertificatesAndKeys extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setAssetList( resp ))
+        this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.setState({loading: false, error: error})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
+  }
+
+
+  certificatesRefresh = () => {
+    this.props.dispatch(setCertificatesFetchStatus('updated'))
+  }
+
+  keysRefresh = () => {
+    this.props.dispatch(setKeysFetchStatus('updated'))
   }
 
   resetError = () => {
@@ -90,22 +100,22 @@ class CertificatesAndKeys extends React.Component {
 
         <Tabs type="card" destroyInactiveTabPane={true}>
           <TabPane tab="F5" key="2">
-            {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> :
+            {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
             <React.Fragment>
-              <div style={{margin: '0 150px'}}>
+              <div style={{margin: '0 130px'}}>
                 <AssetSelector />
               </div>
             <Divider/>
             <Tabs type="card" destroyInactiveTabPane={true}>
               { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                <TabPane tab="Certificates" key="Certificates">
-                  <CertificatesManager/>
+                <TabPane key="Certificates"tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
+                  {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <CertificatesManager/> }
                 </TabPane>
                 : null
               }
               { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
-                <TabPane tab="Keys" key="Keys">
-                  <KeysManager/>
+                <TabPane key="Keys"tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
+                  {this.props.keysLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <KeysManager/> }
                 </TabPane>
                 : null
               }
@@ -133,6 +143,7 @@ class CertificatesAndKeys extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  asset: state.f5.asset,
-  partition: state.f5.partition
+
+  certificatesLoading: state.f5.certificatesLoading,
+  keysLoading: state.f5.keysLoading,
 }))(CertificatesAndKeys);

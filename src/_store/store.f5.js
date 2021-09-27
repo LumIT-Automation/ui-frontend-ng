@@ -133,11 +133,24 @@ const f5Slice = createSlice({
 
 
 
+        setCertificatesLoading: (state, action) => {
+          state.certificatesLoading = action.payload
+        },
         setCertificates: (state, action) => {
           state.certificates = action.payload.data.items
         },
+        setCertificatesFetchStatus: (state, action) => {
+          state.certificatesFetchStatus = action.payload
+        },
+
+        setKeysLoading: (state, action) => {
+          state.keysLoading = action.payload
+        },
         setKeys: (state, action) => {
           state.keys = action.payload.data.items
+        },
+        setKeysFetchStatus: (state, action) => {
+          state.keysFetchStatus = action.payload
         },
 
         setCurrentPools: (state, action) => {
@@ -237,8 +250,13 @@ export const {
   setVirtualServers,
   setVirtualServersFetchStatus,
 
+  setCertificatesLoading,
   setCertificates,
+  setCertificatesFetchStatus,
+
+  setKeysLoading,
   setKeys,
+  setKeysFetchStatus,
 
   resetObjects,
   cleanUp

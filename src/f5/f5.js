@@ -2,8 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
 
-
-import Rest from "../_helpers/Rest";
+import Rest from "../_helpers/Rest"
 import Error from '../error'
 
 import AssetSelector from './assetSelector'
@@ -28,7 +27,7 @@ import '../App.css'
 
 const { TabPane } = Tabs;
 
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 //const { Search } = Input;
@@ -158,10 +157,6 @@ class F5 extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
-  assetList: state.f5.assetList,
-  assets: state.f5.assets,
-  asset: state.f5.asset,
-  partition: state.f5.partition,
 
   nodesLoading: state.f5.nodesLoading,
   monitorsLoading: state.f5.monitorsLoading,
