@@ -3,10 +3,10 @@ import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/t
 /*
 create Slice creates a small piece of the store, in this case the slice for the balancers.
 It has a name, an initial state, and several methods that set the state,
-  setAssetList
-  selectAsset
+  setAssets
+  setAsset
   setPartitions
-  selectPartition
+  setPartition
   setPoolList
   cleanUp
 Methods (called actions) must be exported.
@@ -19,9 +19,6 @@ const f5Slice = createSlice({
     reducers: {
         setEnvironment: (state, action) => {
           state.environment = action.payload
-        },
-        setAssetList: (state, action) => {
-          state.assetList = action.payload.data.items
         },
 
         setAssetsLoading: (state, action) => {
@@ -47,18 +44,8 @@ const f5Slice = createSlice({
         setPartitionsFetchStatus: (state, action) => {
           state.partitionsFetchStatus = action.payload
         },
-/*
+
         setPartition: (state, action) => {
-          state.partition = action.payload
-        },
-*/
-        selectAsset: (state, action) => {
-          state.asset = action.payload
-        },
-        setPartitions: (state, action) => {
-          state.assetPartitions = action.payload.data.items
-        },
-        selectPartition: (state, action) => {
           state.partition = action.payload
         },
 
@@ -204,7 +191,6 @@ const { actions, reducer } = f5Slice;
 
 export const {
   setEnvironment,
-  setAssetList,
 
   setAssetsLoading,
   setAssets,
@@ -213,15 +199,10 @@ export const {
   setAsset,
 
   setPartitionsLoading,
-  //setPartitions,
+  setPartitions,
   setPartitionsFetchStatus,
 
   setPartition,
-
-  selectAsset,
-  setPartitions,
-  selectPartition,
-
 
   setNodesLoading,
   setNodes,

@@ -183,7 +183,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   assetList: state.f5.assetList,
   asset: state.f5.asset,
-  assetPartitions: state.f5.assetPartitions,
+  partitions: state.f5.partitions,
   partition: state.f5.partition,
   pools: state.f5.pools
 }))(PoolsTable);

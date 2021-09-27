@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { setEnvironment, selectAsset, setPartitions, selectPartition } from '../_store/store.f5'
+import { setEnvironment, setAssets, setAsset, setPartitions, setPartition } from '../_store/store.f5'
 import Error from '../error'
 
 import "antd/dist/antd.css"
@@ -11,31 +11,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-/*
-This is the Container of tab "AssetSelector"
-It allows to choose the environment, then the asset of that environment, then the asset's partitions and render the pools in <PoolsTable/>
 
-It receives from the store
-  token,
-  assetList,
-
-  asset,
-  assetPartitions,
-  partition,
-
-MOUNT
-Sets in the local state.environments the possible environments selectable from the assetList.
-When user chooses an environment option it sets it in the local state.environment.
-Filters the assets that are in the selected environment and sets them in the local state.envAssets (the possible assets selectable).
-When user chooses the asset it sets in the store as asset, then calls /backend/f5/${id}/partitions/ to gets the partitions.
-AssetSelector sets them in the store as assetPartitions.
-When user chooses a partition, AssetSelector sets it in the store as partition.
-
-When user click on the Get Pools Button AssetSelector calls /backend/f5/${id}/${partition}/pools/ and sets the response in the store as currentPoolList.
-Than render PoolsTable child.
-
-In case of error it renders Error component.
-*/
 
 
 class AssetSelector extends React.Component {
@@ -51,7 +27,7 @@ class AssetSelector extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.assetList) {
+    if (this.props.assets) {
       this.setEnvironmentList()
     }
   }
@@ -61,19 +37,19 @@ class AssetSelector extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.assetList !== prevProps.assetList) {
+    if (this.props.assets !== prevProps.assets) {
       this.setEnvironmentList()
     }
   }
 
   componentWillUnmount() {
     this.props.dispatch(setEnvironment(null))
-    this.props.dispatch(selectAsset(null))
-    this.props.dispatch(selectPartition(null))
+    this.props.dispatch(setAsset(null))
+    this.props.dispatch(setPartition(null))
   }
 
   setEnvironmentList = () => {
-    const items = Object.assign([], this.props.assetList)
+    const items = Object.assign([], this.props.assets)
     const list = items.map( e => {
       return e.environment
     })
@@ -90,17 +66,17 @@ class AssetSelector extends React.Component {
   }
 
   setEnvAssets = e => {
-    let envAssets = this.props.assetList.filter( a => {
+    let envAssets = this.props.assets.filter( a => {
       return a.environment === e
     })
     this.setState({ envAssets: envAssets })
   }
 
   setAsset = address => {
-    let asset = this.props.assetList.find( a => {
+    let asset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.props.dispatch(selectAsset(asset))
+    this.props.dispatch(setAsset(asset))
     this.fetchAssetPartitions(asset.id)
   }
 
@@ -116,7 +92,7 @@ class AssetSelector extends React.Component {
   }
 
   setPartition = p => {
-    this.props.dispatch(selectPartition(p))
+    this.props.dispatch(setPartition(p))
   }
 
   assetString = () => {
@@ -185,7 +161,7 @@ class AssetSelector extends React.Component {
               <Form.Item name='partition' label="Partition">
                 <Select onChange={p => this.setPartition(p)} style={{ width: 200 }}>
 
-                  {this.props.assetPartitions ? this.props.assetPartitions.map((p, i) => {
+                  {this.props.partitions ? this.props.partitions.map((p, i) => {
                   return (
                     <Select.Option  key={i} value={p.name}>{p.name}</Select.Option>
                   )
@@ -209,8 +185,8 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
   environment: state.f5.environment,
-  assetList: state.f5.assetList,
+  assets: state.f5.assets,
   asset: state.f5.asset,
-  assetPartitions: state.f5.assetPartitions,
+  partitions: state.f5.partitions,
   partition: state.f5.partition,
 }))(AssetSelector);

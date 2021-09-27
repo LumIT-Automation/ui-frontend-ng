@@ -5,7 +5,7 @@ import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 import { setIdentityGroups, setIgIdentifiers } from '../../_store/store.authorizations'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
-import { setAssetList, cleanUp } from '../../_store/store.f5'
+import { setAssets, cleanUp } from '../../_store/store.f5'
 
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -157,7 +157,7 @@ class PermissionsTab extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setAssetList( resp ))
+        this.props.dispatch(setAssets( resp ))
         this.fetchPermissions()
       },
       error => {

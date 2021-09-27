@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setAssetList, setKeys } from '../../../_store/store.f5'
+import { setAssets, setKeys } from '../../../_store/store.f5'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../../_store/store.permissions'
 
 //import { fetchNetworks, requestIp } from '../actions/ipamActions'

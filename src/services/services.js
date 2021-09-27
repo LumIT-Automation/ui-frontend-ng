@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setAssetList } from '../_store/store.f5'
+import { setAssets } from '../_store/store.f5'
 
 import ModalCustom from './modal'
 
@@ -160,7 +160,7 @@ class Service extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setAssetList( resp ))
+        this.props.dispatch(setAssets( resp ))
       },
       error => {
         this.setState({loading: false})

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setAssetList } from '../../_store/store.f5'
+import { setAssets } from '../../_store/store.f5'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
