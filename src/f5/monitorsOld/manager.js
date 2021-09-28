@@ -65,24 +65,9 @@ class Manager extends React.Component {
     let monitorTypes = await this.fetchMonitorsTypeList()
     this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
 
-    let monitors = await this.fetchMonitorsAny()
-    let list = []
-
-    monitors.data.forEach(t => {
-      let type = Object.keys(t)
-      type = type[0]
-      let values = Object.values(t)
-
-      values.forEach(o => {
-        o.items.forEach(m => {
-          Object.assign(m, {type: type});
-          list.push(m)
-        })
-      })
-    })
-
+    let monitors = await this.monitorsLoop(monitorTypes.data.items)
     this.props.dispatch(setMonitorsLoading(false))
-    this.props.dispatch(setMonitors(list))
+    this.props.dispatch(setMonitors(monitors))
   }
 
   fetchMonitorsTypeList = async () => {
@@ -101,22 +86,6 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchMonitorsAny = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.setState({error: error})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/ANY/`, this.props.token)
-    return r
-  }
-/*
   monitorsLoop = async types => {
 
     const promises = types.map(async type => {
@@ -153,7 +122,7 @@ class Manager extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${type}/`, this.props.token)
     return r
   }
-*/
+
   resetError = () => {
     this.setState({ error: null})
   }

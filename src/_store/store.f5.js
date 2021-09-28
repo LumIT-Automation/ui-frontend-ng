@@ -73,6 +73,7 @@ const f5Slice = createSlice({
           state.monitorsFetchStatus = action.payload
         },
 
+
         setPoolsLoading: (state, action) => {
           state.poolsLoading = action.payload
         },
