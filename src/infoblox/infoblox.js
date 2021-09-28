@@ -14,7 +14,7 @@ import Networks from './networks/manager'
 //import CertificateAndKey from './certificates/container'
 
 import {
-  setInfobloxAssets,
+  setAssets,
 
   setContainersLoading,
   setContainers,
@@ -48,10 +48,10 @@ class Infoblox extends React.Component {
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchInfobloxAssets()
-      if (this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any ) && this.props.infobloxAsset  ) {
+      if (this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any ) && this.props.asset  ) {
         this.fetchContainers()
       }
-      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.infobloxAsset  ) {
+      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.asset  ) {
         this.fetchNetworks()
       }
     }
@@ -66,7 +66,7 @@ class Infoblox extends React.Component {
     if (this.props.authorizations !== prevProps.authorizations) {
       this.fetchInfobloxAssets()
     }
-    if ( ((prevProps.infobloxAsset !== this.props.infobloxAsset) && (this.props.infobloxAsset !== null)) ) {
+    if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
       this.fetchContainers()
       this.fetchNetworks()
     }
@@ -90,7 +90,7 @@ class Infoblox extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setInfobloxAssets( resp )))
+        this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
       },
       error => {
         this.setState({loading: false, error: error})
@@ -112,7 +112,7 @@ class Infoblox extends React.Component {
         this.setState({error: error}, () => this.props.dispatch(setContainersLoading(false)))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.infobloxAsset.id}/network-containers/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
   }
 
   fetchNetworks = async () => {
@@ -129,7 +129,7 @@ class Infoblox extends React.Component {
         this.setState({error: error}, () => this.props.dispatch(setNetworksLoading(false)))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.infobloxAsset.id}/networks/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
   }
 
 
@@ -173,7 +173,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.infoblox,
 
-  infobloxAsset: state.infoblox.infobloxAsset,
+  asset: state.infoblox.asset,
   partition: state.infoblox.partition,
 
   networks: state.infoblox.networks,

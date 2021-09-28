@@ -78,7 +78,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
 
-  asset: state.infoblox.infobloxAsset,
+  asset: state.infoblox.asset,
 
   containersLoading: state.infoblox.containersLoading,
   containers: state.infoblox.containers

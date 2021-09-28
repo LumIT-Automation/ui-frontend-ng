@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { setInfobloxEnvironment, setInfobloxAsset, resetObjects } from '../_store/store.infoblox'
+import { setEnvironment, setAsset, resetObjects } from '../_store/store.infoblox'
 import Error from '../error'
 
 import "antd/dist/antd.css"
@@ -41,8 +41,8 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.dispatch(setInfobloxEnvironment(null))
-    this.props.dispatch(setInfobloxAsset(null))
+    this.props.dispatch(setEnvironment(null))
+    this.props.dispatch(setAsset(null))
     //this.props.dispatch(resetObjects())
   }
 
@@ -60,7 +60,7 @@ class InfobloxAssetSelector extends React.Component {
 
   setEnvironment = e => {
     this.setState({ environment: e }, () => this.setEnvAssets(e))
-    this.props.dispatch(setInfobloxEnvironment(e))
+    this.props.dispatch(setEnvironment(e))
   }
 
   setEnvAssets = e => {
@@ -74,7 +74,7 @@ class InfobloxAssetSelector extends React.Component {
     let asset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.props.dispatch(setInfobloxAsset(asset))
+    this.props.dispatch(setAsset(asset))
   }
 
   assetString = () => {
@@ -156,6 +156,6 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.infoblox,
   environment: state.infoblox.environment,
-  assets: state.infoblox.infobloxAssets,
-  asset: state.infoblox.infobloxAsset,
+  assets: state.infoblox.assets,
+  asset: state.infoblox.asset,
 }))(InfobloxAssetSelector);
