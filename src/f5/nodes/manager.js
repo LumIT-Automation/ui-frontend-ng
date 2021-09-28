@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setNodesLoading, setNodes, setNodesFetchStatus } from '../../_store/store.f5'
+import { setNodesLoading, setNodes, setNodesFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -48,9 +48,9 @@ class Manager extends React.Component {
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchNodes()
       }
-      if ( (this.props.nodesFetchStatus === 'updated') ) {
+      if (this.props.nodesFetch) {
         this.fetchNodes()
-        this.props.dispatch(setNodesFetchStatus(''))
+        this.props.dispatch(setNodesFetch(false))
       }
     }
   }
@@ -84,7 +84,7 @@ class Manager extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.f5auth && (this.props.f5auth.nodes_post || this.props.f5auth.any) ?
+         this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
             <Add/>
             :
             null
@@ -107,9 +107,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  f5auth: state.authorizations.f5,
+  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  nodesFetchStatus: state.f5.nodesFetchStatus
+  nodesFetch: state.f5.nodesFetch
 }))(Manager);

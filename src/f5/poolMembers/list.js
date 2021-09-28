@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
+import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetch } from '../../_store/store.f5'
 
 import Delete from './delete'
 
@@ -42,10 +42,10 @@ class List extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.poolMembersFetchStatus  === 'updated') {
+    if (this.props.poolMembersFetch  === true) {
       this.props.dispatch(setPoolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
-      this.props.dispatch(setPoolMembersFetchStatus(''))
+      this.props.dispatch(setPoolMembersFetch(false))
     }
   }
 

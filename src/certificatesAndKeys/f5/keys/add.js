@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setKeysFetchStatus } from '../../../_store/store.f5'
+import { setKeysFetch } from '../../../_store/store.f5'
 
 
 
@@ -156,7 +156,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setKeysFetchStatus('updated')), 2030)
+    setTimeout( () => this.props.dispatch(setKeysFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

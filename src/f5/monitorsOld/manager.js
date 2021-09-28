@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetchStatus } from '../../_store/store.f5'
+import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -49,9 +49,9 @@ class Manager extends React.Component {
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchMonitors()
       }
-      if ( (this.props.monitorsFetchStatus === 'updated') ) {
+      if (this.props.monitorsFetch) {
         this.fetchMonitors()
-        this.props.dispatch(setMonitorsFetchStatus(''))
+        this.props.dispatch(setMonitorsFetch(false))
       }
     }
   }
@@ -161,5 +161,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors,
-  monitorsFetchStatus: state.f5.monitorsFetchStatus
+  monitorsFetch: state.f5.monitorsFetch
 }))(Manager);

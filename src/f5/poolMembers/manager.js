@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetchStatus } from '../../_store/store.f5'
+import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -46,10 +46,10 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.poolMembersFetchStatus  === 'updated') {
+    if (this.props.poolMembersFetch  === true) {
       this.props.dispatch(setPoolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
-      this.props.dispatch(setPoolMembersFetchStatus(''))
+      this.props.dispatch(setPoolMembersFetch(false))
     }
   }
 
@@ -111,5 +111,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   poolMembersLoading: state.f5.poolMembersLoading,
-  poolMembersFetchStatus: state.f5.poolMembersFetchStatus
+  poolMembersFetch: state.f5.poolMembersFetch
 }))(Manager);

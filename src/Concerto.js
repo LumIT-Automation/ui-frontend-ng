@@ -6,7 +6,7 @@ import Error from './error'
 
 import { logout } from './_store/store.auth'
 import { setAuthorizations } from './_store/store.authorizations'
-import { setInfobloxAssets, setInfobloxAssetsFetchStatus } from './_store/store.infoblox'
+import { setInfobloxAssets, setInfobloxAssetsFetch } from './_store/store.infoblox'
 
 import { Layout, Avatar, Divider, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';

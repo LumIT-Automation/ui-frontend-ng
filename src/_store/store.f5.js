@@ -27,8 +27,8 @@ const f5Slice = createSlice({
         setAssets: (state, action) => {
           state.assets = action.payload.data.items
         },
-        setAssetsFetchStatus: (state, action) => {
-          state.assetsFetchStatus = action.payload
+        setAssetsFetch: (state, action) => {
+          state.assetsFetch = action.payload
         },
 
         setAsset: (state, action) => {
@@ -41,8 +41,8 @@ const f5Slice = createSlice({
         setPartitions: (state, action) => {
           state.partitions = action.payload.data.items
         },
-        setPartitionsFetchStatus: (state, action) => {
-          state.partitionsFetchStatus = action.payload
+        setPartitionsFetch: (state, action) => {
+          state.partitionsFetch = action.payload
         },
 
         setPartition: (state, action) => {
@@ -56,8 +56,8 @@ const f5Slice = createSlice({
         setNodes: (state, action) => {
           state.nodes = action.payload.data.items
         },
-        setNodesFetchStatus: (state, action) => {
-          state.nodesFetchStatus = action.payload
+        setNodesFetch: (state, action) => {
+          state.nodesFetch = action.payload
         },
 
         setMonitorTypes: (state, action) => {
@@ -69,8 +69,8 @@ const f5Slice = createSlice({
         setMonitors: (state, action) => {
           state.monitors = action.payload
         },
-        setMonitorsFetchStatus: (state, action) => {
-          state.monitorsFetchStatus = action.payload
+        setMonitorsFetch: (state, action) => {
+          state.monitorsFetch = action.payload
         },
 
 
@@ -80,8 +80,8 @@ const f5Slice = createSlice({
         setPools: (state, action) => {
           state.pools = action.payload.data.items
         },
-        setPoolsFetchStatus: (state, action) => {
-          state.poolsFetchStatus = action.payload
+        setPoolsFetch: (state, action) => {
+          state.poolsFetch = action.payload
         },
 
         setPoolMembersLoading: (state, action) => {
@@ -90,8 +90,8 @@ const f5Slice = createSlice({
         setPoolMembers: (state, action) => {
           state.poolMembers = action.payload.data.items
         },
-        setPoolMembersFetchStatus: (state, action) => {
-          state.poolMembersFetchStatus = action.payload
+        setPoolMembersFetch: (state, action) => {
+          state.poolMembersFetch = action.payload
         },
 
         setProfileTypes: (state, action) => {
@@ -103,8 +103,8 @@ const f5Slice = createSlice({
         setProfiles: (state, action) => {
           state.profiles = action.payload
         },
-        setProfilesFetchStatus: (state, action) => {
-          state.profilesFetchStatus = action.payload
+        setProfilesFetch: (state, action) => {
+          state.profilesFetch = action.payload
         },
 
 
@@ -115,8 +115,8 @@ const f5Slice = createSlice({
         setVirtualServers: (state, action) => {
           state.virtualServers = action.payload.data.items
         },
-        setVirtualServersFetchStatus: (state, action) => {
-          state.virtualServersFetchStatus = action.payload
+        setVirtualServersFetch: (state, action) => {
+          state.virtualServersFetch = action.payload
         },
 
 
@@ -127,8 +127,8 @@ const f5Slice = createSlice({
         setCertificates: (state, action) => {
           state.certificates = action.payload.data.items
         },
-        setCertificatesFetchStatus: (state, action) => {
-          state.certificatesFetchStatus = action.payload
+        setCertificatesFetch: (state, action) => {
+          state.certificatesFetch = action.payload
         },
 
         setKeysLoading: (state, action) => {
@@ -137,8 +137,8 @@ const f5Slice = createSlice({
         setKeys: (state, action) => {
           state.keys = action.payload.data.items
         },
-        setKeysFetchStatus: (state, action) => {
-          state.keysFetchStatus = action.payload
+        setKeysFetch: (state, action) => {
+          state.keysFetch = action.payload
         },
 
         setCurrentPools: (state, action) => {
@@ -150,29 +150,29 @@ const f5Slice = createSlice({
 
           state.nodesLoading= null
           state.nodes = null
-          state.nodesFetchStatus = null
+          state.nodesFetch = null
 
           state.monitorTypes= null
           state.monitorsLoading= null
           state.monitors = null
-          state.monitorsFetchStatus = null
+          state.monitorsFetch = null
 
           state.poolsLoading = null
           state.pools = null
-          state.poolsFetchStatus = null
+          state.poolsFetch = null
 
           state.poolMembersLoading = null
           state.poolMembers = null
-          state.poolMembersFetchStatus = null
+          state.poolMembersFetch = null
 
           state.profileTypes = null
           state.profilesLoading = null
           state.profiles = null
-          state.profilesFetchStatus = null
+          state.profilesFetch = null
 
           state.virtualServersLoading = null
           state.virtualServers = null
-          state.virtualServersFetchStatus = null
+          state.virtualServersFetch = null
 
           state.certificates = null
           state.keys = null
@@ -195,50 +195,50 @@ export const {
 
   setAssetsLoading,
   setAssets,
-  setAssetsFetchStatus,
+  setAssetsFetch,
 
   setAsset,
 
   setPartitionsLoading,
   setPartitions,
-  setPartitionsFetchStatus,
+  setPartitionsFetch,
 
   setPartition,
 
   setNodesLoading,
   setNodes,
-  setNodesFetchStatus,
+  setNodesFetch,
 
   setMonitorTypes,
   setMonitorsLoading,
   setMonitors,
-  setMonitorsFetchStatus,
+  setMonitorsFetch,
 
   setPoolsLoading,
   setPools,
   setCurrentPools,
-  setPoolsFetchStatus,
+  setPoolsFetch,
 
   setPoolMembersLoading,
   setPoolMembers,
-  setPoolMembersFetchStatus,
+  setPoolMembersFetch,
 
   setProfileTypes,
   setProfilesLoading,
   setProfiles,
-  setProfilesFetchStatus,
+  setProfilesFetch,
 
   setVirtualServersLoading,
   setVirtualServers,
-  setVirtualServersFetchStatus,
+  setVirtualServersFetch,
 
   setCertificatesLoading,
   setCertificates,
-  setCertificatesFetchStatus,
+  setCertificatesFetch,
 
   setKeysLoading,
   setKeys,
-  setKeysFetchStatus,
+  setKeysFetch,
 
   resetObjects,
   cleanUp

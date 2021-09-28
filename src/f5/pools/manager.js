@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setPoolsLoading, setPools, setPoolsFetchStatus } from '../../_store/store.f5'
+import { setPoolsLoading, setPools, setPoolsFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -51,9 +51,9 @@ class Manager extends React.Component {
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchPools()
       }
-      if ( (this.props.poolsFetchStatus === 'updated') ) {
+      if (this.props.poolsFetch) {
         this.fetchPools()
-        this.props.dispatch(setPoolsFetchStatus(''))
+        this.props.dispatch(setPoolsFetch(false))
       }
     }
   }
@@ -87,7 +87,7 @@ class Manager extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.f5auth && (this.props.f5auth.pools_post || this.props.f5auth.any) ?
+         this.props.authorizations && (this.props.authorizations.pools_post || this.props.authorizations.any) ?
             <Add/>
           :
           null
@@ -110,9 +110,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  f5auth: state.authorizations.f5,
+  authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,
   pools: state.f5.pools,
-  poolsFetchStatus: state.f5.poolsFetchStatus
+  poolsFetch: state.f5.poolsFetch
 }))(Manager);

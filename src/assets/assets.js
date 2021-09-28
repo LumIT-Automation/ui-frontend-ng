@@ -6,8 +6,8 @@ import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 import Error from '../error'
 
-import { setAssetsFetchStatus as f5AssetsRefresh } from '../_store/store.f5'
-import { setAssetsFetchStatus as infobloxAssetsRefresh } from '../_store/store.infoblox'
+import { setAssetsFetch as f5AssetsRefresh } from '../_store/store.f5'
+import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -48,11 +48,11 @@ class Assets extends React.Component {
   }
 
   f5AssetsRefresh = () => {
-    this.props.dispatch(f5AssetsRefresh('updated'))
+    this.props.dispatch(f5AssetsRefresh(true))
   }
 
   infobloxAssetsRefresh = () => {
-    this.props.dispatch(infobloxAssetsRefresh('updated'))
+    this.props.dispatch(infobloxAssetsRefresh(true))
   }
 
 

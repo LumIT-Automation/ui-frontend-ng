@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setAssetsLoading, setAssets, setAssetsFetchStatus, cleanUp } from '../../_store/store.f5'
+import { setAssetsLoading, setAssets, setAssetsFetch, cleanUp } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -39,9 +39,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.assetsFetchStatus === 'updated') ) {
+    if (this.props.assetsFetch) {
       this.fetchAssets()
-      this.props.dispatch(setAssetsFetchStatus(''))
+      this.props.dispatch(setAssetsFetch(false))
     }
   }
 
@@ -54,7 +54,7 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssets( resp )) 
+        this.props.dispatch(setAssets( resp ))
       },
       error => {
         this.setState({error: error})
@@ -94,5 +94,5 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   f5auth: state.authorizations.f5,
   assets: state.f5.assets,
-  assetsFetchStatus: state.f5.assetsFetchStatus
+  assetsFetch: state.f5.assetsFetch
 }))(Manager);

@@ -10,7 +10,7 @@ import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
 
-import { setAssets, setCertificatesFetchStatus, setKeysFetchStatus } from '../_store/store.f5'
+import { setAssets, setCertificatesFetch, setKeysFetch } from '../_store/store.f5'
 
 
 
@@ -66,11 +66,11 @@ class CertificatesAndKeys extends React.Component {
 
 
   certificatesRefresh = () => {
-    this.props.dispatch(setCertificatesFetchStatus('updated'))
+    this.props.dispatch(setCertificatesFetch(true))
   }
 
   keysRefresh = () => {
-    this.props.dispatch(setKeysFetchStatus('updated'))
+    this.props.dispatch(setKeysFetch(true))
   }
 
   resetError = () => {

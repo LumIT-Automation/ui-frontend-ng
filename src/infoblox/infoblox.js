@@ -18,11 +18,11 @@ import {
 
   setContainersLoading,
   setContainers,
-  setContainersFetchStatus,
+  setContainersFetch,
 
   setNetworksLoading,
   setNetworks,
-  setNetworksFetchStatus,
+  setNetworksFetch,
 
   cleanUp
 
@@ -70,13 +70,13 @@ class Infoblox extends React.Component {
       this.fetchContainers()
       this.fetchNetworks()
     }
-    if ( (this.props.containersFetchStatus === 'updated') ) {
+    if (this.props.containersFetch) {
       this.fetchContainers()
-      this.props.dispatch(setContainersFetchStatus(''))
+      this.props.dispatch(setContainersFetch(false))
     }
-    if ( (this.props.networksFetchStatus === 'updated') ) {
+    if (this.props.networksFetch) {
       this.fetchNetworks()
-      this.props.dispatch(setNetworksFetchStatus(''))
+      this.props.dispatch(setNetworksFetch(false))
     }
   }
 
@@ -177,9 +177,9 @@ export default connect((state) => ({
   partition: state.infoblox.partition,
 
   networks: state.infoblox.networks,
-  networksFetchStatus: state.infoblox.networksFetchStatus,
+  networksFetch: state.infoblox.networksFetch,
 
   containers: state.infoblox.containers,
-  containersFetchStatus: state.infoblox.containersFetchStatus,
+  containersFetch: state.infoblox.containersFetch,
 
 }))(Infoblox);

@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setKeysLoading, setKeys, setKeysFetchStatus } from '../../../_store/store.f5'
+import { setKeysLoading, setKeys, setKeysFetch } from '../../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -45,9 +45,9 @@ class Manager extends React.Component {
       if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
         this.fetchKeys()
       }
-      if ( (this.props.keysFetchStatus === 'updated') ) {
+      if (this.props.keysFetch) {
         this.fetchKeys()
-        this.props.dispatch(setKeysFetchStatus(''))
+        this.props.dispatch(setKeysFetch(false))
       }
     }
   }
@@ -109,5 +109,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   keys: state.f5.keys,
-  keysFetchStatus: state.f5.keysFetchStatus
+  keysFetch: state.f5.keysFetch
 }))(Manager);

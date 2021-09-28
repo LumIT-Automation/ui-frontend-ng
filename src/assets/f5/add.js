@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setAssetsFetchStatus } from '../../_store/store.f5'
+import { setAssetsFetch } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
 
@@ -238,7 +238,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setAssetsFetchStatus('updated')), 2030)
+    setTimeout( () => this.props.dispatch(setAssetsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

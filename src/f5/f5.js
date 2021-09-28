@@ -15,11 +15,11 @@ import VirtualServers from './virtualServers/manager'
 
 import {
   setAssets,
-  setNodesFetchStatus,
-  setMonitorsFetchStatus,
-  setPoolsFetchStatus,
-  setProfilesFetchStatus,
-  setVirtualServersFetchStatus
+  setNodesFetch,
+  setMonitorsFetch,
+  setPoolsFetch,
+  setProfilesFetch,
+  setVirtualServersFetch
 } from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
@@ -75,23 +75,23 @@ class F5 extends React.Component {
 
 
   nodesRefresh = () => {
-    this.props.dispatch(setNodesFetchStatus('updated'))
+    this.props.dispatch(setNodesFetch(true))
   }
 
   monitorsRefresh = () => {
-    this.props.dispatch(setMonitorsFetchStatus('updated'))
+    this.props.dispatch(setMonitorsFetch(true))
   }
 
   poolsRefresh = () => {
-    this.props.dispatch(setPoolsFetchStatus('updated'))
+    this.props.dispatch(setPoolsFetch(true))
   }
 
   profilesRefresh = () => {
-    this.props.dispatch(setProfilesFetchStatus('updated'))
+    this.props.dispatch(setProfilesFetch(true))
   }
 
   virtualServersRefresh = () => {
-    this.props.dispatch(setVirtualServersFetchStatus('updated'))
+    this.props.dispatch(setVirtualServersFetch(true))
   }
 
   resetError = () => {

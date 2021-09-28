@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetchStatus } from '../../_store/store.f5'
+import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch } from '../../_store/store.f5'
 
 import List from './list'
 //import Add from './add'
@@ -51,9 +51,9 @@ class Manager extends React.Component {
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchVirtualServers()
       }
-      if ( (this.props.virtualServersFetchStatus === 'updated') ) {
+      if (this.props.virtualServersFetch) {
         this.fetchVirtualServers()
-        this.props.dispatch(setVirtualServersFetchStatus(''))
+        this.props.dispatch(setVirtualServersFetch(false))
       }
     }
   }
@@ -105,5 +105,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   virtualServers: state.f5.virtualServers,
-  virtualServersFetchStatus: state.f5.virtualServersFetchStatus
+  virtualServersFetch: state.f5.virtualServersFetch
 }))(Manager);

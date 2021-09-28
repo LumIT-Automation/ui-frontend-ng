@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from '../../../error'
 
-import { setCertificatesFetchStatus } from '../../../_store/store.f5'
+import { setCertificatesFetch } from '../../../_store/store.f5'
 
 
 import { Form, Input, Button, Select, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
@@ -156,7 +156,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setCertificatesFetchStatus('updated')), 2030)
+    setTimeout( () => this.props.dispatch(setCertificatesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

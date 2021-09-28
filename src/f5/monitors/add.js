@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setMonitorsFetchStatus } from '../../_store/store.f5'
+import { setMonitorsFetch } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -152,7 +152,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setMonitorsFetchStatus('updated')), 2030)
+    setTimeout( () => this.props.dispatch(setMonitorsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setProfilesFetchStatus } from '../../_store/store.f5'
+import { setProfilesFetch } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
@@ -135,7 +135,7 @@ class Modify extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.props.dispatch(setProfilesFetchStatus('updated')), 2030)
+    setTimeout( () => this.props.dispatch(setProfilesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

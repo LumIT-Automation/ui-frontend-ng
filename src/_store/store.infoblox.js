@@ -16,8 +16,8 @@ const infobloxSlice = createSlice({
       setAssets: (state, action) => {
         state.assets = action.payload.data.items
       },
-      setAssetsFetchStatus: (state, action) => {
-        state.assetsFetchStatus = action.payload
+      setAssetsFetch: (state, action) => {
+        state.assetsFetch = action.payload
       },
 
       setAsset: (state, action) => {
@@ -30,8 +30,8 @@ const infobloxSlice = createSlice({
       setNetworks: (state, action) => {
         state.networks = action.payload.data
       },
-      setNetworksFetchStatus: (state, action) => {
-        state.networksFetchStatus = action.payload
+      setNetworksFetch: (state, action) => {
+        state.networksFetch = action.payload
       },
 
       setContainersLoading: (state, action) => {
@@ -40,8 +40,8 @@ const infobloxSlice = createSlice({
       setContainers: (state, action) => {
         state.containers = action.payload.data
       },
-      ssetContainersFetchStatus: (state, action) => {
-        state.containersFetchStatus = action.payload
+      ssetContainersFetch: (state, action) => {
+        state.containersFetch = action.payload
       },
 
 
@@ -61,17 +61,17 @@ export const {
 
   setAssetsLoading,
   setAssets,
-  setAssetsFetchStatus,
+  setAssetsFetch,
 
   setAsset,
 
   setNetworksLoading,
   setNetworks,
-  setNetworksFetchStatus,
+  setNetworksFetch,
 
   setContainersLoading,
   setContainers,
-  setContainersFetchStatus,
+  setContainersFetch,
 
   cleanUp
 } = actions

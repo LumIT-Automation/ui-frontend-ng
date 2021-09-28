@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest";
 import Error from '../../../error'
 
-import { setCertificatesLoading, setCertificates, setCertificatesFetchStatus } from '../../../_store/store.f5'
+import { setCertificatesLoading, setCertificates, setCertificatesFetch } from '../../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -48,9 +48,9 @@ class CertificatesManager extends React.Component {
       if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
         this.fetchCertificates()
       }
-      if ( (this.props.certificatesFetchStatus === 'updated') ) {
+      if (this.props.certificatesFetch) {
         this.fetchCertificates()
-        this.props.dispatch(setCertificatesFetchStatus(''))
+        this.props.dispatch(setCertificatesFetch(false))
       }
     }
   }
@@ -111,5 +111,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   certificates: state.f5.certificates,
-  certificatesFetchStatus: state.f5.certificatesFetchStatus
+  certificatesFetch: state.f5.certificatesFetch
 }))(CertificatesManager);

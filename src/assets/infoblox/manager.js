@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setAssetsLoading, setAssets, setAssetsFetchStatus } from '../../_store/store.infoblox'
+import { setAssetsLoading, setAssets, setAssetsFetch } from '../../_store/store.infoblox'
 
 import List from './list'
 import Add from './add'
@@ -40,9 +40,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.assetsFetchStatus === 'updated') ) {
+    if (this.props.assetsFetch) {
       this.fetchAssets()
-      this.props.dispatch(setAssetsFetchStatus(''))
+      this.props.dispatch(setAssetsFetch(false))
     }
   }
 
@@ -92,5 +92,5 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   infobloxAuth: state.authorizations.infoblox,
   assets: state.infoblox.assets,
-  assetsFetchStatus: state.infoblox.assetsFetchStatus
+  assetsFetch: state.infoblox.assetsFetch
 }))(Manager);

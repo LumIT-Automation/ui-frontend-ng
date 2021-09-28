@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolsFetchStatus } from '../../_store/store.f5'
+import { setPoolsFetch } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -48,7 +48,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetchStatus('updated')))
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetch(true)))
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(setPoolsLoading(false)))
