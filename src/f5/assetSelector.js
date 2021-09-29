@@ -1,15 +1,12 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 
-import Rest from "../_helpers/Rest";
+import Rest from "../_helpers/Rest"
 import { setEnvironment, setAsset, setPartitions, setPartition } from '../_store/store.f5'
 import Error from '../error'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -45,7 +42,6 @@ class AssetSelector extends React.Component {
     this.props.dispatch(setEnvironment(null))
     this.props.dispatch(setAsset(null))
     this.props.dispatch(setPartition(null))
-    //this.props.dispatch(resetObjects())
   }
 
   setEnvironmentList = () => {

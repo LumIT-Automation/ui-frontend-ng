@@ -6,9 +6,9 @@ import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
 import {
-  setNetworksLoading,
-  setNetworks,
-  setNetworksFetch
+  setTreeLoading,
+  setTree,
+  setTreeFetch,
 } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -30,8 +30,8 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset) {
-      if (!this.props.networks) {
-        this.fetchNetworks()
+      if (!this.props.tree) {
+        this.fetchTree()
       }
     }
   }
@@ -42,15 +42,15 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.asset) {
-      if (!this.props.networks) {
-        this.fetchNetworks()
+      if (!this.props.tree) {
+        this.fetchTree()
       }
       if (prevProps.asset !== this.props.asset) {
-        this.fetchNetworks()
+        this.fetchTree()
       }
-      if (this.props.networksFetch) {
-        this.fetchNetworks()
-        this.props.dispatch(setNetworksFetch(false))
+      if (this.props.treeFetch) {
+        this.fetchTree()
+        this.props.dispatch(setTreeFetch(false))
       }
     }
   }
@@ -58,21 +58,20 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchNetworks = async () => {
-    this.props.dispatch(setNetworksLoading(true))
+  fetchTree = async () => {
+    this.props.dispatch(setTreeLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setNetworks(resp))
+        this.props.dispatch( setTree(resp) )
       },
       error => {
         this.setState({error: error})
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
-    this.props.dispatch(setNetworksLoading(false))
+    await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
+    this.props.dispatch(setTreeLoading(false))
   }
-
 
   resetError = () => {
     this.setState({ error: null})
@@ -80,7 +79,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.asset)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -102,6 +100,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.f5,
   asset: state.infoblox.asset,
 
-  networks: state.infoblox.networks,
-  networksFetch: state.infoblox.networksFetch,
+  tree: state.infoblox.tree,
+  treeFetch: state.infoblox.treeFetch,
 }))(Manager);

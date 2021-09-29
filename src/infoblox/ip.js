@@ -142,7 +142,7 @@ class Ip extends React.Component {
         ...this.getColumnSearchProps('network'),
       },
 
-
+/*
       {
         title: 'Delete',
         align: 'center',
@@ -158,6 +158,7 @@ class Ip extends React.Component {
           </Space>
         ),
       }
+      */
     ];
 
 

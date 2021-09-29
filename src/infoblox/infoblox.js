@@ -1,14 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd'
 
-import Rest from "../_helpers/Rest";
+import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+
 import AssetSelector from './assetSelector'
-import Containers from './containersTemp/manager'
-import Networks from './networks/manager'
+import Tree from './tree/manager'
+//import Containers from './containersTemp/manager'
+//import Networks from './networks/manager'
 
 
 //import CertificateAndKey from './certificates/container'
@@ -16,12 +17,12 @@ import Networks from './networks/manager'
 import {
   setAssets,
 
+  /*
   setContainersLoading,
   setContainers,
   setContainersFetch,
+  */
 
-  setNetworksLoading,
-  setNetworks,
   setNetworksFetch,
 
   cleanUp
@@ -32,7 +33,9 @@ import 'antd/dist/antd.css';
 import '../App.css'
 
 const { TabPane } = Tabs;
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 
 
 
@@ -47,13 +50,7 @@ class Infoblox extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchInfobloxAssets()
-      if (this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any ) && this.props.asset  ) {
-        this.fetchContainers()
-      }
-      if (this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any ) && this.props.asset  ) {
-        this.fetchNetworks()
-      }
+      this.fetchAssets()
     }
   }
 
@@ -62,30 +59,13 @@ class Infoblox extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
-    if (this.props.authorizations !== prevProps.authorizations) {
-      this.fetchInfobloxAssets()
-    }
-    if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
-      this.fetchContainers()
-      this.fetchNetworks()
-    }
-    if (this.props.containersFetch) {
-      this.fetchContainers()
-      this.props.dispatch(setContainersFetch(false))
-    }
-    if (this.props.networksFetch) {
-      this.fetchNetworks()
-      this.props.dispatch(setNetworksFetch(false))
-    }
   }
 
   componentWillUnmount() {
   }
 
 
-  fetchInfobloxAssets = async () => {
-    console.log('fetcho assets')
+  fetchAssets = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
@@ -99,6 +79,7 @@ class Infoblox extends React.Component {
     await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
+/*
   fetchContainers = async () => {
     console.log('fetcho containers')
     this.props.dispatch(setContainersLoading(true))
@@ -114,24 +95,15 @@ class Infoblox extends React.Component {
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
   }
+*/
 
-  fetchNetworks = async () => {
-    console.log('fetcho networks')
-    this.props.dispatch(setNetworksLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        console.log(resp)
-        this.setState({error: false}, () => this.props.dispatch(setNetworks(resp)) )
-        this.props.dispatch(setNetworksLoading(false))
-      },
-      error => {
-        this.setState({error: error}, () => this.props.dispatch(setNetworksLoading(false)))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
+  treeRefresh = () => {
+    this.props.dispatch(setTreeFetch(true))
   }
 
+  networksRefresh = () => {
+    this.props.dispatch(setNetworksFetch(true))
+  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -145,19 +117,25 @@ class Infoblox extends React.Component {
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
 
-          <Tabs type="card" destroyInactiveTabPane={true}>
-            { this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any) ?
+          <Tabs type="card">
+            { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+              <TabPane tab="Tree" tab=<span>Network Tree <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.treeRefresh()}/></span>>
+                {this.props.networksLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Tree/> }
+              </TabPane>
+              : null
+            }
+            {/* this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any) ?
               <TabPane tab="Containers" key="Containers">
                 <Containers/>
               </TabPane>
               : null
-            }
-            { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
-              <TabPane tab="Networks" key="Networks">
-                <Networks/>
+            */}
+            {/* this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+              <TabPane tab="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                {this.props.networksLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Networks/> }
               </TabPane>
               : null
-            }
+            */}
 
           </Tabs>
 
@@ -173,13 +151,13 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.infoblox,
 
-  asset: state.infoblox.asset,
-  partition: state.infoblox.partition,
+  tree: state.infoblox.tree,
+  treeLoading: state.infoblox.treeLoading,
 
   networks: state.infoblox.networks,
-  networksFetch: state.infoblox.networksFetch,
-
+  networksLoading: state.infoblox.networksLoading,
+/*
   containers: state.infoblox.containers,
   containersFetch: state.infoblox.containersFetch,
-
+*/
 }))(Infoblox);

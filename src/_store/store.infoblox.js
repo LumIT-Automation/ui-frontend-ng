@@ -24,6 +24,16 @@ const infobloxSlice = createSlice({
         state.asset = action.payload
       },
 
+      setTreeLoading: (state, action) => {
+        state.treeLoading = action.payload
+      },
+      setTree: (state, action) => {
+        state.tree = [action.payload.data['/']]
+      },
+      setTreeFetch: (state, action) => {
+        state.treeFetch = action.payload
+      },
+
       setNetworksLoading: (state, action) => {
         state.networksLoading = action.payload
       },
@@ -64,6 +74,10 @@ export const {
   setAssetsFetch,
 
   setAsset,
+
+  setTreeLoading,
+  setTree,
+  setNTreeFetch,
 
   setNetworksLoading,
   setNetworks,

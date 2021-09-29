@@ -1,15 +1,13 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 
-import Rest from "../_helpers/Rest";
-import { setEnvironment, setAsset, resetObjects } from '../_store/store.infoblox'
+import Rest from "../_helpers/Rest"
+import { setEnvironment, setAsset } from '../_store/store.infoblox'
 import Error from '../error'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 class InfobloxAssetSelector extends React.Component {
@@ -43,7 +41,6 @@ class InfobloxAssetSelector extends React.Component {
   componentWillUnmount() {
     this.props.dispatch(setEnvironment(null))
     this.props.dispatch(setAsset(null))
-    //this.props.dispatch(resetObjects())
   }
 
   setEnvironmentList = () => {
