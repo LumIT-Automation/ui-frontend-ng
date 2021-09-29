@@ -266,7 +266,7 @@ class Modify extends React.Component {
           </Button>
 
           <Modal
-            title={<p style={{textAlign: 'center'}}>MODIFY PERMISSION</p>}
+            title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
             centered
             destroyOnClose={true}
             visible={this.state.visible}

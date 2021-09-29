@@ -257,7 +257,7 @@ class Modify extends React.Component {
 
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>MODIFY ASSET</p>}
+          title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.fqdn} - {this.props.obj.address}</p></div>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

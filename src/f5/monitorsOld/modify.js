@@ -155,7 +155,7 @@ class Modify extends React.Component {
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>MODIFY MONITOR</p>}
+          title={<p style={{textAlign: 'center'}}>MODIFY {this.props.obj.name} MONITOR</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

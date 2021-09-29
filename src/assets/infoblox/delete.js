@@ -78,7 +78,7 @@ class Delete extends React.Component {
         <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE ASSET</p>}
+          title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{this.props.obj.fqdn} - {this.props.obj.address}</p></div>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

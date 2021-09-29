@@ -81,7 +81,7 @@ class Homepage extends React.Component {
             />
           </Col>
           <Row gutter={16} between="xs" style={{marginTop: '5vh'}}>
-            <Col offset={4} span={16} style={{textAlign: 'center'}}>
+            <Col offset={2} span={16} style={{textAlign: 'center'}}>
               <Histogram/>
             </Col>
           </Row>
