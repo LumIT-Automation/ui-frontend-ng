@@ -26,7 +26,9 @@ class Container extends React.Component {
   }
 
   componentDidMount() {
-    this.getPools()
+    if (this.props.asset && this.props.partitions) {
+      this.getPools()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {

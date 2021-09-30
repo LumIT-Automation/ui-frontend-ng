@@ -4,7 +4,8 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setAssets } from '../_store/store.f5'
+import { setAssets as setF5Assets } from '../_store/store.f5'
+import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 
 import ModalCustom from './modal'
 
@@ -52,14 +53,23 @@ class Service extends React.Component {
         {
           service: 'F5 - Pool Maintenance'
         },
+        {
+          service: 'INFOBLOX - Request IP'
+        },
+        {
+          service: 'INFOBLOX - Release IP'
+        },
       ],
       body: {}
     };
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchAssets()
+    if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
+      this.fetchF5Assets()
+    }
+    if (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) {
+      this.fetchInfobloxAssets()
     }
   }
 
@@ -68,9 +78,7 @@ class Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.authorizations !== prevProps.authorizations) {
-      this.fetchAssets()
-    }
+
   }
 
   componentWillUnmount() {
@@ -154,13 +162,14 @@ class Service extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  fetchAssets = async () => {
+  fetchF5Assets = async () => {
+    console.log('f5assets')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setAssets( resp ))
+        this.props.dispatch(setF5Assets( resp ))
       },
       error => {
         this.setState({loading: false})
@@ -168,6 +177,23 @@ class Service extends React.Component {
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
+  }
+
+  fetchInfobloxAssets = async () => {
+    console.log('ibassets')
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setInfobloxAssets( resp ))
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
   resetError = () => {
@@ -234,6 +260,8 @@ class Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  assets: state.f5.assets
+  f5Authorizations: state.authorizations.f5,
+  infobloxAuthorizations: state.authorizations.infoblox,
+  f5Assets: state.f5.assets,
+  infobloxAssets: state.infoblox.assets
 }))(Service);

@@ -68,23 +68,21 @@ class Manager extends React.Component {
 
     let profileTypes = await this.fetchProfilesTypeList()
     this.props.dispatch(setProfileTypes(profileTypes.data.items))
-    //let profiles = await this.profilesLoop(profileTypes.data.items)
 
     let profiles = await this.fetchProfilesAny()
     let list = []
 
-    profiles.data.forEach(t => {
-      let type = Object.keys(t)
-      type = type[0]
-      let values = Object.values(t)
+    for (let t in profiles.data) {
+      let type = t
+      let values = Object.values(profiles.data[t])
 
       values.forEach(o => {
-        o.items.forEach(p => {
+        o.forEach(p => {
           Object.assign(p, {type: type});
           list.push(p)
         })
       })
-    })
+    }
 
     this.props.dispatch(setProfilesLoading(false))
     this.props.dispatch(setProfiles(list))

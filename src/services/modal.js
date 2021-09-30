@@ -4,10 +4,15 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import AssetSelector from './assetSelector'
+import F5AssetSelector from './f5AssetSelector'
+import InfobloxAssetSelector from './infobloxAssetSelector'
+
 import CreateF5ervice from './createF5Service'
 import DeleteF5ervice from './deleteF5Service'
 import PoolMainenance from './poolMaintenance/manager'
+
+import RequestIp from './requestIp'
+import ReleaseIp from './releaseIp'
 
 
 import { Space, Modal, Table, Result, List, Button, Divider, Alert } from 'antd';
@@ -103,6 +108,16 @@ class ModalCustom extends React.Component {
           <PoolMainenance/>
         )
         break
+      case 'INFOBLOX - Request IP':
+        return (
+          <RequestIp/>
+        )
+        break
+      case 'INFOBLOX - Release IP':
+        return (
+          <ReleaseIp/>
+        )
+        break
       case 'Papayas':
 
         // expected output: "Mangoes and papayas are $2.79 a pound."
@@ -132,16 +147,33 @@ class ModalCustom extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-          <div style={{margin: '0 150px'}}>
-            <AssetSelector />
-          </div>
+          { (this.props.obj.service.includes('F5')) ?
+          <React.Fragment>
+            <div style={{margin: '0 150px'}}>
+              <F5AssetSelector />
+            </div>
+
           <Divider/>
-          { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+          { ((this.props.f5Asset) && (this.props.f5Asset.id && this.props.partition) ) ?
             this.ComponentToRender()
             :
             <Alert message="Asset and Partition not set" type="error" />
           }
+          </React.Fragment>
+          :
+          <React.Fragment>
+            <div style={{margin: '0 300px'}}>
+              <InfobloxAssetSelector />
+            </div>
 
+          <Divider/>
+          { ( this.props.infobloxAsset && this.props.infobloxAsset.id ) ?
+            this.ComponentToRender()
+            :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
+          </React.Fragment>
+          }
         </Modal>
 
 
@@ -155,9 +187,8 @@ class ModalCustom extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  assets: state.f5.assets,
-  asset: state.f5.asset,
+  f5Asset: state.f5.asset,
   partition: state.f5.partition,
+  infobloxAsset: state.infoblox.asset,
   workflowStatus: state.workflows.workflowStatus
 }))(ModalCustom);
