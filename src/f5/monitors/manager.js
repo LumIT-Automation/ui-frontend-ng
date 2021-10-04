@@ -66,7 +66,6 @@ class Manager extends React.Component {
     this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
 
     let monitors = await this.fetchMonitorsAny()
-
     let list = []
 
     for (let t in monitors.data) {
