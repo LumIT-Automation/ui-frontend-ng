@@ -12,9 +12,10 @@ import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblo
 import 'antd/dist/antd.css';
 import '../App.css'
 
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+
 const { TabPane } = Tabs;
 
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 

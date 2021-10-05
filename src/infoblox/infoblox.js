@@ -25,6 +25,8 @@ import {
 
   setNetworksFetch,
 
+  setTreeFetch,
+
   cleanUp
 
 } from '../_store/store.infoblox'
@@ -32,8 +34,9 @@ import {
 import 'antd/dist/antd.css';
 import '../App.css'
 
-const { TabPane } = Tabs;
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+
+const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 

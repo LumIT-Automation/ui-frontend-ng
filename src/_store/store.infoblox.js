@@ -77,7 +77,7 @@ export const {
 
   setTreeLoading,
   setTree,
-  setNTreeFetch,
+  setTreeFetch,
 
   setNetworksLoading,
   setNetworks,
