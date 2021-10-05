@@ -50,8 +50,6 @@ class List extends React.Component {
     })
   }
 
-
-
   fetchIps = async network => {
     this.setState({ipLoading: true})
     let rest = new Rest(
@@ -69,8 +67,6 @@ class List extends React.Component {
     //this.props.dispatch(setTreeLoading(false))
     //this.setState({visible: true})
   }
-
-
 
   resetError = () => {
     this.setState({ error: null})
@@ -99,7 +95,7 @@ class List extends React.Component {
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Row>
+        <Row gutter={200}>
           <Col>
             <Tree
               defaultExpandAll
@@ -112,7 +108,7 @@ class List extends React.Component {
               treeData={this.props.tree}
             />
           </Col>
-          <Col offset={6}>
+          <Col >
             { this.state.network ?
               <Ip ipLoading={this.state.ipLoading} ipv4Info={this.state.ipv4Info} />
               :
