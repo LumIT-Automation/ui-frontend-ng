@@ -11,7 +11,8 @@ fi
 # $1 is the number of times that this package is present on the system (installing or upgrading).
 if [ "$1" -eq "0" ]; then
     printf "\n* Cleanup...\n" 
-    if podman ps | awk '{print $2}' | grep -q ^localhost/ui$; then
+
+    if podman ps | awk '{print $2}' | grep -E '\blocalhost/ui(:|\b)'; then
         podman stop ui
     fi
     
@@ -20,8 +21,8 @@ if [ "$1" -eq "0" ]; then
     fi
     
     # Be sure there is not rubbish around.
-    if podman ps --all | awk '{print $2}' | grep -q ^localhost/ui$; then
-        cIds=$( podman ps --all | awk '$2 == "localhost/ui" { print $1 }' )
+    if podman ps --all | awk '{print $2}' | grep -E '\blocalhost/ui(:|\b)'; then
+        cIds=$( podman ps --all | awk '$2 ~ /^localhost\/ui/ { print $1 }' )
         for id in $cIds; do
             podman rm -f $id
         done
@@ -29,3 +30,4 @@ if [ "$1" -eq "0" ]; then
 fi
 
 exit 0
+
