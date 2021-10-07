@@ -207,11 +207,8 @@ class Rest {
             });
 
             if (response.ok) {
-              // HTTP-status is 200-299.
-              json = await response.json();
-              if (json && json.data) {
-                this.onSuccess(json);
-              }
+              // HTTP-status is 200-299
+              this.onSuccess(response);
             }
             else {
               this.onError(

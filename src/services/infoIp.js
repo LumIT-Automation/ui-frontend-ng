@@ -176,6 +176,18 @@ class RequestIp extends React.Component {
         key: 'ip_address',
       },
       {
+        title: 'Name Server',
+        align: 'center',
+        dataIndex: ['extattrs', 'Name Server', 'value'],
+        key: 'nameServer',
+      },
+      {
+        title: 'Mac address',
+        align: 'center',
+        dataIndex: 'mac_address',
+        key: 'mac_address',
+      },
+      {
         title: 'Status',
         align: 'center',
         dataIndex: 'status',
@@ -194,12 +206,6 @@ class RequestIp extends React.Component {
         key: 'usage',
       },
       {
-        title: 'Mac address',
-        align: 'center',
-        dataIndex: 'mac_address',
-        key: 'mac_address',
-      },
-      {
         title: 'Network',
         align: 'center',
         dataIndex: 'network',
@@ -216,6 +222,12 @@ class RequestIp extends React.Component {
         align: 'center',
         dataIndex: ['extattrs', 'Mask', 'value'],
         key: 'mask',
+      },
+      {
+        title: 'Reference',
+        align: 'center',
+        dataIndex: ['extattrs', 'Reference', 'value'],
+        key: 'reference',
       },
     ];
 

@@ -79,7 +79,7 @@ class Add extends React.Component {
 
       case 'datacenter':
         if (e.target.value) {
-        body.datacenter = e.target.value
+          body.datacenter = e.target.value
           delete errors.datacenterError
         }
         else {
