@@ -11,7 +11,9 @@ import CreateF5ervice from './createF5Service'
 import DeleteF5ervice from './deleteF5Service'
 import PoolMainenance from './poolMaintenance/manager'
 
+import InfoIp from './infoIp'
 import RequestIp from './requestIp'
+import ModifyIp from './modifyIp'
 import ReleaseIp from './releaseIp'
 
 
@@ -108,9 +110,19 @@ class ModalCustom extends React.Component {
           <PoolMainenance/>
         )
         break
+      case 'INFOBLOX - Info IP':
+        return (
+          <InfoIp/>
+        )
+        break
       case 'INFOBLOX - Request IP':
         return (
-          <RequestIp/>
+          <ReleaseIp/>
+        )
+        break
+      case 'INFOBLOX - Modify IP':
+        return (
+          <ModifyIp/>
         )
         break
       case 'INFOBLOX - Release IP':

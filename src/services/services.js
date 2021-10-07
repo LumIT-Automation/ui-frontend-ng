@@ -54,7 +54,13 @@ class Service extends React.Component {
           service: 'F5 - Pool Maintenance'
         },
         {
+          service: 'INFOBLOX - Info IP'
+        },
+        {
           service: 'INFOBLOX - Request IP'
+        },
+        {
+          service: 'INFOBLOX - Modify IP'
         },
         {
           service: 'INFOBLOX - Release IP'
@@ -214,7 +220,6 @@ class Service extends React.Component {
 
 
   render() {
-
     const columns = [
       {
         title: 'Service',

@@ -163,7 +163,10 @@ class Rest {
 
             if (response.ok) {
               // HTTP-status is 200-299.
-              this.onSuccess(response);
+              json = await response.json();
+              if (json && json.data) {
+                this.onSuccess(json);
+              }
             }
             else {
               json = await response.json();
@@ -205,7 +208,10 @@ class Rest {
 
             if (response.ok) {
               // HTTP-status is 200-299.
-              this.onSuccess(response);
+              json = await response.json();
+              if (json && json.data) {
+                this.onSuccess(json);
+              }
             }
             else {
               this.onError(
