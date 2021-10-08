@@ -4,17 +4,12 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col } from 'antd'
+import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
-
-
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -29,7 +24,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class DeleteF5Service extends React.Component {
+class ReleaseIp extends React.Component {
 
   constructor(props) {
     super(props);
@@ -59,40 +54,74 @@ class DeleteF5Service extends React.Component {
     this.setState({visible: true})
   }
 
-  setServiceName = e => {
-    let body = Object.assign({}, this.state.body);
+  setIp = e => {
+
+    let ip = Object.assign({}, this.state.ip);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.serviceName = e.target.value
-      delete errors.serviceNameError
+      const ipv4 = e.target.value
+      const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
+      const ipv4Regex = new RegExp(validIpAddressRegex);
+
+      if (ipv4Regex.test(ipv4)) {
+        ip = ipv4
+        delete errors.ipError
+      }
+      else {
+        errors.ipError = 'error'
+      }
     }
     else {
-      errors.serviceNameError = 'error'
+      errors.ipError = 'error'
     }
-    this.setState({body: body, errors: errors})
+
+    this.setState({ip: ip, errors: errors})
   }
 
-  deleteService = async () => {
-    let errors = Object.assign({}, this.state.errors);
-    let serviceName = this.state.body.serviceName
-    this.setState({message: null})
-
+  infoIp = async () => {
     this.setState({loading: true})
-
     let rest = new Rest(
-      "DELETE",
+      "GET",
       resp => {
-        this.setState({loading: false, success: true})
-        this.success()
+        let ipInfo = []
+        ipInfo.push(resp.data)
+        this.setState({
+          success: true,
+          ipInfo: ipInfo,
+          loading: false
+        })
       },
       error => {
-        this.setState({loading: false, success: false})
-        this.setState({error: error})
+        this.setState({error: error, loading: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/${serviceName}/`, this.props.token )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
+    //this.props.dispatch(setNodesLoading(false))
+  }
 
+  releaseIp = async () => {
+    let errors = Object.assign({}, this.state.errors);
+
+    if (isEmpty(this.state.ip)){
+      this.setState({message: 'Please fill the form'})
+    }
+    else {
+      this.setState({message: null});
+
+        this.setState({loading: true})
+
+        let rest = new Rest(
+          "DELETE",
+          resp => {
+            this.infoIp()
+          },
+          error => {
+            this.setState({loading: false, success: false, error: error})
+          }
+        )
+        await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token )
+      }
   }
 
   resetError = () => {
@@ -115,15 +144,88 @@ class DeleteF5Service extends React.Component {
 
   render() {
 
+    const columns = [
+      {
+        title: 'IP address',
+        align: 'center',
+        dataIndex: 'ip_address',
+        key: 'ip_address',
+      },
+      {
+        title: 'Names',
+        align: 'center',
+        dataIndex: 'names',
+        key: 'ip_address',
+      },
+      {
+        title: 'Name Server',
+        align: 'center',
+        dataIndex: ['extattrs', 'Name Server', 'value'],
+        key: 'nameServer',
+      },
+      {
+        title: 'Mac address',
+        align: 'center',
+        dataIndex: 'mac_address',
+        key: 'mac_address',
+      },
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+      },
+      {
+        title: 'Types',
+        align: 'center',
+        dataIndex: 'types',
+        key: 'types',
+      },
+      {
+        title: 'Usage',
+        align: 'center',
+        dataIndex: 'usage',
+        key: 'usage',
+      },
+      {
+        title: 'Network',
+        align: 'center',
+        dataIndex: 'network',
+        key: 'network',
+      },
+      {
+        title: 'Gateway',
+        align: 'center',
+        dataIndex: ['extattrs', 'Gateway', 'value'],
+        key: 'gateway',
+      },
+      {
+        title: 'Mask',
+        align: 'center',
+        dataIndex: ['extattrs', 'Mask', 'value'],
+        key: 'mask',
+      },
+      {
+        title: 'Reference',
+        align: 'center',
+        dataIndex: ['extattrs', 'Reference', 'value'],
+        key: 'reference',
+      },
+    ];
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
       { !this.state.loading && this.state.success &&
-        <Result
-           status="success"
-           title="Service Deleted"
-         />
+        <Table
+          columns={columns}
+          dataSource={this.state.ipInfo}
+          bordered
+          rowKey="ip"
+          pagination={false}
+          style={{marginBottom: 10}}
+        />
       }
       { !this.state.loading && !this.state.success &&
         <Form
@@ -136,28 +238,27 @@ class DeleteF5Service extends React.Component {
           onFinishFailed={null}
         >
 
-          <Form.Item
-            label="Service Name"
-            name='serviceName'
-            key="serviceName"
-            validateStatus={this.state.errors.serviceNameError}
-            help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
-          >
-            <Input id='name' onChange={e => this.setServiceName(e)} />
-          </Form.Item>
-          { this.state.body.serviceName ?
-            <Form.Item
-              wrapperCol={ {offset: 8 }}
-              name="button"
-              key="button"
-            >
-              <Button type="danger" onClick={() => this.deleteService()}>
-                Delete Service
-              </Button>
-            </Form.Item>
-            :
-            null
-        }
+        <Form.Item
+          label="IP address"
+          name='ip'
+          key="ip"
+          validateStatus={this.state.errors.ipError}
+          help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
+        >
+          <Input id='ip' onChange={e => this.setIp(e)} />
+        </Form.Item>
+
+        <Form.Item
+          wrapperCol={ {offset: 8 }}
+          name="button"
+          key="button"
+        >
+
+          <Button type="primary" onClick={() => this.releaseIp()}>
+            Release Ip
+          </Button>
+
+        </Form.Item>
 
         </Form>
       }
@@ -172,8 +273,6 @@ class DeleteF5Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  authorizations: state.authorizations.f5,
-  asset: state.f5.asset,
-  partition: state.f5.partition,
-  nodes: state.f5.nodes
-}))(DeleteF5Service);
+  authorizations: state.authorizations.infoblox,
+  asset: state.infoblox.asset,
+}))(ReleaseIp);

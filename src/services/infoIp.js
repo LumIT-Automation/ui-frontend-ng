@@ -102,46 +102,6 @@ class RequestIp extends React.Component {
     //this.props.dispatch(setNodesLoading(false))
   }
 
-  /*
-
-  {
-    "data": {
-        "_ref": "ipv4address/Li5pcHY0X2FkZHJlc3MkMTAuOC4xLjMvMA:10.8.1.3",
-        "extattrs": {
-            "Gateway": {
-                "value": "10.8.1.1"
-            },
-            "Mask": {
-                "value": "255.255.128.0"
-            }
-        },
-        "ip_address": "10.8.1.3",
-        "mac_address": "",
-        "names": [
-            "TEST"
-        ],
-        "network": "10.8.1.0/24",
-        "network_view": "default",
-        "objects": [
-            "fixedaddress/ZG5zLmZpeGVkX2FkZHJlc3MkMTAuOC4xLjMuMC4u:10.8.1.3/default"
-        ],
-        "status": "USED",
-        "types": [
-            "RESERVATION"
-        ],
-        "usage": [
-            "DHCP"
-        ]
-    },
-    "href": "/api/v1/infoblox/1/ipv4/10.8.1.3/"
-}
-
-
-
-
-
-  */
-
   resetError = () => {
     this.setState({ error: null})
   }
@@ -167,12 +127,6 @@ class RequestIp extends React.Component {
         title: 'IP address',
         align: 'center',
         dataIndex: 'ip_address',
-        key: 'ip_address',
-      },
-      {
-        title: 'Names',
-        align: 'center',
-        dataIndex: 'names',
         key: 'ip_address',
       },
       {
@@ -228,6 +182,12 @@ class RequestIp extends React.Component {
         align: 'center',
         dataIndex: ['extattrs', 'Reference', 'value'],
         key: 'reference',
+      },
+      {
+        title: 'Names',
+        align: 'center',
+        dataIndex: 'names',
+        key: 'ip_address',
       },
     ];
 

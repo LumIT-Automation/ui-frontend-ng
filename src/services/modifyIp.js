@@ -8,7 +8,7 @@ import { Space, Form, Input, Result, Button, Select, Spin, Divider, Table} from 
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -141,16 +141,13 @@ class RequestIp extends React.Component {
   }
 
   modifyIp = async () => {
-    console.log('modifyIp')
     let errors = Object.assign({}, this.state.errors);
 
     if (isEmpty(this.state.serverName)){
       this.setState({message: 'Please fill the form'})
-      console.log('isEmpty')
     }
     else {
       this.setState({message: null});
-      console.log('creo body')
 
       const body = {
         "data":
@@ -200,9 +197,6 @@ class RequestIp extends React.Component {
 
 
   render() {
-
-    console.log(this.state.macAddress)
-    console.log(this.state.serverName)
 
     const columns = [
       {
@@ -286,7 +280,7 @@ class RequestIp extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
       { !this.state.loading && this.state.success &&
         <React.Fragment>
         <Table
