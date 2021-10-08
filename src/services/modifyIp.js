@@ -37,6 +37,8 @@ class RequestIp extends React.Component {
       visible: false,
       error: null,
       errors: {},
+      serverName: '',
+      mac: '',
       message:'',
     };
   }
@@ -93,10 +95,20 @@ class RequestIp extends React.Component {
         this.setState({
           success: true,
           ipInfo: ipInfo,
-          serverName: resp.data.extattrs['Name Server'].value,
-          mac: resp.data.mac_address,
           loading: false
         })
+        if (resp.data.extattrs && resp.data.extattrs['Name Server']) {
+          console.log(resp.data.extattrs['Name Server'].value)
+          this.setState({
+            serverName: resp.data.extattrs['Name Server'].value,
+          })
+        }
+        if (resp.data.mac_address) {
+          console.log(resp.data.mac_address)
+          this.setState({
+            mac: resp.data.mac_address,
+          })
+        }
       },
       error => {
         this.setState({error: error, loading: false})
@@ -107,7 +119,6 @@ class RequestIp extends React.Component {
   }
 
   setServerName = name => {
-    console.log(name.target.value)
     let errors = Object.assign({}, this.state.errors);
     let serverName
 
@@ -198,6 +209,8 @@ class RequestIp extends React.Component {
 
   render() {
 
+    console.log(this.state)
+
     const columns = [
       {
         title: 'IP address',
@@ -218,7 +231,7 @@ class RequestIp extends React.Component {
         key: 'nameServer',
         render: (name, obj)  => (
           <Space size="small">
-            <Input id='nameServer' defaultValue={this.state.ipInfo[0].extattrs['Name Server'].value} onChange={e => this.setServerName(e)} />
+            <Input id='nameServer' placeholder={this.state.serverName} onChange={e => this.setServerName(e)} />
           </Space>
         ),
       },
@@ -229,7 +242,7 @@ class RequestIp extends React.Component {
         key: 'mac_address',
         render: (name, obj)  => (
           <Space size="small">
-            <Input id='nameServer' defaultValue={this.state.ipInfo[0].mac_address} onChange={e => this.setMacAddress(e)} />
+            <Input id='nameServer' placeholder={this.state.mac} onChange={e => this.setMacAddress(e)} />
           </Space>
         ),
       },
