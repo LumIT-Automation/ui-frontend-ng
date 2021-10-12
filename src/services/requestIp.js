@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
+import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
@@ -38,8 +38,7 @@ class RequestIp extends React.Component {
       error: null,
       errors: {},
       message:'',
-      membersNumber: 0,
-      members: [],
+      ipInfo: [],
       body: {
 
       }
@@ -117,6 +116,7 @@ class RequestIp extends React.Component {
     return realNetworks
   }
 
+/*
   fetchNetworks = async network => {
     let r
     let rest = new Rest(
@@ -187,7 +187,7 @@ class RequestIp extends React.Component {
     this.setState({realConts: realConts})
     this.setState({realNetsAndConts: net})
   }
-
+*/
   /*
   {
     "data": {
@@ -212,10 +212,16 @@ class RequestIp extends React.Component {
   setNetwork = async (value, e) => {
     let errors = Object.assign({}, this.state.errors)
     let objectTypes = []
+    let network = e.value
+    let prefix = network.split('/')
+    prefix = prefix[0]
+    let subnetMask
+    let gateway
 
     if (e) {
-      network = e.value
       const result = this.state.realNetworks.find( realNetwork => realNetwork.network === network )
+      subnetMask = result.extattrs.Mask.value
+      gateway = result.extattrs.Gateway.value
 
       if (result.children.length !== 0 ) {
         result.children.forEach( child => {
@@ -233,23 +239,23 @@ class RequestIp extends React.Component {
     else {
       errors.networkError = 'error'
     }
-    this.setState({objectTypes: objectTypes, errors: errors})
+    this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, objectTypes: objectTypes, errors: errors})
   }
 
 
 
   setObjectType = e => {
-    console.log(e)
     let errors = Object.assign({}, this.state.errors)
+    let objectType
 
-    if (e.target.value) {
+    if (e) {
       objectType = e
       delete errors.objectTypeError
     }
     else {
       errors.objectTypeError = 'error'
     }
-    //this.setState({body: body, errors: errors})
+    this.setState({objectType: objectType, errors: errors})
   }
 
   setNumber = e => {
@@ -267,31 +273,48 @@ class RequestIp extends React.Component {
   }
 
   setServerName = e => {
-    let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
+    let serverName
 
     if (e) {
-      body.serverName = e.target.value
+      serverName = e.target.value
       delete errors.serverNameError
     }
     else {
       errors.serverNameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({serverName: serverName, errors: errors})
+  }
+
+  setMacAddress = m => {
+    let errors = Object.assign({}, this.state.errors);
+    let mac = m.target.value
+
+    const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
+    const macRegex = new RegExp(validMacAddressRegex);
+
+    if (macRegex.test(mac)) {
+      delete errors.macAddressError
+      this.setState({macAddress: mac, errors: errors})
+    }
+    else {
+      errors.macAddressError = 'error'
+      this.setState({errors: errors})
+    }
   }
 
   setReference = e => {
-    let body = Object.assign({}, this.state.body)
+    let reference
     let errors = Object.assign({}, this.state.errors)
 
     if (e) {
-      body.reference = e.target.value
+      reference = e.target.value
       delete errors.referenceError
     }
     else {
       errors.referenceError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({reference: reference, errors: errors})
   }
 
 
@@ -327,19 +350,22 @@ class RequestIp extends React.Component {
     else if (this.state.body.type === 'network') {*/
       let b = {
         "data": {
-          "network": `${this.state.body.network}`,
-          "number": `${this.state.body.number}`,
+          "network": `${this.state.prefix}`,
+          "object_type": `${this.state.objectType}`,
+          "number": 1,
           "mac": [
-              "00:00:00:00:00:00"
+              `${this.state.macAddress}`
           ],
-          "extattrs": {
+          "extattrs": [
+            {
               "Name Server": {
-                  "value": `${this.state.body.serverName}`
+                  "value": `${this.state.serverName}`
               },
               "Reference": {
-                  "value": `${this.state.body.reference}`
+                  "value": `${this.state.reference}`
               }
-          }
+            }
+          ]
         }
       }
     //}
@@ -351,7 +377,27 @@ class RequestIp extends React.Component {
       resp => {
         console.log(resp)
         //console.log(resp.data)
-        this.setState({loading: false, success: true})
+        //fixedaddress/ZG5zLmZpeGVkX2FkZHJlc3MkMTAuOC4xLjEwMC4wLi4:10.8.1.100/default
+        let str = resp.data[0].result
+        let st = str.split(':')
+        let s = st[1]
+        let ip = s.split('/')
+        ip = ip[0]
+        console.log(ip)
+
+        let o = {
+          ip: ip,
+          network: this.state.network,
+          subnetMask: this.state.subnetMask,
+          gateway: this.state.gateway,
+          serverName: this.state.serverName,
+          macAddress: this.state.macAddress,
+          objectType: this.state.objectType
+        }
+        let list = []
+        list.push(o)
+
+        this.setState({ipInfo: list, loading: false, success: true})
         //this.success()
       },
       error => {
@@ -382,17 +428,67 @@ class RequestIp extends React.Component {
 
 
   render() {
-    //console.log(this.state.tree)
+    console.log(this.state)
+
+    const columns = [
+      {
+        title: 'IP address',
+        align: 'center',
+        dataIndex: 'ip',
+        key: 'ip',
+      },
+      {
+        title: 'Network',
+        align: 'center',
+        dataIndex: 'network',
+        key: 'network',
+      },
+      {
+        title: 'subnet Mask',
+        align: 'center',
+        dataIndex: 'subnetMask',
+        key: 'subnetMask',
+      },
+      {
+        title: 'Gateway',
+        align: 'center',
+        dataIndex: 'gateway',
+        key: 'gateway',
+      },
+      {
+        title: 'Server Name',
+        align: 'center',
+        dataIndex: 'serverName',
+        key: 'serverName',
+      },
+      {
+        title: 'Mac Address',
+        align: 'center',
+        dataIndex: 'macAddress',
+        key: 'macAddress',
+      },
+
+      {
+        title: 'Object Type',
+        align: 'center',
+        dataIndex: 'objectType',
+        key: 'objectType',
+      },
+    ];
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
       { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
       { !this.state.loading && this.state.success &&
-        <Result
-           status="success"
-           title="Service Created"
-         />
+        <Table
+          columns={columns}
+          dataSource={this.state.ipInfo}
+          bordered
+          rowKey="ip"
+          pagination={false}
+          style={{marginBottom: 10}}
+        />
       }
       { !this.state.loading && !this.state.success &&
         <Form
@@ -445,17 +541,6 @@ class RequestIp extends React.Component {
               </Select>
             </Form.Item>
 
-
-          <Form.Item
-            label="How many IP?"
-            name='number'
-            key="number"
-            validateStatus={this.state.errors.numberError}
-            help={this.state.errors.numberError ? 'Please input a valid object Type' : null }
-          >
-            <Input id='number' onChange={e => this.setNumber(e)} />
-          </Form.Item>
-
           <Form.Item
             label="Server Name"
             name='serverName'
@@ -465,6 +550,18 @@ class RequestIp extends React.Component {
           >
             <Input id='serverName' onChange={e => this.setServerName(e)} />
           </Form.Item>
+
+          <Form.Item
+            label="Mac Address"
+            name='macAddress'
+            key="macAddress"
+            validateStatus={this.state.errors.macAddressError}
+            help={this.state.errors.macAddressError ? 'Please input a valid object Type' : null }
+          >
+            <Input id='macAddress' onChange={e => this.setMacAddress(e)} />
+          </Form.Item>
+
+
 
           <Form.Item
             label="Reference"

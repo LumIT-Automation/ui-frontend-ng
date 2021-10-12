@@ -209,8 +209,6 @@ class RequestIp extends React.Component {
 
   render() {
 
-    console.log(this.state)
-
     const columns = [
       {
         title: 'IP address',
