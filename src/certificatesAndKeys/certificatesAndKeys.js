@@ -85,7 +85,7 @@ class CertificatesAndKeys extends React.Component {
 
         <Tabs type="card">
           <TabPane tab="F5" key="2">
-            {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+            {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
             <React.Fragment>
               <div style={{margin: '0 130px'}}>
                 <AssetSelector />

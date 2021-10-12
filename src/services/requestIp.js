@@ -47,7 +47,9 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchNetworksAndContainers()
+    //this.fetchNetworksAndContainers()
+    this.main()
+
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -64,11 +66,55 @@ class RequestIp extends React.Component {
     this.setState({visible: true})
   }
 
+  main = async () => {
+    let tree = await this.fetchTree()
+    this.setState({tree: tree})
+
+    let realNetworks = await this.filterRealNetworks()
+    this.setState({realNetworks: realNetworks})
+
+  }
+
   fetchNetworksAndContainers = async () => {
     let networks = await this.fetchNetworks()
     let containers = await this.fetchContainers()
 
     this.filterRealNetsAndConts(networks, containers)
+  }
+
+  fetchTree = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        //console.log(resp.data['/'].children)
+        r = resp.data['/'].children
+        //console.log(tree)
+        //this.setState({tree: tree})
+      },
+      error => {
+        this.setState({error: error, ipLoading: false})
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
+    return r
+  }
+
+  filterRealNetworks = () => {
+    let realNetworks = []
+    let list = []
+
+    this.state.tree.forEach(e => {
+      if (e.extattrs["Real Network"]) {
+        if (e.extattrs["Real Network"].value === 'yes') {
+          //let n = e.network.split('/')
+          //n = n[0]
+          let o = e
+          realNetworks.push(o)
+        }
+      }
+    })
+    return realNetworks
   }
 
   fetchNetworks = async network => {
@@ -102,15 +148,20 @@ class RequestIp extends React.Component {
   }
 
   filterRealNetsAndConts = (nets, conts) => {
+    this.setState({responseNetworks: nets})
+    this.setState({responseContainers: conts})
     let realNets = []
     let realConts = []
+    console.log(nets)
+    console.log(conts)
+
 
     nets.forEach(e => {
       if (e.extattrs["Real Network"]) {
         if (e.extattrs["Real Network"].value === 'yes') {
           let n = e.network.split('/')
           n = n[0]
-          let o = {ele: e, n: n, type: 'network'}
+          let o = {ele: e, type: 'network'}
           realNets.push(o)
         }
       }
@@ -121,15 +172,20 @@ class RequestIp extends React.Component {
         if (e.extattrs["Real Network"].value === 'yes') {
           let n = e.network.split('/')
           n = n[0]
-          let o = {ele: e, n: n, type: 'container'}
+          let o = {ele: e, type: 'container'}
           realConts.push(o)
         }
       }
     })
+
+    console.log(realNets)
+    console.log(realConts)
+
+
     let net = realNets.concat(realConts)
     this.setState({realNets: realNets})
     this.setState({realConts: realConts})
-    this.setState({net: net})
+    this.setState({realNetsAndConts: net})
   }
 
   /*
@@ -153,33 +209,47 @@ class RequestIp extends React.Component {
 }
   */
 
-  setNetwork = (value, e) => {
-    let body = Object.assign({}, this.state.body)
+  setNetwork = async (value, e) => {
     let errors = Object.assign({}, this.state.errors)
+    let objectTypes = []
 
     if (e) {
-      body.network = e.value
-      body.type = e.type
+      network = e.value
+      const result = this.state.realNetworks.find( realNetwork => realNetwork.network === network )
+
+      if (result.children.length !== 0 ) {
+        result.children.forEach( child => {
+          if (child.extattrs && child.extattrs['Object Type'] ) {
+            objectTypes.push(child.extattrs['Object Type'].value)
+          }
+        })
+      }
+      else {
+        console.log('no children')
+      }
       delete errors.networkError
+      //this.setState({network: network, errors: errors})
     }
     else {
       errors.networkError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({objectTypes: objectTypes, errors: errors})
   }
 
+
+
   setObjectType = e => {
-    let body = Object.assign({}, this.state.body)
+    console.log(e)
     let errors = Object.assign({}, this.state.errors)
 
     if (e.target.value) {
-      body.objectType = e.target.value
+      objectType = e
       delete errors.objectTypeError
     }
     else {
       errors.objectTypeError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    //this.setState({body: body, errors: errors})
   }
 
   setNumber = e => {
@@ -312,7 +382,8 @@ class RequestIp extends React.Component {
 
 
   render() {
-    (this.state.body)
+    //console.log(this.state.tree)
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
@@ -341,11 +412,11 @@ class RequestIp extends React.Component {
             validateStatus={this.state.errors.networkError}
             help={this.state.errors.networkError ? 'Please select a valid network' : null }
           >
-          <Select id='snat' onChange={(value, event) => this.setNetwork(value, event)}>
-          { this.state.net ?
-            this.state.net.map((n, i) => {
+          <Select id='network' onChange={(value, event) => this.setNetwork(value, event)}>
+          { this.state.realNetworks ?
+            this.state.realNetworks.map((n, i) => {
             return (
-              <Select.Option key={i} type={n.type} value={n.n}>{n.n}</Select.Option>
+              <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
               )
             })
             :
@@ -354,7 +425,6 @@ class RequestIp extends React.Component {
           </Select>
           </Form.Item>
 
-          { this.state.body.type === 'container' ?
             <Form.Item
               label="Object Type"
               name='objectType'
@@ -362,11 +432,19 @@ class RequestIp extends React.Component {
               validateStatus={this.state.errors.objectTypeError}
               help={this.state.errors.objectTypeError ? 'Please input a valid object Type' : null }
             >
-              <Input id='objectType' onChange={e => this.setObjectType(e)} />
+              <Select id='network' onChange={e => this.setObjectType(e)}>
+              { this.state.objectTypes ?
+                this.state.objectTypes.map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                  )
+                })
+                :
+                null
+              }
+              </Select>
             </Form.Item>
-            :
-            null
-          }
+
 
           <Form.Item
             label="How many IP?"

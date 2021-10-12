@@ -117,7 +117,7 @@ class ModalCustom extends React.Component {
         break
       case 'INFOBLOX - Request IP':
         return (
-          <ReleaseIp/>
+          <RequestIp/>
         )
         break
       case 'INFOBLOX - Modify IP':

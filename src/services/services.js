@@ -56,9 +56,9 @@ class Service extends React.Component {
         {
           service: 'INFOBLOX - Info IP'
         },
-      /*  {
+        {
           service: 'INFOBLOX - Request IP'
-        },*/
+        },
         {
           service: 'INFOBLOX - Modify IP'
         },
