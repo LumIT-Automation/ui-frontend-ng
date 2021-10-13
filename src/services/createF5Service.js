@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setCertificates, setKeys } from '../_store/store.f5'
+import { setCertificates, setKeys, setRouteDomains } from '../_store/store.f5'
 
 import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -53,6 +53,7 @@ class CreateF5Service extends React.Component {
   componentDidMount() {
     this.fetchCertificates()
     this.fetchKeys()
+    this.fetchRouteDomains()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -101,6 +102,22 @@ class CreateF5Service extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
   }
 
+  fetchRouteDomains = async () => {
+    this.setState({loading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({loading: false})
+        this.props.dispatch(setRouteDomains( resp ))
+      },
+      error => {
+        this.setState({loading: false})
+        this.setState({error: error})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
+  }
+
   setServiceType = e => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
@@ -125,6 +142,20 @@ class CreateF5Service extends React.Component {
     }
     else {
       errors.serviceNameError = 'error'
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+  setRouteDomain = e => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+
+    if (e.toString()) {
+      body.routeDomain = e
+      delete errors.routeDomainError
+    }
+    else {
+      errors.routeDomainError = 'error'
     }
     this.setState({body: body, errors: errors})
   }
@@ -407,6 +438,7 @@ class CreateF5Service extends React.Component {
           "name": `${serviceName}`,
           "type": this.state.body.serviceType,
           "snat": this.state.body.snat,
+          "routeDomainId": this.state.body.routeDomain,
           "destination": `${this.state.body.destination}:${this.state.body.destinationPort}`,
           "mask": '255.255.255.255',
           "source": this.state.body.source
@@ -543,6 +575,8 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+    console.log(this.state.body.routeDomain)
+    console.log(this.props.routeDomains)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
@@ -588,6 +622,22 @@ class CreateF5Service extends React.Component {
 
           { this.state.body.serviceName ?
           <React.Fragment>
+
+          <Form.Item
+            label="Route Domain"
+            name='routeDomain'
+            key="routeDomain"
+            validateStatus={this.state.errors.routeDomainError}
+            help={this.state.errors.routeDomainError ? 'Please select a valid routeDomain' : null }
+          >
+          <Select id='snat' onChange={e => this.setRouteDomain(e)}>
+          {this.props.routeDomains.map((n, i) => {
+            return (
+              <Select.Option  key={i} value={n.id}>{n.id}</Select.Option>
+              )
+            })}
+          </Select>
+          </Form.Item>
 
           <Form.Item
             label="Snat"
@@ -822,5 +872,6 @@ export default connect((state) => ({
   partition: state.f5.partition,
   nodes: state.f5.nodes,
   certificates : state.f5.certificates,
-  keys : state.f5.keys
+  keys : state.f5.keys,
+  routeDomains: state.f5.routeDomains
 }))(CreateF5Service);

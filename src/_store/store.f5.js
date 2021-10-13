@@ -45,6 +45,16 @@ const f5Slice = createSlice({
           state.partitionsFetch = action.payload
         },
 
+        setRouteDomainsLoading: (state, action) => {
+          state.routeDomainsLoading = action.payload
+        },
+        setRouteDomains: (state, action) => {
+          state.routeDomains = action.payload.data.items
+        },
+        setRouteDomainsFetch: (state, action) => {
+          state.routeDomainsFetch = action.payload
+        },
+
         setPartition: (state, action) => {
           state.partition = action.payload
         },
@@ -202,6 +212,10 @@ export const {
   setPartitionsLoading,
   setPartitions,
   setPartitionsFetch,
+
+  setRouteDomainsLoading,
+  setRouteDomains,
+  setRouteDomainsFetch,
 
   setPartition,
 
