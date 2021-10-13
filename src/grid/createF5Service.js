@@ -435,7 +435,6 @@ class CreateF5Service extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        console.log(resp)
         this.setState({loading: false, success: true})
         this.success()
       },
@@ -510,7 +509,6 @@ class CreateF5Service extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        console.log(resp)
         this.setState({loading: false, success: true})
         this.success()
       },

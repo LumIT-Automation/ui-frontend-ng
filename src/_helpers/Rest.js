@@ -43,7 +43,6 @@ class Rest {
           }
 
           catch (error) {
-            console.log("Probably a network error occurred.") // test putting down aaa.
             this.onError(error);
           }
         }
@@ -167,6 +166,9 @@ class Rest {
               if (json && json.data) {
                 this.onSuccess(json);
               }
+              else {
+                this.onSuccess(response);
+              }
             }
             else {
               json = await response.json();
@@ -250,7 +252,6 @@ class Rest {
               this.onSuccess(response);
             }
             else {
-              console.log('response not ok')
               this.onError(
                 {
                   status: response.status,

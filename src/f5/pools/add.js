@@ -257,9 +257,11 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
+          console.log(resp)
           this.setState({loading: false, error: false}, () => this.addPoolMembers())
         },
         error => {
+          console.log(resp)
           this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetch(true)))
         }
       )

@@ -9,7 +9,8 @@ import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 
 import ModalCustom from './modal'
 
-import { Space, Modal, Table, Result, List, Typography, Input, Button } from 'antd';
+import { Space, Modal, Table, Result, List, Typography, Input, Button, Row, Col, Collapse } from 'antd';
+const { Panel } = Collapse;
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
@@ -243,15 +244,32 @@ class Service extends React.Component {
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-          <Table
-            columns={columns}
-            dataSource={this.state.list}
-            bordered
-            rowKey="service"
-            //pagination={false}
-            pagination={{ pageSize: 10 }}
-            style={{marginBottom: 10}}
-          />
+
+          <Row>
+            <Col offset={2} span={4}>
+              Info IP
+            </Col>
+            <Col offset={2} span={4}>
+              Request IP
+            </Col>
+            <Col offset={2} span={4}>
+              Modify IP
+            </Col>
+            <Col offset={2} span={4}>
+              Release IP
+            </Col>
+          </Row>
+          <Row>
+            <p>F5</p>
+          </Row>
+          <Row>
+            <p>Check Point</p>
+          </Row>
+
+
+
+
+
 
         {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
 

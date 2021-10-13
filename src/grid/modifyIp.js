@@ -99,11 +99,13 @@ class RequestIp extends React.Component {
           loading: false
         })
         if (resp.data.extattrs && resp.data.extattrs['Name Server']) {
+          console.log(resp.data.extattrs['Name Server'].value)
           this.setState({
             serverName: resp.data.extattrs['Name Server'].value,
           })
         }
         if (resp.data.mac_address) {
+          console.log(resp.data.mac_address)
           this.setState({
             macAddress: resp.data.mac_address,
           })
@@ -175,9 +177,12 @@ class RequestIp extends React.Component {
         let rest = new Rest(
           "PATCH",
           resp => {
+            console.log('resp')
+            console.log(resp)
             this.infoIp()
           },
           error => {
+            console.log(error)
             this.setState({loading: false, success: false, error: error})
           }
         )

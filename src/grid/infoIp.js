@@ -8,7 +8,7 @@ import { Space, Form, Input, Result, Button, Select, Spin, Divider, Table} from 
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -37,9 +37,6 @@ class RequestIp extends React.Component {
       visible: false,
       error: null,
       errors: {},
-      serverName: '',
-      mac: '',
-      macAddress: '00:00:00:00:00:00',
       message:'',
     };
   }
@@ -86,104 +83,24 @@ class RequestIp extends React.Component {
     this.setState({ip: ip, errors: errors})
   }
 
+//http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
+
   infoIp = async () => {
-    this.setState({loading: true})
+    //this.props.dispatch(setNodesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
         let ipInfo = []
         ipInfo.push(resp.data)
-        this.setState({
-          success: true,
-          ipInfo: ipInfo,
-          loading: false
-        })
-        if (resp.data.extattrs && resp.data.extattrs['Name Server']) {
-          this.setState({
-            serverName: resp.data.extattrs['Name Server'].value,
-          })
-        }
-        if (resp.data.mac_address) {
-          this.setState({
-            macAddress: resp.data.mac_address,
-          })
-        }
+        this.setState({success: true, ipInfo: ipInfo})
       },
       error => {
-        this.setState({error: error, loading: false})
+        this.setState({error: error})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
     //this.props.dispatch(setNodesLoading(false))
   }
-
-  setServerName = name => {
-    let errors = Object.assign({}, this.state.errors);
-    let serverName
-
-    if (name.target.value) {
-      serverName = name.target.value
-      delete errors.serverNameError
-      this.setState({ serverName: serverName, errors: errors})
-    }
-    else {
-      errors.serverNameError = 'error'
-      this.setState({ errors: errors})
-    }
-
-  }
-
-  setMacAddress = m => {
-    let errors = Object.assign({}, this.state.errors);
-    let mac = m.target.value
-
-    const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
-    const macRegex = new RegExp(validMacAddressRegex);
-
-    if (macRegex.test(mac)) {
-      delete errors.macAddressError
-      this.setState({macAddress: mac, errors: errors})
-    }
-    else {
-      errors.macError = 'error'
-      this.setState({errors: errors})
-    }
-  }
-
-  modifyIp = async () => {
-    let errors = Object.assign({}, this.state.errors);
-
-    if (isEmpty(this.state.serverName)){
-      this.setState({message: 'Please fill the form'})
-    }
-    else {
-      this.setState({message: null});
-
-      const body = {
-        "data":
-          {
-            "mac": `${this.state.macAddress}`,
-            "extattrs": {
-                "Name Server": {
-                    "value": `${this.state.serverName}`
-                }
-            },
-          }
-        }
-        this.setState({loading: true})
-
-        let rest = new Rest(
-          "PATCH",
-          resp => {
-            this.infoIp()
-          },
-          error => {
-            this.setState({loading: false, success: false, error: error})
-          }
-        )
-        await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, body )
-      }
-    }
 
   resetError = () => {
     this.setState({ error: null})
@@ -213,32 +130,16 @@ class RequestIp extends React.Component {
         key: 'ip_address',
       },
       {
-        title: 'Names',
-        align: 'center',
-        dataIndex: 'names',
-        key: 'ip_address',
-      },
-      {
         title: 'Name Server',
         align: 'center',
         dataIndex: ['extattrs', 'Name Server', 'value'],
         key: 'nameServer',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Input id='nameServer' placeholder={this.state.serverName} onChange={e => this.setServerName(e)} />
-          </Space>
-        ),
       },
       {
         title: 'Mac address',
         align: 'center',
         dataIndex: 'mac_address',
         key: 'mac_address',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Input id='nameServer' placeholder={this.state.macAddress} onChange={e => this.setMacAddress(e)} />
-          </Space>
-        ),
       },
       {
         title: 'Status',
@@ -282,14 +183,19 @@ class RequestIp extends React.Component {
         dataIndex: ['extattrs', 'Reference', 'value'],
         key: 'reference',
       },
+      {
+        title: 'Names',
+        align: 'center',
+        dataIndex: 'names',
+        key: 'ip_address',
+      },
     ];
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
       { !this.state.loading && this.state.success &&
-        <React.Fragment>
         <Table
           columns={columns}
           dataSource={this.state.ipInfo}
@@ -298,10 +204,6 @@ class RequestIp extends React.Component {
           pagination={false}
           style={{marginBottom: 10}}
         />
-        <Button type="primary" onClick={() => this.modifyIp()}>
-          Modify Ip
-        </Button>
-        </React.Fragment>
       }
       { !this.state.loading && !this.state.success &&
         <Form
@@ -328,17 +230,9 @@ class RequestIp extends React.Component {
             name="button"
             key="button"
           >
-
-
-            { (this.state.ipInfo && this.state.ipInfo[0].ip_address) ?
-              <Button type="primary" onClick={() => this.modifyIp()}>
-                Modify Ip
-              </Button>
-              :
-              <Button type="primary" onClick={() => this.infoIp()}>
-                Info Ip
-              </Button>
-            }
+            <Button type="primary" onClick={() => this.infoIp()}>
+              Info Ip
+            </Button>
           </Form.Item>
 
         </Form>

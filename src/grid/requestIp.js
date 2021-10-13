@@ -87,7 +87,10 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        //console.log(resp.data['/'].children)
         r = resp.data['/'].children
+        //console.log(tree)
+        //this.setState({tree: tree})
       },
       error => {
         this.setState({error: error, ipLoading: false})
@@ -322,7 +325,30 @@ class RequestIp extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     this.setState({message: null});
-
+/*
+    if (this.state.body.type === 'container') {
+      console.log(this.state.body.type)
+      let b = {
+        "data": {
+          "network": `${this.state.body.network}`,
+          "object_type": `${this.state.body.objectType}`,
+          "number": `${this.state.body.number}`,
+          "mac": [
+              "00:00:00:00:00:00"
+          ],
+          "extattrs": {
+              "Name Server": {
+                  "value": `${this.state.body.serverName}`
+              },
+              "Reference": {
+                  "value": `${this.state.body.reference}`
+              }
+          }
+        }
+      }
+      console.log(b)
+    }
+    else if (this.state.body.type === 'network') {*/
       let b = {
         "data": {
           "network": `${this.state.prefix}`,
@@ -350,12 +376,15 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
+        console.log(resp)
+        //console.log(resp.data)
         //fixedaddress/ZG5zLmZpeGVkX2FkZHJlc3MkMTAuOC4xLjEwMC4wLi4:10.8.1.100/default
         let str = resp.data[0].result
         let st = str.split(':')
         let s = st[1]
         let ip = s.split('/')
         ip = ip[0]
+        console.log(ip)
 
         let o = {
           ip: ip,
@@ -400,6 +429,7 @@ class RequestIp extends React.Component {
 
 
   render() {
+    console.log(this.state)
 
     const columns = [
       {
@@ -466,7 +496,7 @@ class RequestIp extends React.Component {
           {...layout}
           name="basic"
           initialValues={{
-            macAddress: '00:00:00:00:00:00'
+
           }}
           onFinish={null}
           onFinishFailed={null}
