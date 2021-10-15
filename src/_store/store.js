@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
 import authReducer from './store.auth'
+import errorsReducer from './store.errors'
 import authorizationsReducer from './store.authorizations'
 import permissionsReducer from './store.permissions'
 
@@ -16,6 +17,7 @@ ssoAuth, f5.
 export default configureStore({
     reducer: {
         ssoAuth: authReducer,
+        errors: errorsReducer,
         authorizations: authorizationsReducer,
         permissions: permissionsReducer,
         f5: f5Reducer,

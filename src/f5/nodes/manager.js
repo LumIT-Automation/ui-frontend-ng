@@ -5,6 +5,8 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setErrors } from '../../_store/store.errors'
+
 import { setNodesLoading, setNodes, setNodesFetch } from '../../_store/store.f5'
 
 import List from './list'
@@ -21,11 +23,18 @@ class Manager extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
-      error: null
+      /*error: {
+        status: 400,
+        message: "Bad Request",
+        reason: "The requested folder (/bla) was not found.",
+        type: "basic",
+        url: "https://10.0.111.10/backend/f5/2/bla/nodes/"
+      }*/
     };
   }
 
   componentDidMount() {
+    console.log('mount')
     if (this.props.asset && this.props.partition) {
       if (!this.props.nodes) {
         this.fetchNodes()
@@ -49,6 +58,7 @@ class Manager extends React.Component {
         this.fetchNodes()
         this.props.dispatch(setNodesFetch(false))
       }
+
     }
   }
 
@@ -64,7 +74,7 @@ class Manager extends React.Component {
         this.props.dispatch(setNodes(resp))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setErrors(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
@@ -95,7 +105,7 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.errors ? <Error error={this.props.errors} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -104,6 +114,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+  errors: state.errors.errors,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,

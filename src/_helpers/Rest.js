@@ -96,6 +96,16 @@ class Rest {
         }
       }
 
+
+
+
+
+
+
+
+
+
+
       else {
         if (this.method === "GET") {
           try {
@@ -106,42 +116,60 @@ class Rest {
               }
             })
 
+            console.log(response)
+
+
             if (response.ok) {
-              // HTTP-status is 200-299.
+
               json = await response.json();
+
               if (json && json.data) {
                 this.onSuccess(json);
               }
               else {
-
-                this.onError(
-                  {
-                    message: "No data received"
-                  }
-                )
+                this.onSuccess(response);
               }
             }
             else {
-              json = await response.json();
+              try {
+                console.log('try json')
+                json = await response.json();
+                console.log(json)
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    reason: json.reason,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+              catch {
+                console.log('no json')
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
 
-              this.onError(
-                {
-                  status: response.status,
-                  message: response.statusText,
-                  reason: json.error.API.error,
-                  type: response.type,
-                  url: response.url
-                }
-              )
             }
           }
 
           catch (error) {
+            console.log('error')
+            console.log(error)
+
             this.onError(
               {
+                status: error.status,
+                message: error.statusText,
                 message: error.message,
-                name: error.name,
-                type: error.name
+                name: error.name
               }
             )
           }
@@ -178,7 +206,7 @@ class Rest {
                 {
                   status: response.status,
                   message: response.statusText,
-                  reason: json.error.API.error,
+                  reason: json.reason.error,
                   type: response.type,
                   url: response.url
                 }
@@ -247,19 +275,30 @@ class Rest {
               },
             });
 
+            console.log('response')
+            console.log(response)
+
             if (response.ok) {
-              // HTTP-status is 200-299.
-              this.onSuccess(response);
+              json = await response.json();
+              console.log('json')
+              console.log(json)
+              if (json && json.data) {
+
+                this.onSuccess(json);
+              }
+              else {
+                this.onSuccess(response);
+              }
             }
             else {
+              console.log(response)
               this.onError(
                 {
                   status: response.status,
                   message: response.statusText,
+                  reason: json.reason.error,
                   type: response.type,
-                  url: response.url,
-                  body: response.body,
-                  trailers: response.trailers
+                  url: response.url
                 }
               );
             }

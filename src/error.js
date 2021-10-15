@@ -67,7 +67,7 @@ class Error extends Component {
 
 
   render(){
-    const err = this.state.error
+    let err = this.state.error
 
     const columns = [
       {
@@ -104,6 +104,7 @@ class Error extends Component {
 
     let e = () => {
       console.log(this.props.error)
+      console.log(this.props)
       if(this.props.error) {
         let cod = this.props.error.status
 
