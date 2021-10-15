@@ -10,12 +10,12 @@ import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 import ModalCustom from './modal'
 
 import { Space, Modal, Table, Result, List, Typography, Input, Button, Row, Col, Collapse } from 'antd';
-const { Panel } = Collapse;
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
+const { Panel } = Collapse;
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 /*
