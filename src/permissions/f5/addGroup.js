@@ -68,16 +68,20 @@ class Add extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     this.setState({message: null});
-
-    const regex = /(cn=)([\w\d]+)/gm
-    let d = regex.exec(body.dn);
-    let name = d[2]
-
+    let list = this.state.body.dn.split(',')
+    let cn
+    let found = list.find(i => {
+      let iLow = i.toLowerCase()
+      if (iLow.startsWith('cn=')) {
+        i = i.split('=')
+        cn = i[1]
+      }
+    })
 
     const b = {
       "data":
         {
-          "name": name,
+          "name": cn,
           "identity_group_identifier": body.dn
         }
       }
@@ -172,8 +176,7 @@ class Add extends React.Component {
               name='dn2'
               key="dn2"
             >
-              <Input onChange={this.onChange} placeholder="cn=..."
-               />
+              <Input onChange={this.onChange} placeholder="cn=..."/>
             </Form.Item>
 
 

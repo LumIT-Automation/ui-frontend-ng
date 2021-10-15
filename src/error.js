@@ -51,8 +51,8 @@ class Error extends Component {
   deleteCookies = (token, username) => {
     return new Promise( (resolve, reject) => {
       try {
-        document.cookie = `${token}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
-        document.cookie = `${username}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; `
+        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
+        document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
         resolve()
       }
       catch(e) {
@@ -103,6 +103,7 @@ class Error extends Component {
     ]
 
     let e = () => {
+      console.log(this.props.error)
       if(this.props.error) {
         let cod = this.props.error.status
 

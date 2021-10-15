@@ -128,7 +128,7 @@ class Rest {
                 {
                   status: response.status,
                   message: response.statusText,
-                  reason: (json) ? json.error.API.error.F5 : null,
+                  reason: json.error.API.error,
                   type: response.type,
                   url: response.url
                 }
@@ -173,12 +173,12 @@ class Rest {
             else {
               json = await response.json();
               //this.onError("HTTP " + response.status + " received.");
-
+              console.log(json)
               this.onError(
                 {
                   status: response.status,
                   message: response.statusText,
-                  reason: json.error.API.error.F5.message,
+                  reason: json.error.API.error,
                   type: response.type,
                   url: response.url
                 }
