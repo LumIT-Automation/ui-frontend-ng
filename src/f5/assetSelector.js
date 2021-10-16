@@ -91,8 +91,8 @@ class AssetSelector extends React.Component {
 
   setPartition = p => {
     //this.props.dispatch(resetObjects())
-    //this.props.dispatch(setPartition(p))
-    this.props.dispatch(setPartition('bla'))
+    this.props.dispatch(setPartition(p))
+    //this.props.dispatch(setPartition('bla'))
   }
 
   assetString = () => {

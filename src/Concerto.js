@@ -5,6 +5,7 @@ import Rest from "./_helpers/Rest";
 import Error from './error'
 
 import { logout } from './_store/store.auth'
+import { setError } from './_store/store.error'
 import { setAuthorizations } from './_store/store.authorizations'
 import { setInfobloxAssets, setInfobloxAssetsFetch } from './_store/store.infoblox'
 
@@ -62,7 +63,7 @@ class Concerto extends Component {
         this.props.dispatch(setAuthorizations( resp ))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`authorizations/`, this.props.token)
@@ -153,7 +154,7 @@ class Concerto extends Component {
                   }
 
                   <Route path='/services/' component={Service}/>
-                  <Route path='/grid/' component={Grid}/>  
+                  <Route path='/grid/' component={Grid}/>
 
                   <Route path='/assets/' component={Assets}/>
 
@@ -168,7 +169,7 @@ class Concerto extends Component {
           </Layout>
         </BrowserRouter>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Layout>
     )
   }
@@ -178,6 +179,7 @@ class Concerto extends Component {
 export default connect((state) => ({
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
+  error: state.error.error,
   authorizations: state.authorizations,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,

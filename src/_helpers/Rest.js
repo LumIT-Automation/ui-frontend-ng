@@ -87,7 +87,7 @@ class Rest {
           catch (error) {
             this.onError(
               {
-                message: error.message,
+                message: error.statusText,
                 name: error.name,
                 type: error.name
               }
@@ -115,10 +115,8 @@ class Rest {
                 'Authorization': 'Bearer ' + token
               }
             })
-
-            console.log(response)
-
-
+            console.log(resource)
+            //let c = response.bla()
             if (response.ok) {
 
               json = await response.json();
@@ -169,14 +167,10 @@ class Rest {
             console.log('error')
             console.log(error)
 
-            this.onError(
-              {
-                status: error.status,
-                message: error.statusText,
-                message: error.message,
-                name: error.name
-              }
-            )
+            this.onError({
+              message: error.message,
+              type: error.name
+            });
           }
         }
 
@@ -191,11 +185,16 @@ class Rest {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify(payload)
-            });
+            })
+
+            console.log(resource)
+            //let c = response.bla()
 
             if (response.ok) {
               // HTTP-status is 200-299.
               json = await response.json();
+
+              //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
                 this.onSuccess(json);
               }
@@ -204,29 +203,47 @@ class Rest {
               }
             }
             else {
-              json = await response.json();
-              //this.onError("HTTP " + response.status + " received.");
-              console.log(json)
-              this.onError(
-                {
-                  status: response.status,
-                  message: response.statusText,
-                  reason: json.reason.error,
-                  type: response.type,
-                  url: response.url
-                }
-              )
-            }
+
+              try {
+                console.log('try json')
+                //e.g. 400, get non existent partitions,
+                json = await response.json();
+                console.log(json)
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    reason: json.reason,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+              catch {
+                //e.g. 404, /../partitionsccc
+                console.log('no json')
+                console.log(response)
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+
+          }
           }
 
           catch (error) {
-            this.onError(
-              {
-                message: error.message,
-                name: error.name,
-                type: error.name
-              }
-            )
+            console.log('error')
+            console.log(error)
+
+            this.onError({
+              message: error.message,
+              type: error.name
+            });
           }
         }
 
@@ -241,32 +258,62 @@ class Rest {
               body: JSON.stringify(payload)
             });
 
+            console.log(resource)
+            //let c = response.bla()
             if (response.ok) {
-              // HTTP-status is 200-299
-              this.onSuccess(response);
+
+              json = await response.json();
+
+              //e.g. get partitions, get nodes, etc.
+              if (json && json.data) {
+                this.onSuccess(json);
+              }
+              //
+              else {
+                this.onSuccess(response);
+              }
             }
             else {
-              this.onError(
-                {
-                  status: response.status,
-                  message: response.statusText,
-                  type: response.type,
-                  url: response.url,
-                  body: response.body,
-                  trailers: response.trailers
-                }
-              );
+
+              try {
+                console.log('try json')
+                //e.g. 400, get non existent partitions,
+                json = await response.json();
+                console.log(json)
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    reason: json.reason,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+              catch {
+                //e.g. 404, /../partitionsccc
+                console.log('no json')
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+
             }
           }
 
           catch (error) {
-            this.onError(
-              {
-                message: error.message,
-                name: error.name,
-                type: error.name
-              }
-            )
+            console.log('error')
+            console.log(error)
+
+            this.onError({
+              message: error.message,
+              type: error.name
+            });
           }
         }
 
@@ -280,43 +327,63 @@ class Rest {
               },
             });
 
-            console.log('response')
+            console.log(resource)
             console.log(response)
-
+            //let c = response.bla()
             if (response.ok) {
-              json = await response.json();
-              console.log('json')
-              console.log(json)
-              if (json && json.data) {
 
+              json = await response.json();
+
+              //e.g. get partitions, get nodes, etc.
+              if (json && json.data) {
                 this.onSuccess(json);
               }
+              //
               else {
                 this.onSuccess(response);
               }
             }
             else {
-              console.log(response)
-              this.onError(
-                {
-                  status: response.status,
-                  message: response.statusText,
-                  reason: json.reason.error,
-                  type: response.type,
-                  url: response.url
-                }
-              );
+
+              try {
+                console.log('try json')
+                //e.g. 400, get non existent partitions,
+                json = await response.json();
+                console.log(json)
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    reason: json.reason,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+              catch {
+                //e.g. 404, /../partitionsccc
+                console.log('no json')
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+
             }
           }
 
           catch (error) {
-            this.onError(
-              {
-                message: error.message,
-                name: error.name,
-                type: error.name
-              }
-            )
+            console.log('error')
+            console.log(error)
+
+            this.onError({
+              message: error.message,
+              type: error.name
+            });
           }
         }
       }
