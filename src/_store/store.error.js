@@ -13,19 +13,19 @@ Methods (called actions) must be exported.
 */
 
 
-const errorsSlice = createSlice({
-    name: 'errors',
+const errorSlice = createSlice({
+    name: 'error',
     initialState: {},
     reducers: {
 
-        setErrorsLoading: (state, action) => {
-          state.errorsLoading = action.payload
+        setErrorLoading: (state, action) => {
+          state.errorLoading = action.payload
         },
-        setErrors: (state, action) => {
-          state.errors = action.payload
+        setError: (state, action) => {
+          state.error = action.payload
         },
-        setErrorsFetch: (state, action) => {
-          state.errorsFetch = action.payload
+        setErrorFetch: (state, action) => {
+          state.errorFetch = action.payload
         },
 
 
@@ -37,13 +37,13 @@ const errorsSlice = createSlice({
     }
 })
 
-const { actions, reducer } = errorsSlice;
+const { actions, reducer } = errorSlice;
 
 export const {
 
-  setErrorsLoading,
-  setErrors,
-  setErrorsFetch,
+  setErrorLoading,
+  setError,
+  setErrorFetch,
 
   setAsset,
 

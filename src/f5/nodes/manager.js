@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setErrors } from '../../_store/store.errors'
+import { setError } from '../../_store/store.error'
 
 import { setNodesLoading, setNodes, setNodesFetch } from '../../_store/store.f5'
 
@@ -74,7 +74,7 @@ class Manager extends React.Component {
         this.props.dispatch(setNodes(resp))
       },
       error => {
-        this.props.dispatch(setErrors(error))
+        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
@@ -87,6 +87,8 @@ class Manager extends React.Component {
 
 
   render() {
+    console.log('render manager nodes')
+    console.log(this.props.error)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -105,7 +107,7 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.props.errors ? <Error error={this.props.errors} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -114,7 +116,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  errors: state.errors.errors,
+  error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,

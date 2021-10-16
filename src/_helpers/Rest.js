@@ -123,16 +123,20 @@ class Rest {
 
               json = await response.json();
 
+              //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
                 this.onSuccess(json);
               }
+              //
               else {
                 this.onSuccess(response);
               }
             }
             else {
+
               try {
                 console.log('try json')
+                //e.g. 400, get non existent partitions,
                 json = await response.json();
                 console.log(json)
                 this.onError(
@@ -146,6 +150,7 @@ class Rest {
                 )
               }
               catch {
+                //e.g. 404, /../partitionsccc
                 console.log('no json')
                 this.onError(
                   {

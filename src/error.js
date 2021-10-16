@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import { Component, } from "react";
 import { logout } from './_store/store.auth'
 
+import { setError } from './_store/store.error'
+
 import { Modal, Table, Result } from 'antd';
 
 //import notFound from './404.gif'
@@ -28,21 +30,25 @@ class Error extends Component {
 
   constructor(props) {
     super(props);
-    this.state = initialState
+    //this.state = initialState
   }
 
   componentDidMount() {
+    /*
     const e = []
     e.push(this.props.error)
     this.setState({ error: e })
+    */
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
     if (this.props.error !== prevProps.error) {
       const e = []
       e.push(this.props.error)
       this.setState({ error: e })
     }
+    */
   }
 
   componentWillUnmount() {
@@ -67,7 +73,7 @@ class Error extends Component {
 
 
   render(){
-    let err = this.state.error
+    //let err = this.state.error
 
     const columns = [
       {
@@ -104,12 +110,18 @@ class Error extends Component {
 
     let e = () => {
       console.log(this.props.error)
+
       console.log(this.props)
       if(this.props.error) {
-        let cod = this.props.error.status
+        console.log(this.props.error[0].status)
+        let cod = this.props.error[0].status
 
         switch(cod) {
 
+          case 400:
+            console.log('il pupazzo gnappo')
+            return <Result title={'400 - Bad Request'} />
+            break
           case 401:
             this.logout()
             //return <Result title={cod} />
@@ -159,13 +171,13 @@ class Error extends Component {
         visible= {this.props.visible}
         footer={''}
         onOk={null}
-        onCancel={() => this.props.resetError()}
+        onCancel={() => this.props.dispatch(setError(null))}
         width={750}
       >
         {e()}
 
         <Table
-          dataSource={err}
+          dataSource={this.props.error}
           columns={columns}
           pagination={false}
           rowKey="message"
