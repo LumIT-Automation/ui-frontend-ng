@@ -127,7 +127,8 @@ class PoolDetails extends React.Component {
         this.setFetchedMembers(resp.data.items)
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`, this.props.token)
@@ -210,7 +211,8 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body)
@@ -224,7 +226,8 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
@@ -238,7 +241,8 @@ class PoolDetails extends React.Component {
         setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
@@ -300,7 +304,8 @@ class PoolDetails extends React.Component {
         this.refreshStats(member, resp.data)
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
@@ -496,7 +501,7 @@ class PoolDetails extends React.Component {
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />
         </Modal>
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
     );
   }
@@ -504,6 +509,7 @@ class PoolDetails extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition
 }))(PoolDetails);

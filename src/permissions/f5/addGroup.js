@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setIdentityGroups, setIgIdentifiers } from '../../_store/store.authorizations'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, AutoComplete } from 'antd';
@@ -111,8 +112,8 @@ class Add extends React.Component {
         this.props.dispatch(setIgIdentifiers(resp))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("f5/identity-groups/", this.props.token)
@@ -207,7 +208,7 @@ class Add extends React.Component {
         </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -217,6 +218,7 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   authorizations: state.authorizations.f5,
   identityGroups: state.authorizations.identityGroups,

@@ -42,6 +42,7 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
+    console.log('monto Concerto')
     this.fetchAuthorizations()
   }
 
@@ -179,7 +180,7 @@ class Concerto extends Component {
 export default connect((state) => ({
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
-  error: state.error.error,
+ 	error: state.error.error,
   authorizations: state.authorizations,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,

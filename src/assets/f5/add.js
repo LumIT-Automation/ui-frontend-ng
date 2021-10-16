@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setAssetsFetch } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
@@ -229,7 +230,8 @@ class Add extends React.Component {
           this.setState({loading: false, success: true}, () => this.success())
         },
         error => {
-          this.setState({loading: false, success: false, error: error})
+          this.props.dispatch(setError(error))
+          this.setState({loading: false, success: false})
         }
       )
       await rest.doXHR(`f5/assets/`, this.props.token, body )
@@ -397,7 +399,7 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -406,5 +408,6 @@ class Add extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token
+  token: state.ssoAuth.token,
+ 	error: state.error.error,
 }))(Add);

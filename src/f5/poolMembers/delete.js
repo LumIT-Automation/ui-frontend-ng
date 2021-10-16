@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setPoolMembersFetch, setPoolMembersLoading } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
@@ -117,7 +118,7 @@ class Delete extends React.Component {
         </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -127,6 +128,7 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
 }))(Delete);

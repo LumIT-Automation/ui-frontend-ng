@@ -24,8 +24,9 @@ class Rest {
               body: JSON.stringify(payload)
             });
 
+
             if (response.ok) {
-              // HTTP-status is 200-299.
+
               json = await response.json();
               if (json && json.access) {
                 this.onSuccess(json);
@@ -36,7 +37,9 @@ class Rest {
             }
             else {
               if (response.status === 401)
-                this.onError("Wrong username or password.");
+                this.onError({
+                  message: "Wrong username or password."
+                });
               else
                 this.onError("HTTP " + response.status + " received.");
             }
@@ -115,7 +118,6 @@ class Rest {
                 'Authorization': 'Bearer ' + token
               }
             })
-            console.log(resource)
             //let c = response.bla()
             if (response.ok) {
 
@@ -133,10 +135,10 @@ class Rest {
             else {
 
               try {
-                console.log('try json')
+
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-                console.log(json)
+
                 this.onError(
                   {
                     status: response.status,
@@ -149,7 +151,6 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                console.log('no json')
                 this.onError(
                   {
                     status: response.status,
@@ -164,9 +165,6 @@ class Rest {
           }
 
           catch (error) {
-            console.log('error')
-            console.log(error)
-
             this.onError({
               message: error.message,
               type: error.name
@@ -176,7 +174,9 @@ class Rest {
 
         else if (this.method === "POST") {
           //let json;
-
+          if (resource === 'login') {
+            return
+          }
           try {
             const response = await fetch(CONFIG.BACKEND_URL + resource, {
               method: 'POST',
@@ -187,7 +187,6 @@ class Rest {
               body: JSON.stringify(payload)
             })
 
-            console.log(resource)
             //let c = response.bla()
 
             if (response.ok) {
@@ -205,10 +204,8 @@ class Rest {
             else {
 
               try {
-                console.log('try json')
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-                console.log(json)
                 this.onError(
                   {
                     status: response.status,
@@ -221,8 +218,6 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                console.log('no json')
-                console.log(response)
                 this.onError(
                   {
                     status: response.status,
@@ -237,9 +232,6 @@ class Rest {
           }
 
           catch (error) {
-            console.log('error')
-            console.log(error)
-
             this.onError({
               message: error.message,
               type: error.name
@@ -258,7 +250,6 @@ class Rest {
               body: JSON.stringify(payload)
             });
 
-            console.log(resource)
             //let c = response.bla()
             if (response.ok) {
 
@@ -266,6 +257,7 @@ class Rest {
 
               //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
+
                 this.onSuccess(json);
               }
               //
@@ -276,10 +268,10 @@ class Rest {
             else {
 
               try {
-                console.log('try json')
+
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-                console.log(json)
+
                 this.onError(
                   {
                     status: response.status,
@@ -292,7 +284,6 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                console.log('no json')
                 this.onError(
                   {
                     status: response.status,
@@ -307,9 +298,6 @@ class Rest {
           }
 
           catch (error) {
-            console.log('error')
-            console.log(error)
-
             this.onError({
               message: error.message,
               type: error.name
@@ -327,29 +315,29 @@ class Rest {
               },
             });
 
-            console.log(resource)
-            console.log(response)
+
             //let c = response.bla()
             if (response.ok) {
-
-              json = await response.json();
-
-              //e.g. get partitions, get nodes, etc.
-              if (json && json.data) {
-                this.onSuccess(json);
+              try {
+                json = await response.json();
+                if (json && json.data) {
+                  this.onSuccess(json);
+                }
               }
-              //
-              else {
+              catch {
                 this.onSuccess(response);
               }
+              //
+
+              //e.g. get partitions, get nodes, etc.
+
+              //
             }
             else {
 
               try {
-                console.log('try json')
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-                console.log(json)
                 this.onError(
                   {
                     status: response.status,
@@ -362,7 +350,6 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                console.log('no json')
                 this.onError(
                   {
                     status: response.status,
@@ -377,9 +364,6 @@ class Rest {
           }
 
           catch (error) {
-            console.log('error')
-            console.log(error)
-
             this.onError({
               message: error.message,
               type: error.name

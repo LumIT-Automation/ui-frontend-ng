@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setAssetsLoading, setAssets, setAssetsFetch, cleanUp } from '../../_store/store.f5'
 
 import List from './list'
@@ -57,7 +58,8 @@ class Manager extends React.Component {
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -83,7 +85,7 @@ class Manager extends React.Component {
           <List/>
         </div>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -92,6 +94,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   f5auth: state.authorizations.f5,
   assets: state.f5.assets,
   assetsFetch: state.f5.assetsFetch

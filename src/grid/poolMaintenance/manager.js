@@ -60,8 +60,8 @@ class Container extends React.Component {
         this.props.dispatch(setCurrentPools( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
@@ -81,7 +81,7 @@ class Container extends React.Component {
             <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> :
             <PoolsTable/>
           }
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
         </Space>
       )
@@ -90,6 +90,7 @@ class Container extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   asset: state.f5.asset,
   partitions: state.f5.partitions,

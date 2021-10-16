@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 
+import { setError } from '../../_store/store.error'
 import { setSuperAdminsPermissions, setSuperAdminsPermissionsBeauty } from '../../_store/store.permissions'
 
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
@@ -138,8 +139,8 @@ class PermissionsTab extends React.Component {
         this.superAdminsInRows()
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("superadmins", this.props.token )
@@ -172,7 +173,7 @@ class PermissionsTab extends React.Component {
 
         {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.superAdmins}/>  }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -182,6 +183,7 @@ class PermissionsTab extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   superAdmins: state.permissions.superAdminsPermissions
 }))(PermissionsTab);

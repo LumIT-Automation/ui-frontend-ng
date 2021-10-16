@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
+
 import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
@@ -263,7 +265,7 @@ class ReleaseIp extends React.Component {
         </Form>
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -273,6 +275,7 @@ class ReleaseIp extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 }))(ReleaseIp);

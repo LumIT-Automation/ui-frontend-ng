@@ -403,7 +403,7 @@ class RequestIp extends React.Component {
       },
       error => {
         this.setState({loading: false, success: false})
-        //this.setState({error: error})
+        //this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
@@ -587,7 +587,7 @@ class RequestIp extends React.Component {
         </Form>
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -597,6 +597,7 @@ class RequestIp extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 }))(RequestIp);

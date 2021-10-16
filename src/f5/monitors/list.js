@@ -6,6 +6,8 @@ import Error from '../../error'
 import Modify from './modify'
 import Delete from './delete'
 
+import { setError } from '../../_store/store.error'
+
 import { Table, Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -196,7 +198,7 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )

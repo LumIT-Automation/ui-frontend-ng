@@ -6,6 +6,8 @@ import { LoadingOutlined } from '@ant-design/icons';
 import Rest from "../_helpers/Rest";
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
+
 import F5 from './f5/manager'
 import SuperAdmin from './superAdmin/manager'
 
@@ -75,7 +77,7 @@ class Permissions extends React.Component {
 
         </Tabs>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
     )
   }
@@ -84,5 +86,6 @@ class Permissions extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
 }))(Permissions);

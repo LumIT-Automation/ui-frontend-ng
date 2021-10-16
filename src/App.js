@@ -20,6 +20,7 @@ class App extends Component {
   }
 
   componentDidMount() {
+    console.log('monto app')
     this.isAuthenticated()
   }
 
@@ -35,6 +36,7 @@ class App extends Component {
 
 
   isAuthenticated = () => {
+    console.log('is authenticated')
     return new Promise( (resolve, reject) => {
       let token, username;
       try {
@@ -53,7 +55,7 @@ class App extends Component {
         resolve()
       }
       catch (e) {
-        //reject(e)
+        console.log(e)
       }
     })
   }

@@ -146,7 +146,7 @@ class AssetSelector extends React.Component {
           </Row>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
         </Space>
       )
@@ -155,6 +155,7 @@ class AssetSelector extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   environment: state.infoblox.environment,
   assets: state.infoblox.assets,

@@ -5,6 +5,8 @@ import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
+
 import AssetSelector from './assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
@@ -59,7 +61,8 @@ class CertificatesAndKeys extends React.Component {
         this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
       },
       error => {
-        this.setState({loading: false, error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -118,7 +121,7 @@ class CertificatesAndKeys extends React.Component {
           </TabPane>
         </Tabs>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
     )
   }
@@ -127,6 +130,7 @@ class CertificatesAndKeys extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
 
   certificatesLoading: state.f5.certificatesLoading,

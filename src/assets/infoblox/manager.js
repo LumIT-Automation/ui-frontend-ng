@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setAssetsLoading, setAssets, setAssetsFetch } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -57,7 +58,8 @@ class Manager extends React.Component {
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
@@ -81,7 +83,7 @@ class Manager extends React.Component {
           <List/>
         </div>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -90,6 +92,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   infobloxAuth: state.authorizations.infoblox,
   assets: state.infoblox.assets,
   assetsFetch: state.infoblox.assetsFetch

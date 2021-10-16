@@ -5,6 +5,8 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
+
 import Ip from './ip'
 
 import { Tree, Table, Input, Button, Space, Spin, Modal, Collapse, Row, Col } from 'antd'
@@ -116,7 +118,7 @@ class List extends React.Component {
             }
           </Col>
         </Row>
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -125,6 +127,7 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.infoblox.asset,
 

@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setAssetsFetch } from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
@@ -51,7 +52,8 @@ class Delete extends React.Component {
         this.setState({loading: false, success: true}, () =>  this.props.dispatch(setAssetsFetch(true)) )
       },
       error => {
-        this.setState({loading: false, success: false, error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`infoblox/asset/${asset.id}/`, this.props.token )
@@ -120,7 +122,7 @@ class Delete extends React.Component {
         </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -130,4 +132,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
 }))(Delete);

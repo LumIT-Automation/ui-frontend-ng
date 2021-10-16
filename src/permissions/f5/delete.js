@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
 
 import { Button, Space, Modal, Result, Spin, Row, Col } from 'antd';
@@ -51,8 +52,8 @@ class Delete extends React.Component {
         this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
       },
       error => {
+        this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
-        this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/permission/${this.props.obj.permissionId}/`, this.props.token )
@@ -169,7 +170,7 @@ class Delete extends React.Component {
         </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -179,6 +180,7 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   f5Permissions: state.permissions.f5Permissions,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty

@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 
+import { setError } from '../../_store/store.error'
+
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -227,6 +229,7 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   authorizations: state.authorizations.f5,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty

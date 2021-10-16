@@ -2,8 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest";
-import { setEnvironment, setAsset } from '../_store/store.f5'
 import Error from '../error'
+
+import { setError } from '../_store/store.error'
+import { setEnvironment, setAsset } from '../_store/store.f5'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
@@ -76,22 +78,7 @@ class AssetSelector extends React.Component {
     this.props.dispatch(setAsset(asset))
     //this.fetchAssetPartitions(asset.id)
   }
-/*
-  fetchAssetPartitions = async (id) => {
-    let rest = new Rest(
-      "GET",
-      resp => this.props.dispatch(setPartitions( resp )),
-      error => {
-        this.setState({error: error})
-      }
-    )
-    await rest.doXHR(`f5/${id}/partitions/`, this.props.token)
-  }
 
-  setPartition = p => {
-    this.props.dispatch(setPartition(p))
-  }
-*/
   resetError = () => {
     this.setState({ error: null})
   }
@@ -139,7 +126,7 @@ class AssetSelector extends React.Component {
           </Row>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
         </Space>
       )
@@ -148,6 +135,7 @@ class AssetSelector extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   assets: state.f5.assets,
   asset: state.f5.asset,

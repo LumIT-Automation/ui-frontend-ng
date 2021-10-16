@@ -5,6 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setPoolsLoading, setPools, setPoolsFetch } from '../../_store/store.f5'
 
 import List from './list'
@@ -70,7 +71,8 @@ class Manager extends React.Component {
         this.props.dispatch(setPools(resp))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
@@ -101,7 +103,7 @@ class Manager extends React.Component {
         <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -110,6 +112,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,

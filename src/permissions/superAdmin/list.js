@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 
+import { setError } from '../../_store/store.error'
 import { setSuperAdminPermissions } from '../../_store/store.permissions'
 
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
@@ -165,6 +166,7 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   superAdmins: state.permissions.superAdminsPermissionsBeauty
 }))(List);

@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 //import Error from '../../error'
 import { DownOutlined } from '@ant-design/icons';
 
+import { setError } from '../_store/store.error'
+
 //import Modify from './modify'
 
 import { Table, Input, Button, Space, Spin, Collapse, Badge, Menu, Modal } from 'antd';
@@ -187,7 +189,7 @@ class Ip extends React.Component {
             style={{marginBottom: 10}}
           />
         </Modal>
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -196,6 +198,7 @@ class Ip extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers

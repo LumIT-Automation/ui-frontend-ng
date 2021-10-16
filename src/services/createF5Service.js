@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
 import { setCertificates, setKeys, setRouteDomains } from '../_store/store.f5'
 
 import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
@@ -79,8 +80,8 @@ class CreateF5Service extends React.Component {
         this.props.dispatch(setCertificates( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
@@ -95,8 +96,8 @@ class CreateF5Service extends React.Component {
         this.props.dispatch(setKeys( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
@@ -111,8 +112,8 @@ class CreateF5Service extends React.Component {
         this.props.dispatch(setRouteDomains( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
@@ -472,8 +473,8 @@ class CreateF5Service extends React.Component {
         this.success()
       },
       error => {
+        this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
-        this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
@@ -547,8 +548,8 @@ class CreateF5Service extends React.Component {
         this.success()
       },
       error => {
+        this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
-        this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
@@ -857,7 +858,7 @@ class CreateF5Service extends React.Component {
         </Form>
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -867,6 +868,7 @@ class CreateF5Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,

@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
+
 import { setError } from '../_store/store.error'
 import { setEnvironment, setAsset, setPartitions, setPartition } from '../_store/store.f5'
 
@@ -184,7 +185,7 @@ class AssetSelector extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  error: state.error.error,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   environment: state.f5.environment,
   assets: state.f5.assets,

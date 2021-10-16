@@ -5,6 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch } from '../../_store/store.f5'
 
 import List from './list'
@@ -69,7 +70,8 @@ class Manager extends React.Component {
         this.props.dispatch(setVirtualServers(resp))
       },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
@@ -93,7 +95,7 @@ class Manager extends React.Component {
         }
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -102,6 +104,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
   virtualServers: state.f5.virtualServers,

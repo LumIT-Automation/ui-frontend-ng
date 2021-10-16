@@ -4,6 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
 import { setAssets } from '../../_store/store.f5'
 import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
 
@@ -113,8 +114,8 @@ class Modify extends React.Component {
         this.setState({partitions: resp.data.items})
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
@@ -133,7 +134,8 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
@@ -184,8 +186,8 @@ class Modify extends React.Component {
         this.success()
       },
       error => {
+        this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
-        this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/permission/${this.props.obj.permissionId}/`, this.props.token, b )
@@ -202,8 +204,8 @@ class Modify extends React.Component {
         this.permissionsInRows()
         },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/permissions/`, this.props.token)
@@ -375,7 +377,7 @@ class Modify extends React.Component {
           </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -385,6 +387,7 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   f5Permissions: state.permissions.f5Permissions,
   f5PermissionsBeauty: state.permissions.f5PermissionsBeauty

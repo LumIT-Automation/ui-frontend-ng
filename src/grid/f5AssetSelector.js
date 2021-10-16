@@ -85,7 +85,8 @@ class AssetSelector extends React.Component {
       "GET",
       resp => this.props.dispatch(setPartitions( resp )),
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${id}/partitions/`, this.props.token)
@@ -174,7 +175,7 @@ class AssetSelector extends React.Component {
           </Row>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
         </Space>
       )
@@ -183,6 +184,7 @@ class AssetSelector extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   environment: state.f5.environment,
   assets: state.f5.assets,

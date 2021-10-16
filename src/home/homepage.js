@@ -93,6 +93,7 @@ class Homepage extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.ssoAuth.token, 
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
 }))(Homepage);

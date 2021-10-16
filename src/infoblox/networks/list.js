@@ -3,6 +3,8 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
+import { setError } from '../../_store/store.error'
+
 //import Modify from './modify'
 
 import { Table, Input, Button, Space, Spin } from 'antd';
@@ -158,7 +160,7 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )

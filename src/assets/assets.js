@@ -6,6 +6,7 @@ import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
 import { setAssetsFetch as f5AssetsRefresh } from '../_store/store.f5'
 import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblox'
 
@@ -80,7 +81,7 @@ class Assets extends React.Component {
           }
         </Tabs>
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
     )
   }
@@ -88,6 +89,7 @@ class Assets extends React.Component {
 
 
 export default connect((state) => ({
+  error: state.error.error,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
   f5assetsLoading: state.f5.assetsLoading,

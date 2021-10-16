@@ -178,8 +178,8 @@ class Service extends React.Component {
         this.props.dispatch(setF5Assets( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -194,8 +194,8 @@ class Service extends React.Component {
         this.props.dispatch(setInfobloxAssets( resp ))
       },
       error => {
-        this.setState({loading: false})
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
@@ -271,7 +271,7 @@ class Service extends React.Component {
 
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -281,6 +281,7 @@ class Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   f5Authorizations: state.authorizations.f5,
   infobloxAuthorizations: state.authorizations.infoblox,
   f5Assets: state.f5.assets,

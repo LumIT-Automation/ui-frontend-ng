@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
+
 import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { setWorkflowStatus } from '../_store/store.workflows'
@@ -87,8 +89,8 @@ class DeleteF5Service extends React.Component {
         this.success()
       },
       error => {
+        this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
-        this.setState({error: error})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/${serviceName}/`, this.props.token )
@@ -162,7 +164,7 @@ class DeleteF5Service extends React.Component {
         </Form>
       }
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -172,6 +174,7 @@ class DeleteF5Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
   partition: state.f5.partition,

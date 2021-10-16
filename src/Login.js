@@ -20,7 +20,7 @@ class Login extends Component {
     super(props);
 
     this.state = {
-      errors: "",
+      error: "",
     }
 
   }
@@ -46,9 +46,8 @@ class Login extends Component {
       let rest = new Rest("POST",
 
         response => {
-          this.setState({ // async.
-            errors: ""
-          });
+          console.log('response ok login')
+          this.setState({ error: null });
 
           // Update the store; save the access token.
           this.props.dispatch(login({
@@ -65,9 +64,7 @@ class Login extends Component {
         },
 
         error => {
-          this.setState({ // async.
-            errors: error.toString(),
-          });
+          this.setState({ error: error.message });
         })
 
       await rest.doXHR(
@@ -80,7 +77,7 @@ class Login extends Component {
 
   render() {
 
-      if (!this.state.errors) {
+      if (!this.state.error) {
         return (
           <Layout>
             <Header className="header">
@@ -147,8 +144,8 @@ class Login extends Component {
             <Row type="flex" justify="center" align="middle" style={{minHeight: '80vh', overflow: "hidden"}}>
               <Col span={4} >
                 <Card title="Error">
-                  <p>{this.state.errors}</p>
-                  <Button onClick={() => this.setState({ errors: null})} type="primary" htmlType="submit" className="login-form-button">
+                  <p>{this.state.error}</p>
+                  <Button onClick={() => this.setState({ error: null})} type="primary" htmlType="submit" className="login-form-button">
                     Retry
                   </Button>
                 </Card>

@@ -1,7 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux'
-
 import "antd/dist/antd.css"
+
+import { setError } from '../../_store/store.error'
 
 import PoolDetails from './poolDetails'
 
@@ -181,6 +182,7 @@ class PoolsTable extends React.Component {
 export default connect((state) => ({
   currentPools: state.f5.currentPools,
   token: state.ssoAuth.token,
+ 	error: state.error.error,
   assets: state.f5.assets,
   asset: state.f5.asset,
   partitions: state.f5.partitions,

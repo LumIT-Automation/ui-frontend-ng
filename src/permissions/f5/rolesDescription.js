@@ -4,8 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { Space, Modal, Table, Result, List, Typography } from 'antd';
+import { setError } from '../../_store/store.error'
 
+import { Space, Modal, Table, Result, List, Typography } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
@@ -66,7 +67,8 @@ class RolesDescription extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
-        this.setState({error: error})
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
@@ -156,7 +158,7 @@ class RolesDescription extends React.Component {
         </Modal>
 
 
-        {this.state.error ? <Error error={this.state.error} visible={true} resetError={() => this.resetError()} /> : <Error error={this.state.error} visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
