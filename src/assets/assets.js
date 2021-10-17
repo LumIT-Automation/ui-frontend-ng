@@ -2,9 +2,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table } from 'antd';
 
+import Error from '../error'
+
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
-import Error from '../error'
 
 import { setError } from '../_store/store.error'
 import { setAssetsFetch as f5AssetsRefresh } from '../_store/store.f5'
@@ -12,11 +13,8 @@ import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblo
 
 import 'antd/dist/antd.css';
 import '../App.css'
-
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
-
 const { TabPane } = Tabs;
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 

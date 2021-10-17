@@ -5,6 +5,15 @@ const infobloxSlice = createSlice({
     initialState: {},
     reducers: {
 
+      setPermissionsLoading: (state, action) => {
+        state.permissionsLoading = action.payload
+      },
+      setPermissions: (state, action) => {
+        state.permissions = action.payload.data.items
+      },
+      setPermissionsFetch: (state, action) => {
+        state.permissionsFetch = action.payload
+      },
 
       setEnvironment: (state, action) => {
         state.environment = action.payload
@@ -66,6 +75,9 @@ const infobloxSlice = createSlice({
 const { actions, reducer } = infobloxSlice;
 
 export const {
+  setPermissionsLoading,
+  setPermissions,
+  setPermissionsFetch,
 
   setEnvironment,
 

@@ -11,6 +11,8 @@ const authorizationsSlice = createSlice({
       setAuthorizations: (state, action) => {
         for (const l in action.payload.data) {
           state[l] = action.payload.data[l].data.items
+          //state.f5
+          //state.infoblox
         }
       },
       setIdentityGroups: ( state, action) => {

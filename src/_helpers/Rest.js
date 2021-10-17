@@ -120,25 +120,19 @@ class Rest {
             })
             //let c = response.bla()
             if (response.ok) {
-
               json = await response.json();
-
               //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
                 this.onSuccess(json);
               }
-              //
               else {
                 this.onSuccess(response);
               }
             }
             else {
-
               try {
-
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-
                 this.onError(
                   {
                     status: response.status,
@@ -160,10 +154,8 @@ class Rest {
                   }
                 )
               }
-
             }
           }
-
           catch (error) {
             this.onError({
               message: error.message,
@@ -186,13 +178,10 @@ class Rest {
               },
               body: JSON.stringify(payload)
             })
-
             //let c = response.bla()
-
             if (response.ok) {
               // HTTP-status is 200-299.
               json = await response.json();
-
               //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
                 this.onSuccess(json);
@@ -202,7 +191,6 @@ class Rest {
               }
             }
             else {
-
               try {
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
@@ -227,10 +215,8 @@ class Rest {
                   }
                 )
               }
-
+            }
           }
-          }
-
           catch (error) {
             this.onError({
               message: error.message,
@@ -249,15 +235,11 @@ class Rest {
               },
               body: JSON.stringify(payload)
             });
-
             //let c = response.bla()
             if (response.ok) {
-
               json = await response.json();
-
               //e.g. get partitions, get nodes, etc.
               if (json && json.data) {
-
                 this.onSuccess(json);
               }
               //
@@ -266,12 +248,9 @@ class Rest {
               }
             }
             else {
-
               try {
-
                 //e.g. 400, get non existent partitions,
                 json = await response.json();
-
                 this.onError(
                   {
                     status: response.status,
@@ -293,10 +272,8 @@ class Rest {
                   }
                 )
               }
-
             }
           }
-
           catch (error) {
             this.onError({
               message: error.message,
@@ -314,8 +291,6 @@ class Rest {
                 'Content-Type': 'application/json'
               },
             });
-
-
             //let c = response.bla()
             if (response.ok) {
               try {
@@ -327,14 +302,10 @@ class Rest {
               catch {
                 this.onSuccess(response);
               }
-              //
-
               //e.g. get partitions, get nodes, etc.
-
               //
             }
             else {
-
               try {
                 //e.g. 400, get non existent partitions,
                 json = await response.json();

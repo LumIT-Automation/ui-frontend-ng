@@ -109,28 +109,27 @@ class Error extends Component {
     ]
 
     let e = () => {
-      console.log(this.props.error)
 
-      console.log(this.props)
-      if(this.props.error) {
-        console.log(this.props.error[0].status)
-        let cod = this.props.error[0].status
+      if (this.props.error) {
+        let statusCode = this.props.error[0].status
 
-        switch(cod) {
-
+        switch(statusCode) {
           case 400:
-            console.log('il pupazzo gnappo')
             return <Result title={'400 - Bad Request'} />
             break
           case 401:
             this.logout()
-            //return <Result title={cod} />
+            //return <Result title={statusCode} />
             break
           case 403:
-            return <Result status={cod} title={'403 - Forbidden'} />
+            return <Result status={statusCode} title={'403 - Forbidden'} />
             break
           case 404:
-            return <Result status={cod} title={'404 - Not Found'} />
+            return <Result status={statusCode} title={'404 - Not Found'} />
+            //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
+            break
+          case 409:
+            return <Result title={'409 - Conflict'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
             break
           case 412:
@@ -146,10 +145,10 @@ class Error extends Component {
             return <Result title={'500'} />
             break
           case 502:
-            return <Result title={cod} />
+            return <Result title={statusCode} />
             break
           case 503:
-            return <Result title={cod} />
+            return <Result title={statusCode} />
             break
 
           default:
@@ -159,9 +158,7 @@ class Error extends Component {
       else {
         return null
       }
-
     }
-
 
     return (
       <Modal
@@ -185,7 +182,6 @@ class Error extends Component {
       </Modal>
     )
   }
-
 }
 
 export default connect((state) => ({

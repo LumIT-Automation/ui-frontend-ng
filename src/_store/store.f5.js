@@ -17,6 +17,16 @@ const f5Slice = createSlice({
     name: 'f5',
     initialState: {},
     reducers: {
+        setPermissionsLoading: (state, action) => {
+          state.permissionsLoading = action.payload
+        },
+        setPermissions: (state, action) => {
+          state.permissions = action.payload.data.items
+        },
+        setPermissionsFetch: (state, action) => {
+          state.permissionsFetch = action.payload
+        },
+
         setEnvironment: (state, action) => {
           state.environment = action.payload
         },
@@ -201,6 +211,10 @@ const f5Slice = createSlice({
 const { actions, reducer } = f5Slice;
 
 export const {
+  setPermissionsLoading,
+  setPermissions,
+  setPermissionsFetch,
+
   setEnvironment,
 
   setAssetsLoading,

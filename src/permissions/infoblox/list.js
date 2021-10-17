@@ -5,12 +5,13 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import Delete from './delete'
+import RolesDescription from './rolesDescription'
 import Modify from './modify'
+import Delete from './delete'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space, Spin, Form } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 
 
@@ -117,6 +118,8 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -126,7 +129,21 @@ class List extends React.Component {
 
     const columns = [
       {
-        title: 'FQDN',
+        title: 'AD group name',
+        align: 'center',
+        dataIndex: 'identity_group_name',
+        key: 'identity_group_name',
+        ...this.getColumnSearchProps('identity_group_name'),
+      },
+      {
+        title: 'Distinguished name',
+        align: 'center',
+        dataIndex: 'identity_group_identifier',
+        key: 'identity_group_identifier',
+        ...this.getColumnSearchProps('identity_group_identifier'),
+      },
+      {
+        title: 'Asset',
         align: 'center',
         dataIndex: 'fqdn',
         key: 'fqdn',
@@ -140,25 +157,19 @@ class List extends React.Component {
         ...this.getColumnSearchProps('address'),
       },
       {
-        title: 'Environment',
+        title: 'Network',
         align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        ...this.getColumnSearchProps('environment'),
+        dataIndex: ['network', 'name' ],
+        key: 'network',
+        ...this.getColumnSearchProps('network'),
       },
       {
-        title: 'Datacenter',
+        title: <RolesDescription/>,
         align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-       ...this.getColumnSearchProps('datacenter'),
-      },
-      {
-        title: 'Position',
-        align: 'center',
-        dataIndex: 'position',
-        key: 'position',
-        ...this.getColumnSearchProps('position'),
+        dataIndex: 'role',
+        key: 'role',
+        ...this.getColumnSearchProps('role'),
+
       },
       {
         title: 'Modify',
@@ -167,7 +178,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.f5Auth && (this.props.f5Auth.asset_patch || this.props.f5Auth.any) ?
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_patch || this.props.authorizations.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -182,7 +193,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.f5Auth && (this.props.f5Auth.asset_delete || this.props.f5Auth.any) ?
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -195,18 +206,17 @@ class List extends React.Component {
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+
+        <br/>
         <Table
           columns={columns}
-          dataSource={this.props.assets}
+          dataSource={this.props.permissions}
           bordered
-          rowKey="id"
+          rowKey="permissionId"
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
       </Space>
 
     )
@@ -214,7 +224,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  assets: state.f5.assets,
-  error: state.error.error,
-  f5Auth: state.authorizations.f5
+  token: state.ssoAuth.token,
+ 	error: state.error.error,
+  assets: state.infoblox.assets,
+  authorizations: state.authorizations.infoblox,
+  permissions: state.infoblox.permissions
 }))(List);

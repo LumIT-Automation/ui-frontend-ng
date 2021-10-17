@@ -9,17 +9,16 @@ import { setIdentityGroups, setIgIdentifiers } from '../../_store/store.authoriz
 import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
 import { setAssets, cleanUp } from '../../_store/store.f5'
 
+import List from './list'
+import Add from './add'
+import AddGroup from './addGroup'
+
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
 
 
-import List from './list'
-import Add from './add'
-import AddGroup from './addGroup'
-
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 /*
@@ -52,84 +51,6 @@ class PermissionsTab extends React.Component {
   componentWillUnmount() {
   }
 
-
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = clearFilters => {
-    clearFilters();
-    this.setState({ searchText: '' });
-  };
 
   resetError = () => {
     this.setState({ error: null})
@@ -171,10 +92,12 @@ class PermissionsTab extends React.Component {
   }
 
   fetchPermissions = async () => {
+    console.log('permissions')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.setState({loading: false})
         this.props.dispatch(setF5Permissions(resp))
         this.permissionsInRows()
@@ -236,7 +159,7 @@ class PermissionsTab extends React.Component {
         </div>
         : null }
 
-        {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.f5PermissionsBeauty}/> }
+        {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.f5PermissionsBeauty}/> }
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 

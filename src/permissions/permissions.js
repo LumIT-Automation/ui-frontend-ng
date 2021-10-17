@@ -1,38 +1,24 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button, Table } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 
-import Rest from "../_helpers/Rest";
 import Error from '../error'
 
-import { setError } from '../_store/store.error'
-
-import F5 from './f5/manager'
 import SuperAdmin from './superAdmin/manager'
+import F5 from './f5/manager'
+import Infoblox from './infoblox/manager'
+
+import { setError } from '../_store/store.error'
+import { setPermissionsFetch as f5PermissionsRefresh } from '../_store/store.f5'
+import { setPermissionsFetch as infobloxPermissionsRefresh } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
-
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const { TabPane } = Tabs;
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-//const { Search } = Input;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 
-
-/*
-This is the parent component of the f5 category.
-
-At mount it calls /assets/ to get the list of assets present in udb and it sets it in the store.
-The other components will recive as props:
-  state.f5.assets
-
-Then render sub Tabs
-
-if there is a error (no assets in the response) renders Error component.
-It also pass to Error's props the callback resetError() in order to reset Error state and haide Error component.
-
-At the unmount it reset state.f5 in the store.
-*/
 
 
 class Permissions extends React.Component {
@@ -62,20 +48,40 @@ class Permissions extends React.Component {
     this.setState({ error: null})
   }
 
+  f5PermissionsRefresh = () => {
+    this.props.dispatch(f5PermissionsRefresh(true))
+  }
+
+  infobloxPermissionsRefresh = () => {
+    this.props.dispatch(infobloxPermissionsRefresh(true))
+  }
+
 
   render() {
+    console.log(this.props.infobloxPermissionsLoading)
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        <Tabs type="card" destroyInactiveTabPane={true}>
+        <Tabs type="card">
           <TabPane tab="SuperAdmin" key="SuperAdmin">
             <SuperAdmin/>
           </TabPane>
-          <TabPane tab="F5" key="F5">
-            <F5/>
-          </TabPane>
-
+          { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
+            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
+              {this.props.f5PermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <F5/> }
+            </TabPane>
+            :
+            null
+          }
+          { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
+            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxAssetsRefresh()}/></span>>
+              {this.props.infobloxPermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
+            </TabPane>
+            :
+            null
+          }
         </Tabs>
+
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
@@ -85,7 +91,9 @@ class Permissions extends React.Component {
 
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
  	error: state.error.error,
-  authorizations: state.authorizations.f5,
+  f5Auth: state.authorizations.f5,
+  infobloxAuth: state.authorizations.infoblox,
+  f5PermissionsLoading: state.f5.permissionsLoading,
+  infobloxPermissionsLoading: state.infoblox.permissionsLoading
 }))(Permissions);

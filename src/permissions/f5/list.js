@@ -182,7 +182,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_patch || this.props.authorizations.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -197,7 +197,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'

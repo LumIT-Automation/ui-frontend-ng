@@ -1,22 +1,26 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest";
 import Error from '../../error'
+import Rest from "../../_helpers/Rest";
 
 import { setError } from '../../_store/store.error'
 import {
-  setAssetsLoading,
   setAssets,
+  setAssetsLoading,
   setAssetsFetch,
-  cleanUp
-} from '../../_store/store.f5'
+  setPermissions,
+  setPermissionsLoading,
+  setPermissionsFetch,
+} from '../../_store/store.infoblox'
 
 import List from './list'
 import Add from './add'
+import AddGroup from './addGroup'
 
 import { Table, Input, Button, Space, Spin, Divider } from 'antd';
 import Highlighter from 'react-highlight-words';
+
 
 /*
 
@@ -35,8 +39,8 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assets) {
-      this.fetchAssets()
+    if (!this.props.permissions) {
+      this.fetchPermissions()
     }
   }
 
@@ -45,9 +49,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.assetsFetch) {
-      this.fetchAssets()
-      this.props.dispatch(setAssetsFetch(false))
+    if (this.props.permissionsFetch) {
+      this.fetchPermissions()
+      this.props.dispatch(setPermissionsFetch(false))
     }
   }
 
@@ -55,7 +59,25 @@ class Manager extends React.Component {
   }
 
 
+  fetchPermissions = async () => {
+    console.log('fetchPermissions')
+    this.props.dispatch(setPermissionsLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setPermissions(resp))
+        this.fetchAssets()
+        },
+      error => {
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`infoblox/permissions/`, this.props.token)
+    this.props.dispatch(setPermissionsLoading(false))
+  }
+
   fetchAssets = async () => {
+    console.log('fetchAssets')
     this.props.dispatch(setAssetsLoading(true))
     let rest = new Rest(
       "GET",
@@ -64,10 +86,9 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR("infoblox/assets/", this.props.token)
     this.props.dispatch(setAssetsLoading(false))
   }
 
@@ -76,21 +97,28 @@ class Manager extends React.Component {
   }
 
 
+
   render() {
+    console.log(this.props.permissions)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
 
-        { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
-           <Add/>
-           : null
-        }
+      { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+        <React.Fragment>
+          <Add/>
+          <AddGroup />
+        </React.Fragment>
+        :
+        null
+      }
 
         <div>
           <List/>
         </div>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
 
     )
@@ -100,7 +128,9 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  authorizations: state.authorizations.f5,
-  assets: state.f5.assets,
-  assetsFetch: state.f5.assetsFetch
+  authorizations: state.authorizations.infoblox,
+
+  permissions: state.infoblox.permissions,
+  permissionsFetch: state.infoblox.permissionsFetch,
+
 }))(Manager);
