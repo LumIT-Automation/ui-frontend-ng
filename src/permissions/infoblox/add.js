@@ -185,7 +185,7 @@ class Add extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/permissions/`, this.props.token, b )
+    await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
 
   }
 
@@ -203,7 +203,7 @@ class Add extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/permissions/`, this.props.token)
+    await rest.doXHR(`infoblox/permissions/`, this.props.token)
   }
 
   permissionsInRows = () => {

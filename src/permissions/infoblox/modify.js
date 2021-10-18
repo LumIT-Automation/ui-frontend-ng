@@ -227,7 +227,7 @@ class Modify extends React.Component {
             onCancel={() => this.closeModal()}
             width={750}
           >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.success &&
             <Result
                status="success"
