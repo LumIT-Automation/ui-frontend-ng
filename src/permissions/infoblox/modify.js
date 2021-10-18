@@ -5,18 +5,15 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setAssets } from '../../_store/store.f5'
-import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
+import { setPermissionsFetch } from '../../_store/store.infoblox'
 
-import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
 
-import { LoadingOutlined } from '@ant-design/icons';
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -59,7 +56,8 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.setValues()
+    let body = Object.assign({}, this.props.obj)
+    this.setState({body: body})
   }
 
   setValues = () => {
@@ -182,7 +180,7 @@ class Modify extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
+        this.setState({loading: false, success: true})
         this.success()
       },
       error => {
@@ -194,59 +192,13 @@ class Modify extends React.Component {
 
   }
 
-  fetchPermissions = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setF5Permissions(resp))
-        this.permissionsInRows()
-        },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
-      }
-    )
-    await rest.doXHR(`f5/permissions/`, this.props.token)
-  }
-
-  permissionsInRows = () => {
-
-    let permissions = Object.assign([], this.props.f5Permissions)
-    let list = []
-
-    for ( let p in permissions) {
-      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
-      let permissionId = permissions[p].id
-      let name = permissions[p].identity_group_name
-      let dn = permissions[p].identity_group_identifier
-      let role = permissions[p].role
-      let assetId = permissions[p].partition.asset_id
-      let partition = permissions[p].partition.name
-      let fqdn = asset.fqdn
-      let address = asset.address
-
-      list.push({
-        permissionId: permissionId,
-        name: name,
-        dn: dn,
-        role: role,
-        assetId: assetId,
-        partition: partition,
-        fqdn: fqdn,
-        address: address
-      })
-    }
-    this.props.dispatch(setF5PermissionsBeauty(list))
-  }
-
   resetError = () => {
     this.setState({ error: null})
   }
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -263,9 +215,7 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-          <Button type="primary" onClick={() => this.details()}>
-            Modify Permission
-          </Button>
+          <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
           <Modal
             title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
@@ -389,6 +339,5 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
   assets: state.f5.assets,
-  f5Permissions: state.permissions.f5Permissions,
-  f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
+  permissions: state.infoblox.permissions,
 }))(Modify);

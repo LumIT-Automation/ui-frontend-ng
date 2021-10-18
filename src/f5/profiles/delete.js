@@ -12,9 +12,8 @@ import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
-/*
 
-*/
+
 
 class Delete extends React.Component {
 

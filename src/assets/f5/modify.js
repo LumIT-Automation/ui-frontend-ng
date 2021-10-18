@@ -14,9 +14,6 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
