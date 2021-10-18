@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import Rest from "../_helpers/Rest";
 import { setEnvironment, setAssets, setAsset, setPartitions, setPartition } from '../_store/store.f5'
 import Error from '../error'
+import { setError } from '../_store/store.error'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';

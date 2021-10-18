@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
+import { setError } from '../_store/store.error'
 
 import { setCertificates, setKeys } from '../_store/store.f5'
 

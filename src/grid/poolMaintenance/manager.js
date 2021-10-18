@@ -5,6 +5,7 @@ import Rest from "../../_helpers/Rest";
 import { setAsset, setPartitions, setPartition, setCurrentPools } from '../../_store/store.f5'
 import PoolsTable from './poolsTable'
 import Error from '../../error'
+import { setError } from '../../_store/store.error'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';

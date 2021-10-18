@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
+import { setError } from '../_store/store.error'
 
 import { setAssets as setF5Assets } from '../_store/store.f5'
 import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'

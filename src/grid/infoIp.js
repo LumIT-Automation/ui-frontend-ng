@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
+import { setError } from '../_store/store.error'
 
 import { Space, Form, Input, Result, Button, Select, Spin, Divider, Table} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
