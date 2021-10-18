@@ -97,7 +97,7 @@ class Add extends React.Component {
   setAsset = id => {
     let body = Object.assign({}, this.state.body)
     body.assetId = id
-    this.setState({body: body}, () => {this.fetchAssetPartitions(id)})
+    //this.setState({body: body}, () => {this.fetchAssetPartitions(id)})
   }
 
   fetchAssetPartitions = async (id) => {
@@ -126,7 +126,7 @@ class Add extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
+        //this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
         this.props.dispatch(setError(error))
@@ -177,7 +177,7 @@ class Add extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
+        //this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
         this.success()
       },
       error => {
@@ -195,8 +195,8 @@ class Add extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setInfobloxPermissions(resp))
-        this.permissionsInRows()
+        //this.props.dispatch(setPermissions(resp))
+        //this.permissionsInRows()
         },
       error => {
         this.props.dispatch(setError(error))
@@ -233,7 +233,7 @@ class Add extends React.Component {
         address: address
       })
     }
-    this.props.dispatch(setInfobloxPermissionsBeauty(list))
+    //this.props.dispatch(setInfobloxPermissionsBeauty(list))
   }
 
   resetError = () => {
