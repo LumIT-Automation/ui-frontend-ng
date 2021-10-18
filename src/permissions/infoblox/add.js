@@ -113,7 +113,7 @@ class Add extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/${id}/partitions/`, this.props.token)
+    await rest.doXHR(`infoblox/${id}/partitions/`, this.props.token)
   }
 
   setPartition = partition => {
@@ -133,7 +133,7 @@ class Add extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
   }
 
   beautifyPrivileges = () => {
@@ -208,7 +208,7 @@ class Add extends React.Component {
 
   permissionsInRows = () => {
 
-    let permissions = Object.assign([], this.props.f5Permissions)
+    let permissions = Object.assign([], this.props.infobloxPermissions)
     let list = []
 
     for ( let p in permissions) {
