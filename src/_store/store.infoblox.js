@@ -63,6 +63,17 @@ const infobloxSlice = createSlice({
         state.containersFetch = action.payload
       },
 
+      setRealNetworksLoading: (state, action) => {
+        state.realNetworksLoading = action.payload
+      },
+      setRealNetworks: (state, action) => {
+        console.log(action.payload)
+        state.realNetworks = action.payload
+      },
+      setRealNetworksFetch: (state, action) => {
+        state.RealNetworksFetch = action.payload
+      },
+
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -98,6 +109,10 @@ export const {
   setContainersLoading,
   setContainers,
   setContainersFetch,
+
+  setRealNtworksLoading,
+  setRealNetworks,
+  setRealNetworksFetch,
 
   cleanUp
 } = actions

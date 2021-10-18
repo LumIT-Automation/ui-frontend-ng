@@ -136,6 +136,10 @@ class Error extends Component {
             return <Result title={'412 - Precondition Failed'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
             break
+          case 422:
+            return <Result title={'422 - Unprocessable Entity'} />
+            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
+            break
           case 429:
             return <Result title={'429 - Too many requests'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />

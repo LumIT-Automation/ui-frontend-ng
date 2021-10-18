@@ -119,6 +119,8 @@ class Manager extends React.Component {
 
   }
 
+
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -132,10 +134,7 @@ class Manager extends React.Component {
         <br/>
 
       { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-        <React.Fragment>
           <Add/>
-          <AddGroup />
-        </React.Fragment>
         :
         null
       }

@@ -5,7 +5,11 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setPermissionsFetch } from '../../_store/store.infoblox'
+import {
+  setPermissionsFetch,
+  setRealNetworks,
+  setRealNetworksFetch,
+} from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
@@ -35,9 +39,15 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       error: null,
-      errors: {},
+      errors: {
+      },
       message:'',
-      body: {}
+      groupToAdd: false,
+      body: {
+        network: {
+
+        }
+      }
     };
   }
 
@@ -58,75 +68,142 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
+  onlyUnique = (value, index, self) => {
+    return self.indexOf(value) === index;
+  }
+
   onSearch = (searchText) => {
-    let items = Object.assign([], this.props.igIdentifiers)
+    let permissions = Object.assign([], this.props.permissions)
+    let gi = []
+    let items = []
     let options = []
+
+    permissions.forEach(p => {
+      gi.push(p.identity_group_identifier)
+    })
+
+    items = gi.filter(this.onlyUnique);
 
     let matchFound = items.filter(a =>{
       return a.toLowerCase().includes(searchText.toLowerCase())
     })
-
 
     for(var i=0; i<matchFound.length; i++)  {
       options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
     }
 
     this.setState({
-      options: options
+      options: options,
+      items: items,
     })
+
   }
 
   selectDn = e => {
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
+    let dn
 
-      if (e) {
-        let dn = e
-        let first = dn.split(",")
-        let name = first[0].split("=")
-        body.dn = e
-        body.name = name[1]
-        delete errors.dnError
+    if (e) {
+      if (e.target) {
+        console.log('e.target.')
+        dn = e.target.value
+        this.setState({groupToAdd: true})
       }
       else {
-        errors.dnError = 'error'
+        console.log('')
+        dn = e
+        this.setState({groupToAdd: false})
       }
-      this.setState({body: body, errors: errors})
+
+      let list = dn.split(',')
+      let cns = []
+
+      let found = list.filter(i => {
+        let iLow = i.toLowerCase()
+        if (iLow.startsWith('cn=')) {
+          let cn = iLow.split('=')
+          cns.push(cn[1])
+        }
+      })
+
+      body.dn = dn
+      body.cn = cns[0]
+      delete errors.dnError
+    }
+    else {
+      errors.dnError = 'error'
+    }
+    this.setState({body: body, errors: errors})
   }
 
   setAsset = id => {
     let body = Object.assign({}, this.state.body)
     body.assetId = id
-    //this.setState({body: body}, () => {this.fetchAssetPartitions(id)})
+    body.network.id_asset = id
+    this.setState({body: body}, () => this.fetchNetworks())
   }
 
-  fetchAssetPartitions = async (id) => {
-    this.setState({loading: true})
+  fetchNetworks = async () => {
+    let tree = await this.fetchTree()
+    this.setState({tree: tree})
+
+    let realNetworks = await this.filterRealNetworks()
+    this.props.dispatch(setRealNetworks( realNetworks ))
+  }
+
+  fetchTree = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.setState({partitions: resp.data.items})
+        r = resp.data['/'].children
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.props.dispatch(setError( error ))
       }
     )
-    await rest.doXHR(`infoblox/${id}/partitions/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.body.assetId}/tree/`, this.props.token)
+    return r
   }
 
-  setPartition = partition => {
-    let body = Object.assign({}, this.state.body);
-    body.partition = partition
-    this.setState({body: body})
+  filterRealNetworks = () => {
+    let realNetworks = []
+    let list = []
+
+    this.state.tree.forEach(e => {
+      if (e.extattrs["Real Network"]) {
+        if (e.extattrs["Real Network"].value === 'yes') {
+          //let n = e.network.split('/')
+          //n = n[0]
+          let o = e
+          realNetworks.push(o)
+        }
+      }
+    })
+    return realNetworks
+  }
+
+  setNetwork = n => {
+    console.log(n)
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+
+    if (n) {
+      body.network.name = n
+      delete errors.networkName
+    }
+    else {
+      errors.networkName = 'error'
+    }
+    this.setState({body: body, errors: errors})
   }
 
   fetchRoles = async () => {
     let rest = new Rest(
       "GET",
       resp => {
-        //this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
+        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
         this.props.dispatch(setError(error))
@@ -153,22 +230,16 @@ class Add extends React.Component {
     this.setState({body: body})
   }
 
-  addPermission = async () => {
+  addNewDn = async () => {
+    console.log('cicciput')
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
-
-    this.setState({message: null});
-
+    let r
     const b = {
       "data":
         {
-          "identity_group_name": this.state.body.name,
-          "identity_group_identifier": this.state.body.dn,
-          "role": this.state.body.role,
-          "partition": {
-              "name": this.state.body.partition,
-              "id_asset": this.state.body.assetId
-          }
+          "name": body.cn,
+          "identity_group_identifier": body.dn
         }
       }
 
@@ -177,7 +248,62 @@ class Add extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        //this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
+        r = resp
+        this.setState({loading: false, success: true})
+      },
+      error => {
+        r = error
+        this.setState({loading: false, success: false, error: error})
+      }
+    )
+    await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
+    return r
+  }
+
+  addPermission = async () => {
+
+    if (this.state.groupToAdd) {
+      console.log('devo aggiungernlo')
+      await this.addNewDn()
+    }
+
+    let body = Object.assign({}, this.state.body);
+    let errors = Object.assign({}, this.state.errors);
+
+    this.setState({message: null});
+    console.log(body)
+
+    const b = {
+      "data":
+        {
+          "identity_group_name": this.state.body.cn,
+          "identity_group_identifier": this.state.body.dn,
+          "role": this.state.body.role,
+          "network": {
+              "name": "10.8.0.0/17",
+              "id_asset": this.state.body.assetId
+          }
+        }
+      }
+
+    /*
+    const b = {
+      "data": {
+        "identity_group_name": "groupAdmin",
+        "identity_group_identifier": "cn=groupadmin,cn=users,dc=lab,dc=local",
+        "role": "admin",
+        "network": {
+            "name": "10.8.0.0/17",
+            "id_asset": 1
+        }
+      }
+    }
+    */
+    this.setState({loading: true})
+
+    let rest = new Rest(
+      "POST",
+      resp => {
         this.success()
       },
       error => {
@@ -189,52 +315,6 @@ class Add extends React.Component {
 
   }
 
-  fetchPermissions = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        //this.props.dispatch(setPermissions(resp))
-        //this.permissionsInRows()
-        },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
-      }
-    )
-    await rest.doXHR(`infoblox/permissions/`, this.props.token)
-  }
-
-  permissionsInRows = () => {
-
-    let permissions = Object.assign([], this.props.infobloxPermissions)
-    let list = []
-
-    for ( let p in permissions) {
-      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
-      let permissionId = permissions[p].id
-      let name = permissions[p].identity_group_name
-      let dn = permissions[p].identity_group_identifier
-      let role = permissions[p].role
-      let assetId = permissions[p].partition.asset_id
-      let partition = permissions[p].partition.name
-      let fqdn = asset.fqdn
-      let address = asset.address
-
-      list.push({
-        permissionId: permissionId,
-        name: name,
-        dn: dn,
-        role: role,
-        assetId: assetId,
-        partition: partition,
-        fqdn: fqdn,
-        address: address
-      })
-    }
-    //this.props.dispatch(setInfobloxPermissionsBeauty(list))
-  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -242,6 +322,7 @@ class Add extends React.Component {
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -254,6 +335,8 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state.body)
+    console.log(this.state.groupToAdd)
     return (
       <Space direction='vertical'>
 
@@ -295,6 +378,7 @@ class Add extends React.Component {
                  options={this.state.options}
                  onSearch={this.onSearch}
                  onSelect={this.selectDn}
+                 onBlur={this.selectDn}
                  placeholder="cn=..."
                />
             </Form.Item>
@@ -314,15 +398,15 @@ class Add extends React.Component {
             </Form.Item>
 
             <Form.Item
-              label="Partition"
-              name="partition"
-              key="partition"
+              label="Networks"
+              name="networks"
+              key="networks"
             >
-              <Select id='partition' onChange={p => this.setPartition(p) }>
+              <Select id='networks' onChange={n => this.setNetwork(n) }>
                   <Select.Option  key={'any'} value={'any'}>any</Select.Option>
-                {this.state.partitions ? this.state.partitions.map((a, i) => {
+                {this.props.realNetworks ? this.props.realNetworks.map((a, i) => {
                 return (
-                  <Select.Option  key={i} value={a.name}>{a.name}</Select.Option>
+                  <Select.Option  key={i} value={a.network}>{a.network}</Select.Option>
                 )
               }) : null}
               </Select>
@@ -380,4 +464,7 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
+  permissions: state.infoblox.permissions,
+  assets: state.infoblox.assets,
+  realNetworks: state.infoblox.realNetworks
 }))(Add);
