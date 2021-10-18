@@ -233,7 +233,7 @@ class Add extends React.Component {
         address: address
       })
     }
-    this.props.dispatch(setF5PermissionsBeauty(list))
+    this.props.dispatch(setInfobloxPermissionsBeauty(list))
   }
 
   resetError = () => {
