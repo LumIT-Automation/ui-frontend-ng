@@ -195,7 +195,7 @@ class Add extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setF5Permissions(resp))
+        this.props.dispatch(setInfobloxPermissions(resp))
         this.permissionsInRows()
         },
       error => {
