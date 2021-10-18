@@ -60,17 +60,14 @@ class Manager extends React.Component {
 
   main = async () => {
     let assets = await this.fetchAssets()
-    this.props.dispatch(setAssetsLoading(false))
+    this.props.dispatch(setAssets( assets ))
 
     let permissions = await this.fetchPermissions()
-    this.props.dispatch(setPermissionsLoading(false))
 
-    this.props.dispatch(setAssets( assets ))
-    this.props.dispatch(setPermissions(permissions))
+    this.addAssetDetails(permissions)
   }
 
   fetchPermissions = async () => {
-    console.log('fetchPermissions')
     let r
     this.props.dispatch(setPermissionsLoading(true))
     let rest = new Rest(
@@ -88,9 +85,7 @@ class Manager extends React.Component {
   }
 
   fetchAssets = async () => {
-    console.log('fetchAssets')
     let r
-    this.props.dispatch(setAssetsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -105,6 +100,25 @@ class Manager extends React.Component {
     return r
   }
 
+  addAssetDetails = (perm) => {
+    let permissions = Object.assign({}, perm.data.items)
+    let assets = Object.assign({}, this.props.assets)
+
+    permissions = JSON.parse(JSON.stringify(permissions))
+    assets = JSON.parse(JSON.stringify(assets))
+    assets = Object.assign([], assets)
+
+    for (const [key, value] of Object.entries(permissions)) {
+      const asset = assets.find(a => a.id === value.network.asset_id)
+      value.asset = asset
+    }
+    permissions = Object.assign([], permissions)
+
+    this.props.dispatch(setPermissions(permissions))
+    this.props.dispatch(setPermissionsLoading(false))
+
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -112,6 +126,7 @@ class Manager extends React.Component {
 
 
   render() {
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -141,8 +156,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
   authorizations: state.authorizations.infoblox,
-
+  assets: state.infoblox.assets,
   permissions: state.infoblox.permissions,
   permissionsFetch: state.infoblox.permissionsFetch,
-
 }))(Manager);

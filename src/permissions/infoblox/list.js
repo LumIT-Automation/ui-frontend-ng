@@ -27,7 +27,6 @@ class List extends React.Component {
   }
 
   componentDidMount() {
-    this.addAssetDetails()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,23 +37,6 @@ class List extends React.Component {
   }
 
   componentWillUnmount() {
-  }
-
-  addAssetDetails = () => {
-
-    let permissions = Object.assign({}, this.props.permissions)
-    let assets = Object.assign({}, this.props.assets)
-
-    permissions = JSON.parse(JSON.stringify(permissions))
-    assets = JSON.parse(JSON.stringify(assets))
-    assets = Object.assign([], assets)
-
-    for (const [key, value] of Object.entries(permissions)) {
-      const asset = assets.find(a => a.id === value.network.asset_id)
-      value.asset = asset
-    }
-    permissions = Object.assign([], permissions)
-    this.setState({permissions: permissions})
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -225,7 +207,7 @@ class List extends React.Component {
         <br/>
         <Table
           columns={columns}
-          dataSource={this.state.permissions}
+          dataSource={this.props.permissions}
           bordered
           rowKey="permissionId"
           //pagination={false}

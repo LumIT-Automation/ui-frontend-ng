@@ -71,8 +71,6 @@ class Delete extends React.Component {
 
 
   render() {
-    console.log(this.props.obj)
-
     return (
       <Space direction='vertical'>
 

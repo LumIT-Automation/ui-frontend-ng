@@ -49,7 +49,6 @@ class Permissions extends React.Component {
   }
 
   f5PermissionsRefresh = () => {
-    console.log('eeee')
     this.props.dispatch(f5PermissionsRefresh(true))
   }
 

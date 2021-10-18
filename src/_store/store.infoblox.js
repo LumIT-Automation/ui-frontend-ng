@@ -9,7 +9,7 @@ const infobloxSlice = createSlice({
         state.permissionsLoading = action.payload
       },
       setPermissions: (state, action) => {
-        state.permissions = action.payload.data.items
+        state.permissions = action.payload
       },
       setPermissionsFetch: (state, action) => {
         state.permissionsFetch = action.payload
