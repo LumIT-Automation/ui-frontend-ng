@@ -2,6 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
+import { setError } from '../../_store/store.error'
 
 import { Modal, Button, Space, Table, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
