@@ -49,6 +49,7 @@ class Permissions extends React.Component {
   }
 
   f5PermissionsRefresh = () => {
+    console.log('eeee')
     this.props.dispatch(f5PermissionsRefresh(true))
   }
 
@@ -67,14 +68,14 @@ class Permissions extends React.Component {
             <SuperAdmin/>
           </TabPane>
           { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
-            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
+            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsRefresh()}/></span>>
               {this.props.f5PermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <F5/> }
             </TabPane>
             :
             null
           }
           { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
-            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxAssetsRefresh()}/></span>>
+            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsRefresh()}/></span>>
               {this.props.infobloxPermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
             </TabPane>
             :

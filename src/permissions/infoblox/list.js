@@ -27,6 +27,7 @@ class List extends React.Component {
   }
 
   componentDidMount() {
+    this.addAssetDetails()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -39,6 +40,22 @@ class List extends React.Component {
   componentWillUnmount() {
   }
 
+  addAssetDetails = () => {
+
+    let permissions = Object.assign({}, this.props.permissions)
+    let assets = Object.assign({}, this.props.assets)
+
+    permissions = JSON.parse(JSON.stringify(permissions))
+    assets = JSON.parse(JSON.stringify(assets))
+    assets = Object.assign([], assets)
+
+    for (const [key, value] of Object.entries(permissions)) {
+      const asset = assets.find(a => a.id === value.network.asset_id)
+      value.asset = asset
+    }
+    permissions = Object.assign([], permissions)
+    this.setState({permissions: permissions})
+  }
 
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -118,8 +135,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-
-
   resetError = () => {
     this.setState({ error: null})
   }
@@ -145,23 +160,23 @@ class List extends React.Component {
       {
         title: 'Asset',
         align: 'center',
-        dataIndex: 'fqdn',
+        dataIndex: ['asset', 'fqdn' ],
         key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
+        ...this.getColumnSearchProps(['asset', 'fqdn' ]),
       },
       {
         title: 'Address',
         align: 'center',
-        dataIndex: 'address',
+        dataIndex: ['asset', 'address' ],
         key: 'address',
-        ...this.getColumnSearchProps('address'),
+        ...this.getColumnSearchProps(['asset', 'address' ]),
       },
       {
         title: 'Network',
         align: 'center',
         dataIndex: ['network', 'name' ],
         key: 'network',
-        ...this.getColumnSearchProps('network'),
+        ...this.getColumnSearchProps(['network', 'name' ]),
       },
       {
         title: <RolesDescription/>,
@@ -210,7 +225,7 @@ class List extends React.Component {
         <br/>
         <Table
           columns={columns}
-          dataSource={this.props.permissions}
+          dataSource={this.state.permissions}
           bordered
           rowKey="permissionId"
           //pagination={false}

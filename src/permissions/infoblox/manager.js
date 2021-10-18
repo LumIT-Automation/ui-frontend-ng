@@ -40,7 +40,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.permissions) {
-      this.fetchPermissions()
+      this.main()
     }
   }
 
@@ -50,7 +50,7 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.permissionsFetch) {
-      this.fetchPermissions()
+      this.main()
       this.props.dispatch(setPermissionsFetch(false))
     }
   }
@@ -58,38 +58,51 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
+  main = async () => {
+    let assets = await this.fetchAssets()
+    this.props.dispatch(setAssetsLoading(false))
+
+    let permissions = await this.fetchPermissions()
+    this.props.dispatch(setPermissionsLoading(false))
+
+    this.props.dispatch(setAssets( assets ))
+    this.props.dispatch(setPermissions(permissions))
+  }
 
   fetchPermissions = async () => {
     console.log('fetchPermissions')
+    let r
     this.props.dispatch(setPermissionsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setPermissions(resp))
-        this.fetchAssets()
-        },
+        r = resp
+      },
       error => {
+        r = error
         this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`infoblox/permissions/`, this.props.token)
-    this.props.dispatch(setPermissionsLoading(false))
+    return r
   }
 
   fetchAssets = async () => {
     console.log('fetchAssets')
+    let r
     this.props.dispatch(setAssetsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssets( resp ))
+        r = resp
       },
       error => {
+        r = error
         this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
-    this.props.dispatch(setAssetsLoading(false))
+    return r
   }
 
   resetError = () => {
@@ -99,7 +112,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.permissions)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
