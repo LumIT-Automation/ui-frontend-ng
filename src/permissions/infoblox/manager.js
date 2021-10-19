@@ -21,9 +21,9 @@ import List from './list'
 import Add from './add'
 
 import { Table, Input, Button, Space, Spin, Divider } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { LoadingOutlined } from '@ant-design/icons';
 
-
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 /*
 
 */
@@ -61,6 +61,7 @@ class Manager extends React.Component {
   }
 
   main = async () => {
+    this.props.dispatch(setPermissionsLoading(true))
     let assets = await this.fetchAssets()
     this.props.dispatch(setAssets( assets ))
 
@@ -71,6 +72,7 @@ class Manager extends React.Component {
     let permissions = await this.fetchPermissions()
 
     this.addAssetDetails(permissions)
+    this.props.dispatch(setPermissionsLoading(false))
   }
 
   fetchAssets = async () => {
@@ -107,7 +109,6 @@ class Manager extends React.Component {
 
   fetchPermissions = async () => {
     let r
-    this.props.dispatch(setPermissionsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -124,7 +125,7 @@ class Manager extends React.Component {
 
 
 
-  addAssetDetails = (perm) => {
+  addAssetDetails = async (perm) => {
     let permissions = Object.assign({}, perm.data.items)
     let assets = Object.assign({}, this.props.assets)
 
@@ -139,8 +140,8 @@ class Manager extends React.Component {
     permissions = Object.assign([], permissions)
 
     this.props.dispatch(setPermissions(permissions))
-    this.props.dispatch(setPermissionsLoading(false))
-
+    console.log('finish')
+    return
   }
 
 
@@ -152,20 +153,25 @@ class Manager extends React.Component {
 
 
   render() {
-
+    console.log(this.props.permissionsLoading)
+    console.log(this.props.permissions)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
+        {this.props.permissionsLoading ?
+          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+          :
+          <React.Fragment>
+            { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+              <Add/>
+              :
+              null
+            }
 
-      { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-          <Add/>
-        :
-        null
-      }
+            <List/>
 
-        <div>
-          <List/>
-        </div>
+          </React.Fragment>
+        }
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
@@ -182,4 +188,5 @@ export default connect((state) => ({
   assets: state.infoblox.assets,
   permissions: state.infoblox.permissions,
   permissionsFetch: state.infoblox.permissionsFetch,
+  permissionsLoading: state.infoblox.permissionsLoading,
 }))(Manager);

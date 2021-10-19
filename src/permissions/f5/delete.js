@@ -5,16 +5,15 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
+import { setPermissionsFetch } from '../../_store/store.f5'
 
-import { Button, Space, Modal, Result, Spin, Row, Col } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 
-/*
 
-*/
 
 class Delete extends React.Component {
 
@@ -49,61 +48,16 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => {this.fetchPermissions()})
+        this.setState({loading: false, success: true}, () => this.props.dispatch(setPermissionsFetch(true)) )
       },
       error => {
         this.props.dispatch(setError(error))
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/permission/${this.props.obj.permissionId}/`, this.props.token )
+    await rest.doXHR(`f5/permission/${this.props.obj.id}/`, this.props.token )
   }
 
-  fetchPermissions = async () => {
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setF5Permissions(resp))
-        this.permissionsInRows()
-        },
-      error => {
-        this.setState({loading: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/permissions/`, this.props.token)
-  }
-
-  permissionsInRows = () => {
-    let permissions = Object.assign([], this.props.f5Permissions)
-    let list = []
-
-    for ( let p in permissions) {
-      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
-      let permissionId = permissions[p].id
-      let name = permissions[p].identity_group_name
-      let dn = permissions[p].identity_group_identifier
-      let role = permissions[p].role
-      let assetId = permissions[p].partition.asset_id
-      let partition = permissions[p].partition.name
-      let fqdn = asset.fqdn
-      let address = asset.address
-
-      list.push({
-        permissionId: permissionId,
-        name: name,
-        dn: dn,
-        role: role,
-        assetId: assetId,
-        partition: partition,
-        fqdn: fqdn,
-        address: address
-      })
-    }
-    this.props.dispatch(setF5PermissionsBeauty(list))
-  }
 
   resetError = () => {
     this.setState({ error: null})
@@ -122,10 +76,7 @@ class Delete extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button type="primary" danger onClick={() => this.details()}>
-          Delete Permission
-        </Button>
-
+        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
           title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
@@ -137,7 +88,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={antIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
           {!this.state.loading && this.state.success &&
             <Result
                status="success"
@@ -181,7 +132,4 @@ class Delete extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  assets: state.f5.assets,
-  f5Permissions: state.permissions.f5Permissions,
-  f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
 }))(Delete);

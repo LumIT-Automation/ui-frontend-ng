@@ -58,7 +58,6 @@ class Permissions extends React.Component {
 
 
   render() {
-    console.log(this.props.infobloxPermissionsLoading)
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
@@ -68,14 +67,14 @@ class Permissions extends React.Component {
           </TabPane>
           { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
             <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsRefresh()}/></span>>
-              {this.props.f5PermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <F5/> }
+              <F5/>
             </TabPane>
             :
             null
           }
           { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
             <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsRefresh()}/></span>>
-              {this.props.infobloxPermissionsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
+              <Infoblox/>
             </TabPane>
             :
             null
@@ -94,6 +93,4 @@ export default connect((state) => ({
  	error: state.error.error,
   f5Auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
-  f5PermissionsLoading: state.f5.permissionsLoading,
-  infobloxPermissionsLoading: state.infoblox.permissionsLoading
 }))(Permissions);

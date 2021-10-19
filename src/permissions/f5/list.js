@@ -6,17 +6,14 @@ import Rest from "../../_helpers/Rest";
 
 import { setError } from '../../_store/store.error'
 
-import { Table, Input, Button, Space, Spin, Form } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-
 import RolesDescription from './rolesDescription'
 import Modify from './modify'
 import Delete from './delete'
 
-/*
+import { Table, Input, Button, Space, Spin, Form } from 'antd';
+import Highlighter from 'react-highlight-words';
+import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
-*/
 
 
 class List extends React.Component {
@@ -122,8 +119,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-
-
   resetError = () => {
     this.setState({ error: null})
   }
@@ -135,37 +130,37 @@ class List extends React.Component {
       {
         title: 'AD group name',
         align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
+        dataIndex: 'identity_group_name',
+        key: 'identity_group_name',
+        ...this.getColumnSearchProps('identity_group_name'),
       },
       {
         title: 'Distinguished name',
         align: 'center',
-        dataIndex: 'dn',
-        key: 'dn',
-        ...this.getColumnSearchProps('dn'),
+        dataIndex: 'identity_group_identifier',
+        key: 'identity_group_identifier',
+        ...this.getColumnSearchProps('identity_group_identifier'),
       },
       {
         title: 'Asset',
         align: 'center',
-        dataIndex: 'fqdn',
+        dataIndex: ['asset', 'fqdn' ],
         key: 'fqdn',
-        ...this.getColumnSearchProps('fqdn'),
+        ...this.getColumnSearchProps(['asset', 'fqdn' ]),
       },
       {
         title: 'Address',
         align: 'center',
-        dataIndex: 'address',
+        dataIndex: ['asset', 'address' ],
         key: 'address',
-        ...this.getColumnSearchProps('address'),
+        ...this.getColumnSearchProps(['asset', 'address' ]),
       },
       {
         title: 'Partitions',
         align: 'center',
-        dataIndex: 'partition',
+        dataIndex: ['partition', 'name' ],
         key: 'partition',
-        ...this.getColumnSearchProps('partition'),
+        ...this.getColumnSearchProps(['partition', 'name' ]),
       },
       {
         title: <RolesDescription/>,
@@ -214,7 +209,7 @@ class List extends React.Component {
         <br/>
         <Table
           columns={columns}
-          dataSource={this.props.f5PermissionsBeauty}
+          dataSource={this.props.permissions}
           bordered
           rowKey="permissionId"
           //pagination={false}
@@ -232,5 +227,5 @@ export default connect((state) => ({
  	error: state.error.error,
   assets: state.f5.assets,
   authorizations: state.authorizations.f5,
-  f5PermissionsBeauty: state.permissions.f5PermissionsBeauty
+  permissions: state.f5.permissions
 }))(List);

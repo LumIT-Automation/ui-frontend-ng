@@ -5,18 +5,23 @@ import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 
 import { setError } from '../../_store/store.error'
-import { setIdentityGroups, setIgIdentifiers } from '../../_store/store.authorizations'
-import { setF5Permissions, setF5PermissionsBeauty } from '../../_store/store.permissions'
-import { setAssets, cleanUp } from '../../_store/store.f5'
+import {
+  setAssets,
+  setAssetsLoading,
+  setAssetsFetch,
+  setIdentityGroups,
+  setIdentityGroupsLoading,
+  setIdentityGroupsFetch,
+  setPermissions,
+  setPermissionsLoading,
+  setPermissionsFetch,
+} from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
-import AddGroup from './addGroup'
 
 import { Table, Input, Button, Space, Spin, Form } from 'antd';
-import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
-
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -26,7 +31,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 */
 
 
-class PermissionsTab extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
@@ -38,7 +43,9 @@ class PermissionsTab extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchIdentityGroups()
+    if (!this.props.permissions) {
+      this.main()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,9 +53,28 @@ class PermissionsTab extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.permissionsFetch) {
+      this.main()
+      this.props.dispatch(setPermissionsFetch(false))
+    }
   }
 
   componentWillUnmount() {
+  }
+
+  main = async () => {
+    this.props.dispatch(setPermissionsLoading(true))
+    let assets = await this.fetchAssets()
+    this.props.dispatch(setAssets( assets ))
+
+    let identityGroups = await this.fetchIdentityGroups()
+    this.props.dispatch(setIdentityGroups( identityGroups ))
+
+
+    let permissions = await this.fetchPermissions()
+
+    this.addAssetDetails(permissions)
+    this.props.dispatch(setPermissionsLoading(false))
   }
 
 
@@ -56,127 +82,114 @@ class PermissionsTab extends React.Component {
     this.setState({ error: null})
   }
 
-  fetchIdentityGroups = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setIdentityGroups( resp ))
-        this.props.dispatch(setIgIdentifiers(resp))
-        this.fetchAssets()
-      },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
-      }
-    )
-    await rest.doXHR("f5/identity-groups/", this.props.token)
-  }
-
   fetchAssets = async () => {
-    this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setAssets( resp ))
-        this.fetchPermissions()
+        r = resp
       },
       error => {
+        r = error
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
+    return r
   }
 
-  fetchPermissions = async () => {
-    console.log('permissions')
-    this.setState({loading: true})
+  fetchIdentityGroups  = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
-        this.setState({loading: false})
-        this.props.dispatch(setF5Permissions(resp))
-        this.permissionsInRows()
-        },
+        r = resp
+      },
       error => {
+        r = error
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
+  }
+
+  fetchPermissions = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`f5/permissions/`, this.props.token)
+    return r
   }
 
-  permissionsInRows = () => {
 
-    let permissions = Object.assign([], this.props.f5Permissions)
-    let superAdmins = Object.assign([], this.props.superAdmins)
 
-    let list = []
+  addAssetDetails = async (perm) => {
+    let permissions = Object.assign({}, perm.data.items)
+    let assets = Object.assign({}, this.props.assets)
 
-    for ( let p in permissions) {
-      let dn = permissions[p].identity_group_identifier
+    permissions = JSON.parse(JSON.stringify(permissions))
+    assets = JSON.parse(JSON.stringify(assets))
+    assets = Object.assign([], assets)
 
-      if (superAdmins.find(s => s.dn === dn) ) {
-        continue
-      }
-      let asset = this.props.assets.find(a => a.id === permissions[p].partition.asset_id)
-      let permissionId = permissions[p].id
-      let name = permissions[p].identity_group_name
-      let role = permissions[p].role
-      let assetId = permissions[p].partition.asset_id
-      let partition = permissions[p].partition.name
-      let fqdn = asset.fqdn
-      let address = asset.address
-
-      list.push({
-        permissionId: permissionId,
-        name: name,
-        dn: dn,
-        role: role,
-        assetId: assetId,
-        partition: partition,
-        fqdn: fqdn,
-        address: address
-      })
+    for (const [key, value] of Object.entries(permissions)) {
+      const asset = assets.find(a => a.id === value.partition.asset_id)
+      value.asset = asset
     }
-    this.props.dispatch(setF5PermissionsBeauty(list))
+    permissions = Object.assign([], permissions)
+
+    this.props.dispatch(setPermissions(permissions))
+    console.log('finish')
+    return
   }
+
+
+
+
+
+
 
 
   render() {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+        <br/>
+        {this.props.permissionsLoading ?
+          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+          :
+          <React.Fragment>
+            { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+              <Add/>
+              :
+              null
+            }
 
-      { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-        <div>
-          <br/>
-          <Add/>
-          <AddGroup />
-        </div>
-        : null }
+            <List/>
 
-        {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.f5PermissionsBeauty}/> }
+          </React.Fragment>
+        }
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
-
     )
   }
 }
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
-  assets: state.f5.assets,
+  error: state.error.error,
   authorizations: state.authorizations.f5,
-  identityGroups: state.authorizations.identityGroups,
-  igIdentifiers: state.authorizations.igIdentifiers,
-  f5Permissions: state.permissions.f5Permissions,
-  f5PermissionsBeauty: state.permissions.f5PermissionsBeauty,
-  superAdmins: state.permissions.superAdminsPermissionsBeauty
-}))(PermissionsTab);
+  assets: state.f5.assets,
+  permissions: state.f5.permissions,
+  permissionsFetch: state.f5.permissionsFetch,
+  permissionsLoading: state.f5.permissionsLoading,
+}))(Manager);

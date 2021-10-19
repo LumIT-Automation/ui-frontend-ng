@@ -21,10 +21,20 @@ const f5Slice = createSlice({
           state.permissionsLoading = action.payload
         },
         setPermissions: (state, action) => {
-          state.permissions = action.payload.data.items
+          state.permissions = action.payload
         },
         setPermissionsFetch: (state, action) => {
           state.permissionsFetch = action.payload
+        },
+
+        setIdentityGroupsLoading: (state, action) => {
+          state.identityGroupsLoading = action.payload
+        },
+        setIdentityGroups: (state, action) => {
+          state.identityGroups = action.payload.data.items
+        },
+        setIdentityGroupsFetch: (state, action) => {
+          state.identityGroupsFetch = action.payload
         },
 
         setEnvironment: (state, action) => {
@@ -214,6 +224,10 @@ export const {
   setPermissionsLoading,
   setPermissions,
   setPermissionsFetch,
+
+  setIdentityGroupsLoading,
+  setIdentityGroups,
+  setIdentityGroupsFetch,
 
   setEnvironment,
 

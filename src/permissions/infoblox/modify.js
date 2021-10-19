@@ -269,8 +269,6 @@ class Modify extends React.Component {
     this.setState({body: body, errors: errors})
   }
 
-
-
   addNewDn = async () => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
@@ -500,5 +498,4 @@ export default connect((state) => ({
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
   assets: state.infoblox.assets,
-  realNetworks: state.infoblox.realNetworks
 }))(Modify);

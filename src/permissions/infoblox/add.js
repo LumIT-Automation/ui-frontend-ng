@@ -7,17 +7,14 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 import {
   setPermissionsFetch,
-  setRealNetworks,
-  setRealNetworksFetch,
 } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-/*
 
-*/
+
 
 const layout = {
   labelCol: { span: 6 },
@@ -293,7 +290,6 @@ class Add extends React.Component {
   }
 
   addPermission = async () => {
-
     if (this.state.groupToAdd) {
       await this.addNewDn()
     }
@@ -310,8 +306,8 @@ class Add extends React.Component {
           "identity_group_identifier": this.state.body.dn,
           "role": this.state.body.role,
           "network": {
-              "name": this.state.body.network.name,
-              "id_asset": this.state.body.assetId
+            "name": this.state.body.network.name,
+            "id_asset": this.state.body.assetId
           }
         }
       }
@@ -331,7 +327,6 @@ class Add extends React.Component {
     await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
 
   }
-
 
   resetError = () => {
     this.setState({ error: null})
