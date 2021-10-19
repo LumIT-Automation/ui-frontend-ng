@@ -73,16 +73,13 @@ class Add extends React.Component {
   }
 
   onSearch = (searchText) => {
-    let permissions = Object.assign([], this.props.permissions)
-    let gi = []
     let items = []
     let options = []
 
-    permissions.forEach(p => {
-      gi.push(p.identity_group_identifier)
+    let identityGroups = Object.assign([], this.props.identityGroups)
+    identityGroups.forEach( ig => {
+      items.push(ig.identity_group_identifier)
     })
-
-    items = gi.filter(this.onlyUnique);
 
     let matchFound = items.filter(a =>{
       return a.toLowerCase().includes(searchText.toLowerCase())
@@ -96,7 +93,6 @@ class Add extends React.Component {
       options: options,
       items: items,
     })
-
   }
 
   selectDn = e => {
@@ -106,30 +102,39 @@ class Add extends React.Component {
 
     if (e) {
       if (e.target) {
-        console.log('e.target.')
         dn = e.target.value
-        this.setState({groupToAdd: true})
       }
       else {
-        console.log('')
         dn = e
-        this.setState({groupToAdd: false})
       }
 
-      let list = dn.split(',')
-      let cns = []
+      if (this.state.items.includes(dn)) {
+        this.setState({groupToAdd: false})
+        body.dn = dn
+        let cn = this.props.identityGroups.find( ig => {
+          return ig.identity_group_identifier === dn
+        })
+        body.cn = cn.name
+        delete errors.dnError
+      }
+      else {
+        this.setState({groupToAdd: true})
+        let list = dn.split(',')
+        let cns = []
 
-      let found = list.filter(i => {
-        let iLow = i.toLowerCase()
-        if (iLow.startsWith('cn=')) {
-          let cn = iLow.split('=')
-          cns.push(cn[1])
-        }
-      })
+        let found = list.filter(i => {
+          let iLow = i.toLowerCase()
+          if (iLow.startsWith('cn=')) {
+            let cn = iLow.split('=')
+            cns.push(cn[1])
+          }
+        })
 
-      body.dn = dn
-      body.cn = cns[0]
-      delete errors.dnError
+        body.dn = dn
+        body.cn = cns[0]
+        delete errors.dnError
+      }
+
     }
     else {
       errors.dnError = 'error'
@@ -142,61 +147,6 @@ class Add extends React.Component {
     body.assetId = id
     body.network.id_asset = id
     this.setState({body: body}, () => this.fetchNetworks())
-  }
-
-  fetchNetworks = async () => {
-    let tree = await this.fetchTree()
-    this.setState({tree: tree})
-
-    let realNetworks = await this.filterRealNetworks()
-    this.props.dispatch(setRealNetworks( realNetworks ))
-  }
-
-  fetchTree = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data['/'].children
-      },
-      error => {
-        this.props.dispatch(setError( error ))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.state.body.assetId}/tree/`, this.props.token)
-    return r
-  }
-
-  filterRealNetworks = () => {
-    let realNetworks = []
-    let list = []
-
-    this.state.tree.forEach(e => {
-      if (e.extattrs["Real Network"]) {
-        if (e.extattrs["Real Network"].value === 'yes') {
-          //let n = e.network.split('/')
-          //n = n[0]
-          let o = e
-          realNetworks.push(o)
-        }
-      }
-    })
-    return realNetworks
-  }
-
-  setNetwork = n => {
-    console.log(n)
-    let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
-
-    if (n) {
-      body.network.name = n
-      delete errors.networkName
-    }
-    else {
-      errors.networkName = 'error'
-    }
-    this.setState({body: body, errors: errors})
   }
 
   fetchRoles = async () => {
@@ -230,8 +180,94 @@ class Add extends React.Component {
     this.setState({body: body})
   }
 
+  fetchNetworks = async () => {
+    let nets = await this.fetchNets()
+    let containers = await this.fetchContainers()
+    let networks = nets.concat(containers)
+    this.setState({nets: networks})
+  }
+
+  fetchNets = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError( error ))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.state.body.assetId}/networks/`, this.props.token)
+    return r
+  }
+
+  fetchContainers = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError( error ))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.state.body.assetId}/network-containers/`, this.props.token)
+    return r
+  }
+
+  onNetworkSearch = (searchText) => {
+    let items = []
+    let options = []
+
+    let networks = Object.assign([], this.state.nets)
+    networks.forEach( n => {
+      items.push(n.network)
+    })
+
+    let matchFound = items.filter(a =>{
+      return a.toLowerCase().includes(searchText.toLowerCase())
+    })
+
+    for(var i=0; i<matchFound.length; i++)  {
+      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
+    }
+
+    this.setState({
+      networkOptions: options,
+      items: items,
+    })
+  }
+
+  setNetwork = n => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+    let network
+
+    if (n) {
+      if (n.target) {
+        network = n.target.value
+      }
+      else {
+        network = n
+      }
+
+      if (this.state.items.includes(network)) {
+        body.network.name = network
+        delete errors.networkName
+      }
+      else {
+        errors.networkName = 'error'
+      }
+
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+
+
   addNewDn = async () => {
-    console.log('cicciput')
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
     let r
@@ -263,7 +299,6 @@ class Add extends React.Component {
   addPermission = async () => {
 
     if (this.state.groupToAdd) {
-      console.log('devo aggiungernlo')
       await this.addNewDn()
     }
 
@@ -271,7 +306,6 @@ class Add extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     this.setState({message: null});
-    console.log(body)
 
     const b = {
       "data":
@@ -280,7 +314,7 @@ class Add extends React.Component {
           "identity_group_identifier": this.state.body.dn,
           "role": this.state.body.role,
           "network": {
-              "name": "10.8.0.0/17",
+              "name": this.state.body.network.name,
               "id_asset": this.state.body.assetId
           }
         }
@@ -336,7 +370,6 @@ class Add extends React.Component {
 
   render() {
     console.log(this.state.body)
-    console.log(this.state.groupToAdd)
     return (
       <Space direction='vertical'>
 
@@ -398,21 +431,6 @@ class Add extends React.Component {
             </Form.Item>
 
             <Form.Item
-              label="Networks"
-              name="networks"
-              key="networks"
-            >
-              <Select id='networks' onChange={n => this.setNetwork(n) }>
-                  <Select.Option  key={'any'} value={'any'}>any</Select.Option>
-                {this.props.realNetworks ? this.props.realNetworks.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a.network}>{a.network}</Select.Option>
-                )
-              }) : null}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
               label="Role"
               name="role"
               key="role"
@@ -425,6 +443,27 @@ class Add extends React.Component {
               }) : null}
               </Select>
             </Form.Item>
+
+            {this.state.body.role === 'admin' ?
+              () => this.setNetwork('any')
+              :
+              <Form.Item
+                label="Networks"
+                name="networks"
+                key="networks"
+                validateStatus={this.state.errors.networkName}
+                help={this.state.errors.networkName ? 'Network not found' : null }
+              >
+                <AutoComplete
+                   options={this.state.networkOptions}
+                   onSearch={this.onNetworkSearch}
+                   onSelect={this.setNetwork}
+                   onBlur={this.setNetwork}
+                   placeholder="0.0.0.0/0"
+                 />
+              </Form.Item>
+            }
+
 
             {this.state.message ?
               <Form.Item
@@ -464,6 +503,7 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
+  identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
   assets: state.infoblox.assets,
   realNetworks: state.infoblox.realNetworks

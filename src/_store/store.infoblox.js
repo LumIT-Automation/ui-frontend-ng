@@ -15,6 +15,16 @@ const infobloxSlice = createSlice({
         state.permissionsFetch = action.payload
       },
 
+      setIdentityGroupsLoading: (state, action) => {
+        state.identityGroupsLoading = action.payload
+      },
+      setIdentityGroups: (state, action) => {
+        state.identityGroups = action.payload.data.items
+      },
+      setIdentityGroupsFetch: (state, action) => {
+        state.identityGroupsFetch = action.payload
+      },
+
       setEnvironment: (state, action) => {
         state.environment = action.payload
       },
@@ -89,6 +99,10 @@ export const {
   setPermissionsLoading,
   setPermissions,
   setPermissionsFetch,
+
+  setIdentityGroupsLoading,
+  setIdentityGroups,
+  setIdentityGroupsFetch,
 
   setEnvironment,
 

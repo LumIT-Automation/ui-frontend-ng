@@ -9,6 +9,9 @@ import {
   setAssets,
   setAssetsLoading,
   setAssetsFetch,
+  setIdentityGroups,
+  setIdentityGroupsLoading,
+  setIdentityGroupsFetch,
   setPermissions,
   setPermissionsLoading,
   setPermissionsFetch,
@@ -62,9 +65,45 @@ class Manager extends React.Component {
     let assets = await this.fetchAssets()
     this.props.dispatch(setAssets( assets ))
 
+    let identityGroups = await this.fetchIdentityGroups()
+    this.props.dispatch(setIdentityGroups( identityGroups ))
+
+
     let permissions = await this.fetchPermissions()
 
     this.addAssetDetails(permissions)
+  }
+
+  fetchAssets = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
+    return r
+  }
+
+  fetchIdentityGroups  = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR("infoblox/identity-groups/", this.props.token)
+    return r
   }
 
   fetchPermissions = async () => {
@@ -84,21 +123,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchAssets = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
-      }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
-    return r
-  }
+
 
   addAssetDetails = (perm) => {
     let permissions = Object.assign({}, perm.data.items)
