@@ -5,18 +5,22 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setPermissionsFetch } from '../../_store/store.infoblox'
+import {
+  setPermissionsFetch,
+  setRealNetworks,
+  setRealNetworksFetch,
+} from '../../_store/store.infoblox'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
-
+import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
+/*
 
-
+*/
 
 const layout = {
-  labelCol: { span: 8 },
+  labelCol: { span: 6 },
   wrapperCol: { span: 12 },
 };
 
@@ -35,9 +39,15 @@ class Modify extends React.Component {
     this.state = {
       visible: false,
       error: null,
-      errors: {},
+      errors: {
+      },
       message:'',
-      body: {}
+      groupToAdd: false,
+      body: {
+        network: {
+
+        }
+      }
     };
   }
 
@@ -56,73 +66,91 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let body = Object.assign({}, this.props.obj)
+    let body = {}
+    body.cn = this.props.obj.identity_group_name
+    body.dn = this.props.obj.identity_group_identifier
+    body.role = this.props.obj.role
+    body.network = {}
+    body.network.name = this.props.obj.network.name
+    body.network.id_asset = this.props.obj.network.asset_id
     this.setState({body: body})
   }
 
-  setValues = () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+  onSearch = (searchText) => {
+    let items = []
+    let options = []
 
-    body.dn = this.props.obj.dn
-    body.name = this.props.obj.name
-    body.role = this.props.obj.role
-    body.assetId = this.props.obj.assetId
-    body.partition = this.props.obj.partition
-    delete errors.dnError
+    let identityGroups = Object.assign([], this.props.identityGroups)
+    identityGroups.forEach( ig => {
+      items.push(ig.identity_group_identifier)
+    })
 
-    this.setState({body: body, errors: errors}, () => {this.fetchAssetPartitions(this.state.body.assetId)})
+    let matchFound = items.filter(a =>{
+      return a.toLowerCase().includes(searchText.toLowerCase())
+    })
+
+    for(var i=0; i<matchFound.length; i++)  {
+      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
+    }
+
+    this.setState({
+      options: options,
+      items: items,
+    })
   }
 
-  setDistinguishedName = e => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+  selectDn = e => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+    let dn
 
-    switch(e.target.id) {
-      case 'dn':
-        if (e.target.value) {
-          let dn = e.target.value
-          let first = dn.split(",")
-          let name = first[0].split("=")
-          body.dn = e.target.value
-          body.name = name[1]
-          delete errors.dnError
-        }
-        else {
-          errors.dnError = 'error'
-        }
-        this.setState({body: body, errors: errors})
-        break
-      default:
+    if (e) {
+      if (e.target) {
+        dn = e.target.value
+      }
+      else {
+        dn = e
+      }
+
+      if (this.state.items.includes(dn)) {
+        this.setState({groupToAdd: false})
+        body.dn = dn
+        let cn = this.props.identityGroups.find( ig => {
+          return ig.identity_group_identifier === dn
+        })
+        body.cn = cn.name
+        delete errors.dnError
+      }
+      else {
+        this.setState({groupToAdd: true})
+        let list = dn.split(',')
+        let cns = []
+
+        let found = list.filter(i => {
+          let iLow = i.toLowerCase()
+          if (iLow.startsWith('cn=')) {
+            let cn = iLow.split('=')
+            cns.push(cn[1])
+          }
+        })
+
+        body.dn = dn
+        body.cn = cns[0]
+        delete errors.dnError
+      }
+
     }
+    else {
+      errors.dnError = 'error'
+    }
+    this.setState({body: body, errors: errors})
   }
 
   setAsset = id => {
-    let body = Object.assign({}, this.state.body);
+    let body = Object.assign({}, this.state.body)
     body.assetId = id
-    this.setState({body: body}, () => {this.fetchAssetPartitions(id)})
-  }
-
-  fetchAssetPartitions = async (id) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.setState({partitions: resp.data.items})
-      },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
-      }
-    )
-    await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
-  }
-
-  setPartition = partition => {
-    let body = Object.assign({}, this.state.body);
-    body.partition = partition
-    this.setState({body: body})
+    body.network.id_asset = id
+    this.setState({body: body}, () => this.fetchNetworks())
   }
 
   fetchRoles = async () => {
@@ -136,7 +164,7 @@ class Modify extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
   }
 
   beautifyPrivileges = () => {
@@ -156,7 +184,128 @@ class Modify extends React.Component {
     this.setState({body: body})
   }
 
+  fetchNetworks = async () => {
+    let nets = await this.fetchNets()
+    let containers = await this.fetchContainers()
+    let networks = nets.concat(containers)
+    this.setState({nets: networks})
+  }
+
+  fetchNets = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError( error ))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.state.body.assetId}/networks/`, this.props.token)
+    return r
+  }
+
+  fetchContainers = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError( error ))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.state.body.assetId}/network-containers/`, this.props.token)
+    return r
+  }
+
+  onNetworkSearch = (searchText) => {
+    let items = []
+    let options = []
+
+    let networks = Object.assign([], this.state.nets)
+    networks.forEach( n => {
+      items.push(n.network)
+    })
+
+    let matchFound = items.filter(a =>{
+      return a.toLowerCase().includes(searchText.toLowerCase())
+    })
+
+    for(var i=0; i<matchFound.length; i++)  {
+      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
+    }
+
+    this.setState({
+      networkOptions: options,
+      items: items,
+    })
+  }
+
+  setNetwork = n => {
+    let body = Object.assign({}, this.state.body)
+    let errors = Object.assign({}, this.state.errors)
+    let network
+
+    if (n) {
+      if (n.target) {
+        network = n.target.value
+      }
+      else {
+        network = n
+      }
+
+      if (this.state.items.includes(network)) {
+        body.network.name = network
+        delete errors.networkName
+      }
+      else {
+        errors.networkName = 'error'
+      }
+
+    }
+    this.setState({body: body, errors: errors})
+  }
+
+
+
+  addNewDn = async () => {
+    let body = Object.assign({}, this.state.body);
+    let errors = Object.assign({}, this.state.errors);
+    let r
+    const b = {
+      "data":
+        {
+          "name": body.cn,
+          "identity_group_identifier": body.dn
+        }
+      }
+
+    this.setState({loading: true})
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+        this.setState({loading: false, success: true})
+      },
+      error => {
+        r = error
+        this.setState({loading: false, success: false, error: error})
+      }
+    )
+    await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
+    return r
+  }
+
   modifyPermission = async () => {
+
+    if (this.state.groupToAdd) {
+      await this.addNewDn()
+    }
+
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
 
@@ -165,11 +314,11 @@ class Modify extends React.Component {
     const b = {
       "data":
         {
-          "identity_group_name": this.state.body.name,
+          "identity_group_name": this.state.body.cn,
           "identity_group_identifier": this.state.body.dn,
           "role": this.state.body.role,
-          "partition": {
-              "name": this.state.body.partition,
+          "network": {
+              "name": this.state.body.network.name,
               "id_asset": this.state.body.assetId
           }
         }
@@ -180,7 +329,6 @@ class Modify extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, success: true})
         this.success()
       },
       error => {
@@ -188,9 +336,10 @@ class Modify extends React.Component {
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/permission/${this.props.obj.permissionId}/`, this.props.token, b )
+    await rest.doXHR(`infoblox/permission/${this.props.obj.id}/`, this.props.token, b )
 
   }
+
 
   resetError = () => {
     this.setState({ error: null})
@@ -211,120 +360,130 @@ class Modify extends React.Component {
 
 
   render() {
-
+    console.log(this.state.body)
     return (
       <Space direction='vertical'>
 
-          <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
-          <Modal
-            title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
-            centered
-            destroyOnClose={true}
-            visible={this.state.visible}
-            footer={''}
-            onOk={() => this.setState({visible: true})}
-            onCancel={() => this.closeModal()}
-            width={750}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>MODIFY PERMISSION</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={750}
+        >
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !this.state.loading && this.state.success &&
+          <Result
+             status="success"
+             title="Modify"
+           />
+        }
+        { !this.state.loading && !this.state.success &&
+          <Form
+            {...layout}
+            name="basic"
+            initialValues={{
+              remember: true,
+              dn: this.state.body.dn,
+              role: this.state.body.role,
+              networks: this.state.body.network.name,
+            }}
+            onFinish={null}
+            onFinishFailed={null}
           >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.success &&
-            <Result
-               status="success"
-               title="Updated"
-             />
-          }
-          { !this.state.loading && !this.state.success &&
-            <Form
-              {...layout}
-              name="basic"
-              initialValues={{
-                remember: true,
-                dn: this.state.body.dn,
-                asset: this.state.body.assetId,
-                partition: this.state.body.partition,
-                role: this.state.body.role
-              }}
-              onFinish={null}
-              onFinishFailed={null}
+            <Form.Item
+              label="Distinguished Name"
+              name='dn'
+              key="dn"
             >
+              <AutoComplete
+                 options={this.state.options}
+                 onSearch={this.onSearch}
+                 onSelect={this.selectDn}
+                 onBlur={this.selectDn}
+                 placeholder="cn=..."
+               />
+            </Form.Item>
+
+            <Form.Item
+              label="Asset"
+              name='asset'
+              key="asset"
+            >
+              <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
+                {this.props.assets ? this.props.assets.map((a, i) => {
+                return (
+                  <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
+                )
+              }) : null}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Role"
+              name="role"
+              key="role"
+            >
+              <Select id='role' onFocus={() => this.fetchRoles()} onChange={r => this.setRole(r) }>
+                {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
+                return (
+                  <Select.Option  key={i} value={a}>{a}</Select.Option>
+                )
+              }) : null}
+              </Select>
+            </Form.Item>
+
+            {this.state.body.role === 'admin' ?
+              () => this.setNetwork('any')
+              :
               <Form.Item
-                label="Distinguished Name"
-                name="dn"
-                key="dn"
+                label="Networks"
+                name="networks"
+                key="networks"
+                validateStatus={this.state.errors.networkName}
+                help={this.state.errors.networkName ? 'Network not found' : null }
               >
-                {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
-                <Input id='dn' onBlur={e => this.setDistinguishedName(e)} />
+                <AutoComplete
+                   options={this.state.networkOptions}
+                   onSearch={this.onNetworkSearch}
+                   onSelect={this.setNetwork}
+                   onBlur={this.setNetwork}
+                   placeholder="0.0.0.0/0"
+                 />
+              </Form.Item>
+            }
+
+
+            {this.state.message ?
+              <Form.Item
+
+                name="message"
+                key="message"
+              >
+                <p style={{color: 'red'}}>{this.state.message}</p>
               </Form.Item>
 
-              <Form.Item
-                label="Asset"
-                name='asset'
-                key="asset"
-              >
-                <Select id='asset' onChange={id => this.setAsset(id) }>
-                  {this.props.assets ? this.props.assets.map((a, i) => {
-                  return (
-                    <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-                  )
-                }) : null}
-                </Select>
-              </Form.Item>
+              : null
+            }
 
-              <Form.Item
-                label="Partition"
-                name="partition"
-                key="partition"
-              >
-                <Select id='partition' onChange={p => this.setPartition(p) }>
-                  <Select.Option  key={'any'} value={'any'}>any</Select.Option>
-                  {this.state.partitions ? this.state.partitions.map((a, i) => {
-                  return (
-                    <Select.Option  key={i} value={a.name}>{a.name}</Select.Option>
-                  )
-                }) : null}
-                </Select>
-              </Form.Item>
+            <Form.Item
+              wrapperCol={ {offset: 6 }}
+              name="button"
+              key="button"
+            >
+              <Button type="primary" onClick={() => this.modifyPermission()}>
+                Modify Permission
+              </Button>
+            </Form.Item>
 
-              <Form.Item
-                label="Role"
-                name="role"
-                key="role"
-              >
-                <Select id='role' onFocus={() => this.fetchRoles()} onChange={r => this.setRole(r) }>
-                  {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                  return (
-                    <Select.Option  key={i} value={a}>{a}</Select.Option>
-                  )
-                }) : null}
-                </Select>
-              </Form.Item>
-
-              {this.state.message ?
-                <Form.Item
-
-                  name="message"
-                  key="message"
-                >
-                  <p style={{color: 'red'}}>{this.state.message}</p>
-                </Form.Item>
-
-                : null
-              }
-
-              <Form.Item
-                wrapperCol={ {offset: 8 }}
-                name="button"
-                key="button"
-              >
-                <Button type="primary" onClick={() => this.modifyPermission()}>
-                  Modify Permission
-                </Button>
-              </Form.Item>
-
-            </Form>
-          }
-          </Modal>
+          </Form>
+        }
+        </Modal>
 
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
@@ -338,6 +497,8 @@ class Modify extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  assets: state.f5.assets,
+  identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
+  assets: state.infoblox.assets,
+  realNetworks: state.infoblox.realNetworks
 }))(Modify);

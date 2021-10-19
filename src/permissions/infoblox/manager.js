@@ -19,7 +19,6 @@ import {
 
 import List from './list'
 import Add from './add'
-import AddGroup from './addGroup'
 
 import { Table, Input, Button, Space, Spin, Divider } from 'antd';
 import Highlighter from 'react-highlight-words';

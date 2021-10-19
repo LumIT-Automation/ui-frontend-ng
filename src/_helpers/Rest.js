@@ -265,6 +265,7 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
+                console.log('iiiii')
                 this.onError(
                   {
                     status: response.status,

@@ -68,10 +68,6 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
-  onlyUnique = (value, index, self) => {
-    return self.indexOf(value) === index;
-  }
-
   onSearch = (searchText) => {
     let items = []
     let options = []
@@ -320,19 +316,6 @@ class Add extends React.Component {
         }
       }
 
-    /*
-    const b = {
-      "data": {
-        "identity_group_name": "groupAdmin",
-        "identity_group_identifier": "cn=groupadmin,cn=users,dc=lab,dc=local",
-        "role": "admin",
-        "network": {
-            "name": "10.8.0.0/17",
-            "id_asset": 1
-        }
-      }
-    }
-    */
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -360,7 +343,6 @@ class Add extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
