@@ -350,7 +350,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.body)
+    console.log(this.state.nets)
     return (
       <Space direction='vertical'>
 
@@ -428,21 +428,27 @@ class Add extends React.Component {
             {this.state.body.role === 'admin' ?
               () => this.setNetwork('any')
               :
-              <Form.Item
-                label="Networks"
-                name="networks"
-                key="networks"
-                validateStatus={this.state.errors.networkName}
-                help={this.state.errors.networkName ? 'Network not found' : null }
-              >
-                <AutoComplete
-                   options={this.state.networkOptions}
-                   onSearch={this.onNetworkSearch}
-                   onSelect={this.setNetwork}
-                   onBlur={this.setNetwork}
-                   placeholder="0.0.0.0/0"
-                 />
-              </Form.Item>
+              <React.Fragment>
+                { this.state.nets ?
+                  <Form.Item
+                    label="Networks"
+                    name="networks"
+                    key="networks"
+                    validateStatus={this.state.errors.networkName}
+                    help={this.state.errors.networkName ? 'Network not found' : null }
+                  >
+                    <AutoComplete
+                       options={this.state.networkOptions}
+                       onSearch={this.onNetworkSearch}
+                       onSelect={this.setNetwork}
+                       onBlur={this.setNetwork}
+                       placeholder="0.0.0.0/0"
+                     />
+                  </Form.Item>
+                  :
+                  null
+                }
+              </React.Fragment>
             }
 
 
@@ -487,5 +493,4 @@ export default connect((state) => ({
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
   assets: state.infoblox.assets,
-  realNetworks: state.infoblox.realNetworks
 }))(Add);
