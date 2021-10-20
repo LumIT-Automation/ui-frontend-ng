@@ -83,6 +83,7 @@ class CertificatesManager extends React.Component {
 
 
   render() {
+    console.log(this.props.asset)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>

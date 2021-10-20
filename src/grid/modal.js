@@ -4,17 +4,19 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
+import { setError } from '../_store/store.error'
+
 import F5AssetSelector from './f5AssetSelector'
-import InfobloxAssetSelector from './infobloxAssetSelector'
+
 
 import CreateF5ervice from './createF5Service'
 import DeleteF5ervice from './deleteF5Service'
 import PoolMainenance from './poolMaintenance/manager'
 
-import InfoIp from './infoIp'
-import RequestIp from './requestIp'
-import ModifyIp from './modifyIp'
-import ReleaseIp from './releaseIp'
+import InfoIp from './infoblox/infoIp'
+import RequestIp from './infoblox/requestIp'
+import ModifyIp from './infoblox/modifyIp'
+import ReleaseIp from './infoblox/releaseIp'
 
 
 import { Space, Modal, Table, Result, List, Button, Divider, Alert } from 'antd';
@@ -175,7 +177,7 @@ class ModalCustom extends React.Component {
           :
           <React.Fragment>
             <div style={{margin: '0 300px'}}>
-              <InfobloxAssetSelector />
+
             </div>
 
           <Divider/>
@@ -198,7 +200,7 @@ class ModalCustom extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token, 
+  token: state.ssoAuth.token,
  	error: state.error.error,
   f5Asset: state.f5.asset,
   partition: state.f5.partition,

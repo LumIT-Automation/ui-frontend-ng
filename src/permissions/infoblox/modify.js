@@ -222,7 +222,7 @@ class Modify extends React.Component {
   }
 
   onNetworkSearch = (searchText) => {
-    let items = []
+    let items = ['any']
     let options = []
 
     let networks = Object.assign([], this.state.nets)
@@ -259,6 +259,10 @@ class Modify extends React.Component {
 
       if (this.state.items.includes(network)) {
         body.network.name = network
+        delete errors.networkName
+      }
+      else if (network === 'any') {
+        body.network.name = 'any'
         delete errors.networkName
       }
       else {

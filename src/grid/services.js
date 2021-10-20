@@ -10,6 +10,7 @@ import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 
 import ModalCustom from './modal'
 
+
 import { Space, Modal, Table, Result, List, Typography, Input, Button, Row, Col, Collapse } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
@@ -45,30 +46,6 @@ class Service extends React.Component {
       error: null,
       errors: {},
       message:'',
-      list: [
-        {
-          service: 'F5 - Create Service'
-        },
-        {
-          service: 'F5 - Delete Service'
-        },
-        {
-          service: 'F5 - Pool Maintenance'
-        },
-        {
-          service: 'INFOBLOX - Info IP'
-        },
-        {
-          service: 'INFOBLOX - Request IP'
-        },
-        {
-          service: 'INFOBLOX - Modify IP'
-        },
-        {
-          service: 'INFOBLOX - Release IP'
-        },
-      ],
-      body: {}
     };
   }
 
@@ -91,84 +68,6 @@ class Service extends React.Component {
 
   componentWillUnmount() {
   }
-
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = clearFilters => {
-    clearFilters();
-    this.setState({ searchText: '' });
-  };
 
   fetchF5Assets = async () => {
     this.setState({loading: true})
@@ -220,27 +119,6 @@ class Service extends React.Component {
 
 
   render() {
-    const columns = [
-      {
-        title: 'Service',
-        align: 'center',
-        dataIndex: 'service',
-        key: 'service',
-        ...this.getColumnSearchProps('service'),
-      },
-      {
-        title: 'Run',
-        align: 'center',
-        dataIndex: 'run',
-        key: 'run',
-        render: (name, obj)  => (
-          <Space size="small">
-            <ModalCustom name={name} obj={obj} />
-          </Space>
-        ),
-      },
-    ];
-
 
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -248,7 +126,7 @@ class Service extends React.Component {
 
           <Row>
             <Col offset={2} span={4}>
-              Info IP
+
             </Col>
             <Col offset={2} span={4}>
               Request IP

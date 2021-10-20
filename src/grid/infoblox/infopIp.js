@@ -3,14 +3,14 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
-
 import { setError } from '../_store/store.error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Divider, Table} from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import { Space, Modal, Table, Result, List, Button, Divider, Alert } from 'antd';
+
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { setWorkflowStatus } from '../_store/store.workflows'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -31,7 +31,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class RequestIp extends React.Component {
+class ModalCustom extends React.Component {
 
   constructor(props) {
     super(props);
@@ -40,6 +40,7 @@ class RequestIp extends React.Component {
       error: null,
       errors: {},
       message:'',
+      body: {}
     };
   }
 
@@ -51,6 +52,9 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.workflowStatus === 'created') {
+      this.success()
+    }
   }
 
   componentWillUnmount() {
@@ -98,18 +102,18 @@ class RequestIp extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
     //this.props.dispatch(setNodesLoading(false))
   }
-
   resetError = () => {
     this.setState({ error: null})
   }
 
   success = () => {
-    this.props.dispatch(setWorkflowStatus( 'created' ))
+    this.props.dispatch(setWorkflowStatus( '' ))
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -194,56 +198,89 @@ class RequestIp extends React.Component {
     ];
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <Space direction='vertical'>
 
-      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.success &&
-        <Table
-          columns={columns}
-          dataSource={this.state.ipInfo}
-          bordered
-          rowKey="ip"
-          pagination={false}
-          style={{marginBottom: 10}}
-        />
-      }
-      { !this.state.loading && !this.state.success &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
+        <Button type="primary" onClick={() => this.details()}>
+          INFO IP
+        </Button>
 
-          }}
-          onFinish={null}
-          onFinishFailed={null}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>INFO IP</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
         >
-          <Form.Item
-            label="IP address"
-            name='ip'
-            key="ip"
-            validateStatus={this.state.errors.ipError}
-            help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
-          >
-            <Input id='ip' onChange={e => this.setIp(e)} />
-          </Form.Item>
+          <React.Fragment>
+            <div style={{margin: '0 300px'}}>
+            </div>
 
-          <Form.Item
-            wrapperCol={ {offset: 8 }}
-            name="button"
-            key="button"
-          >
-            <Button type="primary" onClick={() => this.infoIp()}>
-              Info Ip
-            </Button>
-          </Form.Item>
+          <Divider/>
+          { ( this.props.infobloxAsset && this.props.infobloxAsset.id ) ?
+            <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        </Form>
-      }
-        {this.props.error ?
-          <Error error={this.props.error} visible={true} resetError={() => this.resetError()} />
-          :
-          <Error error={null} visible={false} />
-        }
+            { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <Table
+                columns={columns}
+                dataSource={this.state.ipInfo}
+                bordered
+                rowKey="ip"
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
+            }
+            { !this.state.loading && !this.state.success &&
+              <Form
+                {...layout}
+                name="basic"
+                initialValues={{
+
+                }}
+                onFinish={null}
+                onFinishFailed={null}
+              >
+                <Form.Item
+                  label="IP address"
+                  name='ip'
+                  key="ip"
+                  validateStatus={this.state.errors.ipError}
+                  help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
+                >
+                  <Input id='ip' onChange={e => this.setIp(e)} />
+                </Form.Item>
+
+                <Form.Item
+                  wrapperCol={ {offset: 8 }}
+                  name="button"
+                  key="button"
+                >
+                  <Button type="primary" onClick={() => this.infoIp()}>
+                    Info Ip
+                  </Button>
+                </Form.Item>
+
+              </Form>
+            }
+              {this.props.error ?
+                <Error error={this.props.error} visible={true} resetError={() => this.resetError()} />
+                :
+                <Error error={null} visible={false} />
+              }
+
+            </Space>
+            :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
+          </React.Fragment>
+
+        </Modal>
+
+
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </Space>
 
@@ -256,4 +293,4 @@ export default connect((state) => ({
  	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
-}))(RequestIp);
+}))(ModalCustom);
