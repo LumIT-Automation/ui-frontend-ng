@@ -110,6 +110,7 @@ class Concerto extends Component {
     )
 
     return (
+
       <Layout style={{overflow: 'initial'}}>
         <Header className="header">
           <div>
@@ -134,6 +135,7 @@ class Concerto extends Component {
                 style={{
                   margin: '3vh 0vw 0vh 0vw',
                   minHeight: '100vh',
+                  padding: '0 24px 24px'
                 }}
               >
                 <Switch>

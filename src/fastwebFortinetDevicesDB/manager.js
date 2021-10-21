@@ -121,7 +121,7 @@ class Manager extends React.Component {
 
   render() {
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+      <React.Fragment>
 
         { this.state.loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
@@ -136,7 +136,7 @@ class Manager extends React.Component {
         }
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
+      </React.Fragment>
 
     )
   }
