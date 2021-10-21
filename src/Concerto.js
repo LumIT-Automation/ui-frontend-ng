@@ -128,14 +128,13 @@ class Concerto extends Component {
         <BrowserRouter>
           <Layout>
             <CustomSider/>
-            <Layout style={{padding: '0 24px 24px'}}>
+              <Layout style={{padding: '0 24px 24px'}}>
 
               <Content
                 className="site-layout-background"
                 style={{
                   margin: '3vh 0vw 0vh 0vw',
                   minHeight: '100vh',
-                  padding: '0 24px 24px'
                 }}
               >
                 <Switch>

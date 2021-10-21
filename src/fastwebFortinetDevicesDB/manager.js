@@ -32,6 +32,7 @@ class Manager extends React.Component {
   componentDidMount() {
     //this.ullalla()
     this.fetchDevices()
+    //this.ullalla()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,39 +47,43 @@ class Manager extends React.Component {
 
 
   ullalla = () => {
-    let list = ["SERIALE",
-    "ID_PROGETTO",
-    "MODELLO",
-    "FIRMWARE",
-    "DESCRIZIONE",
-    "HA",
-    "VDOM",
-    "IP_MGMT",
-    "PORT_MGMT",
-    "REVERSE",
-    "INDIRIZZO",
-    "POSIZIONE",
-    "KEYMAKER",
-    "USERADMIN",
-    "PUBLIC_NET",
-    "CODICE_SERVIZIO",
-    "NOTE_APPARATO",
-    "ASSISTENZA",
-    "PROFILO",
-    "ATTIVAZIONE_ANNO",
-    "ATTIVAZIONE_MESE",
-    "DISK_STATUS",
-    "AUTENTICAZIONE",
-    "SERVIZI",
-    "ADDURL_MGMT",
-    "SNMP_COMMUNITY",
-    "SNMP_PORT",
-    "STATUS_APPARATO",
-    "BACKUP_SCRIPT",
-    "BACKUP_STATUS",
-    "BACKUP_TSTAMP",
-    "BACKUP_CHECKSUM",
-    "detail"]
+    let list = [        "SERIALE",
+        "ID_PROGETTO",
+        "MODELLO",
+        "FIRMWARE",
+        "DESCRIZIONE",
+        "HA",
+        "VDOM",
+        "IP_MGMT",
+        "PORT_MGMT",
+        "REVERSE",
+        "INDIRIZZO",
+        "POSIZIONE",
+        "KEYMAKER",
+        "USERADMIN",
+        "PUBLIC_NET",
+        "CODICE_SERVIZIO",
+        "NOTE_APPARATO",
+        "ASSISTENZA",
+        "PROFILO",
+        "ATTIVAZIONE_ANNO",
+        "ATTIVAZIONE_MESE",
+        "DISK_STATUS",
+        "AUTENTICAZIONE",
+        "SERVIZI",
+        "ADDURL_MGMT",
+        "SNMP_COMMUNITY",
+        "SNMP_PORT",
+        "STATUS_APPARATO",
+        "BACKUP_SCRIPT",
+        "BACKUP_STATUS",
+        "BACKUP_TSTAMP",
+        "BACKUP_CHECKSUM",
+        "comune",
+        "provincia",
+        "targa",
+        "regione",
+        "extra_data"]
 
     let out = []
 
@@ -86,6 +91,7 @@ class Manager extends React.Component {
       let o = {
         title: `${i}`,
         align: `center`,
+        width: 'auto',
         dataIndex: `${i}`,
         key: `${i}`,
         cippa: `...this.getColumnSearchProps('${i}')`,
