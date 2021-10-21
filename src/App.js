@@ -44,13 +44,12 @@ class App extends Component {
         username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
 
         if (token && username) {
-
           this.props.dispatch(login({
             authenticated: true,
             username: username,
             token: token
-          })
-        )
+            })
+          )
         }
         resolve()
       }
