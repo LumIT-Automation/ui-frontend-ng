@@ -360,7 +360,7 @@ class RequestIp extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        <Button type="primary" onClick={() => this.details()}>Run</Button>
+        <Button type="primary" onClick={() => this.details()}>REQUEST IP</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>REQUEST IP</p>}

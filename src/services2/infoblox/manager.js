@@ -43,7 +43,7 @@ class Manager extends React.Component {
     console.log(this.props.assets)
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+      <React.Fragment>
 
         <Row>
           <Row>
@@ -54,26 +54,26 @@ class Manager extends React.Component {
           <Divider/>
           <Row>
           </Row>
-          <Col>
-            Details IP
-          </Col>
-
-          <Col>
+          <Col span={4} offset={2} >
             <RequestIp/>
           </Col>
 
-          <Col>
-            Modify IP
+          <Col span={4} offset={2}>
+            <RequestIp/>
           </Col>
 
-          <Col>
-            Release IP
+          <Col span={4} offset={2}>
+            <RequestIp/>
+          </Col>
+
+          <Col span={4} offset={2}>
+            <RequestIp/>
           </Col>
         </Row>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
-      </Space>
+      </React.Fragment>
 
     )
   }

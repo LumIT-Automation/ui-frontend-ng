@@ -11,6 +11,7 @@ import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 import InfobloxManager from './infoblox/manager'
 
 import { Space, Row, Col, Collapse, Divider } from 'antd';
+const { Panel } = Collapse;
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -29,6 +30,9 @@ class Service extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
+    console.log(this.props.f5Authorizations)
+    console.log(this.props.f5Assets)
     if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
       if(!this.props.f5Assets) {
         this.fetchF5Assets()
@@ -46,6 +50,7 @@ class Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update')
   }
 
   componentWillUnmount() {
@@ -101,34 +106,35 @@ class Service extends React.Component {
 
 
   render() {
+    console.log(this.props.infobloxAssets)
+    console.log(this.props.f5Assets)
 
     return (
-      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
-        {this.props.infobloxAssets ?
-          <React.Fragment>
-            <Divider orientation="left" plain>
-              Infoblox
-            </Divider>
+        <Collapse defaultActiveKey={['1']} >
+          <Panel header="History" key="history" showArrow={false}>
             <InfobloxManager/>
-          </React.Fragment>
-          :
-          null
-        }
-        {this.props.f5Assets ?
-          <React.Fragment>
-            <Divider orientation="left" plain>
-              Infoblox
-            </Divider>
-            <InfobloxManager/>
-          </React.Fragment>
-          :
-          null
-        }
+          </Panel>
+          {this.props.infobloxAssets ?
+            <Panel header="IPAM" key="ipam" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+          {this.props.f5Assets ?
+            <Panel header="Load Balancers" key="loadBalancers" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+        </Collapse>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
-      </Space>
+      </React.Fragment>
 
     )
   }

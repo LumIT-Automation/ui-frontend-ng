@@ -98,6 +98,7 @@ class Concerto extends Component {
 
 
   render() {
+    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?
@@ -160,7 +161,11 @@ class Concerto extends Component {
                   }
 
                   <Route path='/services/' component={Service}/>
-                  <Route path='/services2/' component={Services2}/>
+                  { this.props.authorizations && (this.props.f5auth || this.props.authorizations.any)?
+                    <Route path='/services2/' component={Services2}/>
+                    :
+                    null
+                  }
                   <Route path='/assets/' component={Assets}/>
 
                   { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
