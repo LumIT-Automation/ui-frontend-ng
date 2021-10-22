@@ -124,7 +124,35 @@ class Service extends React.Component {
             null
           }
           {this.props.f5Assets ?
+            <Panel header="Switch" key="switch" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+          {this.props.f5Assets ?
+            <Panel header="Firewall" key="firewall" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+          {this.props.f5Assets ?
+            <Panel header="Virtual Machine" key="virtualMachine" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+          {this.props.f5Assets ?
             <Panel header="Load Balancers" key="loadBalancers" showArrow={false}>
+              <InfobloxManager/>
+            </Panel>
+            :
+            null
+          }
+          {this.props.f5Assets ?
+            <Panel header="Web application firewall" key="waf" showArrow={false}>
               <InfobloxManager/>
             </Panel>
             :

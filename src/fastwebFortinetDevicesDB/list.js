@@ -404,7 +404,7 @@ class List extends React.Component {
         <Table
           columns={columns}
           dataSource={this.props.devices}
-          scroll={{ x: 'auto'}}
+          scroll={{ x: 'auto', y: 570}}
           bordered
           rowKey="name"
           //pagination={false}

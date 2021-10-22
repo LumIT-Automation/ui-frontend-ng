@@ -11,7 +11,7 @@ import { setError } from '../../_store/store.error'
 import { Space, Modal, Form, Input, Result, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -41,6 +41,8 @@ class RequestIp extends React.Component {
       error: null,
       errors: {},
       message:'',
+      counter: 0,
+      requests: [],
       macAddress: '00:00:00:00:00:00',
       ipInfo: [],
       body: {
@@ -116,6 +118,22 @@ class RequestIp extends React.Component {
       }
     })
     return realNetworks
+  }
+
+  setRequests = () => {
+    let n = this.state.counter + 1
+    let r = {id: n}
+    let list = Object.assign([], this.state.requests)
+    list.push(r)
+    this.setState({requests: list, counter: n})
+  }
+
+  removeRequest = r => {
+    let list = Object.assign([], this.state.requests)
+    let newList = list.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({requests: newList})
   }
 
   setNetwork = async (value, e) => {
@@ -310,7 +328,39 @@ class RequestIp extends React.Component {
 
 
   render() {
-    console.log(this.state.realNetworks)
+
+    const requests = [
+      {
+        title: 'Network',
+        align: 'center',
+        dataIndex: 'network',
+        key: 'network',
+        render: (name, obj)  => (
+          <Select id='network'  style={{ width: '100%' }} onChange={(value, event) => this.setNetwork(value, event)}>
+            { this.state.realNetworks ?
+              this.state.realNetworks.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                )
+              })
+              :
+              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Remove request',
+        align: 'center',
+        dataIndex: 'remove',
+        key: 'remove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.removeRequest(obj)}>
+            -
+          </Button>
+        ),
+      },
+    ]
     const columns = [
       {
         title: 'IP address',
@@ -378,7 +428,7 @@ class RequestIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
             { !this.state.loading && this.state.success &&
               <Table
                 columns={columns}
@@ -484,6 +534,17 @@ class RequestIp extends React.Component {
 
               </Form>
             }
+            <Button type="primary" onClick={() => this.setRequests()}>
+              +
+            </Button>
+            <Table
+              columns={requests}
+              dataSource={this.state.requests}
+              bordered
+              rowKey="id"
+              pagination={false}
+              style={{marginBottom: 10}}
+            />
             </React.Fragment>
             :
             <Alert message="Asset and Partition not set" type="error" />
