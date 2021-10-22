@@ -336,7 +336,7 @@ class RequestIp extends React.Component {
         dataIndex: 'network',
         key: 'network',
         render: (name, obj)  => (
-          <Select id='network'  style={{ width: '100%' }} onChange={(value, event) => this.setNetwork(value, event)}>
+          <Select id='network' style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event)}>
             { this.state.realNetworks ?
               this.state.realNetworks.map((n, i) => {
               return (
@@ -344,9 +344,55 @@ class RequestIp extends React.Component {
                 )
               })
               :
-              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
             }
           </Select>
+        ),
+      },
+      {
+        title: 'Object Type',
+        align: 'center',
+        dataIndex: 'objectType',
+        key: 'objectType',
+        render: (name, obj)  => (
+          <Select id='network' style={{ width: '100%' }} onChange={e => this.setObjectType(e)}>
+            { this.state.objectTypes ?
+              this.state.objectTypes.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
+              :
+              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Server Name',
+        align: 'center',
+        dataIndex: 'serverName',
+        key: 'serverName',
+        render: (name, obj)  => (
+          <Input id='serverName' s style={{ width: '150px' }} onChange={e => this.setServerName(e)} />
+        ),
+      },
+      {
+        title: 'Mac address',
+        align: 'center',
+        dataIndex: 'macAddress',
+        key: 'macAddress',
+        render: (name, obj)  => (
+          <Input id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e)} />
+        ),
+      },
+      {
+        title: 'Reference',
+        align: 'center',
+        dataIndex: 'reference',
+        key: 'reference',
+        render: (name, obj)  => (
+          <Input id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e)} />
         ),
       },
       {
@@ -439,101 +485,7 @@ class RequestIp extends React.Component {
                 style={{marginBottom: 10}}
               />
             }
-            { !this.state.loading && !this.state.success &&
-              <Form
-                {...layout}
-                name="basic"
-                initialValues={{
-                  macAddress: '00:00:00:00:00:00'
-                }}
-                onFinish={null}
-                onFinishFailed={null}
-              >
 
-                <Form.Item
-                  label="Network"
-                  name='network'
-                  key="network"
-                  validateStatus={this.state.errors.networkError}
-                  help={this.state.errors.networkError ? 'Please select a valid network' : null }
-                >
-                <Select id='network' onChange={(value, event) => this.setNetwork(value, event)}>
-                { this.state.realNetworks ?
-                  this.state.realNetworks.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                    )
-                  })
-                  :
-                  null
-                }
-                </Select>
-                </Form.Item>
-
-                  <Form.Item
-                    label="Object Type"
-                    name='objectType'
-                    key="objectType"
-                    validateStatus={this.state.errors.objectTypeError}
-                    help={this.state.errors.objectTypeError ? 'Please input a valid object Type' : null }
-                  >
-                    <Select id='network' onChange={e => this.setObjectType(e)}>
-                    { this.state.objectTypes ?
-                      this.state.objectTypes.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                        )
-                      })
-                      :
-                      null
-                    }
-                    </Select>
-                  </Form.Item>
-
-                <Form.Item
-                  label="Server Name"
-                  name='serverName'
-                  key="serverName"
-                  validateStatus={this.state.errors.serverNameError}
-                  help={this.state.errors.serverNameError ? 'Please input a valid object Type' : null }
-                >
-                  <Input id='serverName' onChange={e => this.setServerName(e)} />
-                </Form.Item>
-
-                <Form.Item
-                  label="Mac Address"
-                  name='macAddress'
-                  key="macAddress"
-                  validateStatus={this.state.errors.macAddressError}
-                  help={this.state.errors.macAddressError ? 'Please input a valid object Type' : null }
-                >
-                  <Input id='macAddress' onChange={e => this.setMacAddress(e)} />
-                </Form.Item>
-
-
-
-                <Form.Item
-                  label="Reference"
-                  name='reference'
-                  key="reference"
-                  validateStatus={this.state.errors.referenceError}
-                  help={this.state.errors.referenceError ? 'Please input a valid object Type' : null }
-                >
-                  <Input id='reference' onChange={e => this.setReference(e)} />
-                </Form.Item>
-
-                <Form.Item
-                  wrapperCol={ {offset: 8 }}
-                  name="button"
-                  key="button"
-                >
-                  <Button type="primary" onClick={() => this.requestIp()}>
-                    Request Ip
-                  </Button>
-                </Form.Item>
-
-              </Form>
-            }
             <Button type="primary" onClick={() => this.setRequests()}>
               +
             </Button>
@@ -545,6 +497,9 @@ class RequestIp extends React.Component {
               pagination={false}
               style={{marginBottom: 10}}
             />
+            <Button type="primary" onClick={() => this.requestIp()}>
+              Request Ip
+            </Button>
             </React.Fragment>
             :
             <Alert message="Asset and Partition not set" type="error" />
