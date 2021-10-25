@@ -489,6 +489,8 @@ class RequestIp extends React.Component {
             <Button type="primary" onClick={() => this.setRequests()}>
               +
             </Button>
+            <br/>
+            <br/>
             <Table
               columns={requests}
               dataSource={this.state.requests}
@@ -497,7 +499,7 @@ class RequestIp extends React.Component {
               pagination={false}
               style={{marginBottom: 10}}
             />
-            <Button type="primary" onClick={() => this.requestIp()}>
+            <Button type="primary" style={{float: "right"}} onClick={() => this.requestIp()}>
               Request Ip
             </Button>
             </React.Fragment>
