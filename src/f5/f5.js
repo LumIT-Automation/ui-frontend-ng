@@ -111,35 +111,85 @@ class F5 extends React.Component {
 
           <Tabs type="card">
             { this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any) ?
+              <React.Fragment>
+              {this.props.nodesLoading ?
+              <TabPane key="Nodes" tab="Nodes">
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+              </TabPane>
+              :
               <TabPane key="Nodes" tab=<span>Nodes <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.nodesRefresh()}/></span>>
-                {this.props.nodesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Nodes/> }
+                <Nodes/>
               </TabPane>
-              : null
             }
+              </React.Fragment>
+              :
+              null
+            }
+
             { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
-                <TabPane key="Monitors" tab=<span>Monitors <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.monitorsRefresh()}/></span>>
-                {this.props.monitorsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Monitors/> }
+              <React.Fragment>
+              {this.props.monitorsLoading ?
+              <TabPane key="Monitors" tab="Monitors">
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
               </TabPane>
-              : null
+              :
+              <TabPane key="Monitors" tab=<span>Monitors <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.monitorsRefresh()}/></span>>
+                <Monitors/>
+              </TabPane>
             }
+              </React.Fragment>
+              :
+              null
+            }
+
             { this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any) ?
+              <React.Fragment>
+              {this.props.poolsLoading ?
+              <TabPane key="Pools" tab="Pools">
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+              </TabPane>
+              :
               <TabPane key="Pools" tab=<span>Pools <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.poolsRefresh()}/></span>>
-                {this.props.poolsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Pools/> }
+                <Pools/>
               </TabPane>
-              : null
             }
+              </React.Fragment>
+              :
+              null
+            }
+
             { this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any) ?
+              <React.Fragment>
+              {this.props.profilesLoading ?
+              <TabPane key="Profiles" tab="Profiles">
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+              </TabPane>
+              :
               <TabPane key="Profiles" tab=<span>Profiles <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.profilesRefresh()}/></span>>
-                {this.props.profilesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Profiles/> }
+                <Profiles/>
               </TabPane>
-              : null
             }
+              </React.Fragment>
+              :
+              null
+            }
+
             { this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any) ?
-              <TabPane key="Virtual Servers" tab=<span>Virtual Servers <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.virtualServersRefresh()}/></span>>
-                {this.props.virtualServersLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <VirtualServers/> }
+              <React.Fragment>
+              {this.props.virtualServersLoading ?
+              <TabPane key="Virtual Servers" tab="Virtual Servers">
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
               </TabPane>
-              : null
+              :
+              <TabPane key="Virtual Servers" tab=<span>Virtual Servers <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.virtualServersRefresh()}/></span>>
+                <VirtualServers/>
+              </TabPane>
             }
+              </React.Fragment>
+              :
+              null
+            }
+
             {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
               <TabPane tab="Certificates" key="4">
                 <CertificateAndKey/>
