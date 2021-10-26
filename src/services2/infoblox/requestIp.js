@@ -43,6 +43,7 @@ class RequestIp extends React.Component {
       message:'',
       counter: 0,
       requests: [],
+      response: [],
       macAddress: '00:00:00:00:00:00',
       ipInfo: [],
       body: {
@@ -74,37 +75,19 @@ class RequestIp extends React.Component {
 
   main = async () => {
     this.setState({networkLoading: true})
-    //let tree = await this.fetchTree()
-    //
-    //this.setState({tree: tree})
-
     let networks = await this.fetchNetworks()
-
-
     let containers = await this.fetchContainers()
-
-
     let realNetworks = await this.realNet(networks)
     let realContainers = await this.realCont(containers)
-
-
-
     let real = realNetworks.concat(realContainers)
-
-
     this.setState({real: real, networkLoading: false, networks: networks, containers: containers})
-    //this.setState({realNetworks: realNetworks})
-
   }
 
-
   fetchNetworks = async () => {
-    //this.props.dispatch(setNetworksLoading(true))
     let r
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch(setNetworks(resp))
         r = resp.data
       },
       error => {
@@ -114,16 +97,13 @@ class RequestIp extends React.Component {
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
     return r
-    //this.props.dispatch(setNetworksLoading(false))
   }
 
   fetchContainers = async () => {
-    //this.props.dispatch(setNetworksLoading(true))
     let r
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch(setNetworks(resp))
         r = resp.data
       },
       error => {
@@ -132,22 +112,6 @@ class RequestIp extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
-    return r
-    //this.props.dispatch(setNetworksLoading(false))
-  }
-
-  fetchTree = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data['/'].children
-      },
-      error => {
-        this.setState({error: error, ipLoading: false})
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
     return r
   }
 
@@ -162,7 +126,6 @@ class RequestIp extends React.Component {
         }
       }
     })
-
     return list
   }
 
@@ -178,13 +141,12 @@ class RequestIp extends React.Component {
         }
       }
     })
-
     return list
   }
 
   setRequests = () => {
     let n = this.state.counter + 1
-    let r = {id: n}
+    let r = {id: n, status: '', color: 'blue', macAddress: '00:00:00:00:00:00'}
     let list = Object.assign([], this.state.requests)
     list.push(r)
     this.setState({requests: list, counter: n})
@@ -199,51 +161,43 @@ class RequestIp extends React.Component {
   }
 
 
+  fetchNetwork = async network => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data[0]
+      },
+      error => {
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/`, this.props.token)
+    return r
+  }
 
-    fetchNetwork = async network => {
-      console.log('fetchnetwork')
-      console.log(network)
-      let r
-      let rest = new Rest(
-        "GET",
-        resp => {
-          //this.props.dispatch(setNetworks(resp))
-          r = resp.data[0]
-        },
-        error => {
-          this.props.dispatch(setError(error))
-        }
-      )
-      await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/`, this.props.token)
-      return r
-      //this.props.dispatch(setNetworksLoading(false))
-    }
-
-    fetchContainer = async container => {
-      console.log('fetchcontainer')
-      console.log(container)
-      //this.props.dispatch(setNetworksLoading(true))
-      let r
-      let rest = new Rest(
-        "GET",
-        resp => {
-          //this.props.dispatch(setNetworks(resp))
-          console.log(resp.data)
-          r = resp.data[0]
-        },
-        error => {
-          this.props.dispatch(setError(error))
-        }
-      )
-      await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/`, this.props.token)
-      return r
-      //this.props.dispatch(setNetworksLoading(false))
-    }
+  fetchContainer = async container => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data[0]
+      },
+      error => {
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/`, this.props.token)
+    return r
+  }
 
 
 
-  setNetwork = async (value, e) => {
+  setNetwork = async (value, e, id) => {
+    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
+
     let objectTypes = []
     let network = e.value
     let prefix = network.split('/')
@@ -253,7 +207,6 @@ class RequestIp extends React.Component {
 
     if (e) {
       const result = this.state.real.find( real => real.network === network )
-      console.log(result)
       if (result.isContainer) {
         this.state.networks.forEach((item, i) => {
           if (item.network_container === network ) {
@@ -269,7 +222,6 @@ class RequestIp extends React.Component {
         this.setState({objectTypes: null})
       }
       let info = await this.fetchNetwork(prefix)
-      console.log(info)
 
       if (info && info.extattrs) {
         if (info.extattrs.Mask) {
@@ -284,12 +236,19 @@ class RequestIp extends React.Component {
     else {
       errors.networkError = 'error'
     }
-    this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
+    req.prefix = prefix
+    req.subnetMask = subnetMask
+    req.gateway = gateway
+    req.network = network
+    req.errors = errors
+    //this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
   }
 
 
-  setObjectType = e => {
+  setObjectType = (e, id) => {
+    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
     let objectType
 
     if (e) {
@@ -299,25 +258,15 @@ class RequestIp extends React.Component {
     else {
       errors.objectTypeError = 'error'
     }
-    this.setState({objectType: objectType, errors: errors})
+    req.objectType = objectType
+    req.errors = errors
+    //this.setState({objectType: objectType, errors: errors})
   }
 
-  setNumber = e => {
-    let body = Object.assign({}, this.state.body)
+  setServerName = (e, id) => {
+    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
-
-    if (e) {
-      body.number = e.target.value
-      delete errors.numberError
-    }
-    else {
-      errors.numberError = 'error'
-    }
-    this.setState({body: body, errors: errors})
-  }
-
-  setServerName = e => {
-    let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
     let serverName
 
     if (e) {
@@ -327,29 +276,37 @@ class RequestIp extends React.Component {
     else {
       errors.serverNameError = 'error'
     }
-    this.setState({serverName: serverName, errors: errors})
+    req.serverName = serverName
+    req.errors = errors
+    //this.setState({serverName: serverName, errors: errors})
   }
 
-  setMacAddress = m => {
-    let errors = Object.assign({}, this.state.errors);
+  setMacAddress = (m, id) => {
+    let requests = Object.assign([], this.state.requests)
+    let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
     let mac = m.target.value
 
     const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
     const macRegex = new RegExp(validMacAddressRegex);
 
     if (macRegex.test(mac)) {
+      macAddress = mac
       delete errors.macAddressError
-      this.setState({macAddress: mac, errors: errors})
+      //this.setState({macAddress: mac, errors: errors})
     }
     else {
       errors.macAddressError = 'error'
-      this.setState({errors: errors})
     }
+    req.macAddress = macAddress
+    req.errors = errors
   }
 
-  setReference = e => {
-    let reference
+  setReference = (e, id) => {
+    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
+    let reference
 
     if (e) {
       reference = e.target.value
@@ -358,10 +315,72 @@ class RequestIp extends React.Component {
     else {
       errors.referenceError = 'error'
     }
-    this.setState({reference: reference, errors: errors})
+    req.reference = reference
+    req.errors = errors
+    //this.setState({reference: reference, errors: errors})
   }
 
 
+  sendRequests = async () => {
+  /*  this.state.requests.forEach(r =>{
+      this.request(r)
+    })
+*/
+    this.setState({loading: true})
+    const promises = this.state.requests.map(async req => {
+      const resp = await this.requestI(req)
+      let res = await this.updateResponse(resp, req.id)
+      //console.log(res)
+      return res
+    })
+
+    const response = await Promise.all(promises)
+    //console.log(response)
+    this.setState({response: response, loading: false, success: true})
+  }
+
+  requestI = async r => {
+    let re
+    let errors = Object.assign({}, this.state.errors);
+
+    this.setState({message: null});
+
+      let b = {
+        "data": {
+          "network": `${r.prefix}`,
+          "object_type": `${r.objectType}`,
+          "number": 1,
+          "mac": [
+              `${r.macAddress}`
+          ],
+          "extattrs": [
+            {
+              "Name Server": {
+                  "value": `${r.serverName}`
+              },
+              "Reference": {
+                  "value": `${r.reference}`
+              }
+            }
+          ]
+        }
+      }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        re = resp
+
+      },
+      error => {
+        re = error
+        this.setState({loading: false, success: false})
+        //this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
+    return re
+  }
 
   requestIp = async () => {
     let body = Object.assign({}, this.state.body);
@@ -427,6 +446,22 @@ class RequestIp extends React.Component {
 
   }
 
+  updateResponse = async (resp, id) => {
+    let str = resp.data[0].result
+    let st = str.split(':')
+    let s = st[1]
+    let ip = s.split('/')
+    ip = ip[0]
+
+    let requests = Object.assign([], this.state.requests)
+    let errors = Object.assign({}, this.state.errors)
+    let req = this.state.requests.find( r => r.id === id )
+    req.ip = ip
+    return req
+    //response.push(req)
+    //this.setState({response: response})
+  }
+
   resetError = () => {
     this.setState({ error: null})
   }
@@ -452,8 +487,22 @@ class RequestIp extends React.Component {
 */
 
   render() {
-
+    console.log(this.state.response)
     const requests = [
+      {
+        title: 'Status Request',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        render(name, record) {
+          return {
+            props: {
+              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+            },
+            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+          };
+        }
+      },
       {
         title: 'Network',
         align: 'center',
@@ -465,7 +514,7 @@ class RequestIp extends React.Component {
               <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
               :
               <React.Fragment>
-                <Select id='network' style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event)}>
+                <Select key={obj.id} style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event, obj.id)}>
                   { this.state.real ?
                     this.state.real.map((n, i) => {
                     return (
@@ -487,7 +536,7 @@ class RequestIp extends React.Component {
         dataIndex: 'objectType',
         key: 'objectType',
         render: (name, obj)  => (
-          <Select id='network' style={{ width: '100%' }} onChange={e => this.setObjectType(e)}>
+          <Select key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
             { this.state.objectTypes ?
               this.state.objectTypes.map((n, i) => {
               return (
@@ -506,7 +555,7 @@ class RequestIp extends React.Component {
         dataIndex: 'serverName',
         key: 'serverName',
         render: (name, obj)  => (
-          <Input id='serverName' s style={{ width: '150px' }} onChange={e => this.setServerName(e)} />
+          <Input id='serverName' style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
         ),
       },
       {
@@ -515,7 +564,7 @@ class RequestIp extends React.Component {
         dataIndex: 'macAddress',
         key: 'macAddress',
         render: (name, obj)  => (
-          <Input id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e)} />
+          <Input id='macAddress' defaultValue={'00:00:00:00:00:00'} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
         ),
       },
       {
@@ -524,7 +573,7 @@ class RequestIp extends React.Component {
         dataIndex: 'reference',
         key: 'reference',
         render: (name, obj)  => (
-          <Input id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e)} />
+          <Input id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e, obj.id)} />
         ),
       },
       {
@@ -586,7 +635,7 @@ class RequestIp extends React.Component {
     ];
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
         <Button type="primary" onClick={() => this.details()}>REQUEST IP</Button>
 
@@ -607,33 +656,37 @@ class RequestIp extends React.Component {
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
             { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !this.state.loading && this.state.success &&
+            { !this.state.loading && this.state.success  ?
               <Table
                 columns={columns}
-                dataSource={this.state.ipInfo}
+                dataSource={this.state.response}
                 bordered
                 rowKey="ip"
                 pagination={false}
                 style={{marginBottom: 10}}
               />
-            }
 
-            <Button type="primary" onClick={() => this.setRequests()}>
-              +
-            </Button>
-            <br/>
-            <br/>
-            <Table
-              columns={requests}
-              dataSource={this.state.requests}
-              bordered
-              rowKey="id"
-              pagination={false}
-              style={{marginBottom: 10}}
-            />
-            <Button type="primary" style={{float: "right"}} onClick={() => this.requestIp()}>
-              Request Ip
-            </Button>
+              :
+
+              <React.Fragment>
+                <Button type="primary" onClick={() => this.setRequests()}>
+                  +
+                </Button>
+                <br/>
+                <br/>
+                <Table
+                  columns={requests}
+                  dataSource={this.state.requests}
+                  bordered
+                  rowKey="id"
+                  pagination={false}
+                  style={{marginBottom: 10}}
+                />
+                <Button type="primary" style={{float: "right"}} onClick={() => this.sendRequests()}>
+                  Request Ip
+                </Button>
+            </React.Fragment>
+            }
             </React.Fragment>
             :
             <Alert message="Asset and Partition not set" type="error" />
@@ -642,7 +695,7 @@ class RequestIp extends React.Component {
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
-      </Space>
+      </React.Fragment>
 
     )
   }
