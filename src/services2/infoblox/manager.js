@@ -40,7 +40,7 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.assets)
+    
 
     return (
       <React.Fragment>

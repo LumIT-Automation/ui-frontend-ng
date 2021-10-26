@@ -59,7 +59,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('mount request')
+
     if (this.props.asset !== prevProps.asset) {
       this.main()
     }
@@ -73,19 +73,67 @@ class RequestIp extends React.Component {
   }
 
   main = async () => {
-    let tree = await this.fetchTree()
-    this.setState({tree: tree})
+    this.setState({networkLoading: true})
+    //let tree = await this.fetchTree()
+    //
+    //this.setState({tree: tree})
 
-    let realNetworks = await this.filterRealNetworks()
-    this.setState({realNetworks: realNetworks})
+    let networks = await this.fetchNetworks()
+
+
+    let containers = await this.fetchContainers()
+
+
+    let realNetworks = await this.realNet(networks)
+    let realContainers = await this.realCont(containers)
+
+
+
+    let real = realNetworks.concat(realContainers)
+
+
+    this.setState({real: real, networkLoading: false, networks: networks, containers: containers})
+    //this.setState({realNetworks: realNetworks})
 
   }
 
-  fetchNetworksAndContainers = async () => {
-    let networks = await this.fetchNetworks()
-    let containers = await this.fetchContainers()
 
-    this.filterRealNetsAndConts(networks, containers)
+  fetchNetworks = async () => {
+    //this.props.dispatch(setNetworksLoading(true))
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        //this.props.dispatch(setNetworks(resp))
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
+    return r
+    //this.props.dispatch(setNetworksLoading(false))
+  }
+
+  fetchContainers = async () => {
+    //this.props.dispatch(setNetworksLoading(true))
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        //this.props.dispatch(setNetworks(resp))
+        r = resp.data
+      },
+      error => {
+        this.props.dispatch(setError(error))
+        this.setState({loading: false, success: false})
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
+    return r
+    //this.props.dispatch(setNetworksLoading(false))
   }
 
   fetchTree = async () => {
@@ -103,21 +151,35 @@ class RequestIp extends React.Component {
     return r
   }
 
-  filterRealNetworks = () => {
-    let realNetworks = []
+  realNet = items => {
     let list = []
 
-    this.state.tree.forEach(e => {
+    items.forEach(e => {
       if (e.extattrs["Real Network"]) {
         if (e.extattrs["Real Network"].value === 'yes') {
-          //let n = e.network.split('/')
-          //n = n[0]
           let o = e
-          realNetworks.push(o)
+          list.push(o)
         }
       }
     })
-    return realNetworks
+
+    return list
+  }
+
+  realCont = items => {
+    let list = []
+
+    items.forEach(e => {
+      if (e.extattrs["Real Network"]) {
+        if (e.extattrs["Real Network"].value === 'yes') {
+          let o = e
+          o.isContainer = true
+          list.push(o)
+        }
+      }
+    })
+
+    return list
   }
 
   setRequests = () => {
@@ -136,6 +198,50 @@ class RequestIp extends React.Component {
     this.setState({requests: newList})
   }
 
+
+
+    fetchNetwork = async network => {
+      console.log('fetchnetwork')
+      console.log(network)
+      let r
+      let rest = new Rest(
+        "GET",
+        resp => {
+          //this.props.dispatch(setNetworks(resp))
+          r = resp.data[0]
+        },
+        error => {
+          this.props.dispatch(setError(error))
+        }
+      )
+      await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/`, this.props.token)
+      return r
+      //this.props.dispatch(setNetworksLoading(false))
+    }
+
+    fetchContainer = async container => {
+      console.log('fetchcontainer')
+      console.log(container)
+      //this.props.dispatch(setNetworksLoading(true))
+      let r
+      let rest = new Rest(
+        "GET",
+        resp => {
+          //this.props.dispatch(setNetworks(resp))
+          console.log(resp.data)
+          r = resp.data[0]
+        },
+        error => {
+          this.props.dispatch(setError(error))
+        }
+      )
+      await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/`, this.props.token)
+      return r
+      //this.props.dispatch(setNetworksLoading(false))
+    }
+
+
+
   setNetwork = async (value, e) => {
     let errors = Object.assign({}, this.state.errors)
     let objectTypes = []
@@ -146,29 +252,40 @@ class RequestIp extends React.Component {
     let gateway
 
     if (e) {
-      const result = this.state.realNetworks.find( realNetwork => realNetwork.network === network )
-      subnetMask = result.extattrs.Mask.value
-      gateway = result.extattrs.Gateway.value
-
-      if (result.children.length !== 0 ) {
-        result.children.forEach( child => {
-          if (child.extattrs && child.extattrs['Object Type'] ) {
-            objectTypes.push(child.extattrs['Object Type'].value)
+      const result = this.state.real.find( real => real.network === network )
+      console.log(result)
+      if (result.isContainer) {
+        this.state.networks.forEach((item, i) => {
+          if (item.network_container === network ) {
+            if (item.extattrs && item.extattrs['Object Type'] ) {
+              objectTypes.push(item.extattrs['Object Type'].value)
+            }
           }
         })
+        let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
+        this.setState({objectTypes: unique})
       }
       else {
-        console.log('no children')
+        this.setState({objectTypes: null})
+      }
+      let info = await this.fetchNetwork(prefix)
+      console.log(info)
+
+      if (info && info.extattrs) {
+        if (info.extattrs.Mask) {
+          subnetMask = info.extattrs.Mask.value
+        }
+        if (info.extattrs.Gateway) {
+          gateway = info.extattrs.Gateway.value
+        }
       }
       delete errors.networkError
-      //this.setState({network: network, errors: errors})
     }
     else {
       errors.networkError = 'error'
     }
-    this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, objectTypes: objectTypes, errors: errors})
+    this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
   }
-
 
 
   setObjectType = e => {
@@ -327,6 +444,13 @@ class RequestIp extends React.Component {
   }
 
 
+/*
+
+<React.Fragment>
+</React.Fragment>
+
+*/
+
   render() {
 
     const requests = [
@@ -336,17 +460,25 @@ class RequestIp extends React.Component {
         dataIndex: 'network',
         key: 'network',
         render: (name, obj)  => (
-          <Select id='network' style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event)}>
-            { this.state.realNetworks ?
-              this.state.realNetworks.map((n, i) => {
-              return (
-                <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                )
-              })
-              :
+          <React.Fragment>
+          { this.state.networkLoading ?
               <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
-            }
-          </Select>
+              :
+              <React.Fragment>
+                <Select id='network' style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event)}>
+                  { this.state.real ?
+                    this.state.real.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                      )
+                    })
+                    :
+                    null
+                  }
+                </Select>
+              </React.Fragment>
+          }
+          </React.Fragment>
         ),
       },
       {

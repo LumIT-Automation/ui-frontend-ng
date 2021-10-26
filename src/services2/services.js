@@ -30,9 +30,9 @@ class Service extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
-    console.log(this.props.f5Authorizations)
-    console.log(this.props.f5Assets)
+    
+    
+    
     if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
       if(!this.props.f5Assets) {
         this.fetchF5Assets()
@@ -50,7 +50,7 @@ class Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update')
+    
   }
 
   componentWillUnmount() {
@@ -106,53 +106,57 @@ class Service extends React.Component {
 
 
   render() {
-    console.log(this.props.infobloxAssets)
-    console.log(this.props.f5Assets)
+    
+    
 
     return (
       <React.Fragment>
 
+        <Divider orientation="left" plain>
+          History
+        </Divider>
+
         <Collapse defaultActiveKey={['1']} >
-          <Panel header="History" key="history" showArrow={false}>
+          <Panel header="History" key="history" showArrow={false} style={{textAlign: 'center'}}>
             <InfobloxManager/>
           </Panel>
           {this.props.infobloxAssets ?
-            <Panel header="IPAM" key="ipam" showArrow={false}>
+            <Panel header="IPAM" key="ipam" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
             null
           }
           {this.props.f5Assets ?
-            <Panel header="Switch" key="switch" showArrow={false}>
+            <Panel header="Switch" key="switch" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
             null
           }
           {this.props.f5Assets ?
-            <Panel header="Firewall" key="firewall" showArrow={false}>
+            <Panel header="Firewall" key="firewall" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
             null
           }
           {this.props.f5Assets ?
-            <Panel header="Virtual Machine" key="virtualMachine" showArrow={false}>
+            <Panel header="Virtual Machine" key="virtualMachine" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
             null
           }
           {this.props.f5Assets ?
-            <Panel header="Load Balancers" key="loadBalancers" showArrow={false}>
+            <Panel header="Load Balancers" key="loadBalancers" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
             null
           }
           {this.props.f5Assets ?
-            <Panel header="Web application firewall" key="waf" showArrow={false}>
+            <Panel header="Web application firewall" key="waf" showArrow={false} style={{textAlign: 'center'}}>
               <InfobloxManager/>
             </Panel>
             :
