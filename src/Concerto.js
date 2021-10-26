@@ -98,7 +98,6 @@ class Concerto extends Component {
 
 
   render() {
-    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         {this.props.username === 'admin@automation.local' ?

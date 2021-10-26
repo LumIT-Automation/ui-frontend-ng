@@ -40,34 +40,39 @@ class Manager extends React.Component {
 
 
   render() {
-    
 
     return (
       <React.Fragment>
 
         <Row>
+        {/*
           <Row>
             <div style={{margin: '0 150px'}}>
               <AssetSelector/>
             </div>
           </Row>
           <Divider/>
+        */}
           <Row>
           </Row>
           <Col span={4} offset={2} >
+            <p>IP details</p>
+            <DetailsIp/>
+          </Col>
+
+          <Col span={4} offset={2}>
+            <p>IP request</p>
             <RequestIp/>
           </Col>
 
           <Col span={4} offset={2}>
-            <RequestIp/>
+            <p>IP modify</p>
+            <ModifyIp/>
           </Col>
 
           <Col span={4} offset={2}>
-            <RequestIp/>
-          </Col>
-
-          <Col span={4} offset={2}>
-            <RequestIp/>
+            <p>IP release</p>
+            <ReleaseIp/>
           </Col>
         </Row>
 

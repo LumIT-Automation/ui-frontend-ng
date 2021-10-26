@@ -74,6 +74,7 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
+    console.log(this.props.error)
 
     const columns = [
       {
@@ -109,10 +110,9 @@ class Error extends Component {
     ]
 
     let e = () => {
-
-      if (this.props.error) {
-        let statusCode = this.props.error[0].status
-
+      if (this.props.error && this.props.error[0]) {
+        const statusCode = this.props.error[0].status
+        
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
@@ -138,6 +138,10 @@ class Error extends Component {
             break
           case 422:
             return <Result title={'422 - Unprocessable Entity'} />
+            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
+            break
+          case 423:
+            return <Result title={'423 - Locked'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
             break
           case 429:

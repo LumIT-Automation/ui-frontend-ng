@@ -6,7 +6,7 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-
+import AssetSelector from './assetSelector'
 
 import { Space, Modal, Form, Input, Result, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -14,10 +14,6 @@ import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -49,6 +45,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
+    console.log('monto request')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -56,8 +53,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
-    if (this.props.asset !== prevProps.asset) {
+    if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
       this.main()
     }
   }
@@ -142,7 +138,7 @@ class RequestIp extends React.Component {
 
   setRequests = () => {
     let n = this.state.counter + 1
-    let r = {id: n, status: '', color: 'blue', macAddress: '00:00:00:00:00:00'}
+    let r = {id: n, macAddress: '00:00:00:00:00:00'}
     let list = Object.assign([], this.state.requests)
     list.push(r)
     this.setState({requests: list, counter: n})
@@ -194,7 +190,7 @@ class RequestIp extends React.Component {
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     this.setState({objectTypes: null})
-    
+
     let objectTypes = []
     let network = e.value
     let prefix = network.split('/')
@@ -320,16 +316,32 @@ class RequestIp extends React.Component {
 
   sendRequests = async () => {
     this.setState({loading: true})
+    let response = []
+
+    for await (const req of this.state.requests) {
+      try {
+        const resp = await this.request(req)
+        let res = await this.updateResponse(resp, req.id)
+        response.push(res)
+      } catch(resp) {
+        console.log('errrrrrr')
+        console.log(resp)
+        return
+      }
+    }
+
+
+    /*
     const promises = this.state.requests.map(async req => {
       const resp = await this.request(req)
-      console.log(resp)
       let res = await this.updateResponse(resp, req.id)
-      //console.log(res)
       return res
     })
 
+    console.log(promises)
     const response = await Promise.all(promises)
-    //console.log(response)
+    */
+    console.log(response)
     this.setState({response: response, loading: false, success: true})
   }
 
@@ -364,9 +376,9 @@ class RequestIp extends React.Component {
       "POST",
       resp => {
         re = resp
-
       },
       error => {
+        console.log(error)
         re = error
         this.setState({loading: false, success: false})
         this.props.dispatch(setError(error))
@@ -377,7 +389,6 @@ class RequestIp extends React.Component {
   }
 
   updateResponse = async (resp, id) => {
-    console.log(resp)
 
     if (resp.data && resp.data[0].result) {
       let str = resp.data[0].result
@@ -432,20 +443,6 @@ class RequestIp extends React.Component {
 
   render() {
     const requests = [
-      {
-        title: 'Status Request',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        render(name, record) {
-          return {
-            props: {
-              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
-            },
-            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
-          };
-        }
-      },
       {
         title: 'Network',
         align: 'center',
@@ -594,7 +591,8 @@ class RequestIp extends React.Component {
         >
 
 
-
+          <AssetSelector />
+          <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
@@ -636,7 +634,7 @@ class RequestIp extends React.Component {
           }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
 
       </React.Fragment>
 

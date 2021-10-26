@@ -30,9 +30,9 @@ class Service extends React.Component {
   }
 
   componentDidMount() {
-    
-    
-    
+
+    console.log('monto services')
+
     if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
       if(!this.props.f5Assets) {
         this.fetchF5Assets()
@@ -50,7 +50,7 @@ class Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+
   }
 
   componentWillUnmount() {
@@ -106,63 +106,30 @@ class Service extends React.Component {
 
 
   render() {
-    
-    
+
+
 
     return (
       <React.Fragment>
 
-        <Divider orientation="left" plain>
-          History
-        </Divider>
+        <React.Fragment>
+          <Divider orientation="left" plain>
+            History
+          </Divider>
+        </React.Fragment>
 
-        <Collapse defaultActiveKey={['1']} >
-          <Panel header="History" key="history" showArrow={false} style={{textAlign: 'center'}}>
-            <InfobloxManager/>
-          </Panel>
-          {this.props.infobloxAssets ?
-            <Panel header="IPAM" key="ipam" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-          {this.props.f5Assets ?
-            <Panel header="Switch" key="switch" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-          {this.props.f5Assets ?
-            <Panel header="Firewall" key="firewall" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-          {this.props.f5Assets ?
-            <Panel header="Virtual Machine" key="virtualMachine" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-          {this.props.f5Assets ?
-            <Panel header="Load Balancers" key="loadBalancers" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-          {this.props.f5Assets ?
-            <Panel header="Web application firewall" key="waf" showArrow={false} style={{textAlign: 'center'}}>
-              <InfobloxManager/>
-            </Panel>
-            :
-            null
-          }
-        </Collapse>
+        <React.Fragment>
+          <Divider orientation="left" plain>
+            Ipam
+          </Divider>
+          <InfobloxManager/>
+        </React.Fragment>
+
+        <React.Fragment>
+          <Divider orientation="left" plain>
+            Load Balancer
+          </Divider>
+        </React.Fragment>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 

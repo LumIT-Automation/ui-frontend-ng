@@ -29,6 +29,7 @@ class AssetSelector extends React.Component {
   }
 
   componentDidMount() {
+      console.log('monto assetselector')
     if (this.props.assets) {
       this.setEnvironmentList()
     }
@@ -45,7 +46,7 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.dispatch(setEnvironment(null))
+    console.log('smonto asset selector')
     this.props.dispatch(setAsset(null))
   }
 
@@ -107,7 +108,7 @@ class AssetSelector extends React.Component {
 
   render() {
     return (
-        <Space direction='vertical' style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+        <React.Fragment>
         <br/>
           <Row>
             <Form
@@ -118,6 +119,7 @@ class AssetSelector extends React.Component {
                 size: 'default'
               }}
               size={'default'}
+              style={{paddingLeft: '300px'}}
             >
               <Form.Item name='environment' label="Environment">
                 <Select onChange={e => this.setEnvironment(e)} style={{ width: 200 }}>
@@ -147,10 +149,9 @@ class AssetSelector extends React.Component {
 
           </Row>
 
-
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
-        </Space>
+        </React.Fragment>
       )
   }
 };
