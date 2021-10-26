@@ -45,10 +45,6 @@ class RequestIp extends React.Component {
       requests: [],
       response: [],
       macAddress: '00:00:00:00:00:00',
-      ipInfo: [],
-      body: {
-
-      }
     };
   }
 
@@ -197,7 +193,8 @@ class RequestIp extends React.Component {
     let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
-
+    this.setState({objectTypes: null})
+    
     let objectTypes = []
     let network = e.value
     let prefix = network.split('/')
@@ -322,13 +319,10 @@ class RequestIp extends React.Component {
 
 
   sendRequests = async () => {
-  /*  this.state.requests.forEach(r =>{
-      this.request(r)
-    })
-*/
     this.setState({loading: true})
     const promises = this.state.requests.map(async req => {
-      const resp = await this.requestI(req)
+      const resp = await this.request(req)
+      console.log(resp)
       let res = await this.updateResponse(resp, req.id)
       //console.log(res)
       return res
@@ -339,7 +333,7 @@ class RequestIp extends React.Component {
     this.setState({response: response, loading: false, success: true})
   }
 
-  requestI = async r => {
+  request = async r => {
     let re
     let errors = Object.assign({}, this.state.errors);
 
@@ -375,89 +369,35 @@ class RequestIp extends React.Component {
       error => {
         re = error
         this.setState({loading: false, success: false})
-        //this.props.dispatch(setError(error))
+        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
     return re
   }
 
-  requestIp = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
-
-    this.setState({message: null});
-
-      let b = {
-        "data": {
-          "network": `${this.state.prefix}`,
-          "object_type": `${this.state.objectType}`,
-          "number": 1,
-          "mac": [
-              `${this.state.macAddress}`
-          ],
-          "extattrs": [
-            {
-              "Name Server": {
-                  "value": `${this.state.serverName}`
-              },
-              "Reference": {
-                  "value": `${this.state.reference}`
-              }
-            }
-          ]
-        }
-      }
-    //}
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        //fixedaddress/ZG5zLmZpeGVkX2FkZHJlc3MkMTAuOC4xLjEwMC4wLi4:10.8.1.100/default
-        let str = resp.data[0].result
-        let st = str.split(':')
-        let s = st[1]
-        let ip = s.split('/')
-        ip = ip[0]
-
-        let o = {
-          ip: ip,
-          network: this.state.network,
-          subnetMask: this.state.subnetMask,
-          gateway: this.state.gateway,
-          serverName: this.state.serverName,
-          macAddress: this.state.macAddress,
-          objectType: this.state.objectType
-        }
-        let list = []
-        list.push(o)
-
-        this.setState({ipInfo: list, loading: false, success: true})
-        //this.success()
-      },
-      error => {
-        this.setState({loading: false, success: false})
-        //this.props.dispatch(setError(error))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
-
-  }
-
   updateResponse = async (resp, id) => {
-    let str = resp.data[0].result
-    let st = str.split(':')
-    let s = st[1]
-    let ip = s.split('/')
-    ip = ip[0]
+    console.log(resp)
 
-    let requests = Object.assign([], this.state.requests)
-    let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
-    req.ip = ip
-    return req
+    if (resp.data && resp.data[0].result) {
+      let str = resp.data[0].result
+      let st = str.split(':')
+      let s = st[1]
+      let ip = s.split('/')
+      ip = ip[0]
+
+      let requests = Object.assign([], this.state.requests)
+      let errors = Object.assign({}, this.state.errors)
+      let req = this.state.requests.find( r => r.id === id )
+      req.ip = ip
+      return req
+    }
+    else {
+      let req = this.state.requests.find( r => r.id === id )
+      req.ip = 'no ip'
+      return req
+    }
+
     //response.push(req)
     //this.setState({response: response})
   }
@@ -475,6 +415,10 @@ class RequestIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      success: false,
+      requests: [],
+      response: [],
+      errors: []
     })
   }
 
@@ -487,7 +431,6 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.response)
     const requests = [
       {
         title: 'Status Request',
