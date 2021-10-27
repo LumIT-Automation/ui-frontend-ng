@@ -8,6 +8,7 @@ import { setVisible } from '../../_store/store.f5'
 
 import AssetSelector from './assetSelector'
 import CreateLoadBalancer from './createF5Service'
+import DeleteLoadBalancer from './deleteF5Service'
 
 import { Space, Row, Col, Divider } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -57,12 +58,11 @@ class Manager extends React.Component {
           <Col span={4} offset={2} >
             <p>Create Load Balancer</p>
             <CreateLoadBalancer/>
-
           </Col>
 
           <Col span={4} offset={2}>
             <p>Delete Load Balancer</p>
-
+            <DeleteLoadBalancer/>
           </Col>
 
           <Col span={4} offset={2}>

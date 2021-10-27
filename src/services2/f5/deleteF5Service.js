@@ -1,16 +1,17 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Rest from "../../_helpers/Rest"
+import Error from '../../error'
 
-import { setError } from '../_store/store.error'
+import { setError } from '../../_store/store.error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col } from 'antd'
+import AssetSelector from './assetSelector'
+
+import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-import { setWorkflowStatus } from '../_store/store.workflows'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -102,7 +103,6 @@ class DeleteF5Service extends React.Component {
   }
 
   success = () => {
-    this.props.dispatch(setWorkflowStatus( 'deleted' ))
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -118,9 +118,28 @@ class DeleteF5Service extends React.Component {
   render() {
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
-      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
+        <Button type="primary" onClick={() => this.details()}>DELETE LOAD BALANCER</Button>
+
+        <Modal
+          title={<p style={{textAlign: 'center'}}>DELETE LOAD BALANCER</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
+        >
+
+
+          <AssetSelector />
+          <Divider/>
+
+          { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
+            <React.Fragment>
+      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
       { !this.state.loading && this.state.success &&
         <Result
            status="success"
@@ -163,10 +182,15 @@ class DeleteF5Service extends React.Component {
 
         </Form>
       }
+      </React.Fragment>
+      :
+      <Alert message="Asset and Partition not set" type="error" />
+      }
+      </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+      {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
 
-      </Space>
+      </React.Fragment>
 
     )
   }

@@ -113,7 +113,7 @@ class AssetSelector extends React.Component {
     return (
       <React.Fragment>
       <br/>
-        <Row>
+        <Row style={{paddingLeft: '200px'}}>
           <Col>
             Environment:
             <Select onChange={e => this.setEnvironment(e)} style={{ width: 200, marginLeft: '10px' }} >
