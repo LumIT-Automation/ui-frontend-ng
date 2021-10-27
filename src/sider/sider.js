@@ -145,7 +145,6 @@ class CustomSider extends Component {
 
           <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
           <Menu.Divider/>
-          <Menu.Item key="services2" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services2/">SERVICES2</Link></Menu.Item>
           {/*
           <Menu.Item key="grid" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/grid/">GRID</Link></Menu.Item>
 

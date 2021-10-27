@@ -21,7 +21,6 @@ import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 import Service from './services/services'
-import Services2 from './services2/services'
 //import Grid from './grid/services'
 import Assets from './assets/assets'
 import Permissions from './permissions/permissions'
@@ -160,11 +159,7 @@ class Concerto extends Component {
                   }
 
                   <Route path='/services/' component={Service}/>
-                  { this.props.authorizations && (this.props.f5auth || this.props.authorizations.any)?
-                    <Route path='/services2/' component={Services2}/>
-                    :
-                    null
-                  }
+                  
                   <Route path='/assets/' component={Assets}/>
 
                   { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
