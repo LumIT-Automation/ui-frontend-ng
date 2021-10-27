@@ -10,6 +10,7 @@ import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
 import { setVisible as setInfobloxVisible } from '../_store/store.infoblox'
 
 import InfobloxManager from './infoblox/manager'
+import F5Manager from './f5/manager'
 
 import { Space, Row, Col, Collapse, Divider } from 'antd'
 
@@ -131,17 +132,14 @@ class Service extends React.Component {
           <Divider orientation="left" plain onMouseOver={() => this.props.dispatch(setInfobloxVisible( true ))}>
             Ipam
           </Divider>
-          {this.props.ipamVisible ?
             <InfobloxManager/>
-            :
-            null
-          }
         </React.Fragment>
 
         <React.Fragment>
           <Divider orientation="left" plain>
             Load Balancer
           </Divider>
+          <F5Manager/>
         </React.Fragment>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}

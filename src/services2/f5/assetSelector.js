@@ -5,7 +5,7 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setEnvironment, setAssets, setAsset } from '../../_store/store.infoblox'
+import { setEnvironment, setAssets, setAsset } from '../../_store/store.f5'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
@@ -42,7 +42,9 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
+    this.props.dispatch(setEnvironment(null))
     this.props.dispatch(setAsset(null))
+    this.props.dispatch(setPartition(null))
   }
 
   setEnvironmentList = () => {
@@ -74,6 +76,22 @@ class AssetSelector extends React.Component {
       return a.address === address
     })
     this.props.dispatch(setAsset(asset))
+    this.fetchAssetPartitions(asset.id)
+  }
+
+  fetchAssetPartitions = async (id) => {
+    let rest = new Rest(
+      "GET",
+      resp => this.props.dispatch(setPartitions( resp )),
+      error => {
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`f5/${id}/partitions/`, this.props.token)
+  }
+
+  setPartition = p => {
+    this.props.dispatch(setPartition(p))
   }
 
 
@@ -121,9 +139,21 @@ class AssetSelector extends React.Component {
 
               </Form.Item>
 
+              <Form.Item name='partition' label="Partition">
+                <Select onChange={p => this.setPartition(p)} style={{ width: 200 }}>
+
+                  {this.props.partitions ? this.props.partitions.map((p, i) => {
+                  return (
+                    <Select.Option  key={i} value={p.name}>{p.name}</Select.Option>
+                  )
+                }) : null}
+                </Select>
+              </Form.Item>
+
             </Form>
 
           </Row>
+
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
@@ -135,8 +165,10 @@ class AssetSelector extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  authorizations: state.authorizations.infoblox,
-  environment: state.infoblox.environment,
-  assets: state.infoblox.assets,
-  asset: state.infoblox.asset,
+  authorizations: state.authorizations.f5,
+  environment: state.f5.environment,
+  assets: state.f5.assets,
+  asset: state.f5.asset,
+  partitions: state.f5.partitions,
+  partition: state.f5.partition,
 }))(AssetSelector);
