@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from '../../_helpers/Rest'
 
+import { setAssetsFetch } from '../../_store/store.f5'
+
 import AssetSelector from './assetSelector'
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
@@ -23,6 +25,9 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    if (!this.props.assets) {
+      this.props.dispatch(setAssetsFetch(true))
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -30,6 +35,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (!this.props.assets) {
+      this.props.dispatch(setAssetsFetch(true))
+    }
   }
 
   componentWillUnmount() {
@@ -39,7 +47,6 @@ class Manager extends React.Component {
 
 
   render() {
-
     return (
       <React.Fragment >
 
@@ -81,4 +88,5 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
+  assets: state.infoblox.assets,
 }))(Manager);

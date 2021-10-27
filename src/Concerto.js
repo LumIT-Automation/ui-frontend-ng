@@ -7,13 +7,11 @@ import Error from './error'
 import { logout } from './_store/store.auth'
 import { setError } from './_store/store.error'
 import { setAuthorizations } from './_store/store.authorizations'
-import { setInfobloxAssets, setInfobloxAssetsFetch } from './_store/store.infoblox'
 
-import { Layout, Avatar, Divider, Menu, Dropdown  } from 'antd';
+import { Layout, Avatar, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
 import CustomSider from './sider/sider'
-import CustomBreadcrumb from './breadcrumb'
 
 import Homepage from './home/homepage'
 import Devices from './fastwebFortinetDevicesDB/manager'
@@ -159,7 +157,7 @@ class Concerto extends Component {
                   }
 
                   <Route path='/services/' component={Service}/>
-                  
+
                   <Route path='/assets/' component={Assets}/>
 
                   { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?

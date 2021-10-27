@@ -199,7 +199,7 @@ class DetailsIp extends React.Component {
       <Button type="primary" onClick={() => this.details()}>IP DETAILS</Button>
 
       <Modal
-        title={<p style={{textAlign: 'center'}}>REQUEST IP</p>}
+        title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}
         centered
         destroyOnClose={true}
         visible={this.state.visible}

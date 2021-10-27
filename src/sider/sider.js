@@ -10,22 +10,17 @@ import { HomeOutlined,
   SettingOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  NotificationOutlined,
   ApartmentOutlined,
   FastForwardOutlined
 
  } from '@ant-design/icons';
 
-import Icon from '@ant-design/icons';
-
 import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
 import IpSVG from '../svg/ip-address-svgrepo-com.svg'
 import NetworkSVG from '../svg/layer-3-switch.svg'
 import LoadbalancerSVG from '../svg/loadbalancer.svg'
-import F5SVG from '../svg/f5_Networks-Logo.wine.svg'
 import CertSVG from '../svg/certificates.svg'
 import ItemsSVG from '../svg/items.svg'
-import MyIcon from '../svg/ipIcon.js'
 
 const { Sider } = Layout;
 

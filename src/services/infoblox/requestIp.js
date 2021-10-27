@@ -8,25 +8,12 @@ import { setError } from '../../_store/store.error'
 
 import AssetSelector from './assetSelector'
 
-import { Space, Modal, Form, Input, Result, Button, Select, Spin, Divider, Table, Alert } from 'antd'
+import { Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class RequestIp extends React.Component {
 
@@ -185,7 +172,6 @@ class RequestIp extends React.Component {
 
 
   setNetwork = async (value, e, id) => {
-    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     this.setState({objectTypes: null})
@@ -238,7 +224,6 @@ class RequestIp extends React.Component {
 
 
   setObjectType = (e, id) => {
-    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let objectType
@@ -256,7 +241,6 @@ class RequestIp extends React.Component {
   }
 
   setServerName = (e, id) => {
-    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let serverName
@@ -274,7 +258,6 @@ class RequestIp extends React.Component {
   }
 
   setMacAddress = (m, id) => {
-    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let mac = m.target.value
@@ -296,7 +279,6 @@ class RequestIp extends React.Component {
   }
 
   setReference = (e, id) => {
-    let requests = Object.assign([], this.state.requests)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let reference
@@ -347,7 +329,6 @@ class RequestIp extends React.Component {
 
   request = async r => {
     let re
-    let errors = Object.assign({}, this.state.errors);
 
     this.setState({message: null});
 
@@ -378,13 +359,12 @@ class RequestIp extends React.Component {
         re = resp
       },
       error => {
-        console.log(error)
         re = error
         this.setState({loading: false, success: false})
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4sd/?next-available`, this.props.token, b )
     return re
   }
 
@@ -397,8 +377,6 @@ class RequestIp extends React.Component {
       let ip = s.split('/')
       ip = ip[0]
 
-      let requests = Object.assign([], this.state.requests)
-      let errors = Object.assign({}, this.state.errors)
       let req = this.state.requests.find( r => r.id === id )
       req.ip = ip
       return req

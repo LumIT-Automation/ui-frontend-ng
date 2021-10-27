@@ -7,16 +7,15 @@ import Error from '../error'
 import { setError } from '../_store/store.error'
 import { setAssets as setF5Assets } from '../_store/store.f5'
 import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
-import { setVisible as setInfobloxVisible } from '../_store/store.infoblox'
+import { setAssetsFetch as setInfobloxAssetsFetch } from '../_store/store.infoblox'
+import { setAssetsFetch as setF5AssetsFetch } from '../_store/store.f5'
 
 import InfobloxManager from './infoblox/manager'
 import F5Manager from './f5/manager'
 
-import { Space, Row, Col, Collapse, Divider } from 'antd'
+import { Divider } from 'antd'
 
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const { Panel } = Collapse
+import { LoadingOutlined } from '@ant-design/icons'
 
 
 
@@ -33,17 +32,14 @@ class Service extends React.Component {
   }
 
   componentDidMount() {
-
-    console.log('monto services')
-
-    if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
-      if(!this.props.f5Assets) {
-        this.fetchF5Assets()
-      }
-    }
     if (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) {
       if(!this.props.infobloxAssets) {
         this.fetchInfobloxAssets()
+      }
+    }
+    if (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) {
+      if(!this.props.f5Assets) {
+        this.fetchF5Assets()
       }
     }
   }
@@ -53,7 +49,14 @@ class Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
+    if (this.props.infobloxAssetsFetch) {
+      this.fetchInfobloxAssets()
+      this.props.dispatch(setInfobloxAssetsFetch(false))
+    }
+    if (this.props.f5AssetsFetch) {
+      this.fetchF5Assets()
+      this.props.dispatch(setF5AssetsFetch(false))
+    }
   }
 
   componentWillUnmount() {
@@ -95,9 +98,6 @@ class Service extends React.Component {
     this.setState({ error: null})
   }
 
-  hideIpam = () => {
-    this.setState({ ipamVisible: false})
-  }
 
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
@@ -116,9 +116,6 @@ class Service extends React.Component {
 
 
   render() {
-
-
-
     return (
       <React.Fragment>
 
@@ -129,7 +126,7 @@ class Service extends React.Component {
         </React.Fragment>
 
         <React.Fragment>
-          <Divider orientation="left" plain onMouseOver={() => this.props.dispatch(setInfobloxVisible( true ))}>
+          <Divider orientation="left" plain >
             Ipam
           </Divider>
             <InfobloxManager/>
@@ -153,11 +150,14 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  f5Authorizations: state.authorizations.f5,
+
   infobloxAuthorizations: state.authorizations.infoblox,
+  f5Authorizations: state.authorizations.f5,
 
-  f5Assets: state.f5.assets,
   infobloxAssets: state.infoblox.assets,
+  f5Assets: state.f5.assets,
 
-  ipamVisible: state.infoblox.visible
+  infobloxAssetsFetch: state.infoblox.assetsFetch,
+  f5AssetsFetch: state.f5.assetsFetch,
+
 }))(Service);
