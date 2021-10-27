@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import { setError } from '../../_store/store.error'
+import { setError } from '../../../_store/store.error'
 
 import PoolDetails from './poolDetails'
 

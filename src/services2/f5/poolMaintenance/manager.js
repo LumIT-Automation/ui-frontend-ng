@@ -2,21 +2,22 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from "../../../_helpers/Rest";
+import Error from '../../../error'
 
-import { setError } from '../../_store/store.error'
-import { setAsset, setPartitions, setPartition, setCurrentPools } from '../../_store/store.f5'
+import { setError } from '../../../_store/store.error'
+import { setAsset, setPartitions, setPartition, setCurrentPools } from '../../../_store/store.f5'
 
+import AssetSelector from '../assetSelector'
 import PoolsTable from './poolsTable'
 
-import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
+import { Modal, Alert, Form, Select, Button, Row, Divider, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
-class Container extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
@@ -30,6 +31,7 @@ class Container extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partitions) {
+      console.log('monto manager')
       this.getPools()
     }
   }
@@ -39,12 +41,18 @@ class Container extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (prevProps.asset !== this.props.asset) || (prevProps.partition !== this.props.partition) ) {
+    console.log('manager update')
+    if ( (this.props.asset && this.props.partitions) && (prevProps.partition !== this.props.partition) ) {
+      console.log('getpools')
       this.getPools()
     }
   }
 
   componentWillUnmount() {
+  }
+
+  details = () => {
+    this.setState({visible: true})
   }
 
 
@@ -74,20 +82,56 @@ class Container extends React.Component {
     this.setState({ error: null})
   }
 
+  closeModal = () => {
+    this.setState({
+      visible: false,
+      success: false,
+      body: {},
+      errors: []
+    })
+  }
+
 
   render() {
+    console.log(this.props.asset)
+    console.log(this.props.partition)
+    console.log(this.props.currentPools)
     return (
-        <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+      <React.Fragment>
+
+        <Button type="primary" onClick={() => this.details()}>POOL MAINTENANCE</Button>
+
+        <Modal
+          title={<p style={{textAlign: 'center'}}>POOL MAINTENANCE</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
+        >
 
 
-          {this.state.loading ?
-            <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> :
-            <PoolsTable/>
+          <AssetSelector />
+          <Divider/>
+
+          { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
+            <React.Fragment>
+            {this.state.loading ?
+              <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+              <PoolsTable/>
+            }
+            </React.Fragment>
+            :
+            <Alert message="Asset and Partition not set" type="error" />
           }
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        </Modal>
 
-        </Space>
-      )
+        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+
+      </React.Fragment>
+    )
   }
 };
 
@@ -99,4 +143,4 @@ export default connect((state) => ({
   partitions: state.f5.partitions,
   partition: state.f5.partition,
   currentPools: state.f5.currentPools
-}))(Container);
+}))(Manager);

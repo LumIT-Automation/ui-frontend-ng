@@ -4,13 +4,12 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from '../../_helpers/Rest'
 
-import { setVisible } from '../../_store/store.f5'
-
 import AssetSelector from './assetSelector'
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
+import PoolMaintenance from './poolMaintenance/manager'
 
-import { Space, Row, Col, Divider } from 'antd';
+import { Row, Col, Divider } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 
@@ -67,7 +66,7 @@ class Manager extends React.Component {
 
           <Col span={4} offset={2}>
             <p>Pool Maintenance</p>
-
+            <PoolMaintenance/>
           </Col>
 
         </Row>
@@ -82,6 +81,4 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
-  authorizations: state.authorizations.f5,
-  assets: state.f5.assets,
 }))(Manager);
