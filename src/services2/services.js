@@ -7,6 +7,7 @@ import Error from '../error'
 import { setError } from '../_store/store.error'
 import { setAssets as setF5Assets } from '../_store/store.f5'
 import { setAssets as setInfobloxAssets } from '../_store/store.infoblox'
+import { setVisible as setInfobloxVisible } from '../_store/store.infoblox'
 
 import InfobloxManager from './infoblox/manager'
 
@@ -92,6 +93,10 @@ class Service extends React.Component {
     this.setState({ error: null})
   }
 
+  hideIpam = () => {
+    this.setState({ ipamVisible: false})
+  }
+
   success = () => {
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -103,6 +108,9 @@ class Service extends React.Component {
       visible: false,
     })
   }
+
+
+
 
 
   render() {
@@ -119,10 +127,14 @@ class Service extends React.Component {
         </React.Fragment>
 
         <React.Fragment>
-          <Divider orientation="left" plain>
+          <Divider orientation="left" plain onMouseOver={() => this.props.dispatch(setInfobloxVisible( true ))}>
             Ipam
           </Divider>
-          <InfobloxManager/>
+          {this.props.ipamVisible ?
+            <InfobloxManager/>
+            :
+            null
+          }
         </React.Fragment>
 
         <React.Fragment>
@@ -146,5 +158,7 @@ export default connect((state) => ({
   infobloxAuthorizations: state.authorizations.infoblox,
 
   f5Assets: state.f5.assets,
-  infobloxAssets: state.infoblox.assets
+  infobloxAssets: state.infoblox.assets,
+
+  ipamVisible: state.infoblox.visible
 }))(Service);

@@ -4,6 +4,8 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest";
 
+import { setVisible } from '../../_store/store.infoblox'
+
 import AssetSelector from './assetSelector'
 import DetailsIp from './detailsIp'
 import RequestIp from './requestIp'
@@ -42,9 +44,9 @@ class Manager extends React.Component {
   render() {
 
     return (
-      <React.Fragment>
+      <React.Fragment >
 
-        <Row>
+        <Row onMouseLeave={() => this.props.dispatch(setVisible( false ))}>
         {/*
           <Row>
             <div style={{margin: '0 150px'}}>
