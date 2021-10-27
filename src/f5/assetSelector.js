@@ -109,9 +109,8 @@ class AssetSelector extends React.Component {
 
 
   render() {
-    console.log(this.props.partition)
     return (
-        <Space direction='vertical' style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+        <React.Fragment>
         <br/>
           <Row>
             <Col>
@@ -161,7 +160,7 @@ class AssetSelector extends React.Component {
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
 
-        </Space>
+      </React.Fragment>
       )
   }
 };

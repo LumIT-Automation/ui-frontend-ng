@@ -1,23 +1,20 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Rest from "../../_helpers/Rest"
+import Error from '../../error'
 
-import { setError } from '../_store/store.error'
-import { setCertificates, setKeys, setRouteDomains } from '../_store/store.f5'
+import { setError } from '../../_store/store.error'
+import { setCertificates, setKeys, setRouteDomains } from '../../_store/store.f5'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
+import AssetSelector from './assetSelector'
+
+import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-import { setWorkflowStatus } from '../_store/store.workflows'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -52,9 +49,6 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchCertificates()
-    this.fetchKeys()
-    this.fetchRouteDomains()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -62,6 +56,11 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
+      this.fetchCertificates()
+      this.fetchKeys()
+      this.fetchRouteDomains()
+    }
   }
 
   componentWillUnmount() {
@@ -562,7 +561,6 @@ class CreateF5Service extends React.Component {
   }
 
   success = () => {
-    this.props.dispatch(setWorkflowStatus( 'created' ))
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -571,296 +569,322 @@ class CreateF5Service extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      success: false,
+      body: {},
+      errors: []
     })
   }
 
 
   render() {
-    console.log(this.state.body.routeDomain)
-    console.log(this.props.routeDomains)
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
-      { this.state.loading && <Spin indicator={antIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.success &&
-        <Result
-           status="success"
-           title="Service Created"
-         />
-      }
-      { !this.state.loading && !this.state.success &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
+        <Button type="primary" onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
 
-          }}
-          onFinish={null}
-          onFinishFailed={null}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>CREATE LOAD BALANCER</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
         >
-          <Form.Item
-            label="Service Type"
-            name='serviceType'
-            key="serviceType"
-            validateStatus={this.state.errors.serviceTypeError}
-            help={this.state.errors.serviceTypeError ? 'Please select a valid Service Type' : null }
-          >
-            <Select id='serviceType' onChange={e => this.setServiceType(e)}>
-              <Select.Option key={'L7'} value={'L7'}>Layer 7</Select.Option>
-              <Select.Option key={'L4'} value={'L4'}>Layer 4</Select.Option>
-            </Select>
-          </Form.Item>
 
-          <Form.Item
-            label="Service Name"
-            name='serviceName'
-            key="serviceName"
-            validateStatus={this.state.errors.serviceNameError}
-            help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
-          >
-            <Input id='name' onChange={e => this.setServiceName(e)} />
-          </Form.Item>
 
-          { this.state.body.serviceName ?
-          <React.Fragment>
+          <AssetSelector />
+          <Divider/>
 
-          <Form.Item
-            label="Route Domain"
-            name='routeDomain'
-            key="routeDomain"
-            validateStatus={this.state.errors.routeDomainError}
-            help={this.state.errors.routeDomainError ? 'Please select a valid routeDomain' : null }
-          >
-          <Select id='snat' onChange={e => this.setRouteDomain(e)}>
-          {this.props.routeDomains.map((n, i) => {
-            return (
-              <Select.Option  key={i} value={n.id}>{n.id}</Select.Option>
-              )
-            })}
-          </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Snat"
-            name='snat'
-            key="snat"
-            validateStatus={this.state.errors.snatError}
-            help={this.state.errors.snatError ? 'Please select a valid Snat' : null }
-          >
-            <Select id='snat' onChange={e => this.setSnat(e)}>
-              <Select.Option key={'none'} value={'none'}>none</Select.Option>
-              <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Destination"
-            name='destination'
-            key="destination"
-            validateStatus={this.state.errors.destinationError}
-            help={this.state.errors.destinationError ? 'Please input a valid destination' : null }
-          >
-              <Input id='destination' onBlur={e => this.setDestination(e)} />
-          </Form.Item>
-
-          <Form.Item
-            label="Destination Port"
-            name='destinationPort'
-            key="destinationPort"
-            validateStatus={this.state.errors.destinationPortError}
-            help={this.state.errors.destinationPortError ? 'Please input a valid destination Port' : null }
-          >
-            <Input id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
-          </Form.Item>
-
-          { this.state.body.serviceType === 'L7' ?
-            <Form.Item
-              label="Certificate"
-              name='certificate'
-              key="certificate"
-              validateStatus={this.state.errors.certificateError}
-              help={this.state.errors.certificateError ? 'Please select a valid certificate' : null }
-            >
-            <Select id='snat' onChange={e => this.setCertificateName(e)}>
-            {this.props.certificates.map((n, i) => {
-              return (
-                <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
-                )
-              })}
-            </Select>
-            </Form.Item>
-            :
-            null
-          }
-
-          { this.state.body.serviceType === 'L7' ?
-            <Form.Item
-              label="Key"
-              name='key'
-              key="key"
-              validateStatus={this.state.errors.keyError}
-              help={this.state.errors.keyError ? 'Please select a valid key' : null }
-            >
-            <Select id='snat' onChange={e => this.setKeyName(e)}>
-            {this.props.keys.map((n, i) => {
-              return (
-                <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
-                )
-              })}
-            </Select>
-            </Form.Item>
-            :
-            null
-          }
-
-          <Form.Item
-            label="Load Balancing Method"
-            name='lbMethod'
-            key="lbMethod"
-            validateStatus={this.state.errors.lbMethodError}
-            help={this.state.errors.lbMethodError ? 'Please input a valid Loadbalancing Method' : null }
-          >
-            <Select id='lbMethod' onChange={a => this.setLbMethod(a)}>
-              <Select.Option key={'round-robin'} value={'round-robin'}>round-robin</Select.Option>
-              <Select.Option key={'least-connections-member'} value={'least-connections-member'}>least-connections-member</Select.Option>
-              <Select.Option key={'observed-member'} value={'observed-member'}>observed-member</Select.Option>
-              <Select.Option key={'predictive-member'} value={'predictive-member'}>predictive-member</Select.Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Monitor Type"
-            name='monitorType'
-            key="monitorType"
-            validateStatus={this.state.errors.monitorTypeError}
-            help={this.state.errors.monitorTypeError ? 'Please input a valid Monitor Type' : null }
-          >
-            <Select id='monitorType' onChange={a => this.setMonitorType(a)}>
-              <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
-              <Select.Option key={'http'} value={'http'}>http</Select.Option>
-            </Select>
-          </Form.Item>
-
-          { this.state.body.monitorType === 'http' ?
-            <Form.Item
-              label="Monitor send string"
-              name='monitorSendString'
-              key="monitorSendString"
-              validateStatus={this.state.errors.monitorSendStringError}
-              help={this.state.errors.monitorSendStringError ? 'Please input a valid monitor send string' : null }
-            >
-              <Input.TextArea rows={4} onChange={e => this.setMonitorSendString(e)} />
-            </Form.Item>
-            :
-            null
-          }
-
-          { this.state.body.monitorType === 'http' ?
-            <Form.Item
-              label="Monitor receive string"
-              name='monitorReceiveString'
-              key="monitorReceiveString"
-              validateStatus={this.state.errors.monitorReceiveStringError}
-              help={this.state.errors.monitorReceiveStringError ? 'Please input a valid monitor receive string' : null }
-            >
-              <Input.TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
-            </Form.Item>
-            :
-            null
-          }
-
-          <Form.Item
-            label="One more member"
-            name='membersNumber'
-            key="membersNumber"
-            validateStatus={this.state.errors.membersNumberError}
-            help={this.state.errors.membersNumberError ? 'Please input a valid number of members' : null }
-          >
-            <Button type="primary" onClick={() => this.oneMoreMember()}>
-              +
-            </Button>
-            {//<Input id='membersNumber' onBlur={e => this.setMembersNumber(e)} />
+          { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
+            <React.Fragment>
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <Result
+                 status="success"
+                 title="Service Created"
+               />
             }
-          </Form.Item>
+            { !this.state.loading && !this.state.success &&
+              <Form
+                {...layout}
+                name="basic"
+                initialValues={{
 
-          {
-            this.state.members.map((n, i) => {
-              let a = 'address' + n.id
-              let na = 'name' + n.id
-              let pa = 'port' + n.id
-              let r = 'remove' + n.id
-              return (
+                }}
+                onFinish={null}
+                onFinishFailed={null}
+              >
+                <Form.Item
+                  label="Service Type"
+                  name='serviceType'
+                  key="serviceType"
+                  validateStatus={this.state.errors.serviceTypeError}
+                  help={this.state.errors.serviceTypeError ? 'Please select a valid Service Type' : null }
+                >
+                  <Select id='serviceType' onChange={e => this.setServiceType(e)}>
+                    <Select.Option key={'L7'} value={'L7'}>Layer 7</Select.Option>
+                    <Select.Option key={'L4'} value={'L4'}>Layer 4</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Service Name"
+                  name='serviceName'
+                  key="serviceName"
+                  validateStatus={this.state.errors.serviceNameError}
+                  help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
+                >
+                  <Input id='name' onChange={e => this.setServiceName(e)} />
+                </Form.Item>
+
+                { this.state.body.serviceName ?
                 <React.Fragment>
+
                 <Form.Item
-                  label="Address"
-                  name={a}
-                  key={a}
-                  validateStatus={this.state.errors.memberAddressError}
-                  help={this.state.errors.memberAddressError ? 'Please input a valid IP' : null }
+                  label="Route Domain"
+                  name='routeDomain'
+                  key="routeDomain"
+                  validateStatus={this.state.errors.routeDomainError}
+                  help={this.state.errors.routeDomainError ? 'Please select a valid routeDomain' : null }
                 >
-                  <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setMemberAddress(n.id, e)} />
+                <Select id='snat' onChange={e => this.setRouteDomain(e)}>
+                {this.props.routeDomains.map((n, i) => {
+                  return (
+                    <Select.Option  key={i} value={n.id}>{n.id}</Select.Option>
+                    )
+                  })}
+                </Select>
                 </Form.Item>
 
                 <Form.Item
-                  label="Name"
-                  name={na}
-                  key={na}
-                  validateStatus={this.state.errors.memberNameError}
-                  help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
+                  label="Snat"
+                  name='snat'
+                  key="snat"
+                  validateStatus={this.state.errors.snatError}
+                  help={this.state.errors.snatError ? 'Please select a valid Snat' : null }
                 >
-                  <Input id={na} style={{display: 'block'}} onBlur={e => this.setMemberName(n.id, e)} />
+                  <Select id='snat' onChange={e => this.setSnat(e)}>
+                    <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                    <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                  </Select>
                 </Form.Item>
 
                 <Form.Item
-                  label="Port"
-                  name={pa}
-                  key={pa}
-                  validateStatus={this.state.errors.memberPortError}
-                  help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
+                  label="Destination"
+                  name='destination'
+                  key="destination"
+                  validateStatus={this.state.errors.destinationError}
+                  help={this.state.errors.destinationError ? 'Please input a valid destination' : null }
                 >
-                  <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(n.id, e)}/>
+                    <Input id='destination' onBlur={e => this.setDestination(e)} />
                 </Form.Item>
 
                 <Form.Item
-                  label="Remove member"
-                  name={r}
-                  key={r}
-                  validateStatus={this.state.errors.removeMemberError}
-                  help={this.state.errors.removeMemberError ? 'Please input a valid number of members' : null }
+                  label="Destination Port"
+                  name='destinationPort'
+                  key="destinationPort"
+                  validateStatus={this.state.errors.destinationPortError}
+                  help={this.state.errors.destinationPortError ? 'Please input a valid destination Port' : null }
                 >
-                  <Button type="danger" onClick={() => this.removeMember(n.id)}>
-                    -
+                  <Input id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
+                </Form.Item>
+
+                { this.state.body.serviceType === 'L7' ?
+                  <Form.Item
+                    label="Certificate"
+                    name='certificate'
+                    key="certificate"
+                    validateStatus={this.state.errors.certificateError}
+                    help={this.state.errors.certificateError ? 'Please select a valid certificate' : null }
+                  >
+                  <Select id='snat' onChange={e => this.setCertificateName(e)}>
+                  {this.props.certificates.map((n, i) => {
+                    return (
+                      <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                      )
+                    })}
+                  </Select>
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                { this.state.body.serviceType === 'L7' ?
+                  <Form.Item
+                    label="Key"
+                    name='key'
+                    key="key"
+                    validateStatus={this.state.errors.keyError}
+                    help={this.state.errors.keyError ? 'Please select a valid key' : null }
+                  >
+                  <Select id='snat' onChange={e => this.setKeyName(e)}>
+                  {this.props.keys.map((n, i) => {
+                    return (
+                      <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                      )
+                    })}
+                  </Select>
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                <Form.Item
+                  label="Load Balancing Method"
+                  name='lbMethod'
+                  key="lbMethod"
+                  validateStatus={this.state.errors.lbMethodError}
+                  help={this.state.errors.lbMethodError ? 'Please input a valid Loadbalancing Method' : null }
+                >
+                  <Select id='lbMethod' onChange={a => this.setLbMethod(a)}>
+                    <Select.Option key={'round-robin'} value={'round-robin'}>round-robin</Select.Option>
+                    <Select.Option key={'least-connections-member'} value={'least-connections-member'}>least-connections-member</Select.Option>
+                    <Select.Option key={'observed-member'} value={'observed-member'}>observed-member</Select.Option>
+                    <Select.Option key={'predictive-member'} value={'predictive-member'}>predictive-member</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Monitor Type"
+                  name='monitorType'
+                  key="monitorType"
+                  validateStatus={this.state.errors.monitorTypeError}
+                  help={this.state.errors.monitorTypeError ? 'Please input a valid Monitor Type' : null }
+                >
+                  <Select id='monitorType' onChange={a => this.setMonitorType(a)}>
+                    <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
+                    <Select.Option key={'http'} value={'http'}>http</Select.Option>
+                  </Select>
+                </Form.Item>
+
+                { this.state.body.monitorType === 'http' ?
+                  <Form.Item
+                    label="Monitor send string"
+                    name='monitorSendString'
+                    key="monitorSendString"
+                    validateStatus={this.state.errors.monitorSendStringError}
+                    help={this.state.errors.monitorSendStringError ? 'Please input a valid monitor send string' : null }
+                  >
+                    <Input.TextArea rows={4} onChange={e => this.setMonitorSendString(e)} />
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                { this.state.body.monitorType === 'http' ?
+                  <Form.Item
+                    label="Monitor receive string"
+                    name='monitorReceiveString'
+                    key="monitorReceiveString"
+                    validateStatus={this.state.errors.monitorReceiveStringError}
+                    help={this.state.errors.monitorReceiveStringError ? 'Please input a valid monitor receive string' : null }
+                  >
+                    <Input.TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                <Form.Item
+                  label="One more member"
+                  name='membersNumber'
+                  key="membersNumber"
+                  validateStatus={this.state.errors.membersNumberError}
+                  help={this.state.errors.membersNumberError ? 'Please input a valid number of members' : null }
+                >
+                  <Button type="primary" onClick={() => this.oneMoreMember()}>
+                    +
                   </Button>
-                  <Divider/>
+                  {//<Input id='membersNumber' onBlur={e => this.setMembersNumber(e)} />
+                  }
                 </Form.Item>
+
+                {
+                  this.state.members.map((n, i) => {
+                    let a = 'address' + n.id
+                    let na = 'name' + n.id
+                    let pa = 'port' + n.id
+                    let r = 'remove' + n.id
+                    return (
+                      <React.Fragment>
+                      <Form.Item
+                        label="Address"
+                        name={a}
+                        key={a}
+                        validateStatus={this.state.errors.memberAddressError}
+                        help={this.state.errors.memberAddressError ? 'Please input a valid IP' : null }
+                      >
+                        <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setMemberAddress(n.id, e)} />
+                      </Form.Item>
+
+                      <Form.Item
+                        label="Name"
+                        name={na}
+                        key={na}
+                        validateStatus={this.state.errors.memberNameError}
+                        help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
+                      >
+                        <Input id={na} style={{display: 'block'}} onBlur={e => this.setMemberName(n.id, e)} />
+                      </Form.Item>
+
+                      <Form.Item
+                        label="Port"
+                        name={pa}
+                        key={pa}
+                        validateStatus={this.state.errors.memberPortError}
+                        help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
+                      >
+                        <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(n.id, e)}/>
+                      </Form.Item>
+
+                      <Form.Item
+                        label="Remove member"
+                        name={r}
+                        key={r}
+                        validateStatus={this.state.errors.removeMemberError}
+                        help={this.state.errors.removeMemberError ? 'Please input a valid number of members' : null }
+                      >
+                        <Button type="danger" onClick={() => this.removeMember(n.id)}>
+                          -
+                        </Button>
+                        <Divider/>
+                      </Form.Item>
+
+                      </React.Fragment>
+                    )
+                  })
+                }
 
                 </React.Fragment>
-              )
-            })
+                :
+                null
+              }
+
+
+                <Form.Item
+                  wrapperCol={ {offset: 8 }}
+                  name="button"
+                  key="button"
+                >
+                  <Button type="primary" onClick={() => this.removeMembersId()}>
+                    Create Service
+                  </Button>
+                </Form.Item>
+
+              </Form>
+            }
+
+            </React.Fragment>
+            :
+            <Alert message="Asset and Partition not set" type="error" />
           }
+        </Modal>
 
-          </React.Fragment>
-          :
-          null
-        }
+        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
 
-
-          <Form.Item
-            wrapperCol={ {offset: 8 }}
-            name="button"
-            key="button"
-          >
-            <Button type="primary" onClick={() => this.removeMembersId()}>
-              Create Service
-            </Button>
-          </Form.Item>
-
-        </Form>
-      }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
+      </React.Fragment>
 
     )
   }
