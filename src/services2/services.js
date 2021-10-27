@@ -11,10 +11,11 @@ import { setVisible as setInfobloxVisible } from '../_store/store.infoblox'
 
 import InfobloxManager from './infoblox/manager'
 
-import { Space, Row, Col, Collapse, Divider } from 'antd';
-const { Panel } = Collapse;
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { Space, Row, Col, Collapse, Divider } from 'antd'
+
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const { Panel } = Collapse
 
 
 

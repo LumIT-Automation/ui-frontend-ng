@@ -46,7 +46,7 @@ class Manager extends React.Component {
     return (
       <React.Fragment >
 
-        <Row onMouseLeave={() => this.props.dispatch(setVisible( false ))}>
+        <Row>
         {/*
           <Row>
             <div style={{margin: '0 150px'}}>
