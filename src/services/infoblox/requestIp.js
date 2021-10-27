@@ -24,7 +24,7 @@ class RequestIp extends React.Component {
       error: null,
       errors: {},
       message:'',
-      counter: 0,
+      counter: 1,
       requests: [],
       response: [],
       macAddress: '00:00:00:00:00:00',
@@ -32,6 +32,10 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
+    let requests = Object.assign([], this.state.requests)
+    requests.push({id:1, macAddress: '00:00:00:00:00:00'})
+    this.setState({requests: requests})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -39,6 +43,12 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('didupdate')
+    if (this.state.requests && this.state.requests.length === 0) {
+      let requests = Object.assign([], this.state.requests)
+      requests.push({id:1, macAddress: '00:00:00:00:00:00'})
+      this.setState({requests: requests})
+    }
     if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
       this.main()
     }
@@ -420,6 +430,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
+    console.log(this.state.requests)
     const requests = [
       {
         title: 'Network',
