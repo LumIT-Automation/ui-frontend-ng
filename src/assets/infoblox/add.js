@@ -343,7 +343,7 @@ class Add extends React.Component {
             </Form.Item>
 
             <Form.Item
-              label="position"
+              label="Position"
               name="position"
               key="position"
               validateStatus={this.state.errors.positionError}
