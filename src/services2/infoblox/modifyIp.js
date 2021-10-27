@@ -6,7 +6,9 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Divider, Table} from 'antd'
+import AssetSelector from './assetSelector'
+
+import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, Table} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -30,7 +32,7 @@ function isEmpty(obj) {
     return true;
 }
 
-class RequestIp extends React.Component {
+class ModifyIp extends React.Component {
 
   constructor(props) {
     super(props);
@@ -191,7 +193,6 @@ class RequestIp extends React.Component {
   }
 
   success = () => {
-    this.props.dispatch(setWorkflowStatus( 'created' ))
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -225,9 +226,9 @@ class RequestIp extends React.Component {
         dataIndex: ['extattrs', 'Name Server', 'value'],
         key: 'nameServer',
         render: (name, obj)  => (
-          <Space size="small">
+          <React.Fragment>
             <Input id='nameServer' placeholder={this.state.serverName} onChange={e => this.setServerName(e)} />
-          </Space>
+          </React.Fragment>
         ),
       },
       {
@@ -236,9 +237,9 @@ class RequestIp extends React.Component {
         dataIndex: 'mac_address',
         key: 'mac_address',
         render: (name, obj)  => (
-          <Space size="small">
+          <React.Fragment>
             <Input id='nameServer' placeholder={this.state.macAddress} onChange={e => this.setMacAddress(e)} />
-          </Space>
+          </React.Fragment>
         ),
       },
       {
@@ -286,72 +287,92 @@ class RequestIp extends React.Component {
     ];
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
-      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.success &&
-        <React.Fragment>
-        <Table
-          columns={columns}
-          dataSource={this.state.ipInfo}
-          bordered
-          rowKey="ip"
-          pagination={false}
-          style={{marginBottom: 10}}
-        />
-        <Button type="primary" onClick={() => this.modifyIp()}>
-          Modify Ip
-        </Button>
-        </React.Fragment>
-      }
-      { !this.state.loading && !this.state.success &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
+        <Button type="primary" onClick={() => this.details()}>MODIFY IP</Button>
 
-          }}
-          onFinish={null}
-          onFinishFailed={null}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>MODIFY IP</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
         >
-          <Form.Item
-            label="IP address"
-            name='ip'
-            key="ip"
-            validateStatus={this.state.errors.ipError}
-            help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
-          >
-            <Input id='ip' onChange={e => this.setIp(e)} />
-          </Form.Item>
-
-          <Form.Item
-            wrapperCol={ {offset: 8 }}
-            name="button"
-            key="button"
-          >
 
 
-            { (this.state.ipInfo && this.state.ipInfo[0].ip_address) ?
+          <AssetSelector />
+          <Divider/>
+
+          { ( this.props.asset && this.props.asset.id ) ?
+            <React.Fragment>
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <React.Fragment>
+              <Table
+                columns={columns}
+                dataSource={this.state.ipInfo}
+                bordered
+                rowKey="ip"
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
               <Button type="primary" onClick={() => this.modifyIp()}>
                 Modify Ip
               </Button>
-              :
-              <Button type="primary" onClick={() => this.infoIp()}>
-                Info Ip
-              </Button>
+              </React.Fragment>
             }
-          </Form.Item>
+            { !this.state.loading && !this.state.success &&
+              <Form
+                {...layout}
+                name="basic"
+                initialValues={{
 
-        </Form>
-      }
-        {this.props.error ?
-          <Error error={this.props.error} visible={true} resetError={() => this.resetError()} />
-          :
-          <Error error={null} visible={false} />
-        }
+                }}
+                onFinish={null}
+                onFinishFailed={null}
+              >
+                <Form.Item
+                  label="IP address"
+                  name='ip'
+                  key="ip"
+                  validateStatus={this.state.errors.ipError}
+                  help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
+                >
+                  <Input id='ip' onChange={e => this.setIp(e)} />
+                </Form.Item>
 
-      </Space>
+                <Form.Item
+                  wrapperCol={ {offset: 8 }}
+                  name="button"
+                  key="button"
+                >
 
+
+                  { (this.state.ipInfo && this.state.ipInfo[0].ip_address) ?
+                    <Button type="primary" onClick={() => this.modifyIp()}>
+                      Modify Ip
+                    </Button>
+                    :
+                    <Button type="primary" onClick={() => this.infoIp()}>
+                      Info Ip
+                    </Button>
+                  }
+                </Form.Item>
+
+              </Form>
+            }
+            </React.Fragment>
+            :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
+        </Modal>
+
+        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+
+      </React.Fragment>
     )
   }
 }
@@ -361,4 +382,4 @@ export default connect((state) => ({
  	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
-}))(RequestIp);
+}))(ModifyIp);

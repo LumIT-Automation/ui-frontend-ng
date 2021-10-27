@@ -45,7 +45,6 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
-    console.log('monto request')
   }
 
   shouldComponentUpdate(newProps, newState) {
