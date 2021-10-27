@@ -16,6 +16,7 @@ automation-interface-ui-container
 %include %{_topdir}/SPECS/preinst.spec
 %include %{_topdir}/SPECS/postinst.spec
 %include %{_topdir}/SPECS/prerm.spec
+%include %{_topdir}/SPECS/postrm.spec
 
 %prep
 %setup  -q #unpack tarball
