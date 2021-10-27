@@ -32,7 +32,6 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
     let requests = Object.assign([], this.state.requests)
     requests.push({id:1, macAddress: '00:00:00:00:00:00'})
     this.setState({requests: requests})
@@ -43,7 +42,6 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('didupdate')
     if (this.state.requests && this.state.requests.length === 0) {
       let requests = Object.assign([], this.state.requests)
       requests.push({id:1, macAddress: '00:00:00:00:00:00'})
@@ -578,8 +576,6 @@ class RequestIp extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-
-
           <AssetSelector />
           <Divider/>
 
@@ -595,9 +591,7 @@ class RequestIp extends React.Component {
                 pagination={false}
                 style={{marginBottom: 10}}
               />
-
               :
-
               <React.Fragment>
                 <Button type="primary" onClick={() => this.setRequests()}>
                   +
@@ -612,10 +606,11 @@ class RequestIp extends React.Component {
                   pagination={false}
                   style={{marginBottom: 10}}
                 />
-                <Button type="primary" style={{float: "right"}} onClick={() => this.sendRequests()}>
+                <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.sendRequests()}>
                   Request Ip
                 </Button>
-            </React.Fragment>
+                <br/>
+              </React.Fragment>
             }
             </React.Fragment>
             :

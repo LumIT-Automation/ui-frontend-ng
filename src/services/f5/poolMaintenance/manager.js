@@ -93,9 +93,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.asset)
-    console.log(this.props.partition)
-    console.log(this.props.currentPools)
     return (
       <React.Fragment>
 
