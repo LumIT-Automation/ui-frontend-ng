@@ -26,8 +26,10 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assets) {
-      this.props.dispatch(setAssetsFetch(true))
+    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
+      if(!this.props.infobloxAssets) {
+        this.props.dispatch(setAssetsFetch(true))
+      }
     }
   }
 
@@ -36,8 +38,10 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.assets) {
-      this.props.dispatch(setAssetsFetch(true))
+    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
+      if(!this.props.infobloxAssets) {
+        this.props.dispatch(setAssetsFetch(true))
+      }
     }
   }
 
@@ -93,5 +97,6 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
+  authorizations: state.authorizations.infoblox,
   assets: state.infoblox.assets,
 }))(Manager);
