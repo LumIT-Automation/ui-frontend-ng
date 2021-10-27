@@ -284,13 +284,14 @@ class RequestIp extends React.Component {
 
     if (macRegex.test(mac)) {
       let macAddress = mac
+      req.macAddress = macAddress
       delete errors.macAddressError
       //this.setState({macAddress: mac, errors: errors})
     }
     else {
+      req.macAddress = ''
       errors.macAddressError = 'error'
     }
-    req.macAddress = macAddress
     req.errors = errors
   }
 
