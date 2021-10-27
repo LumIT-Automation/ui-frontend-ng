@@ -406,7 +406,7 @@ class List extends React.Component {
           dataSource={this.props.devices}
           scroll={{ x: 'auto', y: 570}}
           bordered
-          rowKey="name"
+          rowKey="SERIALE"
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}

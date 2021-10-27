@@ -41,7 +41,6 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    console.log('monto Concerto')
     this.fetchAuthorizations()
   }
 

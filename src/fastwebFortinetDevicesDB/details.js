@@ -515,7 +515,7 @@ class Details extends React.Component {
             columns={columns}
             dataSource={this.state.device}
             bordered
-            rowKey="name"
+            rowKey="SERIALE"
             layout="vertical"
             pagination={false}
             style={{ width: 'auto', marginBottom: 10}}

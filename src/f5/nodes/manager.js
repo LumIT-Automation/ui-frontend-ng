@@ -33,7 +33,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
     if (this.props.asset && this.props.partition) {
       if (!this.props.nodes) {
         this.fetchNodes()
@@ -86,8 +85,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log('render manager nodes')
-    console.log(this.props.error)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>

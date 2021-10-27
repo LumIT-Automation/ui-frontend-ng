@@ -364,7 +364,7 @@ class RequestIp extends React.Component {
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4sd/?next-available`, this.props.token, b )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
     return re
   }
 
