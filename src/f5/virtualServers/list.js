@@ -130,7 +130,8 @@ class List extends React.Component {
     const columns = [
       {
         title: 'Name',
-        align: 'center',
+        align: 'center', 
+ 				width: 'auto',
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
@@ -138,6 +139,7 @@ class List extends React.Component {
       {
         title: 'Type',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'type',
         key: 'type',
        ...this.getColumnSearchProps('type'),
@@ -145,6 +147,7 @@ class List extends React.Component {
       {
         title: 'Destination',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'destination',
         key: 'destination',
        ...this.getColumnSearchProps('destination'),
@@ -152,6 +155,7 @@ class List extends React.Component {
        {
          title: 'Subnet Mask',
          align: 'center',
+ 				width: 'auto',
          dataIndex: 'mask',
          key: 'mask',
         ...this.getColumnSearchProps('mask'),
@@ -159,6 +163,7 @@ class List extends React.Component {
       {
         title: 'IP Protocol',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'ipProtocol',
         key: 'ipProtocol',
        ...this.getColumnSearchProps('ipProtocol'),
@@ -166,6 +171,7 @@ class List extends React.Component {
       {
         title: 'Pool',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'pool',
         key: 'pool',
        ...this.getColumnSearchProps('pool'),
@@ -173,6 +179,7 @@ class List extends React.Component {
       {
         title: 'Profiles',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'profiles',
         key: 'profiles',
        ...this.getColumnSearchProps('profiles'),
@@ -180,6 +187,7 @@ class List extends React.Component {
       {
         title: 'Policies',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'policies',
         key: 'policies',
        ...this.getColumnSearchProps('policies'),
@@ -187,6 +195,7 @@ class List extends React.Component {
       {
         title: 'iRules',
         align: 'center',
+ 				width: 'auto',
         dataIndex: 'irules',
         key: 'irules',
        ...this.getColumnSearchProps('irules'),
@@ -194,6 +203,7 @@ class List extends React.Component {
       {
         title: 'sourceAddressTranslation',
         align: 'center',
+ 				width: 'auto',
         dataIndex: ['sourceAddressTranslation', 'type'],
         key: 'sourceAddressTranslation',
        //...this.getColumnSearchProps(['sourceAddressTranslation', 'type']),
@@ -202,10 +212,11 @@ class List extends React.Component {
 
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+      <React.Fragment>
         <Table
           columns={columns}
           dataSource={this.props.virtualServers}
+          scroll={{ x: 'auto', y: 'auto'}}
           bordered
           rowKey="name"
           //pagination={false}
@@ -213,7 +224,7 @@ class List extends React.Component {
           style={{marginBottom: 10}}
         />
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
+      </React.Fragment>
 
     )
   }

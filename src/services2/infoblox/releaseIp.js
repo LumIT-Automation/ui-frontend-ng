@@ -6,9 +6,10 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { Space, Form, Input, Result, Button, Select, Spin, Modal, Row, Col, Table } from 'antd'
+import AssetSelector from './assetSelector'
+
+import { Modal, Alert, Divider, Form, Input, Result, Button, Spin, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-import { setWorkflowStatus } from '../../_store/store.workflows'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -131,7 +132,6 @@ class ReleaseIp extends React.Component {
   }
 
   success = () => {
-    this.props.dispatch(setWorkflowStatus( 'deleted' ))
     setTimeout( () => this.setState({ success: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -216,58 +216,83 @@ class ReleaseIp extends React.Component {
     ];
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <React.Fragment>
 
-      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.success &&
-        <Table
-          columns={columns}
-          dataSource={this.state.ipInfo}
-          bordered
-          rowKey="ip"
-          pagination={false}
-          style={{marginBottom: 10}}
-        />
-      }
-      { !this.state.loading && !this.state.success &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
+        <Button type="primary" onClick={() => this.details()}>RELEASE IP</Button>
 
-          }}
-          onFinish={null}
-          onFinishFailed={null}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>RELEASE IP</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
         >
 
-        <Form.Item
-          label="IP address"
-          name='ip'
-          key="ip"
-          validateStatus={this.state.errors.ipError}
-          help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
-        >
-          <Input id='ip' onChange={e => this.setIp(e)} />
-        </Form.Item>
 
-        <Form.Item
-          wrapperCol={ {offset: 8 }}
-          name="button"
-          key="button"
-        >
+          <AssetSelector />
+          <Divider/>
 
-          <Button type="primary" onClick={() => this.releaseIp()}>
-            Release Ip
-          </Button>
+          { ( this.props.asset && this.props.asset.id ) ?
+            <React.Fragment>
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <Table
+                columns={columns}
+                dataSource={this.state.ipInfo}
+                bordered
+                rowKey="ip"
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
+            }
+            { !this.state.loading && !this.state.success &&
+              <Form
+                {...layout}
+                name="basic"
+                initialValues={{
 
-        </Form.Item>
+                }}
+                onFinish={null}
+                onFinishFailed={null}
+              >
 
-        </Form>
-      }
+              <Form.Item
+                label="IP address"
+                name='ip'
+                key="ip"
+                validateStatus={this.state.errors.ipError}
+                help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
+              >
+                <Input id='ip' onChange={e => this.setIp(e)} />
+              </Form.Item>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+              <Form.Item
+                wrapperCol={ {offset: 8 }}
+                name="button"
+                key="button"
+              >
 
-      </Space>
+                <Button type="primary" onClick={() => this.releaseIp()}>
+                  Release Ip
+                </Button>
+
+              </Form.Item>
+
+              </Form>
+            }
+
+          </React.Fragment>
+          :
+          <Alert message="Asset and Partition not set" type="error" />
+        }
+      </Modal>
+
+      {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+
+    </React.Fragment>
 
     )
   }
