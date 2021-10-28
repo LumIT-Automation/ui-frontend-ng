@@ -85,7 +85,7 @@ class Infoblox extends React.Component {
 
 /*
   fetchContainers = async () => {
-    console.log('fetcho containers')
+    
     this.props.dispatch(setContainersLoading(true))
     let rest = new Rest(
       "GET",

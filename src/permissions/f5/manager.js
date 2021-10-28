@@ -130,8 +130,6 @@ class Manager extends React.Component {
     return r
   }
 
-
-
   addAssetDetails = async (perm) => {
     let permissions = Object.assign({}, perm.data.items)
     let assets = Object.assign({}, this.props.assets)
@@ -147,16 +145,8 @@ class Manager extends React.Component {
     permissions = Object.assign([], permissions)
 
     this.props.dispatch(setPermissions(permissions))
-    console.log('finish')
     return
   }
-
-
-
-
-
-
-
 
   render() {
     return (

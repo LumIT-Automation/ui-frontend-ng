@@ -41,7 +41,7 @@ class DetailsIp extends React.Component {
   }
 
   componentDidMount() {
-      console.log('monto details')
+      
   }
 
   shouldComponentUpdate(newProps, newState) {

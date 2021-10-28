@@ -215,7 +215,7 @@ class Add extends React.Component {
   }
 
   setNetwork = n => {
-    console.log(n)
+    
 
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
@@ -231,7 +231,7 @@ class Add extends React.Component {
       }
     }
     else {
-      console.log('errore')
+      
       errors.networkName = 'error'
     }
 
@@ -324,7 +324,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.nets)
+    
     return (
       <Space direction='vertical'>
 

@@ -326,8 +326,6 @@ class RequestIp extends React.Component {
         let res = await this.updateResponse(resp, req.id)
         response.push(res)
       } catch(resp) {
-        console.log('errrrrrr')
-        console.log(resp)
         return
       }
     }
@@ -340,10 +338,10 @@ class RequestIp extends React.Component {
       return res
     })
 
-    console.log(promises)
+    
     const response = await Promise.all(promises)
     */
-    console.log(response)
+    
     this.setState({response: response, loading: false, success: true})
   }
 
@@ -441,7 +439,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.objectTypes)
+    
     const requests = [
       {
         title: 'Network',

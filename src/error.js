@@ -42,7 +42,7 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log(this.props.error)
+    //
     /*
     if (this.props.error !== prevProps.error) {
       const e = []
@@ -75,7 +75,7 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
-    console.log(this.props.error)
+    
 
     const columns = [
       {

@@ -135,7 +135,7 @@ class List extends React.Component {
       "GET",
       resp => {
         //this.props.dispatch( setTree(resp) )
-        console.log(resp.data[1].ipv4Info)
+        
         this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
       },
       error => {

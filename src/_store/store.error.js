@@ -22,7 +22,7 @@ const errorSlice = createSlice({
           state.errorLoading = action.payload
         },
         setError: (state, action) => {
-          console.log(action.payload)
+          
           state.error = action.payload
         },
         setErrorFetch: (state, action) => {

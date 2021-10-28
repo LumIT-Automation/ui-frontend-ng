@@ -31,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partitions) {
-      console.log('monto manager')
+      
       this.getPools()
     }
   }
@@ -41,9 +41,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('manager update')
+    
     if ( (this.props.asset && this.props.partitions) && (prevProps.partition !== this.props.partition) ) {
-      console.log('getpools')
+      
       this.getPools()
     }
   }

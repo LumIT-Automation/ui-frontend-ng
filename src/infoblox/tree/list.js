@@ -58,7 +58,7 @@ class List extends React.Component {
       "GET",
       resp => {
         //this.props.dispatch( setTree(resp) )
-        console.log(resp.data[1].ipv4Info)
+        
         this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
       },
       error => {
@@ -75,7 +75,7 @@ class List extends React.Component {
   }
 
   onSelect = (selectedKeys, info) => {
-    console.log('selected', selectedKeys, info)
+    
     if (info.node.type === 'network') {
       let n = info.node.network
       n = n.split('/')
@@ -90,11 +90,11 @@ class List extends React.Component {
   }
 
   onCheck = (checkedKeys, info) => {
-    console.log('onCheck', checkedKeys, info);
+    ;
   }
 
   render() {
-    console.log(this.props.tree)
+    
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>

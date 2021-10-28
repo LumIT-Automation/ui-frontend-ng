@@ -40,7 +40,7 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     /*if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       if(!this.props.infobloxAssets) {
-        console.log('manager update')
+        
         this.props.dispatch(setAssetsFetch(true))
       }
     }*/

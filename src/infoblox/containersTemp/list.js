@@ -145,7 +145,7 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.containers)
+    
 
     const expandedRowRender = () => {
     const columns = [
@@ -179,7 +179,7 @@ class List extends React.Component {
 
   const data = [];
     this.props.containers.forEach( c => {
-      //console.log(c)
+      //
       let network = c.network
       data.push({
         key: network,

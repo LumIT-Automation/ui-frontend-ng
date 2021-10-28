@@ -362,7 +362,7 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.state.body)
+    
     return (
       <Space direction='vertical'>
 

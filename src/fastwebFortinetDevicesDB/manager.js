@@ -98,7 +98,7 @@ class Manager extends React.Component {
       }
       out.push(o)
     })
-    console.log(out)
+    
 
   }
 

@@ -46,7 +46,7 @@ class Login extends Component {
       let rest = new Rest("POST",
 
         response => {
-          console.log('response ok login')
+          
           this.setState({ error: null });
 
           // Update the store; save the access token.

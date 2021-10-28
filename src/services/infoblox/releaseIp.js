@@ -147,7 +147,7 @@ class ReleaseIp extends React.Component {
 
 
   render() {
-    console.log(this.state.success)
+    
     const columns = [
       {
         title: 'IP address',

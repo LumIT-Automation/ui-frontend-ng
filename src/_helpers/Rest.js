@@ -145,8 +145,8 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                  console.log('iiiii')
-                  console.log(response)
+                  
+                  
                 this.onError(
                   {
                     status: response.status,
@@ -195,9 +195,9 @@ class Rest {
             else {
               try {
                 //e.g. 400, get non existent partitions,
-                console.log(response)
+                
                 json = await response.json();
-                //console.log(json)
+                //
                 this.onError(
                   {
                     status: response.status,
@@ -210,8 +210,8 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                  console.log('iiiii')
-                  console.log(response)
+                  
+                  
                 this.onError(
                   {
                     status: response.status,
@@ -269,7 +269,7 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                console.log('iiiii')
+                
                 this.onError(
                   {
                     status: response.status,

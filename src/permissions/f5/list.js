@@ -202,6 +202,9 @@ class List extends React.Component {
       }
     ];
 
+    let randomKey = () => {
+      return Math.random().toString()
+    }
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
@@ -211,13 +214,12 @@ class List extends React.Component {
           columns={columns}
           dataSource={this.props.permissions}
           bordered
-          rowKey="permissionId"
+          rowKey={randomKey}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
       </Space>
-
     )
   }
 }

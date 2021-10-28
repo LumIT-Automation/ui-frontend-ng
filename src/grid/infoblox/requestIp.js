@@ -87,9 +87,9 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        //console.log(resp.data['/'].children)
+        //
         r = resp.data['/'].children
-        //console.log(tree)
+        //
         //this.setState({tree: tree})
       },
       error => {
@@ -153,8 +153,8 @@ class RequestIp extends React.Component {
     this.setState({responseContainers: conts})
     let realNets = []
     let realConts = []
-    console.log(nets)
-    console.log(conts)
+    
+    
 
 
     nets.forEach(e => {
@@ -179,8 +179,8 @@ class RequestIp extends React.Component {
       }
     })
 
-    console.log(realNets)
-    console.log(realConts)
+    
+    
 
 
     let net = realNets.concat(realConts)
@@ -232,7 +232,7 @@ class RequestIp extends React.Component {
         })
       }
       else {
-        console.log('no children')
+        
       }
       delete errors.networkError
       //this.setState({network: network, errors: errors})
@@ -327,7 +327,7 @@ class RequestIp extends React.Component {
     this.setState({message: null});
 /*
     if (this.state.body.type === 'container') {
-      console.log(this.state.body.type)
+      
       let b = {
         "data": {
           "network": `${this.state.body.network}`,
@@ -346,7 +346,7 @@ class RequestIp extends React.Component {
           }
         }
       }
-      console.log(b)
+      
     }
     else if (this.state.body.type === 'network') {*/
       let b = {
@@ -376,15 +376,15 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        console.log(resp)
-        //console.log(resp.data)
+        
+        //
         //fixedaddress/ZG5zLmZpeGVkX2FkZHJlc3MkMTAuOC4xLjEwMC4wLi4:10.8.1.100/default
         let str = resp.data[0].result
         let st = str.split(':')
         let s = st[1]
         let ip = s.split('/')
         ip = ip[0]
-        console.log(ip)
+        
 
         let o = {
           ip: ip,
@@ -429,7 +429,7 @@ class RequestIp extends React.Component {
 
 
   render() {
-    console.log(this.state)
+    
 
     const columns = [
       {

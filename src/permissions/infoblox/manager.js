@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
-import Rest from "../../_helpers/Rest";
+import Rest from "../../_helpers/Rest"
 
 import { setError } from '../../_store/store.error'
 import {
@@ -20,13 +20,11 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Table, Input, Button, Space, Spin, Divider } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-/*
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
-*/
 
 
 class Manager extends React.Component {
@@ -58,21 +56,49 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('unmmount')
   }
 
   main = async () => {
     this.props.dispatch(setPermissionsLoading(true))
-    let assets = await this.fetchAssets()
-    this.props.dispatch(setAssets( assets ))
+    let permissions
 
-    let identityGroups = await this.fetchIdentityGroups()
-    this.props.dispatch(setIdentityGroups( identityGroups ))
+    try {
+      let assets = await this.fetchAssets()
+      this.props.dispatch(setAssets( assets ))
+    }
+    catch (resp){
+      this.props.dispatch(setPermissionsLoading(false))
+      return
+    }
 
+    try {
+      let identityGroups = await this.fetchIdentityGroups()
+      this.props.dispatch(setIdentityGroups( identityGroups ))
+    }
+    catch (resp){
+      this.props.dispatch(setPermissionsLoading(false))
+      this.componentWillUnmount()
+    }
 
-    let permissions = await this.fetchPermissions()
-
-    this.addAssetDetails(permissions)
-    this.props.dispatch(setPermissionsLoading(false))
+    try {
+      permissions = await this.fetchPermissions()
+      if (permissions.status === 200) {
+        this.props.dispatch(setPermissions( permissions ))
+        this.addAssetDetails(permissions)
+        this.props.dispatch(setPermissionsLoading(false))
+      }
+      else {
+        let error = new Error('KO');
+        throw error;
+      }
+    }
+    catch (err){
+      console.log(permissions)
+      this.props.dispatch(setError(permissions))
+      this.props.dispatch(setPermissionsLoading(false))
+      this.componentWillUnmount()
+    }
   }
 
   fetchAssets = async () => {
@@ -116,10 +142,9 @@ class Manager extends React.Component {
       },
       error => {
         r = error
-        this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR(`infoblox/permissions/`, this.props.token)
+    await rest.doXHR(`infoblox/permissionss/`, this.props.token)
     return r
   }
 
@@ -140,43 +165,36 @@ class Manager extends React.Component {
     permissions = Object.assign([], permissions)
 
     this.props.dispatch(setPermissions(permissions))
-    console.log('finish')
     return
   }
 
 
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
-
-
   render() {
-    console.log(this.props.permissionsLoading)
-    console.log(this.props.permissions)
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <br/>
-        {this.props.permissionsLoading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+      <React.Fragment>
+      { this.props.error ?
+        <Error error={[this.props.error]} visible={true} />
+        :
+        <React.Fragment>
+          <br/>
+          {this.props.permissionsLoading ?
+            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+            :
+            <React.Fragment>
+              { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+                <Add/>
+                :
+                null
+              }
+              <List/>
+            </React.Fragment>
+          }
           :
-          <React.Fragment>
-            { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-              <Add/>
-              :
-              null
-            }
-
-            <List/>
-
-          </React.Fragment>
+          <Error visible={false} />}
+        </React.Fragment>
         }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
-
+      </React.Fragment>
     )
   }
 }
