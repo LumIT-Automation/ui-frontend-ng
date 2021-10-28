@@ -8,7 +8,7 @@ import Error from '../../../error'
 import { setError } from '../../../_store/store.error'
 import { setAsset, setPartitions, setPartition, setCurrentPools } from '../../../_store/store.f5'
 
-import AssetSelector from '../assetSelector'
+import AssetSelector from '../../../f5/assetSelector'
 import PoolsTable from './poolsTable'
 
 import { Modal, Alert, Form, Select, Button, Row, Divider, Spin } from 'antd';

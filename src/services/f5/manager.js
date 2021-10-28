@@ -6,7 +6,6 @@ import Rest from '../../_helpers/Rest'
 
 import { setAssetsFetch } from '../../_store/store.f5'
 
-import AssetSelector from './assetSelector'
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'

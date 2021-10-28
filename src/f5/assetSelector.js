@@ -11,8 +11,7 @@ import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Col, Divider, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons'
 
-const { Option } = Select;
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 class AssetSelector extends React.Component {
@@ -91,8 +90,6 @@ class AssetSelector extends React.Component {
         this.setState({ partitions: resp.data.items }, () => this.props.dispatch(setPartitions( resp )))
       },
       error => {
-        console.log('errore')
-        console.log(this.state.partitions)
         this.props.dispatch(setError(error))
       }
     )
@@ -101,21 +98,17 @@ class AssetSelector extends React.Component {
   }
 
   setPartition = p => {
-    //this.props.dispatch(resetObjects())
-    //this.setState({partition: p})
     this.props.dispatch(setPartition(p))
-    //this.props.dispatch(setPartition('bla'))
-  }
-
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
 
   render() {
-    console.log(this.state.envAssets)
     return (
+
+      <React.Fragment>
+      { this.props.error ?
+        <Error error={[this.props.error]} visible={true} />
+        :
         <React.Fragment>
         <br/>
           <Row style={{paddingLeft: '100px'}}>
@@ -169,11 +162,14 @@ class AssetSelector extends React.Component {
             </Col>
 
             <Col offset={1}>
-              Partition:
+
               { this.state.partitionsLoading ?
-                <Spin indicator={spinIcon} style={{margin: 'auto', fontSize: 24}} />
+                <React.Fragment>
+                  Partition:  <Spin indicator={spinIcon} style={{margin: '0 50px', display: 'inline'}}/>
+                </React.Fragment>
                 :
                 <React.Fragment>
+                Partition:
                 {this.state.partitions ?
                   <Select
                     showSearch
@@ -201,12 +197,10 @@ class AssetSelector extends React.Component {
               }
             </Col>
           </Row>
-
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error error={null} visible={false} />}
-
+        </React.Fragment>
+      }
       </React.Fragment>
-      )
+    )
   }
 };
 

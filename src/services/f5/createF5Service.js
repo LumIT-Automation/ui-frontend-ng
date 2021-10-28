@@ -7,7 +7,7 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 import { setCertificates, setKeys, setRouteDomains } from '../../_store/store.f5'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../../f5/assetSelector'
 
 import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
