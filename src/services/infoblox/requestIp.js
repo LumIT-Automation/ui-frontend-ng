@@ -135,7 +135,7 @@ class RequestIp extends React.Component {
     let r = {id: n, macAddress: '00:00:00:00:00:00'}
     let list = Object.assign([], this.state.requests)
     list.push(r)
-    this.setState({requests: list, counter: n})
+    this.setState({requests: list, counter: n, objectTypes: null})
   }
 
   removeRequest = r => {
@@ -205,7 +205,7 @@ class RequestIp extends React.Component {
         this.setState({objectTypes: unique})
       }
       else {
-        this.setState({objectTypes: null})
+        //this.setState({objectTypes: null})
       }
       let info = await this.fetchNetwork(prefix)
 
@@ -413,6 +413,7 @@ class RequestIp extends React.Component {
     this.setState({
       visible: false,
       success: false,
+      objectTypes: null,
       requests: [],
       response: [],
       errors: []
@@ -428,7 +429,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.requests)
+    console.log(this.state.objectTypes)
     const requests = [
       {
         title: 'Network',
@@ -464,6 +465,7 @@ class RequestIp extends React.Component {
         key: 'objectType',
         render: (name, obj)  => (
           <Select key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
+            <Select.Option  key={'-'} value={null}>-</Select.Option>
             { this.state.objectTypes ?
               this.state.objectTypes.map((n, i) => {
               return (
@@ -471,7 +473,7 @@ class RequestIp extends React.Component {
                 )
               })
               :
-              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+              null
             }
           </Select>
         ),

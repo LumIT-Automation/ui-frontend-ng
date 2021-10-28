@@ -122,17 +122,22 @@ class Service extends React.Component {
 
         <React.Fragment>
           <Divider orientation="left" plain>
-            History
+            HISTORY
           </Divider>
+          <br/>
+          <br/>
         </React.Fragment>
 
 
         { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
         <React.Fragment>
           <Divider orientation="left" plain >
-            Ipam
+            IPAM
           </Divider>
-            <InfobloxManager/>
+          <br/>
+          <InfobloxManager/>
+          <br/>
+          <br/>
         </React.Fragment>
         :
         null
@@ -141,9 +146,12 @@ class Service extends React.Component {
         { (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) ?
         <React.Fragment>
           <Divider orientation="left" plain>
-            Load Balancer
+            LOAD BALANCER
           </Divider>
+          <br/>
           <F5Manager/>
+          <br/>
+          <br/>
         </React.Fragment>
         :
         null
