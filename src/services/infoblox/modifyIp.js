@@ -99,6 +99,8 @@ class ModifyIp extends React.Component {
         this.setState({
           success: true,
           ipInfo: ipInfo,
+          present: true,
+          status: resp.data.status,
           loading: false
         })
         if (resp.data.extattrs && resp.data.extattrs['Name Server']) {
@@ -113,7 +115,7 @@ class ModifyIp extends React.Component {
         }
       },
       error => {
-        this.setState({error: error, loading: false})
+        this.setState({error: error, loading: false, present: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
@@ -194,13 +196,13 @@ class ModifyIp extends React.Component {
       visible: false,
       success: false,
       ipInfo: [],
+      present: false,
       errors: []
     })
   }
 
 
   render() {
-    console.log(this.state.success)
     const columns = [
       {
         title: 'IP address',
@@ -309,7 +311,7 @@ class ModifyIp extends React.Component {
                 <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                 :
                 <React.Fragment>
-                { this.state.success ?
+                { this.state.present ?
                   <React.Fragment>
                     <Table
                       columns={columns}
@@ -319,9 +321,15 @@ class ModifyIp extends React.Component {
                       pagination={false}
                       style={{marginBottom: 10}}
                     />
+                    { ( this.state.status === 'USED' ) ?
                     <Button type="primary" onClick={() => this.modifyIp()}>
                       Modify Ip
                     </Button>
+                    :
+                    <Button type="primary" onClick={() => this.modifyIp()} disabled>
+                      Modify Ip
+                    </Button>
+                    }
                   </React.Fragment>
                   :
                   <Form
