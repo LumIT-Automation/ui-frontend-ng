@@ -140,12 +140,14 @@ class ReleaseIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      success: false,
+      errors: []
     })
   }
 
 
   render() {
-
+    console.log(this.state.success)
     const columns = [
       {
         title: 'IP address',
@@ -243,7 +245,7 @@ class ReleaseIp extends React.Component {
                 columns={columns}
                 dataSource={this.state.ipInfo}
                 bordered
-                rowKey="ip"
+                rowKey="ip_address"
                 pagination={false}
                 style={{marginBottom: 10}}
               />
