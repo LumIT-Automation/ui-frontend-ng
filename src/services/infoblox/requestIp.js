@@ -63,10 +63,23 @@ class RequestIp extends React.Component {
     this.setState({networkLoading: true})
     let networks = await this.fetchNetworks()
     let containers = await this.fetchContainers()
-    let realNetworks = await this.realNet(networks)
-    let realContainers = await this.realCont(containers)
-    let real = realNetworks.concat(realContainers)
-    this.setState({real: real, networkLoading: false, networks: networks, containers: containers})
+    let real, realNetworks, realContainers
+
+    if (networks) {
+      realNetworks = await this.realNet(networks)
+    }
+    if (containers) {
+      realContainers = await this.realCont(containers)
+    }
+
+    if (networks && containers) {
+      real = realNetworks.concat(realContainers)
+    }
+
+    if (real) {
+      this.setState({real: real, networkLoading: false, networks: networks, containers: containers})
+    }
+
   }
 
   fetchNetworks = async () => {
@@ -179,13 +192,12 @@ class RequestIp extends React.Component {
 
 
 
-  setNetwork = async (value, e, id) => {
+  setNetwork = async (network, e, id) => {
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     this.setState({objectTypes: null})
 
     let objectTypes = []
-    let network = e.value
     let prefix = network.split('/')
     prefix = prefix[0]
     let subnetMask
@@ -205,7 +217,7 @@ class RequestIp extends React.Component {
         this.setState({objectTypes: unique})
       }
       else {
-        //this.setState({objectTypes: null})
+        this.setState({objectTypes: null})
       }
       let info = await this.fetchNetwork(prefix)
 
@@ -442,7 +454,18 @@ class RequestIp extends React.Component {
               <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
               :
               <React.Fragment>
-                <Select key={obj.id} style={{ width: '300px' }} onChange={(value, event) => this.setNetwork(value, event, obj.id)}>
+                <Select
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  key={obj.id}
+                  style={{ width: '300px' }}
+                  onChange={(value, event) => this.setNetwork(value, event, obj.id)}>
                   { this.state.real ?
                     this.state.real.map((n, i) => {
                     return (
@@ -565,65 +588,71 @@ class RequestIp extends React.Component {
 
     return (
       <React.Fragment>
+      { this.props.error ?
+        <React.Fragment>
+          <Error error={[this.props.error]} visible={true} />
+        </React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>REQUEST IP</Button>
+        :
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>REQUEST IP</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-        >
-          <AssetSelector />
-          <Divider/>
+        <React.Fragment>
+          <Button type="primary" onClick={() => this.details()}>REQUEST IP</Button>
 
-          { ( this.props.asset && this.props.asset.id ) ?
-            <React.Fragment>
-            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !this.state.loading && this.state.success  ?
-              <Table
-                columns={columns}
-                dataSource={this.state.response}
-                bordered
-                rowKey="ip"
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-              :
+          <Modal
+            title={<p style={{textAlign: 'center'}}>REQUEST IP</p>}
+            centered
+            destroyOnClose={true}
+            visible={this.state.visible}
+            footer={''}
+            onOk={() => this.setState({visible: true})}
+            onCancel={() => this.closeModal()}
+            width={1500}
+          >
+
+            <AssetSelector />
+            <Divider/>
+
+            { ( this.props.asset && this.props.asset.id ) ?
               <React.Fragment>
-                <Button type="primary" onClick={() => this.setRequests()}>
-                  +
-                </Button>
-                <br/>
-                <br/>
+              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+              { !this.state.loading && this.state.success  ?
                 <Table
-                  columns={requests}
-                  dataSource={this.state.requests}
+                  columns={columns}
+                  dataSource={this.state.response}
                   bordered
-                  rowKey="id"
+                  rowKey="ip"
                   pagination={false}
                   style={{marginBottom: 10}}
                 />
-                <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.sendRequests()}>
-                  Request Ip
-                </Button>
-                <br/>
+                :
+                <React.Fragment>
+                  <Button type="primary" onClick={() => this.setRequests()}>
+                    +
+                  </Button>
+                  <br/>
+                  <br/>
+                  <Table
+                    columns={requests}
+                    dataSource={this.state.requests}
+                    bordered
+                    rowKey="id"
+                    pagination={false}
+                    style={{marginBottom: 10}}
+                  />
+                  <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.sendRequests()}>
+                    Request Ip
+                  </Button>
+                  <br/>
+                </React.Fragment>
+              }
               </React.Fragment>
+              :
+              <Alert message="Asset and Partition not set" type="error" />
             }
-            </React.Fragment>
-            :
-            <Alert message="Asset and Partition not set" type="error" />
-          }
-        </Modal>
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
-
+          </Modal>
+        </React.Fragment>
+      }
       </React.Fragment>
-
     )
   }
 }

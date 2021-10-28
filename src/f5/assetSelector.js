@@ -9,7 +9,10 @@ import { setEnvironment, setAsset, setPartitions, setPartition } from '../_store
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Col, Divider, Spin } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons'
 
+const { Option } = Select;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class AssetSelector extends React.Component {
@@ -19,8 +22,6 @@ class AssetSelector extends React.Component {
     this.state = {
       environments: [],
       environment: '',
-      envAssets: [],
-      partitions: [],
       error: null,
     };
   }
@@ -77,22 +78,26 @@ class AssetSelector extends React.Component {
     let asset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.setState({ partitions: null, partition: null }, () => this.fetchAssetPartitions(asset))
+    this.setState({partitions: null}, () => this.fetchAssetPartitions(asset))
     this.props.dispatch(setAsset(asset))
     this.props.dispatch(setPartition(null))
   }
 
   fetchAssetPartitions = async (asset) => {
+    this.setState({partitionsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({ partitions: resp.data.items }, () => this.props.dispatch(setPartitions( resp )))
       },
       error => {
+        console.log('errore')
+        console.log(this.state.partitions)
         this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`f5/${asset.id}/partitions/`, this.props.token)
+    this.setState({partitionsLoading: false})
   }
 
   setPartition = p => {
@@ -109,13 +114,25 @@ class AssetSelector extends React.Component {
 
 
   render() {
+    console.log(this.state.envAssets)
     return (
         <React.Fragment>
         <br/>
           <Row style={{paddingLeft: '100px'}}>
             <Col>
               Environment:
-              <Select onChange={e => this.setEnvironment(e)} style={{ width: 200, marginLeft: '10px' }} >
+              <Select
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={e => this.setEnvironment(e)}
+                style={{ width: 200, marginLeft: '10px' }}
+              >
                 {this.state.environments.map((n, i) => {
                 return (
                   <Select.Option key={i} value={n}>{n}</Select.Option>
@@ -127,7 +144,18 @@ class AssetSelector extends React.Component {
             <Col offset={1}>
               Asset:
               { this.state.envAssets ?
-                <Select onChange={n => this.setAsset(n)} style={{ width: 350, marginLeft: '10px' }}>
+                <Select
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onChange={n => this.setAsset(n)}
+                  style={{ width: 350, marginLeft: '10px' }}
+                >
                 {this.state.envAssets.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
@@ -135,25 +163,42 @@ class AssetSelector extends React.Component {
                 })}
                 </Select>
                 :
-                <Select value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
+                <Select disabled value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
                 </Select>
               }
             </Col>
 
             <Col offset={1}>
               Partition:
-              {this.state.partitions ?
-                <Select onChange={p => this.setPartition(p)} style={{ width: 200, marginLeft: '10px' }}>
-                   {this.state.partitions.map((p, i) => {
-                  return (
-                    <Select.Option  key={i} value={p.name}>{p.name}</Select.Option>
-                  )
-                })}
-                </Select>
+              { this.state.partitionsLoading ?
+                <Spin indicator={spinIcon} style={{margin: 'auto', fontSize: 24}} />
                 :
-                <Select value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
-                </Select>
-            }
+                <React.Fragment>
+                {this.state.partitions ?
+                  <Select
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onChange={p => this.setPartition(p)}
+                    style={{ width: 200, marginLeft: '10px' }}
+                  >
+                     {this.state.partitions.map((p, i) => {
+                    return (
+                      <Select.Option  key={i} value={p.name}>{p.name}</Select.Option>
+                    )
+                  })}
+                  </Select>
+                  :
+                  <Select disabled value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
+                  </Select>
+                }
+                </React.Fragment>
+              }
             </Col>
           </Row>
 

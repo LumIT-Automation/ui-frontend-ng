@@ -119,48 +119,52 @@ class Service extends React.Component {
 
     return (
       <React.Fragment>
-
-        <React.Fragment>
-          <Divider orientation="left" plain>
-            HISTORY
-          </Divider>
-          <br/>
-          <br/>
-        </React.Fragment>
-
-
-        { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
-        <React.Fragment>
-          <Divider orientation="left" plain >
-            IPAM
-          </Divider>
-          <br/>
-          <InfobloxManager/>
-          <br/>
-          <br/>
-        </React.Fragment>
+      { this.props.error ?
+        <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} />
         :
-        null
-        }
-
-        { (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) ?
         <React.Fragment>
-          <Divider orientation="left" plain>
-            LOAD BALANCER
-          </Divider>
-          <br/>
-          <F5Manager/>
-          <br/>
-          <br/>
+
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              HISTORY
+            </Divider>
+            <br/>
+            <br/>
+          </React.Fragment>
+
+
+          { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
+          <React.Fragment>
+            <Divider orientation="left" plain >
+              IPAM
+            </Divider>
+            <br/>
+            <InfobloxManager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+          :
+          null
+          }
+
+
+          { (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) ?
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              LOAD BALANCER
+            </Divider>
+            <br/>
+            <F5Manager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+          :
+          null
+          }
+
         </React.Fragment>
-        :
-        null
         }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </React.Fragment>
-
+        </React.Fragment>
     )
   }
 }

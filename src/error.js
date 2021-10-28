@@ -42,6 +42,7 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    //console.log(this.props.error)
     /*
     if (this.props.error !== prevProps.error) {
       const e = []
@@ -112,7 +113,7 @@ class Error extends Component {
     let e = () => {
       if (this.props.error && this.props.error[0]) {
         const statusCode = this.props.error[0].status
-        
+
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
@@ -179,6 +180,7 @@ class Error extends Component {
         onCancel={() => this.props.dispatch(setError(null))}
         width={750}
       >
+        <React.Fragment>
         {e()}
 
         <Table
@@ -187,7 +189,9 @@ class Error extends Component {
           pagination={false}
           rowKey="message"
         />
+          </React.Fragment>
       </Modal>
+
     )
   }
 }
