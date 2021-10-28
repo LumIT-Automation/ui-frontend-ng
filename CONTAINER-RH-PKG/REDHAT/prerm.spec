@@ -8,12 +8,13 @@ if getenforce | grep -q Enforcing;then
     echo -e "\nWarning: \e[32mselinux enabled\e[0m.  The image/container may \e[32mnot be cleaned\e[0m at the end of the process.\n"
 fi
 
-# $1 is the number of times that this package is present on the system (installing or upgrading).
+# $1 is the number of time that this package is present on the system. If this script is run from an upgrade and not
 if [ "$1" -eq "0" ]; then
     printf "\n* Cleanup...\n" 
 
-    if podman ps | awk '{print $2}' | grep -E '\blocalhost/ui(:|$)'; then
-        podman stop ui
+    if podman ps | awk '{print $2}' | grep -Eq '\blocalhost/ui(:|$)'; then
+        podman stop -t 5 ui &
+        wait $! # Wait for the shutdown process of the container.
     fi
     
     if podman images | awk '{print $1}' | grep -q ^localhost/ui$; then

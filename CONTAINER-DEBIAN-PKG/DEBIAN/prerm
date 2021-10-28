@@ -5,8 +5,9 @@ set -e
 printf "\n* Container prerm...\n"
 printf "\n* Cleanup...\n"
 
-if podman ps | awk '{print $2}' | grep -E '\blocalhost/ui(:|$)'; then
-    podman stop ui
+if podman ps | awk '{print $2}' | grep -Eq '\blocalhost/ui(:|$)'; then
+    podman stop -t 5 ui &
+    wait $! # Wait for the shutdown process of the container.
 fi
 
 if podman images | awk '{print $1}' | grep -q ^localhost/ui$; then
@@ -15,7 +16,7 @@ fi
 
 # Be sure there is not rubbish around.
 if podman ps --all | awk '{print $2}' | grep -E '\blocalhost/ui(:|$)'; then
-    cIds=$( podman ps --all | awk '$2 ~ /^localhost\/ui(:|$)/  { print $1 }' )
+    cIds=$( podman ps --all | awk '$2 ~ /^localhost\/ui(:|$)/ { print $1 }' )
     for id in $cIds; do
         podman rm -f $id
     done
