@@ -120,7 +120,7 @@ class F5 extends React.Component {
               <TabPane key="Nodes" tab=<span>Nodes <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.nodesRefresh()}/></span>>
                 <Nodes/>
               </TabPane>
-            }
+              }
               </React.Fragment>
               :
               null

@@ -59,31 +59,50 @@ class Permissions extends React.Component {
 
   render() {
     return (
-      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
 
-        <Tabs type="card">
-          <TabPane tab="SuperAdmin" key="SuperAdmin">
-            <SuperAdmin/>
-          </TabPane>
-          { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
-            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsRefresh()}/></span>>
-              <F5/>
+      <React.Fragment>
+      { this.props.error ?
+        <Error error={[this.props.error]} visible={true} />
+        :
+        <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
+          <Tabs type="card">
+            <TabPane tab="SuperAdmin" key="SuperAdmin">
+              <SuperAdmin/>
             </TabPane>
-            :
-            null
-          }
-          { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
-            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsRefresh()}/></span>>
-              <Infoblox/>
-            </TabPane>
-            :
-            null
-          }
-        </Tabs>
-
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
+            { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
+              <React.Fragment>
+                {this.props.f5Loading ?
+                  <TabPane key="F5" tab="F5">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsRefresh()}/></span>>
+                    <F5/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+            { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
+              <React.Fragment>
+                {this.props.infobloxLoading ?
+                  <TabPane key="Infoblox" tab="Infoblox">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsRefresh()}/></span>>
+                    <Infoblox/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+          </Tabs>
+        </Space>
+      }
+      </React.Fragment>
     )
   }
 }
@@ -91,6 +110,10 @@ class Permissions extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
+
   f5Auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
+
+  infobloxLoading: state.infoblox.permissionsLoading,
+  f5Loading: state.f5.permissionsLoading
 }))(Permissions);
