@@ -44,10 +44,6 @@ class Permissions extends React.Component {
   componentWillUnmount() {
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   f5PermissionsRefresh = () => {
     this.props.dispatch(f5PermissionsRefresh(true))
   }

@@ -58,29 +58,52 @@ class Assets extends React.Component {
 
   render() {
     return (
+      <React.Fragment>
+      { this.props.error ?
+        <Error error={[this.props.error]} visible={true} />
+        :
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-
         <Tabs type="card">
           { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
-            <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
-              {this.props.f5assetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
-                <F5/>
-            }
-            </TabPane>
+
+            <React.Fragment>
+              {this.props.f5Loading ?
+                <TabPane key="F5" tab="F5">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+                :
+                <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5AssetsRefresh()}/></span>>
+                  <F5/>
+                </TabPane>
+              }
+            </React.Fragment>
             :
             null
           }
-          { this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any) ?
-            <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxAssetsRefresh()}/></span>>
-              {this.props.infobloxAssetsLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Infoblox/> }
-            </TabPane>
+
+
+          { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
+            <React.Fragment>
+              {this.props.infobloxLoading ?
+                <TabPane key="Infoblox" tab="Infoblox">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+                :
+                <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxAssetsRefresh()}/></span>>
+                  <Infoblox/>
+                </TabPane>
+              }
+            </React.Fragment>
             :
             null
           }
+
         </Tabs>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
+    }
+    </React.Fragment>
     )
   }
 }
@@ -88,8 +111,10 @@ class Assets extends React.Component {
 
 export default connect((state) => ({
   error: state.error.error,
+
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
-  f5assetsLoading: state.f5.assetsLoading,
-  infobloxAssetsLoading: state.infoblox.assetsLoading
+
+  f5Loading: state.f5.assetsLoading,
+  infobloxLoading: state.infoblox.assetsLoading
 }))(Assets);
