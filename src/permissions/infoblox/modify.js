@@ -67,6 +67,7 @@ class Modify extends React.Component {
     body.cn = this.props.obj.identity_group_name
     body.dn = this.props.obj.identity_group_identifier
     body.role = this.props.obj.role
+    body.asset = this.props.obj.asset
     body.network = {}
     body.network.name = this.props.obj.network.name
     body.network.id_asset = this.props.obj.network.asset_id
@@ -386,6 +387,7 @@ class Modify extends React.Component {
             initialValues={{
               remember: true,
               dn: this.state.body.dn,
+              asset: this.state.body.asset ? `${this.state.body.asset.fqdn} - ${this.state.body.asset.address}` : null,
               role: this.state.body.role,
               networks: this.state.body.network.name,
             }}

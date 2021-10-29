@@ -7,18 +7,14 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 import {
   setPermissionsFetch,
-  setRealNetworks,
-  setRealNetworksFetch,
 } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
-/*
 
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -64,15 +60,18 @@ class Modify extends React.Component {
   }
 
   details = () => {
+    console.log(this.props.obj)
     this.setState({visible: true})
     let body = {}
     body.cn = this.props.obj.identity_group_name
     body.dn = this.props.obj.identity_group_identifier
     body.role = this.props.obj.role
+    body.asset = this.props.obj.asset
     body.partition = {}
     body.partition = this.props.obj.partition
     body.assetId = this.props.obj.partition.asset_id
     this.setState({body: body})
+    this.fetchRoles()
   }
 
   onSearch = (searchText) => {
@@ -148,11 +147,11 @@ class Modify extends React.Component {
   setAsset = id => {
     let body = Object.assign({}, this.state.body);
     body.assetId = id
-    body.assetId = id
-    this.setState({body: body}, () => {this.fetchPartitions()})
+    this.setState({body: body}, () => this.fetchPartitions())
   }
 
   fetchRoles = async () => {
+    this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -164,6 +163,7 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    this.setState({rolesLoading: false})
   }
 
   beautifyPrivileges = () => {
@@ -187,11 +187,10 @@ class Modify extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({partitions: resp.data.items})
+        this.setState({partitions: resp.data.items, partitionsLoading: false})
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
       }
     )
     await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
@@ -233,7 +232,6 @@ class Modify extends React.Component {
   }
 
   modifyPermission = async () => {
-
     if (this.state.groupToAdd) {
       await this.addNewDn()
     }
@@ -321,6 +319,7 @@ class Modify extends React.Component {
           initialValues={{
             remember: true,
             dn: this.state.body.dn,
+            asset: this.state.body.asset ? `${this.state.body.asset.fqdn} - ${this.state.body.asset.address}` : null,
             role: this.state.body.role,
             partitions: this.state.body.partition,
           }}
@@ -360,28 +359,67 @@ class Modify extends React.Component {
             name="role"
             key="role"
           >
-            <Select id='role' onFocus={() => this.fetchRoles()} onChange={r => this.setRole(r) }>
+          { this.state.rolesLoading ?
+            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+            :
+            <Select id='role' onChange={r => this.setRole(r) }>
               {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-              return (
-                <Select.Option  key={i} value={a}>{a}</Select.Option>
-              )
-            }) : null}
+                return (
+                  <Select.Option  key={i} value={a}>{a}</Select.Option>
+                )
+              })
+              :
+              null
+              }
             </Select>
+          }
           </Form.Item>
 
           <Form.Item
             label="Partition"
-            name="partition"
-            key="partition"
+            name="partitions"
+            key="partitions"
+            validateStatus={this.state.errors.partitionName}
+            help={this.state.errors.partitionName ? 'Partition not found' : null }
           >
-            <Select id='partition' onChange={p => this.setPartition(p) }>
-              <Select.Option  key={'any'} value={'any'}>any</Select.Option>
-              {this.state.partitions ? this.state.partitions.map((a, i) => {
-              return (
-                <Select.Option  key={i} value={a.name}>{a.name}</Select.Option>
-              )
-            }) : null}
-            </Select>
+
+          { this.state.partitionsLoading ?
+            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+            :
+            <React.Fragment>
+            { this.state.partitions ?
+              <Select
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={n => this.setPartition(n)}
+              >
+                {this.state.body.role === 'admin' ?
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  :
+                  <React.Fragment>
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  {this.state.partitions.map((n, i) => {
+                    return (
+                      <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                    )
+                  })
+                  }
+                  </React.Fragment>
+                }
+              </Select>
+              :
+              <Select disabled value={null} onChange={null}>
+              </Select>
+            }
+            </React.Fragment>
+          }
+
           </Form.Item>
 
               {this.state.message ?
@@ -397,13 +435,19 @@ class Modify extends React.Component {
               }
 
               <Form.Item
-                wrapperCol={ {offset: 8 }}
+                wrapperCol={ {offset: 6 }}
                 name="button"
                 key="button"
               >
-                <Button type="primary" onClick={() => this.modifyPermission()}>
-                  Modify Permission
-                </Button>
+                { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.partition && this.state.body.assetId ?
+                  <Button type="primary" onClick={() => this.modifyPermission()} >
+                    Modify Permission
+                  </Button>
+                  :
+                  <Button type="primary" onClick={() => this.modifyPermission()} disabled>
+                    Modify Permission
+                  </Button>
+                }
               </Form.Item>
 
             </Form>

@@ -5,7 +5,7 @@ import Rest from "../_helpers/Rest"
 import Error from '../error'
 
 import { setError } from '../_store/store.error'
-import { setEnvironment, setAsset, setPartitions, setPartition } from '../_store/store.f5'
+import { setEnvironment, setAsset, setPartitions, setPartition, clearPartitions } from '../_store/store.f5'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Button, Row, Col, Divider, Spin } from 'antd';
@@ -103,6 +103,7 @@ class AssetSelector extends React.Component {
 
 
   render() {
+    console.log(this.state.partitions)
     return (
 
       <React.Fragment>

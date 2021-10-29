@@ -222,8 +222,6 @@ class Add extends React.Component {
     return r
   }
 
-
-
   addPermission = async () => {
     if (this.state.groupToAdd) {
       await this.addNewDn()
