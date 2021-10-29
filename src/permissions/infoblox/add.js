@@ -301,7 +301,6 @@ class Add extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
-
   }
 
   resetError = () => {

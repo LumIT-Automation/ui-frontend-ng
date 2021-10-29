@@ -11,7 +11,7 @@ import {
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
@@ -62,6 +62,7 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    this.fetchRoles()
   }
 
   onSearch = (searchText) => {
@@ -137,11 +138,11 @@ class Add extends React.Component {
   setAsset = id => {
     let body = Object.assign({}, this.state.body)
     body.assetId = id
-    body.partition.id_asset = id
     this.setState({body: body}, () => this.fetchPartitions())
   }
 
   fetchRoles = async () => {
+    this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -153,6 +154,7 @@ class Add extends React.Component {
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    this.setState({rolesLoading: false})
   }
 
   beautifyPrivileges = () => {
@@ -176,7 +178,7 @@ class Add extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({partitions: resp.data.items})
+        this.setState({partitions: resp.data.items, partitionsLoading: false})
       },
       error => {
         this.props.dispatch(setError(error))
@@ -258,7 +260,6 @@ class Add extends React.Component {
       }
     )
     await rest.doXHR(`f5/permissions/`, this.props.token, b )
-
   }
 
   resetError = () => {
@@ -345,29 +346,68 @@ class Add extends React.Component {
             name="role"
             key="role"
           >
-            <Select id='role' onFocus={() => this.fetchRoles()} onChange={r => this.setRole(r) }>
+          { this.state.rolesLoading ?
+            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+            :
+            <Select id='role' onChange={r => this.setRole(r) }>
               {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-              return (
-                <Select.Option  key={i} value={a}>{a}</Select.Option>
-              )
-            }) : null}
+                return (
+                  <Select.Option  key={i} value={a}>{a}</Select.Option>
+                )
+              })
+              :
+              null
+              }
             </Select>
+          }
           </Form.Item>
 
-            <Form.Item
-              label="Partition"
-              name="partition"
-              key="partition"
-            >
-              <Select id='partition' onChange={p => this.setPartition(p) }>
-                  <Select.Option  key={'any'} value={'any'}>any</Select.Option>
-                {this.state.partitions ? this.state.partitions.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a.name}>{a.name}</Select.Option>
-                )
-              }) : null}
+          <Form.Item
+            label="Partition"
+            name="partitions"
+            key="partitions"
+            validateStatus={this.state.errors.partitionName}
+            help={this.state.errors.partitionName ? 'Partition not found' : null }
+          >
+
+          { this.state.partitionsLoading ?
+            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+            :
+            <React.Fragment>
+            { this.state.partitions ?
+              <Select
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={n => this.setPartition(n)}
+              >
+                {this.state.body.role === 'admin' ?
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  :
+                  <React.Fragment>
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  {this.state.partitions.map((n, i) => {
+                    return (
+                      <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                    )
+                  })
+                  }
+                  </React.Fragment>
+                }
               </Select>
-            </Form.Item>
+              :
+              <Select disabled value={null} onChange={null}>
+              </Select>
+            }
+            </React.Fragment>
+          }
+
+          </Form.Item>
 
             {this.state.message ?
               <Form.Item
@@ -386,9 +426,15 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addPermission()}>
-                Add Permission
-              </Button>
+              { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.partition && this.state.body.assetId ?
+                <Button type="primary" onClick={() => this.addPermission()} >
+                  Add Permission
+                </Button>
+                :
+                <Button type="primary" onClick={() => this.addPermission()} disabled>
+                  Add Permission
+                </Button>
+              }
             </Form.Item>
 
           </Form>
@@ -410,5 +456,5 @@ export default connect((state) => ({
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,
-  realNetworks: state.f5.realNetworks
+  partitions: state.f5.partitions
 }))(Add);
