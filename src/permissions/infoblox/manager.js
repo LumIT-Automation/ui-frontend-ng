@@ -61,138 +61,160 @@ class Manager extends React.Component {
 
   main = async () => {
     this.props.dispatch(setPermissionsLoading(true))
-    let permissions
 
-    try {
-      let assets = await this.fetchAssets()
-      this.props.dispatch(setAssets( assets ))
-    }
-    catch (resp){
-      this.props.dispatch(setPermissionsLoading(false))
-      return
-    }
+    let assets = await this.fetchAssets()
+    this.props.dispatch(setAssets( assets ))
 
-    try {
-      let identityGroups = await this.fetchIdentityGroups()
-      this.props.dispatch(setIdentityGroups( identityGroups ))
-    }
-    catch (resp){
-      this.props.dispatch(setPermissionsLoading(false))
-      this.componentWillUnmount()
-    }
+    let identityGroups = await this.fetchIdentityGroups()
+    this.props.dispatch(setIdentityGroups( identityGroups ))
 
-    try {
-      permissions = await this.fetchPermissions()
-      if (permissions.status === 200) {
-        this.props.dispatch(setPermissions( permissions ))
-        this.addAssetDetails(permissions)
-        this.props.dispatch(setPermissionsLoading(false))
-      }
-      else {
-        let error = new Error('KO');
-        throw error;
-      }
-    }
-    catch (err){
-      console.log(permissions)
-      this.props.dispatch(setError(permissions))
-      this.props.dispatch(setPermissionsLoading(false))
-      this.componentWillUnmount()
-    }
+    let permissions = await this.fetchPermissions()
+    let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
+
+    this.props.dispatch(setPermissions( permissionsWithAssets ))
+    this.props.dispatch(setPermissionsLoading(false))
   }
+
 
   fetchAssets = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
+    try {
+      const response = await fetch('/backend/infoblox/assets/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
 
-  fetchIdentityGroups  = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
+
+  fetchIdentityGroups = async () => {
+    try {
+      const response = await fetch('/backend/infoblox/identity-groups/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR("infoblox/identity-groups/", this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
+
 
   fetchPermissions = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
+    try {
+      const response = await fetch('/backend/infoblox/permissions/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR(`infoblox/permissionss/`, this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
 
 
+  addAssetDetails = async (assets, permissions) => {
 
-  addAssetDetails = async (perm) => {
-    let permissions = Object.assign({}, perm.data.items)
-    let assets = Object.assign({}, this.props.assets)
+    //assets and permissions are immutable, so I stringyfy and parse in order to edit them
+    let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
+    let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
+    let list = []
 
-    permissions = JSON.parse(JSON.stringify(permissions))
-    assets = JSON.parse(JSON.stringify(assets))
-    assets = Object.assign([], assets)
 
-    for (const [key, value] of Object.entries(permissions)) {
-      const asset = assets.find(a => a.id === value.network.asset_id)
+    for (const [key, value] of Object.entries(assetsObject)) {
+      list.push(value)
+    }
+
+    for (const [key, value] of Object.entries(newPermissions)) {
+      const asset = list.find(a => a.id === value.network.asset_id)
       value.asset = asset
     }
-    permissions = Object.assign([], permissions)
 
-    this.props.dispatch(setPermissions(permissions))
-    return
+    let permissionsWithAsset = Object.assign([], newPermissions)
+
+    return permissionsWithAsset
   }
 
 
 
   render() {
+
     return (
       <React.Fragment>
-      { this.props.error ?
-        <Error error={[this.props.error]} visible={true} />
-        :
-        <React.Fragment>
-          <br/>
-          {this.props.permissionsLoading ?
-            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+        <br/>
+        { this.props.permissionsLoading ?
+          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+          :
+          <React.Fragment>
+          { this.props.error ?
+            <Error error={[this.props.error]} visible={true} />
             :
             <React.Fragment>
-              { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-                <Add/>
-                :
-                null
-              }
-              <List/>
+              <br/>
+                <React.Fragment>
+                  { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+                    <Add/>
+                    :
+                    null
+                  }
+                  <List/>
+                </React.Fragment>
             </React.Fragment>
-          }
-          :
-          <Error visible={false} />}
-        </React.Fragment>
+            }
+          </React.Fragment>
         }
       </React.Fragment>
     )

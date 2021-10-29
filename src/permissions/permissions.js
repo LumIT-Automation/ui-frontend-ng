@@ -9,8 +9,8 @@ import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 
 import { setError } from '../_store/store.error'
-import { setPermissionsFetch as f5PermissionsRefresh } from '../_store/store.f5'
-import { setPermissionsFetch as infobloxPermissionsRefresh } from '../_store/store.infoblox'
+import { setPermissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
+import { setPermissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -44,12 +44,12 @@ class Permissions extends React.Component {
   componentWillUnmount() {
   }
 
-  f5PermissionsRefresh = () => {
-    this.props.dispatch(f5PermissionsRefresh(true))
+  f5PermissionsFetch = refresh => {
+    this.props.dispatch(f5PermissionsFetch(refresh))
   }
 
-  infobloxPermissionsRefresh = () => {
-    this.props.dispatch(infobloxPermissionsRefresh(true))
+  infobloxPermissionsFetch = refresh => {
+    this.props.dispatch(infobloxPermissionsFetch(refresh))
   }
 
 
@@ -72,7 +72,7 @@ class Permissions extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                   :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsRefresh()}/></span>>
+                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.f5PermissionsFetch(true)}/></span>>
                     <F5/>
                   </TabPane>
                 }
@@ -87,7 +87,7 @@ class Permissions extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                   :
-                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsRefresh()}/></span>>
+                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.infobloxPermissionsFetch(true)}/></span>>
                     <Infoblox/>
                   </TabPane>
                 }

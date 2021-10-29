@@ -26,10 +26,6 @@ import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
-/*
-
-*/
-
 
 class Manager extends React.Component {
 
@@ -60,20 +56,22 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('unmount')
   }
 
   main = async () => {
     this.props.dispatch(setPermissionsLoading(true))
+
     let assets = await this.fetchAssets()
     this.props.dispatch(setAssets( assets ))
 
     let identityGroups = await this.fetchIdentityGroups()
     this.props.dispatch(setIdentityGroups( identityGroups ))
 
-
     let permissions = await this.fetchPermissions()
+    let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
 
-    this.addAssetDetails(permissions)
+    this.props.dispatch(setPermissions( permissionsWithAssets ))
     this.props.dispatch(setPermissionsLoading(false))
   }
 
@@ -83,93 +81,146 @@ class Manager extends React.Component {
   }
 
   fetchAssets = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
+    try {
+      const response = await fetch('/backend/f5/assets/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR("f5/assets/", this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
 
-  fetchIdentityGroups  = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
+
+  fetchIdentityGroups = async () => {
+    try {
+      const response = await fetch('/backend/f5/identity-groups/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR("f5/identity-groups/", this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
+
 
   fetchPermissions = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-        this.props.dispatch(setError(error))
+    try {
+      const response = await fetch('/backend/f5/permissions/', {
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bearer ' + this.props.token
+        }
+      })
+
+      if (response.ok) {
+        const json = await response.json();
+        return json
       }
-    )
-    await rest.doXHR(`f5/permissions/`, this.props.token)
-    return r
+      else {
+        this.props.dispatch(setError(response))
+      }
+
+    }
+    catch (error) {
+      let e = {
+        message: error.statusText,
+        name: error.name,
+        type: error.name
+      }
+
+      this.props.dispatch(setError(e))
+    }
   }
 
-  addAssetDetails = async (perm) => {
-    let permissions = Object.assign({}, perm.data.items)
-    let assets = Object.assign({}, this.props.assets)
 
-    permissions = JSON.parse(JSON.stringify(permissions))
-    assets = JSON.parse(JSON.stringify(assets))
-    assets = Object.assign([], assets)
+  addAssetDetails = async (assets, permissions) => {
 
-    for (const [key, value] of Object.entries(permissions)) {
-      const asset = assets.find(a => a.id === value.partition.asset_id)
+    //assets and permissions are immutable, so I stringyfy and parse in order to edit them
+    let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
+    let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
+    let list = []
+
+
+    for (const [key, value] of Object.entries(assetsObject)) {
+      list.push(value)
+    }
+
+    for (const [key, value] of Object.entries(newPermissions)) {
+      const asset = list.find(a => a.id === value.partition.asset_id)
       value.asset = asset
     }
-    permissions = Object.assign([], permissions)
 
-    this.props.dispatch(setPermissions(permissions))
-    return
+    let permissionsWithAsset = Object.assign([], newPermissions)
+
+    return permissionsWithAsset
   }
 
+
+
   render() {
+
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
+      <React.Fragment>
         <br/>
         {this.props.permissionsLoading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
           <React.Fragment>
+          { this.props.error ?
+            <Error error={[this.props.error]} visible={true} />
+            :
+          <React.Fragment>
+            <br/>
+            <React.Fragment>
             { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
               <Add/>
               :
               null
             }
-
             <List/>
-
-          </React.Fragment>
+            </React.Fragment>
+        </React.Fragment>
         }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
+        </React.Fragment>
+      }
+      </React.Fragment>
     )
   }
 }
@@ -178,8 +229,11 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   error: state.error.error,
   authorizations: state.authorizations.f5,
+
   assets: state.f5.assets,
+  identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
+
   permissionsFetch: state.f5.permissionsFetch,
   permissionsLoading: state.f5.permissionsLoading,
 }))(Manager);

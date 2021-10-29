@@ -215,8 +215,6 @@ class Add extends React.Component {
   }
 
   setNetwork = n => {
-    
-
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
 
@@ -231,7 +229,7 @@ class Add extends React.Component {
       }
     }
     else {
-      
+
       errors.networkName = 'error'
     }
 
@@ -324,7 +322,7 @@ class Add extends React.Component {
 
 
   render() {
-    
+
     return (
       <Space direction='vertical'>
 

@@ -7,17 +7,14 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 import {
   setPermissionsFetch,
-  setRealNetworks,
-  setRealNetworksFetch,
 } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-/*
 
-*/
+
 
 const layout = {
   labelCol: { span: 6 },
@@ -74,6 +71,7 @@ class Modify extends React.Component {
     body.network.name = this.props.obj.network.name
     body.network.id_asset = this.props.obj.network.asset_id
     this.setState({body: body})
+    this.fetchRoles()
   }
 
   onSearch = (searchText) => {
@@ -154,6 +152,7 @@ class Modify extends React.Component {
   }
 
   fetchRoles = async () => {
+    this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -165,6 +164,7 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
+    this.setState({rolesLoading: false})
   }
 
   beautifyPrivileges = () => {
@@ -185,10 +185,11 @@ class Modify extends React.Component {
   }
 
   fetchNetworks = async () => {
+    this.setState({networksLoading: true})
     let nets = await this.fetchNets()
     let containers = await this.fetchContainers()
     let networks = nets.concat(containers)
-    this.setState({nets: networks})
+    this.setState({nets: networks, networksLoading: false})
   }
 
   fetchNets = async () => {
@@ -247,29 +248,22 @@ class Modify extends React.Component {
   setNetwork = n => {
     let body = Object.assign({}, this.state.body)
     let errors = Object.assign({}, this.state.errors)
-    let network
 
     if (n) {
-      if (n.target) {
-        network = n.target.value
-      }
-      else {
-        network = n
-      }
-
-      if (this.state.items.includes(network)) {
-        body.network.name = network
-        delete errors.networkName
-      }
-      else if (network === 'any') {
+      if (n === 'any') {
         body.network.name = 'any'
         delete errors.networkName
       }
       else {
-        errors.networkName = 'error'
+        body.network.name = n
+        delete errors.networkName
       }
-
     }
+    else {
+
+      errors.networkName = 'error'
+    }
+
     this.setState({body: body, errors: errors})
   }
 
@@ -362,7 +356,7 @@ class Modify extends React.Component {
 
 
   render() {
-    
+
     return (
       <Space direction='vertical'>
 
@@ -431,40 +425,70 @@ class Modify extends React.Component {
               name="role"
               key="role"
             >
-              <Select id='role' onFocus={() => this.fetchRoles()} onChange={r => this.setRole(r) }>
+            { this.state.rolesLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+              :
+              <Select id='role' onChange={r => this.setRole(r) }>
                 {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a}>{a}</Select.Option>
-                )
-              }) : null}
+                  return (
+                    <Select.Option  key={i} value={a}>{a}</Select.Option>
+                  )
+                })
+                :
+                null
+                }
               </Select>
+            }
             </Form.Item>
 
-            {this.state.body.role === 'admin' ?
-              () => this.setNetwork('any')
+            <Form.Item
+              label="Networks"
+              name="networks"
+              key="networks"
+              validateStatus={this.state.errors.networkName}
+              help={this.state.errors.networkName ? 'Network not found' : null }
+            >
+
+            { this.state.networksLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+
               :
+
               <React.Fragment>
-                { this.state.nets ?
-                  <Form.Item
-                    label="Networks"
-                    name="networks"
-                    key="networks"
-                    validateStatus={this.state.errors.networkName}
-                    help={this.state.errors.networkName ? 'Network not found' : null }
-                  >
-                    <AutoComplete
-                       options={this.state.networkOptions}
-                       onSearch={this.onNetworkSearch}
-                       onSelect={this.setNetwork}
-                       onBlur={this.setNetwork}
-                       placeholder="0.0.0.0/0"
-                     />
-                  </Form.Item>
-                  :
-                  null
-                }
+              { this.state.nets ?
+                <Select
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onChange={n => this.setNetwork(n)}
+                >
+                  {this.state.body.role === 'admin' ?
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    :
+                    <React.Fragment>
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    {this.state.nets.map((n, i) => {
+                      return (
+                        <Select.Option  key={i} value={n.network}>{n.network}</Select.Option>
+                      )
+                    })
+                    }
+                    </React.Fragment>
+                  }
+                </Select>
+                :
+                <Select disabled value={null} onChange={null}>
+                </Select>
+              }
               </React.Fragment>
             }
+
+            </Form.Item>
 
 
             {this.state.message ?
@@ -484,9 +508,15 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.modifyPermission()}>
-                Modify Permission
-              </Button>
+              { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.network.name && this.state.body.assetId ?
+                <Button type="primary" onClick={() => this.modifyPermission()} >
+                  Modify Permission
+                </Button>
+                :
+                <Button type="primary" onClick={() => this.modifyPermission()} disabled>
+                  Modify Permission
+                </Button>
+              }
             </Form.Item>
 
           </Form>
