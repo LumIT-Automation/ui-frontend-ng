@@ -42,7 +42,7 @@ class Homepage extends React.Component {
 
   render() {
     return (
-      <Content >
+      <React.Fragment>
 
         <Row className="row-homepage" between="xs" style={{backgroundColor: '#FFFFFF',  margin: 10}}>
 
@@ -87,13 +87,13 @@ class Homepage extends React.Component {
           </Row>
         </Row>
 
-      </Content>
+      </React.Fragment>
     )
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token, 
+  token: state.ssoAuth.token,
  	error: state.error.error,
   authorizations: state.authorizations.f5,
 }))(Homepage);

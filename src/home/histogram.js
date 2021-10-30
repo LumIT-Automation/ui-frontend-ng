@@ -46,7 +46,7 @@ export default class Histogram extends PureComponent {
 
   render() {
     return (
-      <div>
+      <React.Fragment>
       <p style={{textAlign: 'center', color: '#8C8C8C'}}>Performance year per year</p>
       {//<ResponsiveContainer width="1000px" height="2000px">
       }
@@ -71,7 +71,7 @@ export default class Histogram extends PureComponent {
         </BarChart>
       {//</ResponsiveContainer>
       }
-      </div>
+      </React.Fragment>
     );
   }
 }

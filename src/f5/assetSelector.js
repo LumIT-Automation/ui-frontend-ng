@@ -73,13 +73,19 @@ class AssetSelector extends React.Component {
     this.setState({ envAssets: envAssets })
   }
 
-  setAsset = address => {
+  setAsset = async address => {
+    let asset = await this.assetSelect(address)
+    this.fetchAssetPartitions(asset)
+    this.props.dispatch(setAsset(asset))
+    this.props.dispatch(setPartition(null))
+  }
+
+  assetSelect = async (address) => {
     let asset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.setState({partitions: null}, () => this.fetchAssetPartitions(asset))
-    this.props.dispatch(setAsset(asset))
-    this.props.dispatch(setPartition(null))
+    this.setState({partitions: null})
+    return asset
   }
 
   fetchAssetPartitions = async (asset) => {
@@ -87,7 +93,7 @@ class AssetSelector extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({ partitions: resp.data.items }, () => this.props.dispatch(setPartitions( resp )))
+        this.setState({ partitions: resp.data.items })
       },
       error => {
         this.props.dispatch(setError(error))
@@ -103,7 +109,6 @@ class AssetSelector extends React.Component {
 
 
   render() {
-    console.log(this.state.partitions)
     return (
 
       <React.Fragment>
