@@ -144,11 +144,22 @@ class RequestIp extends React.Component {
   }
 
   setRequests = () => {
-    let n = this.state.counter + 1
-    let r = {id: n, macAddress: '00:00:00:00:00:00'}
+    //let n = this.state.counter + 1
+    let id = 0
+    let n = 0
+    let rowId = Date.now()
+    console.log(rowId)
+    this.state.requests.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let r = {id: n, rowId: rowId, macAddress: '00:00:00:00:00:00'}
     let list = Object.assign([], this.state.requests)
     list.push(r)
-    this.setState({requests: list, counter: n, objectTypes: null})
+    this.setState({requests: list, objectTypes: null})
   }
 
   removeRequest = r => {
@@ -242,8 +253,49 @@ class RequestIp extends React.Component {
     //this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
   }
 
+  isHeartbeat = async id => {
+    console.log(id)
+    console.log(this.state.requests)
+    let requests = Object.assign([], this.state.requests)
+    let minorEqual = []
+    let major = []
 
-  setObjectType = (e, id) => {
+    requests.forEach(r => {
+      if (r.id <= id) {
+        console.log(r.id)
+        minorEqual.push(r)
+      }
+    })
+
+    requests.forEach(r => {
+      if (r.id > id) {
+        major.push(r)
+      }
+    })
+
+    major.forEach( r => {
+      r.id = r.id + 1
+    });
+
+    let newRequests = minorEqual.concat(major)
+
+
+    console.log('minorEqual')
+    console.log(minorEqual)
+    console.log(major)
+    console.log('major')
+    console.log('newRequest')
+    console.log(newRequests)
+    this.setState({request: newRequests})
+    return 'ciao bello'
+  }
+
+  setObjectType = async (e, id) => {
+    let h
+    if (e === 'Heartbeat') {
+      h = await this.isHeartbeat(id)
+    }
+    console.log(h)
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let objectType
@@ -338,10 +390,10 @@ class RequestIp extends React.Component {
       return res
     })
 
-    
+
     const response = await Promise.all(promises)
     */
-    
+
     this.setState({response: response, loading: false, success: true})
   }
 
@@ -439,8 +491,14 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    
+
     const requests = [
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+      },
       {
         title: 'Network',
         align: 'center',
@@ -454,6 +512,7 @@ class RequestIp extends React.Component {
               <React.Fragment>
                 <Select
                   showSearch
+                  value={obj.network}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -485,7 +544,7 @@ class RequestIp extends React.Component {
         dataIndex: 'objectType',
         key: 'objectType',
         render: (name, obj)  => (
-          <Select key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
+          <Select value={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
             <Select.Option  key={'-'} value={null}>-</Select.Option>
             { this.state.objectTypes ?
               this.state.objectTypes.map((n, i) => {
@@ -505,7 +564,7 @@ class RequestIp extends React.Component {
         dataIndex: 'serverName',
         key: 'serverName',
         render: (name, obj)  => (
-          <Input id='serverName' style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
+          <Input placeholder={obj.serverName} id='serverName' style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
         ),
       },
       {
@@ -514,7 +573,7 @@ class RequestIp extends React.Component {
         dataIndex: 'macAddress',
         key: 'macAddress',
         render: (name, obj)  => (
-          <Input id='macAddress' defaultValue={'00:00:00:00:00:00'} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+          <Input placeholder={obj.macAddress} id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
         ),
       },
       {
@@ -523,7 +582,7 @@ class RequestIp extends React.Component {
         dataIndex: 'reference',
         key: 'reference',
         render: (name, obj)  => (
-          <Input id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e, obj.id)} />
+          <Input placeholder={obj.reference} id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e, obj.id)} />
         ),
       },
       {
@@ -584,6 +643,7 @@ class RequestIp extends React.Component {
       },
     ];
 
+
     return (
       <React.Fragment>
       { this.props.error ?
@@ -633,7 +693,7 @@ class RequestIp extends React.Component {
                     columns={requests}
                     dataSource={this.state.requests}
                     bordered
-                    rowKey="id"
+                    rowKey="rowId"
                     pagination={false}
                     style={{marginBottom: 10}}
                   />
