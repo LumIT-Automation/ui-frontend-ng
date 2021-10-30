@@ -512,7 +512,7 @@ class RequestIp extends React.Component {
               <React.Fragment>
                 <Select
                   showSearch
-                  value={obj.network}
+                  defaultValue={obj.network}
                   optionFilterProp="children"
                   filterOption={(input, option) =>
                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -544,7 +544,7 @@ class RequestIp extends React.Component {
         dataIndex: 'objectType',
         key: 'objectType',
         render: (name, obj)  => (
-          <Select value={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
+          <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
             <Select.Option  key={'-'} value={null}>-</Select.Option>
             { this.state.objectTypes ?
               this.state.objectTypes.map((n, i) => {
