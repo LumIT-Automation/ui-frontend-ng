@@ -201,7 +201,6 @@ class RequestIp extends React.Component {
   }
 
 
-
   setNetwork = async (network, e, id) => {
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
@@ -267,7 +266,7 @@ class RequestIp extends React.Component {
     }
     req.objectType = objectType
     req.errors = errors
-    this.setState({objectType: objectType, errors: errors})
+    this.setState({errors: errors})
   }
 
   setServerName = (e, id) => {
