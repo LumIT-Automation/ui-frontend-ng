@@ -169,7 +169,7 @@ class Concerto extends Component {
           </Layout>
         </BrowserRouter>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Layout>
     )
   }

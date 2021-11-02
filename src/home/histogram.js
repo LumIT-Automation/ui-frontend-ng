@@ -47,30 +47,36 @@ export default class Histogram extends PureComponent {
   render() {
     return (
       <React.Fragment>
-      <p style={{textAlign: 'center', color: '#8C8C8C'}}>Performance year per year</p>
-      {//<ResponsiveContainer width="1000px" height="2000px">
-      }
-        <BarChart
-          width={1070}
-          height={250}
-          data={data}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="year" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="dissmissed" fill="#8884d8" />
-          <Bar dataKey="new" fill="#82ca9d" />
-        </BarChart>
-      {//</ResponsiveContainer>
-      }
+        { this.props.error ?
+          <Error error={[this.props.error]} pathname={pathname}  />
+        :
+          <React.Fragment>
+          <p style={{textAlign: 'center', color: '#8C8C8C'}}>Performance year per year</p>
+          {//<ResponsiveContainer width="1000px" height="2000px">
+          }
+            <BarChart
+              width={1070}
+              height={250}
+              data={data}
+              margin={{
+                top: 5,
+                right: 30,
+                left: 20,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="year" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="dissmissed" fill="#8884d8" />
+              <Bar dataKey="new" fill="#82ca9d" />
+            </BarChart>
+          {//</ResponsiveContainer>
+          }
+          </React.Fragment>
+        }
       </React.Fragment>
     );
   }

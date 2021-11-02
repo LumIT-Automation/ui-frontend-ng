@@ -68,7 +68,6 @@ class Delete extends React.Component {
 
 
   render() {
-
     return (
       <React.Fragment>
         { this.props.error ?

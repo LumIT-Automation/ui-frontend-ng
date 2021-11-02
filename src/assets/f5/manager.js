@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
+import { useLocation } from 'react-router-dom'
 
 import { setError } from '../../_store/store.error'
 import {
@@ -47,6 +48,12 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
+  usePathname = () => {
+    const location = useLocation();
+    console.log('location');
+    console.log(location);
+    //return location.pathname;
+  }
 
   fetchAssets = async () => {
     this.props.dispatch(setAssetsLoading(true))
@@ -66,10 +73,11 @@ class Manager extends React.Component {
 
 
   render() {
+
     return (
       <React.Fragment>
         { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
+          <Error error={[this.props.error]} />
         :
           <React.Fragment>
             <br/>
@@ -82,7 +90,7 @@ class Manager extends React.Component {
             :
               null
             }
-              <List/>
+            <List/>
           </React.Fragment>
         }
       </React.Fragment>

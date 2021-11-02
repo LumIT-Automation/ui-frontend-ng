@@ -518,8 +518,6 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.response)
-
     const requests = [
       {
         title: 'id',

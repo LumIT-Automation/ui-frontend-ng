@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Component, } from "react";
+import { Component } from "react";
+import  { Redirect } from 'react-router-dom'
 import { logout } from './_store/store.auth'
 
 import { setError } from './_store/store.error'
@@ -55,6 +56,18 @@ class Error extends Component {
   componentWillUnmount() {
   }
 
+  parentPath = () => {
+    let parent = this.props.pathname.split('/')
+    return parent
+  }
+
+
+  onCancel = async () => {
+    window.location.href = '/';
+    //this.props.dispatch(setError(null))
+    //return <Redirect to='/'  />
+  }
+
   deleteCookies = (token, username) => {
     return new Promise( (resolve, reject) => {
       try {
@@ -75,6 +88,7 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
+    console.log(this.props.pathname)
 
 
     const columns = [
@@ -177,7 +191,8 @@ class Error extends Component {
         visible= {this.props.visible}
         footer={''}
         onOk={null}
-        onCancel={() => this.props.dispatch(setError(null))}
+        //onCancel={() => this.props.dispatch(setError(null))}
+        onCancel={this.onCancel}
         width={750}
       >
         <React.Fragment>
