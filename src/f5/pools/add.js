@@ -4,10 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
 import { setPoolsFetch } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Divider } from 'antd';
+import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -183,7 +182,7 @@ class Add extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     if (nodeId) {
-      let index = nodes.findIndex((obj => obj.id == nodeId))
+      let index = nodes.findIndex((obj => obj.id === nodeId))
       nodes.splice(index, 1)
       delete errors.nodesError
     }
@@ -203,7 +202,7 @@ class Add extends React.Component {
 
     //if (ipv4Regex.test(ipv4)) {
     if (name) {
-      let index = nodes.findIndex((obj => obj.id == id))
+      let index = nodes.findIndex((obj => obj.id === id))
       //nodes[index].address = ipv4
       nodes[index].name = name
       delete errors.memberNameError
@@ -224,7 +223,7 @@ class Add extends React.Component {
       errors.memberPortError = 'error'
     }
     else {
-      let index = nodes.findIndex((obj => obj.id == id))
+      let index = nodes.findIndex((obj => obj.id === id))
       nodes[index].port = port
       delete errors.memberPortError
     }
@@ -232,8 +231,7 @@ class Add extends React.Component {
   }
 
   addPool = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
 
     if (isEmpty(body)){
       this.setState({message: 'Please fill the form'})
@@ -413,7 +411,6 @@ class Add extends React.Component {
 
             {
               this.state.nodes.map((n, i) => {
-                let a = 'address' + n.id
                 let na = 'name' + n.id
                 let pa = 'port' + n.id
                 let r = 'remove' + n.id

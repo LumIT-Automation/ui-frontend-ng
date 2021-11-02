@@ -5,12 +5,11 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetch } from '../../_store/store.f5'
+import { setPoolMembersLoading, setPoolMembersFetch } from '../../_store/store.f5'
 
 import Delete from './delete'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 

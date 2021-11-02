@@ -6,10 +6,9 @@ import Error from '../../error'
 
 import PoolMembers from '../poolMembers/manager'
 
-import { setError } from '../../_store/store.error'
 import { setPoolsFetch } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Table, Divider } from 'antd';
+import { Form, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -230,8 +229,7 @@ class Modify extends React.Component {
   }
 
   modifyPool = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
 
     if (isEmpty(body)){
       this.setState({message: 'Please fill the form'})
@@ -282,129 +280,6 @@ class Modify extends React.Component {
 
 
   render() {
-
-    const columns = [
-      {
-        title: 'Member',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-      },
-      {
-        title: 'Address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-      },
-      {
-        title: 'State',
-        align: 'center',
-        dataIndex: 'state',
-        key: 'state',
-      },
-      {
-        title: 'Session',
-        align: 'center',
-        dataIndex: 'session',
-        key: 'session',
-      },/*
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        render(name, record) {
-          return {
-            props: {
-              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
-            },
-            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
-          };
-        }
-      },*/
-      {
-        title: 'Enable',
-        align: 'center',
-        dataIndex: 'enable',
-        key: 'enable',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Button type="primary" onClick={() => null}>
-              Enable
-            </Button>
-          </Space>
-        ),
-      },
-      {
-        title: 'Disable',
-        align: 'center',
-        dataIndex: 'disable',
-        key: 'disable',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Button type="primary" onClick={() => null}>
-              Disable
-            </Button>
-          </Space>
-        ),
-      },
-      {
-        title: 'Force Offline',
-        align: 'center',
-        dataIndex: 'foff',
-        key: 'foff',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Button type="primary" onClick={() => null}>
-              Force Offline
-            </Button>
-          </Space>
-        ),
-      },
-      {
-        title: 'Connections',
-        align: 'center',
-        dataIndex: 'connections',
-        key: 'connections',
-      },/*
-      {
-        title: '',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isMonitored ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },*//*
-      {
-        title: "Amount",
-        dataIndex: "amount",
-        width: 100,
-        render(text, record) {
-          return {
-            props: {
-              style: { background: 51 > 50 ? "red" : "green" }
-            },
-            children: <div>{text}</div>
-          };
-        }
-      },*//*
-      {
-        title: 'Monitoring',
-        align: 'center',
-        dataIndex: 'monitoring',
-        key: 'monitoring',
-        render: (name, obj)  => (
-          <Space size="small">
-            <Button type="primary" onClick={() => null}>
-              { obj.isMonitored ? 'STOP' : 'START' }
-            </Button>
-          </Space>
-        ),
-      },*/
-    ];
 
     return (
 

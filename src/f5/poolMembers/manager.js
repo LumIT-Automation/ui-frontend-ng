@@ -5,23 +5,16 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
 import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
-import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { Space, Spin, Alert } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
+const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
-
-/*
-
-*/
 
 
 class Manager extends React.Component {

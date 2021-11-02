@@ -4,10 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
 import { setMonitorsFetch } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select } from 'antd';
+import { Form, Input, Button, Space, Modal, Spin, Result } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -91,8 +90,7 @@ class Modify extends React.Component {
   }
 
   modifyMonitor = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
 
     if (isEmpty(body)){
       this.setState({message: 'Please fill the form'})

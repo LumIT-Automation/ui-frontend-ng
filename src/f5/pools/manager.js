@@ -11,14 +11,8 @@ import { setPoolsLoading, setPools, setPoolsFetch } from '../../_store/store.f5'
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Space, Alert } from 'antd';
 
-
-
-/*
-
-*/
 
 
 class Manager extends React.Component {

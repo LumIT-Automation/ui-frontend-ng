@@ -6,9 +6,7 @@ import Error from '../../error'
 import Modify from './modify'
 import Delete from './delete'
 
-import { setError } from '../../_store/store.error'
-
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 

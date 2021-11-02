@@ -3,20 +3,10 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-
-//import Modify from './modify'
-//import Delete from './delete'
-
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
-
-
-/*
-
-*/
 
 
 class List extends React.Component {
@@ -130,7 +120,7 @@ class List extends React.Component {
     const columns = [
       {
         title: 'Name',
-        align: 'center', 
+        align: 'center',
  				width: 'auto',
         dataIndex: 'name',
         key: 'name',
