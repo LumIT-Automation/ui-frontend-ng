@@ -8,29 +8,16 @@ import { setError } from '../../_store/store.error'
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
+import { Modal, Alert, Form, Input, Result, Button, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-
-
-/*
-
-*/
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
 }
+
+
 
 class DeleteF5Service extends React.Component {
 
@@ -77,7 +64,6 @@ class DeleteF5Service extends React.Component {
   }
 
   deleteService = async () => {
-    let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
     this.setState({message: null})
 

@@ -9,25 +9,16 @@ import { setCertificates, setKeys, setRouteDomains } from '../../_store/store.f5
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, TextArea } from 'antd'
+import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
 }
+
+
 
 class CreateF5Service extends React.Component {
 
@@ -344,7 +335,7 @@ class CreateF5Service extends React.Component {
     const ipv4Regex = new RegExp(validIpAddressRegex);
 
     if (ipv4Regex.test(ipv4)) {
-      let index = members.findIndex((obj => obj.id == memberId))
+      let index = members.findIndex((obj => obj.id === memberId))
       members[index].address = ipv4
       delete errors.memberAddressError
     }
@@ -361,7 +352,7 @@ class CreateF5Service extends React.Component {
     const name = e.target.value
 
     if (name) {
-      let index = members.findIndex((obj => obj.id == memberId))
+      let index = members.findIndex((obj => obj.id === memberId))
       members[index].name = name
       delete errors.memberNameError
     }
@@ -381,7 +372,7 @@ class CreateF5Service extends React.Component {
       errors.memberPortError = 'error'
     }
     else {
-      let index = members.findIndex((obj => obj.id == memberId))
+      let index = members.findIndex((obj => obj.id === memberId))
       members[index].port = port
       delete errors.memberPortError
     }
@@ -393,7 +384,7 @@ class CreateF5Service extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     if (memberId) {
-      let index = members.findIndex((obj => obj.id == memberId))
+      let index = members.findIndex((obj => obj.id === memberId))
       members.splice(index, 1)
       delete errors.membersError
     }
@@ -423,8 +414,6 @@ class CreateF5Service extends React.Component {
 
 
   createL4Service = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
 
     this.setState({message: null});
@@ -478,8 +467,6 @@ class CreateF5Service extends React.Component {
   }
 
   createL7Service = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
     let serviceName = this.state.body.serviceName
     this.setState({message: null});
 

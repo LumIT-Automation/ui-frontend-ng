@@ -8,25 +8,16 @@ import { setError } from '../../_store/store.error'
 
 import AssetSelector from './assetSelector'
 
-import { Modal, Form, Input, Result, Button, Select, Spin, Divider, Table, Alert} from 'antd'
+import { Modal, Form, Input, Button, Spin, Divider, Table, Alert} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
 }
+
+
 
 class DetailsIp extends React.Component {
 
@@ -41,7 +32,7 @@ class DetailsIp extends React.Component {
   }
 
   componentDidMount() {
-      
+
   }
 
   shouldComponentUpdate(newProps, newState) {

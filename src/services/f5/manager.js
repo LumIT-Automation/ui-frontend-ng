@@ -2,16 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
-import Rest from '../../_helpers/Rest'
 
 import { setAssetsFetch } from '../../_store/store.f5'
 
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'
+import { Row, Col } from 'antd';
 
-import { Row, Col, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 
 
 class Manager extends React.Component {

@@ -6,13 +6,7 @@ import '../App.css'
 
 import { Statistic, Row, Col, Layout, Divider } from 'antd'
 
-import Rest from "../_helpers/Rest";
-import Error from '../error'
-
 import Histogram from './histogram'
-const { Content } = Layout
-
-
 
 
 

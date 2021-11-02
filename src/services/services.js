@@ -15,8 +15,6 @@ import F5Manager from './f5/manager'
 
 import { Divider } from 'antd'
 
-import { LoadingOutlined } from '@ant-design/icons'
-
 
 
 class Service extends React.Component {

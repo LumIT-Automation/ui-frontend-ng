@@ -1,19 +1,17 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
-import Rest from "../../_helpers/Rest";
 
 import { setAssetsFetch } from '../../_store/store.infoblox'
 
-import AssetSelector from './assetSelector'
 import DetailsIp from './detailsIp'
 import RequestIp from './requestIp'
 import ModifyIp from './modifyIp'
 import ReleaseIp from './releaseIp'
 
-import { Space, Row, Col, Divider } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Row, Col } from 'antd';
+
 
 
 class Manager extends React.Component {
@@ -40,7 +38,7 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     /*if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       if(!this.props.infobloxAssets) {
-        
+
         this.props.dispatch(setAssetsFetch(true))
       }
     }*/

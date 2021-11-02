@@ -75,7 +75,7 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
-    
+
 
     const columns = [
       {

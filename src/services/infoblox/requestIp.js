@@ -252,7 +252,6 @@ class RequestIp extends React.Component {
   }
 
   setObjectType = async (e, id) => {
-    let h
     let errors = Object.assign({}, this.state.errors)
     let req = this.state.requests.find( r => r.id === id )
     let objectType

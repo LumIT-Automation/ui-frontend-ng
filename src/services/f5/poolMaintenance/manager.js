@@ -6,12 +6,12 @@ import Rest from "../../../_helpers/Rest";
 import Error from '../../../error'
 
 import { setError } from '../../../_store/store.error'
-import { setAsset, setPartitions, setPartition, setCurrentPools } from '../../../_store/store.f5'
+import { setCurrentPools } from '../../../_store/store.f5'
 
 import AssetSelector from '../../../f5/assetSelector'
 import PoolsTable from './poolsTable'
 
-import { Modal, Alert, Form, Select, Button, Row, Divider, Spin } from 'antd';
+import { Modal, Alert, Button, Divider, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
@@ -31,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partitions) {
-      
+
       this.getPools()
     }
   }
@@ -41,9 +41,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
+
     if ( (this.props.asset && this.props.partitions) && (prevProps.partition !== this.props.partition) ) {
-      
+
       this.getPools()
     }
   }

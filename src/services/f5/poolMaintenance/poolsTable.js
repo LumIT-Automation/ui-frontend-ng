@@ -2,20 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import { setError } from '../../../_store/store.error'
-
 import PoolDetails from './poolDetails'
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
-
-/*
-It receives currentPoolList from redux and render it in a table.
-The items are Serchable and filterable.
-Click on a Details table set visible the modal and then PoolsDetail came in play.
-*/
 
 
 class PoolsTable extends React.Component {

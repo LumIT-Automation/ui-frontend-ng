@@ -4,20 +4,14 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-
 import AssetSelector from './assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider, Table} from 'antd'
+import { Modal, Alert, Form, Input, Button, Select, Spin, Divider, Table} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -156,7 +150,6 @@ class ModifyIp extends React.Component {
   }
 
   modifyIp = async () => {
-    let errors = Object.assign({}, this.state.errors);
 
     if (isEmpty(this.state.serverName)){
       this.setState({message: 'Please fill the form'})

@@ -4,11 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-
 import AssetSelector from './assetSelector'
 
-import { Modal, Alert, Divider, Form, Input, Result, Button, Spin, Table } from 'antd'
+import { Modal, Alert, Divider, Form, Input, Button, Spin, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -104,7 +102,6 @@ class ReleaseIp extends React.Component {
   }
 
   releaseIp = async () => {
-    let errors = Object.assign({}, this.state.errors);
 
     if (isEmpty(this.state.ip)){
       this.setState({message: 'Please fill the form'})
@@ -147,7 +144,7 @@ class ReleaseIp extends React.Component {
 
 
   render() {
-    
+
     const columns = [
       {
         title: 'IP address',
