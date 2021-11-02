@@ -80,45 +80,48 @@ class CertificatesAndKeys extends React.Component {
 
   render() {
     return (
-      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-
-        <Tabs type="card">
-          <TabPane tab="F5" key="2">
-            {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
-            <React.Fragment>
-              <div style={{margin: '0 130px'}}>
-                <AssetSelector />
-              </div>
-            <Divider/>
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
             <Tabs type="card">
-              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                <TabPane key="Certificates"tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
-                  {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <CertificatesManager/> }
-                </TabPane>
-                : null
-              }
-              { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
-                <TabPane key="Keys"tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
-                  {this.props.keysLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <KeysManager/> }
-                </TabPane>
-                : null
-              }
-              {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
-                <TabPane tab="Certificates" key="4">
-                  <CertificateAndKey/>
-                </TabPane>
-                : null
-              */}
+              <TabPane tab="F5" key="2">
+                {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+                <React.Fragment>
+                  <div style={{margin: '0 130px'}}>
+                    <AssetSelector />
+                  </div>
+                <Divider/>
+                <Tabs type="card">
+                  { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
+                    <TabPane key="Certificates"tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
+                      {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <CertificatesManager/> }
+                    </TabPane>
+                    : null
+                  }
+                  { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
+                    <TabPane key="Keys"tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
+                      {this.props.keysLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <KeysManager/> }
+                    </TabPane>
+                    : null
+                  }
+                  {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
+                    <TabPane tab="Certificates" key="4">
+                      <CertificateAndKey/>
+                    </TabPane>
+                    : null
+                  */}
 
+                </Tabs>
+
+                </React.Fragment>
+                }
+              </TabPane>
             </Tabs>
-
-            </React.Fragment>
-            }
-          </TabPane>
-        </Tabs>
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
+          </Space>
+        }
+      </React.Fragment>
     )
   }
 }

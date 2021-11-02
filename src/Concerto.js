@@ -19,7 +19,6 @@ import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 import Service from './services/services'
-//import Grid from './grid/services'
 import Assets from './assets/assets'
 import Permissions from './permissions/permissions'
 

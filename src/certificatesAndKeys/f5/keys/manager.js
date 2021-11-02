@@ -82,26 +82,33 @@ class Manager extends React.Component {
 
   render() {
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <br/>
-        { (this.props.asset && this.props.asset.id ) ?
-           this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
-              <Add/>
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <React.Fragment>
+            <br/>
+            { (this.props.asset && this.props.asset.id ) ?
+              this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+                <React.Fragment>
+                  <Add/>
+                  <br/>
+                  <br/>
+                </React.Fragment>
               :
+                null
+            :
               null
-            :
-            null
+            }
+
+            { (this.props.asset && this.props.asset.id ) ?
+                <List/>
+                :
+                <Alert message="Asset not set" type="error" />
+            }
+          </React.Fragment>
         }
-
-        { (this.props.asset && this.props.asset.id ) ?
-            <List/>
-            :
-            <Alert message="Asset not set" type="error" />
-        }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
-
+      </React.Fragment>
     )
   }
 }

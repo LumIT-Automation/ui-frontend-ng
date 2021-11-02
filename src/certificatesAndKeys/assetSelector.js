@@ -82,50 +82,50 @@ class AssetSelector extends React.Component {
 
   render() {
     return (
-        <Space direction='vertical' style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
-        <br/>
-          <Row>
-            <Form
-              labelCol={{ span: 25 }}
-              wrapperCol={{ span: 40 }}
-              layout="inline"
-              initialValues={{ size: 'default' }}
-              size={'default'}
-            >
-              <Form.Item label="Environment">
-                <Select onChange={e => this.setEnvironment(e)} style={{ width: 180 }}>
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <Space direction='vertical' style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+          <br/>
+            <Row>
+              <Form
+                labelCol={{ span: 25 }}
+                wrapperCol={{ span: 40 }}
+                layout="inline"
+                initialValues={{ size: 'default' }}
+                size={'default'}
+              >
+                <Form.Item label="Environment">
+                  <Select onChange={e => this.setEnvironment(e)} style={{ width: 180 }}>
 
-                  {this.state.environments.map((n, i) => {
-                  return (
-                    <Select.Option  key={i} value={n}>{n}</Select.Option>
-                  )
-                })}
-                </Select>
+                    {this.state.environments.map((n, i) => {
+                    return (
+                      <Select.Option  key={i} value={n}>{n}</Select.Option>
+                    )
+                  })}
+                  </Select>
 
-              </Form.Item>
+                </Form.Item>
 
-              <Form.Item label="Asset">
-                <Select onChange={a => this.setAsset(a)} style={{ width: 350 }}>
+                <Form.Item label="Asset">
+                  <Select onChange={a => this.setAsset(a)} style={{ width: 350 }}>
 
-                  {this.state.envAssets.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
-                  )
-                })}
-                </Select>
+                    {this.state.envAssets.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
+                    )
+                  })}
+                  </Select>
 
-              </Form.Item>
+                </Form.Item>
+              </Form>
 
-
-            </Form>
-
-          </Row>
-
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-        </Space>
-      )
+            </Row>
+          </Space>
+        }
+      </React.Fragment>
+    )
   }
 };
 

@@ -158,93 +158,95 @@ class Add extends React.Component {
 
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <React.Fragment>
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+            <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>ADD KEY</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={750}
-        >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.success &&
-          <Result
-             status="success"
-             title="Added"
-           />
-        }
-        { !this.state.loading && !this.state.success &&
-          <Form
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 8 }}
-            layout="horizontal"
-            initialValues={{ size: 'default' }}
-            size={'default'}
-          >
-
-              <Form.Item label="Key name" >
-                <Input onChange={e => this.setFilename(e)}/>
-              </Form.Item>
-
-            { (this.state.body.fileName) ?
-              <Form.Item label="File source">
-              <Radio.Group onChange={e => this.setSourceType(e)} value={this.state.body.sourceValue}>
-                <Radio value={"upload"}>Upload</Radio>
-                <Radio value={"pasteText"}>Paste text</Radio>
-              </Radio.Group>
-              </Form.Item>
-              :
-              null
+            <Modal
+              title={<p style={{textAlign: 'center'}}>ADD KEY</p>}
+              centered
+              destroyOnClose={true}
+              visible={this.state.visible}
+              footer={''}
+              onOk={() => this.setState({visible: true})}
+              onCancel={() => this.closeModal()}
+              width={750}
+            >
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <Result
+                 status="success"
+                 title="Added"
+               />
             }
+            { !this.state.loading && !this.state.success &&
+              <Form
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 8 }}
+                layout="horizontal"
+                initialValues={{ size: 'default' }}
+                size={'default'}
+              >
 
-            {this.state.body.sourceValue === "upload" ?
-              <Form.Item label="Upload File">
-                <Input type="file" onChange={this.uploadFile} />
-              </Form.Item>
-              :
-              null
-            }
+                  <Form.Item label="Key name" >
+                    <Input onChange={e => this.setFilename(e)}/>
+                  </Form.Item>
 
-            {this.state.body.sourceValue === "pasteText" ?
-              <Form.Item label="Paste Text">
-                <TextArea rows={4} onChange={e => this.setText(e)} />
-              </Form.Item>
-              :
-              null
-            }
-
-            {this.fileSummary()}
-
-            { (this.props.asset) ?
-              <Form.Item wrapperCol={ {offset: 8, span: 16 }}>
-                <Button type="primary" onClick={this.installKey}>Install {this.state.body.fileType}</Button>
-              </Form.Item>
-            :
-              <Form.Item wrapperCol={ {offset: 8, span: 8 }}>
-                {
-                  <Alert message="Asset not set" type="error" />
+                { (this.state.body.fileName) ?
+                  <Form.Item label="File source">
+                  <Radio.Group onChange={e => this.setSourceType(e)} value={this.state.body.sourceValue}>
+                    <Radio value={"upload"}>Upload</Radio>
+                    <Radio value={"pasteText"}>Paste text</Radio>
+                  </Radio.Group>
+                  </Form.Item>
+                  :
+                  null
                 }
-              </Form.Item>
+
+                {this.state.body.sourceValue === "upload" ?
+                  <Form.Item label="Upload File">
+                    <Input type="file" onChange={this.uploadFile} />
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                {this.state.body.sourceValue === "pasteText" ?
+                  <Form.Item label="Paste Text">
+                    <TextArea rows={4} onChange={e => this.setText(e)} />
+                  </Form.Item>
+                  :
+                  null
+                }
+
+                {this.fileSummary()}
+
+                { (this.props.asset) ?
+                  <Form.Item wrapperCol={ {offset: 8, span: 16 }}>
+                    <Button type="primary" onClick={this.installKey}>Install {this.state.body.fileType}</Button>
+                  </Form.Item>
+                :
+                  <Form.Item wrapperCol={ {offset: 8, span: 8 }}>
+                    {
+                      <Alert message="Asset not set" type="error" />
+                    }
+                  </Form.Item>
+                }
+
+              </Form>
             }
 
-          </Form>
+
+
+
+            </Modal>
+          </React.Fragment>
         }
-
-
-
-
-        </Modal>
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
-
+      </React.Fragment>
     )
   }
 }

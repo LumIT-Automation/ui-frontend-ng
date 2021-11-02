@@ -140,10 +140,7 @@ class CustomSider extends Component {
 
           <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
           <Menu.Divider/>
-          {/*
-          <Menu.Item key="grid" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/grid/">GRID</Link></Menu.Item>
 
-          */}
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
           { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
             <React.Fragment>
