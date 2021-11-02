@@ -29,6 +29,7 @@ class RequestIp extends React.Component {
       requests: [],
       response: [],
       macAddress: '00:00:00:00:00:00',
+      macAddress2: '00:00:00:00:00:00',
     };
   }
 
