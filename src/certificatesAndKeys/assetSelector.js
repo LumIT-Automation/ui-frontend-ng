@@ -1,17 +1,13 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 
-import Rest from "../_helpers/Rest";
 import Error from '../error'
 
-import { setError } from '../_store/store.error'
-import { setEnvironment, setAsset } from '../_store/store.f5'
+import { setAsset } from '../_store/store.f5'
 
 import "antd/dist/antd.css"
-import { Space, Form, Select, Button, Row, Divider, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+import { Space, Form, Select, Row } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 
 

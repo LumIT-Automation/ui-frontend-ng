@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
+import { Tabs, Space, Spin, Divider } from 'antd';
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
@@ -11,10 +11,7 @@ import AssetSelector from './assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
-
 import { setAssets, setCertificatesFetch, setKeysFetch } from '../_store/store.f5'
-
-
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -23,7 +20,6 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 
 
 

@@ -7,26 +7,13 @@ import Error from '../../../error'
 import { setError } from '../../../_store/store.error'
 import { setCertificatesFetch } from '../../../_store/store.f5'
 
-import { Form, Input, Button, Select, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
+import { Form, Input, Button, Card, Space, Radio, Alert, Spin, Result, Modal } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const { TextArea } = Input
 
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class Add extends React.Component {
 
@@ -55,15 +42,13 @@ class Add extends React.Component {
   }
 
   setFilename = e => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
     body.fileName = e.target.value
     this.setState({body: body})
   }
 
   setSourceType = e => {
     let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
     if (e.target.value === 'pasteText') {
       body.sourceValue = e.target.value
     } else if (e.target.value === 'upload') {
@@ -74,21 +59,18 @@ class Add extends React.Component {
 
   setText = event => {
     let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
     body.text = event.target.value
     this.setState({body: body})
   }
 
   uploadFile = event => {
     let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
     body.selectedFile = event.target.files[0]
     this.setState({body: body}, () => this.readSingleFile(event))
   }
 
   readSingleFile = e => {
     let body = Object.assign({}, this.state.body)
-    let errors = Object.assign({}, this.state.errors)
 
     var file = e.target.files[0];
     if (!file) {
