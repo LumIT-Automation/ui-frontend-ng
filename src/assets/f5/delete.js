@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { setDeleteF5AssetError } from '../../_store/store.error'
 import { setAssetsFetch } from '../../_store/store.f5'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
@@ -51,11 +51,11 @@ class Delete extends React.Component {
         this.setState({loading: false, success: true}, () =>  this.props.dispatch(setAssetsFetch(true)) )
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setDeleteF5AssetError(error))
         this.setState({loading: false, success: false})
       }
     )
-    await rest.doXHR(`f5/asset/${asset.id}/`, this.props.token )
+    await rest.doXHR(`f5/assetx/${asset.id}/`, this.props.token )
 
   }
 
@@ -70,9 +70,7 @@ class Delete extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
-        :
+        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'AssetF5Manager_DeleteAsset'} /> : null }
           <React.Fragment>
 
             <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
@@ -120,7 +118,7 @@ class Delete extends React.Component {
             </Modal>
 
           </React.Fragment>
-        }
+
       </React.Fragment>
     )
   }
@@ -128,5 +126,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	error: state.error.deleteF5AssetError,
 }))(Delete);

@@ -5,7 +5,7 @@ import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 import { useLocation } from 'react-router-dom'
 
-import { setError } from '../../_store/store.error'
+import { setFetchF5AssetsError } from '../../_store/store.error'
 import {
   setAssetsLoading,
   setAssets,
@@ -29,8 +29,10 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assets) {
-      this.fetchAssets()
+    if (!this.props.error) {
+      if (!this.props.assets) {
+        this.fetchAssets()
+      }
     }
   }
 
@@ -46,13 +48,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-  }
-
-  usePathname = () => {
-    const location = useLocation();
-    console.log('location');
-    console.log(location);
-    //return location.pathname;
+    console.log('unmount')
   }
 
   fetchAssets = async () => {
@@ -63,7 +59,7 @@ class Manager extends React.Component {
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setFetchF5AssetsError(error))
         this.setState({loading: false, success: false})
       }
     )
@@ -73,26 +69,24 @@ class Manager extends React.Component {
 
 
   render() {
-
+    console.log(this.props.error)
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} />
-        :
-          <React.Fragment>
-            <br/>
-            { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
-              <React.Fragment>
-                <Add/>
-                <br/>
-                <br/>
-              </React.Fragment>
-            :
-              null
-            }
+        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'AssetF5Manager_FetchAssets'} /> : null }
+        <React.Fragment>
+          <br/>
+          { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
+            <React.Fragment>
+              <Add/>
+              <br/>
+              <br/>
+            </React.Fragment>
+          :
+            null
+          }
             <List/>
-          </React.Fragment>
-        }
+        </React.Fragment>
+
       </React.Fragment>
     )
   }
@@ -100,7 +94,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	error: state.error.fetchF5AssetsError,
   authorizations: state.authorizations.f5,
   assets: state.f5.assets,
   assetsFetch: state.f5.assetsFetch

@@ -4,7 +4,11 @@ import { Component } from "react";
 import  { Redirect } from 'react-router-dom'
 import { logout } from './_store/store.auth'
 
-import { setError } from './_store/store.error'
+import {
+  setError,
+  setFetchF5AssetsError,
+  setDeleteF5AssetError
+} from './_store/store.error'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -35,37 +39,30 @@ class Error extends Component {
   }
 
   componentDidMount() {
-    /*
-    const e = []
-    e.push(this.props.error)
-    this.setState({ error: e })
-    */
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //
-    /*
-    if (this.props.error !== prevProps.error) {
-      const e = []
-      e.push(this.props.error)
-      this.setState({ error: e })
-    }
-    */
   }
 
   componentWillUnmount() {
   }
 
-  parentPath = () => {
-    let parent = this.props.pathname.split('/')
-    return parent
-  }
-
 
   onCancel = async () => {
-    window.location.href = '/';
-    //this.props.dispatch(setError(null))
-    //return <Redirect to='/'  />
+    if ( this.props.type ) {
+      switch(this.props.type) {
+        case 'Error':
+          this.props.dispatch(setError(null))
+          break
+        case 'AssetF5Manager_FetchAssets':
+          this.props.dispatch(setFetchF5AssetsError(null))
+          break
+        case 'AssetF5Manager_DeleteAsset':
+          this.props.dispatch(setDeleteF5AssetError(null))
+          break
+      }
+
+    }
   }
 
   deleteCookies = (token, username) => {
@@ -88,7 +85,8 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
-    console.log(this.props.pathname)
+    console.log(this.props.type)
+    console.log(this.props.error)
 
 
     const columns = [

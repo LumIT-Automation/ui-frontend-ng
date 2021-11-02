@@ -22,12 +22,19 @@ const errorSlice = createSlice({
           state.errorLoading = action.payload
         },
         setError: (state, action) => {
-          
           state.error = action.payload
         },
         setErrorFetch: (state, action) => {
           state.errorFetch = action.payload
         },
+        setFetchF5AssetsError: (state, action) => {
+          state.fetchF5AssetsError = action.payload
+        },
+        setDeleteF5AssetError: (state, action) => {
+          state.deleteF5AssetError = action.payload
+        },
+
+
 
 
         cleanUp: (state, action) => {
@@ -45,8 +52,8 @@ export const {
   setErrorLoading,
   setError,
   setErrorFetch,
-
-  setAsset,
+  setFetchF5AssetsError,
+  setDeleteF5AssetError,
 
   cleanUp
 } = actions
