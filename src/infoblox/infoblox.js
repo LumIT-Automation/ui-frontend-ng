@@ -1,45 +1,25 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd'
+import { Tabs, Space, Spin, Divider } from 'antd'
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setError } from '../_store/store.error'
-
 import AssetSelector from './assetSelector'
 import Tree from './tree/manager'
-//import Containers from './containersTemp/manager'
-//import Networks from './networks/manager'
-
-
-//import CertificateAndKey from './certificates/container'
-
 import {
   setAssets,
-
-  /*
-  setContainersLoading,
-  setContainers,
-  setContainersFetch,
-  */
-
   setNetworksFetch,
-
-  setTreeFetch,
-
-  cleanUp
-
+  setTreeFetch
 } from '../_store/store.infoblox'
 
-import 'antd/dist/antd.css';
+import 'antd/dist/antd.css'
 import '../App.css'
 
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
 
 
 
@@ -85,7 +65,7 @@ class Infoblox extends React.Component {
 
 /*
   fetchContainers = async () => {
-    
+
     this.props.dispatch(setContainersLoading(true))
     let rest = new Rest(
       "GET",

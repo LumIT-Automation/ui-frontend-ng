@@ -5,10 +5,10 @@ import Rest from "../_helpers/Rest"
 import Error from '../error'
 
 import { setError } from '../_store/store.error'
-import { setEnvironment, setAsset, setPartitions, setPartition, clearPartitions } from '../_store/store.f5'
+import { setEnvironment, setAsset, setPartition } from '../_store/store.f5'
 
 import "antd/dist/antd.css"
-import { Space, Form, Select, Button, Row, Col, Divider, Spin } from 'antd';
+import { Select, Row, Col, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />

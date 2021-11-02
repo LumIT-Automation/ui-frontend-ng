@@ -5,17 +5,10 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-
 import Ip from './ip'
 
-import { Tree, Table, Input, Button, Space, Spin, Modal, Collapse, Row, Col } from 'antd'
-
-import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-const { Panel } = Collapse
+import { Tree, Space, Collapse, Row, Col } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 
 
@@ -58,7 +51,7 @@ class List extends React.Component {
       "GET",
       resp => {
         //this.props.dispatch( setTree(resp) )
-        
+
         this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
       },
       error => {
@@ -75,7 +68,7 @@ class List extends React.Component {
   }
 
   onSelect = (selectedKeys, info) => {
-    
+
     if (info.node.type === 'network') {
       let n = info.node.network
       n = n.split('/')
@@ -94,7 +87,7 @@ class List extends React.Component {
   }
 
   render() {
-    
+
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>

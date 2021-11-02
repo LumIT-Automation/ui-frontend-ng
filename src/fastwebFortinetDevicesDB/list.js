@@ -3,11 +3,9 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../error'
 
-import { setError } from '../_store/store.error'
-
 import Details from './details'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
@@ -131,7 +129,6 @@ class List extends React.Component {
  		width: 'auto',
     dataIndex: "SERIALE",
     key: "SERIALE",
-    width: 'auto',
     ...this.getColumnSearchProps('SERIALE'),
     render: (name, obj)  => (
       <Space size="small">

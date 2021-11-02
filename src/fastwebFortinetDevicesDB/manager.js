@@ -9,11 +9,9 @@ import { setError } from '../_store/store.error'
 
 import List from './list'
 
-import { Table, Input, Button, Space, Spin, Alert } from 'antd'
+import { Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-
-
 
 
 
@@ -98,7 +96,7 @@ class Manager extends React.Component {
       }
       out.push(o)
     })
-    
+
 
   }
 

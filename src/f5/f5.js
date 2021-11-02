@@ -1,11 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin, Form, Input, Button, Table, Divider } from 'antd';
+import { Tabs, Space, Spin, Divider } from 'antd';
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
-
-import { setError } from '../_store/store.error'
 
 import AssetSelector from './assetSelector'
 import Nodes from './nodes/manager'
@@ -13,7 +11,6 @@ import Monitors from './monitors/manager'
 import Pools from './pools/manager'
 import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
-//import CertificateAndKey from './certificates/container'
 
 import {
   setAssets,
@@ -30,10 +27,8 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const { TabPane } = Tabs;
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const refreshIcon = <ReloadOutlined style={{color: 'white' }}  />
-//const { Search } = Input;
+
 
 
 class F5 extends React.Component {
