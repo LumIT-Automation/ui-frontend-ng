@@ -1,20 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
-import Rest from "../../_helpers/Rest";
-
-import { setError } from '../../_store/store.error'
-import { setSuperAdminPermissions } from '../../_store/store.permissions'
-
-import { Table, Input, Button, Space, Spin, Form } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { SearchOutlined } from '@ant-design/icons';
 
-
-/*
-
-*/
 
 
 class List extends React.Component {

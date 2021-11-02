@@ -6,7 +6,6 @@ import { Layout, Form, Input, Button, Row, Col, Card } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 import Rest from "./_helpers/Rest";
-import Error from './error'
 
 import { login } from './_store/store.auth'
 
@@ -46,7 +45,7 @@ class Login extends Component {
       let rest = new Rest("POST",
 
         response => {
-          
+
           this.setState({ error: null });
 
           // Update the store; save the access token.

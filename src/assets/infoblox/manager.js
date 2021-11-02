@@ -1,7 +1,7 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest";
+import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
@@ -10,15 +10,8 @@ import { setAssetsLoading, setAssets, setAssetsFetch } from '../../_store/store.
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Space } from 'antd'
 
-
-
-
-/*
-
-*/
 
 
 class Manager extends React.Component {

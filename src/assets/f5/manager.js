@@ -8,15 +8,13 @@ import { setError } from '../../_store/store.error'
 import {
   setAssetsLoading,
   setAssets,
-  setAssetsFetch,
-  cleanUp
+  setAssetsFetch
 } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Divider } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Space } from 'antd';
 
 /*
 

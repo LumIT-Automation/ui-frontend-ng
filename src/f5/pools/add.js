@@ -87,7 +87,6 @@ class Add extends React.Component {
 
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     switch(e.target.id) {
 
@@ -197,7 +196,6 @@ class Add extends React.Component {
   setMemberName = (name, id) => {
     let nodes = Object.assign([], this.state.nodes);
     let errors = Object.assign({}, this.state.errors);
-    //const regex = new RegExp();
 
     //const ipv4 = m
     //const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -219,7 +217,6 @@ class Add extends React.Component {
   setMemberPort = (p, id) => {
     let nodes = Object.assign([], this.state.nodes);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     const port = p.target.value
 

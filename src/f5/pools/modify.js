@@ -147,7 +147,6 @@ class Modify extends React.Component {
 
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     switch(e.target.id) {
 

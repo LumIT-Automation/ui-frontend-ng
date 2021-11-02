@@ -7,7 +7,7 @@ import Rest from "../../_helpers/Rest";
 import { setError } from '../../_store/store.error'
 import { setSuperAdminsPermissions, setSuperAdminsPermissionsBeauty } from '../../_store/store.permissions'
 
-import { Table, Input, Button, Space, Spin, Form } from 'antd';
+import { Input, Button, Space, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
 

@@ -9,25 +9,16 @@ import {
   setPermissionsFetch,
 } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result, AutoComplete, Select } from 'antd';
+import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-
-
-
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 12 },
 };
 
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
+
 
 class Modify extends React.Component {
 
@@ -203,8 +194,7 @@ class Modify extends React.Component {
   }
 
   addNewDn = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
     let r
     const b = {
       "data":
@@ -235,9 +225,6 @@ class Modify extends React.Component {
     if (this.state.groupToAdd) {
       await this.addNewDn()
     }
-
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
 
     this.setState({message: null});
 

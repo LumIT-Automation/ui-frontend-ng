@@ -143,7 +143,6 @@ class Modify extends React.Component {
 
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     switch(e.target.id) {
 
@@ -186,8 +185,7 @@ class Modify extends React.Component {
   }
 
   modifyAsset = async () => {
-    let body = Object.assign({}, this.state.body);
-    let errors = Object.assign({}, this.state.errors);
+    let body = Object.assign({}, this.state.body)
 
     if (isEmpty(body)){
       this.setState({message: 'Please fill the form'})

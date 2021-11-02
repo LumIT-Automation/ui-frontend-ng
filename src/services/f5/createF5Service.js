@@ -177,7 +177,6 @@ class CreateF5Service extends React.Component {
   setDestination = e => {
     let body = Object.assign({}, this.state.body);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     const ipv4 = e.target.value
     const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -339,7 +338,6 @@ class CreateF5Service extends React.Component {
   setMemberAddress = (memberId, e) => {
     let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     const ipv4 = e.target.value
     const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -359,7 +357,6 @@ class CreateF5Service extends React.Component {
   setMemberName = (memberId, e) => {
     let members = Object.assign([], this.state.members);
     let errors = Object.assign({}, this.state.errors);
-    const regex = new RegExp();
 
     const name = e.target.value
 
@@ -467,7 +464,7 @@ class CreateF5Service extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        
+
         this.setState({loading: false, success: true})
         this.success()
       },
@@ -542,7 +539,7 @@ class CreateF5Service extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        
+
         this.setState({loading: false, success: true})
         this.success()
       },

@@ -2,16 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
-import Rest from "../../_helpers/Rest"
 
 import { setError } from '../../_store/store.error'
 import {
   setAssets,
-  setAssetsLoading,
-  setAssetsFetch,
   setIdentityGroups,
-  setIdentityGroupsLoading,
-  setIdentityGroupsFetch,
   setPermissions,
   setPermissionsLoading,
   setPermissionsFetch,
@@ -20,7 +15,7 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Table, Input, Button, Space, Spin, Divider } from 'antd'
+import { Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

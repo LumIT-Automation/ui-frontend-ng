@@ -6,27 +6,10 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { Space, Modal, Table, Result, List, Typography } from 'antd';
+import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-/*
-
-*/
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class RolesDescription extends React.Component {
 
