@@ -14,11 +14,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space } from 'antd';
-
-/*
-
-*/
 
 
 class Manager extends React.Component {
@@ -69,28 +64,28 @@ class Manager extends React.Component {
     this.props.dispatch(setAssetsLoading(false))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <br/>
-
-        { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
-           <Add/>
-           : null
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <React.Fragment>
+            <br/>
+            { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
+              <React.Fragment>
+                <Add/>
+                <br/>
+                <br/>
+              </React.Fragment>
+            :
+              null
+            }
+              <List/>
+          </React.Fragment>
         }
-
-        <div>
-          <List/>
-        </div>
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
-
+      </React.Fragment>
     )
   }
 }

@@ -197,19 +197,22 @@ class List extends React.Component {
 
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Table
-          columns={columns}
-          dataSource={this.props.assets}
-          bordered
-          rowKey="id"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
-
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <Table
+            columns={columns}
+            dataSource={this.props.assets}
+            bordered
+            rowKey="id"
+            scroll= {{x: 350}}
+            //pagination={false}
+            pagination={{ pageSize: 10 }}
+            style={{marginBottom: 10}}
+          />
+        }
+      </React.Fragment>
     )
   }
 }

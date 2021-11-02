@@ -10,8 +10,6 @@ import { setAssetsLoading, setAssets, setAssetsFetch } from '../../_store/store.
 import List from './list'
 import Add from './add'
 
-import { Space } from 'antd'
-
 
 
 class Manager extends React.Component {
@@ -67,19 +65,25 @@ class Manager extends React.Component {
   render() {
     console.log(this.props.assets)
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <br/>
-        { this.props.infobloxAuth && (this.props.infobloxAuth.assets_post || this.props.infobloxAuth.any) ?
-          <Add/>
-        : null }
-
-        <div>
-          <List/>
-        </div>
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-      </Space>
-
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <React.Fragment>
+            <br/>
+            { this.props.infobloxAuth && (this.props.infobloxAuth.assets_post || this.props.infobloxAuth.any) ?
+              <React.Fragment>
+                <Add/>
+                <br/>
+                <br/>
+              </React.Fragment>
+            :
+              null
+            }
+            <List/>
+          </React.Fragment>
+        }
+      </React.Fragment>
     )
   }
 }

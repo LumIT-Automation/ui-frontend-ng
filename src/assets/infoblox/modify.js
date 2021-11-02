@@ -7,7 +7,7 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 import { setAssetsFetch } from '../../_store/store.infoblox'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
+import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -251,162 +251,161 @@ class Modify extends React.Component {
   render() {
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
+        { this.props.error ?
+          <Error error={[this.props.error]} visible={true} />
+        :
+          <React.Fragment>
 
-        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+            <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
-
-        <Modal
-          title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.fqdn} - {this.props.obj.address}</p></div>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={750}
-        >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.success &&
-          <Result
-             status="success"
-             title="Updated"
-           />
-        }
-        { !this.state.loading && !this.state.success &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={{
-              remember: true,
-              address: this.state.body.address,
-              fqdn: this.state.body.fqdn,
-              datacenter: this.state.body.datacenter,
-              environment: this.state.body.environment,
-              position: this.state.body.position,
-              tlsverify: this.state.body.tlsverify,
-              username: this.state.body.username,
-              password: this.state.body.password
-            }}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-            <Form.Item
-              label="Address"
-              name="address"
-              key="address"
-              validateStatus={this.state.errors.addressError}
-              help={this.state.errors.addressError ? 'Please input a valid ipv4' : null }
+            <Modal
+              title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.fqdn} - {this.props.obj.address}</p></div>}
+              centered
+              destroyOnClose={true}
+              visible={this.state.visible}
+              footer={''}
+              onOk={() => this.setState({visible: true})}
+              onCancel={() => this.closeModal()}
+              width={750}
             >
-              {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
-              <Input id='address' onBlur={e => this.ipHostnameValidator(e)} />
-            </Form.Item>
-
-            <Form.Item
-              label="Fqdn"
-              name="fqdn"
-              key="fqdn"
-              validateStatus={this.state.errors.fqdnError}
-              help={this.state.errors.fqdnError ? 'Please input a valid fqdn' : null }
-            >
-              <Input id='fqdn' onBlur={e => this.ipHostnameValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Datacenter"
-              name="datacenter"
-              key="datacenter"
-              validateStatus={this.state.errors.datacenterError}
-              help={this.state.errors.datacenterError ? 'Please input a valid Datacenter' : null }
-            >
-              <Input id='datacenter' onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Environment"
-              name="environment"
-              key="environment"
-              validateStatus={this.state.errors.environmentError}
-              help={this.state.errors.environmentError ? 'Please input a valid Environment' : null }
-            >
-              <Input id='environment' onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Position"
-              name="position"
-              key="position"
-              validateStatus={this.state.errors.positionError}
-              help={this.state.errors.positionError ? 'Please input a valid Position' : null }
-            >
-              <Input id='position' onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Tls verify"
-              name="tlsverify"
-              key="tlsverify"
-              validateStatus={this.state.errors.tlsverifyError}
-              help={this.state.errors.tlsverifyError ? 'Please input a valid tls verification' : null }
-            >
-              <Radio.Group id='tlsverify' value={this.state.body.tlsverify} onChange={e => this.genericValidator(e)}>
-                <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                <Radio key='0' id='tlsverify' value='0'>No</Radio>
-              </Radio.Group>
-            </Form.Item>
-
-            <Form.Item
-              label="Username"
-              name="username"
-              key="username"
-              validateStatus={this.state.errors.usernameError}
-              help={this.state.errors.usernameError ? 'Please input a valid asset Username' : null }
-            >
-              <Input id="username" onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            <Form.Item
-              label="Password"
-              name="password"
-              key="password"
-              validateStatus={this.state.errors.passwordError}
-              help={this.state.errors.passwordError ? 'Please input a valid asset Password' : null }
-            >
-              <Input.Password id="password" onBlur={e => this.genericValidator(e)}/>
-            </Form.Item>
-
-            {this.state.message ?
-              <Form.Item
-                wrapperCol={ {offset: 8, span: 16 }}
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
-
-              : null
+            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !this.state.loading && this.state.success &&
+              <Result
+                 status="success"
+                 title="Updated"
+               />
             }
+            { !this.state.loading && !this.state.success &&
+              <Form
+                {...layout}
+                name="basic"
+                initialValues={{
+                  remember: true,
+                  address: this.state.body.address,
+                  fqdn: this.state.body.fqdn,
+                  datacenter: this.state.body.datacenter,
+                  environment: this.state.body.environment,
+                  position: this.state.body.position,
+                  tlsverify: this.state.body.tlsverify,
+                  username: this.state.body.username,
+                  password: this.state.body.password
+                }}
+                onFinish={null}
+                onFinishFailed={null}
+              >
+                <Form.Item
+                  label="Address"
+                  name="address"
+                  key="address"
+                  validateStatus={this.state.errors.addressError}
+                  help={this.state.errors.addressError ? 'Please input a valid ipv4' : null }
+                >
+                  {/*<Input placeholder="address" onBlur={e => this.ipv4Validator(e.target.value)} />*/}
+                  <Input id='address' onBlur={e => this.ipHostnameValidator(e)} />
+                </Form.Item>
 
-            <Form.Item
-              wrapperCol={ {offset: 8, span: 16 }}
-              name="button"
-              key="button"
-            >
-              <Button type="primary" onClick={() => this.modifyAsset()}>
-                Modify Asset
-              </Button>
-            </Form.Item>
+                <Form.Item
+                  label="Fqdn"
+                  name="fqdn"
+                  key="fqdn"
+                  validateStatus={this.state.errors.fqdnError}
+                  help={this.state.errors.fqdnError ? 'Please input a valid fqdn' : null }
+                >
+                  <Input id='fqdn' onBlur={e => this.ipHostnameValidator(e)}/>
+                </Form.Item>
 
-          </Form>
+                <Form.Item
+                  label="Datacenter"
+                  name="datacenter"
+                  key="datacenter"
+                  validateStatus={this.state.errors.datacenterError}
+                  help={this.state.errors.datacenterError ? 'Please input a valid Datacenter' : null }
+                >
+                  <Input id='datacenter' onBlur={e => this.genericValidator(e)}/>
+                </Form.Item>
+
+                <Form.Item
+                  label="Environment"
+                  name="environment"
+                  key="environment"
+                  validateStatus={this.state.errors.environmentError}
+                  help={this.state.errors.environmentError ? 'Please input a valid Environment' : null }
+                >
+                  <Input id='environment' onBlur={e => this.genericValidator(e)}/>
+                </Form.Item>
+
+                <Form.Item
+                  label="Position"
+                  name="position"
+                  key="position"
+                  validateStatus={this.state.errors.positionError}
+                  help={this.state.errors.positionError ? 'Please input a valid Position' : null }
+                >
+                  <Input id='position' onBlur={e => this.genericValidator(e)}/>
+                </Form.Item>
+
+                <Form.Item
+                  label="Tls verify"
+                  name="tlsverify"
+                  key="tlsverify"
+                  validateStatus={this.state.errors.tlsverifyError}
+                  help={this.state.errors.tlsverifyError ? 'Please input a valid tls verification' : null }
+                >
+                  <Radio.Group id='tlsverify' value={this.state.body.tlsverify} onChange={e => this.genericValidator(e)}>
+                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
+                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                  </Radio.Group>
+                </Form.Item>
+
+                <Form.Item
+                  label="Username"
+                  name="username"
+                  key="username"
+                  validateStatus={this.state.errors.usernameError}
+                  help={this.state.errors.usernameError ? 'Please input a valid asset Username' : null }
+                >
+                  <Input id="username" onBlur={e => this.genericValidator(e)}/>
+                </Form.Item>
+
+                <Form.Item
+                  label="Password"
+                  name="password"
+                  key="password"
+                  validateStatus={this.state.errors.passwordError}
+                  help={this.state.errors.passwordError ? 'Please input a valid asset Password' : null }
+                >
+                  <Input.Password id="password" onBlur={e => this.genericValidator(e)}/>
+                </Form.Item>
+
+                {this.state.message ?
+                  <Form.Item
+                    wrapperCol={ {offset: 8, span: 16 }}
+                    name="message"
+                    key="message"
+                  >
+                    <p style={{color: 'red'}}>{this.state.message}</p>
+                  </Form.Item>
+
+                  : null
+                }
+
+                <Form.Item
+                  wrapperCol={ {offset: 8, span: 16 }}
+                  name="button"
+                  key="button"
+                >
+                  <Button type="primary" onClick={() => this.modifyAsset()}>
+                    Modify Asset
+                  </Button>
+                </Form.Item>
+
+              </Form>
+            }
+            </Modal>
+          </React.Fragment>
         }
-
-        </Modal>
-
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
-
+      </React.Fragment>
     )
   }
 }
