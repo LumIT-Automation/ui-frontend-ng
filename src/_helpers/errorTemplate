@@ -7,6 +7,17 @@ setPermissionsError: (state, action) => {
 setPermissionsError
 
 
+ERROR
+
+import {
+  setPermissionsError,
+} from './_store/store.error'
+
+case 'Error':
+  this.props.dispatch(setPermissionsError(null))
+  break
+
+
 
 
 COMPONENT
@@ -27,14 +38,3 @@ error => {
 { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
 
 error: state.error.permissionsError,
-
-
-ERROR
-
-import {
-  setPermissionsError,
-} from './_store/store.error'
-
-case 'Error':
-  this.props.dispatch(setPermissionsError(null))
-  break

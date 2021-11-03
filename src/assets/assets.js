@@ -28,7 +28,7 @@ class Assets extends React.Component {
   }
 
   componentDidMount() {
-    this.magia()
+    //this.magia()
   }
 
   shouldComponentUpdate(newProps, newState) {

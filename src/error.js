@@ -157,8 +157,8 @@ class Error extends Component {
           this.props.dispatch(setF5KeysError(null))
           break
 
-        case 'setInfobloPermissionsError':
-        	this.props.dispatch(setInfobloPermissionsError(null))
+        case 'setInfobloxPermissionsError':
+        	this.props.dispatch(setInfobloxPermissionsError(null))
         	break
         case 'setInfobloxIdentityGroupsError':
         	this.props.dispatch(setInfobloxIdentityGroupsError(null))
@@ -169,26 +169,26 @@ class Error extends Component {
         case 'setInfobloxAssetsError':
         	this.props.dispatch(setInfobloxAssetsError(null))
         	break
-        case 'setInfobloAssetAddError':
-        	this.props.dispatch(setInfobloAssetAddError(null))
+        case 'setInfobloxAssetAddError':
+        	this.props.dispatch(setInfobloxAssetAddError(null))
         	break
-        case 'setInfobloAssetModifyError':
-        	this.props.dispatch(setInfobloAssetModifyError(null))
+        case 'setInfobloxAssetModifyError':
+        	this.props.dispatch(setInfobloxAssetModifyError(null))
         	break
-        case 'setInfobloAssetDeleteError':
-        	this.props.dispatch(setInfobloAssetDeleteError(null))
+        case 'setInfobloxAssetDeleteError':
+        	this.props.dispatch(setInfobloxAssetDeleteError(null))
         	break
-        case 'setInfobloTreeError':
-        	this.props.dispatch(setInfobloTreeError(null))
+        case 'setInfobloxTreeError':
+        	this.props.dispatch(setInfobloxTreeError(null))
         	break
-        case 'setInfobloNetworksError':
-        	this.props.dispatch(setInfobloNetworksError(null))
+        case 'setInfobloxNetworksError':
+        	this.props.dispatch(setInfobloxNetworksError(null))
         	break
         case 'setInfobloContainersError':
-        	this.props.dispatch(setInfobloContainersError(null))
+        	this.props.dispatch(setInfobloxContainersError(null))
         	break
-        case 'setInfobloRealNetworksError':
-        	this.props.dispatch(setInfobloRealNetworksError(null))
+        case 'setInfobloxRealNetworksError':
+        	this.props.dispatch(setInfobloxRealNetworksError(null))
         	break
 
 
@@ -219,7 +219,6 @@ class Error extends Component {
     //let err = this.state.error
     console.log(this.props.type)
     console.log(this.props.error)
-
 
     const columns = [
       {

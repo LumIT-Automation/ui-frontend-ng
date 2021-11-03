@@ -53,12 +53,14 @@ class Permissions extends React.Component {
 
 
   render() {
+    console.log(this.props.assetsError)
     return (
 
       <React.Fragment>
-      { this.props.error ?
-        <Error error={[this.props.error]} visible={true} />
-        :
+        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'Error'}/> : null }
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setF5IdentityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setF5PermissionsError'} /> : null }
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
             <TabPane tab="SuperAdmin" key="SuperAdmin">
@@ -96,7 +98,7 @@ class Permissions extends React.Component {
             }
           </Tabs>
         </Space>
-      }
+
       </React.Fragment>
     )
   }
@@ -105,6 +107,10 @@ class Permissions extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
+
+  assetsError: state.f5.assetsError,
+  identityGroupsError: state.f5.identityGroupsError,
+  permissionsError: state.f5.permissionsError,
 
   f5Auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,

@@ -2,14 +2,17 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
+import Rest from '../../_helpers/Rest'
 
-import { setError } from '../../_store/store.error'
 import {
-  setAssets,
-  setIdentityGroups,
   setPermissions,
   setPermissionsLoading,
   setPermissionsFetch,
+  setPermissionsError,
+  setAssets,
+  setAssetsError,
+  setIdentityGroups,
+  setIdentityGroupsError,
 } from '../../_store/store.f5'
 
 import List from './list'
@@ -34,8 +37,12 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.permissions) {
-      this.main()
+    console.log('mount')
+    console.log(this.props.assetsError)
+    if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
+      if (!this.props.permissions) {
+        this.main()
+      }
     }
   }
 
@@ -55,19 +62,46 @@ class Manager extends React.Component {
   }
 
   main = async () => {
+    console.log('main')
     this.props.dispatch(setPermissionsLoading(true))
 
     let assets = await this.fetchAssets()
-    this.props.dispatch(setAssets( assets ))
+    if (assets.status && assets.status !== 200 ) {
+      this.props.dispatch(setAssetsError(assets))
+      this.props.dispatch(setPermissionsLoading(false))
+    }
+    else {
+      this.props.dispatch(setAssets( assets ))
+    }
 
     let identityGroups = await this.fetchIdentityGroups()
-    this.props.dispatch(setIdentityGroups( identityGroups ))
+    if (identityGroups.status && identityGroups.status !== 200 ) {
+      this.props.dispatch(setIdentityGroupsError(identityGroups))
+      this.props.dispatch(setPermissionsLoading(false))
+    }
+    else {
+      this.props.dispatch(setIdentityGroups( identityGroups ))
+    }
 
     let permissions = await this.fetchPermissions()
-    let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
+    if (permissions.status && permissions.status !== 200 ) {
+      this.props.dispatch(setPermissionsError(permissions))
+      this.props.dispatch(setPermissionsLoading(false))
+    }
+    else {
+      this.props.dispatch(setPermissions(permissions))
+    }
 
-    this.props.dispatch(setPermissions( permissionsWithAssets ))
-    this.props.dispatch(setPermissionsLoading(false))
+    if ((assets.status && assets.status !== 200 ) ||
+        (identityGroups.status && identityGroups.status !== 200 ) ||
+        (permissions.status && permissions.status !== 200 ) ) {
+      this.props.dispatch(setPermissionsLoading(false))
+    }
+    else {
+      let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
+      this.props.dispatch(setPermissions( permissionsWithAssets ))
+      this.props.dispatch(setPermissionsLoading(false))
+    }
   }
 
 
@@ -75,9 +109,58 @@ class Manager extends React.Component {
     this.setState({ error: null})
   }
 
+
+  fetchAssets = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("f5/assets/", this.props.token)
+    return r
+  }
+
+  fetchIdentityGroups = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
+  }
+
+  fetchPermissions = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("f5/permissions/", this.props.token)
+    return r
+  }
+
+
+
+/*
   fetchAssets = async () => {
     try {
-      const response = await fetch('/backend/f5/assets/', {
+      const response = await fetch('/backend/f5/assetss/', {
         method: 'GET',
         headers: {
           'Authorization': 'Bearer ' + this.props.token
@@ -89,7 +172,8 @@ class Manager extends React.Component {
         return json
       }
       else {
-        this.props.dispatch(setError(response))
+        console.log('èèèèèèè')
+        this.props.dispatch(setAssetsError(response))
       }
 
     }
@@ -100,11 +184,11 @@ class Manager extends React.Component {
         type: error.name
       }
 
-      this.props.dispatch(setError(e))
+      this.props.dispatch(setAssetsError(e))
     }
   }
-
-
+*/
+/*
   fetchIdentityGroups = async () => {
     try {
       const response = await fetch('/backend/f5/identity-groups/', {
@@ -119,7 +203,7 @@ class Manager extends React.Component {
         return json
       }
       else {
-        this.props.dispatch(setError(response))
+        this.props.dispatch(setIdentityGroupsError(response))
       }
 
     }
@@ -130,11 +214,11 @@ class Manager extends React.Component {
         type: error.name
       }
 
-      this.props.dispatch(setError(e))
+      this.props.dispatch(setIdentityGroupsError(e))
     }
   }
-
-
+*/
+/*
   fetchPermissions = async () => {
     try {
       const response = await fetch('/backend/f5/permissions/', {
@@ -149,7 +233,7 @@ class Manager extends React.Component {
         return json
       }
       else {
-        this.props.dispatch(setError(response))
+        this.props.dispatch(setPermissionsError(response))
       }
 
     }
@@ -160,10 +244,10 @@ class Manager extends React.Component {
         type: error.name
       }
 
-      this.props.dispatch(setError(e))
+      this.props.dispatch(setPermissionsError(e))
     }
   }
-
+*/
 
   addAssetDetails = async (assets, permissions) => {
 
@@ -190,6 +274,7 @@ class Manager extends React.Component {
 
 
   render() {
+    console.log(this.props.assetsError)
 
     return (
       <React.Fragment>
@@ -197,11 +282,7 @@ class Manager extends React.Component {
         {this.props.permissionsLoading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
-          <React.Fragment>
-          { this.props.error ?
-            <Error error={[this.props.error]} visible={true} />
-            :
-          <React.Fragment>
+            <React.Fragment>
             <br/>
             <React.Fragment>
             { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
@@ -210,11 +291,10 @@ class Manager extends React.Component {
               null
             }
             <List/>
+
             </React.Fragment>
-        </React.Fragment>
-        }
-        </React.Fragment>
-      }
+            </React.Fragment>
+          }
       </React.Fragment>
     )
   }
@@ -228,6 +308,10 @@ export default connect((state) => ({
   assets: state.f5.assets,
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
+
+  assetsError: state.f5.assetsError,
+  identityGroupsError: state.f5.identityGroupsError,
+  permissionsError: state.f5.permissionsError,
 
   permissionsFetch: state.f5.permissionsFetch,
   permissionsLoading: state.f5.permissionsLoading,
