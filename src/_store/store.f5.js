@@ -26,6 +26,9 @@ const f5Slice = createSlice({
         setPermissionsFetch: (state, action) => {
           state.permissionsFetch = action.payload
         },
+        setPermissionsError: (state, action) => {
+          state.permissionsError = action.payload
+        },
 
         setIdentityGroupsLoading: (state, action) => {
           state.identityGroupsLoading = action.payload
@@ -36,9 +39,15 @@ const f5Slice = createSlice({
         setIdentityGroupsFetch: (state, action) => {
           state.identityGroupsFetch = action.payload
         },
+        setIdentityGroupsError: (state, action) => {
+          state.identityGroupsError = action.payload
+        },
 
         setEnvironment: (state, action) => {
           state.environment = action.payload
+        },
+        setEnvironmentError: (state, action) => {
+          state.environmentError = action.payload
         },
 
         setAssetsLoading: (state, action) => {
@@ -76,6 +85,9 @@ const f5Slice = createSlice({
         setPartitionsFetch: (state, action) => {
           state.partitionsFetch = action.payload
         },
+        setPartitionsError: (state, action) => {
+          state.partitionsError = action.payload
+        },
         clearPartitions: (state, action) => {
           state.partitions = null
         },
@@ -89,9 +101,21 @@ const f5Slice = createSlice({
         setRouteDomainsFetch: (state, action) => {
           state.routeDomainsFetch = action.payload
         },
+        setRouteDomainsError: (state, action) => {
+          state.routeDomainsError = action.payload
+        },
 
         setPartition: (state, action) => {
           state.partition = action.payload
+        },
+        setPartitionAddError: (state, action) => {
+          state.partitionAddError = action.payload
+        },
+        setPartitionModifyError: (state, action) => {
+          state.partitionModifyError = action.payload
+        },
+        setPartitionDeleteError: (state, action) => {
+          state.partitionDeleteError = action.payload
         },
 
 
@@ -104,10 +128,17 @@ const f5Slice = createSlice({
         setNodesFetch: (state, action) => {
           state.nodesFetch = action.payload
         },
+        setNodesError: (state, action) => {
+          state.nodesError = action.payload
+        },
 
         setMonitorTypes: (state, action) => {
           state.monitorTypes = action.payload
         },
+        setMonitorTypesError: (state, action) => {
+          state.monitorTypesError = action.payload
+        },
+
         setMonitorsLoading: (state, action) => {
           state.monitorsLoading = action.payload
         },
@@ -116,6 +147,9 @@ const f5Slice = createSlice({
         },
         setMonitorsFetch: (state, action) => {
           state.monitorsFetch = action.payload
+        },
+        setMonitorsError: (state, action) => {
+          state.monitorsError = action.payload
         },
 
 
@@ -128,6 +162,9 @@ const f5Slice = createSlice({
         setPoolsFetch: (state, action) => {
           state.poolsFetch = action.payload
         },
+        setPoolsError: (state, action) => {
+          state.poolsError = action.payload
+        },
 
         setPoolMembersLoading: (state, action) => {
           state.poolMembersLoading = action.payload
@@ -138,10 +175,17 @@ const f5Slice = createSlice({
         setPoolMembersFetch: (state, action) => {
           state.poolMembersFetch = action.payload
         },
+        setPoolMembersError: (state, action) => {
+          state.poolMembersError = action.payload
+        },
 
         setProfileTypes: (state, action) => {
           state.profileTypes = action.payload
         },
+        setProfileTypes: (state, action) => {
+          state.profileTypes = action.payload
+        },
+
         setProfilesLoading: (state, action) => {
           state.profilesLoading = action.payload
         },
@@ -150,6 +194,9 @@ const f5Slice = createSlice({
         },
         setProfilesFetch: (state, action) => {
           state.profilesFetch = action.payload
+        },
+        setProfilesError: (state, action) => {
+          state.profilesError = action.payload
         },
 
 
@@ -163,7 +210,9 @@ const f5Slice = createSlice({
         setVirtualServersFetch: (state, action) => {
           state.virtualServersFetch = action.payload
         },
-
+        setVirtualServersError: (state, action) => {
+          state.virtualServersError = action.payload
+        },
 
 
         setCertificatesLoading: (state, action) => {
@@ -175,6 +224,9 @@ const f5Slice = createSlice({
         setCertificatesFetch: (state, action) => {
           state.certificatesFetch = action.payload
         },
+        setCertificatesError: (state, action) => {
+          state.certificatesError = action.payload
+        },
 
         setKeysLoading: (state, action) => {
           state.keysLoading = action.payload
@@ -184,6 +236,9 @@ const f5Slice = createSlice({
         },
         setKeysFetch: (state, action) => {
           state.keysFetch = action.payload
+        },
+        setKeysError: (state, action) => {
+          state.keysError = action.payload
         },
 
         setCurrentPools: (state, action) => {
@@ -239,12 +294,15 @@ export const {
   setPermissionsLoading,
   setPermissions,
   setPermissionsFetch,
+  setPermissionsError,
 
   setIdentityGroupsLoading,
   setIdentityGroups,
   setIdentityGroupsFetch,
+  setIdentityGroupsError,
 
   setEnvironment,
+  setEnvironmentError,
 
   setAssetsLoading,
   setAssets,
@@ -259,48 +317,66 @@ export const {
   setPartitionsLoading,
   setPartitions,
   setPartitionsFetch,
+  setPartitionsError,
   clearPartitions,
 
   setRouteDomainsLoading,
   setRouteDomains,
   setRouteDomainsFetch,
+  setRouteDomainsError,
 
   setPartition,
+  setPartitionAddError,
+  setPartitionModifyError,
+  setPartitionDeleteError,
 
   setNodesLoading,
   setNodes,
   setNodesFetch,
+  setNodesError,
 
   setMonitorTypes,
+  setMonitorTypesError,
+
   setMonitorsLoading,
   setMonitors,
   setMonitorsFetch,
+  setMonitorsError,
 
   setPoolsLoading,
   setPools,
-  setCurrentPools,
   setPoolsFetch,
+  setPoolsError,
+
+  setCurrentPools,
 
   setPoolMembersLoading,
   setPoolMembers,
   setPoolMembersFetch,
+  setPoolMembersError,
 
   setProfileTypes,
+  setProfileTypesError,
+
   setProfilesLoading,
   setProfiles,
   setProfilesFetch,
+  setProfilesError,
 
   setVirtualServersLoading,
   setVirtualServers,
   setVirtualServersFetch,
+  setVirtualServersError,
 
   setCertificatesLoading,
   setCertificates,
   setCertificatesFetch,
+  setCertificatesError,
 
   setKeysLoading,
   setKeys,
   setKeysFetch,
+  setKeysError,
 
   resetObjects,
   cleanUp

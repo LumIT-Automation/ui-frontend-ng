@@ -28,6 +28,7 @@ class Assets extends React.Component {
   }
 
   componentDidMount() {
+    this.magia()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,6 +39,32 @@ class Assets extends React.Component {
   }
 
   componentWillUnmount() {
+
+  }
+
+  magia = () => {
+    let list = [
+      'setInfobloPermissionsError',
+      'setInfobloxIdentityGroupsError',
+      'setInfobloxEnvironmentError',
+      'setInfobloxAssetsError',
+      'setInfobloAssetAddError',
+      'setInfobloAssetModifyError',
+      'setInfobloAssetDeleteError',
+      'setInfobloTreeError',
+      'setInfobloNetworksError',
+      'setInfobloContainersError',
+      'setInfobloRealNetworksError',
+    ]
+    let newList = []
+
+    list.forEach((item, i) => {
+      let s = `case '${item}':
+        this.props.dispatch(${item}(null))
+        break`
+      newList.push(s)
+    });
+    console.log(newList)
 
   }
 

@@ -14,6 +14,9 @@ const infobloxSlice = createSlice({
       setPermissionsFetch: (state, action) => {
         state.permissionsFetch = action.payload
       },
+      setPermissionsError: (state, action) => {
+        state.permissionsError = action.payload
+      },
 
       setIdentityGroupsLoading: (state, action) => {
         state.identityGroupsLoading = action.payload
@@ -24,9 +27,15 @@ const infobloxSlice = createSlice({
       setIdentityGroupsFetch: (state, action) => {
         state.identityGroupsFetch = action.payload
       },
+      setIdentityGroupsError: (state, action) => {
+        state.identityGroupsError = action.payload
+      },
 
       setEnvironment: (state, action) => {
         state.environment = action.payload
+      },
+      setEnvironmentError: (state, action) => {
+        state.environmentError = action.payload
       },
 
       setAssetsLoading: (state, action) => {
@@ -64,6 +73,9 @@ const infobloxSlice = createSlice({
       setTreeFetch: (state, action) => {
         state.treeFetch = action.payload
       },
+      setTreeError: (state, action) => {
+        state.treeError = action.payload
+      },
 
       setNetworksLoading: (state, action) => {
         state.networksLoading = action.payload
@@ -74,6 +86,9 @@ const infobloxSlice = createSlice({
       setNetworksFetch: (state, action) => {
         state.networksFetch = action.payload
       },
+      setNetworksError: (state, action) => {
+        state.networksError = action.payload
+      },
 
       setContainersLoading: (state, action) => {
         state.containersLoading = action.payload
@@ -81,8 +96,11 @@ const infobloxSlice = createSlice({
       setContainers: (state, action) => {
         state.containers = action.payload.data
       },
-      ssetContainersFetch: (state, action) => {
+      setContainersFetch: (state, action) => {
         state.containersFetch = action.payload
+      },
+      setContainersError: (state, action) => {
+        state.containersError = action.payload
       },
 
       setRealNetworksLoading: (state, action) => {
@@ -93,6 +111,9 @@ const infobloxSlice = createSlice({
       },
       setRealNetworksFetch: (state, action) => {
         state.RealNetworksFetch = action.payload
+      },
+      setRealNetworksError: (state, action) => {
+        state.RealNetworksError = action.payload
       },
 
 
@@ -110,12 +131,15 @@ export const {
   setPermissionsLoading,
   setPermissions,
   setPermissionsFetch,
+  setPermissionsError,
 
   setIdentityGroupsLoading,
   setIdentityGroups,
   setIdentityGroupsFetch,
+  setIdentityGroupsError,
 
   setEnvironment,
+  setEnvironmentError,
 
   setAssetsLoading,
   setAssets,
@@ -130,18 +154,22 @@ export const {
   setTreeLoading,
   setTree,
   setTreeFetch,
+  setTreeError,
 
   setNetworksLoading,
   setNetworks,
   setNetworksFetch,
+  setNetworksError,
 
   setContainersLoading,
   setContainers,
   setContainersFetch,
+  setContainersError,
 
   setRealNtworksLoading,
   setRealNetworks,
   setRealNetworksFetch,
+  setRealNetworksError,
 
   cleanUp
 } = actions
