@@ -35,59 +35,53 @@ class Homepage extends React.Component {
 
 
   render() {
-    
+
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} pathname={pathname}  />
-        :
-          <React.Fragment>
 
-            <Row className="row-homepage" between="xs" style={{backgroundColor: '#FFFFFF',  margin: 10}}>
+        <Row className="row-homepage" between="xs" style={{backgroundColor: '#FFFFFF',  margin: 10}}>
 
-              <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
-                <Statistic
-                  title="Total Firewalls"
-                  value={3600}
-                  valueStyle={{ color: '#000000' }}
-                  style={{backgroundColor: '#FFFFFF',  margin: 10}}
-                />
-              </Col>
+          <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
+            <Statistic
+              title="Total Firewalls"
+              value={3600}
+              valueStyle={{ color: '#000000' }}
+              style={{backgroundColor: '#FFFFFF',  margin: 10}}
+            />
+          </Col>
 
-              <Col span={1} className="col-homepage" style={{textAlign: 'center'}}>
-                <Divider type='vertical' style={{height: '100%'}}/>
-              </Col>
+          <Col span={1} className="col-homepage" style={{textAlign: 'center'}}>
+            <Divider type='vertical' style={{height: '100%'}}/>
+          </Col>
 
-              <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
-              <Statistic
-                title="New Firewalls (2021)"
-                value={500}
-                valueStyle={{ color: '#000000' }}
-                style={{backgroundColor: '#FFFFFF',  margin: 10}}
-              />
-              </Col>
+          <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
+          <Statistic
+            title="New Firewalls (2021)"
+            value={500}
+            valueStyle={{ color: '#000000' }}
+            style={{backgroundColor: '#FFFFFF',  margin: 10}}
+          />
+          </Col>
 
-              <Col span={1} className="col-homepage" style={{textAlign: 'center'}}>
-                <Divider type='vertical' style={{height: '100%'}}/>
-              </Col>
+          <Col span={1} className="col-homepage" style={{textAlign: 'center'}}>
+            <Divider type='vertical' style={{height: '100%'}}/>
+          </Col>
 
-              <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
-                <Statistic
-                  title="New Firewalls (January)"
-                  value={50}
-                  valueStyle={{ color: '#000000' }}
-                  style={{backgroundColor: '#FFFFFF',  margin: 10}}
-                />
-              </Col>
-              <Row gutter={16} between="xs" style={{marginTop: '5vh'}}>
-                <Col offset={2} span={16} style={{textAlign: 'center'}}>
-                  <Histogram/>
-                </Col>
-              </Row>
-            </Row>
+          <Col offset={1} span={6} className="col-homepage" style={{textAlign: 'center'}}>
+            <Statistic
+              title="New Firewalls (January)"
+              value={50}
+              valueStyle={{ color: '#000000' }}
+              style={{backgroundColor: '#FFFFFF',  margin: 10}}
+            />
+          </Col>
+          <Row gutter={16} between="xs" style={{marginTop: '5vh'}}>
+            <Col offset={2} span={16} style={{textAlign: 'center'}}>
+              <Histogram/>
+            </Col>
+          </Row>
+        </Row>
 
-          </React.Fragment>
-        }
       </React.Fragment>
     )
   }

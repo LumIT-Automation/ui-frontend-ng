@@ -47,9 +47,7 @@ export default class Histogram extends PureComponent {
   render() {
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} pathname={pathname}  />
-        :
+
           <React.Fragment>
           <p style={{textAlign: 'center', color: '#8C8C8C'}}>Performance year per year</p>
           {//<ResponsiveContainer width="1000px" height="2000px">
@@ -76,8 +74,7 @@ export default class Histogram extends PureComponent {
           {//</ResponsiveContainer>
           }
           </React.Fragment>
-        }
-      </React.Fragment>
+
     );
   }
 }
