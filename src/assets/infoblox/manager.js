@@ -4,8 +4,12 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
-import { setAssetsLoading, setAssets, setAssetsFetch } from '../../_store/store.infoblox'
+import {
+  setAssetsLoading,
+  setAssets,
+  setAssetsFetch,
+  setAssetsError
+} from '../../_store/store.infoblox'
 
 import List from './list'
 import Add from './add'
@@ -22,8 +26,10 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assets) {
-      this.fetchAssets()
+    if (!this.props.assetsError) {
+      if (!this.props.assets) {
+        this.fetchAssets()
+      }
     }
   }
 
@@ -49,7 +55,7 @@ class Manager extends React.Component {
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setAssetsError(error))
         this.setState({loading: false, success: false})
       }
     )
@@ -63,26 +69,20 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.assets)
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
-        :
+        <br/>
+        { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
           <React.Fragment>
+            <Add/>
             <br/>
-            { this.props.infobloxAuth && (this.props.infobloxAuth.assets_post || this.props.infobloxAuth.any) ?
-              <React.Fragment>
-                <Add/>
-                <br/>
-                <br/>
-              </React.Fragment>
-            :
-              null
-            }
-            <List/>
+            <br/>
           </React.Fragment>
+        :
+          null
         }
+          <List/>
+          { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
       </React.Fragment>
     )
   }
@@ -90,8 +90,8 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
-  infobloxAuth: state.authorizations.infoblox,
+ 	assetsError: state.infoblox.assetsError,
+  authorizations: state.authorizations.infoblox,
   assets: state.infoblox.assets,
   assetsFetch: state.infoblox.assetsFetch
 }))(Manager);

@@ -400,7 +400,7 @@ class Add extends React.Component {
         }
         </Modal>
 
-        { this.props.assetAddError ? <Error error={[this.props.assetAddError]} visible={true} type={'setAssetAddError'} /> : null }
+        { this.props.assetAddError ? <Error error={[this.props.assetAddError]} visible={true} type={'setF5AssetAddError'} /> : null }
 
       </React.Fragment>
     )

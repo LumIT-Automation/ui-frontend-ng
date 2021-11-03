@@ -11,9 +11,8 @@ import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
-/*
 
-*/
+
 
 class Delete extends React.Component {
 
@@ -114,7 +113,7 @@ class Delete extends React.Component {
 
         </Modal>
 
-        { this.props.assetDeleteError ? <Error error={[this.props.assetDeleteError]} visible={true} type={'setAssetDeleteError'} /> : null }
+        { this.props.assetDeleteError ? <Error error={[this.props.assetDeleteError]} visible={true} type={'setF5AssetDeleteError'} /> : null }
 
       </React.Fragment>
     )

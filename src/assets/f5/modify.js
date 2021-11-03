@@ -392,7 +392,7 @@ class Modify extends React.Component {
         }
         </Modal>
 
-        { this.props.assetModifyError ? <Error error={[this.props.assetModifyError]} visible={true} type={'setAssetModifyError'} /> : null }
+        { this.props.assetModifyError ? <Error error={[this.props.assetModifyError]} visible={true} type={'setF5AssetModifyError'} /> : null }
 
       </React.Fragment>
     )

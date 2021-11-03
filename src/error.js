@@ -7,11 +7,18 @@ import { logout } from './_store/store.auth'
 import { setError } from './_store/store.error'
 
 import {
-  setAssetsError,
-  setAssetAddError,
-  setAssetModifyError,
-  setAssetDeleteError
+  setAssetsError as setF5AssetsError,
+  setAssetAddError as setF5AssetAddError,
+  setAssetModifyError as setF5AssetModifyError,
+  setAssetDeleteError as setF5AssetDeleteError,
 } from './_store/store.f5'
+
+import {
+  setAssetsError as setInfobloxAssetsError,
+  setAssetAddError as setInfobloxAssetAddError,
+  setAssetModifyError as setInfobloxAssetModifyError,
+  setAssetDeleteError as setInfobloxAssetDeleteError,
+} from './_store/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -57,18 +64,34 @@ class Error extends Component {
         case 'Error':
           this.props.dispatch(setError(null))
           break
-        case 'setAssetsError':
-          this.props.dispatch(setAssetsError(null))
+
+        case 'setF5AssetsError':
+          this.props.dispatch(setF5AssetsError(null))
           break
-        case 'setAssetAddError':
-          this.props.dispatch(setAssetAddError(null))
+        case 'setF5AssetAddError':
+          this.props.dispatch(setF5AssetAddError(null))
           break
-        case 'setAssetModifyError':
-          this.props.dispatch(setAssetModifyError(null))
+        case 'setF5AssetModifyError':
+          this.props.dispatch(setF5AssetModifyError(null))
         break
-        case 'setAssetDeleteError':
-          this.props.dispatch(setAssetDeleteError(null))
+        case 'setF5AssetDeleteError':
+          this.props.dispatch(setF5AssetDeleteError(null))
           break
+
+        case 'setInfobloxAssetsError':
+          this.props.dispatch(setInfobloxAssetsError(null))
+          break
+        case 'setInfobloxAssetAddError':
+          this.props.dispatch(setInfobloxAssetAddError(null))
+          break
+        case 'setInfobloxAssetModifyError':
+          this.props.dispatch(setInfobloxAssetModifyError(null))
+        break
+        case 'setInfobloxAssetDeleteError':
+          this.props.dispatch(setInfobloxAssetDeleteError(null))
+          break
+
+          setInfobloxAssetsError
       }
 
     }

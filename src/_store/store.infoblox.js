@@ -38,9 +38,21 @@ const infobloxSlice = createSlice({
       setAssetsFetch: (state, action) => {
         state.assetsFetch = action.payload
       },
+      setAssetsError: (state, action) => {
+        state.assetsError = action.payload
+      },
 
       setAsset: (state, action) => {
         state.asset = action.payload
+      },
+      setAssetAddError: (state, action) => {
+        state.assetAddError = action.payload
+      },
+      setAssetModifyError: (state, action) => {
+        state.assetModifyError = action.payload
+      },
+      setAssetDeleteError: (state, action) => {
+        state.assetDeleteError = action.payload
       },
 
       setTreeLoading: (state, action) => {
@@ -108,8 +120,12 @@ export const {
   setAssetsLoading,
   setAssets,
   setAssetsFetch,
+  setAssetsError,
 
   setAsset,
+  setAssetAddError,
+  setAssetModifyError,
+  setAssetDeleteError,
 
   setTreeLoading,
   setTree,

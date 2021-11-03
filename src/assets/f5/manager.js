@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
-import { useLocation } from 'react-router-dom'
 
 import {
   setAssetsLoading,
@@ -22,8 +21,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
       error: null
     };
   }
@@ -48,7 +45,6 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount')
   }
 
   fetchAssets = async () => {
@@ -69,25 +65,21 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.assetsError)
     return (
-
-
-        <React.Fragment>
-          <br/>
-          { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
-            <React.Fragment>
-              <Add/>
-              <br/>
-              <br/>
-            </React.Fragment>
-          :
-            null
-          }
-            <List/>
-            { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
-        </React.Fragment>
-
+      <React.Fragment>
+        <br/>
+        { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
+          <React.Fragment>
+            <Add/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+          <List/>
+          { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+      </React.Fragment>
     )
   }
 }
