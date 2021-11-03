@@ -4,11 +4,14 @@ import { Component } from "react";
 import  { Redirect } from 'react-router-dom'
 import { logout } from './_store/store.auth'
 
+import { setError } from './_store/store.error'
+
 import {
-  setError,
-  setFetchF5AssetsError,
-  setDeleteF5AssetError
-} from './_store/store.error'
+  setAssetsError,
+  setAssetAddError,
+  setAssetModifyError,
+  setAssetDeleteError
+} from './_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -54,11 +57,17 @@ class Error extends Component {
         case 'Error':
           this.props.dispatch(setError(null))
           break
-        case 'AssetF5Manager_FetchAssets':
-          this.props.dispatch(setFetchF5AssetsError(null))
+        case 'setAssetsError':
+          this.props.dispatch(setAssetsError(null))
           break
-        case 'AssetF5Manager_DeleteAsset':
-          this.props.dispatch(setDeleteF5AssetError(null))
+        case 'setAssetAddError':
+          this.props.dispatch(setAssetAddError(null))
+          break
+        case 'setAssetModifyError':
+          this.props.dispatch(setAssetModifyError(null))
+        break
+        case 'setAssetDeleteError':
+          this.props.dispatch(setAssetDeleteError(null))
           break
       }
 

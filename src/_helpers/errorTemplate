@@ -1,0 +1,40 @@
+STORE
+
+setPermissionsError: (state, action) => {
+  state.permissionsError = action.payload
+},
+
+setPermissionsError
+
+
+
+
+COMPONENT
+
+import { setPermissionsError } from '../../_store/store.error'
+
+componentDidMount() {
+  if (!this.props.permissionsError) {
+    if (!this.props.assets) {
+      this.fetchAssets()
+    }
+  }
+}
+
+error => {
+  this.props.dispatch(setPermissionsError(error))
+
+{ this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
+
+error: state.error.permissionsError,
+
+
+ERROR
+
+import {
+  setPermissionsError,
+} from './_store/store.error'
+
+case 'Error':
+  this.props.dispatch(setPermissionsError(null))
+  break

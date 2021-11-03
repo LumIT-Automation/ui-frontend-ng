@@ -5,11 +5,11 @@ import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 import { useLocation } from 'react-router-dom'
 
-import { setFetchF5AssetsError } from '../../_store/store.error'
 import {
   setAssetsLoading,
   setAssets,
-  setAssetsFetch
+  setAssetsFetch,
+  setAssetsError
 } from '../../_store/store.f5'
 
 import List from './list'
@@ -29,7 +29,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.error) {
+    if (!this.props.assetsError) {
       if (!this.props.assets) {
         this.fetchAssets()
       }
@@ -59,7 +59,7 @@ class Manager extends React.Component {
         this.props.dispatch(setAssets( resp ))
       },
       error => {
-        this.props.dispatch(setFetchF5AssetsError(error))
+        this.props.dispatch(setAssetsError(error))
         this.setState({loading: false, success: false})
       }
     )
@@ -69,10 +69,10 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.error)
+    console.log(this.props.assetsError)
     return (
-      <React.Fragment>
-        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'AssetF5Manager_FetchAssets'} /> : null }
+
+
         <React.Fragment>
           <br/>
           { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
@@ -85,16 +85,16 @@ class Manager extends React.Component {
             null
           }
             <List/>
+            { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
         </React.Fragment>
 
-      </React.Fragment>
     )
   }
 }
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.fetchF5AssetsError,
+ 	assetsError: state.f5.assetsError,
   authorizations: state.authorizations.f5,
   assets: state.f5.assets,
   assetsFetch: state.f5.assetsFetch
