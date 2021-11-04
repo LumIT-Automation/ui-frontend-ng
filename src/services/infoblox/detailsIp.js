@@ -141,18 +141,6 @@ class DetailsIp extends React.Component {
         key: 'status',
       },
       {
-        title: 'Types',
-        align: 'center',
-        dataIndex: 'types',
-        key: 'types',
-      },
-      {
-        title: 'Usage',
-        align: 'center',
-        dataIndex: 'usage',
-        key: 'usage',
-      },
-      {
         title: 'Network',
         align: 'center',
         dataIndex: 'network',
@@ -177,10 +165,10 @@ class DetailsIp extends React.Component {
         key: 'reference',
       },
       {
-        title: 'Names',
+        title: 'Record A',
         align: 'center',
         dataIndex: 'names',
-        key: 'ip_address',
+        key: 'recordA',
       },
     ];
 
@@ -212,6 +200,7 @@ class DetailsIp extends React.Component {
               dataSource={this.state.ipInfo}
               bordered
               rowKey="ip"
+              scroll={{x: 350}}
               pagination={false}
               style={{marginBottom: 10}}
             />

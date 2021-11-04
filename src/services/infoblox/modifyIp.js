@@ -204,12 +204,6 @@ class ModifyIp extends React.Component {
         key: 'ip_address',
       },
       {
-        title: 'Names',
-        align: 'center',
-        dataIndex: 'names',
-        key: 'ip_address',
-      },
-      {
         title: 'Name Server',
         align: 'center',
         dataIndex: ['extattrs', 'Name Server', 'value'],
@@ -238,18 +232,6 @@ class ModifyIp extends React.Component {
         key: 'status',
       },
       {
-        title: 'Types',
-        align: 'center',
-        dataIndex: 'types',
-        key: 'types',
-      },
-      {
-        title: 'Usage',
-        align: 'center',
-        dataIndex: 'usage',
-        key: 'usage',
-      },
-      {
         title: 'Network',
         align: 'center',
         dataIndex: 'network',
@@ -272,6 +254,12 @@ class ModifyIp extends React.Component {
         align: 'center',
         dataIndex: ['extattrs', 'Reference', 'value'],
         key: 'reference',
+      },
+      {
+        title: 'Record A',
+        align: 'center',
+        dataIndex: 'names',
+        key: 'RecordA',
       },
     ];
 
@@ -311,6 +299,7 @@ class ModifyIp extends React.Component {
                       dataSource={this.state.ipInfo}
                       bordered
                       rowKey="ip"
+                      scroll={{x: 350}}
                       pagination={false}
                       style={{marginBottom: 10}}
                     />

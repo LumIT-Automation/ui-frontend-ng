@@ -243,6 +243,7 @@ class ReleaseIp extends React.Component {
                 dataSource={this.state.ipInfo}
                 bordered
                 rowKey="ip_address"
+                scroll={{x: 350}}
                 pagination={false}
                 style={{marginBottom: 10}}
               />
