@@ -91,7 +91,7 @@ return (
 
 */
 
-
+/*
   ullalla = () => {
     let list = [        "SERIALE",
         "ID_PROGETTO",
@@ -148,7 +148,7 @@ return (
 
   }
 
-
+*/
 
 
   fetchDevices = async () => {
@@ -156,7 +156,7 @@ return (
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false, devices: resp.data})
+        this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
       },
       error => {
         this.setState({loading: false, success: false})
@@ -178,7 +178,8 @@ return (
 
   render() {
 
-
+    console.log(this.state.devices)
+    console.log(this.state.firmware)
 
 
     return (
@@ -191,10 +192,9 @@ return (
             { this.state.devices ?
               <React.Fragment>
                 <Row>
-                    <Col offset={1} span={6}>
-
-                    <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                      <AmericanPie w={350} h={200}/>
+                  <Col offset={1} span={6}>
+                    <Card style={{width: 400}} title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                      <AmericanPie w={400} h={200} devices={this.state.devices}/>
                     </Card>
                   </Col>
                 </Row>

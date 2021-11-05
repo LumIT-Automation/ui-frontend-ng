@@ -135,7 +135,10 @@ class Concerto extends Component {
                 <Switch>
 
 
-                  <Route exact path='/' component={Homepage}/>
+
+                    <Route exact path='/home/' component={Homepage}/>
+
+                  <Route exact path='/' component={Devices}/>
                   <Route exact path='/devices/' component={Devices}/>
 
 

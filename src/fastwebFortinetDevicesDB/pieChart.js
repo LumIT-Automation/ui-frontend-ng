@@ -4,37 +4,74 @@ import { PieChart, Pie } from "recharts";
 
 export default class Torta extends PureComponent {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+
+    };
+  }
+
+  componentDidMount() {
+    console.log('Pie')
+    this.dammiFirmware()
+  }
+
+  dammiFirmware = () => {
+    let firmwares = []
+    let list = []
+
+    this.props.devices.forEach((item, i) => {
+      firmwares.push(item.FIRMWARE)
+    })
+
+
+
+
+    this.setState({firmwares: firmwares})
+  }
+
+  setFirmware = f => {
+    this.setState({firmware: f}, () => {})
+  }
+
   render() {
 
-    const renderCustomizedLabel = ( {x, y, name} ) => {
-      return name
+    console.log(this.props.devices)
+    console.log(this.state.firmwares)
+
+    const renderCustomizedLabel = ( {x, y, firmware, fill, cx, cy} ) => {
+      console.log(fill)
+      return <text x={x} y={y} fill={fill} fontSize={15} textAnchor={x > cx ? 'start' : 'end'}>{firmware}</text>
+      //return firmware
     }
 
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042']
+
     const data = [
-    { name: "FortiGate-10E", value: 4, fill:"#AAA718" },
-    { name: "FortiGate-20E", value: 3, fill:"AAA415" },
-    { name: "FortiGate-300E", value: 8, fill:"#AAA112"},
-    { name: "FortiGate-4000E", value: 20, fill:"#AAA789" },
-    { name: "FortiGate-20000E", value: 8, fill:"#000456" },
-    { name: "FortiGate-9000E", value: 89, fill:"#000123" }
-    ];
+      { firmware: "v6.4.3 build1778 (GA)", value: 4, fill:"#0088FE" },
+      { firmware: "9.0", value: 2, fill:"#00C49F" }
+    ]
 
     return (
-      <ResponsiveContainer width={this.props.w} height={this.props.h}>
-        <PieChart>
-           <Pie
-             dataKey="value"
-             startAngle={0}
-             endAngle={360}
-             data={data}
-             cx={this.props.w / 100 * 40}
-             cy={this.props.h / 2}
-             outerRadius={80}
-             fill="#8884d8"
-             label={e => renderCustomizedLabel(e)}
-             onClick={e => alert(e.name)}
-           />
-         </PieChart>
+      <ResponsiveContainer>
+        <React.Fragment>
+          <PieChart width={this.props.w} height={this.props.h}>
+             <Pie
+               dataKey="value"
+               startAngle={0}
+               endAngle={360}
+               data={data}
+               cx={"40%"}
+               cy={this.props.h / 2}
+               outerRadius={50}
+               fill="#8884d8"
+
+               label={e => renderCustomizedLabel(e)}
+               onClick={e => alert(e.firmware)}
+               onMouseOver={e => this.setFirmware(e.firmware)}
+             />
+           </PieChart>
+         </React.Fragment>
       </ResponsiveContainer>
     )
   }

@@ -34,6 +34,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
+    console.log('request ip mount')
     let requests = Object.assign([], this.state.requests)
     requests.push({id:1, macAddress: '00:00:00:00:00:00'})
     this.setState({requests: requests})
@@ -44,13 +45,16 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.requests && this.state.requests.length === 0) {
-      let requests = Object.assign([], this.state.requests)
-      requests.push({id:1, macAddress: '00:00:00:00:00:00'})
-      this.setState({requests: requests})
-    }
-    if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
-      this.main()
+    console.log('UPDATE')
+    if (this.state.visible === true){
+      if (this.state.requests && this.state.requests.length === 0) {
+        let requests = Object.assign([], this.state.requests)
+        requests.push({id:1, macAddress: '00:00:00:00:00:00'})
+        this.setState({requests: requests})
+      }
+      if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
+        this.main()
+      }
     }
   }
 
