@@ -5,6 +5,7 @@
   "dependencies": {
     "@ant-design/icons": "4.0.0",
     "@reduxjs/toolkit": "^1.5.1",
+    "@south-paw/react-vector-maps": "^3.1.0",
     "antd": "^4.15.5",
     "axios": "^0.21.1",
     "react": "^17.0.2",
@@ -15,7 +16,8 @@
     "react-scripts": "^4.0.3",
     "recharts": "^2.1.6",
     "redux": "^4.1.0",
-    "redux-thunk": "^2.3.0"
+    "redux-thunk": "^2.3.0",
+    "victory": "^36.2.0"
   },
   "devDependencies": {},
   "scripts": {

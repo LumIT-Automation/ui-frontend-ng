@@ -11,8 +11,10 @@ import { setError } from '../_store/store.error'
 
 import List from './list'
 import AmericanPie from './pieChart'
+import Victory from './victory'
+import Map from './maps'
 
-import { Spin, Card, Row, Col } from 'antd'
+import { Spin, Card, Row, Col, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -191,18 +193,79 @@ return (
           <React.Fragment>
             { this.state.devices ?
               <React.Fragment>
-                <Row>
-                  <Col offset={1} span={6}>
-                    <Card style={{width: 400}} title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                      <AmericanPie w={400} h={200} devices={this.state.devices}/>
+
+                <Row >
+                  <Col span={4}>
+                    <Card title={<p style={{textAlign: 'center'}}>Cert Expirance</p>} bordered={false}>
+                      <Table/>
+                    </Card>
+                  </Col>
+                  <Col offset={1} span={4}>
+                    <Card title={<p style={{textAlign: 'center'}}>CVE Bulletin</p>} bordered={false}>
+                      <Table/>
+                    </Card>
+                  </Col>
+                  <Col offset={1} span={4}>
+                    <Card title={<p style={{textAlign: 'center'}}>Warnings</p>} bordered={false}>
+                      <Table/>
+                    </Card>
+                  </Col>
+                  <Col offset={1} span={9}>
+                    <Card title={<p style={{textAlign: 'center'}}>History</p>} bordered={false}>
+                      <Table scroll={{x: 200}}/>
                     </Card>
                   </Col>
                 </Row>
-                <Row style={{marginTop: '50px'}}>
-                  <Col>
-                    <List devices={this.state.devices}/>
+
+                <hr/>
+
+                <Row>
+                  <Col span={14}>
+                    <Row>
+                      <Col span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={false}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                        </Card>
+                      </Col>
+                    </Row>
+                    <Row>
+                      <Col span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={false}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={7}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </Col>
+
+
+                  <Col span={10}>
+                  <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                    <Map onClick={e => console.log(e)}/>
+                  </Card>
                   </Col>
                 </Row>
+
+
               </React.Fragment>
               :
               null

@@ -69,7 +69,9 @@ export default class Torta extends PureComponent {
                label={e => renderCustomizedLabel(e)}
                onClick={e => alert(e.firmware)}
                onMouseOver={e => this.setFirmware(e.firmware)}
-             />
+             >
+             <Tooltip content={<p>ciao</p>}/>
+             </Pie>
            </PieChart>
          </React.Fragment>
       </ResponsiveContainer>
