@@ -81,8 +81,10 @@ class Manager extends React.Component {
         :
           null
         }
-          <List/>
-          { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
+
+        <List/>
+
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
       </React.Fragment>
     )
   }

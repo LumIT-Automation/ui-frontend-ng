@@ -73,6 +73,12 @@ class Error extends Component {
   }
 
   componentDidMount() {
+    console.log('error')
+    console.log(this.props.error)
+  }
+
+  shouldComponentUpdate(newProps, newState) {
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -107,15 +113,6 @@ class Error extends Component {
           break
         case 'setF5AssetsError':
           this.props.dispatch(setF5AssetsError(null))
-          break
-        case 'setF5AssetAddError':
-          this.props.dispatch(setF5AssetAddError(null))
-          break
-        case 'setF5AssetModifyError':
-          this.props.dispatch(setF5AssetModifyError(null))
-          break
-        case 'setF5AssetDeleteError':
-          this.props.dispatch(setF5AssetDeleteError(null))
           break
         case 'setF5PartitionsError':
           this.props.dispatch(setF5PartitionsError(null))

@@ -34,7 +34,7 @@ class Manager extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -77,8 +77,10 @@ class Manager extends React.Component {
         :
           null
         }
-          <List/>
-          { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+
+        <List/>
+
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
       </React.Fragment>
     )
   }

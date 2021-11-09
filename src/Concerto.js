@@ -47,7 +47,6 @@ class Concerto extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.props.authorizationsError)
   }
 
   componentWillUnmount() {

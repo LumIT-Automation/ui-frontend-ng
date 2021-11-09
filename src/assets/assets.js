@@ -2,8 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
-import Error from '../error'
-
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 
@@ -28,7 +26,6 @@ class Assets extends React.Component {
   }
 
   componentDidMount() {
-    //this.magia()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -40,36 +37,6 @@ class Assets extends React.Component {
 
   componentWillUnmount() {
 
-  }
-
-  magia = () => {
-    let list = [
-      'setInfobloPermissionsError',
-      'setInfobloxIdentityGroupsError',
-      'setInfobloxEnvironmentError',
-      'setInfobloxAssetsError',
-      'setInfobloAssetAddError',
-      'setInfobloAssetModifyError',
-      'setInfobloAssetDeleteError',
-      'setInfobloTreeError',
-      'setInfobloNetworksError',
-      'setInfobloContainersError',
-      'setInfobloRealNetworksError',
-    ]
-    let newList = []
-
-    list.forEach((item, i) => {
-      let s = `case '${item}':
-        this.props.dispatch(${item}(null))
-        break`
-      newList.push(s)
-    });
-     
-
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   f5AssetsRefresh = () => {
@@ -84,11 +51,9 @@ class Assets extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'Error'}/> : null }
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
             { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
-
               <React.Fragment>
                 {this.props.f5Loading ?
                   <TabPane key="F5" tab="F5">
@@ -103,7 +68,6 @@ class Assets extends React.Component {
               :
               null
             }
-
 
             { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
               <React.Fragment>
