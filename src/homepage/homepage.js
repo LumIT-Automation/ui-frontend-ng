@@ -206,7 +206,7 @@ return (
                     </Card>
                   </Col>
                   <Col offset={1} span={4}>
-                    <Card title={<p style={{textAlign: 'center'}}>Warnings</p>} bordered={false}>
+                    <Card title={<p style={{textAlign: 'center'}}>Logs</p>} bordered={false}>
                       <Table/>
                     </Card>
                   </Col>
