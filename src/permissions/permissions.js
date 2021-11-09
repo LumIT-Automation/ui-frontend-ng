@@ -53,7 +53,7 @@ class Permissions extends React.Component {
 
 
   render() {
-    console.log(this.props.assetsError)
+     
     return (
 
       <React.Fragment>

@@ -6,15 +6,14 @@ import Error from './error'
 
 import { logout } from './_store/store.auth'
 import { setError } from './_store/store.error'
-import { setAuthorizations } from './_store/store.authorizations'
+import { setAuthorizations, setAuthorizationsError } from './_store/store.authorizations'
 
 import { Layout, Avatar, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
 import CustomSider from './sider/sider'
 
-import Homepage from './home/homepage'
-import Devices from './fastwebFortinetDevicesDB/manager'
+import Homepage from './homepage/homepage'
 import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
@@ -48,6 +47,7 @@ class Concerto extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.props.authorizationsError)
   }
 
   componentWillUnmount() {
@@ -55,13 +55,14 @@ class Concerto extends Component {
 
 
   fetchAuthorizations = async () => {
+
     let rest = new Rest(
       "GET",
       resp => {
         this.props.dispatch(setAuthorizations( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setAuthorizationsError(error))
       }
     )
     await rest.doXHR(`authorizations/`, this.props.token)
@@ -123,8 +124,7 @@ class Concerto extends Component {
         <BrowserRouter>
           <Layout>
             <CustomSider/>
-              <Layout style={{padding: '0 24px 24px'}}>
-
+            <Layout style={{padding: '0 24px 24px'}}>
               <Content
                 className="site-layout-background"
                 style={{
@@ -133,34 +133,21 @@ class Concerto extends Component {
                 }}
               >
                 <Switch>
-
-
-
-                    <Route exact path='/home/' component={Homepage}/>
-
-                  <Route exact path='/' component={Devices}/>
-                  <Route exact path='/devices/' component={Devices}/>
-
-
+                  <Route exact path='/' component={Homepage}/>
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
                     <Route path='/infoblox/' component={Infoblox}/>
                     : null
                   }
-
                   { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
                     <Route path='/f5/' component={F5}/>
                     : null
                   }
-
                   { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
                     <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
                     : null
                   }
-
                   <Route path='/services/' component={Service}/>
-
                   <Route path='/assets/' component={Assets}/>
-
                   { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
                     <Route path='/permissions/' component={Permissions}/>
                     : null
@@ -171,8 +158,7 @@ class Concerto extends Component {
             </Layout>
           </Layout>
         </BrowserRouter>
-
-
+        { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'setAuthorizationsError'} /> : null }
       </Layout>
     )
   }
@@ -184,6 +170,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
   authorizations: state.authorizations,
+  authorizationsError: state.authorizations.authorizationsError,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
 }))(Concerto);

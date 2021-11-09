@@ -12,7 +12,7 @@ export default class Torta extends PureComponent {
   }
 
   componentDidMount() {
-    console.log('Pie')
+     
     this.dammiFirmware()
   }
 
@@ -36,11 +36,11 @@ export default class Torta extends PureComponent {
 
   render() {
 
-    console.log(this.props.devices)
-    console.log(this.state.firmwares)
+     
+     
 
     const renderCustomizedLabel = ( {x, y, firmware, fill, cx, cy} ) => {
-      console.log(fill)
+       
       return <text x={x} y={y} fill={fill} fontSize={15} textAnchor={x > cx ? 'start' : 'end'}>{firmware}</text>
       //return firmware
     }

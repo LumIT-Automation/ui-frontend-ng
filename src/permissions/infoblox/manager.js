@@ -51,7 +51,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmmount')
+     
   }
 
   main = async () => {

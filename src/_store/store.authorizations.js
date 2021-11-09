@@ -15,6 +15,10 @@ const authorizationsSlice = createSlice({
           //state.infoblox
         }
       },
+      setAuthorizationsError: (state, action) => {
+        console.log(action.payload)
+        state.authorizationsError = action.payload
+      },
       setIdentityGroups: ( state, action) => {
         state.identityGroups = action.payload.data.items
       },
@@ -33,5 +37,11 @@ const authorizationsSlice = createSlice({
 
 const { actions, reducer } = authorizationsSlice;
 
-export const { setAuthorizations, setIdentityGroups, setF5Permissions, setIgIdentifiers } = actions
+export const {
+  setAuthorizations,
+  setAuthorizationsError,
+  setIdentityGroups,
+  setF5Permissions,
+  setIgIdentifiers
+} = actions
 export default reducer

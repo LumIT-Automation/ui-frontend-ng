@@ -124,7 +124,7 @@ export default class Victory extends React.Component {
   }
 
   componentDidMount() {
-    console.log('Victory')
+     
 
   }
 

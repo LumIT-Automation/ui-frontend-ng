@@ -64,7 +64,7 @@ class Assets extends React.Component {
         break`
       newList.push(s)
     });
-    console.log(newList)
+     
 
   }
 

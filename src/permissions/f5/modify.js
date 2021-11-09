@@ -51,7 +51,7 @@ class Modify extends React.Component {
   }
 
   details = () => {
-    console.log(this.props.obj)
+     
     this.setState({visible: true})
     let body = {}
     body.cn = this.props.obj.identity_group_name

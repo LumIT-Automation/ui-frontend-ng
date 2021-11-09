@@ -20,7 +20,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
-class Manager extends React.Component {
+class Homepage extends React.Component {
 
   constructor(props) {
     super(props);
@@ -33,7 +33,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount kkk')
+
     //this.ullalla()
     this.fetchDevices()
     //this.ullalla()
@@ -44,7 +44,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update kkk')
+
   }
 
   componentWillUnmount() {
@@ -169,7 +169,7 @@ return (
   }
 
   renderCustomizedLabel = ( x ) => {
-    console.log(x)
+
     //return name
   }
 
@@ -180,8 +180,8 @@ return (
 
   render() {
 
-    console.log(this.state.devices)
-    console.log(this.state.firmware)
+
+
 
 
     return (
@@ -260,7 +260,7 @@ return (
 
                   <Col span={10}>
                   <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                    <Map onClick={e => console.log(e)}/>
+                    <Map />
                   </Card>
                   </Col>
                 </Row>
@@ -288,4 +288,4 @@ export default connect((state) => ({
   partition: state.f5.partition,
   monitors: state.f5.monitors,
   monitorsFetch: state.f5.monitorsFetch
-}))(Manager);
+}))(Homepage);

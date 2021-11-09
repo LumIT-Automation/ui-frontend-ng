@@ -60,7 +60,7 @@ const f5Slice = createSlice({
           state.assetsFetch = action.payload
         },
         setAssetsError: (state, action) => {
-          console.log(action.payload)
+
           state.assetsError = action.payload
         },
 

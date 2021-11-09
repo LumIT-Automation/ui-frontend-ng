@@ -5,7 +5,7 @@ import  { Redirect } from 'react-router-dom'
 import { logout } from './_store/store.auth'
 
 import { setError } from './_store/store.error'
-
+import { setAuthorizationsError } from './_store/store.authorizations'
 import {
   setPermissionsError as setF5PermissionsError,
   setIdentityGroupsError as setF5IdentityGroupsError,
@@ -30,7 +30,6 @@ import {
   setCertificatesError as setF5CertificatesError,
   setKeysError as setF5KeysError
 } from './_store/store.f5'
-
 import {
   setPermissionsError as setInfobloxPermissionsError,
   setIdentityGroupsError as setInfobloxIdentityGroupsError,
@@ -77,6 +76,8 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('error')
+    console.log(this.props.error)
   }
 
   componentWillUnmount() {
@@ -86,8 +87,13 @@ class Error extends Component {
   onCancel = async () => {
     if ( this.props.type ) {
       switch(this.props.type) {
+
         case 'Error':
           this.props.dispatch(setError(null))
+          break
+
+        case 'setAuthorizationsError':
+          this.props.dispatch(setAuthorizationsError(null))
           break
 
         case 'setF5PermissionsError':
@@ -217,8 +223,8 @@ class Error extends Component {
 
   render(){
     //let err = this.state.error
-    console.log(this.props.type)
-    console.log(this.props.error)
+
+
 
     const columns = [
       {

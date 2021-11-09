@@ -37,8 +37,8 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
-    console.log(this.props.assetsError)
+     
+     
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       if (!this.props.permissions) {
         this.main()
@@ -58,11 +58,11 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount')
+     
   }
 
   main = async () => {
-    console.log('main')
+     
     this.props.dispatch(setPermissionsLoading(true))
 
     let assets = await this.fetchAssets()
@@ -172,7 +172,7 @@ class Manager extends React.Component {
         return json
       }
       else {
-        console.log('èèèèèèè')
+         
         this.props.dispatch(setAssetsError(response))
       }
 
@@ -274,7 +274,7 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.assetsError)
+     
 
     return (
       <React.Fragment>

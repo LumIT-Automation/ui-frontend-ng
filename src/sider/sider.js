@@ -92,12 +92,8 @@ class CustomSider extends Component {
           style={{ borderRight: 0 }}
         >
 
-          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/home/">HOME</Link></Menu.Item>
+          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-
-          <Menu.Item key="fastweDevices" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/devices/">DEVICES</Link></Menu.Item>
-          <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-
 
           { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
             <React.Fragment>
