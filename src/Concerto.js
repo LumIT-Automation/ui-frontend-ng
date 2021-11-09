@@ -74,21 +74,20 @@ class Concerto extends Component {
     this.setState({ error: null})
   }
 
-  deleteCookies = (token, username) => {
-    return new Promise( (resolve, reject) => {
+  deleteCookies = () => {
       try {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        resolve()
+        return 'OK'
       }
       catch(e) {
-        reject(e)
+        alert('no cookies deleted')
       }
-    })
   }
 
-  logout = () => {
-    this.deleteCookies('token', 'username').then( this.props.dispatch( logout() ) )
+  logout = async () => {
+    await this.deleteCookies()
+    this.props.dispatch( logout() )
   }
 
 
