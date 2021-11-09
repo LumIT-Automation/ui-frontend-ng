@@ -69,7 +69,7 @@ class Assets extends React.Component {
               null
             }
 
-            { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
+            { this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
                   <TabPane key="Infoblox" tab="Infoblox">
