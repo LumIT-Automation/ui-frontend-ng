@@ -37,8 +37,8 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-     
-     
+
+
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       if (!this.props.permissions) {
         this.main()
@@ -58,17 +58,18 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-     
+    console.log('unmount!!!!!')
   }
 
   main = async () => {
-     
+
     this.props.dispatch(setPermissionsLoading(true))
 
     let assets = await this.fetchAssets()
     if (assets.status && assets.status !== 200 ) {
       this.props.dispatch(setAssetsError(assets))
       this.props.dispatch(setPermissionsLoading(false))
+      return
     }
     else {
       this.props.dispatch(setAssets( assets ))
@@ -78,6 +79,7 @@ class Manager extends React.Component {
     if (identityGroups.status && identityGroups.status !== 200 ) {
       this.props.dispatch(setIdentityGroupsError(identityGroups))
       this.props.dispatch(setPermissionsLoading(false))
+      return
     }
     else {
       this.props.dispatch(setIdentityGroups( identityGroups ))
@@ -87,6 +89,7 @@ class Manager extends React.Component {
     if (permissions.status && permissions.status !== 200 ) {
       this.props.dispatch(setPermissionsError(permissions))
       this.props.dispatch(setPermissionsLoading(false))
+      return
     }
     else {
       this.props.dispatch(setPermissions(permissions))
@@ -96,6 +99,7 @@ class Manager extends React.Component {
         (identityGroups.status && identityGroups.status !== 200 ) ||
         (permissions.status && permissions.status !== 200 ) ) {
       this.props.dispatch(setPermissionsLoading(false))
+      return
     }
     else {
       let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
@@ -172,7 +176,7 @@ class Manager extends React.Component {
         return json
       }
       else {
-         
+
         this.props.dispatch(setAssetsError(response))
       }
 
@@ -274,7 +278,7 @@ class Manager extends React.Component {
 
 
   render() {
-     
+
 
     return (
       <React.Fragment>
@@ -282,18 +286,20 @@ class Manager extends React.Component {
         {this.props.permissionsLoading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
-            <React.Fragment>
+          <React.Fragment>
             <br/>
             <React.Fragment>
-            { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-              <Add/>
-              :
-              null
-            }
+              { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+                <Add/>
+                :
+                null
+              }
+            </React.Fragment>
             <List/>
-
-            </React.Fragment>
-            </React.Fragment>
+            { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+            { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setF5IdentityGroupsError'} /> : null }
+            { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setF5PermissionsError'} /> : null }
+          </React.Fragment>
           }
       </React.Fragment>
     )
@@ -302,16 +308,15 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
-  error: state.error.error,
   authorizations: state.authorizations.f5,
-
-  assets: state.f5.assets,
-  identityGroups: state.f5.identityGroups,
-  permissions: state.f5.permissions,
 
   assetsError: state.f5.assetsError,
   identityGroupsError: state.f5.identityGroupsError,
   permissionsError: state.f5.permissionsError,
+
+  assets: state.f5.assets,
+  identityGroups: state.f5.identityGroups,
+  permissions: state.f5.permissions,
 
   permissionsFetch: state.f5.permissionsFetch,
   permissionsLoading: state.f5.permissionsLoading,

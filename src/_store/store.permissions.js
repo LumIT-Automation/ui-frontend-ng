@@ -17,15 +17,12 @@ const permissionsSlice = createSlice({
       setF5Permissions: ( state, action) => {
         state.f5Permissions = action.payload.data.items
       },
-      setF5PermissionsBeauty: ( state, action) => {
-        state.f5PermissionsBeauty = action.payload
+      addF5PermissionError: ( state, action) => {
+        state.addF5PermissionError = action.payload
       },
       setInfobloxPermissions: ( state, action) => {
         state.infobloxPermissions = action.payload.data.items
       },
-      setInfobloxPermissionsBeauty: ( state, action) => {
-        state.infobloxPermissionsBeauty = action.payload
-      }
     }
 })
 
@@ -35,8 +32,7 @@ export const {
   setSuperAdminsPermissions,
   setSuperAdminsPermissionsBeauty,
   setF5Permissions,
-  setF5PermissionsBeauty,
+  addF5PermissionError,
   setInfobloxPermissions,
-  setInfobloxPermissionsBeauty
 } = actions
 export default reducer

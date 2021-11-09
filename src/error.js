@@ -6,6 +6,7 @@ import { logout } from './_store/store.auth'
 
 import { setError } from './_store/store.error'
 import { setAuthorizationsError } from './_store/store.authorizations'
+import { addF5PermissionError } from './_store/store.permissions'
 import {
   setPermissionsError as setF5PermissionsError,
   setIdentityGroupsError as setF5IdentityGroupsError,
@@ -73,7 +74,7 @@ class Error extends Component {
   }
 
   componentDidMount() {
-    console.log('error')
+    console.log('error mount')
     console.log(this.props.error)
   }
 
@@ -82,7 +83,8 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('error')
+    console.log('error update')
+
     console.log(this.props.error)
   }
 
@@ -105,9 +107,16 @@ class Error extends Component {
         case 'setF5PermissionsError':
           this.props.dispatch(setF5PermissionsError(null))
           break
+        case 'addF5PermissionError':
+          this.props.dispatch(addF5PermissionError(null))
+          break
+
         case 'setF5IdentityGroupsError':
           this.props.dispatch(setF5IdentityGroupsError(null))
           break
+
+
+
         case 'setF5EnvironmentError':
           this.props.dispatch(setF5EnvironmentError(null))
           break

@@ -2,8 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
-import Error from '../error'
-
 import SuperAdmin from './superAdmin/manager'
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
@@ -53,14 +51,8 @@ class Permissions extends React.Component {
 
 
   render() {
-     
     return (
-
       <React.Fragment>
-        { this.props.error ? <Error error={[this.props.error]} visible={true} type={'Error'}/> : null }
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setF5IdentityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setF5PermissionsError'} /> : null }
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
             <TabPane tab="SuperAdmin" key="SuperAdmin">
@@ -107,10 +99,6 @@ class Permissions extends React.Component {
 
 export default connect((state) => ({
  	error: state.error.error,
-
-  assetsError: state.f5.assetsError,
-  identityGroupsError: state.f5.identityGroupsError,
-  permissionsError: state.f5.permissionsError,
 
   f5Auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,

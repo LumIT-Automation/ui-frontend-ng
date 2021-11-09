@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { addF5PermissionError } from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
 } from '../../_store/store.f5'
@@ -31,11 +31,7 @@ class Add extends React.Component {
       errors: {},
       message:'',
       groupToAdd: false,
-      body: {
-        partition: {
-
-        }
-      }
+      body: {}
     };
   }
 
@@ -47,6 +43,7 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
   }
 
   componentWillUnmount() {
@@ -180,6 +177,7 @@ class Add extends React.Component {
   }
 
   setPartition = partition => {
+    console.log(partition)
     let body = Object.assign({}, this.state.body);
     body.partition = partition
     this.setState({body: body})
@@ -241,7 +239,7 @@ class Add extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(addF5PermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -262,6 +260,8 @@ class Add extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      body: {},
+      partitions: []
     })
   }
 
@@ -270,165 +270,168 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-      <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
-      <Modal
-        title={<p style={{textAlign: 'center'}}>ADD PERMISSION</p>}
-        centered
-        destroyOnClose={true}
-        visible={this.state.visible}
-        footer={''}
-        onOk={() => this.setState({visible: true})}
-        onCancel={() => this.closeModal()}
-        width={750}
-      >
-      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.response &&
-        <Result
-           status="success"
-           title="Added"
-         />
-      }
-      { !this.state.loading && !this.state.response &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
-            remember: true,
-          }}
-          onFinish={null}
-          onFinishFailed={null}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>ADD PERMISSION</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={750}
         >
-          <Form.Item
-            label="Distinguished Name"
-            name='dn'
-            key="dn"
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !this.state.loading && this.state.response &&
+          <Result
+             status="success"
+             title="Added"
+           />
+        }
+        { !this.state.loading && !this.state.response &&
+          <Form
+            {...layout}
+            name="basic"
+            initialValues={{
+              remember: true,
+              dn: this.state.body.dn,
+              asset: this.state.body.assetId,
+              role: this.state.body.role
+            }}
+            onFinish={null}
+            onFinishFailed={null}
           >
-            <AutoComplete
-               options={this.state.options}
-               onSearch={this.onSearch}
-               onSelect={this.selectDn}
-               onBlur={this.selectDn}
-               placeholder="cn=..."
-             />
-          </Form.Item>
-
-          <Form.Item
-            label="Asset"
-            name='asset'
-            key="asset"
-          >
-            <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
-              {this.props.assets ? this.props.assets.map((a, i) => {
-              return (
-                <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-              )
-            }) : null}
-            </Select>
-          </Form.Item>
-
-          <Form.Item
-            label="Role"
-            name="role"
-            key="role"
-          >
-          { this.state.rolesLoading ?
-            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-            :
-            <Select id='role' onChange={r => this.setRole(r) }>
-              {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a}>{a}</Select.Option>
-                )
-              })
-              :
-              null
-              }
-            </Select>
-          }
-          </Form.Item>
-
-          <Form.Item
-            label="Partition"
-            name="partitions"
-            key="partitions"
-            validateStatus={this.state.errors.partitionName}
-            help={this.state.errors.partitionName ? 'Partition not found' : null }
-          >
-
-          { this.state.partitionsLoading ?
-            <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-            :
-            <React.Fragment>
-            { this.state.partitions ?
-              <Select
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                onChange={n => this.setPartition(n)}
-              >
-                {this.state.body.role === 'admin' ?
-                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                  :
-                  <React.Fragment>
-                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                  {this.state.partitions.map((n, i) => {
-                    return (
-                      <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
-                    )
-                  })
-                  }
-                  </React.Fragment>
-                }
-              </Select>
-              :
-              <Select disabled value={null} onChange={null}>
-              </Select>
-            }
-            </React.Fragment>
-          }
-
-          </Form.Item>
-
-            {this.state.message ?
-              <Form.Item
-
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
-
-              : null
-            }
-
             <Form.Item
-              wrapperCol={ {offset: 6 }}
-              name="button"
-              key="button"
+              label="Distinguished Name"
+              name='dn'
+              key="dn"
             >
-              { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.partition && this.state.body.assetId ?
-                <Button type="primary" onClick={() => this.addPermission()} >
-                  Add Permission
-                </Button>
-                :
-                <Button type="primary" onClick={() => this.addPermission()} disabled>
-                  Add Permission
-                </Button>
-              }
+              <AutoComplete
+                 options={this.state.options}
+                 onSearch={this.onSearch}
+                 onSelect={this.selectDn}
+                 onBlur={this.selectDn}
+                 placeholder="cn=..."
+               />
             </Form.Item>
 
-          </Form>
-        }
+            <Form.Item
+              label="Asset"
+              name='asset'
+              key="asset"
+            >
+              <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
+                {this.props.assets ? this.props.assets.map((a, i) => {
+                return (
+                  <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
+                )
+              }) : null}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              label="Role"
+              name="role"
+              key="role"
+            >
+            { this.state.rolesLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+              :
+              <Select id='role' onChange={r => this.setRole(r) }>
+                {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
+                  return (
+                    <Select.Option  key={i} value={a}>{a}</Select.Option>
+                  )
+                })
+                :
+                null
+                }
+              </Select>
+            }
+            </Form.Item>
+
+            <Form.Item
+              label="Partition"
+              name="partition"
+              key="partition"
+              validateStatus={this.state.errors.partitionName}
+              help={this.state.errors.partitionName ? 'Partition not found' : null }
+            >
+
+            { this.state.partitionsLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+              :
+              <React.Fragment>
+              { (this.state.partitions && this.state.partitions.length > 0) ?
+                <Select
+                defaultValue={this.state.body.partition}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onChange={n => this.setPartition(n)}
+                >
+                  {this.state.body.role === 'admin' ?
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  :
+                    <React.Fragment>
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    {this.state.partitions.map((n, i) => {
+                      return (
+                        <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                      )
+                    })
+                    }
+                    </React.Fragment>
+                  }
+                </Select>
+              :
+                <Select disabled value={null} onChange={null}>
+                </Select>
+              }
+              </React.Fragment>
+            }
+
+            </Form.Item>
+
+              {this.state.message ?
+                <Form.Item
+
+                  name="message"
+                  key="message"
+                >
+                  <p style={{color: 'red'}}>{this.state.message}</p>
+                </Form.Item>
+
+                : null
+              }
+
+              <Form.Item
+                wrapperCol={ {offset: 6 }}
+                name="button"
+                key="button"
+              >
+                { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.partition && this.state.body.assetId ?
+                  <Button type="primary" onClick={() => this.addPermission()} >
+                    Add Permission
+                  </Button>
+                  :
+                  <Button type="primary" onClick={() => this.addPermission()} disabled>
+                    Add Permission
+                  </Button>
+                }
+              </Form.Item>
+
+            </Form>
+          }
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.addF5PermissionError ? <Error error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
 
       </Space>
 
@@ -439,6 +442,7 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
+  addF5PermissionError: state.permissions.addF5PermissionError,
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,
