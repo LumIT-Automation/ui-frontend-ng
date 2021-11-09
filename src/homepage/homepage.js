@@ -196,7 +196,7 @@ return (
 
                 <Row >
                   <Col span={4}>
-                    <Card title={<p style={{textAlign: 'center'}}>Cert Expirance</p>} bordered={false}>
+                    <Card title={<p style={{textAlign: 'center'}}>Cert Expirations</p>} bordered={false}>
                       <Table/>
                     </Card>
                   </Col>
