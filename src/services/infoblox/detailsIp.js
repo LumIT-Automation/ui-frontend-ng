@@ -83,7 +83,7 @@ class DetailsIp extends React.Component {
       resp => {
         let ipInfo = []
         ipInfo.push(resp.data)
-        this.setState({success: true, ipInfo: ipInfo})
+        this.setState({response: true, ipInfo: ipInfo})
       },
       error => {
         this.props.dispatch(setError(error))
@@ -97,8 +97,8 @@ class DetailsIp extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -106,7 +106,7 @@ class DetailsIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      success: false,
+      response: false,
       ipInfo: [],
       errors: []
     })
@@ -194,7 +194,7 @@ class DetailsIp extends React.Component {
         { ( this.props.asset && this.props.asset.id ) ?
           <React.Fragment>
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.success &&
+          { !this.state.loading && this.state.response &&
             <Table
               columns={columns}
               dataSource={this.state.ipInfo}
@@ -205,7 +205,7 @@ class DetailsIp extends React.Component {
               style={{marginBottom: 10}}
             />
           }
-          { !this.state.loading && !this.state.success &&
+          { !this.state.loading && !this.state.response &&
             <Form
               {...layout}
               name="basic"

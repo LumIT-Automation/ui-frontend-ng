@@ -249,12 +249,12 @@ class Modify extends React.Component {
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState({loading: false, success: true}, () => this.props.dispatch(setPoolsFetch(true)))
-          this.success()
+          this.setState({loading: false, response: true}, () => this.props.dispatch(setPoolsFetch(true)))
+          this.response()
         },
         error => {
           this.props.dispatch(setError(error))
-          this.setState({loading: false, success: false})
+          this.setState({loading: false, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, body )
@@ -265,8 +265,8 @@ class Modify extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -419,13 +419,13 @@ class Modify extends React.Component {
           width={1500}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.success &&
+        { !this.state.loading && this.state.response &&
           <Result
              status="success"
              title="Updated"
            />
         }
-        { !this.state.loading && !this.state.success &&
+        { !this.state.loading && !this.state.response &&
           <Form
             {...layout}
             name="basic"

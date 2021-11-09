@@ -91,7 +91,7 @@ class ModifyIp extends React.Component {
         let ipInfo = []
         ipInfo.push(resp.data)
         this.setState({
-          success: true,
+          response: true,
           ipInfo: ipInfo,
           present: true,
           status: resp.data.status,
@@ -176,7 +176,7 @@ class ModifyIp extends React.Component {
             this.infoIp()
           },
           error => {
-            this.setState({loading: false, success: false, error: error})
+            this.setState({loading: false, response: false, error: error})
           }
         )
         await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, body )
@@ -187,7 +187,7 @@ class ModifyIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      success: false,
+      response: false,
       ipInfo: [],
       present: false,
       errors: []

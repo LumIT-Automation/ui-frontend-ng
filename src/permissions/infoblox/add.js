@@ -143,7 +143,7 @@ class Add extends React.Component {
         },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
@@ -244,11 +244,11 @@ class Add extends React.Component {
       "POST",
       resp => {
         r = resp
-        this.setState({loading: false, success: true})
+        this.setState({loading: false, response: true})
       },
       error => {
         r = error
-        this.setState({loading: false, success: false, error: error})
+        this.setState({loading: false, response: false, error: error})
       }
     )
     await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
@@ -280,11 +280,11 @@ class Add extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        this.success()
+        this.response()
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
@@ -294,8 +294,8 @@ class Add extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -325,13 +325,13 @@ class Add extends React.Component {
           width={750}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.success &&
+        { !this.state.loading && this.state.response &&
           <Result
              status="success"
              title="Added"
            />
         }
-        { !this.state.loading && !this.state.success &&
+        { !this.state.loading && !this.state.response &&
           <Form
             {...layout}
             name="basic"

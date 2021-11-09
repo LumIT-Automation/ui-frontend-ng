@@ -88,7 +88,7 @@ class ReleaseIp extends React.Component {
         let ipInfo = []
         ipInfo.push(resp.data)
         this.setState({
-          success: true,
+          response: true,
           ipInfo: ipInfo,
           loading: false
         })
@@ -117,7 +117,7 @@ class ReleaseIp extends React.Component {
             this.infoIp()
           },
           error => {
-            this.setState({loading: false, success: false, error: error})
+            this.setState({loading: false, response: false, error: error})
           }
         )
         await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token )
@@ -128,8 +128,8 @@ class ReleaseIp extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -137,7 +137,7 @@ class ReleaseIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      success: false,
+      response: false,
       errors: []
     })
   }
@@ -237,7 +237,7 @@ class ReleaseIp extends React.Component {
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
             { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !this.state.loading && this.state.success &&
+            { !this.state.loading && this.state.response &&
               <Table
                 columns={columns}
                 dataSource={this.state.ipInfo}
@@ -248,7 +248,7 @@ class ReleaseIp extends React.Component {
                 style={{marginBottom: 10}}
               />
             }
-            { !this.state.loading && !this.state.success &&
+            { !this.state.loading && !this.state.response &&
               <Form
                 {...layout}
                 name="basic"

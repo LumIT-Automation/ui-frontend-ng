@@ -58,7 +58,7 @@ class CertificatesAndKeys extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)

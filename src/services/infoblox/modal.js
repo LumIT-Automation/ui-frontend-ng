@@ -67,7 +67,7 @@ class ModalCustom extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.workflowStatus === 'created') {
-      this.success()
+      this.response()
     }
   }
 
@@ -82,9 +82,9 @@ class ModalCustom extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
+  response = () => {
     this.props.dispatch(setWorkflowStatus( '' ))
-    setTimeout( () => this.setState({ success: false }), 2000)
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 

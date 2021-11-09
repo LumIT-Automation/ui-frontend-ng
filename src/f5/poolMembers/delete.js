@@ -46,7 +46,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({success: true, error: false}, () => this.props.dispatch(setPoolMembersFetch(true)))
+        this.setState({response: true, error: false}, () => this.props.dispatch(setPoolMembersFetch(true)))
         this.props.dispatch(setPoolMembersLoading(false))
       },
       error => {
@@ -85,13 +85,13 @@ class Delete extends React.Component {
           width={750}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
-          {!this.state.loading && this.state.success &&
+          {!this.state.loading && this.state.response &&
             <Result
                status="success"
                title="Deleted"
              />
           }
-          {!this.state.loading && !this.state.success &&
+          {!this.state.loading && !this.state.response &&
             <div>
               <Row>
                 <Col span={5} offset={10}>

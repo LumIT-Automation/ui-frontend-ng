@@ -97,7 +97,7 @@ class RequestIp extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
@@ -113,7 +113,7 @@ class RequestIp extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
@@ -383,7 +383,7 @@ class RequestIp extends React.Component {
     }
     console.log(response)
 
-    this.setState({response: response, loading: false, success: true})
+    this.setState({response: response, loading: false})
   }
 
   request = async r => {
@@ -451,7 +451,7 @@ class RequestIp extends React.Component {
       },
       error => {
         re = error
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
         this.props.dispatch(setError(error))
       }
     )
@@ -496,16 +496,10 @@ class RequestIp extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
-      success: false,
       objectTypes: null,
       requests: [],
       response: [],
@@ -779,7 +773,7 @@ class RequestIp extends React.Component {
             { ( this.props.asset && this.props.asset.id ) ?
               <React.Fragment>
               { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-              { !this.state.loading && this.state.success  ?
+              { !this.state.loading && this.state.response.length !== 0  ?
                 <Table
                   columns={response}
                   dataSource={this.state.response}

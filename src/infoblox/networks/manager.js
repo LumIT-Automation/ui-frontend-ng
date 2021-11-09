@@ -69,7 +69,7 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
@@ -83,7 +83,7 @@ class Manager extends React.Component {
 
 
   render() {
-    
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 

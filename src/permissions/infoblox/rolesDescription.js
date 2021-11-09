@@ -51,7 +51,7 @@ class RolesDescription extends React.Component {
         },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
@@ -76,8 +76,8 @@ class RolesDescription extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 

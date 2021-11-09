@@ -72,7 +72,7 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
@@ -85,7 +85,7 @@ class Manager extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      success: false,
+      response: false,
       body: {},
       errors: []
     })

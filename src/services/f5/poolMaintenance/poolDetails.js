@@ -46,7 +46,7 @@ render() renders table of pool members.
 ENABLE, DISABLE, FORCE OFFLINE
 ENABLE, DISABLE and FORCE OFFLINE buttons call /backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/
 with method PATCH and in the body the required state, for example for enable { "data": { "state": "user-up", "session":"user-enabled" } }
-on success they call fetchPoolMembers() after 3 seconds in order to have the new member's state. Then componentDidUpdate() does the rest of the refreshing work.
+on response they call fetchPoolMembers() after 3 seconds in order to have the new member's state. Then componentDidUpdate() does the rest of the refreshing work.
 
 
 MONITORING
@@ -70,7 +70,7 @@ if it's true
 
 memberStats()
 call /backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/
-onsuccess this.refreshStats(member, resp.data)
+onresponse this.refreshStats(member, resp.data)
 
 refreshStat()
 takes the member from this.state.currentMembers and update it with current fetched connections.
@@ -130,7 +130,7 @@ class PoolDetails extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`, this.props.token)

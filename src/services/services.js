@@ -97,11 +97,6 @@ class Service extends React.Component {
   }
 
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({

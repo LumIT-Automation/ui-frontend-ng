@@ -101,11 +101,11 @@ class Add extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, success: true}, () => this.success() )
+        this.setState({loading: false, response: true}, () => this.response() )
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token, body )
@@ -136,8 +136,8 @@ class Add extends React.Component {
     }
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setKeysFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -177,13 +177,13 @@ class Add extends React.Component {
               width={750}
             >
             { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !this.state.loading && this.state.success &&
+            { !this.state.loading && this.state.response &&
               <Result
                  status="success"
                  title="Added"
                />
             }
-            { !this.state.loading && !this.state.success &&
+            { !this.state.loading && !this.state.response &&
               <Form
                 labelCol={{ span: 8 }}
                 wrapperCol={{ span: 8 }}

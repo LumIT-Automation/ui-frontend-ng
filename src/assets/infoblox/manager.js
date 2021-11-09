@@ -56,7 +56,7 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setAssetsError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)

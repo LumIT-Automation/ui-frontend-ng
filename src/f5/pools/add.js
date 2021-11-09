@@ -256,7 +256,7 @@ class Add extends React.Component {
           this.setState({loading: false, error: false}, () => this.addPoolMembers())
         },
         error => {
-          this.setState({loading: false, error: error, success: false}, () => this.props.dispatch(setPoolsFetch(true)))
+          this.setState({loading: false, error: error, response: false}, () => this.props.dispatch(setPoolsFetch(true)))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token, body)
@@ -289,24 +289,24 @@ class Add extends React.Component {
       this.addPoolMember(body)
     })
 
-    this.success()
+    this.response()
   }
 
   addPoolMember = async (body) => {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, success: true}, () => this.success())
+          this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.setState({loading: false, error: error, success: false})
+          this.setState({loading: false, error: error, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.body.name}/members/`, this.props.token, body)
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setPoolsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
@@ -340,13 +340,13 @@ class Add extends React.Component {
           width={750}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.success &&
+        { !this.state.loading && this.state.response &&
           <Result
              status="success"
              title="Added"
            />
         }
-        { !this.state.loading && !this.state.success &&
+        { !this.state.loading && !this.state.response &&
           <Form
             {...layout}
             name="basic"

@@ -91,7 +91,7 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
         r = error
       }
     )
@@ -108,7 +108,7 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
         r = error
       }
     )
@@ -146,7 +146,7 @@ class Manager extends React.Component {
       },
       error => {
       this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
         r = error
       }
     )

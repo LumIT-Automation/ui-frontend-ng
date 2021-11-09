@@ -48,11 +48,11 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true}, () => this.props.dispatch(setPermissionsFetch(true)) )
+        this.setState({loading: false, response: true}, () => this.props.dispatch(setPermissionsFetch(true)) )
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/permission/${this.props.obj.id}/`, this.props.token )
@@ -87,13 +87,13 @@ class Delete extends React.Component {
           width={750}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
-          {!this.state.loading && this.state.success &&
+          {!this.state.loading && this.state.response &&
             <Result
                status="success"
                title="Deleted"
              />
           }
-          {!this.state.loading && !this.state.success &&
+          {!this.state.loading && !this.state.response &&
             <div>
               <Row>
                 <Col span={5} offset={10}>

@@ -132,7 +132,7 @@ class Details extends React.Component {
         this.setState({loading: false, device: device, extraData: resp.data.extra_data})
       },
       error => {
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
         this.props.dispatch(setError(error))
       }
     )
@@ -158,15 +158,15 @@ class Details extends React.Component {
           this.fetchDevice()
         },
         error => {
-          this.setState({extraLoading: false, success: false, error: error})
+          this.setState({extraLoading: false, response: false, error: error})
         }
       )
       await rest.doXHR(`/fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token, body )
     }
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 

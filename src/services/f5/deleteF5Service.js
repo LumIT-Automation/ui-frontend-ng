@@ -72,12 +72,12 @@ class DeleteF5Service extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, success: true})
-        this.success()
+        this.setState({loading: false, response: true})
+        this.response()
       },
       error => {
         this.props.dispatch(setError(error))
-        this.setState({loading: false, success: false})
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/${serviceName}/`, this.props.token )
@@ -88,8 +88,8 @@ class DeleteF5Service extends React.Component {
     this.setState({ error: null})
   }
 
-  success = () => {
-    setTimeout( () => this.setState({ success: false }), 2000)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -126,13 +126,13 @@ class DeleteF5Service extends React.Component {
           { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
             <React.Fragment>
       { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.success &&
+      { !this.state.loading && this.state.response &&
         <Result
            status="success"
            title="Service Deleted"
          />
       }
-      { !this.state.loading && !this.state.success &&
+      { !this.state.loading && !this.state.response &&
         <Form
           {...layout}
           name="basic"

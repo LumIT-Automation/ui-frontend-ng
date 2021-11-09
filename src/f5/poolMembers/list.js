@@ -186,7 +186,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
@@ -200,7 +200,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
@@ -214,7 +214,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, success: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))

@@ -161,7 +161,7 @@ return (
         this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
       },
       error => {
-        this.setState({loading: false, success: false})
+        this.setState({loading: false})
         this.props.dispatch(setError(error))
       }
     )
