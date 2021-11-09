@@ -81,7 +81,7 @@ class Concerto extends Component {
         return 'OK'
       }
       catch(e) {
-        alert('no cookies deleted')
+        console.log('no logout')
       }
   }
 
