@@ -43,7 +43,6 @@ class RolesDescription extends React.Component {
   }
 
   showRoles = async () => {
-
     let rest = new Rest(
       "GET",
       resp => {

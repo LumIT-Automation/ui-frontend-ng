@@ -4,9 +4,10 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { addF5PermissionError } from '../../_store/store.permissions'
+import { addF5PermissionError, fetchF5RolesError, addNewDnError } from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
+  setPartitionsError
 } from '../../_store/store.f5'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -138,7 +139,7 @@ class Add extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(fetchF5RolesError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -170,7 +171,7 @@ class Add extends React.Component {
         this.setState({partitions: resp.data.items, partitionsLoading: false})
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setPartitionsError(error))
       }
     )
     await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
@@ -203,6 +204,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true})
       },
       error => {
+        this.props.dispatch(addNewDnError(error))
         r = error
         this.setState({loading: false, response: false, error: error})
       }
@@ -432,6 +434,9 @@ class Add extends React.Component {
         </Modal>
 
         { this.props.addF5PermissionError ? <Error error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
+        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+        { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
 
       </Space>
 
@@ -441,8 +446,12 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   addF5PermissionError: state.permissions.addF5PermissionError,
+  fetchF5RolesError: state.permissions.fetchF5RolesError,
+  addNewDnError: state.permissions.addNewDnError,
+  partitionsError: state.f5.partitionsError,
+
+
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,

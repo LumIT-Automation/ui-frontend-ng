@@ -6,7 +6,13 @@ import { logout } from './_store/store.auth'
 
 import { setError } from './_store/store.error'
 import { setAuthorizationsError } from './_store/store.authorizations'
-import { addF5PermissionError } from './_store/store.permissions'
+import {
+  fetchF5RolesError,
+  addNewDnError,
+  addF5PermissionError,
+  modifyF5PermissionError,
+  deleteF5PermissionError
+} from './_store/store.permissions'
 import {
   setPermissionsError as setF5PermissionsError,
   setIdentityGroupsError as setF5IdentityGroupsError,
@@ -107,8 +113,21 @@ class Error extends Component {
         case 'setF5PermissionsError':
           this.props.dispatch(setF5PermissionsError(null))
           break
+        case 'fetchF5RolesError':
+          this.props.dispatch(fetchF5RolesError(null))
+          break
+        case 'addNewDnError':
+          this.props.dispatch(addNewDnError(null))
+          break
+
         case 'addF5PermissionError':
           this.props.dispatch(addF5PermissionError(null))
+          break
+        case 'modifyF5PermissionError':
+          this.props.dispatch(modifyF5PermissionError(null))
+          break
+        case 'deleteF5PermissionError':
+          this.props.dispatch(deleteF5PermissionError(null))
           break
 
         case 'setF5IdentityGroupsError':
@@ -326,7 +345,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>ERROR</p>}
+        title={<p style={{textAlign: 'center'}}>ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}

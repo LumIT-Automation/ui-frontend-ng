@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { modifyF5PermissionError, addNewDnError } from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
 } from '../../_store/store.f5'
@@ -51,7 +51,7 @@ class Modify extends React.Component {
   }
 
   details = () => {
-     
+
     this.setState({visible: true})
     let body = {}
     body.cn = this.props.obj.identity_group_name
@@ -213,6 +213,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true})
       },
       error => {
+        this.props.dispatch(addNewDnError(error))
         r = error
         this.setState({loading: false, response: false, error: error})
       }
@@ -442,7 +443,7 @@ class Modify extends React.Component {
           </Modal>
 
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
       </Space>
 
@@ -452,7 +453,7 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	addNewDnError: state.permissions.addNewDnError,
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,
