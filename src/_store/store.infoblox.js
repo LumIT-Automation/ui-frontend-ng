@@ -87,6 +87,7 @@ const infobloxSlice = createSlice({
         state.networksFetch = action.payload
       },
       setNetworksError: (state, action) => {
+        console.log('store')
         state.networksError = action.payload
       },
 
@@ -100,6 +101,7 @@ const infobloxSlice = createSlice({
         state.containersFetch = action.payload
       },
       setContainersError: (state, action) => {
+        console.log('èèèèèèèèèèè')
         state.containersError = action.payload
       },
 

@@ -14,6 +14,7 @@ const permissionsSlice = createSlice({
       setSuperAdminsPermissionsBeauty: ( state, action) => {
         state.superAdminsPermissionsBeauty = action.payload
       },
+
       setF5Permissions: ( state, action) => {
         state.f5Permissions = action.payload.data.items
       },
@@ -21,7 +22,6 @@ const permissionsSlice = createSlice({
         state.fetchF5RolesError = action.payload
       },
       addNewDnError: ( state, action) => {
-        console.log('store permissions')
         state.addNewDnError = action.payload
       },
       addF5PermissionError: ( state, action) => {
@@ -33,8 +33,21 @@ const permissionsSlice = createSlice({
       deleteF5PermissionError: ( state, action) => {
         state.deleteF5PermissionError = action.payload
       },
+
       setInfobloxPermissions: ( state, action) => {
         state.infobloxPermissions = action.payload.data.items
+      },
+      fetchInfobloxRolesError: ( state, action) => {
+        state.fetchInfobloxRolesError = action.payload
+      },
+      addInfobloxPermissionError: ( state, action) => {
+        state.addInfobloxPermissionError = action.payload
+      },
+      modifyInfobloxPermissionError: ( state, action) => {
+        state.modifyInfobloxPermissionError = action.payload
+      },
+      deleteInfobloxPermissionError: ( state, action) => {
+        state.deleteInfobloxPermissionError = action.payload
       },
     }
 })
@@ -44,12 +57,18 @@ const { actions, reducer } = permissionsSlice;
 export const {
   setSuperAdminsPermissions,
   setSuperAdminsPermissionsBeauty,
+
   setF5Permissions,
   fetchF5RolesError,
   addNewDnError,
   addF5PermissionError,
   modifyF5PermissionError,
   deleteF5PermissionError,
+
   setInfobloxPermissions,
+  fetchInfobloxRolesError,
+  addInfobloxPermissionError,
+  modifyInfobloxPermissionError,
+  deleteInfobloxPermissionError,
 } = actions
 export default reducer

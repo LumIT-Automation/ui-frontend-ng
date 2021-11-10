@@ -4,9 +4,15 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import {
+  fetchInfobloxRolesError,
+  addNewDnError,
+  addInfobloxPermissionError,
+} from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
+  setNetworksError,
+  setContainersError,
 } from '../../_store/store.infoblox'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -31,10 +37,9 @@ class Add extends React.Component {
       },
       message:'',
       groupToAdd: false,
+      network: '',
       body: {
-        network: {
-
-        }
+        network: {}
       }
     };
   }
@@ -47,6 +52,8 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update')
+    console.log(this.props.addNewDnError)
   }
 
   componentWillUnmount() {
@@ -130,7 +137,7 @@ class Add extends React.Component {
   setAsset = id => {
     let body = Object.assign({}, this.state.body)
     body.assetId = id
-    body.network.id_asset = id
+    //body.network.id_asset = id
     this.setState({body: body}, () => this.fetchNetworks())
   }
 
@@ -142,7 +149,7 @@ class Add extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(fetchInfobloxRolesError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -169,8 +176,19 @@ class Add extends React.Component {
 
   fetchNetworks = async () => {
     this.setState({networksLoading: true})
+
     let nets = await this.fetchNets()
+    if (nets.status && nets.status !== 200) {
+      await this.setState({networksLoading: false})
+      return
+    }
+
     let containers = await this.fetchContainers()
+    if (containers.status && containers.status !== 200) {
+      await this.setState({networksLoading: false})
+      return
+    }
+
     let networks = nets.concat(containers)
     this.setState({nets: networks, networksLoading: false})
   }
@@ -183,7 +201,8 @@ class Add extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setError( error ))
+        this.props.dispatch(setNetworksError( error ))
+        r = error
       }
     )
     await rest.doXHR(`infoblox/${this.state.body.assetId}/networks/`, this.props.token)
@@ -198,7 +217,8 @@ class Add extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setError( error ))
+        this.props.dispatch(setContainersError( error ))
+        r = error
       }
     )
     await rest.doXHR(`infoblox/${this.state.body.assetId}/network-containers/`, this.props.token)
@@ -224,7 +244,7 @@ class Add extends React.Component {
       errors.networkName = 'error'
     }
 
-    this.setState({body: body, errors: errors})
+    this.setState({body: body, network: n, errors: errors})
   }
 
   addNewDn = async () => {
@@ -247,6 +267,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true})
       },
       error => {
+        this.props.dispatch(addNewDnError(error))
         r = error
         this.setState({loading: false, response: false, error: error})
       }
@@ -257,7 +278,10 @@ class Add extends React.Component {
 
   addPermission = async () => {
     if (this.state.groupToAdd) {
-      await this.addNewDn()
+      let awaitDn = await this.addNewDn()
+      if (awaitDn.status && awaitDn.status !== 201) {
+        return
+      }
     }
 
     this.setState({message: null});
@@ -283,7 +307,7 @@ class Add extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(addInfobloxPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -303,6 +327,8 @@ class Add extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      body: {},
+      network: ''
     })
   }
 
@@ -337,6 +363,9 @@ class Add extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
+              dn: this.state.body.dn,
+              asset: this.state.body.assetId,
+              role: this.state.body.role
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -402,12 +431,11 @@ class Add extends React.Component {
 
             { this.state.networksLoading ?
               <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-
               :
-
               <React.Fragment>
-              { this.state.nets ?
+              { this.state.nets && this.state.nets.length > 0?
                 <Select
+                  defaultValue={this.state.network ? this.state.network : null}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -472,8 +500,11 @@ class Add extends React.Component {
         }
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.fetchInfobloxRolesError ? <Error error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+        { this.props.networksError ? <Error error={[this.props.networksError]} visible={true} type={'setInfobloxNetworksError'} /> : null }
+        { this.props.containersError ? <Error error={[this.props.containersError]} visible={true} type={'setInfobloxContainersError'} /> : null }
+        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+        { this.props.addInfobloxPermissionError ? <Error error={[this.props.addInfobloxPermissionError]} visible={true} type={'addInfobloxPermissionError'} /> : null }
 
       </Space>
 
@@ -483,7 +514,13 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+
+  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
+  networksError: state.infoblox.networksError,
+  containersError: state.infoblox.containersError,
+  addNewDnError: state.permissions.addNewDnError,
+  addInfobloxPermissionError: state.permissions.addInfobloxPermissionError,
+
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
   assets: state.infoblox.assets,

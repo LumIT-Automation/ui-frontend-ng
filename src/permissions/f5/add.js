@@ -213,13 +213,16 @@ class Add extends React.Component {
         this.setState({loading: false, response: false, error: error})
       }
     )
-    await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
+    await rest.doXHR(`f5/identity-groupsx/`, this.props.token, b )
     return r
   }
 
   addPermission = async () => {
     if (this.state.groupToAdd) {
-      await this.addNewDn()
+      let awaitDn = await this.addNewDn()
+      if (awaitDn.status && awaitDn.status !== 201) {
+        return
+      }
     }
 
     this.setState({message: null});
@@ -371,7 +374,7 @@ class Add extends React.Component {
               <React.Fragment>
               { (this.state.partitions && this.state.partitions.length > 0) ?
                 <Select
-                defaultValue={this.state.body.partition}
+                  defaultValue={this.state.body.partition}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -454,7 +457,6 @@ export default connect((state) => ({
   fetchF5RolesError: state.permissions.fetchF5RolesError,
   addNewDnError: state.permissions.addNewDnError,
   partitionsError: state.f5.partitionsError,
-
 
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,

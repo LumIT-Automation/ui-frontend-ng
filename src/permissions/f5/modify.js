@@ -246,8 +246,7 @@ class Modify extends React.Component {
   modifyPermission = async () => {
     if (this.state.groupToAdd) {
       let awaitDn = await this.addNewDn()
-      console.log(awaitDn)
-      if (awaitDn && awaitDn.status !== 201) {
+      if (awaitDn.status && awaitDn.status !== 201) {
         return
       }
     }

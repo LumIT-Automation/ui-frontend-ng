@@ -7,11 +7,17 @@ import { logout } from './_store/store.auth'
 import { setError } from './_store/store.error'
 import { setAuthorizationsError } from './_store/store.authorizations'
 import {
-  fetchF5RolesError,
   addNewDnError,
+
+  fetchF5RolesError,
   addF5PermissionError,
   modifyF5PermissionError,
-  deleteF5PermissionError
+  deleteF5PermissionError,
+
+  fetchInfobloxRolesError,
+  addInfobloxPermissionError,
+  modifyInfobloxPermissionError,
+  deleteInfobloxPermissionError,
 } from './_store/store.permissions'
 import {
   setPermissionsError as setF5PermissionsError,
@@ -188,9 +194,30 @@ class Error extends Component {
           this.props.dispatch(setF5KeysError(null))
           break
 
+
+
         case 'setInfobloxPermissionsError':
         	this.props.dispatch(setInfobloxPermissionsError(null))
         	break
+
+        case 'fetchInfobloxRolesError':
+          this.props.dispatch(fetchInfobloxRolesError(null))
+          break
+
+        case 'addInfobloxPermissionError':
+          this.props.dispatch(addInfobloxPermissionError(null))
+          break
+        case 'modifyInfobloxPermissionError':
+          this.props.dispatch(modifyInfobloxPermissionError(null))
+          break
+        case 'deleteInfobloxPermissionError':
+          this.props.dispatch(deleteInfobloxPermissionError(null))
+          break
+
+        case 'setInfobloxIdentityGroupsError':
+          this.props.dispatch(setInfobloxIdentityGroupsError(null))
+          break
+
         case 'setInfobloxIdentityGroupsError':
         	this.props.dispatch(setInfobloxIdentityGroupsError(null))
         	break
@@ -215,7 +242,8 @@ class Error extends Component {
         case 'setInfobloxNetworksError':
         	this.props.dispatch(setInfobloxNetworksError(null))
         	break
-        case 'setInfobloContainersError':
+        case 'setInfobloxContainersError':
+          console.log('case giusto')
         	this.props.dispatch(setInfobloxContainersError(null))
         	break
         case 'setInfobloxRealNetworksError':
