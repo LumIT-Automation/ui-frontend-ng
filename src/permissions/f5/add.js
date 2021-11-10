@@ -4,7 +4,11 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { addF5PermissionError, fetchF5RolesError, addNewDnError } from '../../_store/store.permissions'
+import {
+  fetchF5RolesError,
+  addNewDnError,
+  addF5PermissionError,
+} from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
   setPartitionsError
@@ -455,5 +459,4 @@ export default connect((state) => ({
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,
-  partitions: state.f5.partitions
 }))(Add);

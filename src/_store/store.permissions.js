@@ -21,6 +21,7 @@ const permissionsSlice = createSlice({
         state.fetchF5RolesError = action.payload
       },
       addNewDnError: ( state, action) => {
+        console.log('store permissions')
         state.addNewDnError = action.payload
       },
       addF5PermissionError: ( state, action) => {

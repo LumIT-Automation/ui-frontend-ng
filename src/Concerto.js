@@ -87,7 +87,7 @@ class Concerto extends Component {
 
   logout = async () => {
     await this.deleteCookies()
-    this.props.dispatch( logout() )
+    this.props.dispatch(logout())
   }
 
 
@@ -107,6 +107,7 @@ class Concerto extends Component {
 
       <Layout style={{overflow: 'initial'}}>
         <Header className="header">
+          <p style={{float: "left", marginRight: '15px', color: 'white'}}>Concerto</p>
           <div>
             <Dropdown overlay={menu} trigger={['click']}>
               <Avatar

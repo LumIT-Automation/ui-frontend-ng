@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { fetchF5RolesError } from '../../_store/store.permissions'
 
 import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -39,17 +39,17 @@ class RolesDescription extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.showRoles()
+    this.fetchRoles()
   }
 
-  showRoles = async () => {
+  fetchRoles = async () => {
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(fetchF5RolesError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -139,8 +139,7 @@ class RolesDescription extends React.Component {
           />
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
 
       </Space>
 
@@ -149,5 +148,6 @@ class RolesDescription extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token
+  token: state.ssoAuth.token,
+  fetchF5RolesError: state.permissions.fetchF5RolesError,
 }))(RolesDescription);

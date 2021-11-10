@@ -4,9 +4,10 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { modifyF5PermissionError, addNewDnError } from '../../_store/store.permissions'
+import { fetchF5RolesError, addNewDnError, modifyF5PermissionError } from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
+  setPartitionsError
 } from '../../_store/store.f5'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -41,16 +42,33 @@ class Modify extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
+    console.log(this.props.addNewDnError)
+    console.log(newProps.addNewDnError)
+    console.log(this.props.modifyF5PermissionError)
+    console.log(newProps.modifyF5PermissionError)
+    if (
+      newProps.fetchF5RolesError ||
+      newProps.partitionsError ||
+      newProps.addNewDnError ||
+      newProps.modifyF5PermissionError
+    ) {
+      console.log('should')
+      return false
+    }
     return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('aggiorno')
+    console.log(this.props)
+    console.log(this.state)
   }
 
   componentWillUnmount() {
+    console.log('unmount')
   }
 
-  details = () => {
+  details = async () => {
 
     this.setState({visible: true})
     let body = {}
@@ -61,8 +79,9 @@ class Modify extends React.Component {
     body.partition = {}
     body.partition = this.props.obj.partition
     body.assetId = this.props.obj.partition.asset_id
-    this.setState({body: body})
+    await this.setState({body: body})
     this.fetchRoles()
+    this.fetchPartitions()
   }
 
   onSearch = (searchText) => {
@@ -142,6 +161,7 @@ class Modify extends React.Component {
   }
 
   fetchRoles = async () => {
+    console.log('chiamo')
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
@@ -149,7 +169,8 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(setError(error))
+        console.log('++++++++++')
+        this.props.dispatch(fetchF5RolesError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -181,7 +202,7 @@ class Modify extends React.Component {
         this.setState({partitions: resp.data.items, partitionsLoading: false})
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setPartitionsError(error))
       }
     )
     await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
@@ -214,8 +235,8 @@ class Modify extends React.Component {
       },
       error => {
         this.props.dispatch(addNewDnError(error))
-        r = error
         this.setState({loading: false, response: false, error: error})
+        r = error
       }
     )
     await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
@@ -224,7 +245,11 @@ class Modify extends React.Component {
 
   modifyPermission = async () => {
     if (this.state.groupToAdd) {
-      await this.addNewDn()
+      let awaitDn = await this.addNewDn()
+      console.log(awaitDn)
+      if (awaitDn && awaitDn.status !== 201) {
+        return
+      }
     }
 
     this.setState({message: null});
@@ -250,7 +275,7 @@ class Modify extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(modifyF5PermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -442,8 +467,10 @@ class Modify extends React.Component {
           }
           </Modal>
 
-
+        { this.props.modifyF5PermissionError ? <Error error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
+        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
         { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+        { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
 
       </Space>
 
@@ -453,7 +480,11 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	addNewDnError: state.permissions.addNewDnError,
+  modifyF5PermissionError: state.permissions.modifyF5PermissionError,
+  fetchF5RolesError: state.permissions.fetchF5RolesError,
+  addNewDnError: state.permissions.addNewDnError,
+  partitionsError: state.f5.partitionsError,
+
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
   assets: state.f5.assets,
