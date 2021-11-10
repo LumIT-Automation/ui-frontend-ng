@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
 import { setAssetsFetch } from '../../_store/store.f5'
 
@@ -79,8 +78,6 @@ class Manager extends React.Component {
 
         </Row>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
       </React.Fragment>
 
     )
@@ -88,7 +85,6 @@ class Manager extends React.Component {
 }
 
 export default connect((state) => ({
- 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   assets: state.infoblox.assets,
 }))(Manager);

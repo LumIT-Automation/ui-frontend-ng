@@ -75,10 +75,6 @@ class AssetSelector extends React.Component {
     //this.fetchAssetPartitions(asset.id)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (

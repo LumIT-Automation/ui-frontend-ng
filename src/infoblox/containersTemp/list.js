@@ -1,9 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
-
-import { setError } from '../../_store/store.error'
 
 import { DownOutlined } from '@ant-design/icons';
 
@@ -122,10 +119,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   expandedRowRender = () => {
     const columns = [
       { title: 'Date', dataIndex: 'date', key: 'date' },
@@ -145,7 +138,7 @@ class List extends React.Component {
 
 
   render() {
-    
+
 
     const expandedRowRender = () => {
     const columns = [
@@ -234,7 +227,6 @@ class List extends React.Component {
           expandable={{ expandedRowRender }}
           dataSource={data}
         />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -243,7 +235,6 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers

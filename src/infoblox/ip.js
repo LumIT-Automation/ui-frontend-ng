@@ -1,10 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-//import Error from '../../error'
 import { DownOutlined } from '@ant-design/icons';
-
-import { setError } from '../_store/store.error'
 
 //import Modify from './modify'
 
@@ -125,15 +122,8 @@ class Ip extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
-
-
-
 
     const columns = [
       {
@@ -189,7 +179,6 @@ class Ip extends React.Component {
             style={{marginBottom: 10}}
           />
         </Modal>
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -198,7 +187,6 @@ class Ip extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers
