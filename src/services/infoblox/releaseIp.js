@@ -34,7 +34,7 @@ class ReleaseIp extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: { }
+      request: { }
     };
   }
 

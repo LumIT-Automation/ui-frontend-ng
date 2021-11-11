@@ -20,7 +20,7 @@ class RolesDescription extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 

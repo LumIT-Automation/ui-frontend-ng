@@ -31,7 +31,7 @@ class Modify extends React.Component {
       },
       message:'',
       groupToAdd: false,
-      body: {
+      request: {
         network: {
 
         }
@@ -54,15 +54,15 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let body = {}
-    body.cn = this.props.obj.identity_group_name
-    body.dn = this.props.obj.identity_group_identifier
-    body.role = this.props.obj.role
-    body.asset = this.props.obj.asset
-    body.network = {}
-    body.network.name = this.props.obj.network.name
-    body.network.id_asset = this.props.obj.network.asset_id
-    this.setState({body: body})
+    let request = {}
+    request.cn = this.props.obj.identity_group_name
+    request.dn = this.props.obj.identity_group_identifier
+    request.role = this.props.obj.role
+    request.asset = this.props.obj.asset
+    request.network = {}
+    request.network.name = this.props.obj.network.name
+    request.network.id_asset = this.props.obj.network.asset_id
+    this.setState({request: request})
     this.fetchRoles()
   }
 
@@ -90,7 +90,7 @@ class Modify extends React.Component {
   }
 
   selectDn = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
     let dn
 
@@ -104,11 +104,11 @@ class Modify extends React.Component {
 
       if (this.state.items.includes(dn)) {
         this.setState({groupToAdd: false})
-        body.dn = dn
+        request.dn = dn
         let cn = this.props.identityGroups.find( ig => {
           return ig.identity_group_identifier === dn
         })
-        body.cn = cn.name
+        request.cn = cn.name
         delete errors.dnError
       }
       else {
@@ -124,8 +124,8 @@ class Modify extends React.Component {
           }
         })
 
-        body.dn = dn
-        body.cn = cns[0]
+        request.dn = dn
+        request.cn = cns[0]
         delete errors.dnError
       }
 
@@ -133,14 +133,14 @@ class Modify extends React.Component {
     else {
       errors.dnError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setAsset = id => {
-    let body = Object.assign({}, this.state.body)
-    body.assetId = id
-    body.network.id_asset = id
-    this.setState({body: body}, () => this.fetchNetworks())
+    let request = Object.assign({}, this.state.request)
+    request.assetId = id
+    request.network.id_asset = id
+    this.setState({request: request}, () => this.fetchNetworks())
   }
 
   fetchRoles = async () => {
@@ -171,9 +171,9 @@ class Modify extends React.Component {
   }
 
   setRole = role => {
-    let body = Object.assign({}, this.state.body);
-    body.role = role
-    this.setState({body: body})
+    let request = Object.assign({}, this.state.request);
+    request.role = role
+    this.setState({request: request})
   }
 
   fetchNetworks = async () => {
@@ -195,7 +195,7 @@ class Modify extends React.Component {
         this.props.dispatch(setError( error ))
       }
     )
-    await rest.doXHR(`infoblox/${this.state.body.assetId}/networks/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.assetId}/networks/`, this.props.token)
     return r
   }
 
@@ -210,7 +210,7 @@ class Modify extends React.Component {
         this.props.dispatch(setError( error ))
       }
     )
-    await rest.doXHR(`infoblox/${this.state.body.assetId}/network-containers/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.assetId}/network-containers/`, this.props.token)
     return r
   }
 
@@ -238,16 +238,16 @@ class Modify extends React.Component {
   }
 
   setNetwork = n => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (n) {
       if (n === 'any') {
-        body.network.name = 'any'
+        request.network.name = 'any'
         delete errors.networkName
       }
       else {
-        body.network.name = n
+        request.network.name = n
         delete errors.networkName
       }
     }
@@ -256,17 +256,17 @@ class Modify extends React.Component {
       errors.networkName = 'error'
     }
 
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   addNewDn = async () => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let r
     const b = {
       "data":
         {
-          "name": body.cn,
-          "identity_group_identifier": body.dn
+          "name": request.cn,
+          "identity_group_identifier": request.dn
         }
       }
 
@@ -298,12 +298,12 @@ class Modify extends React.Component {
     const b = {
       "data":
         {
-          "identity_group_name": this.state.body.cn,
-          "identity_group_identifier": this.state.body.dn,
-          "role": this.state.body.role,
+          "identity_group_name": this.state.request.cn,
+          "identity_group_identifier": this.state.request.dn,
+          "role": this.state.request.role,
           "network": {
-              "name": this.state.body.network.name,
-              "id_asset": this.state.body.assetId
+              "name": this.state.request.network.name,
+              "id_asset": this.state.request.assetId
           }
         }
       }
@@ -373,10 +373,10 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              dn: this.state.body.dn,
-              asset: this.state.body.asset ? `${this.state.body.asset.fqdn} - ${this.state.body.asset.address}` : null,
-              role: this.state.body.role,
-              networks: this.state.body.network.name,
+              dn: this.state.request.dn,
+              asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
+              role: this.state.request.role,
+              networks: this.state.request.network.name,
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -456,7 +456,7 @@ class Modify extends React.Component {
                   }
                   onChange={n => this.setNetwork(n)}
                 >
-                  {this.state.body.role === 'admin' ?
+                  {this.state.request.role === 'admin' ?
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
                     :
                     <React.Fragment>
@@ -497,7 +497,7 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.network.name && this.state.body.assetId ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.assetId ?
                 <Button type="primary" onClick={() => this.modifyPermission()} >
                   Modify Permission
                 </Button>

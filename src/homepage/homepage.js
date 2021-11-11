@@ -9,7 +9,7 @@ import Error from '../error'
 
 import { setError } from '../_store/store.error'
 
-import List from './list'
+//import List from './list'
 import AmericanPie from './pieChart'
 import Victory from './victory'
 import Map from './maps'
@@ -35,7 +35,6 @@ class Homepage extends React.Component {
   componentDidMount() {
 
     //this.ullalla()
-    this.fetchDevices()
     //this.ullalla()
   }
 
@@ -153,36 +152,10 @@ return (
 */
 
 
-  fetchDevices = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
-      },
-      error => {
-        this.setState({loading: false})
-        this.props.dispatch(setError(error))
-      }
-    )
-    await rest.doXHR(`fortinetdb/devices/`, this.props.token)
-  }
 
-  renderCustomizedLabel = ( x ) => {
-
-    //return name
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
-
-
-
-
 
     return (
       <React.Fragment>
@@ -191,7 +164,7 @@ return (
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
           <React.Fragment>
-            { this.state.devices ?
+            { this.props.devices ?
               <React.Fragment>
 
                 <Row >
@@ -224,7 +197,7 @@ return (
                     <Row>
                       <Col span={7}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                       <Col offset={1} span={7}>
@@ -234,14 +207,14 @@ return (
                       </Col>
                       <Col offset={1} span={7}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                     </Row>
                     <Row>
                       <Col span={7}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                       <Col offset={1} span={7}>
@@ -251,7 +224,7 @@ return (
                       </Col>
                       <Col offset={1} span={7}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.state.devices}/>
+                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                     </Row>
@@ -272,8 +245,6 @@ return (
             }
           </React.Fragment>
         }
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </React.Fragment>
 
     )
@@ -287,5 +258,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors,
-  monitorsFetch: state.f5.monitorsFetch
+  monitorsFetch: state.f5.monitorsFetch,
+  devices: state.fortinet.assets
 }))(Homepage);

@@ -40,7 +40,7 @@ class Modify extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 
@@ -59,56 +59,56 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let body = Object.assign({}, this.props.obj)
-    this.setState({body: body})
+    let request = Object.assign({}, this.props.obj)
+    this.setState({request: request})
   }
 
   setInterval = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.interval = parseInt(e.target.value)
+      request.interval = parseInt(e.target.value)
       delete errors.intervalError
     }
     else {
       errors.nameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setTimeout = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.timeout = parseInt(e.target.value)
+      request.timeout = parseInt(e.target.value)
       delete errors.timeoutError
       }
       else {
         errors.timeoutError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   modifyProfile = async () => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
 
-      const body = {
+      const b = {
         "data":
           {
               "destination": "*:*",
-              "interval": this.state.body.interval,
+              "interval": this.state.request.interval,
               "manualResume": "disabled",
               "timeUntilUp": 0,
-              "timeout": this.state.body.timeout,
+              "timeout": this.state.request.timeout,
               "transparent": "disabled",
               "upInterval": 0
           }
@@ -126,7 +126,7 @@ class Modify extends React.Component {
           this.setState({loading: false, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/fastl4/${this.props.obj.name}/`, this.props.token, body )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/fastl4/${this.props.obj.name}/`, this.props.token, b )
     }
   }
 
@@ -177,8 +177,8 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              address: this.state.body.address,
-              name: this.state.body.name
+              address: this.state.request.address,
+              name: this.state.request.name
             }}
             onFinish={null}
             onFinishFailed={null}

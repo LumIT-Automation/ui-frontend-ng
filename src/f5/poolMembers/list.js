@@ -182,7 +182,7 @@ class List extends React.Component {
 
 
   enableMember = async (member) => {
-    const body = { "data": { "state": "user-up", "session":"user-enabled" } }
+    const b = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -192,11 +192,11 @@ class List extends React.Component {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
   }
 
   disableMember = async (member) => {
-    const body = {"data":{"state":"user-up", "session":"user-disabled"}}
+    const b = {"data":{"state":"user-up", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -206,11 +206,11 @@ class List extends React.Component {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
-    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
   forceOfflineMember = async (member) => {
-    const body = {"data":{"state":"user-down", "session":"user-disabled"}}
+    const b = {"data":{"state":"user-down", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -220,7 +220,7 @@ class List extends React.Component {
         this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
       }
     )
-    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
   resetError = () => {

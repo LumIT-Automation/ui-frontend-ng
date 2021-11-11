@@ -31,7 +31,7 @@ class CreateF5Service extends React.Component {
       message:'',
       membersNumber: 0,
       members: [],
-      body: {
+      request: {
         service: 'F5 - Create Service',
         source: "0.0.0.0/0",
         members: []
@@ -110,63 +110,63 @@ class CreateF5Service extends React.Component {
   }
 
   setServiceType = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.serviceType = e
+      request.serviceType = e
       delete errors.serviceTypeError
     }
     else {
       errors.serviceTypeError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setServiceName = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.serviceName = e.target.value
+      request.serviceName = e.target.value
       delete errors.serviceNameError
     }
     else {
       errors.serviceNameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setRouteDomain = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (e.toString()) {
-      body.routeDomain = e
+      request.routeDomain = e
       delete errors.routeDomainError
     }
     else {
       errors.routeDomainError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setSnat = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.snat = e
+      request.snat = e
       delete errors.snatError
     }
     else {
       errors.snatError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setDestination = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     const ipv4 = e.target.value
@@ -174,156 +174,156 @@ class CreateF5Service extends React.Component {
     const ipv4Regex = new RegExp(validIpAddressRegex);
 
     if (ipv4Regex.test(ipv4)) {
-      body.destination = ipv4
+      request.destination = ipv4
       delete errors.destinationError
     }
     else {
       errors.destinationError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setDestinationPort = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (isNaN(e.target.value)) {
       errors.destinationPortError = 'error'
     }
     else {
-      body.destinationPort = e.target.value
+      request.destinationPort = e.target.value
       delete errors.destinationPortError
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setCertificateName = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (e) {
-      body.certificateName = e
+      request.certificateName = e
       delete errors.certificateNameError
     }
     else {
       errors.certificateNameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setKeyName = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (e) {
-      body.keyName = e
+      request.keyName = e
       delete errors.keyNameError
     }
     else {
       errors.keyNameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 /*
   setDestinationPoolPort = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     if (isNaN(e.target.value)) {
       errors.destinationPoolPortError = 'error'
     }
     else {
-      body.destinationPoolPort = e.target.value
+      request.destinationPoolPort = e.target.value
       delete errors.destinationPoolPortError
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 */
   setLbMethod = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     switch (e) {
       case 'round-robin':
-        body.lbMethod = 'round-robin'
+        request.lbMethod = 'round-robin'
         delete errors.lbMethodError
         break
       case 'least-connections-member':
-        body.lbMethod = 'least-connections-member'
+        request.lbMethod = 'least-connections-member'
         delete errors.lbMethodError
         break
       case 'observed-member':
-        body.lbMethod = 'observed-member'
+        request.lbMethod = 'observed-member'
         delete errors.lbMethodError
         break
       case 'predictive-member':
-        body.lbMethod = 'predictive-member'
+        request.lbMethod = 'predictive-member'
         delete errors.lbMethodError
         break
       default:
         errors.lbMethodError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitorType = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     switch (e) {
       case 'tcp-half-open':
-        body.monitorType = 'tcp-half-open'
+        request.monitorType = 'tcp-half-open'
         delete errors.monitorTypeError
         break
       case 'http':
-        body.monitorType = 'http'
+        request.monitorType = 'http'
         delete errors.monitorTypeError
         break
 
       default:
         errors.monitorTypeError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitorSendString = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.monitorSendString = e.target.value
+      request.monitorSendString = e.target.value
       delete errors.monitorSendStringError
     }
     else {
       errors.monitorSendStringError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitorReceiveString = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.monitorReceiveString = e.target.value
+      request.monitorReceiveString = e.target.value
       delete errors.monitorReceiveStringError
     }
     else {
       errors.moonitorReceiveStringError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   oneMoreMember = () => {
     let membersNumber = this.state.membersNumber
     let members = this.state.members
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     membersNumber = membersNumber + 1
     members.push({id: membersNumber})
     delete errors.membersNumberError
-    this.setState({membersNumber: membersNumber, errors: errors, body: body})
+    this.setState({membersNumber: membersNumber, errors: errors, request: request})
   }
 
   setMemberAddress = (memberId, e) => {
@@ -396,25 +396,25 @@ class CreateF5Service extends React.Component {
 
   removeMembersId = () => {
     let list = Object.assign([], this.state.members);
-    let body = Object.assign([], this.state.body);
+    let request = Object.assign([], this.state.request);
     let newList = []
 
     list.forEach((item, i) => {
       newList.push({name: item.name, address: item.address, port: item.port})
     })
 
-    body.members = newList
+    request.members = newList
 
-    if (this.state.body.serviceType === 'L4') {
-      this.setState({body: body}, () => this.createL4Service())
-    } else if (this.state.body.serviceType === 'L7') {
-      this.setState({body: body}, () => this.createL7Service())
+    if (this.state.request.serviceType === 'L4') {
+      this.setState({request: request}, () => this.createL4Service())
+    } else if (this.state.request.serviceType === 'L7') {
+      this.setState({request: request}, () => this.createL7Service())
     }
   }
 
 
   createL4Service = async () => {
-    let serviceName = this.state.body.serviceName
+    let serviceName = this.state.request.serviceName
 
     this.setState({message: null});
 
@@ -422,10 +422,10 @@ class CreateF5Service extends React.Component {
       "data": {
         "virtualServer": {
           "name": `${serviceName}`,
-          "type": this.state.body.serviceType,
-          "snat": this.state.body.snat,
-          "routeDomainId": this.state.body.routeDomain,
-          "destination": `${this.state.body.destination}:${this.state.body.destinationPort}`,
+          "type": this.state.request.serviceType,
+          "snat": this.state.request.snat,
+          "routeDomainId": this.state.request.routeDomain,
+          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
           "mask": '255.255.255.255',
           "source": '0.0.0.0/0'
         },
@@ -438,12 +438,12 @@ class CreateF5Service extends React.Component {
         ],
         "pool": {
             "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.body.lbMethod,
-            "nodes": this.state.body.members
+            "loadBalancingMode": this.state.request.lbMethod,
+            "nodes": this.state.request.members
         },
         "monitor": {
-            "name": `${this.state.body.monitorType}_${serviceName}`,
-            "type": this.state.body.monitorType
+            "name": `${this.state.request.monitorType}_${serviceName}`,
+            "type": this.state.request.monitorType
         }
       }
     }
@@ -467,18 +467,18 @@ class CreateF5Service extends React.Component {
   }
 
   createL7Service = async () => {
-    let serviceName = this.state.body.serviceName
+    let serviceName = this.state.request.serviceName
     this.setState({message: null});
 
     const b = {
       "data": {
         "virtualServer": {
           "name": `${serviceName}`,
-          "type": this.state.body.serviceType,
-          "snat": this.state.body.snat,
-          "destination": `${this.state.body.destination}:${this.state.body.destinationPort}`,
+          "type": this.state.request.serviceType,
+          "snat": this.state.request.snat,
+          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
           "mask": '255.255.255.255',
-          "source": this.state.body.source
+          "source": this.state.request.source
         },
         "profiles": [
             {
@@ -501,22 +501,22 @@ class CreateF5Service extends React.Component {
             {
                 "name": `client-ssl_${serviceName}`,
                 "type": "client-ssl",
-                "cert": this.state.body.certificateName,
-                "key": this.state.body.keyName,
+                "cert": this.state.request.certificateName,
+                "key": this.state.request.keyName,
                 "chain": "",
                 "context": "clientside"
             }
         ],
         "pool": {
             "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.body.lbMethod,
-            "nodes": this.state.body.members
+            "loadBalancingMode": this.state.request.lbMethod,
+            "nodes": this.state.request.members
         },
         "monitor": {
-            "name": `${this.state.body.monitorType}_${serviceName}`,
-            "type": this.state.body.monitorType,
-            "send": `${this.state.body.monitorSendString}`,
-            "recv": `${this.state.body.monitorReceiveString}`
+            "name": `${this.state.request.monitorType}_${serviceName}`,
+            "type": this.state.request.monitorType,
+            "send": `${this.state.request.monitorSendString}`,
+            "recv": `${this.state.request.monitorReceiveString}`
         }
       }
     }
@@ -554,7 +554,7 @@ class CreateF5Service extends React.Component {
     this.setState({
       visible: false,
       response: false,
-      body: {},
+      request: {},
       errors: []
     })
   }
@@ -623,7 +623,7 @@ class CreateF5Service extends React.Component {
                   <Input id='name' onChange={e => this.setServiceName(e)} />
                 </Form.Item>
 
-                { this.state.body.serviceName ?
+                { this.state.request.serviceName ?
                 <React.Fragment>
 
                 <Form.Item
@@ -675,7 +675,7 @@ class CreateF5Service extends React.Component {
                   <Input id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
                 </Form.Item>
 
-                { this.state.body.serviceType === 'L7' ?
+                { this.state.request.serviceType === 'L7' ?
                   <Form.Item
                     label="Certificate"
                     name='certificate'
@@ -695,7 +695,7 @@ class CreateF5Service extends React.Component {
                   null
                 }
 
-                { this.state.body.serviceType === 'L7' ?
+                { this.state.request.serviceType === 'L7' ?
                   <Form.Item
                     label="Key"
                     name='key'
@@ -743,7 +743,7 @@ class CreateF5Service extends React.Component {
                   </Select>
                 </Form.Item>
 
-                { this.state.body.monitorType === 'http' ?
+                { this.state.request.monitorType === 'http' ?
                   <Form.Item
                     label="Monitor send string"
                     name='monitorSendString'
@@ -757,7 +757,7 @@ class CreateF5Service extends React.Component {
                   null
                 }
 
-                { this.state.body.monitorType === 'http' ?
+                { this.state.request.monitorType === 'http' ?
                   <Form.Item
                     label="Monitor receive string"
                     name='monitorReceiveString'

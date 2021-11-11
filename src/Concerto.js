@@ -88,6 +88,7 @@ class Concerto extends Component {
   logout = async () => {
     await this.deleteCookies()
     this.props.dispatch(logout())
+    document.location.href = '/'
   }
 
 

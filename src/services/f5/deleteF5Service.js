@@ -28,7 +28,7 @@ class DeleteF5Service extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: { }
+      request: { }
     };
   }
 
@@ -50,21 +50,21 @@ class DeleteF5Service extends React.Component {
   }
 
   setServiceName = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.serviceName = e.target.value
+      request.serviceName = e.target.value
       delete errors.serviceNameError
     }
     else {
       errors.serviceNameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   deleteService = async () => {
-    let serviceName = this.state.body.serviceName
+    let serviceName = this.state.request.serviceName
     this.setState({message: null})
 
     this.setState({loading: true})
@@ -152,7 +152,7 @@ class DeleteF5Service extends React.Component {
           >
             <Input id='name' onChange={e => this.setServiceName(e)} />
           </Form.Item>
-          { this.state.body.serviceName ?
+          { this.state.request.serviceName ?
             <Form.Item
               wrapperCol={ {offset: 8 }}
               name="button"

@@ -20,7 +20,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    this.isAuthenticated()
+    this.authenticate()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -34,7 +34,8 @@ class App extends Component {
   }
 
 
-  isAuthenticated = () => {
+  authenticate = () => {
+    console.log('isAuthenticated')
     return new Promise( (resolve, reject) => {
       let token, username;
       try {

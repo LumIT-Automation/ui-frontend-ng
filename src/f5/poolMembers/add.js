@@ -92,7 +92,7 @@ class Add extends React.Component {
     else {
       this.setState({message: null});
 
-      const body = {
+      const b = {
         "data":
           {
             "name": `${this.state.name}:${this.state.port}`,
@@ -121,7 +121,7 @@ class Add extends React.Component {
           this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
     }
   }
 

@@ -54,7 +54,7 @@ class ModalCustom extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 

@@ -34,7 +34,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidMount() {
-     
+
     let requests = Object.assign([], this.state.requests)
     requests.push({id:1, macAddress: '00:00:00:00:00:00'})
     this.setState({requests: requests})
@@ -45,7 +45,7 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-     
+
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = Object.assign([], this.state.requests)
@@ -373,20 +373,20 @@ class RequestIp extends React.Component {
 
     for await (const req of this.state.requests) {
       try {
-        const resp = await this.request(req)
+        const resp = await this.nextAvailableIp(req)
         let res = await this.updateResponse(resp, req.id)
-         
+
         response.push(res)
       } catch(resp) {
         return
       }
     }
-     
+
 
     this.setState({response: response, loading: false})
   }
 
-  request = async r => {
+  nextAvailableIp = async r => {
     let re
     let b
     this.setState({message: null})
@@ -460,20 +460,20 @@ class RequestIp extends React.Component {
   }
 
   updateResponse = async (resp, id) => {
-     
+
     if (resp.data && resp.data.length > 0) {
       let ips = []
 
       resp.data.forEach(result => {
-         
+
         let str = result.result
         let st = str.split(':')
         let s = st[1]
         let ip = s.split('/')
         ip = ip[0]
-         
+
         ips.push({ip: ip})
-         
+
       })
 
       let req = this.state.requests.find( r => r.id === id )

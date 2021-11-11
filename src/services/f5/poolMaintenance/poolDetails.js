@@ -45,7 +45,7 @@ render() renders table of pool members.
 
 ENABLE, DISABLE, FORCE OFFLINE
 ENABLE, DISABLE and FORCE OFFLINE buttons call /backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/
-with method PATCH and in the body the required state, for example for enable { "data": { "state": "user-up", "session":"user-enabled" } }
+with method PATCH and in the request the required state, for example for enable { "data": { "state": "user-up", "session":"user-enabled" } }
 on response they call fetchPoolMembers() after 3 seconds in order to have the new member's state. Then componentDidUpdate() does the rest of the refreshing work.
 
 
@@ -206,7 +206,7 @@ class PoolDetails extends React.Component {
 
   //ENABLE, DISABLE, FORCE OFFLINE
   enableMember = async (member) => {
-    const body = { "data": { "state": "user-up", "session":"user-enabled" } }
+    const b = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -216,11 +216,11 @@ class PoolDetails extends React.Component {
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
   }
 
   disableMember = async (member) => {
-    const body = {"data":{"state":"user-up", "session":"user-disabled"}}
+    const b = {"data":{"state":"user-up", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -230,11 +230,11 @@ class PoolDetails extends React.Component {
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
   forceOfflineMember = async (member) => {
-    const body = {"data":{"state":"user-down", "session":"user-disabled"}}
+    const b = {"data":{"state":"user-down", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -244,7 +244,7 @@ class PoolDetails extends React.Component {
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, body )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
 

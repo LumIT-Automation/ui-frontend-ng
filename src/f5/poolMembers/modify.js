@@ -40,7 +40,7 @@ class Modify extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 
@@ -59,80 +59,80 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let body = Object.assign({}, this.props.obj)
-    this.setState({body: body})
+    let request = Object.assign({}, this.props.obj)
+    this.setState({request: request})
   }
 
   genericValidator = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
 
       case 'tlsverify':
         if (e.target.value) {
-          body.tlsverify = e.target.value
+          request.tlsverify = e.target.value
           delete errors.tlsverifyError
         }
         else {
           errors.tlsverifyError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
       case 'datacenter':
         if (e.target.value) {
-        body.datacenter = e.target.value
+        request.datacenter = e.target.value
           delete errors.datacenterError
         }
         else {
           errors.datacenterError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
       case 'environment':
         if (e.target.value) {
-          body.environment = e.target.value
+          request.environment = e.target.value
           delete errors.environmentError
         }
         else {
           errors.environmentError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
       case 'position':
         if (e.target.value) {
-          body.position = e.target.value
+          request.position = e.target.value
           delete errors.positionError
         }
         else {
           errors.positionError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
       case 'username':
         if (e.target.value) {
-          body.username = e.target.value
+          request.username = e.target.value
           delete errors.usernameError
         }
         else {
           errors.usernameError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
       case 'password':
         if (e.target.value) {
-          body.password = e.target.value
+          request.password = e.target.value
           delete errors.passwordError
         }
         else {
           errors.passwordError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
 
 
@@ -143,7 +143,7 @@ class Modify extends React.Component {
 
   ipHostnameValidator = e => {
 
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
@@ -154,13 +154,13 @@ class Modify extends React.Component {
         const ipv4Regex = new RegExp(validIpAddressRegex);
 
         if (ipv4Regex.test(ipv4)) {
-          body.address = ipv4
+          request.address = ipv4
           delete errors.addressError
         }
         else {
           errors.addressError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       case 'fqdn':
@@ -169,13 +169,13 @@ class Modify extends React.Component {
         const fqdnRegex = new RegExp(validHostnameRegex);
 
         if (fqdnRegex.test(fqdn)) {
-          body.fqdn = fqdn
+          request.fqdn = fqdn
           delete errors.fqdnError
         }
         else {
           errors.fqdnError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       default:
@@ -187,62 +187,62 @@ class Modify extends React.Component {
   }
 
   setLbMethod = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     switch (e) {
       case 'round-robin':
-        body.lbMethod = 'round-robin'
+        request.lbMethod = 'round-robin'
         delete errors.lbMethodError
         break
       case 'least-connections-member':
-        body.lbMethod = 'least-connections-member'
+        request.lbMethod = 'least-connections-member'
         delete errors.lbMethodError
         break
       case 'observed-member':
-        body.lbMethod = 'observed-member'
+        request.lbMethod = 'observed-member'
         delete errors.lbMethodError
         break
       case 'predictive-member':
-        body.lbMethod = 'predictive-member'
+        request.lbMethod = 'predictive-member'
         delete errors.lbMethodError
         break
       default:
         errors.lbMethodError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitor = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.monitor = e
+      request.monitor = e
       delete errors.monitorError
       }
       else {
         errors.moitorError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   modifyPool = async () => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
 
-      const body = {
+      const b = {
         "data":
           {
-            "monitor": this.state.body.monitor,
-            "loadBalancingMode": this.state.body.lbMethod
+            "monitor": this.state.request.monitor,
+            "loadBalancingMode": this.state.request.lbMethod
           }
         }
 
@@ -257,7 +257,7 @@ class Modify extends React.Component {
           this.setState({loading: false, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, body )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, b )
     }
   }
 
@@ -431,8 +431,8 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              lbMethod: this.state.body.lbMethod,
-              monitor: this.state.body.monitor
+              lbMethod: this.state.request.lbMethod,
+              monitor: this.state.request.monitor
             }}
             onFinish={null}
             onFinishFailed={null}

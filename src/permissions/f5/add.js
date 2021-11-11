@@ -36,7 +36,7 @@ class Add extends React.Component {
       errors: {},
       message:'',
       groupToAdd: false,
-      body: {}
+      request: {}
     };
   }
 
@@ -83,7 +83,7 @@ class Add extends React.Component {
   }
 
   selectDn = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
     let dn
 
@@ -97,11 +97,11 @@ class Add extends React.Component {
 
       if (this.state.items.includes(dn)) {
         this.setState({groupToAdd: false})
-        body.dn = dn
+        request.dn = dn
         let cn = this.props.identityGroups.find( ig => {
           return ig.identity_group_identifier === dn
         })
-        body.cn = cn.name
+        request.cn = cn.name
         delete errors.dnError
       }
       else {
@@ -117,8 +117,8 @@ class Add extends React.Component {
           }
         })
 
-        body.dn = dn
-        body.cn = cns[0]
+        request.dn = dn
+        request.cn = cns[0]
         delete errors.dnError
       }
 
@@ -126,13 +126,13 @@ class Add extends React.Component {
     else {
       errors.dnError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setAsset = id => {
-    let body = Object.assign({}, this.state.body)
-    body.assetId = id
-    this.setState({body: body}, () => this.fetchPartitions())
+    let request = Object.assign({}, this.state.request)
+    request.assetId = id
+    this.setState({request: request}, () => this.fetchPartitions())
   }
 
   fetchRoles = async () => {
@@ -163,9 +163,9 @@ class Add extends React.Component {
   }
 
   setRole = role => {
-    let body = Object.assign({}, this.state.body);
-    body.role = role
-    this.setState({body: body})
+    let request = Object.assign({}, this.state.request);
+    request.role = role
+    this.setState({request: request})
   }
 
   fetchPartitions = async (id) => {
@@ -178,24 +178,24 @@ class Add extends React.Component {
         this.props.dispatch(setPartitionsError(error))
       }
     )
-    await rest.doXHR(`f5/${this.state.body.assetId}/partitions/`, this.props.token)
+    await rest.doXHR(`f5/${this.state.request.assetId}/partitions/`, this.props.token)
   }
 
   setPartition = partition => {
     console.log(partition)
-    let body = Object.assign({}, this.state.body);
-    body.partition = partition
-    this.setState({body: body})
+    let request = Object.assign({}, this.state.request);
+    request.partition = partition
+    this.setState({request: request})
   }
 
   addNewDn = async () => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let r
     const b = {
       "data":
         {
-          "name": body.cn,
-          "identity_group_identifier": body.dn
+          "name": request.cn,
+          "identity_group_identifier": request.dn
         }
       }
 
@@ -230,12 +230,12 @@ class Add extends React.Component {
     const b = {
       "data":
         {
-          "identity_group_name": this.state.body.cn,
-          "identity_group_identifier": this.state.body.dn,
-          "role": this.state.body.role,
+          "identity_group_name": this.state.request.cn,
+          "identity_group_identifier": this.state.request.dn,
+          "role": this.state.request.role,
           "partition": {
-            "name": this.state.body.partition,
-            "id_asset": this.state.body.assetId
+            "name": this.state.request.partition,
+            "id_asset": this.state.request.assetId
           }
         }
       }
@@ -269,7 +269,7 @@ class Add extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      body: {},
+      request: {},
       partitions: []
     })
   }
@@ -304,9 +304,9 @@ class Add extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              dn: this.state.body.dn,
-              asset: this.state.body.assetId,
-              role: this.state.body.role
+              dn: this.state.request.dn,
+              asset: this.state.request.assetId,
+              role: this.state.request.role
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -374,7 +374,7 @@ class Add extends React.Component {
               <React.Fragment>
               { (this.state.partitions && this.state.partitions.length > 0) ?
                 <Select
-                  defaultValue={this.state.body.partition}
+                  defaultValue={this.state.request.partition}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -385,7 +385,7 @@ class Add extends React.Component {
                   }
                   onChange={n => this.setPartition(n)}
                 >
-                  {this.state.body.role === 'admin' ?
+                  {this.state.request.role === 'admin' ?
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
                   :
                     <React.Fragment>
@@ -425,7 +425,7 @@ class Add extends React.Component {
                 name="button"
                 key="button"
               >
-                { this.state.body.cn && this.state.body.dn && this.state.body.role && this.state.body.partition && this.state.body.assetId ?
+                { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition && this.state.request.assetId ?
                   <Button type="primary" onClick={() => this.addPermission()} >
                     Add Permission
                   </Button>

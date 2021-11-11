@@ -15,6 +15,7 @@ class Rest {
     if (resource) {
       if (resource === "login") {
         if (this.method === "POST") {
+          console.log(payload)
           try {
             const response = await fetch(CONFIG.AUTH_URL, {
               method: 'POST',
@@ -145,8 +146,8 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                  
-                  
+
+
                 this.onError(
                   {
                     status: response.status,
@@ -195,7 +196,7 @@ class Rest {
             else {
               try {
                 //e.g. 400, get non existent partitions,
-                
+
                 json = await response.json();
                 //
                 this.onError(
@@ -210,8 +211,8 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                  
-                  
+
+
                 this.onError(
                   {
                     status: response.status,
@@ -269,7 +270,7 @@ class Rest {
               }
               catch {
                 //e.g. 404, /../partitionsccc
-                
+
                 this.onError(
                   {
                     status: response.status,

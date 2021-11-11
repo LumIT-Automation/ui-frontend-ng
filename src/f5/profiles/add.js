@@ -39,7 +39,7 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 
@@ -61,47 +61,47 @@ class Add extends React.Component {
   }
 
   setProfileName = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.name = e.target.value
+      request.name = e.target.value
       delete errors.nameError
     }
     else {
       errors.nameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setProfileType = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.profileType = e
+      request.profileType = e
       delete errors.profileTypeError
       }
       else {
         errors.profileTypeError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
 
   addProfile = async () => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
-      const body = {
+      const b = {
         "data":
           {
-            "name": this.state.body.name,
+            "name": this.state.request.name,
           }
         }
 
@@ -117,7 +117,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.state.body.profileType}/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.state.request.profileType}/`, this.props.token, b)
     }
   }
 

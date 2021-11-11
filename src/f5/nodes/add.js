@@ -36,7 +36,7 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {}
+      request: {}
     };
   }
 
@@ -58,20 +58,20 @@ class Add extends React.Component {
   }
 
   genericValidator = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
 
       case 'name':
         if (e.target.value) {
-          body.name = e.target.value
+          request.name = e.target.value
           delete errors.nameError
         }
         else {
           errors.nameError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
       default:
 
@@ -80,7 +80,7 @@ class Add extends React.Component {
 
   ipHostnameValidator = e => {
 
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
@@ -91,13 +91,13 @@ class Add extends React.Component {
         const ipv4Regex = new RegExp(validIpAddressRegex);
 
         if (ipv4Regex.test(ipv4)) {
-          body.address = ipv4
+          request.address = ipv4
           delete errors.addressError
         }
         else {
           errors.addressError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       case 'fqdn':
@@ -106,13 +106,13 @@ class Add extends React.Component {
         const fqdnRegex = new RegExp(validHostnameRegex);
 
         if (fqdnRegex.test(fqdn)) {
-          body.fqdn = fqdn
+          request.fqdn = fqdn
           delete errors.fqdnError
         }
         else {
           errors.fqdnError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       default:
@@ -121,12 +121,12 @@ class Add extends React.Component {
   }
 
   setStatus = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.session = e[0]
-      body.state = e[1]
+      request.session = e[0]
+      request.state = e[1]
       delete errors.sessionError
       delete errors.stateError
       }
@@ -134,25 +134,25 @@ class Add extends React.Component {
         errors.sessionError = 'error'
         errors.stateError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   addNode = async () => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
-      const body = {
+      const b = {
         "data":
           {
-            "address": this.state.body.address,
-            "name": this.state.body.name,
-            "session": this.state.body.session,
-            "state": this.state.body.state
+            "address": this.state.request.address,
+            "name": this.state.request.name,
+            "session": this.state.request.session,
+            "state": this.state.request.state
           }
         }
 
@@ -168,7 +168,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, b)
     }
   }
 

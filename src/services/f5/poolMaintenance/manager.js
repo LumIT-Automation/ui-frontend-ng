@@ -86,7 +86,7 @@ class Manager extends React.Component {
     this.setState({
       visible: false,
       response: false,
-      body: {},
+      request: {},
       errors: []
     })
   }

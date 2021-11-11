@@ -40,7 +40,7 @@ class Add extends React.Component {
       message:'',
       nodesNumber: 0,
       nodes: [],
-      body: {}
+      request: {}
     };
   }
 
@@ -62,20 +62,20 @@ class Add extends React.Component {
   }
 
   nameSetValidator = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
 
       case 'name':
         if (e.target.value) {
-          body.name = e.target.value
+          request.name = e.target.value
           delete errors.nameError
         }
         else {
           errors.nameError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break
       default:
 
@@ -84,7 +84,7 @@ class Add extends React.Component {
 
   ipHostnameValidator = e => {
 
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     switch(e.target.id) {
@@ -95,13 +95,13 @@ class Add extends React.Component {
         const ipv4Regex = new RegExp(validIpAddressRegex);
 
         if (ipv4Regex.test(ipv4)) {
-          body.address = ipv4
+          request.address = ipv4
           delete errors.addressError
         }
         else {
           errors.addressError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       case 'fqdn':
@@ -110,13 +110,13 @@ class Add extends React.Component {
         const fqdnRegex = new RegExp(validHostnameRegex);
 
         if (fqdnRegex.test(fqdn)) {
-          body.fqdn = fqdn
+          request.fqdn = fqdn
           delete errors.fqdnError
         }
         else {
           errors.fqdnError = 'error'
         }
-        this.setState({body: body, errors: errors})
+        this.setState({request: request, errors: errors})
         break;
 
       default:
@@ -125,56 +125,56 @@ class Add extends React.Component {
   }
 
   setLbMethod = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     switch (e) {
       case 'round-robin':
-        body.lbMethod = 'round-robin'
+        request.lbMethod = 'round-robin'
         delete errors.lbMethodError
         break
       case 'least-connections-member':
-        body.lbMethod = 'least-connections-member'
+        request.lbMethod = 'least-connections-member'
         delete errors.lbMethodError
         break
       case 'observed-member':
-        body.lbMethod = 'observed-member'
+        request.lbMethod = 'observed-member'
         delete errors.lbMethodError
         break
       case 'predictive-member':
-        body.lbMethod = 'predictive-member'
+        request.lbMethod = 'predictive-member'
         delete errors.lbMethodError
         break
       default:
         errors.lbMethodError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitor = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.monitor = e
+      request.monitor = e
       delete errors.monitorError
       }
       else {
         errors.moitorError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   oneMoreNode = () => {
     let nodesNumber = this.state.nodesNumber
     let nodes = this.state.nodes
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     let errors = Object.assign({}, this.state.errors)
 
     nodesNumber = nodesNumber + 1
     nodes.push({id: nodesNumber})
     delete errors.nodesNumberError
-    this.setState({nodesNumber: nodesNumber, errors: errors, body: body})
+    this.setState({nodesNumber: nodesNumber, errors: errors, request: request})
   }
 
   removeNode = (nodeId) => {
@@ -231,20 +231,20 @@ class Add extends React.Component {
   }
 
   addPool = async () => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
-      const body = {
+      const b = {
         "data":
         {
-            "name": this.state.body.name,
-            "monitor": this.state.body.monitor,
-            "loadBalancingMode": this.state.body.lbMethod
+            "name": this.state.request.name,
+            "monitor": this.state.request.monitor,
+            "loadBalancingMode": this.state.request.lbMethod
         }
       }
 
@@ -259,14 +259,14 @@ class Add extends React.Component {
           this.setState({loading: false, error: error, response: false}, () => this.props.dispatch(setPoolsFetch(true)))
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token, b)
     }
   }
 
   addPoolMembers = async () => {
     this.state.nodes.forEach(m => {
       this.setState({message: null});
-      const body = {
+      const b = {
         "data":
           {
             "name": `${m.name}:${m.port}`,
@@ -286,13 +286,13 @@ class Add extends React.Component {
           }
       }
       this.setState({loading: true})
-      this.addPoolMember(body)
+      this.addPoolMember(request)
     })
 
     this.response()
   }
 
-  addPoolMember = async (body) => {
+  addPoolMember = async (request) => {
       let rest = new Rest(
         "POST",
         resp => {
@@ -302,7 +302,7 @@ class Add extends React.Component {
           this.setState({loading: false, error: error, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.body.name}/members/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.request.name}/members/`, this.props.token, b)
   }
 
   response = () => {

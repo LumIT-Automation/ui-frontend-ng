@@ -36,7 +36,7 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
-      body: {},
+      request: {},
       monitorFullList: []
     };
   }
@@ -59,78 +59,78 @@ class Add extends React.Component {
   }
 
   setMonitorName = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.name = e.target.value
+      request.name = e.target.value
       delete errors.nameError
     }
     else {
       errors.nameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setMonitorType = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e) {
-      body.monitorType = e
+      request.monitorType = e
       delete errors.monitorTypeError
       }
       else {
         errors.monitorTypeError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   setInterval = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.interval = parseInt(e.target.value)
+      request.interval = parseInt(e.target.value)
       delete errors.intervalError
     }
     else {
       errors.nameError = 'error'
     }
-    this.setState({body: body, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
   setTimeout = e => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
     let errors = Object.assign({}, this.state.errors);
 
     if (e.target.value) {
-      body.timeout = parseInt(e.target.value)
+      request.timeout = parseInt(e.target.value)
       delete errors.timeoutError
       }
       else {
         errors.timeoutError = 'error'
       }
-      this.setState({body: body, errors: errors})
+      this.setState({request: request, errors: errors})
   }
 
   addMonitor = async () => {
-    let body = Object.assign({}, this.state.body);
+    let request = Object.assign({}, this.state.request);
 
-    if (isEmpty(body)){
+    if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
     }
 
     else {
       this.setState({message: null});
-      const body = {
+      const b = {
         "data":
           {
-            "address": this.state.body.address,
-            "name": this.state.body.name,
-            "state": this.state.body.monitorType,
-            "interval": this.state.body.interval,
-            "timeout": this.state.body.timeout
+            "address": this.state.request.address,
+            "name": this.state.request.name,
+            "state": this.state.request.monitorType,
+            "interval": this.state.request.interval,
+            "timeout": this.state.request.timeout
           }
         }
 
@@ -145,7 +145,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: false, error: error})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.body.monitorType}/`, this.props.token, body)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.request.monitorType}/`, this.props.token, b)
     }
   }
 

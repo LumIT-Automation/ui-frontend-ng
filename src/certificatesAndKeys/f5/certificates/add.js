@@ -20,7 +20,7 @@ class Add extends React.Component {
   constructor(props) {
     super(props)
       this.state = {
-        body: {}
+        request: {}
       };
     }
 
@@ -42,35 +42,35 @@ class Add extends React.Component {
   }
 
   setFilename = e => {
-    let body = Object.assign({}, this.state.body)
-    body.fileName = e.target.value
-    this.setState({body: body})
+    let request = Object.assign({}, this.state.request)
+    request.fileName = e.target.value
+    this.setState({request: request})
   }
 
   setSourceType = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
     if (e.target.value === 'pasteText') {
-      body.sourceValue = e.target.value
+      request.sourceValue = e.target.value
     } else if (e.target.value === 'upload') {
-      body.sourceValue = e.target.value
+      request.sourceValue = e.target.value
     }
-    this.setState({body: body})
+    this.setState({request: request})
   }
 
   setText = event => {
-    let body = Object.assign({}, this.state.body)
-    body.text = event.target.value
-    this.setState({body: body})
+    let request = Object.assign({}, this.state.request)
+    request.text = event.target.value
+    this.setState({request: request})
   }
 
   uploadFile = event => {
-    let body = Object.assign({}, this.state.body)
-    body.selectedFile = event.target.files[0]
-    this.setState({body: body}, () => this.readSingleFile(event))
+    let request = Object.assign({}, this.state.request)
+    request.selectedFile = event.target.files[0]
+    this.setState({request: request}, () => this.readSingleFile(event))
   }
 
   readSingleFile = e => {
-    let body = Object.assign({}, this.state.body)
+    let request = Object.assign({}, this.state.request)
 
     var file = e.target.files[0];
     if (!file) {
@@ -79,17 +79,17 @@ class Add extends React.Component {
     var reader = new FileReader();
     reader.onload = (e) => {
       var contents = e.target.result;
-      body.text = contents
+      request.text = contents
     };
     reader.readAsText(file);
-    this.setState({body: body})
+    this.setState({request: request})
   }
 
   installCertificate =  async () => {
-    let certificateName = `${this.state.body.fileName}`
-    let contentBase64 = btoa(this.state.body.text)
+    let certificateName = `${this.state.request.fileName}`
+    let contentBase64 = btoa(this.state.request.text)
 
-    let body = {
+    let request = {
       "certificate": {
         "name": certificateName,
         "content_base64": contentBase64
@@ -108,23 +108,23 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token, body )
+    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token, b )
   }
 
   fileSummary = () => {
-    if (this.state.body.selectedFile) {
+    if (this.state.request.selectedFile) {
       return (
         <Form.Item label="File Details">
           <Card>
-              <p>Name: {this.state.body.selectedFile.name}</p>
-              <p>Type: {this.state.body.selectedFile.type}</p>
-              <p>Size: {this.state.body.selectedFile.size} Bytes</p>
+              <p>Name: {this.state.request.selectedFile.name}</p>
+              <p>Type: {this.state.request.selectedFile.type}</p>
+              <p>Size: {this.state.request.selectedFile.size} Bytes</p>
           </Card>
         </Form.Item>
 
       );
     } else {
-        if (this.state.body.sourceValue === "upload") {
+        if (this.state.request.sourceValue === "upload") {
           return (
             <Form.Item label="File Details" >
               <Card>
@@ -197,9 +197,9 @@ class Add extends React.Component {
                     <Input onChange={e => this.setFilename(e)}/>
                   </Form.Item>
 
-                { (this.state.body.fileName) ?
+                { (this.state.request.fileName) ?
                   <Form.Item label="File source">
-                  <Radio.Group onChange={e => this.setSourceType(e)} value={this.state.body.sourceValue}>
+                  <Radio.Group onChange={e => this.setSourceType(e)} value={this.state.request.sourceValue}>
                     <Radio value={"upload"}>Upload</Radio>
                     <Radio value={"pasteText"}>Paste text</Radio>
                   </Radio.Group>
@@ -208,7 +208,7 @@ class Add extends React.Component {
                   null
                 }
 
-                {this.state.body.sourceValue === "upload" ?
+                {this.state.request.sourceValue === "upload" ?
                   <Form.Item label="Upload File">
                     <Input type="file" onChange={this.uploadFile} />
                   </Form.Item>
@@ -216,7 +216,7 @@ class Add extends React.Component {
                   null
                 }
 
-                {this.state.body.sourceValue === "pasteText" ?
+                {this.state.request.sourceValue === "pasteText" ?
                   <Form.Item label="Paste Text">
                     <TextArea rows={4} onChange={e => this.setText(e)} />
                   </Form.Item>
@@ -228,7 +228,7 @@ class Add extends React.Component {
 
                 { (this.props.asset) ?
                   <Form.Item wrapperCol={ {offset: 8, span: 16 }}>
-                    <Button type="primary" onClick={this.installCertificate}>Install {this.state.body.fileType}</Button>
+                    <Button type="primary" onClick={this.installCertificate}>Install {this.state.request.fileType}</Button>
                   </Form.Item>
                 :
                   <Form.Item wrapperCol={ {offset: 8, span: 8 }}>

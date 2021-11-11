@@ -157,7 +157,7 @@ class ModifyIp extends React.Component {
     else {
       this.setState({message: null});
 
-      const body = {
+      const b = {
         "data":
           {
             "mac": `${this.state.macAddress}`,
@@ -179,7 +179,7 @@ class ModifyIp extends React.Component {
             this.setState({loading: false, response: false, error: error})
           }
         )
-        await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, body )
+        await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, b )
       }
     }
 

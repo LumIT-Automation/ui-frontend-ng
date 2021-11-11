@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Rest from "../../_helpers/Rest"
+import Error from '../../error'
 
-import { setError } from '../_store/store.error'
+import { setError } from '../../_store/store.error'
 
 import { Input, Button, Space, Modal, Spin, Table } from 'antd'
 
@@ -146,7 +146,7 @@ class Details extends React.Component {
   modifyExtraData = async e => {
     this.setState({extraLoading: true})
     if (e.target && e.target.value) {
-      const body = {
+      const b = {
         "data": {
           "extra_data": e.target.value
         }
@@ -161,7 +161,7 @@ class Details extends React.Component {
           this.setState({extraLoading: false, response: false, error: error})
         }
       )
-      await rest.doXHR(`/fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token, body )
+      await rest.doXHR(`/fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token, b )
     }
   }
 
