@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from "../_helpers/Rest"
+import Error from '../error'
 
-import { setError } from '../../_store/store.error'
+import { setError } from '../_store/store.error'
 
 import { Input, Button, Space, Modal, Spin, Table } from 'antd'
 

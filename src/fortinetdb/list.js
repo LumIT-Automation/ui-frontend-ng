@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+import Error from '../error'
 
 import Details from './details'
 
@@ -400,8 +400,8 @@ class List extends React.Component {
       <React.Fragment>
         <Table
           columns={columns}
-          dataSource={this.props.assets}
-          scroll={{ x: 'auto', y: 570}}
+          dataSource={this.props.devices}
+          scroll={{ x: 'auto', y: 650}}
           bordered
           rowKey="SERIALE"
           //pagination={false}
@@ -418,5 +418,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations.f5,
-  assets: state.fortinet.assets,
+  devices: state.fortinetdb.devices,
 }))(List);

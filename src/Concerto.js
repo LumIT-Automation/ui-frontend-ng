@@ -14,6 +14,7 @@ import { UserOutlined } from '@ant-design/icons';
 import CustomSider from './sider/sider'
 
 import Homepage from './homepage/homepage'
+import Devices from './fortinetdb/devices'
 import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
@@ -134,10 +135,16 @@ class Concerto extends Component {
               >
                 <Switch>
                   <Route exact path='/' component={Homepage}/>
+
+                    <Route path='/devices/' component={Devices}/>
+                    <Route path='/projects/' component={Devices}/>
+                    <Route path='/ddoses/' component={Devices}/>
+
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
                     <Route path='/infoblox/' component={Infoblox}/>
                     : null
                   }
+
                   { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
                     <Route path='/f5/' component={F5}/>
                     : null

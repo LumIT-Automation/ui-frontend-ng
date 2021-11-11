@@ -4,11 +4,9 @@ import { Tabs, Space, Spin } from 'antd';
 
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
-import Fortinet from './fortinet/manager'
 
 import { setAssetsFetch as f5AssetsRefresh } from '../_store/store.f5'
 import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblox'
-import { setAssetsFetch as fortinetAssetsRefresh } from '../_store/store.fortinet'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -49,10 +47,6 @@ class Assets extends React.Component {
     this.props.dispatch(infobloxAssetsRefresh(true))
   }
 
-  fortinetAssetsRefresh = () => {
-    this.props.dispatch(fortinetAssetsRefresh(true))
-  }
-
 
   render() {
     return (
@@ -91,22 +85,7 @@ class Assets extends React.Component {
               null
             }
 
-
-              <React.Fragment>
-                {this.props.fortinetLoading ?
-                  <TabPane key="Infoblox" tab="Infoblox">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="fortinet" tab=<span>Fortinet <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fortinetAssetsRefresh()}/></span>>
-                    <Fortinet/>
-                  </TabPane>
-                }
-              </React.Fragment>
-
-
           </Tabs>
-
 
         </Space>
       </React.Fragment>
@@ -120,9 +99,7 @@ export default connect((state) => ({
 
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
-  fortinetAuth: state.authorizations.fortinet,
 
   f5Loading: state.f5.assetsLoading,
   infobloxLoading: state.infoblox.assetsLoading,
-  fortinetLoading: state.fortinet.assetsLoading
 }))(Assets);

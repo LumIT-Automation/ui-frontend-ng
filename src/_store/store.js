@@ -7,7 +7,7 @@ import permissionsReducer from './store.permissions'
 
 import f5Reducer from './store.f5'
 import infobloxReducer from './store.infoblox'
-import fortinetReducer from './store.fortinet'
+import fortinetdbReducer from './store.fortinetdb'
 import workflowsReducer from './store.workflows'
 
 /*
@@ -23,7 +23,7 @@ export default configureStore({
         permissions: permissionsReducer,
         f5: f5Reducer,
         infoblox: infobloxReducer,
-        fortinet: fortinetReducer,
+        fortinetdb: fortinetdbReducer,
         workflows: workflowsReducer
     }
 })

@@ -95,6 +95,16 @@ class CustomSider extends Component {
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
+          { this.props.fortinetdbAuth && (this.props.fortinetdbAuth || this.props.fortinetdbAuth.any) ?
+            <React.Fragment>
+              <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICES</Link></Menu.Item>
+              <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECTS</Link></Menu.Item>
+              <Menu.Item key="ddoses" icon={this.itemsIcon()}><Link to="/ddoses/">DDOSES</Link></Menu.Item>
+              <Divider style={{border: '1vh solid #f0f2f5'}}/>
+            </React.Fragment>
+            : null
+          }
+
           { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
             <React.Fragment>
               <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
@@ -171,4 +181,5 @@ export default connect((state) => ({
   authorizations: state.authorizations,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
+  fortinetdbAuth: state.authorizations.fortinetdb,
 }))(CustomSider);
