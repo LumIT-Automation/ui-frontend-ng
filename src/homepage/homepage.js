@@ -170,22 +170,22 @@ return (
                 <Row >
                   <Col span={4}>
                     <Card title={<p style={{textAlign: 'center'}}>Cert Expirations</p>} bordered={false}>
-                      <Table/>
+                      <Table scroll={{x: 'auto'}}/>
                     </Card>
                   </Col>
                   <Col offset={1} span={4}>
                     <Card title={<p style={{textAlign: 'center'}}>CVE Bulletin</p>} bordered={false}>
-                      <Table/>
+                      <Table scroll={{x: 'auto'}}/>
                     </Card>
                   </Col>
                   <Col offset={1} span={4}>
                     <Card title={<p style={{textAlign: 'center'}}>Logs</p>} bordered={false}>
-                      <Table/>
+                      <Table scroll={{x: 'auto'}}/>
                     </Card>
                   </Col>
                   <Col offset={1} span={9}>
                     <Card title={<p style={{textAlign: 'center'}}>History</p>} bordered={false}>
-                      <Table scroll={{x: 200}}/>
+                      <Table scroll={{x: 'auto'}}/>
                     </Card>
                   </Col>
                 </Row>

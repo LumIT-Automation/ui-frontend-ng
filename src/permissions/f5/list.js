@@ -211,7 +211,7 @@ class List extends React.Component {
           dataSource={this.props.permissions}
           bordered
           rowKey={randomKey}
-          scroll= {{x: 500}}
+          scroll={{x: 'auto'}}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}

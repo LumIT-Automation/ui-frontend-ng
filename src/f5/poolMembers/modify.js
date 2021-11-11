@@ -474,6 +474,7 @@ class Modify extends React.Component {
               columns={columns}
               pagination={false}
               rowKey="name"
+              scroll={{x: 'auto'}}
               //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
             />
 

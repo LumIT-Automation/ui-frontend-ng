@@ -168,7 +168,7 @@ class List extends React.Component {
         upgradeNum: 'Upgraded: 56',
       });
     }
-    return <Table columns={columns} dataSource={data} pagination={false} />;
+    return <Table columns={columns} dataSource={data} pagination={false} scroll={{x: 'auto'}}/>;
   };
 
 
@@ -238,10 +238,10 @@ class List extends React.Component {
         />
         */}
         <Table
-
           columns={columns}
           expandable={ this.expandedRowRender }
           dataSource={data}
+          scroll={{x: 'auto'}}
         />
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>

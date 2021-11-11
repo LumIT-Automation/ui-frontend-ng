@@ -207,6 +207,7 @@ class List extends React.Component {
             dataSource={this.props.ipv4Info}
             bordered
             rowKey="ip_address"
+            scroll={{x: 'auto'}}
             //pagination={false}
             pagination={{ pageSize: 50 }}
             style={{marginBottom: 50}}

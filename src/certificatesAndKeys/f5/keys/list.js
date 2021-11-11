@@ -172,7 +172,7 @@ class List extends React.Component {
               dataSource={this.props.keys}
               bordered
               rowKey="name"
-              scroll={{x: 500}}
+              scroll={{x: 'auto'}}
               //pagination={false}
               pagination={{ pageSize: 10 }}
               style={{marginBottom: 10}}

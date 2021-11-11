@@ -174,6 +174,7 @@ class Ip extends React.Component {
             dataSource={null}
             bordered
             rowKey="name"
+            scroll={{x: 'auto'}}
             //pagination={false}
             pagination={{ pageSize: 10 }}
             style={{marginBottom: 10}}

@@ -200,7 +200,7 @@ class DetailsIp extends React.Component {
               dataSource={this.state.ipInfo}
               bordered
               rowKey="ip"
-              scroll={{x: 350}}
+              scroll={{x: 'auto'}}
               pagination={false}
               style={{marginBottom: 10}}
             />

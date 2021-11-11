@@ -144,6 +144,7 @@ class List extends React.Component {
           dataSource={this.props.superAdmins}
           bordered
           rowKey="dn"
+          scroll={{x: 'auto'}}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}

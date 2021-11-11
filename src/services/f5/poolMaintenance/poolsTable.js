@@ -163,6 +163,7 @@ class PoolsTable extends React.Component {
           dataSource={this.props.currentPools}
           bordered
           rowKey="name"
+          scroll={{x: 'auto'}}
           pagination={{ pageSize: 10 }}
           style={{paddig: '200%', marginBottom: 10}}
         />

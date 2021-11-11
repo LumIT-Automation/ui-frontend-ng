@@ -332,6 +332,7 @@ class List extends React.Component {
             columns={columns}
             pagination={false}
             rowKey="name"
+            scroll={{x: 'auto'}}
             style={{marginLeft: '200px'}}
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />

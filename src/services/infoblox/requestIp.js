@@ -779,7 +779,7 @@ class RequestIp extends React.Component {
                   dataSource={this.state.response}
                   bordered
                   rowKey="id"
-                  scroll={{x: 350}}
+                  scroll={{x: 'auto'}}
                   pagination={false}
                   style={{marginBottom: 10}}
                 />
@@ -795,7 +795,7 @@ class RequestIp extends React.Component {
                     dataSource={this.state.requests}
                     bordered
                     rowKey="id"
-                    scroll= {{x: 500}}
+                    scroll={{x: 'auto'}}
                     pagination={false}
                     style={{marginBottom: 10}}
                   />

@@ -391,7 +391,7 @@ class Error extends Component {
           columns={columns}
           pagination={false}
           rowKey="message"
-          scroll={{x: 350}}
+          scroll={{x: 'auto'}}
         />
           </React.Fragment>
       </Modal>

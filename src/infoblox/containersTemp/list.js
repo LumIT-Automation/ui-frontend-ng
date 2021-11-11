@@ -133,7 +133,7 @@ class List extends React.Component {
 
       });
     }
-    return <Table columns={columns} dataSource={data} pagination={false} />;
+    return <Table columns={columns} dataSource={data} pagination={false} scroll={{x: 'auto'}}/>;
   };
 
 
@@ -163,7 +163,7 @@ class List extends React.Component {
         ip: true
       });
     }
-    return <Table columns={columns} dataSource={data} pagination={false} />;
+    return <Table columns={columns} dataSource={data} pagination={false} scroll={{x: 'auto'}}/>;
   };
 
     const containerColumns = [
@@ -222,10 +222,10 @@ class List extends React.Component {
         />
         */}
         <Table
-
           columns={containerColumns}
           expandable={{ expandedRowRender }}
           dataSource={data}
+          scroll={{x: 'auto'}}
         />
       </Space>
 

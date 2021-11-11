@@ -197,7 +197,7 @@ class List extends React.Component {
             dataSource={this.props.assets}
             bordered
             rowKey="id"
-            scroll= {{x: 350}}
+            scroll={{x: 'auto'}}
             //pagination={false}
             pagination={{ pageSize: 10 }}
             style={{marginBottom: 10}}

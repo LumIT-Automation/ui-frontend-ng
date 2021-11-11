@@ -149,11 +149,12 @@ class List extends React.Component {
           dataSource={this.props.networks}
           bordered
           rowKey="network"
+          scroll={{x: 'auto'}}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        
+
       </Space>
 
     )

@@ -192,6 +192,7 @@ class List extends React.Component {
           dataSource={this.props.monitors}
           bordered
           rowKey="name"
+          scroll={{x: 'auto'}}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}

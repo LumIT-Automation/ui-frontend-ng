@@ -133,6 +133,7 @@ class RolesDescription extends React.Component {
             dataSource={this.state.rolesBeauty}
             bordered
             rowKey="role"
+            scroll={{x: 'auto'}}
             //pagination={false}
             pagination={{ pageSize: 10 }}
             style={{marginBottom: 10}}
