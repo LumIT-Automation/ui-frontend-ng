@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
-import { VictoryPie } from 'victory';
+import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory';
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
@@ -59,7 +59,13 @@ class Firmware extends React.Component {
             target: "data",
             eventHandlers: {
               onClick: (e, n) => {
-                console.log(n.datum.FIRMWARE)
+                console.log(n.style.fill)
+              },
+              onMouseOver: (e, n) => {
+                this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
+              },
+              onMouseLeave: (e, n) => {
+                this.setState({name: '', color: ''})
               }
             }
           }]}
@@ -70,6 +76,13 @@ class Firmware extends React.Component {
           y="COUNT"
           innerRadius={0} radius={80}
           labels={({ datum }) => datum.COUNT}
+        />
+        <VictoryLabel
+          textAnchor="start"
+          x={80}
+          y={280}
+          text={this.state.name}
+          style={{ fill: this.state.color }}
         />
       </svg>
     );

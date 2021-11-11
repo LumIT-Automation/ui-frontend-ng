@@ -70,6 +70,19 @@ const fortinetdbSlice = createSlice({
         state.firmwaresError = action.payload
       },
 
+      setFirmwareLoading: (state, action) => {
+        state.firmwareLoading = action.payload
+      },
+      setFirmware: (state, action) => {
+        state.firmware = action.payload.data.items
+      },
+      setFirmwareFetch: (state, action) => {
+        state.firmwareFetch = action.payload
+      },
+      setFirmwareError: (state, action) => {
+        state.firmwareError = action.payload
+      },
+
       cleanUp: (state, action) => {
         for (const l in state) {
           state[l] = null
@@ -100,6 +113,11 @@ export const {
   setFirmwares,
   setFirmwaresFetch,
   setFirmwaresError,
+
+  setFirmwareLoading,
+  setFirmware,
+  setFirmwareFetch,
+  setFirmwareError,
 
   setDevice,
   setDeviceAddError,
