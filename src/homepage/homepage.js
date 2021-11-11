@@ -7,7 +7,7 @@ import "antd/dist/antd.css"
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setError } from '../_store/store.error'
+import { setDevices, setDevicesLoading, setDevicesError } from '../_store/store.fortinetdb'
 
 //import List from './list'
 import AmericanPie from './pieChart'
@@ -33,9 +33,7 @@ class Homepage extends React.Component {
   }
 
   componentDidMount() {
-
-    //this.ullalla()
-    //this.ullalla()
+    this.fetchDevices()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -151,7 +149,22 @@ return (
 
 */
 
-
+fetchDevices = async () => {
+  this.props.dispatch(setDevicesLoading(true))
+  let rest = new Rest(
+    "GET",
+    resp => {
+      this.props.dispatch(setDevices(resp.data))
+      this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
+    },
+    error => {
+      this.setState({loading: false})
+      this.props.dispatch(setDevicesError(error))
+    }
+  )
+  await rest.doXHR(`fortinetdb/devices/`, this.props.token)
+  this.props.dispatch(setDevicesLoading(false))
+}
 
 
 
@@ -253,11 +266,7 @@ return (
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
-  asset: state.f5.asset,
-  partition: state.f5.partition,
-  monitors: state.f5.monitors,
-  monitorsFetch: state.f5.monitorsFetch,
-  devices: state.fortinet.assets
+
+  devices: state.fortinetdb.devices,
 }))(Homepage);
