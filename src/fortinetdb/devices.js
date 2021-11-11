@@ -26,7 +26,9 @@ class Devices extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchDevices()
+    if (!this.props.devices) {
+      this.fetchDevices()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -48,11 +50,9 @@ class Devices extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setDevices(resp.data))
-        this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
+        this.props.dispatch(setDevices(resp))
       },
       error => {
-        this.setState({loading: false})
         this.props.dispatch(setDevicesError(error))
       }
     )

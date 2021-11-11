@@ -15,7 +15,7 @@ const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-class Details extends React.Component {
+class Device extends React.Component {
 
   constructor(props) {
     super(props);
@@ -502,7 +502,7 @@ class Details extends React.Component {
         </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>Details</p>}
+          title={<p style={{textAlign: 'center'}}>Device</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -534,4 +534,4 @@ class Details extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-}))(Details);
+}))(Device);

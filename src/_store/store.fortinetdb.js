@@ -35,7 +35,7 @@ const fortinetdbSlice = createSlice({
         state.devicesLoading = action.payload
       },
       setDevices: (state, action) => {
-        state.devices = action.payload
+        state.devices = action.payload.data.items
       },
       setDevicesFetch: (state, action) => {
         state.devicesFetch = action.payload
@@ -55,6 +55,19 @@ const fortinetdbSlice = createSlice({
       },
       setDeviceDeleteError: (state, action) => {
         state.deviceDeleteError = action.payload
+      },
+
+      setFirmwaresLoading: (state, action) => {
+        state.firmwaresLoading = action.payload
+      },
+      setFirmwares: (state, action) => {
+        state.firmwares = action.payload.data.items
+      },
+      setFirmwaresFetch: (state, action) => {
+        state.firmwaresFetch = action.payload
+      },
+      setFirmwaresError: (state, action) => {
+        state.firmwaresError = action.payload
       },
 
       cleanUp: (state, action) => {
@@ -82,6 +95,11 @@ export const {
   setDevices,
   setDevicesFetch,
   setDevicesError,
+
+  setFirmwaresLoading,
+  setFirmwares,
+  setFirmwaresFetch,
+  setFirmwaresError,
 
   setDevice,
   setDeviceAddError,

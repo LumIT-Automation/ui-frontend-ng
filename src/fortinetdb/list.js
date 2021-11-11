@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../error'
 
-import Details from './details'
+import Device from './device'
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -132,7 +132,7 @@ class List extends React.Component {
     ...this.getColumnSearchProps('SERIALE'),
     render: (name, obj)  => (
       <Space size="small">
-        <Details name={name} obj={obj} />
+        <Device name={name} obj={obj} />
       </Space>
     ),
   },

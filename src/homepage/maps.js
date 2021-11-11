@@ -6,7 +6,7 @@ import italy from './italy.json';
 
 
 const Map =() => {
-  const style = { margin: '1rem auto', width: '300px', fill: '#a82b2b', outline: 'none' };
+  const style = { margin: '1rem auto', fill: '#a82b2b', outline: 'none' };
 
   const [hovered, setHovered] = React.useState('None');
   const [focused, setFocused] = React.useState('None');

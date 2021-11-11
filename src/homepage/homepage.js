@@ -13,6 +13,7 @@ import { setDevices, setDevicesLoading, setDevicesError } from '../_store/store.
 import AmericanPie from './pieChart'
 import Victory from './victory'
 import Map from './maps'
+import Firmware from './firmwaresWidget'
 
 import { Spin, Card, Row, Col, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons';
@@ -154,11 +155,9 @@ fetchDevices = async () => {
   let rest = new Rest(
     "GET",
     resp => {
-      this.props.dispatch(setDevices(resp.data))
-      this.setState({loading: false, devices: resp.data, firmware: resp.data.FIRMWARE})
+      this.props.dispatch(setDevices(resp))
     },
     error => {
-      this.setState({loading: false})
       this.props.dispatch(setDevicesError(error))
     }
   )
@@ -206,46 +205,37 @@ fetchDevices = async () => {
                 <hr/>
 
                 <Row>
-                  <Col span={14}>
+                  <Col span={12}>
                     <Row>
-                      <Col span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
+                      <Col offset={1} span={11}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={false}>
+                      <Col offset={1} span={11}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
                           <Victory/>
-                        </Card>
-                      </Col>
-                      <Col offset={1} span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                     </Row>
+                    <br/>
                     <Row>
-                      <Col span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
+                      <Col offset={1} span={11}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={false}>
+                      <Col offset={1} span={11}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
                           <Victory/>
-                        </Card>
-                      </Col>
-                      <Col offset={1} span={7}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
-                          <AmericanPie w={400} h={200} devices={this.props.devices}/>
                         </Card>
                       </Col>
                     </Row>
                   </Col>
 
 
-                  <Col span={10}>
-                  <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={false}>
+                  <Col offset={2} span={10}>
+                  <Card title={<p style={{textAlign: 'center'}}>Region</p>} bordered={true}>
                     <Map />
                   </Card>
                   </Col>
