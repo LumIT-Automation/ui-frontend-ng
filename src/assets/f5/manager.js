@@ -28,6 +28,7 @@ class Manager extends React.Component {
     if (!this.props.assetsError) {
       if (!this.props.assets) {
         this.fetchAssets()
+        this.props.dispatch(setAssetsFetch(false))
       }
     }
   }

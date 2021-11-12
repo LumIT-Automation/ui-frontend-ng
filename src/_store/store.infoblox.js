@@ -45,6 +45,9 @@ const infobloxSlice = createSlice({
         state.assets = action.payload.data.items
       },
       setAssetsFetch: (state, action) => {
+        console.log('assets fetch')
+        console.log(action.payload)
+        //state.assetsFetch = action.payload
         state.assetsFetch = action.payload
       },
       setAssetsError: (state, action) => {

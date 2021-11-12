@@ -21,7 +21,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: null
     };
   }
 
@@ -29,6 +28,7 @@ class Manager extends React.Component {
     if (!this.props.assetsError) {
       if (!this.props.assets) {
         this.fetchAssets()
+        this.props.dispatch(setAssetsFetch(false))
       }
     }
   }
@@ -56,7 +56,6 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setAssetsError(error))
-        this.setState({loading: false})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
@@ -90,10 +89,13 @@ class Manager extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	assetsError: state.infoblox.assetsError,
   authorizations: state.authorizations.infoblox,
+
   assets: state.infoblox.assets,
+  assetsError: state.infoblox.assetsError,
   assetsFetch: state.infoblox.assetsFetch
+
 }))(Manager);

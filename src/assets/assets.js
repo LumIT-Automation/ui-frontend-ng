@@ -5,8 +5,8 @@ import { Tabs, Space, Spin } from 'antd';
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 
-import { setAssetsFetch as f5AssetsRefresh } from '../_store/store.f5'
-import { setAssetsFetch as infobloxAssetsRefresh } from '../_store/store.infoblox'
+import { setAssetsFetch as f5AssetsFetch } from '../_store/store.f5'
+import { setAssetsFetch as infobloxAssetsFetch } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -50,7 +50,7 @@ class Assets extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                   :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsRefresh(true))}/></span>>
+                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsFetch(true))}/></span>>
                     <F5/>
                   </TabPane>
                 }
@@ -66,7 +66,7 @@ class Assets extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                   :
-                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(infobloxAssetsRefresh(true))}/></span>>
+                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(infobloxAssetsFetch(true))}/></span>>
                     <Infoblox/>
                   </TabPane>
                 }
