@@ -17,7 +17,6 @@ class RolesDescription extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {}
@@ -71,10 +70,6 @@ class RolesDescription extends React.Component {
     this.setState({rolesBeauty: newList})
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -113,7 +108,7 @@ class RolesDescription extends React.Component {
 
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <div> <QuestionCircleOutlined style={{marginRight: '10px', marginTop: '12px', marginBottom: 'auto'}} onClick={() => this.details()} /> Role </div>
 
@@ -142,7 +137,7 @@ class RolesDescription extends React.Component {
 
         { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }

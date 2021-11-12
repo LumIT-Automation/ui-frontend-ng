@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { fetchInfobloxRolesError } from '../../_store/store.error'
 
 import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -17,7 +17,6 @@ class RolesDescription extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {}
@@ -50,7 +49,7 @@ class RolesDescription extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setfetchInfobloxRolesErrorError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -70,10 +69,6 @@ class RolesDescription extends React.Component {
 
     }
     this.setState({rolesBeauty: newList})
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   response = () => {
@@ -114,7 +109,7 @@ class RolesDescription extends React.Component {
 
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <div> <QuestionCircleOutlined style={{marginRight: '10px', marginTop: '12px', marginBottom: 'auto'}} onClick={() => this.details()} /> Role </div>
 
@@ -142,14 +137,15 @@ class RolesDescription extends React.Component {
         </Modal>
 
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.fetchInfobloxRolesError ? <Error error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token
+  token: state.ssoAuth.token,
+  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
 }))(RolesDescription);

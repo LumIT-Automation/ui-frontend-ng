@@ -171,14 +171,14 @@ class Add extends React.Component {
 
     let nets = await this.fetchNets()
     if (nets.status && nets.status !== 200) {
-      this.props.dispatch(setNetworksError( error ))
+      this.props.dispatch(setNetworksError( nets ))
       await this.setState({networksLoading: false})
       return
     }
 
     let containers = await this.fetchContainers()
     if (containers.status && containers.status !== 200) {
-      this.props.dispatch(setContainersError( error ))
+      this.props.dispatch(setContainersError( containers ))
       await this.setState({networksLoading: false})
       return
     }
@@ -308,7 +308,7 @@ class Add extends React.Component {
   render() {
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
@@ -476,9 +476,10 @@ class Add extends React.Component {
         { this.props.networksError ? <Error error={[this.props.networksError]} visible={true} type={'setInfobloxNetworksError'} /> : null }
         { this.props.containersError ? <Error error={[this.props.containersError]} visible={true} type={'setInfobloxContainersError'} /> : null }
         { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+
         { this.props.addInfobloxPermissionError ? <Error error={[this.props.addInfobloxPermissionError]} visible={true} type={'addInfobloxPermissionError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }
@@ -491,6 +492,7 @@ export default connect((state) => ({
   networksError: state.infoblox.networksError,
   containersError: state.infoblox.containersError,
   addNewDnError: state.permissions.addNewDnError,
+
   addInfobloxPermissionError: state.permissions.addInfobloxPermissionError,
 
   identityGroups: state.infoblox.identityGroups,

@@ -112,7 +112,7 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        console.log('fetchAssets error')
+        
         r = error
       }
     )
@@ -129,7 +129,7 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        console.log('fetchIdentityGroups error')
+        
         r = error
       }
     )
@@ -145,7 +145,7 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        console.log('fetchPermissions error')
+        
         r = error
       }
     )
@@ -179,8 +179,8 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log('manager infoblox')
-    console.log(this.props)
+    
+    
     return (
       <React.Fragment>
         <br/>

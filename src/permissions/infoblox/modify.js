@@ -4,9 +4,15 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import {
+  fetchInfobloxRolesError,
+  addNewDnError,
+  modifyInfobloxPermissionError
+} from '../../_store/store.permissions'
 import {
   setPermissionsFetch,
+  setNetworksError,
+  setContainersError
 } from '../../_store/store.infoblox'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -26,16 +32,9 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
-      errors: {
-      },
+      errors: {},
       message:'',
-      groupToAdd: false,
-      request: {
-        network: {
-
-        }
-      }
+      request: {}
     };
   }
 
@@ -43,6 +42,15 @@ class Modify extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
+    if (
+      newProps.fetchInfobloxRolesError ||
+      newProps.networksError ||
+      newProps.containersError ||
+      newProps.addNewDnError ||
+      newProps.modifyInfobloxPermissionError
+    ) {
+      return false
+    }
     return true;
   }
 
@@ -52,18 +60,19 @@ class Modify extends React.Component {
   componentWillUnmount() {
   }
 
-  details = () => {
+  details = async () => {
+    
     this.setState({visible: true})
     let request = {}
     request.cn = this.props.obj.identity_group_name
     request.dn = this.props.obj.identity_group_identifier
     request.role = this.props.obj.role
     request.asset = this.props.obj.asset
-    request.network = {}
-    request.network.name = this.props.obj.network.name
-    request.network.id_asset = this.props.obj.network.asset_id
-    this.setState({request: request})
+    request.network = this.props.obj.network
+    request.assetId = this.props.obj.network.asset_id
+    await this.setState({request: request})
     this.fetchRoles()
+    this.fetchNetworks()
   }
 
   onSearch = (searchText) => {
@@ -139,7 +148,6 @@ class Modify extends React.Component {
   setAsset = id => {
     let request = Object.assign({}, this.state.request)
     request.assetId = id
-    request.network.id_asset = id
     this.setState({request: request}, () => this.fetchNetworks())
   }
 
@@ -151,8 +159,8 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
+        this.props.dispatch(fetchInfobloxRolesError(error))
+        this.setState({rolesLoading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
@@ -178,8 +186,21 @@ class Modify extends React.Component {
 
   fetchNetworks = async () => {
     this.setState({networksLoading: true})
+
     let nets = await this.fetchNets()
+    if (nets.status && nets.status !== 200) {
+      this.props.dispatch(setNetworksError( nets ))
+      await this.setState({networksLoading: false})
+      return
+    }
+
     let containers = await this.fetchContainers()
+    if (containers.status && containers.status !== 200) {
+      this.props.dispatch(setContainersError( containers ))
+      await this.setState({networksLoading: false})
+      return
+    }
+
     let networks = nets.concat(containers)
     this.setState({nets: networks, networksLoading: false})
   }
@@ -192,7 +213,7 @@ class Modify extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setError( error ))
+        r = error
       }
     )
     await rest.doXHR(`infoblox/${this.state.request.assetId}/networks/`, this.props.token)
@@ -207,7 +228,7 @@ class Modify extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setError( error ))
+        r = error
       }
     )
     await rest.doXHR(`infoblox/${this.state.request.assetId}/network-containers/`, this.props.token)
@@ -237,26 +258,10 @@ class Modify extends React.Component {
     })
   }
 
-  setNetwork = n => {
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-
-    if (n) {
-      if (n === 'any') {
-        request.network.name = 'any'
-        delete errors.networkName
-      }
-      else {
-        request.network.name = n
-        delete errors.networkName
-      }
-    }
-    else {
-
-      errors.networkName = 'error'
-    }
-
-    this.setState({request: request, errors: errors})
+  setNetwork = network => {
+    let request = Object.assign({}, this.state.request);
+    request.network = network
+    this.setState({request: request})
   }
 
   addNewDn = async () => {
@@ -279,8 +284,9 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true})
       },
       error => {
-        r = error
+        this.props.dispatch(addNewDnError(error))
         this.setState({loading: false, response: false, error: error})
+        r = error
       }
     )
     await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
@@ -288,9 +294,11 @@ class Modify extends React.Component {
   }
 
   modifyPermission = async () => {
-
     if (this.state.groupToAdd) {
-      await this.addNewDn()
+      let awaitDn = await this.addNewDn()
+      if (awaitDn.status && awaitDn.status !== 201) {
+        return
+      }
     }
 
     this.setState({message: null});
@@ -302,7 +310,7 @@ class Modify extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "network": {
-              "name": this.state.request.network.name,
+              "name": this.state.request.network,
               "id_asset": this.state.request.assetId
           }
         }
@@ -316,7 +324,7 @@ class Modify extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(modifyInfobloxPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -346,7 +354,7 @@ class Modify extends React.Component {
   render() {
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
@@ -376,7 +384,7 @@ class Modify extends React.Component {
               dn: this.state.request.dn,
               asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
               role: this.state.request.role,
-              networks: this.state.request.network.name,
+              networks: this.state.request.network,
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -440,12 +448,11 @@ class Modify extends React.Component {
 
             { this.state.networksLoading ?
               <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-
               :
-
               <React.Fragment>
-              { this.state.nets ?
+              { this.state.nets && this.state.nets.length > 0 ?
                 <Select
+                  defaultValue={this.state.network}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -497,7 +504,7 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.assetId ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.assetId ?
                 <Button type="primary" onClick={() => this.modifyPermission()} >
                   Modify Permission
                 </Button>
@@ -512,10 +519,14 @@ class Modify extends React.Component {
         }
         </Modal>
 
+        { this.props.fetchInfobloxRolesError ? <Error error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+        { this.props.networksError ? <Error error={[this.props.networksError]} visible={true} type={'setInfobloxNetworksError'} /> : null }
+        { this.props.containersError ? <Error error={[this.props.containersError]} visible={true} type={'setInfobloxContainersError'} /> : null }
+        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.modifyInfobloxPermissionError ? <Error error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }
@@ -523,7 +534,14 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+
+  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
+  networksError: state.infoblox.networksError,
+  containersError: state.infoblox.containersError,
+  addNewDnError: state.permissions.addNewDnError,
+
+  modifyInfobloxPermissionError: state.permissions.modifyInfobloxPermissionError,
+
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
   assets: state.infoblox.assets,

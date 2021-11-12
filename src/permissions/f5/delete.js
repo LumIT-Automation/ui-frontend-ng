@@ -21,7 +21,6 @@ class Delete extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
     };
   }
 
@@ -69,7 +68,7 @@ class Delete extends React.Component {
   render() {
 
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
@@ -115,10 +114,9 @@ class Delete extends React.Component {
 
         </Modal>
 
-
       { this.props.deleteF5PermissionError ? <Error error={[this.props.deleteF5PermissionError]} visible={true} type={'deleteF5PermissionError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }

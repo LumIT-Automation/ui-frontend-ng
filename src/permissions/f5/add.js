@@ -16,7 +16,6 @@ import {
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const layout = {

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setError } from '../../_store/store.error'
+import { deleteInfobloxPermissionError } from '../../_store/store.error'
 import { setPermissionsFetch } from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
@@ -21,7 +21,6 @@ class Delete extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
     };
   }
 
@@ -51,7 +50,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(setPermissionsFetch(true)) )
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(deleteInfobloxPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -72,7 +71,7 @@ class Delete extends React.Component {
 
   render() {
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
@@ -118,10 +117,9 @@ class Delete extends React.Component {
 
         </Modal>
 
+        { this.props.deleteInfobloxPermissionError ? <Error error={[this.props.deleteInfobloxPermissionError]} visible={true} type={'deleteInfobloxPermissionError'} /> : null }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-      </Space>
+      </React.Fragment>
 
     )
   }
@@ -129,5 +127,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	deleteInfobloxPermissionError: state.permissions.deleteInfobloxPermissionError,
 }))(Delete);
