@@ -7,7 +7,6 @@ import Error from '../../error'
 import { setAssetsFetch, setAssetAddError } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
-
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
@@ -33,7 +32,6 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {}
@@ -425,7 +423,10 @@ class Add extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
+
   token: state.ssoAuth.token,
   assetAddError: state.infoblox.assetAddError,
+
 }))(Add);

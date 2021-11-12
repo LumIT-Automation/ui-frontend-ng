@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
 import Delete from './delete'
 import Modify from './modify'
@@ -12,19 +11,13 @@ import { SearchOutlined } from '@ant-design/icons';
 
 
 
-/*
-
-*/
-
-
 class List extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
@@ -120,13 +113,8 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
-
     const columns = [
       {
         title: 'FQDN',
@@ -197,28 +185,22 @@ class List extends React.Component {
 
 
     return (
-      <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
-        :
-          <Table
-            columns={columns}
-            dataSource={this.props.assets}
-            bordered
-            rowKey="id"
-            scroll={{x: 'auto'}}
-            //pagination={false}
-            pagination={{ pageSize: 10 }}
-            style={{marginBottom: 10}}
-          />
-        }
-      </React.Fragment>
+      <Table
+        columns={columns}
+        dataSource={this.props.assets}
+        bordered
+        rowKey="id"
+        scroll={{x: 'auto'}}
+        pagination={{ pageSize: 10 }}
+        style={{marginBottom: 10}}
+      />
     )
   }
 }
 
 export default connect((state) => ({
+
   assets: state.infoblox.assets,
-  error: state.error.error,
   infobloxAuth: state.authorizations.infoblox
+
 }))(List);
