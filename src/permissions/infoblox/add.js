@@ -32,15 +32,10 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
-      errors: {
-      },
+      errors: {},
       message:'',
       groupToAdd: false,
-      network: '',
-      request: {
-        network: {}
-      }
+      request: {}
     };
   }
 
@@ -52,8 +47,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update')
-    console.log(this.props.addNewDnError)
   }
 
   componentWillUnmount() {
@@ -137,7 +130,6 @@ class Add extends React.Component {
   setAsset = id => {
     let request = Object.assign({}, this.state.request)
     request.assetId = id
-    //request.network.id_asset = id
     this.setState({request: request}, () => this.fetchNetworks())
   }
 
@@ -150,7 +142,7 @@ class Add extends React.Component {
         },
       error => {
         this.props.dispatch(fetchInfobloxRolesError(error))
-        this.setState({loading: false, response: false})
+        this.setState({rolesLoading: false, response: false})
       }
     )
     await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
@@ -179,12 +171,14 @@ class Add extends React.Component {
 
     let nets = await this.fetchNets()
     if (nets.status && nets.status !== 200) {
+      this.props.dispatch(setNetworksError( error ))
       await this.setState({networksLoading: false})
       return
     }
 
     let containers = await this.fetchContainers()
     if (containers.status && containers.status !== 200) {
+      this.props.dispatch(setContainersError( error ))
       await this.setState({networksLoading: false})
       return
     }
@@ -201,7 +195,6 @@ class Add extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setNetworksError( error ))
         r = error
       }
     )
@@ -217,7 +210,6 @@ class Add extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(setContainersError( error ))
         r = error
       }
     )
@@ -225,26 +217,10 @@ class Add extends React.Component {
     return r
   }
 
-  setNetwork = n => {
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-
-    if (n) {
-      if (n === 'any') {
-        request.network.name = 'any'
-        delete errors.networkName
-      }
-      else {
-        request.network.name = n
-        delete errors.networkName
-      }
-    }
-    else {
-
-      errors.networkName = 'error'
-    }
-
-    this.setState({request: request, network: n, errors: errors})
+  setNetwork = network => {
+    let request = Object.assign({}, this.state.request);
+    request.network = network
+    this.setState({request: request})
   }
 
   addNewDn = async () => {
@@ -293,7 +269,7 @@ class Add extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "network": {
-            "name": this.state.request.network.name,
+            "name": this.state.request.network,
             "id_asset": this.state.request.assetId
           }
         }
@@ -314,10 +290,6 @@ class Add extends React.Component {
     await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
@@ -328,7 +300,7 @@ class Add extends React.Component {
     this.setState({
       visible: false,
       request: {},
-      network: ''
+      nets: []
     })
   }
 
@@ -361,12 +333,12 @@ class Add extends React.Component {
           <Form
             {...layout}
             name="basic"
-            initialValues={{
+            initialValues={this.state.request ? {
               remember: true,
               dn: this.state.request.dn,
               asset: this.state.request.assetId,
               role: this.state.request.role
-            }}
+            }: null}
             onFinish={null}
             onFinishFailed={null}
           >
@@ -450,13 +422,13 @@ class Add extends React.Component {
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
                     :
                     <React.Fragment>
-                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    {this.state.nets.map((n, i) => {
-                      return (
-                        <Select.Option  key={i} value={n.network}>{n.network}</Select.Option>
-                      )
-                    })
-                    }
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                      {this.state.nets.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                        )
+                      })
+                      }
                     </React.Fragment>
                   }
                 </Select>
@@ -485,7 +457,7 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.assetId ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.assetId ?
                 <Button type="primary" onClick={() => this.addPermission()} >
                   Add Permission
                 </Button>

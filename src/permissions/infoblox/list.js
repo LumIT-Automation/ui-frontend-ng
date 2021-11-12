@@ -18,8 +18,7 @@ class List extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
@@ -114,13 +113,9 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
-
     const columns = [
       {
         title: 'AD group name',
@@ -202,29 +197,20 @@ class List extends React.Component {
     }
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
-        <br/>
         <Table
           columns={columns}
           dataSource={this.props.permissions}
           bordered
           rowKey={randomKey}
           scroll={{x: 'auto'}}
-          //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-      </Space>
-
     )
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
-  assets: state.infoblox.assets,
-  authorizations: state.authorizations.infoblox,
-  permissions: state.infoblox.permissions
+  permissions: state.infoblox.permissions,
+  authorizations: state.authorizations.infoblox
 }))(List);

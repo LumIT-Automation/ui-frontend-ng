@@ -32,7 +32,6 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       groupToAdd: false,
@@ -48,7 +47,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state)
   }
 
   componentWillUnmount() {
@@ -144,7 +142,7 @@ class Add extends React.Component {
         },
       error => {
         this.props.dispatch(fetchF5RolesError(error))
-        this.setState({loading: false, response: false})
+        this.setState({rolesLoading: false, response: false})
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
@@ -182,7 +180,6 @@ class Add extends React.Component {
   }
 
   setPartition = partition => {
-    console.log(partition)
     let request = Object.assign({}, this.state.request);
     request.partition = partition
     this.setState({request: request})
@@ -255,10 +252,6 @@ class Add extends React.Component {
     await rest.doXHR(`f5/permissions/`, this.props.token, b )
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
@@ -277,7 +270,7 @@ class Add extends React.Component {
 
   render() {
     return (
-      <Space direction='vertical'>
+      <React.Fragment>
 
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
@@ -302,12 +295,12 @@ class Add extends React.Component {
           <Form
             {...layout}
             name="basic"
-            initialValues={{
+            initialValues={this.state.request ? {
               remember: true,
               dn: this.state.request.dn,
               asset: this.state.request.assetId,
               role: this.state.request.role
-            }}
+            }: null}
             onFinish={null}
             onFinishFailed={null}
           >
@@ -386,17 +379,17 @@ class Add extends React.Component {
                   onChange={n => this.setPartition(n)}
                 >
                   {this.state.request.role === 'admin' ?
-                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
                   :
-                    <React.Fragment>
+                  <React.Fragment>
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
                     {this.state.partitions.map((n, i) => {
                       return (
-                        <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
+                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                       )
                     })
                     }
-                    </React.Fragment>
+                  </React.Fragment>
                   }
                 </Select>
               :
@@ -445,7 +438,7 @@ class Add extends React.Component {
         { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
         { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
 
-      </Space>
+      </React.Fragment>
 
     )
   }
@@ -453,6 +446,7 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
+
   addF5PermissionError: state.permissions.addF5PermissionError,
   fetchF5RolesError: state.permissions.fetchF5RolesError,
   addNewDnError: state.permissions.addNewDnError,

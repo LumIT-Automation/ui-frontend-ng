@@ -27,7 +27,6 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {
@@ -160,7 +159,7 @@ class Modify extends React.Component {
         },
       error => {
         this.props.dispatch(fetchF5RolesError(error))
-        this.setState({loading: false, response: false})
+        this.setState({rolesLoading: false, response: false})
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)

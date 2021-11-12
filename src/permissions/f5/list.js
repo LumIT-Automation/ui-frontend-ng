@@ -18,8 +18,7 @@ class List extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
@@ -115,13 +114,9 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
-
     const columns = [
       {
         title: 'AD group name',
@@ -203,28 +198,20 @@ class List extends React.Component {
     }
 
     return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-
-        <br/>
-        <Table
-          columns={columns}
-          dataSource={this.props.permissions}
-          bordered
-          rowKey={randomKey}
-          scroll={{x: 'auto'}}
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
-      </Space>
+      <Table
+        columns={columns}
+        dataSource={this.props.permissions}
+        bordered
+        rowKey={randomKey}
+        scroll={{x: 'auto'}}
+        pagination={{ pageSize: 10 }}
+        style={{marginBottom: 10}}
+      />
     )
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
-  assets: state.f5.assets,
-  authorizations: state.authorizations.f5,
-  permissions: state.f5.permissions
+  permissions: state.f5.permissions,
+  authorizations: state.authorizations.f5  
 }))(List);

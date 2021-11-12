@@ -2,14 +2,17 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
+import Rest from '../../_helpers/Rest'
 
-import { setError } from '../../_store/store.error'
 import {
-  setAssets,
-  setIdentityGroups,
-  setPermissions,
   setPermissionsLoading,
+  setPermissions,
   setPermissionsFetch,
+  setPermissionsError,
+  setAssets,
+  setAssetsError,
+  setIdentityGroups,
+  setIdentityGroupsError,
 } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -27,20 +30,20 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null
     };
   }
 
   componentDidMount() {
-    if (!this.props.permissions) {
-      this.main()
+    if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
+      if (!this.props.permissions) {
+        this.main()
+        this.props.dispatch(setPermissionsFetch(false))
+      }
     }
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -51,113 +54,103 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-     
   }
+
 
   main = async () => {
     this.props.dispatch(setPermissionsLoading(true))
 
     let assets = await this.fetchAssets()
-    this.props.dispatch(setAssets( assets ))
+    if (assets.status && assets.status !== 200 ) {
+      this.props.dispatch(setAssetsError(assets))
+      this.props.dispatch(setPermissionsLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(setAssets( assets ))
+    }
 
     let identityGroups = await this.fetchIdentityGroups()
-    this.props.dispatch(setIdentityGroups( identityGroups ))
+    if (identityGroups.status && identityGroups.status !== 200 ) {
+      this.props.dispatch(setIdentityGroupsError(identityGroups))
+      this.props.dispatch(setPermissionsLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(setIdentityGroups( identityGroups ))
+    }
 
     let permissions = await this.fetchPermissions()
-    let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
+    if (permissions.status && permissions.status !== 200 ) {
+      this.props.dispatch(setPermissionsError(permissions))
+      this.props.dispatch(setPermissionsLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(setPermissions(permissions))
+    }
 
-    this.props.dispatch(setPermissions( permissionsWithAssets ))
-    this.props.dispatch(setPermissionsLoading(false))
+    if ((assets.status && assets.status !== 200 ) ||
+        (identityGroups.status && identityGroups.status !== 200 ) ||
+        (permissions.status && permissions.status !== 200 ) ) {
+      this.props.dispatch(setPermissionsLoading(false))
+      return
+    }
+    else {
+      let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
+      this.props.dispatch(setPermissions( permissionsWithAssets ))
+      this.props.dispatch(setPermissionsLoading(false))
+    }
   }
 
 
   fetchAssets = async () => {
-    try {
-      const response = await fetch('/backend/infoblox/assets/', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer ' + this.props.token
-        }
-      })
-
-      if (response.ok) {
-        const json = await response.json();
-        return json
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        console.log('fetchAssets error')
+        r = error
       }
-      else {
-        this.props.dispatch(setError(response))
-      }
-
-    }
-    catch (error) {
-      let e = {
-        message: error.statusText,
-        name: error.name,
-        type: error.name
-      }
-
-      this.props.dispatch(setError(e))
-    }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
+    return r
   }
 
 
   fetchIdentityGroups = async () => {
-    try {
-      const response = await fetch('/backend/infoblox/identity-groups/', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer ' + this.props.token
-        }
-      })
-
-      if (response.ok) {
-        const json = await response.json();
-        return json
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        console.log('fetchIdentityGroups error')
+        r = error
       }
-      else {
-        this.props.dispatch(setError(response))
-      }
-
-    }
-    catch (error) {
-      let e = {
-        message: error.statusText,
-        name: error.name,
-        type: error.name
-      }
-
-      this.props.dispatch(setError(e))
-    }
+    )
+    await rest.doXHR("infoblox/identity-groups/", this.props.token)
+    return r
   }
 
-
   fetchPermissions = async () => {
-    try {
-      const response = await fetch('/backend/infoblox/permissions/', {
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bearer ' + this.props.token
-        }
-      })
-
-      if (response.ok) {
-        const json = await response.json();
-        return json
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        console.log('fetchPermissions error')
+        r = error
       }
-      else {
-        this.props.dispatch(setError(response))
-      }
-
-    }
-    catch (error) {
-      let e = {
-        message: error.statusText,
-        name: error.name,
-        type: error.name
-      }
-
-      this.props.dispatch(setError(e))
-    }
+    )
+    await rest.doXHR("infoblox/permissions/", this.props.token)
+    return r
   }
 
 
@@ -186,31 +179,26 @@ class Manager extends React.Component {
 
 
   render() {
-
+    console.log('manager infoblox')
+    console.log(this.props)
     return (
       <React.Fragment>
         <br/>
-        { this.props.permissionsLoading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-          :
+        { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
           <React.Fragment>
-          { this.props.error ?
-            <Error error={[this.props.error]} visible={true} />
-            :
-            <React.Fragment>
-              <br/>
-                <React.Fragment>
-                  { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-                    <Add/>
-                    :
-                    null
-                  }
-                  <List/>
-                </React.Fragment>
-            </React.Fragment>
-            }
+            <Add/>
+            <br/>
+            <br/>
           </React.Fragment>
+          :
+          null
         }
+
+        <List/>
+
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setInfobloxIdentityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setInfobloxPermissionsError'} /> : null }
       </React.Fragment>
     )
   }
@@ -218,10 +206,15 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
+
+  assetsError: state.infoblox.assetsError,
+  identityGroupsError: state.infoblox.identityGroupsError,
+  permissionsError: state.infoblox.permissionsError,
+
   assets: state.infoblox.assets,
+  identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
+
   permissionsFetch: state.infoblox.permissionsFetch,
-  permissionsLoading: state.infoblox.permissionsLoading,
 }))(Manager);

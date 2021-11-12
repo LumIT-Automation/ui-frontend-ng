@@ -88,6 +88,7 @@ class Error extends Component {
   componentDidMount() {
     console.log('error mount')
     console.log(this.props.error)
+    console.log(this.props.type)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -98,6 +99,7 @@ class Error extends Component {
     console.log('error update')
 
     console.log(this.props.error)
+    console.log(this.props.type)
   }
 
   componentWillUnmount() {
