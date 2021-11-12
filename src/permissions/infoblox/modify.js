@@ -42,15 +42,6 @@ class Modify extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
-    if (
-      newProps.fetchInfobloxRolesError ||
-      newProps.networksError ||
-      newProps.containersError ||
-      newProps.addNewDnError ||
-      newProps.modifyInfobloxPermissionError
-    ) {
-      return false
-    }
     return true;
   }
 
@@ -61,7 +52,7 @@ class Modify extends React.Component {
   }
 
   details = async () => {
-    
+    this.ig()
     this.setState({visible: true})
     let request = {}
     request.cn = this.props.obj.identity_group_name
@@ -73,76 +64,28 @@ class Modify extends React.Component {
     await this.setState({request: request})
     this.fetchRoles()
     this.fetchNetworks()
+
   }
 
-  onSearch = (searchText) => {
+  ig = () => {
     let items = []
-    let options = []
 
     let identityGroups = Object.assign([], this.props.identityGroups)
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-
-    let matchFound = items.filter(a =>{
-      return a.toLowerCase().includes(searchText.toLowerCase())
-    })
-
-    for(var i=0; i<matchFound.length; i++)  {
-      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
-    }
-
-    this.setState({
-      options: options,
-      items: items,
-    })
+    this.setState({items: items})
   }
 
-  selectDn = e => {
+  setDn = dn => {
     let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-    let dn
+    request.dn = dn
 
-    if (e) {
-      if (e.target) {
-        dn = e.target.value
-      }
-      else {
-        dn = e
-      }
-
-      if (this.state.items.includes(dn)) {
-        this.setState({groupToAdd: false})
-        request.dn = dn
-        let cn = this.props.identityGroups.find( ig => {
-          return ig.identity_group_identifier === dn
-        })
-        request.cn = cn.name
-        delete errors.dnError
-      }
-      else {
-        this.setState({groupToAdd: true})
-        let list = dn.split(',')
-        let cns = []
-
-        let found = list.filter(i => {
-          let iLow = i.toLowerCase()
-          if (iLow.startsWith('cn=')) {
-            let cn = iLow.split('=')
-            cns.push(cn[1])
-          }
-        })
-
-        request.dn = dn
-        request.cn = cns[0]
-        delete errors.dnError
-      }
-
-    }
-    else {
-      errors.dnError = 'error'
-    }
-    this.setState({request: request, errors: errors})
+    let cn = this.props.identityGroups.find( ig => {
+      return ig.identity_group_identifier === dn
+    })
+    request.cn = cn.name
+    this.setState({request: request})
   }
 
   setAsset = id => {
@@ -235,32 +178,11 @@ class Modify extends React.Component {
     return r
   }
 
-  onNetworkSearch = (searchText) => {
-    let items = ['any']
-    let options = []
-
-    let networks = Object.assign([], this.state.nets)
-    networks.forEach( n => {
-      items.push(n.network)
-    })
-
-    let matchFound = items.filter(a =>{
-      return a.toLowerCase().includes(searchText.toLowerCase())
-    })
-
-    for(var i=0; i<matchFound.length; i++)  {
-      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
-    }
-
-    this.setState({
-      networkOptions: options,
-      items: items,
-    })
-  }
-
-  setNetwork = network => {
+  setNetwork = net => {
+    console.log(net)
     let request = Object.assign({}, this.state.request);
-    request.network = network
+    let network = Object.assign({}, this.state.request.network);
+    network.name = net
     this.setState({request: request})
   }
 
@@ -310,7 +232,7 @@ class Modify extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "network": {
-              "name": this.state.request.network,
+              "name": this.state.request.network.name,
               "id_asset": this.state.request.assetId
           }
         }
@@ -332,11 +254,6 @@ class Modify extends React.Component {
 
   }
 
-
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
@@ -352,7 +269,8 @@ class Modify extends React.Component {
 
 
   render() {
-
+    console.log('modifyInfobloxPermission')
+    console.log(this.props.obj)
     return (
       <React.Fragment>
 
@@ -381,7 +299,6 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              dn: this.state.request.dn,
               asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
               role: this.state.request.role,
               networks: this.state.request.network,
@@ -391,21 +308,42 @@ class Modify extends React.Component {
           >
             <Form.Item
               label="Distinguished Name"
-              name='dn'
+              name="dn"
               key="dn"
             >
-              <AutoComplete
-                 options={this.state.options}
-                 onSearch={this.onSearch}
-                 onSelect={this.selectDn}
-                 onBlur={this.selectDn}
-                 placeholder="cn=..."
-               />
+              <React.Fragment>
+              { this.state.items && this.state.items.length > 0 ?
+                <Select
+                  defaultValue={this.state.request.dn}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onChange={n => this.setDn(n)}
+                >
+                  <React.Fragment>
+                    {this.state.items.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                      )
+                    })
+                    }
+                  </React.Fragment>
+                </Select>
+                :
+                <Select disabled value={null} onChange={null}>
+                </Select>
+              }
+              </React.Fragment>
             </Form.Item>
 
             <Form.Item
               label="Asset"
-              name='asset'
+              name="asset"
               key="asset"
             >
               <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
@@ -452,7 +390,7 @@ class Modify extends React.Component {
               <React.Fragment>
               { this.state.nets && this.state.nets.length > 0 ?
                 <Select
-                  defaultValue={this.state.network}
+                  defaultValue={this.state.request.network.name}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -470,7 +408,7 @@ class Modify extends React.Component {
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
                     {this.state.nets.map((n, i) => {
                       return (
-                        <Select.Option  key={i} value={n.network}>{n.network}</Select.Option>
+                        <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
                       )
                     })
                     }

@@ -5,7 +5,14 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setCertificates, setKeys, setRouteDomains } from '../../_store/store.f5'
+import {
+  setCertificates,
+  setCertificatesError,
+  setKeys,
+  setKeysError,
+  setRouteDomains,
+  setRouteDomainsError,
+} from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 
@@ -26,7 +33,6 @@ class CreateF5Service extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       membersNumber: 0,
@@ -40,6 +46,7 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidMount() {
+    console.log('f5 create mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -47,10 +54,9 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('f5 create update')
     if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
-      this.fetchCertificates()
-      this.fetchKeys()
-      this.fetchRouteDomains()
+      this.main()
     }
   }
 
@@ -61,52 +67,80 @@ class CreateF5Service extends React.Component {
     this.setState({visible: true})
   }
 
+  main = async () => {
+
+    let certificates = await this.fetchCertificates()
+    if (certificates.status && certificates.status !== 200 ) {
+      console.log(certificates)
+      this.props.dispatch(setCertificatesError(certificates))
+      return
+    }
+    else {
+      this.props.dispatch(setCertificates( certificates ))
+    }
+
+    let keys = await this.fetchKeys()
+    if (keys.status && keys.status !== 200 ) {
+      this.props.dispatch(setKeysError(keys))
+      return
+    }
+    else {
+      this.props.dispatch(setKeys( keys ))
+    }
+
+    let routeDomains = await this.fetchRouteDomains()
+    if (routeDomains.status && routeDomains.status !== 200 ) {
+      this.props.dispatch(setRouteDomainsError(routeDomains))
+      return
+    }
+    else {
+      this.props.dispatch(setRouteDomains( routeDomains ))
+    }
+  }
+
   fetchCertificates = async () => {
-    this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setCertificates( resp ))
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
+        r = error
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
+    return r
   }
 
   fetchKeys = async () => {
-    this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setKeys( resp ))
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
+        r = error
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
+    return r
   }
 
   fetchRouteDomains = async () => {
-    this.setState({loading: true})
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false})
-        this.props.dispatch(setRouteDomains( resp ))
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
+        r = error
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
+    return r
   }
 
   setServiceType = e => {
@@ -539,11 +573,6 @@ class CreateF5Service extends React.Component {
 
   }
 
-
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -561,6 +590,7 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+    console.log(this.props.certificatesError)
     return (
       <React.Fragment>
 
@@ -633,12 +663,15 @@ class CreateF5Service extends React.Component {
                   validateStatus={this.state.errors.routeDomainError}
                   help={this.state.errors.routeDomainError ? 'Please select a valid routeDomain' : null }
                 >
-                <Select id='snat' onChange={e => this.setRouteDomain(e)}>
-                {this.props.routeDomains.map((n, i) => {
+                <Select id='routeDomain' onChange={e => this.setRouteDomain(e)}>
+                {this.props.routeDomains ? this.props.routeDomains.map((n, i) => {
                   return (
                     <Select.Option  key={i} value={n.id}>{n.id}</Select.Option>
                     )
-                  })}
+                  })
+                :
+                  null
+                }
                 </Select>
                 </Form.Item>
 
@@ -683,12 +716,15 @@ class CreateF5Service extends React.Component {
                     validateStatus={this.state.errors.certificateError}
                     help={this.state.errors.certificateError ? 'Please select a valid certificate' : null }
                   >
-                  <Select id='snat' onChange={e => this.setCertificateName(e)}>
-                  {this.props.certificates.map((n, i) => {
+                  <Select id='certificate' onChange={e => this.setCertificateName(e)}>
+                  {this.props.certificates ? this.props.certificates.map((n, i) => {
                     return (
                       <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
                       )
-                    })}
+                    })
+                  :
+                  null
+                  }
                   </Select>
                   </Form.Item>
                   :
@@ -703,12 +739,15 @@ class CreateF5Service extends React.Component {
                     validateStatus={this.state.errors.keyError}
                     help={this.state.errors.keyError ? 'Please select a valid key' : null }
                   >
-                  <Select id='snat' onChange={e => this.setKeyName(e)}>
-                  {this.props.keys.map((n, i) => {
+                  <Select id='key' onChange={e => this.setKeyName(e)}>
+                  {this.props.keys ? this.props.keys.map((n, i) => {
                     return (
                       <Select.Option  key={i} value={n.name}>{n.name}</Select.Option>
                       )
-                    })}
+                    })
+                  :
+                    null
+                  }
                   </Select>
                   </Form.Item>
                   :
@@ -866,7 +905,9 @@ class CreateF5Service extends React.Component {
           }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+        { this.props.certificatesError ? <Error error={[this.props.certificatesError]} visible={true} type={'setF5CertificatesError'} /> : null }
+        { this.props.keysError ? <Error error={[this.props.keysError]} visible={true} type={'setF5KeysError'} /> : null }
+        { this.props.routeDomainsError ? <Error error={[this.props.routeDomainsError]} visible={true} type={'setF5RouteDomainsError'} /> : null }
 
       </React.Fragment>
 
@@ -876,12 +917,15 @@ class CreateF5Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes,
-  certificates : state.f5.certificates,
-  keys : state.f5.keys,
-  routeDomains: state.f5.routeDomains
+
+  certificates: state.f5.certificates,
+  certificatesError: state.f5.certificatesError,
+  keys: state.f5.keys,
+  keysError: state.f5.keysError,
+  routeDomains: state.f5.routeDomains,
+  routeDomainsError: state.f5.routeDomainsError,
 }))(CreateF5Service);

@@ -112,7 +112,6 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        
         r = error
       }
     )
@@ -129,7 +128,6 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        
         r = error
       }
     )
@@ -145,7 +143,6 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        
         r = error
       }
     )
@@ -179,8 +176,8 @@ class Manager extends React.Component {
 
 
   render() {
-    
-    
+
+
     return (
       <React.Fragment>
         <br/>

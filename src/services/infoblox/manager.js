@@ -85,6 +85,7 @@ class Manager extends React.Component {
             <ReleaseIp/>
           </Col>
         </Row>
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
       </React.Fragment>
     )
   }

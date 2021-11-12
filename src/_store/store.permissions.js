@@ -47,6 +47,7 @@ const permissionsSlice = createSlice({
         state.modifyInfobloxPermissionError = action.payload
       },
       deleteInfobloxPermissionError: ( state, action) => {
+
         state.deleteInfobloxPermissionError = action.payload
       },
     }

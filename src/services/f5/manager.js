@@ -63,7 +63,7 @@ class Manager extends React.Component {
 
   render() {
     return (
-      <React.Fragment >
+      <React.Fragment>
         <Row>
           <Col span={4} offset={2} >
             <p>Create Load Balancer</p>
@@ -80,6 +80,9 @@ class Manager extends React.Component {
             <PoolMaintenance/>
           </Col>
         </Row>
+
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+
       </React.Fragment>
     )
   }

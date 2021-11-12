@@ -73,6 +73,7 @@ class Modify extends React.Component {
   }
 
   onSearch = (searchText) => {
+    console.log(searchText)
     let items = []
     let options = []
 
@@ -386,6 +387,7 @@ class Modify extends React.Component {
               <React.Fragment>
               { this.state.partitions ?
                 <Select
+                  defaultValue={this.state.request.partition.name}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
