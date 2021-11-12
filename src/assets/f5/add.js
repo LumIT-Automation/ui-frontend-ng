@@ -32,7 +32,6 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {}
@@ -407,7 +406,10 @@ class Add extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
+
   token: state.ssoAuth.token,
  	assetAddError: state.f5.assetAddError,
+
 }))(Add);

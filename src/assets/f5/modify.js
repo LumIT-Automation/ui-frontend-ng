@@ -33,7 +33,6 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
       request: {}
@@ -399,7 +398,10 @@ class Modify extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
+
   token: state.ssoAuth.token,
  	assetModifyError: state.f5.assetModifyError,
+  
 }))(Modify);

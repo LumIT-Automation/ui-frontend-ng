@@ -21,7 +21,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: null
     };
   }
 
@@ -56,7 +55,6 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(setAssetsError(error))
-        this.setState({loading: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -88,8 +86,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	assetsError: state.f5.assetsError,
   authorizations: state.authorizations.f5,
+
   assets: state.f5.assets,
+ 	assetsError: state.f5.assetsError,
   assetsFetch: state.f5.assetsFetch
 }))(Manager);

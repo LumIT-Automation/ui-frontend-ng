@@ -205,14 +205,44 @@ fetchDevices = async () => {
                 <hr/>
 
                 <Row>
-                  <Col span={12}>
+                  <Col span={18}>
                     <Row>
-                      <Col offset={1} span={11}>
+                      <Col span={3}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
                           <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={11}>
+                      <Col offset={0} span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={0} span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={0} span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col span={3}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={0} span={3}>
                         <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
                           <Victory/>
                         </Card>
@@ -220,12 +250,50 @@ fetchDevices = async () => {
                     </Row>
                     <br/>
                     <Row>
-                      <Col offset={1} span={11}>
+                      <Col span={4}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
                           <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={11}>
+                      <Col offset={1} span={4}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={4}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={4}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col offset={1} span={4}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                    </Row>
+                    <br/>
+                    <Row>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={0} span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
+                          <Victory/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col offset={0} span={6}>
                         <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
                           <Victory/>
                         </Card>
@@ -234,7 +302,7 @@ fetchDevices = async () => {
                   </Col>
 
 
-                  <Col offset={2} span={10}>
+                  <Col offset={0} span={6}>
                   <Card title={<p style={{textAlign: 'center'}}>Region</p>} bordered={true}>
                     <Map />
                   </Card>

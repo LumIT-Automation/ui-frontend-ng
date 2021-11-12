@@ -20,7 +20,6 @@ class Delete extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
     };
   }
 
@@ -120,7 +119,10 @@ class Delete extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
+
   token: state.ssoAuth.token,
  	assetDeleteError: state.f5.assetDeleteError,
+  
 }))(Delete);
