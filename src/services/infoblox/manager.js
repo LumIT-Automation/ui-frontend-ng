@@ -1,8 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import Rest from "../../_helpers/Rest"
+import Error from '../../error'
 
-import { setAssetsFetch } from '../../_store/store.infoblox'
+import {
+  setAssets,
+  setAssetsError
+} from '../../_store/store.infoblox'
 
 import DetailsIp from './detailsIp'
 import RequestIp from './requestIp'
@@ -18,14 +23,15 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      error: null
     };
   }
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      if(!this.props.infobloxAssets) {
-        this.props.dispatch(setAssetsFetch(true))
+      if (!this.props.assetsError) {
+        if (!this.props.assets) {
+          this.fetchAssets()
+        }
       }
     }
   }
@@ -35,36 +41,30 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      if(!this.props.infobloxAssets) {
-
-        this.props.dispatch(setAssetsFetch(true))
-      }
-    }*/
   }
 
   componentWillUnmount() {
   }
 
-
+  fetchAssets = async () => {
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(setAssets( resp ))
+      },
+      error => {
+        this.props.dispatch(setAssetsError(error))
+      }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
+  }
 
 
   render() {
 
     return (
       <React.Fragment >
-
         <Row>
-        {/*
-          <Row>
-            <div style={{margin: '0 150px'}}>
-              <AssetSelector/>
-            </div>
-          </Row>
-          <Divider/>
-        */}
-          <Row>
-          </Row>
           <Col span={4} offset={2} >
             <p>IP details</p>
             <DetailsIp/>
@@ -85,14 +85,16 @@ class Manager extends React.Component {
             <ReleaseIp/>
           </Col>
         </Row>
-
       </React.Fragment>
-
     )
   }
 }
 
 export default connect((state) => ({
+  token: state.ssoAuth.token,
+
   authorizations: state.authorizations.infoblox,
+
   assets: state.infoblox.assets,
+  assetsError: state.infoblox.assetsError,
 }))(Manager);
