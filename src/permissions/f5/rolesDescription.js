@@ -137,7 +137,7 @@ class RolesDescription extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+          { this.props.fetchF5RolesError ? <Error component={'roledescription f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
           </React.Fragment>
         :
           null

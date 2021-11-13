@@ -61,11 +61,9 @@ class Modify extends React.Component {
     request.role = this.props.obj.role
     request.asset = this.props.obj.asset
     request.network = this.props.obj.network
-    request.assetId = this.props.obj.network.asset_id
     await this.setState({request: request})
     this.fetchRoles()
     this.fetchNetworks()
-
   }
 
   ig = () => {
@@ -90,8 +88,8 @@ class Modify extends React.Component {
   }
 
   setAsset = id => {
-    let request = Object.assign({}, this.state.request)
-    request.assetId = id
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.network.asset_id = id
     this.setState({request: request}, () => this.fetchNetworks())
   }
 
@@ -123,7 +121,7 @@ class Modify extends React.Component {
   }
 
   setRole = role => {
-    let request = Object.assign({}, this.state.request);
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
   }
@@ -160,7 +158,7 @@ class Modify extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/${this.state.request.assetId}/networks/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.network.asset_id}/networks/`, this.props.token)
     return r
   }
 
@@ -175,7 +173,7 @@ class Modify extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/${this.state.request.assetId}/network-containers/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.network.asset_id}/network-containers/`, this.props.token)
     return r
   }
 
@@ -232,7 +230,7 @@ class Modify extends React.Component {
           "role": this.state.request.role,
           "network": {
               "name": this.state.request.network.name,
-              "id_asset": this.state.request.assetId
+              "id_asset": this.state.request.network.asset_id
           }
         }
       }
@@ -374,9 +372,9 @@ class Modify extends React.Component {
             </Form.Item>
 
             <Form.Item
-              label="Networks"
-              name="networks"
-              key="networks"
+              label="Network"
+              name="network"
+              key="network"
               validateStatus={this.state.errors.networkName}
               help={this.state.errors.networkName ? 'Network not found' : null }
             >
@@ -439,7 +437,7 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.assetId ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.network.asset_id ?
                 <Button type="primary" onClick={() => this.modifyPermission()} >
                   Modify Permission
                 </Button>

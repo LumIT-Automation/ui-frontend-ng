@@ -7,7 +7,9 @@ import Error from '../../error'
 import {
   fetchF5RolesError,
   addNewDnError,
-  modifyF5PermissionError } from '../../_store/store.permissions'
+  modifyF5PermissionError
+} from '../../_store/store.permissions'
+
 import {
   setPermissionsFetch,
   setPartitionsError
@@ -20,7 +22,7 @@ const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 12 },
-};
+}
 
 
 
@@ -40,25 +42,18 @@ class Modify extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
-    if (
-      newProps.fetchF5RolesError ||
-      newProps.partitionsError ||
-      newProps.addNewDnError ||
-      newProps.modifyF5PermissionError
-    ) {
-      return false
-    }
     return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request)
   }
 
   componentWillUnmount() {
   }
 
   details = async () => {
-
+    this.ig()
     this.setState({visible: true})
     let request = {}
     request.cn = this.props.obj.identity_group_name
@@ -66,86 +61,35 @@ class Modify extends React.Component {
     request.role = this.props.obj.role
     request.asset = this.props.obj.asset
     request.partition = this.props.obj.partition
-    request.assetId = this.props.obj.partition.asset_id
     await this.setState({request: request})
     this.fetchRoles()
     this.fetchPartitions()
   }
 
-  onSearch = (searchText) => {
-    console.log(searchText)
+  ig = () => {
     let items = []
-    let options = []
 
     let identityGroups = Object.assign([], this.props.identityGroups)
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-
-    let matchFound = items.filter(a =>{
-      return a.toLowerCase().includes(searchText.toLowerCase())
-    })
-
-    for(var i=0; i<matchFound.length; i++)  {
-      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
-    }
-
-    this.setState({
-      options: options,
-      items: items,
-    })
+    this.setState({items: items})
   }
 
-  selectDn = e => {
+  setDn = dn => {
     let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-    let dn
+    request.dn = dn
 
-    if (e) {
-      if (e.target) {
-        dn = e.target.value
-      }
-      else {
-        dn = e
-      }
-
-      if (this.state.items.includes(dn)) {
-        this.setState({groupToAdd: false})
-        request.dn = dn
-        let cn = this.props.identityGroups.find( ig => {
-          return ig.identity_group_identifier === dn
-        })
-        request.cn = cn.name
-        delete errors.dnError
-      }
-      else {
-        this.setState({groupToAdd: true})
-        let list = dn.split(',')
-        let cns = []
-
-        let found = list.filter(i => {
-          let iLow = i.toLowerCase()
-          if (iLow.startsWith('cn=')) {
-            let cn = iLow.split('=')
-            cns.push(cn[1])
-          }
-        })
-
-        request.dn = dn
-        request.cn = cns[0]
-        delete errors.dnError
-      }
-
-    }
-    else {
-      errors.dnError = 'error'
-    }
-    this.setState({request: request, errors: errors})
+    let cn = this.props.identityGroups.find( ig => {
+      return ig.identity_group_identifier === dn
+    })
+    request.cn = cn.name
+    this.setState({request: request})
   }
 
   setAsset = id => {
-    let request = Object.assign({}, this.state.request);
-    request.assetId = id
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.partition.asset_id = id
     this.setState({request: request}, () => this.fetchPartitions())
   }
 
@@ -177,12 +121,13 @@ class Modify extends React.Component {
   }
 
   setRole = role => {
-    let request = Object.assign({}, this.state.request);
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
   }
 
   fetchPartitions = async (id) => {
+    this.setState({partitionsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -192,12 +137,13 @@ class Modify extends React.Component {
         this.props.dispatch(setPartitionsError(error))
       }
     )
-    await rest.doXHR(`f5/${this.state.request.assetId}/partitions/`, this.props.token)
+    await rest.doXHR(`f5/${this.state.request.partition.asset_id}/partitions/`, this.props.token)
+    this.setState({partitionsLoading: false})
   }
 
   setPartition = partition => {
-    let request = Object.assign({}, this.state.request);
-    request.partition = partition
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.partition.name = partition
     this.setState({request: request})
   }
 
@@ -247,8 +193,8 @@ class Modify extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "partition": {
-              "name": this.state.request.partition,
-              "id_asset": this.state.request.assetId
+              "name": this.state.request.partition.name,
+              "id_asset": this.state.request.partition.asset_id
           }
         }
       }
@@ -288,6 +234,7 @@ class Modify extends React.Component {
 
 
   render() {
+    console.log(this.state.request.partition)
     return (
       <React.Fragment>
 
@@ -319,7 +266,6 @@ class Modify extends React.Component {
               dn: this.state.request.dn,
               asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
               role: this.state.request.role,
-              partitions: this.state.request.partition,
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -329,13 +275,34 @@ class Modify extends React.Component {
               name='dn'
               key="dn"
             >
-              <AutoComplete
-                 options={this.state.options}
-                 onSearch={this.onSearch}
-                 onSelect={this.selectDn}
-                 onBlur={this.selectDn}
-                 placeholder="cn=..."
-               />
+            <React.Fragment>
+            { this.state.items && this.state.items.length > 0 ?
+              <Select
+                defaultValue={this.state.request.dn}
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={n => this.setDn(n)}
+              >
+                <React.Fragment>
+                  {this.state.items.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                  }
+                </React.Fragment>
+              </Select>
+              :
+              <Select disabled value={null} onChange={null}>
+              </Select>
+            }
+            </React.Fragment>
             </Form.Item>
 
             <Form.Item
@@ -375,8 +342,8 @@ class Modify extends React.Component {
 
             <Form.Item
               label="Partition"
-              name="partitions"
-              key="partitions"
+              name="partition"
+              key="partition"
               validateStatus={this.state.errors.partitionName}
               help={this.state.errors.partitionName ? 'Partition not found' : null }
             >
@@ -385,7 +352,7 @@ class Modify extends React.Component {
               <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
               :
               <React.Fragment>
-              { this.state.partitions ?
+              { this.state.partitions && this.state.partitions.length > 0 ?
                 <Select
                   defaultValue={this.state.request.partition.name}
                   showSearch
@@ -438,7 +405,7 @@ class Modify extends React.Component {
                   name="button"
                   key="button"
                 >
-                  { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition && this.state.request.assetId ?
+                  { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.partition.asset_id ?
                     <Button type="primary" onClick={() => this.modifyPermission()} >
                       Modify Permission
                     </Button>
@@ -453,11 +420,17 @@ class Modify extends React.Component {
             }
         </Modal>
 
-        { this.props.modifyF5PermissionError ? <Error error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
-        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
-        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
-        { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.modifyF5PermissionError ? <Error component={'modify f5'} error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
+          { this.props.fetchF5RolesError ? <Error component={'modify f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+          { this.props.addNewDnError ? <Error component={'modify f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
+          { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
       </React.Fragment>
 
     )

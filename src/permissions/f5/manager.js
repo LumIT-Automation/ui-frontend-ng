@@ -188,9 +188,9 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
+        { this.props.assetsError ? <Error component={'manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error component={'manager f5'} error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error component={'manager f5'} error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
       </React.Fragment>
     )
   }

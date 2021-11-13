@@ -9,6 +9,7 @@ import {
   setPermissions,
   setPermissionsFetch,
   setPermissionsError,
+  
   setAssets,
   setAssetsError,
   setIdentityGroups,
@@ -196,7 +197,7 @@ class Manager extends React.Component {
         { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
         { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
         { this.props.permissionsError ? <Error component={'manager infoblox'} error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
-        
+
       </React.Fragment>
     )
   }
