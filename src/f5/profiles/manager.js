@@ -29,8 +29,11 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.profiles) {
-        this.fetchProfiles()
+      if (!this.props.profilesError) {
+        if (!this.props.profiles) {
+          this.fetchProfiles()
+          this.props.dispatch(setProfilesFetch(false))
+        }
       }
     }
   }

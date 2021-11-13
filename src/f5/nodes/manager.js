@@ -34,8 +34,11 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.nodes) {
-        this.fetchNodes()
+      if (!this.props.nodesError) {
+        if (!this.props.nodes) {
+          this.fetchNodes()
+          this.props.dispatch(setNodesFetch(false))
+        }
       }
     }
   }
@@ -56,7 +59,6 @@ class Manager extends React.Component {
         this.fetchNodes()
         this.props.dispatch(setNodesFetch(false))
       }
-
     }
   }
 

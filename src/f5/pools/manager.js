@@ -28,8 +28,11 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.pools) {
-        this.fetchPools()
+      if (!this.props.poolsError) {
+        if (!this.props.pools) {
+          this.fetchPools()
+          this.props.dispatch(setPoolsFetch(false))
+        }
       }
     }
   }

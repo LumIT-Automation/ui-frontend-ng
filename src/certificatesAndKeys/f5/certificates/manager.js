@@ -28,8 +28,11 @@ class CertificatesManager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset) {
-      if (!this.props.certificates) {
-        this.fetchCertificates()
+      if (!this.props.certificatesError) {
+        if (!this.props.certificates) {
+          this.fetchCertificates()
+          this.props.dispatch(setCertificatesFetch(false))
+        }
       }
     }
   }

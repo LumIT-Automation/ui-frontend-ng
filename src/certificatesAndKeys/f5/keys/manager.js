@@ -28,8 +28,11 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset) {
-      if (!this.props.keys) {
-        this.fetchKeys()
+      if (!this.props.keysError) {
+        if (!this.props.keys) {
+          this.fetchKeys()
+          this.props.dispatch(setKeysFetch(false))
+        }
       }
     }
   }
