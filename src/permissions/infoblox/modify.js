@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
 import {
   fetchInfobloxRolesError,
   addNewDnError,
   modifyInfobloxPermissionError
 } from '../../_store/store.permissions'
+
 import {
   setPermissionsFetch,
   setNetworksError,
@@ -179,9 +180,8 @@ class Modify extends React.Component {
   }
 
   setNetwork = net => {
-    let request = Object.assign({}, this.state.request);
-    let network = Object.assign({}, this.state.request.network);
-    network.name = net
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.network.name = net
     this.setState({request: request})
   }
 
@@ -454,12 +454,18 @@ class Modify extends React.Component {
         }
         </Modal>
 
-        { this.props.fetchInfobloxRolesError ? <Error error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
-        { this.props.networksError ? <Error error={[this.props.networksError]} visible={true} type={'setInfobloxNetworksError'} /> : null }
-        { this.props.containersError ? <Error error={[this.props.containersError]} visible={true} type={'setInfobloxContainersError'} /> : null }
-        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.modifyInfobloxPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
+          { this.props.fetchInfobloxRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+          { this.props.addNewDnError ? <Error component={'modify infoblox'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
-        { this.props.modifyInfobloxPermissionError ? <Error error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
+          { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'setNetworksError'} /> : null }
+          { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'setContainersError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
 

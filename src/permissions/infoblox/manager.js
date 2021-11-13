@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 import Rest from '../../_helpers/Rest'
 
 import {
@@ -193,9 +193,10 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setInfobloxIdentityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setInfobloxPermissionsError'} /> : null }
+        { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error component={'manager infoblox'} error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
+        
       </React.Fragment>
     )
   }

@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
 import {
   fetchInfobloxRolesError,
   addNewDnError,
   addInfobloxPermissionError,
 } from '../../_store/store.permissions'
+
 import {
   setPermissionsFetch,
   setNetworksError,
@@ -472,13 +473,18 @@ class Add extends React.Component {
         }
         </Modal>
 
-        { this.props.fetchInfobloxRolesError ? <Error error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
-        { this.props.networksError ? <Error error={[this.props.networksError]} visible={true} type={'setInfobloxNetworksError'} /> : null }
-        { this.props.containersError ? <Error error={[this.props.containersError]} visible={true} type={'setInfobloxContainersError'} /> : null }
-        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.addInfobloxPermissionError ? <Error component={'add infoblox'} error={[this.props.addInfobloxPermissionError]} visible={true} type={'addInfobloxPermissionError'} /> : null }
+          { this.props.fetchInfobloxRolesError ? <Error component={'add infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+          { this.props.addNewDnError ? <Error component={'add infoblox'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
-        { this.props.addInfobloxPermissionError ? <Error error={[this.props.addInfobloxPermissionError]} visible={true} type={'addInfobloxPermissionError'} /> : null }
-
+          { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'setNetworksError'} /> : null }
+          { this.props.containersError ? <Error component={'add infoblox'} error={[this.props.containersError]} visible={true} type={'setContainersError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
       </React.Fragment>
 
     )

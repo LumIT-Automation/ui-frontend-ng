@@ -87,6 +87,8 @@ class Error extends Component {
 
   componentDidMount() {
     console.log('error mount')
+    console.log('---------------------')
+    console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
   }
@@ -97,7 +99,8 @@ class Error extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log('error update')
-
+    console.log('---------------------')
+    console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
   }
@@ -122,6 +125,7 @@ class Error extends Component {
           this.props.dispatch(setF5PermissionsError(null))
           break
         case 'fetchF5RolesError':
+        console.log('error')
           this.props.dispatch(fetchF5RolesError(null))
           break
         case 'addNewDnError':
@@ -375,7 +379,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>! ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}

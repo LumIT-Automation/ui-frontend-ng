@@ -2,9 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
-import { deleteInfobloxPermissionError } from '../../_store/store.error'
+import {
+  deleteInfobloxPermissionError,
+} from '../../_store/store.permissions'
+
 import { setPermissionsFetch } from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
@@ -117,8 +120,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-        { this.props.deleteInfobloxPermissionError ? <Error error={[this.props.deleteInfobloxPermissionError]} visible={true} type={'deleteInfobloxPermissionError'} /> : null }
-
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.deleteInfobloxPermissionError ? <Error component={'delete infoblox'} error={[this.props.deleteInfobloxPermissionError]} visible={true} type={'deleteInfobloxPermissionError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
       </React.Fragment>
 
     )

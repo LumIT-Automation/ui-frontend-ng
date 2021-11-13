@@ -2,13 +2,14 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import {
   fetchF5RolesError,
   addNewDnError,
   addF5PermissionError,
 } from '../../_store/store.permissions'
+
 import {
   setPermissionsFetch,
   setPartitionsError
@@ -133,6 +134,7 @@ class Add extends React.Component {
   }
 
   fetchRoles = async () => {
+    console.log('fetchRoles')
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
@@ -144,7 +146,7 @@ class Add extends React.Component {
         this.setState({rolesLoading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    await rest.doXHR(`f5/roless/?related=privileges`, this.props.token)
     this.setState({rolesLoading: false})
   }
 
@@ -209,7 +211,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false, error: error})
       }
     )
-    await rest.doXHR(`f5/identity-groupsx/`, this.props.token, b )
+    await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
     return r
   }
 
@@ -432,10 +434,17 @@ class Add extends React.Component {
           }
         </Modal>
 
-        { this.props.addF5PermissionError ? <Error error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
-        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
-        { this.props.addNewDnError ? <Error error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
-        { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.addF5PermissionError ? <Error component={'add f5'} error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
+          { this.props.fetchF5RolesError ? <Error component={'add f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+          { this.props.addNewDnError ? <Error component={'add f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+
+          { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import { fetchF5RolesError } from '../../_store/store.permissions'
 
@@ -135,7 +135,13 @@ class RolesDescription extends React.Component {
           />
         </Modal>
 
-        { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+          { this.props.fetchF5RolesError ? <Error error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
 
