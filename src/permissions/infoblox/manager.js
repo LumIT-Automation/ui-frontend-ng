@@ -35,9 +35,9 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
+      this.props.dispatch(setPermissionsFetch(false))
       if (!this.props.permissions) {
         this.main()
-        this.props.dispatch(setPermissionsFetch(false))
       }
     }
   }

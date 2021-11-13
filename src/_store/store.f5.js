@@ -24,6 +24,8 @@ const f5Slice = createSlice({
           state.permissions = action.payload
         },
         setPermissionsFetch: (state, action) => {
+          console.log('store')
+          console.log(action.payload)
           state.permissionsFetch = action.payload
         },
         setPermissionsError: (state, action) => {

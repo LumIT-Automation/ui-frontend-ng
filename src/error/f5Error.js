@@ -14,7 +14,7 @@ import {
   modifyF5PermissionError,
   deleteF5PermissionError,
 
-} from './_store/store.permissions'
+} from '../_store/store.permissions'
 import {
   setPermissionsError,
   setIdentityGroupsError,

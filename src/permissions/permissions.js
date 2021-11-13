@@ -26,7 +26,7 @@ class Permissions extends React.Component {
   }
 
   componentDidMount() {
-
+    console.log('permissions mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -34,6 +34,7 @@ class Permissions extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('permissions update')
   }
 
   componentWillUnmount() {

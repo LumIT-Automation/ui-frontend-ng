@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 import Rest from '../../_helpers/Rest'
 
 import {
@@ -9,6 +9,7 @@ import {
   setPermissions,
   setPermissionsFetch,
   setPermissionsError,
+
   setAssets,
   setAssetsError,
   setIdentityGroups,
@@ -35,9 +36,9 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
+      this.props.dispatch(setPermissionsFetch(false))
       if (!this.props.permissions) {
         this.main()
-        this.props.dispatch(setPermissionsFetch(false))
       }
     }
   }
@@ -187,9 +188,9 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setF5IdentityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setF5PermissionsError'} /> : null }
+        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
       </React.Fragment>
     )
   }

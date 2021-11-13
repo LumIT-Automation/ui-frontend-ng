@@ -33,9 +33,9 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset) {
       if (!this.props.treeError) {
+        this.props.dispatch(setTreeFetch(false))
         if (!this.props.tree) {
           this.fetchTree()
-          this.props.dispatch(setTreeFetch(false))
         }
       }
     }

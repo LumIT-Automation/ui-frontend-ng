@@ -28,9 +28,9 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.virtualServersError) {
+        this.props.dispatch(setVirtualServersFetch(false))
         if (!this.props.virtualServers) {
           this.fetchVirtualServers()
-          this.props.dispatch(setVirtualServersFetch(false))
         }
       }
     }

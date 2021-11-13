@@ -179,7 +179,6 @@ class Modify extends React.Component {
   }
 
   setNetwork = net => {
-    console.log(net)
     let request = Object.assign({}, this.state.request);
     let network = Object.assign({}, this.state.request.network);
     network.name = net
@@ -269,8 +268,6 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log('modifyInfobloxPermission')
-    console.log(this.props.obj)
     return (
       <React.Fragment>
 

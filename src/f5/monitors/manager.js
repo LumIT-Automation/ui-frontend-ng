@@ -30,9 +30,9 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.monitorsError) {
+        this.props.dispatch(setMonitorsFetch(false))
         if (!this.props.monitors) {
           this.fetchMonitors()
-          this.props.dispatch(setMonitorsFetch(false))
         }
       }
     }

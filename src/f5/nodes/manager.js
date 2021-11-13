@@ -22,22 +22,15 @@ class Manager extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
-      /*error: {
-        status: 400,
-        message: "Bad Request",
-        reason: "The requested folder (/bla) was not found.",
-        type: "basic",
-        url: "https://10.0.111.10/backend/f5/2/bla/nodes/"
-      }*/
     };
   }
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.nodesError) {
+        this.props.dispatch(setNodesFetch(false))
         if (!this.props.nodes) {
           this.fetchNodes()
-          this.props.dispatch(setNodesFetch(false))
         }
       }
     }
