@@ -69,7 +69,7 @@ class Modify extends React.Component {
   ig = () => {
     let items = []
 
-    let identityGroups = Object.assign([], this.props.identityGroups)
+    let identityGroups = JSON.parse(JSON.stringify(this.props.identityGroups))
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
@@ -248,7 +248,6 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/permission/${this.props.obj.id}/`, this.props.token, b )
-
   }
 
   response = () => {
@@ -296,7 +295,6 @@ class Modify extends React.Component {
               remember: true,
               asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
               role: this.state.request.role,
-              networks: this.state.request.network,
             }}
             onFinish={null}
             onFinishFailed={null}
@@ -437,7 +435,7 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.network.asset_id ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.network.asset_id ?
                 <Button type="primary" onClick={() => this.modifyPermission()} >
                   Modify Permission
                 </Button>

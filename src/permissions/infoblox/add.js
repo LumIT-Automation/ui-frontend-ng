@@ -50,7 +50,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.request)
   }
 
   componentWillUnmount() {
@@ -65,7 +64,7 @@ class Add extends React.Component {
   ig = () => {
     let items = []
 
-    let identityGroups = Object.assign([], this.props.identityGroups)
+    let identityGroups = JSON.parse(JSON.stringify(this.props.identityGroups))
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })

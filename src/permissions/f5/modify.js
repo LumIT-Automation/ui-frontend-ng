@@ -46,7 +46,6 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.request)
   }
 
   componentWillUnmount() {
@@ -69,7 +68,7 @@ class Modify extends React.Component {
   ig = () => {
     let items = []
 
-    let identityGroups = Object.assign([], this.props.identityGroups)
+    let identityGroups = JSON.parse(JSON.stringify(this.props.identityGroups))
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
@@ -77,7 +76,7 @@ class Modify extends React.Component {
   }
 
   setDn = dn => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.dn = dn
 
     let cn = this.props.identityGroups.find( ig => {
@@ -148,7 +147,7 @@ class Modify extends React.Component {
   }
 
   addNewDn = async () => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let r
     const b = {
       "data":
@@ -212,11 +211,6 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`f5/permission/${this.props.obj.id}/`, this.props.token, b )
-
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   response = () => {
@@ -234,7 +228,6 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.state.request.partition)
     return (
       <React.Fragment>
 
