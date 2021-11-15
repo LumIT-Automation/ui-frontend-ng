@@ -77,7 +77,7 @@ class Modify extends React.Component {
   }
 
   setDn = dn => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.dn = dn
 
     let cn = this.props.identityGroups.find( ig => {
@@ -184,7 +184,7 @@ class Modify extends React.Component {
   }
 
   addNewDn = async () => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let r
     const b = {
       "data":
@@ -229,8 +229,8 @@ class Modify extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "network": {
-              "name": this.state.request.network.name,
-              "id_asset": this.state.request.network.asset_id
+            "name": this.state.request.network.name,
+            "id_asset": this.state.request.network.asset_id
           }
         }
       }

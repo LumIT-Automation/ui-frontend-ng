@@ -36,7 +36,9 @@ class Add extends React.Component {
       errors: {},
       message:'',
       groupToAdd: false,
-      request: {}
+      request: {
+        network: {}
+      }
     };
   }
 
@@ -48,88 +50,41 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request)
   }
 
   componentWillUnmount() {
   }
 
   details = () => {
+    this.ig()
     this.setState({visible: true})
     this.fetchRoles()
   }
 
-  onSearch = (searchText) => {
+  ig = () => {
     let items = []
-    let options = []
 
     let identityGroups = Object.assign([], this.props.identityGroups)
     identityGroups.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-
-    let matchFound = items.filter(a =>{
-      return a.toLowerCase().includes(searchText.toLowerCase())
-    })
-
-    for(var i=0; i<matchFound.length; i++)  {
-      options = [...options, {"label": matchFound[i], "value": matchFound[i]}]
-    }
-
-    this.setState({
-      options: options,
-      items: items,
-    })
+    this.setState({items: items})
   }
 
-  selectDn = e => {
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-    let dn
+  setDn = dn => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.dn = dn
 
-    if (e) {
-      if (e.target) {
-        dn = e.target.value
-      }
-      else {
-        dn = e
-      }
-
-      if (this.state.items.includes(dn)) {
-        this.setState({groupToAdd: false})
-        request.dn = dn
-        let cn = this.props.identityGroups.find( ig => {
-          return ig.identity_group_identifier === dn
-        })
-        request.cn = cn.name
-        delete errors.dnError
-      }
-      else {
-        this.setState({groupToAdd: true})
-        let list = dn.split(',')
-        let cns = []
-
-        let found = list.filter(i => {
-          let iLow = i.toLowerCase()
-          if (iLow.startsWith('cn=')) {
-            let cn = iLow.split('=')
-            cns.push(cn[1])
-          }
-        })
-
-        request.dn = dn
-        request.cn = cns[0]
-        delete errors.dnError
-      }
-
-    }
-    else {
-      errors.dnError = 'error'
-    }
-    this.setState({request: request, errors: errors})
+    let cn = this.props.identityGroups.find( ig => {
+      return ig.identity_group_identifier === dn
+    })
+    request.cn = cn.name
+    this.setState({request: request})
   }
 
   setAsset = id => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.assetId = id
     this.setState({request: request}, () => this.fetchNetworks())
   }
@@ -162,7 +117,7 @@ class Add extends React.Component {
   }
 
   setRole = role => {
-    let request = Object.assign({}, this.state.request);
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
   }
@@ -219,13 +174,14 @@ class Add extends React.Component {
   }
 
   setNetwork = network => {
-    let request = Object.assign({}, this.state.request);
-    request.network = network
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.network = {}
+    request.network.name = network
     this.setState({request: request})
   }
 
   addNewDn = async () => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let r
     const b = {
       "data":
@@ -270,7 +226,7 @@ class Add extends React.Component {
           "identity_group_identifier": this.state.request.dn,
           "role": this.state.request.role,
           "network": {
-            "name": this.state.request.network,
+            "name": this.state.request.network.name,
             "id_asset": this.state.request.assetId
           }
         }
@@ -348,14 +304,35 @@ class Add extends React.Component {
               name='dn'
               key="dn"
             >
-              <AutoComplete
-                 options={this.state.options}
-                 onSearch={this.onSearch}
-                 onSelect={this.selectDn}
-                 onBlur={this.selectDn}
-                 placeholder="cn=..."
-               />
-            </Form.Item>
+              <React.Fragment>
+              { this.state.items && this.state.items.length > 0 ?
+                <Select
+                  defaultValue={this.state.request.dn}
+                  showSearch
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onChange={n => this.setDn(n)}
+                >
+                  <React.Fragment>
+                    {this.state.items.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                      )
+                    })
+                    }
+                  </React.Fragment>
+                </Select>
+                :
+                <Select disabled value={null} onChange={null}>
+                </Select>
+              }
+              </React.Fragment>
+          </Form.Item>
 
             <Form.Item
               label="Asset"
@@ -395,9 +372,9 @@ class Add extends React.Component {
 
 
             <Form.Item
-              label="Networks"
-              name="networks"
-              key="networks"
+              label="Network"
+              name="network"
+              key="network"
               validateStatus={this.state.errors.networkName}
               help={this.state.errors.networkName ? 'Network not found' : null }
             >
@@ -408,7 +385,7 @@ class Add extends React.Component {
               <React.Fragment>
               { this.state.nets && this.state.nets.length > 0?
                 <Select
-                  defaultValue={this.state.network ? this.state.network : null}
+                  defaultValue={this.state.request.network ? this.state.request.network.name : null}
                   showSearch
                   optionFilterProp="children"
                   filterOption={(input, option) =>
@@ -458,7 +435,7 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network && this.state.request.assetId ?
+              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.assetId ?
                 <Button type="primary" onClick={() => this.addPermission()} >
                   Add Permission
                 </Button>
