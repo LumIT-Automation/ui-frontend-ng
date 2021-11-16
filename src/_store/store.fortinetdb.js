@@ -44,6 +44,19 @@ const fortinetdbSlice = createSlice({
         state.devicesError = action.payload
       },
 
+      setDdossesLoading: (state, action) => {
+        state.ddossesLoading = action.payload
+      },
+      setDdosses: (state, action) => {
+        state.ddosses = action.payload.data.items
+      },
+      setDdossesFetch: (state, action) => {
+        state.ddossesFetch = action.payload
+      },
+      setDdossesError: (state, action) => {
+        state.ddossesError = action.payload
+      },
+
       setDevice: (state, action) => {
         state.device = action.payload
       },
@@ -108,6 +121,11 @@ export const {
   setDevices,
   setDevicesFetch,
   setDevicesError,
+
+  setDdossesLoading,
+  setDdosses,
+  setDdossesFetch,
+  setDdossesError,
 
   setFirmwaresLoading,
   setFirmwares,

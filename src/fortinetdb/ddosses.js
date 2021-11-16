@@ -4,9 +4,9 @@ import { Tabs, Space, Spin } from 'antd'
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setDevices, setDevicesLoading, setDevicesError, setDevicesFetch } from '../_store/store.fortinetdb'
+import { setDdosses, setDdossesLoading, setDdossesError, setDdossesFetch } from '../_store/store.fortinetdb'
 
-import List from './devices/list'
+import List from './ddosses/list'
 
 import 'antd/dist/antd.css'
 import '../App.css'
@@ -16,7 +16,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class Devices extends React.Component {
+class Ddosses extends React.Component {
 
   constructor(props) {
     super(props);
@@ -26,8 +26,8 @@ class Devices extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.devices) {
-      this.fetchDevices()
+    if (!this.props.ddosses) {
+      this.fetchDdosses()
     }
   }
 
@@ -36,32 +36,32 @@ class Devices extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.devicesFetch) {
-      this.fetchDevices()
-      this.props.dispatch(setDevicesFetch(false))
+    if (this.props.ddossesFetch) {
+      this.fetchDdosses()
+      this.props.dispatch(setDdossesFetch(false))
     }
   }
 
   componentWillUnmount() {
   }
 
-  fetchDevices = async () => {
-    this.props.dispatch(setDevicesLoading(true))
+  fetchDdosses = async () => {
+    this.props.dispatch(setDdossesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setDevices(resp))
+        this.props.dispatch(setDdosses(resp))
       },
       error => {
-        this.props.dispatch(setDevicesError(error))
+        this.props.dispatch(setDdossesError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/`, this.props.token)
-    this.props.dispatch(setDevicesLoading(false))
+    await rest.doXHR(`fortinetdb/ddosses/`, this.props.token)
+    this.props.dispatch(setDdossesLoading(false))
   }
 
-  devicesRefresh = () => {
-    this.props.dispatch(setDevicesFetch(true))
+  ddossesRefresh = () => {
+    this.props.dispatch(setDdossesFetch(true))
   }
 
 
@@ -70,12 +70,12 @@ class Devices extends React.Component {
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
-            {this.props.devicesLoading ?
-              <TabPane key="devices" tab="Devices">
+            {this.props.ddossesLoading ?
+              <TabPane key="ddosses" tab="Ddosses">
                 <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
               </TabPane>
             :
-              <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.devicesRefresh()}/></span>>
+              <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.ddossesRefresh()}/></span>>
                 <List/>
               </TabPane>
             }
@@ -93,11 +93,11 @@ export default connect((state) => ({
 
   fortinetdbauth: state.authorizations.fortinetdb,
 
-  devicesLoading: state.fortinetdb.devicesLoading,
-  devices: state.fortinetdb.devices,
-  devicesError: state.fortinetdb.devicesError,
-  devicesFetch: state.fortinetdb.devicesFetch
-}))(Devices);
+  ddossesLoading: state.fortinetdb.ddossesLoading,
+  ddosses: state.fortinetdb.ddosses,
+  ddossesError: state.fortinetdb.ddossesError,
+  ddossesFetch: state.fortinetdb.ddossesFetch
+}))(Ddosses);
 
 
 
@@ -109,12 +109,12 @@ export default connect((state) => ({
     <Tabs type="card">
       { this.props.fortinetdbauth && (this.props.fortinetdbauth.assets_get || this.props.fortinetdbauth.any) ?
         <React.Fragment>
-          {this.props.devicesLoading ?
+          {this.props.ddossesLoading ?
             <TabPane key="Fortinetdb" tab="Fortinetdb">
               <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
             </TabPane>
             :
-            <TabPane key="devices" tab=<span>Fortinetdb <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.devicesDevicesRefresh()}/></span>>
+            <TabPane key="ddosses" tab=<span>Fortinetdb <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.ddossesDdossesRefresh()}/></span>>
               <List/>
             </TabPane>
           }
