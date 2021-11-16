@@ -12,10 +12,12 @@ import {
 
 import {
   setPermissionsFetch,
+  setIdentityGroups,
+  setIdentityGroupsError,
   setPartitionsError
 } from '../../_store/store.f5'
 
-import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
+import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select, Input, Row, Col } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
@@ -49,6 +51,7 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
   }
 
   componentWillUnmount() {
@@ -70,7 +73,9 @@ class Add extends React.Component {
     this.setState({items: items})
   }
 
-  setDn = dn => {
+  setDn = async dn => {
+    console.log('setDn')
+    console.log(dn)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.dn = dn
 
@@ -78,7 +83,109 @@ class Add extends React.Component {
       return ig.identity_group_identifier === dn
     })
     request.cn = cn.name
-    this.setState({request: request})
+    await this.setState({request: request, newDn: null})
+  }
+
+  setNewDn = async e => {
+    let dn = e.target.value
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (this.state.items.includes(dn)) {
+      errors.newDn = null
+      await this.setState({errors: errors})
+      this.setDn(dn)
+    }
+    else {
+      request.dn = ''
+      request.cn = ''
+      await this.setState({request: request})
+
+      let list = dn.split(',')
+      let cns = []
+
+      let found = list.filter(i => {
+        let iLow = i.toLowerCase()
+        if (iLow.startsWith('cn=')) {
+          let cn = iLow.split('=')
+          cns.push(cn[1])
+        }
+      })
+      errors.newDn = null
+      this.setState({newDn: dn, newCn: cns[0], errors: errors})
+    }
+  }
+
+  handleNewDn = async () => {
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (this.state.newDn && this.state.newCn) {
+
+      errors.newDn = null
+      await this.setState({errors: errors})
+
+      let awaitDn = await this.addNewDn(this.state.newDn, this.state.newCn)
+      this.setState({addDnLoading: false})
+
+      if (awaitDn.status && awaitDn.status !== 201) {
+        this.props.dispatch(addNewDnError(awaitDn))
+        return
+      }
+
+      let identityGroups = await this.fetchIdentityGroups()
+      if (identityGroups.status && identityGroups.status !== 200 ) {
+        this.props.dispatch(setIdentityGroupsError(identityGroups))
+        return
+      }
+      else {
+        this.props.dispatch(setIdentityGroups( identityGroups ))
+      }
+      this.setDn(this.state.newDn)
+    }
+    else {
+      errors.newDn = 'error'
+      this.setState({errors: errors})
+    }
+  }
+
+  addNewDn = async (dn, cn) => {
+    this.setState({addDnLoading: true})
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let r
+    const b = {
+      "data":
+        {
+          "name": cn,
+          "identity_group_identifier": dn
+        }
+      }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
+    return r
+  }
+
+  fetchIdentityGroups = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
   }
 
   setAsset = id => {
@@ -141,43 +248,9 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  addNewDn = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let r
-    const b = {
-      "data":
-        {
-          "name": request.cn,
-          "identity_group_identifier": request.dn
-        }
-      }
 
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-        this.setState({loading: false, response: true})
-      },
-      error => {
-        this.props.dispatch(addNewDnError(error))
-        r = error
-        this.setState({loading: false, response: false, error: error})
-      }
-    )
-    await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
-    return r
-  }
 
   addPermission = async () => {
-    if (this.state.groupToAdd) {
-      let awaitDn = await this.addNewDn()
-      if (awaitDn.status && awaitDn.status !== 201) {
-        return
-      }
-    }
-
     this.setState({message: null});
 
     const b = {
@@ -240,190 +313,205 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.response &&
-          <Result
-             status="success"
-             title="Added"
-           />
-        }
-        { !this.state.loading && !this.state.response &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={this.state.request ? {
-              remember: true,
-              dn: this.state.request.dn,
-              asset: this.state.request.assetId,
-              role: this.state.request.role
-            }: null}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-            <Form.Item
-              label="Distinguished Name"
-              name='dn'
-              key="dn"
-            >
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+          { !this.state.loading && this.state.response &&
+            <Result
+               status="success"
+               title="Added"
+             />
+          }
+          { !this.state.loading && !this.state.response &&
             <React.Fragment>
-            { this.state.items && this.state.items.length > 0 ?
-              <Select
-                defaultValue={this.state.request.dn}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                onChange={n => this.setDn(n)}
-              >
-                <React.Fragment>
-                  {this.state.items.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                  }
-                </React.Fragment>
-              </Select>
-              :
-              <Select disabled value={null} onChange={null}>
-              </Select>
-            }
-            </React.Fragment>
-        </Form.Item>
-
-            <Form.Item
-              label="Asset"
-              name='asset'
-              key="asset"
-            >
-              <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
-                {this.props.assets ? this.props.assets.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-                )
-              }) : null}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Role"
-              name="role"
-              key="role"
-            >
-            { this.state.rolesLoading ?
-              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-              :
-              <Select id='role' onChange={r => this.setRole(r) }>
-                {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                  return (
-                    <Select.Option  key={i} value={a}>{a}</Select.Option>
-                  )
-                })
-                :
-                null
-                }
-              </Select>
-            }
-            </Form.Item>
-
-            <Form.Item
-              label="Partition"
-              name="partition"
-              key="partition"
-              validateStatus={this.state.errors.partitionName}
-              help={this.state.errors.partitionName ? 'Partition not found' : null }
-            >
-
-            { this.state.partitionsLoading ?
-              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-              :
-              <React.Fragment>
-              { (this.state.partitions && this.state.partitions.length > 0) ?
-                <Select
-                  defaultValue={this.state.partition ? this.state.request.partition.name : null}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  }
-                  onChange={n => this.setPartition(n)}
-                >
-                  {this.state.request.role === 'admin' ?
-                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                  :
+              <Row>
+                { this.state.items && this.state.items.length > 0 ?
                   <React.Fragment>
-                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    {this.state.partitions.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                      )
-                    })
-                    }
+                    <Col offset={2} span={6}>
+                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                    </Col>
+                    <Col span={16}>
+                      <Select
+                        defaultValue={this.state.request.dn}
+                        value={this.state.request.dn}
+                        showSearch
+                        style={{width: 350}}
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                        }
+                        onSelect={n => this.setDn(n)}
+                      >
+                        <React.Fragment>
+                          {this.state.items.map((n, i) => {
+                            return (
+                              <Select.Option key={i} value={n}>{n}</Select.Option>
+                            )
+                          })
+                          }
+                        </React.Fragment>
+                      </Select>
+                    </Col>
                   </React.Fragment>
-                  }
-                </Select>
-              :
-                <Select disabled value={null} onChange={null}>
-                </Select>
-              }
-              </React.Fragment>
-            }
+                :
+                  <React.Fragment>
+                    <Col offset={2} span={6}>
+                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                    </Col>
+                    <Col>
+                      <Select disabled value={null} onChange={null}>
+                      </Select>
+                    </Col>
+                  </React.Fragment>
+                }
+              </Row>
 
-            </Form.Item>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Add new Dn (optional):</p>
+                  {this.state.errors.newDn ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
+                </Col>
+                <Col span={16}>
+                  <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.setNewDn(e)} />
+                  <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.handleNewDn()} />
+                </Col>
+              </Row>
+
+
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
+                </Col>
+                <Col span={16}>
+                  <Select style={{width: 350}} id='asset' onChange={id => this.setAsset(id) }>
+                    {this.props.assets ? this.props.assets.map((a, i) => {
+                      return (
+                        <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
+                      )
+                      })
+                    :
+                      null
+                    }
+                  </Select>
+                </Col>
+              </Row>
+
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Role:</p>
+                </Col>
+                <Col span={16}>
+                  { this.state.rolesLoading ?
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+                  :
+                    <Select style={{width: 350}} id='role' onChange={r => this.setRole(r) }>
+                      {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
+                        return (
+                          <Select.Option  key={i} value={a}>{a}</Select.Option>
+                          )
+                        })
+                      :
+                        null
+                      }
+                    </Select>
+                  }
+                </Col>
+              </Row>
+
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Partition:</p>
+                </Col>
+                <Col span={16}>
+                  { this.state.partitionsLoading ?
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+                  :
+                    <React.Fragment>
+                        { (this.state.partitions && this.state.partitions.length > 0) ?
+                          <Select
+                            defaultValue={this.state.partition ? this.state.request.partition.name : null}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onChange={n => this.setPartition(n)}
+                          >
+                            {this.state.request.role === 'admin' ?
+                            <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                            :
+                            <React.Fragment>
+                              <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                              {this.state.partitions.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                            }
+                          </Select>
+                        :
+                          <Select style={{width: 350}} disabled value={null} onChange={null}>
+                          </Select>
+                        }
+                    </React.Fragment>
+                  }
+                </Col>
+              </Row>
+
+              <br/>
 
               {this.state.message ?
-                <Form.Item
-
-                  name="message"
-                  key="message"
-                >
-                  <p style={{color: 'red'}}>{this.state.message}</p>
-                </Form.Item>
-
-                : null
+                <p style={{color: 'red'}}>{this.state.message}</p>
+              :
+                null
               }
 
-              <Form.Item
-                wrapperCol={ {offset: 6 }}
-                name="button"
-                key="button"
-              >
-                { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.assetId ?
-                  <Button type="primary" onClick={() => this.addPermission()} >
-                    Add Permission
-                  </Button>
+              <Row>
+                <Col offset={8} span={16}>
+                  { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.assetId ?
+                    <Button type="primary" onClick={() => this.addPermission()} >
+                      Add Permission
+                    </Button>
                   :
-                  <Button type="primary" onClick={() => this.addPermission()} disabled>
-                    Add Permission
-                  </Button>
-                }
-              </Form.Item>
+                    <Button type="primary" onClick={() => this.addPermission()} disabled>
+                      Add Permission
+                    </Button>
+                  }
+                </Col>
+              </Row>
 
-            </Form>
+            </React.Fragment>
           }
         </Modal>
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.addF5PermissionError ? <Error component={'add f5'} error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
-          { this.props.fetchF5RolesError ? <Error component={'add f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
-          { this.props.addNewDnError ? <Error component={'add f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+            { this.props.addF5PermissionError ? <Error component={'add f5'} error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
+            { this.props.fetchF5RolesError ? <Error component={'add f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+            { this.props.addNewDnError ? <Error component={'add f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
-          { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
+            { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
           </React.Fragment>
         :
           null
         }
 
       </React.Fragment>
-
     )
   }
 }

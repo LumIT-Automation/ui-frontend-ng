@@ -13,6 +13,7 @@ import {
   setAssets,
   setAssetsError,
   setIdentityGroups,
+  setIdentityGroupsFetch,
   setIdentityGroupsError,
 } from '../../_store/store.f5'
 
@@ -209,4 +210,5 @@ export default connect((state) => ({
   permissions: state.f5.permissions,
 
   permissionsFetch: state.f5.permissionsFetch,
+  identityGroupsFetch: state.f5.identityGroupsFetch
 }))(Manager);
