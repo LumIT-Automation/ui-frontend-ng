@@ -15,10 +15,10 @@ import {
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
@@ -34,10 +34,10 @@ class CreateF5Service extends React.Component {
       visible: false,
       errors: {},
       message:'',
+      snats: ['none', 'automap'],
       membersNumber: 0,
       members: [],
       request: {
-        service: 'F5 - Create Service',
         source: "0.0.0.0/0",
         members: []
       }
@@ -52,6 +52,7 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request)
     if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
       this.main()
     }
@@ -90,6 +91,7 @@ class CreateF5Service extends React.Component {
 
     await this.setState({routeDomainsLoading: true})
     let routeDomains = await this.fetchRouteDomains()
+    console.log(routeDomains)
     await this.setState({routeDomainsLoading: false})
     if (routeDomains.status && routeDomains.status !== 200 ) {
       this.props.dispatch(setRouteDomainsError(routeDomains))
@@ -145,39 +147,28 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-  setServiceType = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
 
-    if (e) {
-      request.serviceType = e
-      delete errors.serviceTypeError
-    }
-    else {
-      errors.serviceTypeError = 'error'
-    }
-    this.setState({request: request, errors: errors})
-  }
 
   setServiceName = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.target.value) {
+    if (e.target.value !== '') {
       request.serviceName = e.target.value
       delete errors.serviceNameError
     }
     else {
-      errors.serviceNameError = 'error'
+      request.serviceName = e.target.value
+      errors.serviceNameError = 'Please input a valid Service Name'
     }
     this.setState({request: request, errors: errors})
   }
 
   setRouteDomain = e => {
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.toString()) {
+    if (e) {
       request.routeDomain = e
       delete errors.routeDomainError
     }
@@ -188,22 +179,22 @@ class CreateF5Service extends React.Component {
   }
 
   setSnat = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (e) {
       request.snat = e
       delete errors.snatError
     }
     else {
-      errors.snatError = 'error'
+      errors.snatError = 'Please select a valid Snat'
     }
     this.setState({request: request, errors: errors})
   }
 
   setDestination = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     const ipv4 = e.target.value
     const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
@@ -214,7 +205,8 @@ class CreateF5Service extends React.Component {
       delete errors.destinationError
     }
     else {
-      errors.destinationError = 'error'
+      request.destination = null
+      errors.destinationError = 'Please input a valid destination'
     }
     this.setState({request: request, errors: errors})
   }
@@ -442,14 +434,12 @@ class CreateF5Service extends React.Component {
     request.members = newList
 
     if (this.state.request.serviceType === 'L4') {
-      this.setState({request: request}, () => this.createL4Service())
-    } else if (this.state.request.serviceType === 'L7') {
-      this.setState({request: request}, () => this.createL7Service())
+      this.setState({request: request}, () => this.createService())
     }
   }
 
 
-  createL4Service = async () => {
+  createService = async () => {
     let serviceName = this.state.request.serviceName
 
     this.setState({message: null});
@@ -502,79 +492,6 @@ class CreateF5Service extends React.Component {
 
   }
 
-  createL7Service = async () => {
-    let serviceName = this.state.request.serviceName
-    this.setState({message: null});
-
-    const b = {
-      "data": {
-        "virtualServer": {
-          "name": `${serviceName}`,
-          "type": this.state.request.serviceType,
-          "snat": this.state.request.snat,
-          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-          "mask": '255.255.255.255',
-          "source": this.state.request.source
-        },
-        "profiles": [
-            {
-                "name": `tcp-wan-optimized_${serviceName}`,
-                "type": "tcp",
-                "defaultsFrom": "/Common/tcp-wan-optimized",
-                "context": "clientside"
-            },
-            {
-                "name": `tcp-lan-optimized_${serviceName}`,
-                "type": "tcp",
-                "defaultsFrom": "/Common/tcp-lan-optimized",
-                "context": "serverside"
-            },
-            {
-                "name": `http_${serviceName}`,
-                "type": "http",
-                "defaultsFrom": "/Common/http"
-            },
-            {
-                "name": `client-ssl_${serviceName}`,
-                "type": "client-ssl",
-                "cert": this.state.request.certificateName,
-                "key": this.state.request.keyName,
-                "chain": "",
-                "context": "clientside"
-            }
-        ],
-        "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.members
-        },
-        "monitor": {
-            "name": `${this.state.request.monitorType}_${serviceName}`,
-            "type": this.state.request.monitorType,
-            "send": `${this.state.request.monitorSendString}`,
-            "recv": `${this.state.request.monitorReceiveString}`
-        }
-      }
-    }
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-
-        this.setState({loading: false, response: true})
-        this.response()
-      },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
-
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -592,13 +509,14 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+    console.log(this.props.certificatesError)
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
+        <Button type="primary" onClick={() => this.details()}>CREATE L4</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>CREATE LOAD BALANCER</p>}
+          title={<p style={{textAlign: 'center'}}>CREATE L4</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -630,73 +548,126 @@ class CreateF5Service extends React.Component {
                 onFinish={null}
                 onFinishFailed={null}
               >
-                <Form.Item
-                  label="Service Type"
-                  name='serviceType'
-                  key="serviceType"
-                  validateStatus={this.state.errors.serviceTypeError}
-                  help={this.state.errors.serviceTypeError ? 'Please select a valid Service Type' : null }
-                >
-                  <Select id='serviceType' onChange={e => this.setServiceType(e)}>
-                    <Select.Option key={'L7'} value={'L7'}>Layer 7</Select.Option>
-                    <Select.Option key={'L4'} value={'L4'}>Layer 4</Select.Option>
-                  </Select>
-                </Form.Item>
 
-                <Form.Item
-                  label="Service Name"
-                  name='serviceName'
-                  key="serviceName"
-                  validateStatus={this.state.errors.serviceNameError}
-                  help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
-                >
-                  <Input id='name' onChange={e => this.setServiceName(e)} />
-                </Form.Item>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Service Name:</p>
+                  </Col>
+                  <Col span={16}>
+                  {this.state.errors.serviceNameError ?
+                    <React.Fragment>
+                      <Input style={{width: 450, borderColor: 'red'}} name="serviceName" id='serviceName' onBlur={e => this.setServiceName(e)} />
+                      <p style={{color: 'red'}}>{this.state.errors.serviceNameError}</p>
+                    </React.Fragment>
+                  :
+                    <Input style={{width: 450}} name="serviceName" id='serviceName' onBlur={e => this.setServiceName(e)} />
+                  }
+                  </Col>
+                </Row>
+                <br/>
 
-                { this.state.request.serviceName ?
-                <React.Fragment>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Route Domain (optional):</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.routeDomainsLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.props.routeDomains && this.props.routeDomains.length > 0 ?
+                        <Select
+                          defaultValue={this.state.request.routeDomain}
+                          value={this.state.request.routeDomain}
+                          showSearch
+                          style={{width: 450}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.setRouteDomain(n)}
+                        >
+                          <React.Fragment>
+                            {this.props.routeDomains.map((n, i) => {
+                              return (
+                                <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                              )
+                            })
+                            }
+                          </React.Fragment>
+                        </Select>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+                </Row>
+                <br/>
 
-                <Form.Item
-                  label="Route Domain"
-                  name='routeDomain'
-                  key="routeDomain"
-                  validateStatus={this.state.errors.routeDomainError}
-                  help={this.state.errors.routeDomainError ? 'Please select a valid routeDomain' : null }
-                >
-                <Select id='routeDomain' onChange={e => this.setRouteDomain(e)}>
-                {this.props.routeDomains ? this.props.routeDomains.map((n, i) => {
-                  return (
-                    <Select.Option  key={i} value={n.id}>{n.id}</Select.Option>
-                    )
-                  })
-                :
-                  null
-                }
-                </Select>
-                </Form.Item>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.snatsLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.state.snats && this.state.snats.length > 0 ?
+                        <Select
+                          defaultValue={this.state.request.snat}
+                          value={this.state.request.snat}
+                          showSearch
+                          style={{width: 450}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.setSnat(n)}
+                        >
+                          <React.Fragment>
+                            {this.state.snats.map((n, i) => {
+                              console.log(n)
+                              return (
+                                <Select.Option key={i} value={n}>{n}</Select.Option>
+                              )
+                            })
+                            }
+                          </React.Fragment>
+                        </Select>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+                </Row>
+                <br/>
 
-                <Form.Item
-                  label="Snat"
-                  name='snat'
-                  key="snat"
-                  validateStatus={this.state.errors.snatError}
-                  help={this.state.errors.snatError ? 'Please select a valid Snat' : null }
-                >
-                  <Select id='snat' onChange={e => this.setSnat(e)}>
-                    <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                    <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                  </Select>
-                </Form.Item>
 
-                <Form.Item
-                  label="Destination"
-                  name='destination'
-                  key="destination"
-                  validateStatus={this.state.errors.destinationError}
-                  help={this.state.errors.destinationError ? 'Please input a valid destination' : null }
-                >
-                    <Input id='destination' onBlur={e => this.setDestination(e)} />
-                </Form.Item>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Destination IP:</p>
+                  </Col>
+                  <Col span={16}>
+                  {this.state.errors.destinationError ?
+                    <React.Fragment>
+                      <Input style={{width: 450, borderColor: 'red'}} name="destination" id='destination' onBlur={e => this.setDestination(e)} />
+                      <p style={{color: 'red'}}>{this.state.errors.destinationError}</p>
+                    </React.Fragment>
+                  :
+                    <Input style={{width: 450}} name="destination" id='destination' onBlur={e => this.setDestination(e)} />
+                  }
+                  </Col>
+                </Row>
+                <br/>
 
                 <Form.Item
                   label="Destination Port"
@@ -880,21 +851,20 @@ class CreateF5Service extends React.Component {
                   })
                 }
 
-                </React.Fragment>
-                :
-                null
-              }
 
-
-                <Form.Item
-                  wrapperCol={ {offset: 8 }}
-                  name="button"
-                  key="button"
-                >
-                  <Button type="primary" onClick={() => this.removeMembersId()}>
-                    Create Service
-                  </Button>
-                </Form.Item>
+                <Row>
+                  <Col offset={8} span={16}>
+                    { this.state.request.serviceName && this.state.request.snat && this.state.request.destination ?
+                      <Button type="primary" onClick={() => this.createService()} >
+                        Add Permission
+                      </Button>
+                    :
+                      <Button type="primary" onClick={() => this.createService()} disabled>
+                        Add Permission
+                      </Button>
+                    }
+                  </Col>
+                </Row>
 
               </Form>
             }
