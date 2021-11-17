@@ -17,6 +17,7 @@ import Homepage from './homepage/homepage'
 
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'
+import Projects from './fortinetdb/projects'
 
 import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
@@ -141,7 +142,7 @@ class Concerto extends Component {
                   <Route exact path='/' component={Homepage}/>
 
                     <Route path='/devices/' component={Devices}/>
-                    <Route path='/projects/' component={Devices}/>
+                    <Route path='/projects/' component={Projects}/>
                     <Route path='/ddosses/' component={Ddosses}/>
 
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?

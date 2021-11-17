@@ -31,6 +31,8 @@ const fortinetdbSlice = createSlice({
         state.identityGroupsError = action.payload
       },
 
+
+
       setDevicesLoading: (state, action) => {
         state.devicesLoading = action.payload
       },
@@ -57,6 +59,20 @@ const fortinetdbSlice = createSlice({
         state.ddossesError = action.payload
       },
 
+      setProjectsLoading: (state, action) => {
+        state.projectsLoading = action.payload
+      },
+      setProjects: (state, action) => {
+        state.projects = action.payload.data.items
+      },
+      setProjectsFetch: (state, action) => {
+        state.projectsFetch = action.payload
+      },
+      setProjectsError: (state, action) => {
+        state.projectsError = action.payload
+      },
+
+
       setDevice: (state, action) => {
         state.device = action.payload
       },
@@ -81,6 +97,19 @@ const fortinetdbSlice = createSlice({
       },
       setDdosDeleteError: (state, action) => {
         state.ddosDeleteError = action.payload
+      },
+
+      setProject: (state, action) => {
+        state.project = action.payload
+      },
+      setProjectAddError: (state, action) => {
+        state.projectAddError = action.payload
+      },
+      setProjectModifyError: (state, action) => {
+        state.projectModifyError = action.payload
+      },
+      setProjectDeleteError: (state, action) => {
+        state.projectDeleteError = action.payload
       },
 
 
@@ -142,6 +171,11 @@ export const {
   setDdossesFetch,
   setDdossesError,
 
+  setProjectsLoading,
+  setProjects,
+  setProjectsFetch,
+  setProjectsError,
+
   setDevice,
   setDeviceAddError,
   setDeviceModifyError,
@@ -151,6 +185,11 @@ export const {
   setDdosAddError,
   setDdosModifyError,
   setDdosDeleteError,
+
+  setProject,
+  setProjectAddError,
+  setProjectModifyError,
+  setProjectDeleteError,
 
 
 
