@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
 import { setAssetsFetch, setAssetAddError } from '../../_store/store.infoblox'
 
@@ -173,22 +173,6 @@ class Add extends React.Component {
       default:
         //
     }
-
-
-/*
-
-"address": "192.168.12.159",
-"fqdn": "192.168.12.159",
-"baseurl": "https://192.168.12.159/wapi/v2.10",
-"tlsverify": 0,
-"datacenter": "Milano",
-"environment": "Developement",
-"position": "RACK 1",
-"username": "admin",
-"password": "infoblox"
-
-*/
-
   }
 
   addAsset = async () => {
@@ -407,16 +391,28 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addAsset()}>
-                Add Asset
-              </Button>
+              { this.state.request.address && this.state.request.fqdn && this.state.request.datacenter && this.state.request.environment && this.state.request.position && !this.state.errors.tlsverify && this.state.request.username && this.state.request.password ?
+                <Button type="primary" onClick={() => this.addAsset()} >
+                  Add Permission
+                </Button>
+              :
+                <Button type="primary" onClick={() => this.addAsset()} disabled>
+                  Add Permission
+                </Button>
+              }
             </Form.Item>
 
           </Form>
         }
         </Modal>
 
-        { this.props.assetAddError ? <Error error={[this.props.assetAddError]} visible={true} type={'setInfobloxAssetAddError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.assetAddError ? <Error component={'asset add infoblox'} error={[this.props.assetAddError]} visible={true} type={'setAssetAddError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
     )

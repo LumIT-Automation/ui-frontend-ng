@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import { setAssetsFetch, setAssetModifyError } from '../../_store/store.f5'
 
@@ -391,8 +391,13 @@ class Modify extends React.Component {
         }
         </Modal>
 
-        { this.props.assetModifyError ? <Error error={[this.props.assetModifyError]} visible={true} type={'setF5AssetModifyError'} /> : null }
-
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.assetModifyError ? <Error component={'asset modify f5'} error={[this.props.assetModifyError]} visible={true} type={'setAssetModifyError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
       </React.Fragment>
     )
   }
@@ -403,5 +408,5 @@ export default connect((state) => ({
 
   token: state.ssoAuth.token,
  	assetModifyError: state.f5.assetModifyError,
-  
+
 }))(Modify);

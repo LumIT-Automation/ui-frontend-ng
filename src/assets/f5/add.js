@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import { setAssetsFetch, setAssetAddError } from '../../_store/store.f5'
 
@@ -173,9 +173,6 @@ class Add extends React.Component {
       default:
         //
     }
-
-
-
   }
 
   addAsset = async () => {
@@ -390,17 +387,28 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addAsset()}>
-                ADD
-              </Button>
+              { this.state.request.address && this.state.request.fqdn && this.state.request.datacenter && this.state.request.environment && this.state.request.position && !this.state.errors.tlsverify && this.state.request.username && this.state.request.password ?
+                <Button type="primary" onClick={() => this.addAsset()} >
+                  Add Permission
+                </Button>
+              :
+                <Button type="primary" onClick={() => this.addAsset()} disabled>
+                  Add Permission
+                </Button>
+              }
             </Form.Item>
 
           </Form>
         }
         </Modal>
 
-        { this.props.assetAddError ? <Error error={[this.props.assetAddError]} visible={true} type={'setF5AssetAddError'} /> : null }
-
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.assetAddError ? <Error component={'asset add f5'} error={[this.props.assetAddError]} visible={true} type={'setAssetAddError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
       </React.Fragment>
     )
   }

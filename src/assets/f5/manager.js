@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import {
   setAssetsLoading,
@@ -79,7 +79,8 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'asset manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+
       </React.Fragment>
     )
   }

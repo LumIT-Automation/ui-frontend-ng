@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import { setAssetsFetch, setAssetDeleteError } from '../../_store/store.f5'
 
@@ -112,7 +112,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-        { this.props.assetDeleteError ? <Error error={[this.props.assetDeleteError]} visible={true} type={'setF5AssetDeleteError'} /> : null }
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.assetDeleteError ? <Error component={'asset delete f5'} error={[this.props.assetDeleteError]} visible={true} type={'setAssetDeleteError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
     )
@@ -124,5 +130,5 @@ export default connect((state) => ({
 
   token: state.ssoAuth.token,
  	assetDeleteError: state.f5.assetDeleteError,
-  
+
 }))(Delete);

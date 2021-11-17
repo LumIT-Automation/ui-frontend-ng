@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
 import {
   setAssetsLoading,
@@ -83,7 +83,8 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'asset manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -97,5 +98,4 @@ export default connect((state) => ({
   assets: state.infoblox.assets,
   assetsError: state.infoblox.assetsError,
   assetsFetch: state.infoblox.assetsFetch
-
 }))(Manager);

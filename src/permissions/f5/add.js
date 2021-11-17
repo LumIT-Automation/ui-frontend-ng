@@ -36,7 +36,6 @@ class Add extends React.Component {
       visible: false,
       errors: {},
       message:'',
-      groupToAdd: false,
       request: {
         partition: {}
       }
