@@ -1,24 +1,19 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
-import Rest from "../../_helpers/Rest";
+import Rest from "../../_helpers/Rest"
 
-import { setError } from '../../_store/store.error'
-import { setSuperAdminsPermissions, setSuperAdminsPermissionsBeauty } from '../../_store/store.permissions'
+import { setSuperAdminsPermissions, setSuperAdminsPermissionsError, setSuperAdminsPermissionsBeauty } from '../../_store/store.permissions'
 
-import { Input, Button, Space, Spin } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Spin } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined, LoadingOutlined } from '@ant-design/icons'
 
 import List from './list'
 
-const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const antIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
-
-/*
-
-*/
 
 
 class PermissionsTab extends React.Component {
@@ -125,10 +120,6 @@ class PermissionsTab extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   fetchSuperAdmin = async () => {
     this.setState({loading: true})
     let rest = new Rest(
@@ -139,7 +130,7 @@ class PermissionsTab extends React.Component {
         this.superAdminsInRows()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setSuperAdminsPermissionsError(error))
         this.setState({loading: false})
       }
     )
@@ -173,8 +164,7 @@ class PermissionsTab extends React.Component {
 
         {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.superAdmins}/>  }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
+        {this.props.superAdminsPermissionsError ? <Error component={'manager superAdmin'} error={[this.props.superAdminsPermissionsError]} visible={true} type={'setSuperAdminsPermissionsError'}/> : null }
       </Space>
 
     )
@@ -183,7 +173,7 @@ class PermissionsTab extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	superAdminsPermissionsError: state.permissions.superAdminsPermissionsError,
   authorizations: state.authorizations.f5,
   superAdmins: state.permissions.superAdminsPermissions
 }))(PermissionsTab);

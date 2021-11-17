@@ -110,10 +110,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
 
@@ -157,7 +153,6 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
   superAdmins: state.permissions.superAdminsPermissionsBeauty
 }))(List);

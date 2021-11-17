@@ -11,6 +11,9 @@ const permissionsSlice = createSlice({
       setSuperAdminsPermissions: ( state, action) => {
         state.superAdminsPermissions = action.payload.data.items
       },
+      setSuperAdminsPermissionsError: ( state, action) => {
+        state.superAdminsPermissionsError = action.payload
+      },
       setSuperAdminsPermissionsBeauty: ( state, action) => {
         state.superAdminsPermissionsBeauty = action.payload
       },
@@ -57,6 +60,7 @@ const { actions, reducer } = permissionsSlice;
 
 export const {
   setSuperAdminsPermissions,
+  setSuperAdminsPermissionsError,
   setSuperAdminsPermissionsBeauty,
 
   setF5Permissions,
