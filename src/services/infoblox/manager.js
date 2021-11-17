@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/infobloxError'
 
 import {
   setAssets,
@@ -85,7 +85,9 @@ class Manager extends React.Component {
             <ReleaseIp/>
           </Col>
         </Row>
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setInfobloxAssetsError'} /> : null }
+
+        { this.props.assetsError ? <Error component={'services manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+
       </React.Fragment>
     )
   }

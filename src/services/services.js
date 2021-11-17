@@ -1,15 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../_helpers/Rest"
-import Error from '../error'
-
-import {
-  setAssetsLoading as setInfobloxAssetsLoading,
-  setAssets as setInfobloxAssets,
-  setAssetsFetch as setInfobloxAssetsFetch,
-  setAssetsError as setInfobloxAssetsError
-} from '../_store/store.infoblox'
 
 import InfobloxManager from './infoblox/manager'
 import F5Manager from './f5/manager'
@@ -43,14 +34,6 @@ class Service extends React.Component {
   }
 
 
-  //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
-
-
   render() {
     return (
       <React.Fragment>
@@ -63,34 +46,32 @@ class Service extends React.Component {
           <br/>
         </React.Fragment>
 
-
         { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
-        <React.Fragment>
-          <Divider orientation="left" plain >
-            IPAM
-          </Divider>
-          <br/>
-          <InfobloxManager/>
-          <br/>
-          <br/>
-        </React.Fragment>
+          <React.Fragment>
+            <Divider orientation="left" plain >
+              IPAM
+            </Divider>
+            <br/>
+            <InfobloxManager/>
+            <br/>
+            <br/>
+          </React.Fragment>
         :
-        null
+          null
         }
 
-
         { (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) ?
-        <React.Fragment>
-          <Divider orientation="left" plain>
-            LOAD BALANCER
-          </Divider>
-          <br/>
-          <F5Manager/>
-          <br/>
-          <br/>
-        </React.Fragment>
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              LOAD BALANCER
+            </Divider>
+            <br/>
+            <F5Manager/>
+            <br/>
+            <br/>
+          </React.Fragment>
         :
-        null
+          null
         }
 
       </React.Fragment>

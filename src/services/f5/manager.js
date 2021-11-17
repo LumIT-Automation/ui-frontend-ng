@@ -1,8 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
 import {
   setAssets,
@@ -12,7 +12,7 @@ import {
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'
-import { Row, Col } from 'antd';
+import { Row, Col } from 'antd'
 
 
 
@@ -81,7 +81,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        { this.props.assetsError ? <Error error={[this.props.assetsError]} visible={true} type={'setF5AssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'services manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
 
       </React.Fragment>
     )
