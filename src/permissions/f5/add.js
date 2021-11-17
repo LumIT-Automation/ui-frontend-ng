@@ -17,7 +17,7 @@ import {
   setPartitionsError
 } from '../../_store/store.f5'
 
-import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select, Input, Row, Col } from 'antd';
+import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
@@ -74,8 +74,6 @@ class Add extends React.Component {
   }
 
   setDn = async dn => {
-    console.log('setDn')
-    console.log(dn)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.dn = dn
 

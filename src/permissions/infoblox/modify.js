@@ -6,7 +6,6 @@ import Error from '../../error/infobloxError'
 
 import {
   fetchInfobloxRolesError,
-  addNewDnError,
   modifyInfobloxPermissionError
 } from '../../_store/store.permissions'
 
@@ -110,7 +109,8 @@ class Modify extends React.Component {
   }
 
   beautifyPrivileges = () => {
-    let fetchedList = Object.assign([], this.state.rolesAndPrivileges)
+    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+    //let fetchedList = Object.assign([], this.state.rolesAndPrivileges)
     let newList = []
 
     for (let r in fetchedList) {
@@ -183,42 +183,7 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
-  addNewDn = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let r
-    const b = {
-      "data":
-        {
-          "name": request.cn,
-          "identity_group_identifier": request.dn
-        }
-      }
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-        this.setState({loading: false, response: true})
-      },
-      error => {
-        this.props.dispatch(addNewDnError(error))
-        this.setState({loading: false, response: false, error: error})
-        r = error
-      }
-    )
-    await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
-    return r
-  }
-
   modifyPermission = async () => {
-    if (this.state.groupToAdd) {
-      let awaitDn = await this.addNewDn()
-      if (awaitDn.status && awaitDn.status !== 201) {
-        return
-      }
-    }
 
     this.setState({message: null});
 
@@ -454,7 +419,6 @@ class Modify extends React.Component {
           <React.Fragment>
           { this.props.modifyInfobloxPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
           { this.props.fetchInfobloxRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
-          { this.props.addNewDnError ? <Error component={'modify infoblox'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
           { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'setNetworksError'} /> : null }
           { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'setContainersError'} /> : null }
@@ -472,12 +436,11 @@ class Modify extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
 
+  modifyInfobloxPermissionError: state.permissions.modifyInfobloxPermissionError,
   fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
+
   networksError: state.infoblox.networksError,
   containersError: state.infoblox.containersError,
-  addNewDnError: state.permissions.addNewDnError,
-
-  modifyInfobloxPermissionError: state.permissions.modifyInfobloxPermissionError,
 
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,

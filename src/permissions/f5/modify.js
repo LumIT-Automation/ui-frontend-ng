@@ -6,7 +6,6 @@ import Error from '../../error'
 
 import {
   fetchF5RolesError,
-  addNewDnError,
   modifyF5PermissionError
 } from '../../_store/store.permissions'
 
@@ -109,7 +108,8 @@ class Modify extends React.Component {
   }
 
   beautifyPrivileges = () => {
-    let fetchedList = Object.assign([], this.state.rolesAndPrivileges)
+    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+    //let fetchedList = Object.assign([], this.state.rolesAndPrivileges)
     let newList = []
 
     for (let r in fetchedList) {
@@ -146,42 +146,7 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
-  addNewDn = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let r
-    const b = {
-      "data":
-        {
-          "name": request.cn,
-          "identity_group_identifier": request.dn
-        }
-      }
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-        this.setState({loading: false, response: true})
-      },
-      error => {
-        this.props.dispatch(addNewDnError(error))
-        this.setState({loading: false, response: false, error: error})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/identity-groups/`, this.props.token, b )
-    return r
-  }
-
   modifyPermission = async () => {
-    if (this.state.groupToAdd) {
-      let awaitDn = await this.addNewDn()
-      if (awaitDn.status && awaitDn.status !== 201) {
-        return
-      }
-    }
 
     this.setState({message: null});
 
@@ -256,7 +221,6 @@ class Modify extends React.Component {
             name="basic"
             initialValues={{
               remember: true,
-              dn: this.state.request.dn,
               asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
               role: this.state.request.role,
             }}
@@ -417,7 +381,6 @@ class Modify extends React.Component {
           <React.Fragment>
           { this.props.modifyF5PermissionError ? <Error component={'modify f5'} error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
           { this.props.fetchF5RolesError ? <Error component={'modify f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
-          { this.props.addNewDnError ? <Error component={'modify f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
           { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
           </React.Fragment>
@@ -435,7 +398,7 @@ export default connect((state) => ({
 
   modifyF5PermissionError: state.permissions.modifyF5PermissionError,
   fetchF5RolesError: state.permissions.fetchF5RolesError,
-  addNewDnError: state.permissions.addNewDnError,
+
   partitionsError: state.f5.partitionsError,
 
   identityGroups: state.f5.identityGroups,
