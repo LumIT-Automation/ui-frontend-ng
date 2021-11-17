@@ -9,7 +9,6 @@ import {
   setAssetsError
 } from '../../_store/store.f5'
 
-import CreateL4 from './createL4'
 import CreateLoadBalancer from './createF5Service'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'
@@ -69,11 +68,6 @@ class Manager extends React.Component {
           <Col span={4} offset={2} >
             <p>Create Load Balancer</p>
             <CreateLoadBalancer/>
-          </Col>
-
-          <Col span={4} offset={2} >
-            <p>Create L4</p>
-            <CreateL4/>
           </Col>
 
           <Col span={4} offset={2}>
