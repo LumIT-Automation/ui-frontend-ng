@@ -15,7 +15,7 @@ const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-class FirmwareTable extends React.Component {
+class RegionTable extends React.Component {
 
   constructor(props) {
     super(props);
@@ -24,13 +24,13 @@ class FirmwareTable extends React.Component {
       error: null,
       errors: {},
       message:'',
-      firmwareFiltered: [],
+      regionFiltered: [],
       call: true
     };
   }
 
   componentDidMount() {
-    console.log('firmwareTable mount')
+    console.log('regionTable mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,8 +38,8 @@ class FirmwareTable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('firmwareTable update')
-    console.log(this.state.firmwareFiltered)
+    console.log('regionTable update')
+    console.log(this.props)
     if (this.props.visible) {
       console.log(this.props.visible)
       if (prevProps.value !== this.props.value ) {
@@ -132,11 +132,11 @@ class FirmwareTable extends React.Component {
 
   main = async () => {
     await this.setState({loading: true, call: false})
-    let firmwareFiltered = await this.fetchFirmwareTable()
-    this.setState({loading: false, firmwareFiltered: firmwareFiltered})
+    let regionFiltered = await this.fetchRegionTable()
+    this.setState({loading: false, regionFiltered: regionFiltered})
   }
 
-  fetchFirmwareTable = async () => {
+  fetchRegionTable = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -149,7 +149,7 @@ class FirmwareTable extends React.Component {
         this.props.dispatch(setError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.props.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${this.props.value}`, this.props.token)
     return r
   }
 
@@ -526,10 +526,10 @@ class FirmwareTable extends React.Component {
            <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
         :
           <React.Fragment>
-          <p>Count: {this.state.firmwareFiltered.length}</p>
+          <p>Count: {this.state.regionFiltered.length}</p>
           <Table
             columns={columns}
-            dataSource={this.state.firmwareFiltered}
+            dataSource={this.state.regionFiltered}
             bordered
             rowKey="SERIALE"
             layout="vertical"
@@ -552,4 +552,4 @@ class FirmwareTable extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-}))(FirmwareTable);
+}))(RegionTable);
