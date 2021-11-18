@@ -525,16 +525,19 @@ class FirmwareTable extends React.Component {
         { this.state.loading ?
            <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
         :
+          <React.Fragment>
+          <p>Count: {this.state.firmwareFiltered.length}</p>
           <Table
             columns={columns}
             dataSource={this.state.firmwareFiltered}
             bordered
             rowKey="SERIALE"
             layout="vertical"
-            pagination={{ pageSize: 10 }}
+            pagination={{ pageSize: 5 }}
             style={{ width: 'auto', marginBottom: 10}}
             scroll={{x: 'auto'}}
           />
+          </React.Fragment>
         }
 
         </Modal>

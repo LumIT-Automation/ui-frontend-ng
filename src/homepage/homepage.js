@@ -146,49 +146,6 @@ class Homepage extends React.Component {
                 <Row>
                   <Col span={18}>
                     <Row>
-                      <Col span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                      <Col span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                      <Col span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                      <Col span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={3}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                    </Row>
-                    <br/>
-                    <Row>
                       <Col span={4}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
                           <Firmware/>
@@ -212,29 +169,6 @@ class Homepage extends React.Component {
                       <Col offset={1} span={4}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
                           <Firmware/>
-                        </Card>
-                      </Col>
-                    </Row>
-                    <br/>
-                    <Row>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={0} span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
                         </Card>
                       </Col>
                     </Row>
