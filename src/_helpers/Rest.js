@@ -15,7 +15,6 @@ class Rest {
     if (resource) {
       if (resource === "login") {
         if (this.method === "POST") {
-          console.log(payload)
           try {
             const response = await fetch(CONFIG.AUTH_URL, {
               method: 'POST',

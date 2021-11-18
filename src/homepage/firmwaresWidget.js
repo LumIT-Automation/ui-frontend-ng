@@ -5,6 +5,7 @@ import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory';
 
 import Rest from "../_helpers/Rest"
 import Error from '../error'
+import FirmwareTable from './firmwareTable'
 
 import { Modal, Table } from 'antd'
 
@@ -49,9 +50,13 @@ class Firmware extends React.Component {
     this.props.dispatch(setFirmwaresLoading(false))
   }
 
+  hide = () => {
+    this.setState({visible: false})
+  }
 
   render() {
     return (
+      <React.Fragment>
       <svg viewBox="0 0 300 300">
         <VictoryPie
           colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
@@ -60,6 +65,7 @@ class Firmware extends React.Component {
             eventHandlers: {
               onClick: (e, n) => {
                 console.log(n.style.fill)
+                this.setState({visible: true, value: n.datum.FIRMWARE})
               },
               onMouseOver: (e, n) => {
                 this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
@@ -85,6 +91,10 @@ class Firmware extends React.Component {
           style={{ fill: this.state.color }}
         />
       </svg>
+
+      <FirmwareTable visible={this.state.visible} value={this.state.value} hide={() => this.hide()}/>
+
+      </React.Fragment>
     );
 
   }

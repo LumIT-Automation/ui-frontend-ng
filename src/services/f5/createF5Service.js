@@ -37,6 +37,8 @@ class CreateF5Service extends React.Component {
       serviceTypes: ['L4', 'L7'],
       snats: ['none', 'automap'],
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
+      monitorTypesL7: ['tcp-half-open', 'http'],
+      monitorTypesL4: ['tcp-half-open'],
       membersNumber: 0,
       members: [],
       request: {
@@ -96,7 +98,6 @@ class CreateF5Service extends React.Component {
 
     await this.setState({routeDomainsLoading: true})
     let routeDomains = await this.fetchRouteDomains()
-    console.log(routeDomains)
     await this.setState({routeDomainsLoading: false})
     if (routeDomains.status && routeDomains.status !== 200 ) {
       this.props.dispatch(setRouteDomainsError(routeDomains))
@@ -289,52 +290,55 @@ class CreateF5Service extends React.Component {
   }
 
   setMonitorType = e => {
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    switch (e) {
-      case 'tcp-half-open':
-        request.monitorType = 'tcp-half-open'
-        delete errors.monitorTypeError
-        break
-      case 'http':
-        request.monitorType = 'http'
-        delete errors.monitorTypeError
-        break
-
-      default:
-        errors.monitorTypeError = 'error'
+    if (e) {
+      request.monitorType = e
+      delete errors.monitorTypeError
+    }
+    else {
+      errors.monitorTypeError = 'Please select a valid Monitor Type'
     }
     this.setState({request: request, errors: errors})
   }
 
   setMonitorSendString = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.target.value) {
-      request.monitorSendString = e.target.value
-      delete errors.monitorSendStringError
+    if (e.target.value !== '' ) {
+      request.nonitorSendString = e.target.value
+      delete errors.nonitorSendStringError
     }
     else {
-      errors.monitorSendStringError = 'error'
+      request.nonitorSendString = null
+      errors.nonitorSendStringError = 'Please input a valid monitor send string'
     }
+
     this.setState({request: request, errors: errors})
   }
 
   setMonitorReceiveString = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.target.value) {
-      request.monitorReceiveString = e.target.value
-      delete errors.monitorReceiveStringError
+    if (e.target.value !== '' ) {
+      request.nonitorReceiveString = e.target.value
+      delete errors.nonitorReceiveStringError
     }
     else {
-      errors.moonitorReceiveStringError = 'error'
+      request.nonitorReceiveString = null
+      errors.nonitorReceiveStringError = 'Please input a valid monitor receive string'
     }
+
     this.setState({request: request, errors: errors})
   }
+
+
+
+
+
 
   oneMoreMember = () => {
     let membersNumber = this.state.membersNumber
@@ -431,6 +435,11 @@ class CreateF5Service extends React.Component {
       this.setState({request: request}, () => this.createService())
     }
   }
+
+
+
+
+
 
 
   createL4Service = async () => {
@@ -642,7 +651,6 @@ class CreateF5Service extends React.Component {
                         >
                           <React.Fragment>
                             {this.state.serviceTypes.map((n, i) => {
-                              console.log(n)
                               return (
                                 <Select.Option key={i} value={n}>{n}</Select.Option>
                               )
@@ -744,7 +752,6 @@ class CreateF5Service extends React.Component {
                         >
                           <React.Fragment>
                             {this.state.snats.map((n, i) => {
-                              console.log(n)
                               return (
                                 <Select.Option key={i} value={n}>{n}</Select.Option>
                               )
@@ -911,7 +918,6 @@ class CreateF5Service extends React.Component {
                         >
                           <React.Fragment>
                             {this.state.lbMethods.map((n, i) => {
-                              console.log(n)
                               return (
                                 <Select.Option key={i} value={n}>{n}</Select.Option>
                               )
@@ -928,46 +934,130 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                <Form.Item
-                  label="Monitor Type"
-                  name='monitorType'
-                  key="monitorType"
-                  validateStatus={this.state.errors.monitorTypeError}
-                  help={this.state.errors.monitorTypeError ? 'Please input a valid Monitor Type' : null }
-                >
-                  <Select id='monitorType' onChange={a => this.setMonitorType(a)}>
-                    <Select.Option key={'tcp-half-open'} value={'tcp-half-open'}>tcp-half-open</Select.Option>
-                    <Select.Option key={'http'} value={'http'}>http</Select.Option>
-                  </Select>
-                </Form.Item>
-
-                { this.state.request.monitorType === 'http' ?
-                  <Form.Item
-                    label="Monitor send string"
-                    name='monitorSendString'
-                    key="monitorSendString"
-                    validateStatus={this.state.errors.monitorSendStringError}
-                    help={this.state.errors.monitorSendStringError ? 'Please input a valid monitor send string' : null }
-                  >
-                    <Input.TextArea rows={4} onChange={e => this.setMonitorSendString(e)} />
-                  </Form.Item>
-                  :
-                  null
+                { this.state.request.serviceType === 'L7' ?
+                  <Row>
+                    <Col offset={2} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
+                    </Col>
+                    <Col span={16}>
+                      { this.state.monitorTypesL7Loading ?
+                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                      :
+                      <React.Fragment>
+                        { this.state.monitorTypesL7 && this.state.monitorTypesL7.length > 0 ?
+                          <Select
+                            defaultValue={this.state.request.monitorType}
+                            value={this.state.request.monitorType}
+                            showSearch
+                            style={{width: 450}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.setMonitorType(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.monitorTypesL7.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                      }
+                    </Col>
+                  </Row>
+                :
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.monitorTypesL4Loading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.state.monitorTypesL4 && this.state.monitorTypesL4.length > 0 ?
+                        <Select
+                          defaultValue={this.state.request.monitorType}
+                          value={this.state.request.monitorType}
+                          showSearch
+                          style={{width: 450}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.setMonitorType(n)}
+                        >
+                          <React.Fragment>
+                            {this.state.monitorTypesL4.map((n, i) => {
+                              return (
+                                <Select.Option key={i} value={n}>{n}</Select.Option>
+                              )
+                            })
+                            }
+                          </React.Fragment>
+                        </Select>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+                </Row>
                 }
 
                 { this.state.request.monitorType === 'http' ?
-                  <Form.Item
-                    label="Monitor receive string"
-                    name='monitorReceiveString'
-                    key="monitorReceiveString"
-                    validateStatus={this.state.errors.monitorReceiveStringError}
-                    help={this.state.errors.monitorReceiveStringError ? 'Please input a valid monitor receive string' : null }
-                  >
-                    <Input.TextArea id='monitorReceiveString' rows={4} onChange={e => this.setMonitorReceiveString(e)} />
-                  </Form.Item>
-                  :
+                  <React.Fragment>
+                    <br/>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor send string:</p>
+                      </Col>
+                      <Col span={16}>
+                      {this.state.errors.monitorSendStringError ?
+                        <React.Fragment>
+                          <Input.TextArea style={{width: 450, borderColor: 'red'}} name="monitorSendString" id='monitorSendString' onBlur={e => this.setMonitorSendString(e)} />
+                          <p style={{color: 'red'}}>{this.state.errors.monitorTypePortError}</p>
+                        </React.Fragment>
+                      :
+                        <Input.TextArea style={{width: 450}} name="monitorSendString" id='monitorSendString' onBlur={e => this.setMonitorSendString(e)} />
+                      }
+                      </Col>
+                    </Row>
+                    <br/>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor receive string:</p>
+                      </Col>
+                      <Col span={16}>
+                      {this.state.errors.monitorReceiveStringError ?
+                        <React.Fragment>
+                          <Input.TextArea style={{width: 450, borderColor: 'red'}} name="monitorReceiveString" id='monitorReceiveString' onBlur={e => this.setMonitorReceiveString(e)} />
+                          <p style={{color: 'red'}}>{this.state.errors.monitorTypePortError}</p>
+                        </React.Fragment>
+                      :
+                        <Input.TextArea style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onBlur={e => this.setMonitorReceiveString(e)} />
+                      }
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
                   null
                 }
+
+                <br/>
 
                 <Form.Item
                   label="One more member"
@@ -1047,7 +1137,8 @@ class CreateF5Service extends React.Component {
                       this.state.request.snat &&
                       this.state.request.destination &&
                       this.state.request.destinationPort &&
-                      this.state.request.lbMethod
+                      this.state.request.lbMethod &&
+                      this.state.request.monitorType
                       ?
                       <Button type="primary" onClick={() => this.createService()} >
                         Create Load Balancer

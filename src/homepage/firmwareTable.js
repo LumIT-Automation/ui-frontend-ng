@@ -1,41 +1,56 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+import Rest from "../_helpers/Rest"
+import Error from '../error'
 
-import Device from './device'
+import { setError } from '../_store/store.error'
 
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Modal, Spin, Table } from 'antd'
+
+import Highlighter from 'react-highlight-words'
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+
+const { TextArea } = Input;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-
-class List extends React.Component {
+class FirmwareTable extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null
+      visible: false,
+      error: null,
+      errors: {},
+      message:'',
+      firmwareFiltered: [],
+      call: true
     };
   }
 
   componentDidMount() {
+    console.log('firmwareTable mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('firmwareTable update')
+    console.log(this.state.firmwareFiltered)
+    if (this.props.visible) {
+      console.log(this.props.visible)
+      if (prevProps.value !== this.props.value ) {
+        console.log('chiamo main')
+        this.main()
+      }
+    }
   }
 
   componentWillUnmount() {
   }
-
 
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -115,47 +130,86 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  main = async () => {
+    await this.setState({loading: true, call: false})
+    let firmwareFiltered = await this.fetchFirmwareTable()
+    this.setState({loading: false, firmwareFiltered: firmwareFiltered})
+  }
+
+  fetchFirmwareTable = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data.items
+      },
+      error => {
+        r = error
+        this.setState({loading: false, response: false})
+        this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.props.value}`, this.props.token)
+    return r
+  }
+
+  setExtraData = e => {
+    this.setState({extraData: e})
+  }
+
+  modifyExtraData = async e => {
+    this.setState({extraLoading: true})
+    if (e.target && e.target.value) {
+      const b = {
+        "data": {
+          "extra_data": e.target.value
+        }
+      }
+      let rest = new Rest(
+        "PATCH",
+        resp => {
+          this.setState({extraLoading: false})
+          this.fetchDevice()
+        },
+        error => {
+          this.setState({extraLoading: false, response: false, error: error})
+        }
+      )
+      await rest.doXHR(`/fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token, b )
+    }
+  }
+
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
+    setTimeout( () => this.closeModal(), 2050)
+  }
+
+  resetError = () => {
+    this.setState({ error: null})
+  }
+
+  //Close and Error
+  closeModal = () => {
+    this.setState({
+      visible: false,
+    }, this.props.hide)
+  }
+
 
   render() {
-
-/*
-"MANAGED_OBJECT": "TMS-CUST-FACEBOOK-EU",
-"ID_PROGETTO": 1508,
-"MO_DESCRIZIONE": "FACEBOOK FastKaleiDoS - Rete EUROPA",
-"MO_NET": "1.0.0.0/8",
-"MO_AUTOMITIGATION": 1,
-"MO_TEMPLATE_MITIGATION": "FACEBOOK-EU-AUTOMITIGATION",
-"MO_PROATTIVITA_MITIGATION": 1,
-"MO_CODICE_SERVIZIO": "",
-"MO_BANDA": 10240000,
-"MO_NOTE": "",
-"MO_ATTIVAZIONE_ANNO": 2020,
-"MO_ATTIVAZIONE_MESE": 4,
-"MO_STATUS": 2,
-"NOME_PROGETTO": "FACEBOOK FastKaleiDoS",
-"ID_SERVIZIO": 100,
-"SERVIZIO": "DDoS Management"
-*/
-
-
     const columns = [
       {
         title: "SERIALE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "SERIALE",
         key: "SERIALE",
-        ...this.getColumnSearchProps('SERIALE'),
-        render: (name, obj)  => (
-          <Space size="small">
-            <Device name={name} obj={obj} />
-          </Space>
-        ),
+        ...this.getColumnSearchProps('SERIALE')
       },
       {
         title: "ID_PROGETTO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "ID_PROGETTO",
         key: "ID_PROGETTO",
         ...this.getColumnSearchProps('ID_PROGETTO')
@@ -163,7 +217,7 @@ class List extends React.Component {
       {
         title: "MODELLO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "MODELLO",
         key: "MODELLO",
         ...this.getColumnSearchProps('MODELLO')
@@ -171,7 +225,7 @@ class List extends React.Component {
       {
         title: "FIRMWARE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "FIRMWARE",
         key: "FIRMWARE",
         ...this.getColumnSearchProps('FIRMWARE')
@@ -179,7 +233,7 @@ class List extends React.Component {
       {
         title: "DESCRIZIONE",
         align: "center",
-     		width: 250,
+        width: "auto",
         dataIndex: "DESCRIZIONE",
         key: "DESCRIZIONE",
         ...this.getColumnSearchProps('DESCRIZIONE')
@@ -187,7 +241,7 @@ class List extends React.Component {
       {
         title: "HA",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "HA",
         key: "HA",
         ...this.getColumnSearchProps('HA')
@@ -195,7 +249,7 @@ class List extends React.Component {
       {
         title: "VDOM",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "VDOM",
         key: "VDOM",
         ...this.getColumnSearchProps('VDOM')
@@ -203,7 +257,7 @@ class List extends React.Component {
       {
         title: "IP_MGMT",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "IP_MGMT",
         key: "IP_MGMT",
         ...this.getColumnSearchProps('IP_MGMT')
@@ -211,7 +265,7 @@ class List extends React.Component {
       {
         title: "PORT_MGMT",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "PORT_MGMT",
         key: "PORT_MGMT",
         ...this.getColumnSearchProps('PORT_MGMT')
@@ -219,7 +273,7 @@ class List extends React.Component {
       {
         title: "REVERSE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "REVERSE",
         key: "REVERSE",
         ...this.getColumnSearchProps('REVERSE')
@@ -227,7 +281,7 @@ class List extends React.Component {
       {
         title: "INDIRIZZO",
         align: "center",
-     		width: 250,
+        width: "auto",
         dataIndex: "INDIRIZZO",
         key: "INDIRIZZO",
         ...this.getColumnSearchProps('INDIRIZZO')
@@ -235,7 +289,7 @@ class List extends React.Component {
       {
         title: "POSIZIONE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "POSIZIONE",
         key: "POSIZIONE",
         ...this.getColumnSearchProps('POSIZIONE')
@@ -243,7 +297,7 @@ class List extends React.Component {
       {
         title: "KEYMAKER",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "KEYMAKER",
         key: "KEYMAKER",
         ...this.getColumnSearchProps('KEYMAKER')
@@ -251,7 +305,7 @@ class List extends React.Component {
       {
         title: "USERADMIN",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "USERADMIN",
         key: "USERADMIN",
         ...this.getColumnSearchProps('USERADMIN')
@@ -259,7 +313,7 @@ class List extends React.Component {
       {
         title: "PUBLIC_NET",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "PUBLIC_NET",
         key: "PUBLIC_NET",
         ...this.getColumnSearchProps('PUBLIC_NET')
@@ -267,7 +321,7 @@ class List extends React.Component {
       {
         title: "CODICE_SERVIZIO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "CODICE_SERVIZIO",
         key: "CODICE_SERVIZIO",
         ...this.getColumnSearchProps('CODICE_SERVIZIO')
@@ -275,7 +329,7 @@ class List extends React.Component {
       {
         title: "NOTE_APPARATO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "NOTE_APPARATO",
         key: "NOTE_APPARATO",
         ...this.getColumnSearchProps('NOTE_APPARATO')
@@ -283,7 +337,7 @@ class List extends React.Component {
       {
         title: "ASSISTENZA",
         align: "center",
-     		width: 250,
+        width: "auto",
         dataIndex: "ASSISTENZA",
         key: "ASSISTENZA",
         ...this.getColumnSearchProps('ASSISTENZA')
@@ -291,7 +345,7 @@ class List extends React.Component {
       {
         title: "PROFILO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "PROFILO",
         key: "PROFILO",
         ...this.getColumnSearchProps('PROFILO')
@@ -299,7 +353,7 @@ class List extends React.Component {
       {
         title: "ATTIVAZIONE_ANNO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "ATTIVAZIONE_ANNO",
         key: "ATTIVAZIONE_ANNO",
         ...this.getColumnSearchProps('ATTIVAZIONE_ANNO')
@@ -307,7 +361,7 @@ class List extends React.Component {
       {
         title: "ATTIVAZIONE_MESE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "ATTIVAZIONE_MESE",
         key: "ATTIVAZIONE_MESE",
         ...this.getColumnSearchProps('ATTIVAZIONE_MESE')
@@ -315,7 +369,7 @@ class List extends React.Component {
       {
         title: "DISK_STATUS",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "DISK_STATUS",
         key: "DISK_STATUS",
         ...this.getColumnSearchProps('DISK_STATUS')
@@ -323,7 +377,7 @@ class List extends React.Component {
       {
         title: "AUTENTICAZIONE",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "AUTENTICAZIONE",
         key: "AUTENTICAZIONE",
         ...this.getColumnSearchProps('AUTENTICAZIONE')
@@ -331,7 +385,7 @@ class List extends React.Component {
       {
         title: "SERVIZI",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "SERVIZI",
         key: "SERVIZI",
         ...this.getColumnSearchProps('SERVIZI')
@@ -339,7 +393,7 @@ class List extends React.Component {
       {
         title: "ADDURL_MGMT",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "ADDURL_MGMT",
         key: "ADDURL_MGMT",
         ...this.getColumnSearchProps('ADDURL_MGMT')
@@ -347,7 +401,7 @@ class List extends React.Component {
       {
         title: "SNMP_COMMUNITY",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "SNMP_COMMUNITY",
         key: "SNMP_COMMUNITY",
         ...this.getColumnSearchProps('SNMP_COMMUNITY')
@@ -355,7 +409,7 @@ class List extends React.Component {
       {
         title: "SNMP_PORT",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "SNMP_PORT",
         key: "SNMP_PORT",
         ...this.getColumnSearchProps('SNMP_PORT')
@@ -363,7 +417,7 @@ class List extends React.Component {
       {
         title: "STATUS_APPARATO",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "STATUS_APPARATO",
         key: "STATUS_APPARATO",
         ...this.getColumnSearchProps('STATUS_APPARATO')
@@ -371,7 +425,7 @@ class List extends React.Component {
       {
         title: "BACKUP_SCRIPT",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "BACKUP_SCRIPT",
         key: "BACKUP_SCRIPT",
         ...this.getColumnSearchProps('BACKUP_SCRIPT')
@@ -379,7 +433,7 @@ class List extends React.Component {
       {
         title: "BACKUP_STATUS",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "BACKUP_STATUS",
         key: "BACKUP_STATUS",
         ...this.getColumnSearchProps('BACKUP_STATUS')
@@ -387,7 +441,7 @@ class List extends React.Component {
       {
         title: "BACKUP_TSTAMP",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "BACKUP_TSTAMP",
         key: "BACKUP_TSTAMP",
         ...this.getColumnSearchProps('BACKUP_TSTAMP')
@@ -395,35 +449,97 @@ class List extends React.Component {
       {
         title: "BACKUP_CHECKSUM",
         align: "center",
-     		width: 'auto',
+        width: "auto",
         dataIndex: "BACKUP_CHECKSUM",
         key: "BACKUP_CHECKSUM",
         ...this.getColumnSearchProps('BACKUP_CHECKSUM')
       },
       {
-        title: "detail",
+        title: "comune",
         align: "center",
-     		width: 'auto',
-        dataIndex: "detail",
-        key: "detail",
-        ...this.getColumnSearchProps('detail')
+        width: "auto",
+        dataIndex: "comune",
+        key: "comune",
+        ...this.getColumnSearchProps('comune')
+      },
+      {
+        title: "provincia",
+        align: "center",
+        width: "auto",
+        dataIndex: "provincia",
+        key: "provincia",
+        ...this.getColumnSearchProps('provincia')
+      },
+      {
+        title: "targa",
+        align: "center",
+        width: "auto",
+        dataIndex: "targa",
+        key: "targa",
+        ...this.getColumnSearchProps('targa')
+      },
+      {
+        title: "regione",
+        align: "center",
+        width: "auto",
+        dataIndex: "regione",
+        key: "regione",
+        ...this.getColumnSearchProps('regione'),
+      },
+      {
+        title: "extra_data",
+        align: "center",
+        width: "auto",
+        dataIndex: "extra_data",
+        key: "extra_data",
+        ...this.getColumnSearchProps('extra_data'),
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.state.extraLoading ?
+               <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+               :
+               <TextArea
+               defaultValue={obj.extra_data}
+               value={this.state.extraData}
+               onChange={e => this.setExtraData( e.target.value) }
+               onBlur={e => this.modifyExtraData(e)} />
+            }
+          </Space>
+        ),
       }
     ]
 
     return (
       <React.Fragment>
-        <Table
-          columns={columns}
-          dataSource={this.props.devices}
-          scroll={{ x: 'auto', y: 650}}
-          bordered
-          rowKey="SERIALE"
-          //pagination={false}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} />}
+        <Modal
+          title={<p style={{textAlign: 'center'}}>FirmwareTable</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.props.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={this.props.hide}
+          width={1500}
+        >
+        { this.state.loading ?
+           <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+        :
+          <Table
+            columns={columns}
+            dataSource={this.state.firmwareFiltered}
+            bordered
+            rowKey="SERIALE"
+            layout="vertical"
+            pagination={{ pageSize: 10 }}
+            style={{ width: 'auto', marginBottom: 10}}
+            scroll={{x: 'auto'}}
+          />
+        }
+
+        </Modal>
+
+        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
 
       </React.Fragment>
     )
@@ -431,6 +547,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  authorizations: state.authorizations.f5,
-  devices: state.fortinetdb.devices,
-}))(List);
+  token: state.ssoAuth.token,
+ 	error: state.error.error,
+}))(FirmwareTable);
