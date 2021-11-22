@@ -146,29 +146,14 @@ class Homepage extends React.Component {
                 <Row>
                   <Col span={18}>
                     <Row>
-                      <Col span={4}>
+                      <Col span={10}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
                           <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={4}>
+                      <Col offset={1} span={10}>
                         <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
                           <Victory/>
-                        </Card>
-                      </Col>
-                      <Col offset={1} span={4}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col offset={1} span={4}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
-                        </Card>
-                      </Col>
-                      <Col offset={1} span={4}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
                         </Card>
                       </Col>
                     </Row>

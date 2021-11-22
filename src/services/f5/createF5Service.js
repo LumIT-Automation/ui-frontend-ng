@@ -11,6 +11,8 @@ import {
   setKeysError,
   setRouteDomains,
   setRouteDomainsError,
+  setCreateL4ServiceError,
+  setCreateL7ServiceError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
@@ -39,14 +41,12 @@ class CreateF5Service extends React.Component {
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypesL7: ['tcp-half-open', 'http'],
       monitorTypesL4: ['tcp-half-open'],
-      membersNumber: 0,
-      members: [],
       request: {
         routeDomain: null,
         certificate: null,
         key: null,
         source: "0.0.0.0/0",
-        members: []
+        nodes: []
       }
     };
   }
@@ -231,10 +231,9 @@ class CreateF5Service extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     const ipv4 = e.target.value
-    const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-    const ipv4Regex = new RegExp(validIpAddressRegex);
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (ipv4Regex.test(ipv4)) {
+    if (validIpAddressRegex.test(ipv4)) {
       request.destination = ipv4
       delete errors.destinationError
     }
@@ -336,110 +335,120 @@ class CreateF5Service extends React.Component {
   }
 
 
+  addNode = () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let id = 0
+    let n = 0
 
+    this.state.request.nodes.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
 
+    let node = {id: n}
+    nodes.push(node)
+    request.nodes = nodes
 
-
-  oneMoreMember = () => {
-    let membersNumber = this.state.membersNumber
-    let members = this.state.members
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-
-    membersNumber = membersNumber + 1
-    members.push({id: membersNumber})
-    delete errors.membersNumberError
-    this.setState({membersNumber: membersNumber, errors: errors, request: request})
+    this.setState({request: request})
   }
 
-  setMemberAddress = (memberId, e) => {
-    let members = Object.assign([], this.state.members);
-    let errors = Object.assign({}, this.state.errors);
+  removeNode = r => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+
+    let list = nodes.filter(n => {
+      return r !== n.id
+    })
+
+    request.nodes = list
+
+    this.setState({request: request})
+  }
+
+
+  setNodeAddress = (nodeId, e) => {
+    console.log('èèèèèèèèèèèèèèèèèèèèèèè')
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     const ipv4 = e.target.value
-    const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-    const ipv4Regex = new RegExp(validIpAddressRegex);
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (ipv4Regex.test(ipv4)) {
-      let index = members.findIndex((obj => obj.id === memberId))
-      members[index].address = ipv4
-      delete errors.memberAddressError
+    if (validIpAddressRegex.test(ipv4)) {
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].address = ipv4
+      delete nodes[index].addressColor
+      delete nodes[index].addressError
     }
     else {
-      errors.memberAddressError = 'error'
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].address = null
+      nodes[index].addressColor = 'red'
+      nodes[index].addressError = 'Please input a valid ip address'
     }
-    this.setState({members: members, errors: errors})
+    request.nodes = nodes
+    this.setState({request: request})
   }
 
-  setMemberName = (memberId, e) => {
-    let members = Object.assign([], this.state.members);
-    let errors = Object.assign({}, this.state.errors);
+  setNodeName = (nodeId, e) => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     const name = e.target.value
 
     if (name) {
-      let index = members.findIndex((obj => obj.id === memberId))
-      members[index].name = name
-      delete errors.memberNameError
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].name = name
+      delete nodes[index].nameColor
+      delete nodes[index].nameError
     }
     else {
-      errors.memberNameError = 'error'
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].name = null
+      nodes[index].nameColor = 'red'
+      nodes[index].nameError = 'Please input a valid node name'
     }
-    this.setState({members: members, errors: errors})
+    request.nodes = nodes
+    this.setState({request: request})
   }
 
-  setMemberPort = (memberId, p) => {
-    let members = Object.assign([], this.state.members);
-    let errors = Object.assign({}, this.state.errors);
+  setNodePort = (nodeId, p) => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     const port = parseInt(p.target.value)
 
-    if (isNaN(port)) {
-      errors.memberPortError = 'error'
+    if (p.target.value !== '' && !isNaN(p.target.value) && p.target.value >= 0 && p.target.value < 65536) {
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].port = port
+      delete nodes[index].portColor
+      delete nodes[index].portError
     }
     else {
-      let index = members.findIndex((obj => obj.id === memberId))
-      members[index].port = port
-      delete errors.memberPortError
+      let index = nodes.findIndex((obj => obj.id === nodeId))
+      nodes[index].port = null
+      nodes[index].portColor = 'red'
+      nodes[index].portError = 'Please input a valid port'
     }
-    this.setState({members: members, errors: errors})
+    request.nodes = nodes
+    this.setState({request: request})
   }
 
-  removeMember = (memberId) => {
-    let members = Object.assign([], this.state.members);
-    let errors = Object.assign({}, this.state.errors);
 
-    if (memberId) {
-      let index = members.findIndex((obj => obj.id === memberId))
-      members.splice(index, 1)
-      delete errors.membersError
-    }
-    else {
-      errors.membersError = 'error'
-    }
-    this.setState({members: members, errors: errors})
-  }
-
-  removeMembersId = () => {
-    let list = Object.assign([], this.state.members);
-    let request = Object.assign([], this.state.request);
-    let newList = []
-
-    list.forEach((item, i) => {
-      newList.push({name: item.name, address: item.address, port: item.port})
-    })
-
-    request.members = newList
+  createService = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     if (this.state.request.serviceType === 'L4') {
-      this.setState({request: request}, () => this.createService())
+      this.createL4Service()
+    }
+    else if (this.state.request.serviceType === 'L7') {
+      this.createL7Service()
     }
   }
-
-
-
-
-
 
 
   createL4Service = async () => {
@@ -466,28 +475,29 @@ class CreateF5Service extends React.Component {
           }
         ],
         "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.members
+          "name": `pool_${serviceName}`,
+          "loadBalancingMode": this.state.request.lbMethod,
+          "nodes": this.state.request.nodes
         },
         "monitor": {
-            "name": `${this.state.request.monitorType}_${serviceName}`,
-            "type": this.state.request.monitorType
+          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "type": this.state.request.monitorType
         }
       }
     }
+
+    console.log(b)
 
     this.setState({loading: true})
 
     let rest = new Rest(
       "POST",
       resp => {
-
         this.setState({loading: false, response: true})
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setCreateL4ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -510,42 +520,42 @@ class CreateF5Service extends React.Component {
           "source": this.state.request.source
         },
         "profiles": [
-            {
-                "name": `tcp-wan-optimized_${serviceName}`,
-                "type": "tcp",
-                "defaultsFrom": "/Common/tcp-wan-optimized",
-                "context": "clientside"
-            },
-            {
-                "name": `tcp-lan-optimized_${serviceName}`,
-                "type": "tcp",
-                "defaultsFrom": "/Common/tcp-lan-optimized",
-                "context": "serverside"
-            },
-            {
-                "name": `http_${serviceName}`,
-                "type": "http",
-                "defaultsFrom": "/Common/http"
-            },
-            {
-                "name": `client-ssl_${serviceName}`,
-                "type": "client-ssl",
-                "cert": this.state.request.certificate,
-                "key": this.state.request.key,
-                "chain": "",
-                "context": "clientside"
-            }
+          {
+            "name": `tcp-wan-optimized_${serviceName}`,
+            "type": "tcp",
+            "defaultsFrom": "/Common/tcp-wan-optimized",
+            "context": "clientside"
+          },
+          {
+            "name": `tcp-lan-optimized_${serviceName}`,
+            "type": "tcp",
+            "defaultsFrom": "/Common/tcp-lan-optimized",
+            "context": "serverside"
+          },
+          {
+            "name": `http_${serviceName}`,
+            "type": "http",
+            "defaultsFrom": "/Common/http"
+          },
+          {
+            "name": `client-ssl_${serviceName}`,
+            "type": "client-ssl",
+            "cert": this.state.request.certificate,
+            "key": this.state.request.key,
+            "chain": "",
+            "context": "clientside"
+          }
         ],
         "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.members
+          "name": `pool_${serviceName}`,
+          "loadBalancingMode": this.state.request.lbMethod,
+          "nodes": this.state.request.nodes
         },
         "monitor": {
-            "name": `${this.state.request.monitorType}_${serviceName}`,
-            "type": this.state.request.monitorType,
-            "send": `${this.state.request.monitorSendString}`,
-            "recv": `${this.state.request.monitorReceiveString}`
+          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "type": this.state.request.monitorType,
+          "send": `${this.state.request.monitorSendString}`,
+          "recv": `${this.state.request.monitorReceiveString}`
         }
       }
     }
@@ -555,12 +565,11 @@ class CreateF5Service extends React.Component {
     let rest = new Rest(
       "POST",
       resp => {
-
         this.setState({loading: false, response: true})
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setCreateL7ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -615,16 +624,7 @@ class CreateF5Service extends React.Component {
                  />
               }
               { !this.state.loading && !this.state.response &&
-              <Form
-                {...layout}
-                name="basic"
-                initialValues={{
-
-                }}
-                onFinish={null}
-                onFinishFailed={null}
-              >
-
+                <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Service Type:</p>
@@ -678,7 +678,7 @@ class CreateF5Service extends React.Component {
                       <p style={{color: 'red'}}>{this.state.errors.serviceNameError}</p>
                     </React.Fragment>
                   :
-                    <Input style={{width: 450}} name="serviceName" id='serviceName' onBlur={e => this.setServiceName(e)} />
+                    <Input defaultValue={this.state.request.serviceName} style={{width: 450}} name="serviceName" id='serviceName' onBlur={e => this.setServiceName(e)} />
                   }
                   </Col>
                 </Row>
@@ -779,7 +779,7 @@ class CreateF5Service extends React.Component {
                       <p style={{color: 'red'}}>{this.state.errors.destinationError}</p>
                     </React.Fragment>
                   :
-                    <Input style={{width: 450}} name="destination" id='destination' onBlur={e => this.setDestination(e)} />
+                    <Input defaultValue={this.state.request.destination} style={{width: 450}} name="destination" id='destination' onBlur={e => this.setDestination(e)} />
                   }
                   </Col>
                 </Row>
@@ -792,11 +792,11 @@ class CreateF5Service extends React.Component {
                   <Col span={16}>
                   {this.state.errors.destinationPortError ?
                     <React.Fragment>
-                      <Input style={{width: 450, borderColor: 'red'}} name="destination" id='destination' onBlur={e => this.setDestinationPort(e)} />
+                      <Input style={{width: 450, borderColor: 'red'}} name="destinationPort" id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
                       <p style={{color: 'red'}}>{this.state.errors.destinationPortError}</p>
                     </React.Fragment>
                   :
-                    <Input style={{width: 450}} name="destinationPort" id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
+                    <Input defaultValue={this.state.request.destinationPort} style={{width: 450}} name="destinationPort" id='destinationPort' onBlur={e => this.setDestinationPort(e)} />
                   }
                   </Col>
                 </Row>
@@ -1032,7 +1032,7 @@ class CreateF5Service extends React.Component {
                           <p style={{color: 'red'}}>{this.state.errors.monitorTypePortError}</p>
                         </React.Fragment>
                       :
-                        <Input.TextArea style={{width: 450}} name="monitorSendString" id='monitorSendString' onBlur={e => this.setMonitorSendString(e)} />
+                        <Input.TextArea defaultValue={this.state.request.monitorSendString} style={{width: 450}} name="monitorSendString" id='monitorSendString' onBlur={e => this.setMonitorSendString(e)} />
                       }
                       </Col>
                     </Row>
@@ -1048,7 +1048,7 @@ class CreateF5Service extends React.Component {
                           <p style={{color: 'red'}}>{this.state.errors.monitorTypePortError}</p>
                         </React.Fragment>
                       :
-                        <Input.TextArea style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onBlur={e => this.setMonitorReceiveString(e)} />
+                        <Input.TextArea defaultValue={this.state.request.monitorReceiveString} style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onBlur={e => this.setMonitorReceiveString(e)} />
                       }
                       </Col>
                     </Row>
@@ -1059,76 +1059,93 @@ class CreateF5Service extends React.Component {
 
                 <br/>
 
-                <Form.Item
-                  label="One more member"
-                  name='membersNumber'
-                  key="membersNumber"
-                  validateStatus={this.state.errors.membersNumberError}
-                  help={this.state.errors.membersNumberError ? 'Please input a valid number of members' : null }
-                >
-                  <Button type="primary" onClick={() => this.oneMoreMember()}>
-                    +
-                  </Button>
-                  {//<Input id='membersNumber' onBlur={e => this.setMembersNumber(e)} />
-                  }
-                </Form.Item>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a node:</p>
+                  </Col>
+                  <Col span={16}>
+                    <Button type="primary" onClick={() => this.addNode()}>
+                      +
+                    </Button>
+                  </Col>
+                </Row>
+                <br/>
 
-                {
-                  this.state.members.map((n, i) => {
-                    let a = 'address' + n.id
-                    let na = 'name' + n.id
-                    let pa = 'port' + n.id
-                    let r = 'remove' + n.id
-                    return (
-                      <React.Fragment>
-                      <Form.Item
-                        label="Address"
-                        name={a}
-                        key={a}
-                        validateStatus={this.state.errors.memberAddressError}
-                        help={this.state.errors.memberAddressError ? 'Please input a valid IP' : null }
-                      >
-                        <Input id={a} value={n.address} style={{display: 'block'}} onBlur={e => this.setMemberAddress(n.id, e)} />
-                      </Form.Item>
+                { this.state.request.nodes ?
+                  this.state.request.nodes.map((n, i) => {
+                  let address = 'address' + n.id
+                  let name = 'name' + n.id
+                  let port = 'port' + n.id
 
-                      <Form.Item
-                        label="Name"
-                        name={na}
-                        key={na}
-                        validateStatus={this.state.errors.memberNameError}
-                        help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
-                      >
-                        <Input id={na} style={{display: 'block'}} onBlur={e => this.setMemberName(n.id, e)} />
-                      </Form.Item>
+                  return (
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={2} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                        </Col>
+                        <Col span={16}>
+                        { n.addressError ?
+                          <React.Fragment>
+                            <Input name={address} id={address} style={{display: 'block', width: 450, borderColor: n.addressColor}} onBlur={e => this.setNodeAddress(n.id, e)} />
+                            <p style={{color: n.addressColor}}>{n.addressError}</p>
+                          </React.Fragment>
+                        :
+                          <Input defaultValue={n.address} name={address} id={address} style={{display: 'block', width: 450, borderColor: n.addressColor}} onBlur={e => this.setNodeAddress(n.id, e)} />
+                        }
+                        </Col>
+                      </Row>
 
-                      <Form.Item
-                        label="Port"
-                        name={pa}
-                        key={pa}
-                        validateStatus={this.state.errors.memberPortError}
-                        help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
-                      >
-                        <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(n.id, e)}/>
-                      </Form.Item>
+                      <Row>
+                        <Col offset={2} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                        </Col>
+                        <Col span={16}>
+                        { n.nameError ?
+                          <React.Fragment>
+                            <Input name={name} id={name} style={{display: 'block', width: 450, borderColor: n.nameColor}} onBlur={e => this.setNodeName(n.id, e)} />
+                            <p style={{color: n.nameColor}}>{n.nameError}</p>
+                          </React.Fragment>
+                        :
+                          <Input defaultValue={n.name} name={name} id={name} style={{display: 'block', width: 450, borderColor: n.nameColor}} onBlur={e => this.setNodeName(n.id, e)} />
+                        }
+                        </Col>
+                      </Row>
 
-                      <Form.Item
-                        label="Remove member"
-                        name={r}
-                        key={r}
-                        validateStatus={this.state.errors.removeMemberError}
-                        help={this.state.errors.removeMemberError ? 'Please input a valid number of members' : null }
-                      >
-                        <Button type="danger" onClick={() => this.removeMember(n.id)}>
-                          -
-                        </Button>
-                        <Divider/>
-                      </Form.Item>
+                      <Row>
+                        <Col offset={2} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
+                        </Col>
+                        <Col span={16}>
+                        { n.portError ?
+                          <React.Fragment>
+                            <Input name={port} id={port} style={{display: 'block', width: 450, borderColor: n.portColor}} onBlur={e => this.setNodePort(n.id, e)} />
+                            <p style={{color: n.portColor}}>{n.portError}</p>
+                          </React.Fragment>
+                        :
+                          <Input defaultValue={n.port} name={port} id={port} style={{display: 'block', width: 450, borderColor: n.portColor}} onBlur={e => this.setNodePort(n.id, e)} />
+                        }
+                        </Col>
+                      </Row>
 
-                      </React.Fragment>
-                    )
+                      <Row>
+                        <Col offset={2} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
+                        </Col>
+                        <Col span={16}>
+                          <Button type="danger" onClick={() => this.removeNode(n.id)}>
+                            -
+                          </Button>
+                        </Col>
+                      </Row>
+
+                      <br/>
+
+                    </React.Fragment>
+                  )
                   })
+                  :
+                  null
                 }
-
 
                 <Row>
                   <Col offset={8} span={16}>
@@ -1138,7 +1155,8 @@ class CreateF5Service extends React.Component {
                       this.state.request.destination &&
                       this.state.request.destinationPort &&
                       this.state.request.lbMethod &&
-                      this.state.request.monitorType
+                      this.state.request.monitorType &&
+                      (this.state.request.nodes.length > 0)
                       ?
                       <Button type="primary" onClick={() => this.createService()} >
                         Create Load Balancer
@@ -1150,8 +1168,8 @@ class CreateF5Service extends React.Component {
                     }
                   </Col>
                 </Row>
+              </React.Fragment>
 
-              </Form>
             }
 
             </React.Fragment>
@@ -1165,6 +1183,9 @@ class CreateF5Service extends React.Component {
             { this.props.certificatesError ? <Error component={'create loadbalancer'} error={[this.props.certificatesError]} visible={true} type={'setCertificatesError'} /> : null }
             { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'setRouteDomainsError'} /> : null }
+
+            { this.props.createL4ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL4ServiceError]} visible={true} type={'setCreateL4ServiceError'} /> : null }
+            { this.props.createL7ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL7ServiceError]} visible={true} type={'setCreateL7ServiceError'} /> : null }
           </React.Fragment>
         :
           null
@@ -1189,4 +1210,7 @@ export default connect((state) => ({
   keysError: state.f5.keysError,
   routeDomains: state.f5.routeDomains,
   routeDomainsError: state.f5.routeDomainsError,
+
+  createL4ServiceError: state.f5.createL4ServiceError,
+  createL7ServiceError: state.f5.createL7ServiceError
 }))(CreateF5Service);

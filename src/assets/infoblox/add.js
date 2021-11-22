@@ -142,10 +142,9 @@ class Add extends React.Component {
 
       case 'address':
         const ipv4 = e.target.value
-        const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-        const ipv4Regex = new RegExp(validIpAddressRegex);
+        const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-        if (ipv4Regex.test(ipv4)) {
+        if (validIpAddressRegex.test(ipv4)) {
           request.address = ipv4
           delete errors.addressError
         }

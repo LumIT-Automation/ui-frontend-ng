@@ -36,7 +36,9 @@ import {
   setProfilesError,
   setVirtualServersError,
   setCertificatesError,
-  setKeysError
+  setKeysError,
+  setCreateL4ServiceError,
+  setCreateL7ServiceError
 } from '../_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
@@ -182,6 +184,13 @@ class Error extends Component {
           break
         case 'setKeysError':
           this.props.dispatch(setKeysError(null))
+          break
+          
+        case 'setCreateL4ServiceError':
+          this.props.dispatch(setCreateL4ServiceError(null))
+          break
+        case 'setCreateL7ServiceError':
+          this.props.dispatch(setCreateL7ServiceError(null))
           break
       }
     }

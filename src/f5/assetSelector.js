@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 
 import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Error from '../error/f5Error'
 
 import { setError } from '../_store/store.error'
 import {
@@ -203,7 +203,9 @@ class AssetSelector extends React.Component {
             }
           </Col>
         </Row>
-        { this.props.partitionsError ? <Error error={[this.props.partitionsError]} visible={true} type={'setF5PartitionsError'} /> : null }
+
+        { this.props.partitionsError ? <Error component={'f5 asset selector'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
+        
       </React.Fragment>
     )
   }

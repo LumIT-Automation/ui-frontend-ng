@@ -206,10 +206,9 @@ class CreateF5Service extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     const ipv4 = e.target.value
-    const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-    const ipv4Regex = new RegExp(validIpAddressRegex);
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (ipv4Regex.test(ipv4)) {
+    if (validIpAddressRegex.test(ipv4)) {
       request.destination = ipv4
       delete errors.destinationError
     }
@@ -367,10 +366,9 @@ class CreateF5Service extends React.Component {
     let errors = Object.assign({}, this.state.errors);
 
     const ipv4 = e.target.value
-    const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-    const ipv4Regex = new RegExp(validIpAddressRegex);
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (ipv4Regex.test(ipv4)) {
+    if (validIpAddressRegex.test(ipv4)) {
       let index = members.findIndex((obj => obj.id === memberId))
       members[index].address = ipv4
       delete errors.memberAddressError

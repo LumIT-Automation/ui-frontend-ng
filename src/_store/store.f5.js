@@ -241,6 +241,14 @@ const f5Slice = createSlice({
           state.keysError = action.payload
         },
 
+
+        setCreateL4ServiceError: (state, action) => {
+          state.createL4ServiceError = action.payload
+        },
+        setCreateL7ServiceError: (state, action) => {
+          state.createL7ServiceError = action.payload
+        },
+
         setCurrentPools: (state, action) => {
           state.currentPools = action.payload.data.items
           //state.currentPoolList = undefined
@@ -377,6 +385,9 @@ export const {
   setKeys,
   setKeysFetch,
   setKeysError,
+
+  setCreateL4ServiceError,
+  setCreateL7ServiceError,
 
   resetObjects,
   cleanUp
