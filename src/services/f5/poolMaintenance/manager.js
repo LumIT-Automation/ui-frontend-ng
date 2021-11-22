@@ -30,7 +30,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.partitions) {
+    if (this.props.asset && this.props.partition) {
 
       this.getPools()
     }
@@ -41,8 +41,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
-    if ( (this.props.asset && this.props.partitions) && (prevProps.partition !== this.props.partition) ) {
+    console.log('update')
+    console.log()
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
 
       this.getPools()
     }
@@ -57,6 +58,7 @@ class Manager extends React.Component {
 
 
   getPools = () => {
+    console.log('èèèèèèèèèèèè')
     if (this.props.asset.id) {
       this.fetchPools(this.props.asset.id, this.props.partition)
     }
@@ -67,6 +69,7 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.setState({loading: false})
         this.props.dispatch(setCurrentPools( resp ))
       },
@@ -135,9 +138,9 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
-  assets: state.f5.assets,
+
   asset: state.f5.asset,
-  partitions: state.f5.partitions,
   partition: state.f5.partition,
+  
   currentPools: state.f5.currentPools
 }))(Manager);

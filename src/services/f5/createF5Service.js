@@ -59,7 +59,6 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.request)
     if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
       this.main()
     }
@@ -484,8 +483,6 @@ class CreateF5Service extends React.Component {
         }
       }
     }
-
-    console.log(b)
 
     this.setState({loading: true})
 
@@ -1154,7 +1151,7 @@ class CreateF5Service extends React.Component {
                       this.state.request.destination &&
                       this.state.request.destinationPort &&
                       this.state.request.lbMethod &&
-                      this.state.request.monitorType 
+                      this.state.request.monitorType
                       ?
                       <Button type="primary" onClick={() => this.createService()} >
                         Create Load Balancer
