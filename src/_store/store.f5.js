@@ -248,6 +248,9 @@ const f5Slice = createSlice({
         setCreateL7ServiceError: (state, action) => {
           state.createL7ServiceError = action.payload
         },
+        setDeleteServiceError: (state, action) => {
+          state.deleteServiceError = action.payload
+        },
 
         setCurrentPools: (state, action) => {
           state.currentPools = action.payload.data.items
@@ -388,6 +391,7 @@ export const {
 
   setCreateL4ServiceError,
   setCreateL7ServiceError,
+  setDeleteServiceError,
 
   resetObjects,
   cleanUp

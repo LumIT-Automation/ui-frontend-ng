@@ -370,7 +370,6 @@ class CreateF5Service extends React.Component {
 
 
   setNodeAddress = (nodeId, e) => {
-    console.log('èèèèèèèèèèèèèèèèèèèèèèè')
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
@@ -1155,8 +1154,7 @@ class CreateF5Service extends React.Component {
                       this.state.request.destination &&
                       this.state.request.destinationPort &&
                       this.state.request.lbMethod &&
-                      this.state.request.monitorType &&
-                      (this.state.request.nodes.length > 0)
+                      this.state.request.monitorType 
                       ?
                       <Button type="primary" onClick={() => this.createService()} >
                         Create Load Balancer

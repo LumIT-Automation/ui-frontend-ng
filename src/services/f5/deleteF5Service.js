@@ -2,9 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
+import {
+  setDeleteServiceError
+} from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 
@@ -25,10 +27,9 @@ class DeleteF5Service extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
       message:'',
-      request: { }
+      request: {}
     };
   }
 
@@ -50,8 +51,8 @@ class DeleteF5Service extends React.Component {
   }
 
   setServiceName = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (e.target.value) {
       request.serviceName = e.target.value
@@ -76,16 +77,12 @@ class DeleteF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setDeleteServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/${serviceName}/`, this.props.token )
 
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   response = () => {
@@ -119,20 +116,19 @@ class DeleteF5Service extends React.Component {
           width={1500}
         >
 
-
           <AssetSelector />
           <Divider/>
 
           { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
             <React.Fragment>
-      { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-      { !this.state.loading && this.state.response &&
-        <Result
-           status="success"
-           title="Service Deleted"
-         />
-      }
-      { !this.state.loading && !this.state.response &&
+              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+              { !this.state.loading && this.state.response &&
+                <Result
+                   status="success"
+                   title="Service Deleted"
+                 />
+              }
+              { !this.state.loading && !this.state.response &&
         <Form
           {...layout}
           name="basic"
@@ -168,13 +164,19 @@ class DeleteF5Service extends React.Component {
 
         </Form>
       }
-      </React.Fragment>
-      :
-      <Alert message="Asset and Partition not set" type="error" />
-      }
-      </Modal>
+            </React.Fragment>
+          :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
+        </Modal>
 
-      {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.deleteServiceError ? <Error component={'delete loadbalancer'} error={[this.props.deleteServiceError]} visible={true} type={'setDeleteServiceError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
 
@@ -184,9 +186,10 @@ class DeleteF5Service extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodes: state.f5.nodes
+
+  deleteServiceError: state.f5.deleteServiceError
 }))(DeleteF5Service);

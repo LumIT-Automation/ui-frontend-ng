@@ -38,7 +38,8 @@ import {
   setCertificatesError,
   setKeysError,
   setCreateL4ServiceError,
-  setCreateL7ServiceError
+  setCreateL7ServiceError,
+  setDeleteServiceError
 } from '../_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
@@ -185,13 +186,17 @@ class Error extends Component {
         case 'setKeysError':
           this.props.dispatch(setKeysError(null))
           break
-          
+
         case 'setCreateL4ServiceError':
           this.props.dispatch(setCreateL4ServiceError(null))
           break
         case 'setCreateL7ServiceError':
           this.props.dispatch(setCreateL7ServiceError(null))
           break
+        case 'setDeleteServiceError':
+          this.props.dispatch(setDeleteServiceError(null))
+          break
+
       }
     }
   }
