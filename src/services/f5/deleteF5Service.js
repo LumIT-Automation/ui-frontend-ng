@@ -129,41 +129,48 @@ class DeleteF5Service extends React.Component {
                  />
               }
               { !this.state.loading && !this.state.response &&
-        <Form
-          {...layout}
-          name="basic"
-          initialValues={{
+                <Form
+                  {...layout}
+                  name="basic"
+                  initialValues={{
 
-          }}
-          onFinish={null}
-          onFinishFailed={null}
-        >
+                  }}
+                  onFinish={null}
+                  onFinishFailed={null}
+                >
+                  <Form.Item
+                    label="Service Name"
+                    name='serviceName'
+                    key="serviceName"
+                    validateStatus={this.state.errors.serviceNameError}
+                    help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
+                  >
+                    <Input id='name' onBlur={e => this.setServiceName(e)} />
+                  </Form.Item>
+                  { this.state.request.serviceName ?
+                    <Form.Item
+                      wrapperCol={ {offset: 8 }}
+                      name="button"
+                      key="button"
+                    >
+                      <Button type="danger" onClick={() => this.deleteService()}>
+                        Delete Service
+                      </Button>
+                    </Form.Item>
+                    :
+                    <Form.Item
+                      wrapperCol={ {offset: 8 }}
+                      name="button"
+                      key="button"
+                    >
+                      <Button type="danger" onClick={() => this.deleteService()} disabled>
+                        Delete Service
+                      </Button>
+                    </Form.Item>
+                }
 
-          <Form.Item
-            label="Service Name"
-            name='serviceName'
-            key="serviceName"
-            validateStatus={this.state.errors.serviceNameError}
-            help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
-          >
-            <Input id='name' onChange={e => this.setServiceName(e)} />
-          </Form.Item>
-          { this.state.request.serviceName ?
-            <Form.Item
-              wrapperCol={ {offset: 8 }}
-              name="button"
-              key="button"
-            >
-              <Button type="danger" onClick={() => this.deleteService()}>
-                Delete Service
-              </Button>
-            </Form.Item>
-            :
-            null
-        }
-
-        </Form>
-      }
+                </Form>
+              }
             </React.Fragment>
           :
             <Alert message="Asset and Partition not set" type="error" />
