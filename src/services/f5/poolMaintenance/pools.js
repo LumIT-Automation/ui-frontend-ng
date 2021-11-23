@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import PoolDetails from './poolDetails'
+import Pool from './pool'
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -10,7 +10,7 @@ import { SearchOutlined } from '@ant-design/icons';
 
 
 
-class PoolsTable extends React.Component {
+class Pools extends React.Component {
 
   constructor(props) {
     super(props);
@@ -150,7 +150,7 @@ class PoolsTable extends React.Component {
         key: 'details',
         render: (name, record)  => (
           <Space size="small">
-            {<PoolDetails name={name} obj={record} />}
+            {<Pool name={name} obj={record} />}
           </Space>
         ),
       }
@@ -160,7 +160,7 @@ class PoolsTable extends React.Component {
     return (
         <Table
           columns={columns}
-          dataSource={this.props.currentPools}
+          dataSource={this.props.pools}
           bordered
           rowKey="name"
           scroll={{x: 'auto'}}
@@ -173,7 +173,7 @@ class PoolsTable extends React.Component {
 
 
 export default connect((state) => ({
-  currentPools: state.f5.currentPools,
+  pools: state.f5.pools,
   token: state.ssoAuth.token,
  	error: state.error.error,
   assets: state.f5.assets,
@@ -181,4 +181,4 @@ export default connect((state) => ({
   partitions: state.f5.partitions,
   partition: state.f5.partition,
   pools: state.f5.pools
-}))(PoolsTable);
+}))(Pools);

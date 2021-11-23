@@ -1,37 +1,30 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../../_helpers/Rest";
-import Error from '../../../error'
+import Rest from '../../../_helpers/Rest'
+import Error from '../../../error/f5Error'
 
-import { setError } from '../../../_store/store.error'
-import { setCurrentPools } from '../../../_store/store.f5'
+import { setPools, setPoolsError } from '../../../_store/store.f5'
 
 import AssetSelector from '../../../f5/assetSelector'
-import PoolsTable from './poolsTable'
+import Pools from './pools'
 
-import { Modal, Alert, Button, Divider, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
+import { Modal, Alert, Button, Divider, Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class Manager extends React.Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      environments: [],
-      environment: '',
-      envAssets: [],
-      error: null,
-    };
+    this.state = {}
   }
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-
       this.getPools()
     }
   }
@@ -41,10 +34,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update')
-    console.log()
     if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
-
       this.getPools()
     }
   }
@@ -58,7 +48,6 @@ class Manager extends React.Component {
 
 
   getPools = () => {
-    console.log('èèèèèèèèèèèè')
     if (this.props.asset.id) {
       this.fetchPools(this.props.asset.id, this.props.partition)
     }
@@ -69,28 +58,20 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.setState({loading: false})
-        this.props.dispatch(setCurrentPools( resp ))
+        this.props.dispatch(setPools( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
+        this.setState({loading: false})
+        this.props.dispatch(setPoolsError(error))
       }
     )
     await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   closeModal = () => {
     this.setState({
-      visible: false,
-      response: false,
-      request: {},
-      errors: []
+      visible: false
     })
   }
 
@@ -111,8 +92,6 @@ class Manager extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-
-
           <AssetSelector />
           <Divider/>
 
@@ -120,7 +99,7 @@ class Manager extends React.Component {
             <React.Fragment>
             {this.state.loading ?
               <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
-              <PoolsTable/>
+              <Pools/>
             }
             </React.Fragment>
             :
@@ -128,7 +107,14 @@ class Manager extends React.Component {
           }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.poolsError ? <Error component={'poolMaint manager'} error={[this.props.poolsError]} visible={true} type={'setPoolsError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
     )
@@ -137,10 +123,10 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-  
-  currentPools: state.f5.currentPools
+
+  pools: state.f5.pools,
+  poolsError: state.f5.poolsError
 }))(Manager);
