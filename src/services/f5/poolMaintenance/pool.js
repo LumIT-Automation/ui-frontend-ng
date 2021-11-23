@@ -1,87 +1,23 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import Rest from "../../../_helpers/Rest";
-import Error from '../../../error'
+import Error from '../../../error/f5Error'
 
-import { setError } from '../../../_store/store.error'
+import {
+  setPoolMembers,
+  setPoolMembersError,
+
+  enableMemberError,
+  disableMemberError,
+  forceOfflineMemberError,
+  memberStatsError
+
+} from '../../../_store/store.f5'
 
 import { Modal, Button, Space, Table, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
+const antIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
-
-/*
-This is the PoolDetails Component.
-It is a table of pool member in a modal which reders:
-
-  Member
-  Address
-  State
-  Session
-  Status
-  Enable
-  Disable
-  Force
-  Offline
-  Connections
-  Monitoring
-
-It receives from redux store token, asset and partition.
-
-When user click on button Details of PoolsTable (the father component, or genitore 2 :-) ) the function details() sets the modal state.visible true, than calls fetchPoolMembers().
-fetchPoolMembers() calls `/backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`
-on succes calls this.setFetchedMembers() that update this.state.fetchedMembers
-When this.state.fetchedMembers changes componentDidUpdate() calls this.setcurrentMembers()
-at the first time this.state.renderedMembers.length === 0 this.setcurrentMembers() enriches this.state.fetchedMembers with
-  connections: 0,
-  isMonitored: false,
-  intervalId: null
-and sets this.state.currentMembers.
-When this.state.currentMembers changes componentDidUpdate() calls this.setRenderedMembers()
-this.setRenderedMembers() assign a new list starting from this.state.currentMembers enriches it with Status an color and sets this.state.renderedMembers.
-
-render() renders table of pool members.
-
-
-ENABLE, DISABLE, FORCE OFFLINE
-ENABLE, DISABLE and FORCE OFFLINE buttons call /backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/
-with method PATCH and in the request the required state, for example for enable { "data": { "state": "user-up", "session":"user-enabled" } }
-on response they call fetchPoolMembers() after 3 seconds in order to have the new member's state. Then componentDidUpdate() does the rest of the refreshing work.
-
-
-MONITORING
-When user click on START/STOP monitoringToggle() runs.
-It takes the selected member to start/stop monitoring.
-takes the value of member's key isMonitored.
-If it's false
-  this.interval = setInterval( () => this.memberStats(member), 3000)
-  every three seconds calls this.memberStats(member)
-  and update the member with
-    isMonitored: true,
-    intervalId: this.interval
-  then sets currentMembers adding the new enriched member to currentMembers.
-if it's true
-  clearInterval(member.intervalId)
-  stops cyclic call and clear intervalId
-  update the member with
-    isMonitored: false,
-    intervalId: null
-  then sets currentMembers adding the new enriched member to currentMembers.
-
-memberStats()
-call /backend/f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/
-onresponse this.refreshStats(member, resp.data)
-
-refreshStat()
-takes the member from this.state.currentMembers and update it with current fetched connections.
-It calls fetchPoolMembers also in order to update the status (of every pool's member) during the monitoring cycle.
-
-
-CLOSE
-When user close the modal, closeModal will triggered
-closeModal() rest the state (visible, fetchedMembers, currentMembers, renderedMembers)
-and clear every possible member's intervalId.
-*/
 
 
 class PoolDetails extends React.Component {
@@ -90,7 +26,6 @@ class PoolDetails extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      fetchedMembers: [],
       currentMembers: [],
       renderedMembers: [],
       error: null
@@ -105,7 +40,7 @@ class PoolDetails extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.fetchedMembers !== prevState.fetchedMembers) {
+    if (this.props.poolMembers !== prevProps.poolMembers) {
       this.setcurrentMembers()
     }
     if (this.state.currentMembers !== prevState.currentMembers) {
@@ -126,30 +61,29 @@ class PoolDetails extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setFetchedMembers(resp.data.items)
+        this.props.dispatch(setPoolMembers(resp))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setPoolMembersError(error))
         this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`, this.props.token)
   }
 
-  setFetchedMembers = fetchedMembersList => {
-    this.setState({fetchedMembers: fetchedMembersList})
-  }
-
   setcurrentMembers = () => {
 
     if (this.state.renderedMembers.length === 0) {
 
-      const fetch = Object.assign([], this.state.fetchedMembers);
+      const fetch = JSON.parse(JSON.stringify(this.props.poolMembers))
+
+      //const fetch = Object.assign([], this.props.poolMembers);
 
       const current = fetch.map( m => {
         let n =  Object.assign( {
             connections: 0,
             isMonitored: false,
+            isLoading: false,
             intervalId: null
           }, m);
         return n
@@ -158,8 +92,9 @@ class PoolDetails extends React.Component {
 
     } else {
 
-      const fetch = Object.assign([], this.state.fetchedMembers);
-      const current = Object.assign([], this.state.currentMembers);
+      const fetch = JSON.parse(JSON.stringify(this.props.poolMembers))
+      const current = JSON.parse(JSON.stringify(this.state.currentMembers))
+      //const current = Object.assign([], this.state.currentMembers);
 
       const newCurrent = current.map( m => {
         let fetched = fetch.find(f => m.name === f.name);
@@ -205,46 +140,114 @@ class PoolDetails extends React.Component {
 
 
   //ENABLE, DISABLE, FORCE OFFLINE
+  enableMemberHandler = async (member) => {
+    const members = JSON.parse(JSON.stringify(this.state.currentMembers))
+    const index = this.state.currentMembers.findIndex(m => {
+      return m.name === member.name
+    })
+    members[index].isLoading = true
+    await this.setState({currentMembers: members})
+
+    let enable = await this.enableMember(member)
+    members[index].isLoading = false
+
+    if (enable.status && enable.status !== 200) {
+      this.props.dispatch(enableMemberError(enable))
+      return
+    }
+
+    await this.setState({currentMembers: members})
+
+    this.fetchPoolMembers(this.props.obj, this.props.asset.id)
+  }
+
+  disableMemberHandler = async (member) => {
+    const members = JSON.parse(JSON.stringify(this.state.currentMembers))
+    const index = this.state.currentMembers.findIndex(m => {
+      return m.name === member.name
+    })
+    members[index].isLoading = true
+    await this.setState({currentMembers: members})
+
+    let disable = await this.disableMember(member)
+    members[index].isLoading = false
+
+    if (disable.status && disable.status !== 200) {
+      this.props.dispatch(disableMemberError(disable))
+      return
+    }
+
+    await this.setState({currentMembers: members})
+
+    this.fetchPoolMembers(this.props.obj, this.props.asset.id)
+  }
+
+  forceOfflineMemberHandler = async (member) => {
+    const members = JSON.parse(JSON.stringify(this.state.currentMembers))
+    const index = this.state.currentMembers.findIndex(m => {
+      return m.name === member.name
+    })
+    members[index].isLoading = true
+    await this.setState({currentMembers: members})
+
+    let forceOffline = await this.forceOfflineMember(member)
+    members[index].isLoading = false
+
+    if (forceOffline.status && forceOffline.status !== 200) {
+      this.props.dispatch(forceOfflineMemberError(forceOffline))
+      return
+    }
+    await this.setState({currentMembers: members})
+
+    this.fetchPoolMembers(this.props.obj, this.props.asset.id)
+  }
+
   enableMember = async (member) => {
+    let r
     const b = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
+        r = error
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
+    return r
   }
 
   disableMember = async (member) => {
+    let r
     const b = {"data":{"state":"user-up", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
+        r = error
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
+    return r
   }
 
   forceOfflineMember = async (member) => {
+    let r
     const b = {"data":{"state":"user-down", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
       resp => {
-        setTimeout( () => this.fetchPoolMembers(this.props.obj, this.props.asset.id), 1000)
+        r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
+        r = error
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
+    return r
   }
 
 
@@ -254,7 +257,8 @@ class PoolDetails extends React.Component {
     const index = this.state.currentMembers.findIndex(m => {
       return m.name === memb.name
     })
-    const members =  Object.assign([], this.state.currentMembers)
+    const members = JSON.parse(JSON.stringify(this.state.currentMembers))
+    //const members =  Object.assign([], this.state.currentMembers)
     const isMonitored = members[index].isMonitored
     let list = []
 
@@ -303,7 +307,7 @@ class PoolDetails extends React.Component {
         this.refreshStats(member, resp.data)
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(memberStatsError(error))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
@@ -335,7 +339,6 @@ class PoolDetails extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      fetchedMembers: [],
       currentMembers: [],
       renderedMembers: [],
     })
@@ -344,15 +347,23 @@ class PoolDetails extends React.Component {
     })
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
 
   render() {
 
     const columns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isLoading ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
       {
         title: 'Member',
         align: 'center',
@@ -398,9 +409,15 @@ class PoolDetails extends React.Component {
         key: 'enable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.enableMember(obj)}>
+          { obj.isLoading ?
+            <Button type="primary" disabled>
               Enable
             </Button>
+            :
+            <Button type="primary" onClick={() => this.enableMemberHandler(obj)}>
+              Enable
+            </Button>
+          }
           </Space>
         ),
       },
@@ -411,9 +428,15 @@ class PoolDetails extends React.Component {
         key: 'disable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.disableMember(obj)}>
+          { obj.isLoading ?
+            <Button type="primary" disabled>
               Disable
             </Button>
+            :
+            <Button type="primary" onClick={() => this.disableMemberHandler(obj)}>
+              Disable
+            </Button>
+          }
           </Space>
         ),
       },
@@ -424,9 +447,15 @@ class PoolDetails extends React.Component {
         key: 'foff',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.forceOfflineMember(obj)}>
+          { obj.isLoading ?
+            <Button type="primary" disabled>
               Force Offline
             </Button>
+            :
+            <Button type="primary" onClick={() => this.forceOfflineMemberHandler(obj)}>
+              Force Offline
+            </Button>
+          }
           </Space>
         ),
       },
@@ -439,8 +468,8 @@ class PoolDetails extends React.Component {
       {
         title: '',
         align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
+        dataIndex: 'monitoring',
+        key: 'monitoring',
         render: (name, obj)  => (
           <Space size="small">
             {obj.isMonitored ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
@@ -500,7 +529,20 @@ class PoolDetails extends React.Component {
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />
         </Modal>
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'setPoolMembersError'} /> : null }
+            { this.props.enableMemberError ? <Error component={'poolMaint pool'} error={[this.props.enableMemberError]} visible={true} type={'enableMemberError'} /> : null }
+            { this.props.disableError ? <Error component={'poolMaint pool'} error={[this.props.disableError]} visible={true} type={'disableError'} /> : null }
+            { this.props.forceOfflineMemberError ? <Error component={'poolMaint pool'} error={[this.props.forceOfflineMemberError]} visible={true} type={'forceOfflineMemberError'} /> : null }
+            { this.props.memberStatsError ? <Error component={'poolMaint pool'} error={[this.props.memberStatsError]} visible={true} type={'memberStatsError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
+
       </Space>
     );
   }
@@ -508,7 +550,16 @@ class PoolDetails extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+
   asset: state.f5.asset,
-  partition: state.f5.partition
+  partition: state.f5.partition,
+
+  poolMembers: state.f5.poolMembers,
+  poolMembersError: state.f5.poolMembersError,
+
+  enableMemberError: state.f5.enableMemberError,
+  disableError: state.f5.disableMemberError,
+  forceOfflineMemberError: state.f5.forceOfflineMemberError,
+  memberStatsError: state.f5.memberStatsError,
+
 }))(PoolDetails);

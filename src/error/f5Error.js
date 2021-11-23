@@ -39,7 +39,12 @@ import {
   setKeysError,
   setCreateL4ServiceError,
   setCreateL7ServiceError,
-  setDeleteServiceError
+  setDeleteServiceError,
+  enableMemberError,
+  disableMemberError,
+  forceOfflineMemberError,
+  memberStatsError
+
 } from '../_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
@@ -196,7 +201,19 @@ class Error extends Component {
         case 'setDeleteServiceError':
           this.props.dispatch(setDeleteServiceError(null))
           break
-
+        case 'enableMemberError':
+          this.props.dispatch(enableMemberError(null))
+          break
+        case 'disableMemberError':
+          this.props.dispatch(disableMemberError(null))
+          break
+        case 'forceOfflineMemberError':
+          this.props.dispatch(forceOfflineMemberError(null))
+          break
+        case 'memberStatsError':
+          this.props.dispatch(memberStatsError(null))
+          break
+          
       }
     }
   }

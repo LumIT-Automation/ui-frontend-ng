@@ -110,7 +110,6 @@ class Manager extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.poolsError ? <Error component={'poolMaint manager'} error={[this.props.poolsError]} visible={true} type={'setPoolsError'} /> : null }
-
           </React.Fragment>
         :
           null

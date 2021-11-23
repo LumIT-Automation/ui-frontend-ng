@@ -252,10 +252,19 @@ const f5Slice = createSlice({
           state.deleteServiceError = action.payload
         },
 
-        setCurrentPools: (state, action) => {
-          state.currentPools = action.payload.data.items
-          //state.currentPoolList = undefined
+        enableMemberError: (state, action) => {
+          state.enableMemberError = action.payload
         },
+        disableMemberError: (state, action) => {
+          state.disableMemberError = action.payload
+        },
+        forceOfflineMemberError: (state, action) => {
+          state.forceOfflineMemberError = action.payload
+        },
+        memberStatsError: (state, action) => {
+          state.memberStatsError = action.payload
+        },
+
 
         resetObjects: (state, action) => {
 
@@ -359,8 +368,6 @@ export const {
   setPoolsFetch,
   setPoolsError,
 
-  setCurrentPools,
-
   setPoolMembersLoading,
   setPoolMembers,
   setPoolMembersFetch,
@@ -392,6 +399,11 @@ export const {
   setCreateL4ServiceError,
   setCreateL7ServiceError,
   setDeleteServiceError,
+
+  enableMemberError,
+  disableMemberError,
+  forceOfflineMemberError,
+  memberStatsError,
 
   resetObjects,
   cleanUp

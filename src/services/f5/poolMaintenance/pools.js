@@ -16,8 +16,7 @@ class Pools extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      poolList: []
+      searchedColumn: ''
     };
   }
 
