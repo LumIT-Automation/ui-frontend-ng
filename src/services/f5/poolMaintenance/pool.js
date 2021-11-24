@@ -40,11 +40,6 @@ class PoolDetails extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('--------------------')
-    this.state.members.map(m => {
-      console.log(m.isLoading)
-    })
-    console.log('++++++++++++++++++++')
   }
 
   componentWillUnmount() {
@@ -62,10 +57,6 @@ class PoolDetails extends React.Component {
       this.props.dispatch(setPoolMembersError(members))
     }
     else {
-      //this.props.dispatch(setPoolMembers(members))
-
-
-      //if (this.state.renderedMembers.length === 0) {
       const membersConn = members.map( m => {
         let n =  Object.assign( {
             connections: 0,
@@ -132,36 +123,7 @@ class PoolDetails extends React.Component {
     return r
   }
 
-  setMembers = () => {
-    const fetch = JSON.parse(JSON.stringify(this.state.members))
 
-    if (this.state.renderedMembers.length === 0) {
-      const current = fetch.map( m => {
-        let n =  Object.assign( {
-            connections: 0,
-            isMonitored: false,
-            isLoading: false,
-            intervalId: null
-          }, m);
-        return n
-      })
-      this.setState({members: current})
-
-    } else {
-      const current = JSON.parse(JSON.stringify(this.state.members))
-      //const current = Object.assign([], this.state.members);
-
-      const newCurrent = current.map( m => {
-        let fetched = fetch.find(f => m.name === f.name);
-        let n = Object.assign(m, fetched)
-          return n
-      })
-      this.setState({members: newCurrent})
-      }
-  }
-
-
-  //ENABLE, DISABLE, FORCE OFFLINE
   enableMemberHandler = async (member) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
     const index = this.state.members.findIndex(m => {
@@ -325,7 +287,7 @@ class PoolDetails extends React.Component {
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].state = fetchMember.state
     members[index].session = fetchMember.session
-    
+
     if (fetchMember.state === 'up' && fetchMember.session === 'monitor-enabled') {
       members[index].status = 'enabled'
       members[index].color = '#90ee90'
@@ -372,13 +334,9 @@ class PoolDetails extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        console.log('patch')
-        console.log(resp)
         r = resp
       },
       error => {
-        console.log('patch error')
-        console.log(error)
         r = error
       }
     )
@@ -423,13 +381,9 @@ class PoolDetails extends React.Component {
     let rest = new Rest(
       'GET',
       resp => {
-        console.log('get')
-        console.log(resp)
         r = resp.data
       },
       error => {
-        console.log('get error')
-        console.log(error)
         r = error
       }
     )
