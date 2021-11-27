@@ -2,11 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../../_helpers/Rest";
-import Error from '../../../error'
+import Rest from "../../../_helpers/Rest"
+import Error from "../../../error/f5Error"
 
-import { setError } from '../../../_store/store.error'
-import { setCertificatesLoading, setCertificates, setCertificatesFetch } from '../../../_store/store.f5'
+import {
+  setCertificatesLoading,
+  setCertificates,
+  setCertificatesFetch,
+  setCertificatesError
+} from '../../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -27,11 +31,11 @@ class CertificatesManager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset) {
-      if (!this.props.certificatesError) {
+    if (!this.props.certificatesError) {
+      if (this.props.asset) {
+        this.props.dispatch(setCertificatesFetch(false))
         if (!this.props.certificates) {
           this.fetchCertificates()
-          this.props.dispatch(setCertificatesFetch(false))
         }
       }
     }
@@ -42,17 +46,9 @@ class CertificatesManager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset) {
-      if (!this.props.certificates) {
-        this.fetchCertificates()
-      }
-      if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
-        this.fetchCertificates()
-      }
-      if (this.props.certificatesFetch) {
-        this.fetchCertificates()
-        this.props.dispatch(setCertificatesFetch(false))
-      }
+    if (this.props.certificatesFetch) {
+      this.fetchCertificates()
+      this.props.dispatch(setCertificatesFetch(false))
     }
   }
 
@@ -69,16 +65,11 @@ class CertificatesManager extends React.Component {
         this.props.dispatch(setCertificates( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false})
+        this.props.dispatch(setCertificatesError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
     this.props.dispatch(setCertificatesLoading(false))
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
 
@@ -86,31 +77,28 @@ class CertificatesManager extends React.Component {
 
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
+        <br/>
+        { (this.props.asset && this.props.asset.id ) ?
+          this.props.authorizations && (this.props.authorizations.certificates_post || this.props.authorizations.any) ?
+            <React.Fragment>
+              <Add/>
+              <br/>
+              <br/>
+            </React.Fragment>
+          :
+            null
         :
-          <React.Fragment>
-            <br/>
-            { (this.props.asset && this.props.asset.id ) ?
-              this.props.authorizations && (this.props.authorizations.certificates_post || this.props.authorizations.any) ?
-                <React.Fragment>
-                  <Add/>
-                  <br/>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-            :
-              null
-            }
-
-            { (this.props.asset && this.props.asset.id ) ?
-                <List/>
-                :
-                <Alert message="Asset not set" type="error" />
-            }
-          </React.Fragment>
+          null
         }
+
+        { (this.props.asset && this.props.asset.id ) ?
+            <List/>
+            :
+            <Alert message="Asset not set" type="error" />
+        }
+
+        { this.props.certificatesError ? <Error component={'certificates manager f5'} error={[this.props.certificatesError]} visible={true} type={'setCertificatesError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -118,9 +106,10 @@ class CertificatesManager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
+
   certificates: state.f5.certificates,
-  certificatesFetch: state.f5.certificatesFetch
+  certificatesFetch: state.f5.certificatesFetch,
+  certificatesError:  state.f5.certificatesError
 }))(CertificatesManager);

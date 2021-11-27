@@ -117,6 +117,7 @@ class Homepage extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
           <React.Fragment>
+          
             <Row >
               <Col span={4}>
                 <Card title={<p style={{textAlign: 'center'}}>Cert Expirations</p>} bordered={false}>
@@ -144,7 +145,7 @@ class Homepage extends React.Component {
             { this.props.devices ?
               <React.Fragment>
                 <Row>
-                  <Col span={18}>
+                  <Col span={17}>
                     <Row>
                       <Col span={10}>
                         <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>

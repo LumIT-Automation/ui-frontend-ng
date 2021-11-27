@@ -3,15 +3,18 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Divider } from 'antd';
 
 import Rest from "../_helpers/Rest"
-import Error from '../error'
-
-import { setError } from '../_store/store.error'
+import Error from '../error/f5Error'
 
 import AssetSelector from './assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
-import { setAssets, setCertificatesFetch, setKeysFetch } from '../_store/store.f5'
+import {
+  setAssets,
+  setAssetsError,
+  setCertificatesFetch,
+  setKeysFetch
+} from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -57,7 +60,7 @@ class CertificatesAndKeys extends React.Component {
         this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setAssetsError(error))
         this.setState({loading: false})
       }
     )
@@ -73,55 +76,62 @@ class CertificatesAndKeys extends React.Component {
     this.props.dispatch(setKeysFetch(true))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (
-      <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
-        :
-          <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
+      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
+        <Tabs type="card">
+          <TabPane tab="F5" key="2">
+            {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+            <React.Fragment>
+              <div style={{margin: '0 130px'}}>
+                <AssetSelector />
+              </div>
+            <Divider/>
             <Tabs type="card">
-              <TabPane tab="F5" key="2">
-                {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
                 <React.Fragment>
-                  <div style={{margin: '0 130px'}}>
-                    <AssetSelector />
-                  </div>
-                <Divider/>
-                <Tabs type="card">
-                  { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                    <TabPane key="Certificates"tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
-                      {this.props.certificatesLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <CertificatesManager/> }
+                  {this.props.certificatesLoading ?
+                    <TabPane key="Certificates" tab="Certificates">
+                      <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                     </TabPane>
-                    : null
+                    :
+                    <TabPane key="Certificates" tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
+                      <CertificatesManager/>
+                    </TabPane>
                   }
-                  { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
-                    <TabPane key="Keys"tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
-                      {this.props.keysLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <KeysManager/> }
-                    </TabPane>
-                    : null
-                  }
-                  {/* this.props.authorizations && (this.props.authorizations.certificate_post || this.props.authorizations.any) ?
-                    <TabPane tab="Certificates" key="4">
-                      <CertificateAndKey/>
-                    </TabPane>
-                    : null
-                  */}
-
-                </Tabs>
-
                 </React.Fragment>
-                }
-              </TabPane>
+                :
+                null
+              }
+
+              { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
+                <React.Fragment>
+                  {this.props.keysLoading ?
+                    <TabPane key="Keys" tab="Keys">
+                      <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                    </TabPane>
+                    :
+                    <TabPane key="Keys" tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
+                      <KeysManager/>
+                    </TabPane>
+                  }
+                </React.Fragment>
+                :
+                null
+              }
+
+
             </Tabs>
-          </Space>
-        }
-      </React.Fragment>
+
+            </React.Fragment>
+            }
+          </TabPane>
+        </Tabs>
+
+        { this.props.assetsError ? <Error component={'certKey manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+
+      </Space>
     )
   }
 }
@@ -129,8 +139,9 @@ class CertificatesAndKeys extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
+
+  assetsError: state.f5.assetsError,
 
   certificatesLoading: state.f5.certificatesLoading,
   keysLoading: state.f5.keysLoading,

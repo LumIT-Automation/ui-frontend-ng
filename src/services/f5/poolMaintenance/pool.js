@@ -27,8 +27,6 @@ class PoolDetails extends React.Component {
     this.state = {
       visible: false,
       members: [],
-      renderedMembers: [],
-      error: null
     };
   }
 
@@ -481,7 +479,6 @@ class PoolDetails extends React.Component {
     this.setState({
       visible: false,
       members: [],
-      renderedMembers: [],
     })
     this.state.members.map( m => {
       clearInterval(m.intervalId)

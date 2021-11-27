@@ -3,10 +3,14 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../../_helpers/Rest"
-import Error from '../../../error'
+import Error from "../../../error/f5Error"
 
-import { setError } from '../../../_store/store.error'
-import { setKeysLoading, setKeys, setKeysFetch } from '../../../_store/store.f5'
+import {
+  setKeysLoading,
+  setKeys,
+  setKeysFetch,
+  setKeysError
+} from '../../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -27,11 +31,11 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset) {
-      if (!this.props.keysError) {
+    if (!this.props.keysError) {
+      if (this.props.asset) {
+        this.props.dispatch(setKeysFetch(false))
         if (!this.props.keys) {
           this.fetchKeys()
-          this.props.dispatch(setKeysFetch(false))
         }
       }
     }
@@ -42,17 +46,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset) {
-      if (!this.props.keys) {
-        this.fetchKeys()
-      }
-      if ( ((prevProps.asset !== this.props.asset) && (this.props.asset !== null)) ) {
-        this.fetchKeys()
-      }
-      if (this.props.keysFetch) {
-        this.fetchKeys()
-        this.props.dispatch(setKeysFetch(false))
-      }
+    if (this.props.keysFetch) {
+      this.fetchKeys()
+      this.props.dispatch(setKeysFetch(false))
     }
   }
 
@@ -70,47 +66,39 @@ class Manager extends React.Component {
         this.props.dispatch(setKeys( resp ))
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false})
+        this.props.dispatch(setKeysError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
     this.props.dispatch(setKeysLoading(false))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (
       <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
+        <br/>
+        { (this.props.asset && this.props.asset.id ) ?
+          this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+            <React.Fragment>
+              <Add/>
+              <br/>
+              <br/>
+            </React.Fragment>
+          :
+            null
         :
-          <React.Fragment>
-            <br/>
-            { (this.props.asset && this.props.asset.id ) ?
-              this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
-                <React.Fragment>
-                  <Add/>
-                  <br/>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-            :
-              null
-            }
-
-            { (this.props.asset && this.props.asset.id ) ?
-                <List/>
-                :
-                <Alert message="Asset not set" type="error" />
-            }
-          </React.Fragment>
+          null
         }
+
+        { (this.props.asset && this.props.asset.id ) ?
+            <List/>
+            :
+            <Alert message="Asset not set" type="error" />
+        }
+
+        { this.props.keysError ? <Error component={'keys manager f5'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -118,9 +106,10 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
+
   keys: state.f5.keys,
-  keysFetch: state.f5.keysFetch
+  keysFetch: state.f5.keysFetch,
+  keysError:  state.f5.keysError
 }))(Manager);
