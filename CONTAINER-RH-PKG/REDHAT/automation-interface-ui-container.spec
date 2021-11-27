@@ -7,6 +7,7 @@ License:    GPLv3+
 Source0:    RPM_SOURCE
 
 Requires:   podman, buildah, at
+Requires:   automation-interface-log >= 1.2
 
 BuildArch:  noarch
 
