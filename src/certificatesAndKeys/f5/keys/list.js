@@ -114,10 +114,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
 
@@ -162,24 +158,16 @@ class List extends React.Component {
 
 
     return (
-      <React.Fragment>
-        { this.props.error ?
-          <Error error={[this.props.error]} visible={true} />
-        :
-          <React.Fragment>
-            <Table
-              columns={columns}
-              dataSource={this.props.keys}
-              bordered
-              rowKey="name"
-              scroll={{x: 'auto'}}
-              //pagination={false}
-              pagination={{ pageSize: 10 }}
-              style={{marginBottom: 10}}
-            />
-          </React.Fragment>
-        }
-      </React.Fragment>
+      <Table
+        columns={columns}
+        dataSource={this.props.keys}
+        bordered
+        rowKey="name"
+        scroll={{x: 'auto'}}
+        //pagination={false}
+        pagination={{ pageSize: 10 }}
+        style={{marginBottom: 10}}
+      />
     )
   }
 }

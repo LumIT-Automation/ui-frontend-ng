@@ -32,7 +32,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.keysError) {
-      if (this.props.asset) {
+      if (this.props.asset && this.props.partition) {
         this.props.dispatch(setKeysFetch(false))
         if (!this.props.keys) {
           this.fetchKeys()
@@ -46,7 +46,11 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.keysFetch) {
+    if (!this.props.keys && this.props.asset && this.props.partition ) {
+      this.fetchKeys()
+    }
+
+    if (this.props.keysFetch && this.props.asset && this.props.partition ) {
       this.fetchKeys()
       this.props.dispatch(setKeysFetch(false))
     }
@@ -78,23 +82,21 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <br/>
-        { (this.props.asset && this.props.asset.id ) ?
-          this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
-            <React.Fragment>
-              <Add/>
-              <br/>
-              <br/>
-            </React.Fragment>
-          :
-            null
-        :
-          null
-        }
-
-        { (this.props.asset && this.props.asset.id ) ?
-            <List/>
+        { (this.props.asset && this.props.asset.id ) && this.props.partition  ?
+          <React.Fragment>
+            {this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+              <React.Fragment>
+                <Add/>
+                <br/>
+                <br/>
+              </React.Fragment>
             :
-            <Alert message="Asset not set" type="error" />
+              null
+            }
+            <List/>
+            </React.Fragment>
+        :
+          <Alert message="Asset and Partition not set" type="error" />
         }
 
         { this.props.keysError ? <Error component={'keys manager f5'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
@@ -108,6 +110,7 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
   asset: state.f5.asset,
+  partition: state.f5.partition,
 
   keys: state.f5.keys,
   keysFetch: state.f5.keysFetch,

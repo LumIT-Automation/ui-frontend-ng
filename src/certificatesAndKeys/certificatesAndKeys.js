@@ -5,7 +5,7 @@ import { Tabs, Space, Spin, Divider } from 'antd';
 import Rest from "../_helpers/Rest"
 import Error from '../error/f5Error'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../f5/assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 

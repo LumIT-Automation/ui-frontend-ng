@@ -37,6 +37,10 @@ import {
   setVirtualServersError,
   setCertificatesError,
   setKeysError,
+  certificateAddError,
+  certificateDeleteError,
+  keyAddError,
+  keyDeleteError,
   setCreateL4ServiceError,
   setCreateL7ServiceError,
   setDeleteServiceError,
@@ -191,6 +195,19 @@ class Error extends Component {
         case 'setKeysError':
           this.props.dispatch(setKeysError(null))
           break
+        case 'certificateAddError':
+          this.props.dispatch(certificateAddError(null))
+          break
+        case 'certificateDeleteError':
+          this.props.dispatch(certificateDeleteError(null))
+          break
+        case 'keyAddError':
+          this.props.dispatch(keyAddError(null))
+          break
+        case 'keyDeleteError':
+          this.props.dispatch(keyDeleteError(null))
+          break
+
 
         case 'setCreateL4ServiceError':
           this.props.dispatch(setCreateL4ServiceError(null))
@@ -213,7 +230,7 @@ class Error extends Component {
         case 'memberStatsError':
           this.props.dispatch(memberStatsError(null))
           break
-          
+
       }
     }
   }

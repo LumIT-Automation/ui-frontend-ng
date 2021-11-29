@@ -241,6 +241,31 @@ const f5Slice = createSlice({
           state.keysError = action.payload
         },
 
+        certificate: (state, action) => {
+          state.certificate = action.payload
+        },
+        certificateAddError: (state, action) => {
+          state.certificateAddError = action.payload
+        },
+        certificateModifyError: (state, action) => {
+          state.certificateModifyError = action.payload
+        },
+        certificateDeleteError: (state, action) => {
+          state.certificateDeleteError = action.payload
+        },
+
+        key: (state, action) => {
+          state.key = action.payload
+        },
+        keyAddError: (state, action) => {
+          state.keyAddError = action.payload
+        },
+        keyModifyError: (state, action) => {
+          state.keyModifyError = action.payload
+        },
+        keyDeleteError: (state, action) => {
+          state.keyDeleteError = action.payload
+        },
 
         setCreateL4ServiceError: (state, action) => {
           state.createL4ServiceError = action.payload
@@ -395,6 +420,11 @@ export const {
   setKeys,
   setKeysFetch,
   setKeysError,
+
+  certificateAddError,
+  certificateDeleteError,
+  keyAddError,
+  keyDeleteError,
 
   setCreateL4ServiceError,
   setCreateL7ServiceError,
