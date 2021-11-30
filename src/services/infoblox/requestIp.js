@@ -160,10 +160,10 @@ class RequestIp extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n, macAddress: '00:00:00:00:00:00'}
+    let r = {id: n, macAddress: '00:00:00:00:00:00', objectTypes: null}
     let list = Object.assign([], this.state.requests)
     list.push(r)
-    this.setState({requests: list, objectTypes: null})
+    this.setState({requests: list})
   }
 
   removeRequest = r => {
@@ -208,7 +208,7 @@ class RequestIp extends React.Component {
 
   setNetwork = async (network, e, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     this.setState({objectTypes: null})
 
     let objectTypes = []
@@ -228,10 +228,12 @@ class RequestIp extends React.Component {
           }
         })
         let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
-        this.setState({objectTypes: unique})
+        //this.setState({objectTypes: unique})
+        request.objectTypes = unique
       }
       else {
-        this.setState({objectTypes: null})
+        //this.setState({objectTypes: null})
+        request.objectTypes = null
       }
       let info = await this.fetchNetwork(prefix)
 
@@ -248,17 +250,17 @@ class RequestIp extends React.Component {
     else {
       errors.networkError = 'error'
     }
-    req.prefix = prefix
-    req.subnetMask = subnetMask
-    req.gateway = gateway
-    req.network = network
-    req.errors = errors
+    request.prefix = prefix
+    request.subnetMask = subnetMask
+    request.gateway = gateway
+    request.network = network
+    request.errors = errors
     //this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
   }
 
   setObjectType = async (e, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let objectType
 
     if (e) {
@@ -268,14 +270,14 @@ class RequestIp extends React.Component {
     else {
       errors.objectTypeError = 'error'
     }
-    req.objectType = objectType
-    req.errors = errors
+    request.objectType = objectType
+    request.errors = errors
     this.setState({errors: errors})
   }
 
   setServerName = (e, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let serverName
 
     if (e) {
@@ -285,14 +287,14 @@ class RequestIp extends React.Component {
     else {
       errors.serverNameError = 'error'
     }
-    req.serverName = serverName
-    req.errors = errors
+    request.serverName = serverName
+    request.errors = errors
     //this.setState({serverName: serverName, errors: errors})
   }
 
   setServerName2 = (e, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let serverName
 
     if (e) {
@@ -302,14 +304,14 @@ class RequestIp extends React.Component {
     else {
       errors.serverName2Error = 'error'
     }
-    req.serverName2 = serverName
-    req.errors = errors
+    request.serverName2 = serverName
+    request.errors = errors
     //this.setState({serverName: serverName, errors: errors})
   }
 
   setMacAddress = (m, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let mac = m.target.value
 
     const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
@@ -317,20 +319,20 @@ class RequestIp extends React.Component {
 
     if (macRegex.test(mac)) {
       let macAddress = mac
-      req.macAddress = macAddress
+      request.macAddress = macAddress
       delete errors.macAddressError
       //this.setState({macAddress: mac, errors: errors})
     }
     else {
-      req.macAddress = ''
+      request.macAddress = ''
       errors.macAddressError = 'error'
     }
-    req.errors = errors
+    request.errors = errors
   }
 
   setMacAddress2 = (m, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let mac = m.target.value
 
     const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
@@ -338,20 +340,20 @@ class RequestIp extends React.Component {
 
     if (macRegex.test(mac)) {
       let macAddress = mac
-      req.macAddress2 = macAddress
+      request.macAddress2 = macAddress
       delete errors.macAddress2Error
       //this.setState({macAddress: mac, errors: errors})
     }
     else {
-      req.macAddress2 = ''
+      request.macAddress2 = ''
       errors.macAddress2Error = 'error'
     }
-    req.errors = errors
+    request.errors = errors
   }
 
   setReference = (e, id) => {
     let errors = Object.assign({}, this.state.errors)
-    let req = this.state.requests.find( r => r.id === id )
+    let request = this.state.requests.find( r => r.id === id )
     let reference
 
     if (e) {
@@ -361,8 +363,8 @@ class RequestIp extends React.Component {
     else {
       errors.referenceError = 'error'
     }
-    req.reference = reference
-    req.errors = errors
+    request.reference = reference
+    request.errors = errors
     //this.setState({reference: reference, errors: errors})
   }
 
@@ -371,10 +373,10 @@ class RequestIp extends React.Component {
     this.setState({loading: true})
     let response = []
 
-    for await (const req of this.state.requests) {
+    for await (const request of this.state.requests) {
       try {
-        const resp = await this.nextAvailableIp(req)
-        let res = await this.updateResponse(resp, req.id)
+        const resp = await this.nextAvailableIp(request)
+        let res = await this.updateResponse(resp, request.id)
 
         response.push(res)
       } catch(resp) {
@@ -476,19 +478,19 @@ class RequestIp extends React.Component {
 
       })
 
-      let req = this.state.requests.find( r => r.id === id )
-      let res = Object.assign({}, req)
+      let request = this.state.requests.find( r => r.id === id )
+      let res = Object.assign({}, request)
       res.ips = ips
       return res
     }
     else {
-      let req = this.state.requests.find( r => r.id === id )
-      let res = Object.assign({}, req)
+      let request = this.state.requests.find( r => r.id === id )
+      let res = Object.assign({}, request)
       res.ips = ['no ip']
       return res
     }
 
-    //response.push(req)
+    //response.push(request)
     //this.setState({response: response})
   }
 
@@ -572,8 +574,8 @@ class RequestIp extends React.Component {
         render: (name, obj)  => (
           <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
             <Select.Option key={'-'} value={null}>-</Select.Option>
-            { this.state.objectTypes ?
-              this.state.objectTypes.map((n, i) => {
+            { obj.objectTypes ?
+              obj.objectTypes.map((n, i) => {
               return (
                 <Select.Option key={i} value={n}>{n}</Select.Option>
                 )
