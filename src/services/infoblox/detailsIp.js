@@ -260,7 +260,8 @@ class DetailsIp extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	ipDetailError: state.infoblox.ipDetailError,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
+
+  ipDetailError: state.infoblox.ipDetailError,
 }))(DetailsIp);

@@ -129,6 +129,9 @@ const infobloxSlice = createSlice({
       nextAvailableIpError: (state, action) => {
         state.nextAvailableIpError = action.payload
       },
+      ipModifyError: (state, action) => {
+        state.ipModifyError = action.payload
+      },
 
 
       cleanUp: (state, action) => {
@@ -189,6 +192,7 @@ export const {
   networkError,
   containerError,
   nextAvailableIpError,
+  ipModifyError,
 
   cleanUp
 } = actions

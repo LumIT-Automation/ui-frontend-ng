@@ -34,6 +34,7 @@ import {
   networkError,
   containerError,
   nextAvailableIpError,
+  ipModifyError,
 
 } from '../_store/store.infoblox'
 
@@ -170,6 +171,9 @@ class Error extends Component {
           break
         case 'nextAvailableIpError':
           this.props.dispatch(nextAvailableIpError(null))
+          break
+        case 'ipModifyError':
+          this.props.dispatch(ipModifyError(null))
           break
 
       }
