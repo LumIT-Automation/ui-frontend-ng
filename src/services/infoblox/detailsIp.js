@@ -2,16 +2,18 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from "../../error/infobloxError"
 
-import { setError } from '../../_store/store.error'
+import {
+  ipDetailError,
+} from '../../_store/store.infoblox'
 
 import AssetSelector from './assetSelector'
 
-import { Modal, Form, Input, Button, Spin, Divider, Table, Alert} from 'antd'
+import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
@@ -25,9 +27,8 @@ class DetailsIp extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
-      message:'',
+      request: {}
     };
   }
 
@@ -50,33 +51,27 @@ class DetailsIp extends React.Component {
   }
 
   setIp = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    let ip = Object.assign({}, this.state.ip);
-    let errors = Object.assign({}, this.state.errors);
+    const ipv4 = e.target.value
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (e.target.value) {
-      const ipv4 = e.target.value
-      const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-
-      if (validIpAddressRegex.test(ipv4)) {
-        ip = ipv4
-        delete errors.ipError
-      }
-      else {
-        errors.ipError = 'error'
-      }
+    if (validIpAddressRegex.test(ipv4)) {
+      request.ip = ipv4
+      delete errors.ipError
     }
     else {
-      errors.ipError = 'error'
+      request.ip = null
+      errors.ipError = 'Please input a valid ip'
     }
-
-    this.setState({ip: ip, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
 //http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
 
-  infoIp = async () => {
-    //this.props.dispatch(setNodesLoading(true))
+  ipDetail = async () => {
+    this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -85,15 +80,11 @@ class DetailsIp extends React.Component {
         this.setState({response: true, ipInfo: ipInfo})
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(ipDetailError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
-    //this.props.dispatch(setNodesLoading(false))
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
+    this.setState({loading: false})
   }
 
   response = () => {
@@ -107,6 +98,7 @@ class DetailsIp extends React.Component {
       visible: false,
       response: false,
       ipInfo: [],
+      request: {},
       errors: []
     })
   }
@@ -192,7 +184,6 @@ class DetailsIp extends React.Component {
 
         { ( this.props.asset && this.props.asset.id ) ?
           <React.Fragment>
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.response &&
             <Table
               columns={columns}
@@ -204,37 +195,47 @@ class DetailsIp extends React.Component {
               style={{marginBottom: 10}}
             />
           }
-          { !this.state.loading && !this.state.response &&
-            <Form
-              {...layout}
-              name="basic"
-              initialValues={{
+          { !this.state.response &&
+            <React.Fragment>
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
+                </Col>
+                <Col span={16}>
+                { this.state.loading ?
+                  <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
+                :
+                  <React.Fragment>
+                    {this.state.errors.ipError ?
+                      <React.Fragment>
+                        <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                        <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
+                      </React.Fragment>
+                    :
+                      <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                    }
+                  </React.Fragment>
+                }
+                </Col>
+              </Row>
+              <Row>
+                <Col offset={8} span={16}>
+                  { this.state.request.ip ?
+                    <Button type="primary" onClick={() => this.ipDetail()} >
+                      IP detail
+                    </Button>
+                  :
+                    <Button type="primary" onClick={() => this.ipDetail()} disabled>
+                      IP detail
+                    </Button>
+                  }
+                </Col>
+              </Row>
+            </React.Fragment>
 
-              }}
-              onFinish={null}
-              onFinishFailed={null}
-            >
-              <Form.Item
-                label="IP address"
-                name='ip'
-                key="ip"
-                validateStatus={this.state.errors.ipError}
-                help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
-              >
-                <Input id='ip' onChange={e => this.setIp(e)} />
-              </Form.Item>
 
-              <Form.Item
-                wrapperCol={ {offset: 8 }}
-                name="button"
-                key="button"
-              >
-                <Button type="primary" onClick={() => this.infoIp()}>
-                  Info Ip
-                </Button>
-              </Form.Item>
 
-            </Form>
+
           }
           </React.Fragment>
           :
@@ -243,7 +244,13 @@ class DetailsIp extends React.Component {
 
       </Modal>
 
-      {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+      {this.state.visible ?
+        <React.Fragment>
+          { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
+        </React.Fragment>
+      :
+        null
+      }
 
       </React.Fragment>
 
@@ -253,7 +260,7 @@ class DetailsIp extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	ipDetailError: state.infoblox.ipDetailError,
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 }))(DetailsIp);

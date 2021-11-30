@@ -28,7 +28,9 @@ import {
   setTreeError,
   setNetworksError,
   setContainersError,
-  setRealNetworksError
+  setRealNetworksError,
+
+  ipDetailError
 } from '../_store/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
@@ -153,6 +155,9 @@ class Error extends Component {
         	this.props.dispatch(setRealNetworksError(null))
         	break
 
+        case 'ipDetailError':
+        	this.props.dispatch(ipDetailError(null))
+        	break
 
       }
 

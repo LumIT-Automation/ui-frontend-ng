@@ -116,6 +116,10 @@ const infobloxSlice = createSlice({
         state.RealNetworksError = action.payload
       },
 
+      ipDetailError: (state, action) => {
+        state.ipDetailError = action.payload
+      },
+
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -170,6 +174,8 @@ export const {
   setRealNetworks,
   setRealNetworksFetch,
   setRealNetworksError,
+
+  ipDetailError,
 
   cleanUp
 } = actions
