@@ -11,8 +11,8 @@ import {
 
 import {
   setPermissionsFetch,
-  setNetworksError,
-  setContainersError
+  networksError,
+  containersError
 } from '../../_store/store.infoblox'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -130,14 +130,14 @@ class Modify extends React.Component {
 
     let nets = await this.fetchNets()
     if (nets.status && nets.status !== 200) {
-      this.props.dispatch(setNetworksError( nets ))
+      this.props.dispatch(networksError( nets ))
       await this.setState({networksLoading: false})
       return
     }
 
     let containers = await this.fetchContainers()
     if (containers.status && containers.status !== 200) {
-      this.props.dispatch(setContainersError( containers ))
+      this.props.dispatch(containersError( containers ))
       await this.setState({networksLoading: false})
       return
     }
@@ -419,8 +419,8 @@ class Modify extends React.Component {
           { this.props.modifyInfobloxPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
           { this.props.fetchInfobloxRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
 
-          { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'setNetworksError'} /> : null }
-          { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'setContainersError'} /> : null }
+          { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+          { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
           </React.Fragment>
         :
           null

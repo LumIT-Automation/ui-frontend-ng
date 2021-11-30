@@ -26,11 +26,15 @@ import {
   setAssetDeleteError,
 
   setTreeError,
-  setNetworksError,
-  setContainersError,
+  networksError,
+  containersError,
   setRealNetworksError,
 
-  ipDetailError
+  ipDetailError,
+  networkError,
+  containerError,
+  nextAvailableIpError,
+
 } from '../_store/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
@@ -144,12 +148,12 @@ class Error extends Component {
         case 'setTreeError':
         	this.props.dispatch(setTreeError(null))
         	break
-        case 'setNetworksError':
-        	this.props.dispatch(setNetworksError(null))
+        case 'networksError':
+        	this.props.dispatch(networksError(null))
         	break
-        case 'setContainersError':
+        case 'containersError':
           console.log('case giusto')
-        	this.props.dispatch(setContainersError(null))
+        	this.props.dispatch(containersError(null))
         	break
         case 'setRealNetworksError':
         	this.props.dispatch(setRealNetworksError(null))
@@ -158,9 +162,17 @@ class Error extends Component {
         case 'ipDetailError':
         	this.props.dispatch(ipDetailError(null))
         	break
+        case 'networkError':
+          this.props.dispatch(networkError(null))
+          break
+        case 'containerError':
+          this.props.dispatch(containerError(null))
+          break
+        case 'nextAvailableIpError':
+          this.props.dispatch(nextAvailableIpError(null))
+          break
 
       }
-
     }
   }
 

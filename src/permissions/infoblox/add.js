@@ -14,8 +14,8 @@ import {
   setPermissionsFetch,
   setIdentityGroups,
   setIdentityGroupsError,
-  setNetworksError,
-  setContainersError,
+  networksError,
+  containersError,
 } from '../../_store/store.infoblox'
 
 import { Button, Modal, Spin, Result, Select, Row, Col, Input } from 'antd';
@@ -229,14 +229,14 @@ class Add extends React.Component {
 
     let nets = await this.fetchNets()
     if (nets.status && nets.status !== 200) {
-      this.props.dispatch(setNetworksError( nets ))
+      this.props.dispatch(networksError( nets ))
       await this.setState({networksLoading: false})
       return
     }
 
     let containers = await this.fetchContainers()
     if (containers.status && containers.status !== 200) {
-      this.props.dispatch(setContainersError( containers ))
+      this.props.dispatch(containersError( containers ))
       await this.setState({networksLoading: false})
       return
     }
@@ -537,8 +537,8 @@ class Add extends React.Component {
           { this.props.fetchInfobloxRolesError ? <Error component={'add infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
           { this.props.addNewDnError ? <Error component={'add infoblox'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
-          { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'setNetworksError'} /> : null }
-          { this.props.containersError ? <Error component={'add infoblox'} error={[this.props.containersError]} visible={true} type={'setContainersError'} /> : null }
+          { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+          { this.props.containersError ? <Error component={'add infoblox'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
           </React.Fragment>
         :
           null

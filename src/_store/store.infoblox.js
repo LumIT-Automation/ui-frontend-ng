@@ -86,7 +86,7 @@ const infobloxSlice = createSlice({
       setNetworksFetch: (state, action) => {
         state.networksFetch = action.payload
       },
-      setNetworksError: (state, action) => {
+      networksError: (state, action) => {
         state.networksError = action.payload
       },
 
@@ -99,7 +99,7 @@ const infobloxSlice = createSlice({
       setContainersFetch: (state, action) => {
         state.containersFetch = action.payload
       },
-      setContainersError: (state, action) => {
+      containersError: (state, action) => {
         state.containersError = action.payload
       },
 
@@ -118,6 +118,16 @@ const infobloxSlice = createSlice({
 
       ipDetailError: (state, action) => {
         state.ipDetailError = action.payload
+      },
+
+      networkError: (state, action) => {
+        state.networkError = action.payload
+      },
+      containerError: (state, action) => {
+        state.containerError = action.payload
+      },
+      nextAvailableIpError: (state, action) => {
+        state.nextAvailableIpError = action.payload
       },
 
 
@@ -163,12 +173,12 @@ export const {
   setNetworksLoading,
   setNetworks,
   setNetworksFetch,
-  setNetworksError,
+  networksError,
 
   setContainersLoading,
   setContainers,
   setContainersFetch,
-  setContainersError,
+  containersError,
 
   setRealNtworksLoading,
   setRealNetworks,
@@ -176,6 +186,9 @@ export const {
   setRealNetworksError,
 
   ipDetailError,
+  networkError,
+  containerError,
+  nextAvailableIpError,
 
   cleanUp
 } = actions
