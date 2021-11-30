@@ -138,8 +138,7 @@ class PermissionsTab extends React.Component {
   }
 
   superAdminsInRows = () => {
-
-    let superAdmins = Object.assign([], this.props.superAdmins)
+    let superAdmins = JSON.parse(JSON.stringify(this.props.superAdmins))
     let list = []
 
     for ( let s in superAdmins) {

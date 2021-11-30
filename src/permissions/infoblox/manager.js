@@ -9,7 +9,7 @@ import {
   setPermissions,
   setPermissionsFetch,
   setPermissionsError,
-  
+
   setAssets,
   setAssetsError,
   setIdentityGroups,
@@ -169,7 +169,7 @@ class Manager extends React.Component {
       value.asset = asset
     }
 
-    let permissionsWithAsset = Object.assign([], newPermissions)
+    let permissionsWithAsset =JSON.parse(JSON.stringify(newPermissions))
 
     return permissionsWithAsset
   }

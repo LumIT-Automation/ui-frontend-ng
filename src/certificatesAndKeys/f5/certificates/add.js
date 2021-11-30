@@ -41,13 +41,13 @@ class Add extends React.Component {
   }
 
   setFilename = e => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.fileName = e.target.value
     this.setState({request: request})
   }
 
   setSourceType = e => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     if (e.target.value === 'pasteText') {
       request.sourceValue = e.target.value
     } else if (e.target.value === 'upload') {
@@ -57,19 +57,19 @@ class Add extends React.Component {
   }
 
   setText = event => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.text = event.target.value
     this.setState({request: request})
   }
 
   uploadFile = event => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
     request.selectedFile = event.target.files[0]
     this.setState({request: request}, () => this.readSingleFile(event))
   }
 
   readSingleFile = e => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
 
     var file = e.target.files[0];
     if (!file) {

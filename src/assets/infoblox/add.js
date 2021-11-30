@@ -56,8 +56,8 @@ class Add extends React.Component {
   }
 
   genericValidator = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     switch(e.target.id) {
 
@@ -134,9 +134,8 @@ class Add extends React.Component {
   }
 
   ipHostnameValidator = e => {
-
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     switch(e.target.id) {
 
@@ -175,8 +174,9 @@ class Add extends React.Component {
   }
 
   addAsset = async () => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
     let list = ["address", "fqdn", "tlsverify", "datacenter", "environment", "position", "username", "password"]
 
     let missingParams = list.filter(k => {

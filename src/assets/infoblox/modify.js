@@ -54,14 +54,14 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let request = Object.assign({}, this.props.obj)
+    let request = JSON.parse(JSON.stringify(this.props.obj))
     request.tlsverify = request.tlsverify.toString()
     this.setState({request: request})
   }
 
   genericValidator = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     switch(e.target.id) {
 
@@ -138,9 +138,8 @@ class Modify extends React.Component {
   }
 
   ipHostnameValidator = e => {
-
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     switch(e.target.id) {
 
@@ -182,7 +181,7 @@ class Modify extends React.Component {
   }
 
   modifyAsset = async () => {
-    let request = Object.assign({}, this.state.request)
+    let request = JSON.parse(JSON.stringify(this.state.request))
 
     if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})

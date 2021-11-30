@@ -56,7 +56,7 @@ class RolesDescription extends React.Component {
   }
 
   beautifyPriv = () => {
-    let fetchedList = Object.assign([], this.state.rolesAndPrivileges)
+    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
     let newList = []
 
     for (let r in fetchedList) {
