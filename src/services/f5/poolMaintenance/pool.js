@@ -16,7 +16,7 @@ import {
 
 import { Modal, Button, Space, Table, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
-const antIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
@@ -498,7 +498,7 @@ class PoolDetails extends React.Component {
         key: 'loading',
         render: (name, obj)  => (
           <Space size="small">
-            {obj.isLoading ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },
@@ -610,7 +610,7 @@ class PoolDetails extends React.Component {
         key: 'monitoring',
         render: (name, obj)  => (
           <Space size="small">
-            {obj.isMonitored ? <Spin indicator={antIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.isMonitored ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },/*

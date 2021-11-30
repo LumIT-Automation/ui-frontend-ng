@@ -15,10 +15,10 @@ import {
 
 import AssetSelector from './assetSelector'
 
-import { Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
+import { Space, Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const netLoadIcon = <LoadingOutlined style={{ fontSize: 30 }} spin />
 
 
@@ -31,7 +31,6 @@ class RequestIp extends React.Component {
       visible: false,
       error: null,
       errors: {},
-      message:'',
       counter: 1,
       requests: [],
       response: [],
@@ -51,7 +50,6 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.requests)
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
@@ -383,13 +381,18 @@ class RequestIp extends React.Component {
     let response = []
 
     for await (const request of this.state.requests) {
+      console.log(request)
+      request.isLoading = true
+        this.setState({foo: true})
       try {
         const resp = await this.nextAvailableIp(request)
         let res = await this.updateResponse(resp, request.id)
-
+        request.isLoading = false
+        this.setState({foo: false})
         response.push(res)
       } catch(resp) {
-        return
+        request.isLoading = false
+        this.setState({foo: false})
       }
     }
 
@@ -400,7 +403,6 @@ class RequestIp extends React.Component {
   nextAvailableIp = async r => {
     let re
     let b
-    this.setState({message: null})
 
     if (r.objectType !== 'Heartbeat') {
       b = {
@@ -461,9 +463,8 @@ class RequestIp extends React.Component {
         re = resp
       },
       error => {
-        re = error
-        this.setState({loading: false})
         this.props.dispatch(nextAvailableIpError(error))
+        re = error
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4s/?next-available`, this.props.token, b )
@@ -524,6 +525,17 @@ class RequestIp extends React.Component {
 
   render() {
     const requests = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
       {
         title: 'id',
         align: 'center',
@@ -771,18 +783,6 @@ class RequestIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !this.state.loading && this.state.response.length !== 0  ?
-              <Table
-                columns={response}
-                dataSource={this.state.response}
-                bordered
-                rowKey="id"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-              :
               <React.Fragment>
                 <Button type="primary" onClick={() => this.setRequests()}>
                   +
@@ -803,7 +803,22 @@ class RequestIp extends React.Component {
                 </Button>
                 <br/>
               </React.Fragment>
-            }
+              { this.state.response.length !== 0  ?
+                <React.Fragment>
+                  <Divider/>
+                  <Table
+                    columns={response}
+                    dataSource={this.state.response}
+                    bordered
+                    rowKey="id"
+                    scroll={{x: 'auto'}}
+                    pagination={false}
+                    style={{marginBottom: 10}}
+                  />
+                </React.Fragment>
+              :
+                null
+              }
             </React.Fragment>
             :
             <Alert message="Asset and Partition not set" type="error" />
