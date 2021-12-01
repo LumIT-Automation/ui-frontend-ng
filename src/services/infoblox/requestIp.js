@@ -381,7 +381,6 @@ class RequestIp extends React.Component {
     let response = []
 
     for await (const request of this.state.requests) {
-      console.log(request)
       request.isLoading = true
         this.setState({foo: true})
       try {

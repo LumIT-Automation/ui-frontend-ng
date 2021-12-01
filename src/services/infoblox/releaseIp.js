@@ -11,10 +11,10 @@ import {
 
 import AssetSelector from './assetSelector'
 
-import { Modal, Alert, Divider, Form, Input, Button, Spin, Table } from 'antd'
+import { Modal, Alert, Divider, Input, Button, Spin, Table, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 const layout = {
@@ -36,10 +36,8 @@ class ReleaseIp extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
-      message:'',
-      request: { }
+      request: {}
     };
   }
 
@@ -61,75 +59,54 @@ class ReleaseIp extends React.Component {
   }
 
   setIp = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    let ip = Object.assign({}, this.state.ip);
-    let errors = Object.assign({}, this.state.errors);
+    const ipv4 = e.target.value
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-    if (e.target.value) {
-      const ipv4 = e.target.value
-      const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-
-      if (validIpAddressRegex.test(ipv4)) {
-        ip = ipv4
-        delete errors.ipError
-      }
-      else {
-        errors.ipError = 'error'
-      }
+    if (validIpAddressRegex.test(ipv4)) {
+      request.ip = ipv4
+      delete errors.ipError
     }
     else {
-      errors.ipError = 'error'
+      request.ip = null
+      errors.ipError = 'Please input a valid ip'
     }
-
-    this.setState({ip: ip, errors: errors})
+    this.setState({request: request, errors: errors})
   }
 
-  infoIp = async () => {
+  ipDetail = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
         let ipInfo = []
         ipInfo.push(resp.data)
-        this.setState({
-          response: true,
-          ipInfo: ipInfo,
-          loading: false
-        })
+        this.setState({response: true, ipInfo: ipInfo})
       },
       error => {
         this.props.dispatch(ipDetailError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
-    //this.props.dispatch(setNodesLoading(false))
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
+    this.setState({loading: false})
   }
 
   releaseIp = async () => {
+    this.setState({loading: true})
 
-    if (isEmpty(this.state.ip)){
-      this.setState({message: 'Please fill the form'})
-    }
-    else {
-      this.setState({message: null});
-
-        this.setState({loading: true})
-
-        let rest = new Rest(
-          "DELETE",
-          resp => {
-            this.infoIp()
-          },
-          error => {
-            this.props.dispatch(ipReleaseError(error))
-          }
-        )
-        await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token )
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        this.ipDetail()
+      },
+      error => {
+        this.props.dispatch(ipReleaseError(error))
       }
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token )
+    this.setState({loading: false})
   }
 
   response = () => {
@@ -240,58 +217,64 @@ class ReleaseIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
             { !this.state.loading && this.state.response &&
               <Table
                 columns={columns}
                 dataSource={this.state.ipInfo}
                 bordered
-                rowKey="ip_address"
+                rowKey="ip"
                 scroll={{x: 'auto'}}
                 pagination={false}
                 style={{marginBottom: 10}}
               />
             }
-            { !this.state.loading && !this.state.response &&
-              <Form
-                {...layout}
-                name="basic"
-                initialValues={{
+            { !this.state.response &&
+              <React.Fragment>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
+                  </Col>
+                  <Col span={16}>
+                  { this.state.loading ?
+                    <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
+                  :
+                    <React.Fragment>
+                      {this.state.errors.ipError ?
+                        <React.Fragment>
+                          <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                          <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
+                        </React.Fragment>
+                      :
+                        <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                      }
+                    </React.Fragment>
+                  }
+                  </Col>
+                </Row>
+                <Row>
+                  <Col offset={8} span={16}>
+                    { this.state.request.ip ?
+                      <Button type="primary" onClick={() => this.releaseIp()} >
+                        IP release
+                      </Button>
+                    :
+                      <Button type="primary" disabled>
+                        IP release
+                      </Button>
+                    }
+                  </Col>
+                </Row>
+              </React.Fragment>
 
-                }}
-                onFinish={null}
-                onFinishFailed={null}
-              >
 
-              <Form.Item
-                label="IP address"
-                name='ip'
-                key="ip"
-                validateStatus={this.state.errors.ipError}
-                help={this.state.errors.ipError ? 'Please input a valid ip address' : null }
-              >
-                <Input id='ip' onChange={e => this.setIp(e)} />
-              </Form.Item>
 
-              <Form.Item
-                wrapperCol={ {offset: 8 }}
-                name="button"
-                key="button"
-              >
 
-                <Button type="primary" onClick={() => this.releaseIp()}>
-                  Release Ip
-                </Button>
-
-              </Form.Item>
-
-              </Form>
             }
+            </React.Fragment>
+            :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
 
-          </React.Fragment>
-          :
-          <Alert message="Asset and Partition not set" type="error" />
-        }
       </Modal>
 
       {this.state.visible ?

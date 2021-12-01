@@ -113,13 +113,9 @@ class ModifyIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('resp')
-        console.log(resp)
         r = resp
       },
       error => {
-        console.log('error')
-        console.log(error)
         r = error
       }
     )
@@ -167,7 +163,6 @@ class ModifyIp extends React.Component {
     request.errors = errors
 
     this.setState({requests: requests})
-    console.log(requests)
   }
 
 

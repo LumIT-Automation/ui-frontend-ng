@@ -166,91 +166,91 @@ class DetailsIp extends React.Component {
     return (
       <React.Fragment>
 
-      <Button type="primary" onClick={() => this.details()}>IP DETAILS</Button>
+        <Button type="primary" onClick={() => this.details()}>IP DETAILS</Button>
 
-      <Modal
-        title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}
-        centered
-        destroyOnClose={true}
-        visible={this.state.visible}
-        footer={''}
-        onOk={() => this.setState({visible: true})}
-        onCancel={() => this.closeModal()}
-        width={1500}
-      >
+        <Modal
+          title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
+        >
 
-        <AssetSelector/>
-        <Divider/>
+          <AssetSelector/>
+          <Divider/>
 
-        { ( this.props.asset && this.props.asset.id ) ?
-          <React.Fragment>
-          { !this.state.loading && this.state.response &&
-            <Table
-              columns={columns}
-              dataSource={this.state.ipInfo}
-              bordered
-              rowKey="ip"
-              scroll={{x: 'auto'}}
-              pagination={false}
-              style={{marginBottom: 10}}
-            />
-          }
-          { !this.state.response &&
+          { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
-                </Col>
-                <Col span={16}>
-                { this.state.loading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
-                :
-                  <React.Fragment>
-                    {this.state.errors.ipError ?
-                      <React.Fragment>
-                        <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
-                        <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
-                      </React.Fragment>
-                    :
-                      <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
-                    }
-                  </React.Fragment>
-                }
-                </Col>
-              </Row>
-              <Row>
-                <Col offset={8} span={16}>
-                  { this.state.request.ip ?
-                    <Button type="primary" onClick={() => this.ipDetail()} >
-                      IP detail
-                    </Button>
+            { !this.state.loading && this.state.response &&
+              <Table
+                columns={columns}
+                dataSource={this.state.ipInfo}
+                bordered
+                rowKey="ip"
+                scroll={{x: 'auto'}}
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
+            }
+            { !this.state.response &&
+              <React.Fragment>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
+                  </Col>
+                  <Col span={16}>
+                  { this.state.loading ?
+                    <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
                   :
-                    <Button type="primary" onClick={() => this.ipDetail()} disabled>
-                      IP detail
-                    </Button>
+                    <React.Fragment>
+                      {this.state.errors.ipError ?
+                        <React.Fragment>
+                          <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                          <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
+                        </React.Fragment>
+                      :
+                        <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                      }
+                    </React.Fragment>
                   }
-                </Col>
-              </Row>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col offset={8} span={16}>
+                    { this.state.request.ip ?
+                      <Button type="primary" onClick={() => this.ipDetail()} >
+                        IP detail
+                      </Button>
+                    :
+                      <Button type="primary" disabled>
+                        IP detail
+                      </Button>
+                    }
+                  </Col>
+                </Row>
+              </React.Fragment>
+
+
+
+
+            }
             </React.Fragment>
-
-
-
-
+            :
+            <Alert message="Asset and Partition not set" type="error" />
           }
+
+        </Modal>
+
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
           </React.Fragment>
-          :
-          <Alert message="Asset and Partition not set" type="error" />
+        :
+          null
         }
-
-      </Modal>
-
-      {this.state.visible ?
-        <React.Fragment>
-          { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
-        </React.Fragment>
-      :
-        null
-      }
 
       </React.Fragment>
 
