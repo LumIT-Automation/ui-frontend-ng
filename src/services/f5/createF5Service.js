@@ -59,6 +59,7 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request.routeDomain)
     if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
       this.main()
     }
@@ -182,12 +183,12 @@ class CreateF5Service extends React.Component {
     this.setState({request: request, errors: errors})
   }
 
-  setRouteDomain = e => {
+  setRouteDomain = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e) {
-      request.routeDomain = e
+    if (id) {
+      request.routeDomain = id
       delete errors.routeDomainError
     }
     else {
@@ -441,10 +442,20 @@ class CreateF5Service extends React.Component {
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     if (this.state.request.serviceType === 'L4') {
-      this.createL4Service()
+      if (this.state.request.routeDomain) {
+        this.createL4Service()
+      }
+      else {
+        this.createL4ServiceNoRD()
+      }
     }
-    else if (this.state.request.serviceType === 'L7') {
-      this.createL7Service()
+    if (this.state.request.serviceType === 'L7') {
+      if (this.state.request.routeDomain) {
+        this.createL7Service()
+      }
+      else {
+        this.createL7ServiceNoRD()
+      }
     }
   }
 
@@ -501,7 +512,131 @@ class CreateF5Service extends React.Component {
 
   }
 
+  createL4ServiceNoRD = async () => {
+    let serviceName = this.state.request.serviceName
+
+    this.setState({message: null});
+
+    const b = {
+      "data": {
+        "virtualServer": {
+          "name": `${serviceName}`,
+          "type": this.state.request.serviceType,
+          "snat": this.state.request.snat,
+          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+          "mask": '255.255.255.255',
+          "source": '0.0.0.0/0'
+        },
+        "profiles": [
+          {
+            "name": `fastl4_${serviceName}`,
+            "type": "fastl4",
+            "idleTimeout": 300
+          }
+        ],
+        "pool": {
+          "name": `pool_${serviceName}`,
+          "loadBalancingMode": this.state.request.lbMethod,
+          "nodes": this.state.request.nodes
+        },
+        "monitor": {
+          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "type": this.state.request.monitorType
+        }
+      }
+    }
+
+    this.setState({loading: true})
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        this.setState({loading: false, response: true})
+        this.response()
+      },
+      error => {
+        this.props.dispatch(setCreateL4ServiceError(error))
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
+
+  }
+
   createL7Service = async () => {
+    let serviceName = this.state.request.serviceName
+    this.setState({message: null});
+
+    const b = {
+      "data": {
+        "virtualServer": {
+          "name": `${serviceName}`,
+          "type": this.state.request.serviceType,
+          "snat": this.state.request.snat,
+          "routeDomainId": this.state.request.routeDomain,
+          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+          "mask": '255.255.255.255',
+          "source": this.state.request.source
+        },
+        "profiles": [
+          {
+            "name": `tcp-wan-optimized_${serviceName}`,
+            "type": "tcp",
+            "defaultsFrom": "/Common/tcp-wan-optimized",
+            "context": "clientside"
+          },
+          {
+            "name": `tcp-lan-optimized_${serviceName}`,
+            "type": "tcp",
+            "defaultsFrom": "/Common/tcp-lan-optimized",
+            "context": "serverside"
+          },
+          {
+            "name": `http_${serviceName}`,
+            "type": "http",
+            "defaultsFrom": "/Common/http"
+          },
+          {
+            "name": `client-ssl_${serviceName}`,
+            "type": "client-ssl",
+            "cert": this.state.request.certificate,
+            "key": this.state.request.key,
+            "chain": "",
+            "context": "clientside"
+          }
+        ],
+        "pool": {
+          "name": `pool_${serviceName}`,
+          "loadBalancingMode": this.state.request.lbMethod,
+          "nodes": this.state.request.nodes
+        },
+        "monitor": {
+          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "type": this.state.request.monitorType,
+          "send": `${this.state.request.monitorSendString}`,
+          "recv": `${this.state.request.monitorReceiveString}`
+        }
+      }
+    }
+
+    this.setState({loading: true})
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        this.setState({loading: false, response: true})
+        this.response()
+      },
+      error => {
+        this.props.dispatch(setCreateL7ServiceError(error))
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
+
+  }
+
+  createL7ServiceNoRD = async () => {
     let serviceName = this.state.request.serviceName
     this.setState({message: null});
 
@@ -706,8 +841,9 @@ class CreateF5Service extends React.Component {
                         >
                           <React.Fragment>
                             {this.props.routeDomains.map((n, i) => {
+                              console.log(n)
                               return (
-                                <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
                               )
                             })
                             }
@@ -802,7 +938,7 @@ class CreateF5Service extends React.Component {
                   <React.Fragment>
                     <Row>
                       <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate (optional):</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate:</p>
                       </Col>
                       <Col span={16}>
                         { this.state.certificatesLoading ?
@@ -844,7 +980,7 @@ class CreateF5Service extends React.Component {
 
                     <Row>
                       <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key (optional):</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
                       </Col>
                       <Col span={16}>
                         { this.state.keysLoading ?
