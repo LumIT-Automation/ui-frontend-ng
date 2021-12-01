@@ -35,6 +35,7 @@ import {
   containerError,
   nextAvailableIpError,
   ipModifyError,
+  ipReleaseError,
 
 } from '../_store/store.infoblox'
 
@@ -96,11 +97,6 @@ class Error extends Component {
   onCancel = async () => {
     if ( this.props.type ) {
       switch(this.props.type) {
-
-        case 'Error':
-          this.props.dispatch(setError(null))
-          break
-
 
         case 'setAuthorizationsError':
           this.props.dispatch(setAuthorizationsError(null))
@@ -174,6 +170,9 @@ class Error extends Component {
           break
         case 'ipModifyError':
           this.props.dispatch(ipModifyError(null))
+          break
+        case 'ipReleaseError':
+          this.props.dispatch(ipReleaseError(null))
           break
 
       }

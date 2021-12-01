@@ -107,11 +107,6 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
-        case 'Error':
-          this.props.dispatch(setError(null))
-          break
-
-
         case 'setAuthorizationsError':
           this.props.dispatch(setAuthorizationsError(null))
           break

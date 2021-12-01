@@ -2,7 +2,12 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from "../../error/infobloxError"
+
+import {
+  ipDetailError,
+  ipReleaseError,
+} from '../../_store/store.infoblox'
 
 import AssetSelector from './assetSelector'
 
@@ -93,7 +98,7 @@ class ReleaseIp extends React.Component {
         })
       },
       error => {
-        this.setState({error: error, loading: false})
+        this.props.dispatch(ipDetailError(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
@@ -116,7 +121,7 @@ class ReleaseIp extends React.Component {
             this.infoIp()
           },
           error => {
-            this.setState({loading: false, response: false, error: error})
+            this.props.dispatch(ipReleaseError(error))
           }
         )
         await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token )
@@ -289,7 +294,14 @@ class ReleaseIp extends React.Component {
         }
       </Modal>
 
-      {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} errors={null}/>}
+      {this.state.visible ?
+        <React.Fragment>
+          { this.props.ipDetailError ? <Error component={'ipRelease'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
+          { this.props.ipReleaseError ? <Error component={'ipRelease'} error={[this.props.ipReleaseError]} visible={true} type={'ipReleaseError'} /> : null }
+        </React.Fragment>
+      :
+        null
+      }
 
     </React.Fragment>
 
@@ -299,7 +311,10 @@ class ReleaseIp extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
+
+  ipDetailError: state.infoblox.ipDetailError,
+  ipReleaseError: state.infoblox.ipReleaseError,
 }))(ReleaseIp);

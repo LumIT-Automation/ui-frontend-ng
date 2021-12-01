@@ -90,12 +90,6 @@ class Error extends Component {
           this.props.dispatch(setSuperAdminsPermissionsError(null))
           break
 
-        case 'setF5PermissionsError':
-          this.props.dispatch(setF5PermissionsError(null))
-          break
-        case 'fetchF5RolesError':
-          this.props.dispatch(fetchF5RolesError(null))
-          break
         case 'addNewDnError':
           this.props.dispatch(addNewDnError(null))
           break

@@ -265,7 +265,7 @@ class Add extends React.Component {
   addPoolMembers = async () => {
     this.state.nodes.forEach(m => {
       this.setState({message: null});
-      const b = {
+      const request = {
         "data":
           {
             "name": `${m.name}:${m.port}`,
@@ -301,7 +301,7 @@ class Add extends React.Component {
           this.setState({loading: false, error: error, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.request.name}/members/`, this.props.token, b)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.request.name}/members/`, this.props.token, request)
   }
 
   response = () => {

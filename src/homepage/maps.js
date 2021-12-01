@@ -13,7 +13,7 @@ const Map =() => {
   const [hovered, setHovered] = React.useState('None');
   const [focused, setFocused] = React.useState('None');
   const [clicked, setClicked] = React.useState('None');
-  const [visible, setVisible] = React.useState();
+  const [visible, setVisible] = React.useState(false);
   const [value, setValue] = React.useState(false);
 
   const layerProps = {
