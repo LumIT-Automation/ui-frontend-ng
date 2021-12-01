@@ -88,14 +88,19 @@ class ModifyIp extends React.Component {
 
     if (response.status && response.status !== 200) {
       this.props.dispatch(ipDetailError(response))
+      return
     }
     request = Object.assign(request, response.data)
 
     if (response.data.extattrs && response.data.extattrs['Name Server']) {
       request.serverName = response.data.extattrs['Name Server'].value
     }
+
     if (response.data.mac_address) {
       request.macAddress = response.data.mac_address
+    }
+    else {
+      request.macAddress = '00:00:00:00:00:00'
     }
 
     await this.setState({requests: requests, infoIp: true})
@@ -108,9 +113,13 @@ class ModifyIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('resp')
+        console.log(resp)
         r = resp
       },
       error => {
+        console.log('error')
+        console.log(error)
         r = error
       }
     )
@@ -146,14 +155,12 @@ class ModifyIp extends React.Component {
     const validMacAddressRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
 
     if (validMacAddressRegex.test(mac)) {
-      console.log('mac buono')
       let macAddress = mac
       request.macAddress = macAddress
       delete errors.macAddressError
       //this.setState({macAddress: mac, errors: errors})
     }
     else {
-      console.log('mac avariato')
       request.macAddress = ''
       errors.macAddressError = 'error'
     }
