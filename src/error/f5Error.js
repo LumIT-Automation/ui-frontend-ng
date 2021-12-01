@@ -116,7 +116,6 @@ class Error extends Component {
           this.props.dispatch(addNewDnError(null))
           break
         case 'fetchF5RolesError':
-        console.log('f5 error')
           this.props.dispatch(fetchF5RolesError(null))
           break
         case 'addF5PermissionError':

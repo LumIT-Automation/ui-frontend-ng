@@ -1,20 +1,20 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import { VectorMap } from '@south-paw/react-vector-maps';
-import italy from './italy.json';
+import { VectorMap } from '@south-paw/react-vector-maps'
+import italy from './italy.json'
 
 import RegionTable from './regionTable'
 
 
 
-const Map =() => {
-  const style = { margin: '1rem auto', fill: '#a82b2b', outline: 'none' };
+const Map = () => {
+  const style = { margin: '1rem auto', fill: '#a82b2b', outline: 'none' }
 
-  const [hovered, setHovered] = React.useState('None');
-  const [focused, setFocused] = React.useState('None');
-  const [clicked, setClicked] = React.useState('None');
-  const [visible, setVisible] = React.useState(false);
-  const [value, setValue] = React.useState(false);
+  const [hovered, setHovered] = React.useState('None')
+  const [focused, setFocused] = React.useState('None')
+  const [clicked, setClicked] = React.useState('None')
+  const [visible, setVisible] = React.useState(false)
+  const [value, setValue] = React.useState(false)
 
   const layerProps = {
     onMouseEnter: ({ target }) => setHovered(target.attributes.name.value),
@@ -24,7 +24,7 @@ const Map =() => {
     onClick: ({ target }) => {
       //const name = target.attributes.name.value;
       //window.open(`https://www.google.com/search?q=${name}`)
-      setVisible(true),
+      setVisible(true)
       setValue(target.attributes.name.value)
     }
   };

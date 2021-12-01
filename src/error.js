@@ -104,8 +104,14 @@ class Error extends Component {
           this.props.dispatch(deleteF5PermissionError(null))
           break
 
-        case 'setF5IdentityGroupsError':
-          this.props.dispatch(setF5IdentityGroupsError(null))
+        case 'addInfobloxPermissionError':
+          this.props.dispatch(addInfobloxPermissionError(null))
+          break
+        case 'modifyInfobloxPermissionError':
+          this.props.dispatch(modifyInfobloxPermissionError(null))
+          break
+        case 'deleteInfobloxPermissionError':
+          this.props.dispatch(deleteInfobloxPermissionError(null))
           break
 
       }
