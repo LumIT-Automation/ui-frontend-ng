@@ -104,8 +104,8 @@ class CertificatesAndKeys extends React.Component {
                 :
                 null
               }
-
-              { this.props.authorizations && (this.props.authorizations.keys_get || this.props.authorizations.any) ?
+              {/*certificates_get da sostituire con keys_get*/}
+              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
                 <React.Fragment>
                   {this.props.keysLoading ?
                     <TabPane key="Keys" tab="Keys">

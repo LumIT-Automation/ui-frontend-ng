@@ -146,7 +146,8 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.key_delete || this.props.authorizations.any) ?
+            {/*certificate_delete da sostituire con key_delete*/}
+            { this.props.authorizations && (this.props.authorizations.certificate_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'

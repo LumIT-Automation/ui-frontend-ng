@@ -84,7 +84,8 @@ class Manager extends React.Component {
         <br/>
         { (this.props.asset && this.props.asset.id ) && this.props.partition  ?
           <React.Fragment>
-            {this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
+          {/*certificates_post da sostituire con keys_post*/}
+            {this.props.authorizations && (this.props.authorizations.certificates_post || this.props.authorizations.any) ?
               <React.Fragment>
                 <Add/>
                 <br/>
