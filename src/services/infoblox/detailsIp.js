@@ -150,12 +150,6 @@ class DetailsIp extends React.Component {
         key: 'mask',
       },
       {
-        title: 'Reference',
-        align: 'center',
-        dataIndex: ['extattrs', 'Reference', 'value'],
-        key: 'reference',
-      },
-      {
         title: 'Record A',
         align: 'center',
         dataIndex: 'names',

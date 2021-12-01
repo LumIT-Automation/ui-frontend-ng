@@ -187,12 +187,6 @@ class ReleaseIp extends React.Component {
         dataIndex: ['extattrs', 'Mask', 'value'],
         key: 'mask',
       },
-      {
-        title: 'Reference',
-        align: 'center',
-        dataIndex: ['extattrs', 'Reference', 'value'],
-        key: 'reference',
-      },
     ];
 
     return (

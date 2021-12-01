@@ -358,23 +358,6 @@ class RequestIp extends React.Component {
     request.errors = errors
   }
 
-  setReference = (e, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let reference
-
-    if (e) {
-      reference = e.target.value
-      delete errors.referenceError
-    }
-    else {
-      errors.referenceError = 'error'
-    }
-    request.reference = reference
-    request.errors = errors
-    //this.setState({reference: reference, errors: errors})
-  }
-
 
   sendRequests = async () => {
     this.setState({loading: true})
@@ -416,9 +399,6 @@ class RequestIp extends React.Component {
             {
               "Name Server": {
                   "value": `${r.serverName}`
-              },
-              "Reference": {
-                  "value": `${r.reference}`
               }
             }
           ]
@@ -438,17 +418,11 @@ class RequestIp extends React.Component {
             {
               "Name Server": {
                   "value": `${r.serverName}`
-              },
-              "Reference": {
-                  "value": `${r.reference}`
               }
             },
             {
               "Name Server": {
                   "value": `${r.serverName2}`
-              },
-              "Reference": {
-                  "value": `${r.reference}`
               }
             },
           ]
@@ -636,21 +610,6 @@ class RequestIp extends React.Component {
           </React.Fragment>
             :
             <Input defaultValue={obj.macAddress} id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
-          }
-          </React.Fragment>
-        ),
-      },
-      {
-        title: 'Reference',
-        align: 'center',
-        dataIndex: 'reference',
-        key: 'reference',
-        render: (name, obj)  => (
-          <React.Fragment>
-          { (obj.objectType === 'Heartbeat') ?
-            <Input placeholder={obj.reference} id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e, obj.id)} />
-            :
-            <Input placeholder={obj.reference} id='reference' style={{ width: '150px' }} onChange={e => this.setReference(e, obj.id)} />
           }
           </React.Fragment>
         ),
