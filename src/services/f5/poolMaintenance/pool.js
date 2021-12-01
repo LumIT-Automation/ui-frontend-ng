@@ -92,17 +92,6 @@ class PoolDetails extends React.Component {
       })
 
       await this.setState({members: membersState})
-
-      /*} else {
-        //const current = Object.assign([], this.state.members);
-
-        const newCurrent = current.map( m => {
-          let fetched = fetch.find(f => m.name === f.name);
-          let n = Object.assign(m, fetched)
-            return n
-        })
-        this.setState({members: newCurrent})
-      }*/
     }
   }
 
@@ -397,7 +386,6 @@ class PoolDetails extends React.Component {
       return m.name === memb.name
     })
     const members = JSON.parse(JSON.stringify(this.state.members))
-    //const members =  Object.assign([], this.state.members)
     const isMonitored = members[index].isMonitored
     let list = []
 

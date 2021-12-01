@@ -43,7 +43,7 @@ class AssetSelector extends React.Component {
   }
 
   setEnvironmentList = () => {
-    const items = Object.assign([], this.props.assets)
+    const items = JSON.parse(JSON.stringify(this.props.assets))
     const list = items.map( e => {
       return e.environment
     })
