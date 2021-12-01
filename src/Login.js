@@ -41,8 +41,6 @@ class Login extends Component {
 
   onFormSubmit = async data => {
     // XHR for token.
-    console.log(data.username)
-    console.log(data.password)
     if (data.username && data.password) {
       let rest = new Rest("POST",
 

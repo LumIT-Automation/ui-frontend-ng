@@ -148,7 +148,8 @@ class CustomSider extends Component {
           <Menu.Divider/>
 
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
+          { (this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any)) ||
+            (this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any)) ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
@@ -160,7 +161,8 @@ class CustomSider extends Component {
 
 
 
-          { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
+          { (this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any)) ||
+            (this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any)) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
