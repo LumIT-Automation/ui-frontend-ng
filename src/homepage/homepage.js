@@ -45,9 +45,6 @@ class Homepage extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchDevices()
-    this.fetchDdosses()
-    this.fetchProjects()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -62,53 +59,6 @@ class Homepage extends React.Component {
   }
 
 
-  fetchDevices = async () => {
-    this.props.dispatch(setDevicesLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setDevices(resp))
-      },
-      error => {
-        this.props.dispatch(setDevicesError(error))
-      }
-    )
-    await rest.doXHR(`fortinetdb/devices/`, this.props.token)
-    this.props.dispatch(setDevicesLoading(false))
-  }
-
-  fetchDdosses = async () => {
-    this.props.dispatch(setDdossesLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setDdosses(resp))
-      },
-      error => {
-        this.props.dispatch(setDdossesError(error))
-      }
-    )
-    await rest.doXHR(`fortinetdb/ddosses/`, this.props.token)
-    this.props.dispatch(setDdossesLoading(false))
-  }
-
-  fetchProjects = async () => {
-    this.props.dispatch(setProjectsLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(setProjects(resp))
-      },
-      error => {
-        this.props.dispatch(setProjectsError(error))
-      }
-    )
-    await rest.doXHR(`fortinetdb/projects/`, this.props.token)
-    this.props.dispatch(setProjectsLoading(false))
-  }
-
-
-
   render() {
 
     return (
@@ -117,7 +67,7 @@ class Homepage extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
           <React.Fragment>
-          
+
             <Row >
               <Col span={4}>
                 <Card title={<p style={{textAlign: 'center'}}>Cert Expirations</p>} bordered={false}>
