@@ -535,7 +535,7 @@ class PoolDetails extends React.Component {
         key: 'enable',
         render: (name, obj)  => (
           <Space size="small">
-          { obj.isLoading ?
+          { obj.isLoading || obj.isMonitored ?
             <Button type="primary" disabled>
               Enable
             </Button>
@@ -554,7 +554,7 @@ class PoolDetails extends React.Component {
         key: 'disable',
         render: (name, obj)  => (
           <Space size="small">
-          { obj.isLoading ?
+          { obj.isLoading || obj.isMonitored ?
             <Button type="primary" disabled>
               Disable
             </Button>
@@ -573,7 +573,7 @@ class PoolDetails extends React.Component {
         key: 'foff',
         render: (name, obj)  => (
           <Space size="small">
-          { obj.isLoading ?
+          { obj.isLoading || obj.isMonitored ?
             <Button type="primary" disabled>
               Force Offline
             </Button>
