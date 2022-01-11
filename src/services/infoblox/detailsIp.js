@@ -52,23 +52,27 @@ class DetailsIp extends React.Component {
 
   setIp = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    const ipv4 = e.target.value
-    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+    request.ip = e.target.value
 
-    if (validIpAddressRegex.test(ipv4)) {
-      request.ip = ipv4
-      delete errors.ipError
-    }
-    else {
-      request.ip = null
-      errors.ipError = 'Please input a valid ip'
-    }
-    this.setState({request: request, errors: errors})
+    this.setState({request: request})
   }
 
 //http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
+
+  validate = async () => {
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+
+    if (validIpAddressRegex.test(this.state.request.ip)) {
+      this.ipDetail()
+    }
+    else {
+      errors.ipError = 'Please input a valid ip'
+      this.setState({errors: errors})
+    }
+  }
 
   ipDetail = async () => {
     this.setState({loading: true})
@@ -202,11 +206,11 @@ class DetailsIp extends React.Component {
                     <React.Fragment>
                       {this.state.errors.ipError ?
                         <React.Fragment>
-                          <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                          <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                           <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
                         </React.Fragment>
                       :
-                        <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onBlur={e => this.setIp(e)} />
+                        <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       }
                     </React.Fragment>
                   }
@@ -215,7 +219,7 @@ class DetailsIp extends React.Component {
                 <Row>
                   <Col offset={8} span={16}>
                     { this.state.request.ip ?
-                      <Button type="primary" onClick={() => this.ipDetail()} >
+                      <Button type="primary" onClick={() => this.validate()} >
                         IP detail
                       </Button>
                     :
