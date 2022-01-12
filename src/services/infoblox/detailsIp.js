@@ -79,9 +79,9 @@ class DetailsIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        let ipInfo = []
-        ipInfo.push(resp.data)
-        this.setState({response: true, ipInfo: ipInfo})
+        let ipDetails = []
+        ipDetails.push(resp.data)
+        this.setState({response: true, ipDetails: ipDetails})
       },
       error => {
         this.props.dispatch(ipDetailError(error))
@@ -101,7 +101,7 @@ class DetailsIp extends React.Component {
     this.setState({
       visible: false,
       response: false,
-      ipInfo: [],
+      ipDetails: [],
       request: {},
       errors: []
     })
@@ -185,7 +185,7 @@ class DetailsIp extends React.Component {
             { !this.state.loading && this.state.response &&
               <Table
                 columns={columns}
-                dataSource={this.state.ipInfo}
+                dataSource={this.state.ipDetails}
                 bordered
                 rowKey="ip"
                 scroll={{x: 'auto'}}
