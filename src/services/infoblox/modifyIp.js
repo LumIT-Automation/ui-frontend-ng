@@ -31,7 +31,8 @@ class ModifyIp extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {}
+      request: {},
+      ipDetails: []
     };
   }
 
@@ -55,29 +56,25 @@ class ModifyIp extends React.Component {
 
   setIp = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-
     request.ip = e.target.value
-
     this.setState({request: request})
   }
 
-//http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
-/*
-  validate = async () => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-
-    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-
-    if (validIpAddressRegex.test(this.state.request.ip)) {
-      this.ipDetail()
-    }
-    else {
-      errors.ipError = 'Please input a valid ip'
-      this.setState({errors: errors})
-    }
+  setMacAddress = (m, id) => {
+    let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
+    let ipDetail = ipDetails[0]
+    ipDetail.macAddress = m.target.value
+    this.setState({ipDetails: ipDetails})
   }
-*/
-  validate = async () => {
+
+  setServerName = (e, id) => {
+    let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
+    let ipDetail = ipDetails[0]
+    ipDetail.serverName = e.target.value
+    this.setState({ipDetails: ipDetails})
+  }
+
+  validateIp = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     let validators = new Validators()
@@ -92,14 +89,47 @@ class ModifyIp extends React.Component {
     }
   }
 
+  validateMac = async () => {
+    let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
+    let ipDetail = ipDetails[0]
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    let validators = new Validators()
+
+    if (validators.macAddress(ipDetail.macAddress)) {
+      console.log('MAC VALIDO')
+      errors.macError = null
+      this.setState({ipDetails: ipDetails, errors: errors}, () => this.ipModify())
+    }
+    else if (ipDetail.macAddress === '' || ipDetail.macAddress === undefined) {
+      console.log('MAC "" O UNDEFINED')
+      ipDetail.macAddress = '00:00:00:00:00:00'
+      errors.macError = null
+      console.log(ipDetail)
+      console.log(ipDetails)
+      this.setState({ipDetails: ipDetails, errors: errors}, () => this.ipModify())
+    }
+    else {
+      console.log('MAC INVALID')
+      errors.macError = 'Please input a valid mac address'
+      this.setState({errors: errors})
+    }
+  }
+
   ipDetail = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         let ipDetails = []
         ipDetails.push(resp.data)
-        this.setState({response: true, ipDetails: ipDetails})
+        let ipDetail = ipDetails[0]
+        ipDetail.macAddress = ipDetails[0].mac_address
+        ipDetail.serverName = ipDetails[0].extattrs['Name Server'].value
+        console.log(ipDetails)
+        console.log(ipDetail)
+        this.setState({ipDetails: ipDetails})
       },
       error => {
         this.props.dispatch(ipDetailError(error))
@@ -109,58 +139,53 @@ class ModifyIp extends React.Component {
     this.setState({loading: false})
   }
 
-  setServerName = (e, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests[0]
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let serverName
+  ipModify = async () => {
+    let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
+    let ipDetail = ipDetails[0]
+    console.log(this.state.ipDetails)
+    console.log(ipDetail)
 
-    if (e) {
-      serverName = e.target.value
-      delete errors.serverNameError
+    ipDetail.isLoading = true
+    this.setState({ipDetails: ipDetails})
+
+    const b = {
+      "data":
+        {
+          "mac": `${ipDetail.macAddress}`,
+          "extattrs": {
+              "Name Server": {
+                  "value": `${ipDetail.serverName}`
+              }
+          },
+        }
+      }
+
+      console.log(b)
+
+      let rest = new Rest(
+        "PATCH",
+        resp => {
+          ipDetail.isLoading = false
+          this.setState({ipDetails: ipDetails}, () => this.ipDetail())
+        },
+        error => {
+          ipDetail.isLoading = false
+          this.setState({ipDetails: ipDetails})
+          this.props.dispatch(ipModifyError(error))
+        }
+      )
+      await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token, b )
+
     }
-    else {
-      errors.serverNameError = 'error'
-    }
-    request.serverName = serverName
-    request.errors = errors
-    //this.setState({serverName: serverName, errors: errors})
-    this.setState({requests: requests})
-  }
 
-  setMacAddress = (m, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests[0]
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    let mac = m.target.value
-    const validMacAddressRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
 
-    if (validMacAddressRegex.test(mac)) {
-      let macAddress = mac
-      request.macAddress = macAddress
-      delete errors.macAddressError
-      //this.setState({macAddress: mac, errors: errors})
-    }
-    else {
-      request.macAddress = ''
-      errors.macAddressError = 'error'
-    }
-    request.errors = errors
 
-    this.setState({requests: requests})
-  }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
-  }
 
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
-      response: false,
       ipDetails: [],
       request: {},
       errors: []
@@ -195,7 +220,7 @@ class ModifyIp extends React.Component {
         key: 'nameServer',
         render: (name, obj)  => (
           <React.Fragment>
-            <Input id='nameServer' defaultValue={obj.serverName} onChange={e => this.setServerName(e)} />
+            <Input id='nameServer' defaultValue={obj.extattrs['Name Server'].value} onChange={e => this.setServerName(e)} />
           </React.Fragment>
         ),
       },
@@ -206,7 +231,14 @@ class ModifyIp extends React.Component {
         key: 'mac_address',
         render: (name, obj)  => (
           <React.Fragment>
-            <Input id='nameServer' defaultValue={obj.macAddress} onChange={e => this.setMacAddress(e)} />
+            {this.state.errors.macError ?
+              <React.Fragment>
+                <Input id='macAddress' onChange={e => this.setMacAddress(e)} />
+                <p style={{color: 'red'}}>{this.state.errors.macError}</p>
+              </React.Fragment>
+            :
+              <Input id='macAddress' defaultValue={obj.mac_address} onChange={e => this.setMacAddress(e)} />
+            }
           </React.Fragment>
         ),
       },
@@ -248,7 +280,7 @@ class ModifyIp extends React.Component {
         <Button type="primary" onClick={() => this.details()}>IP MODIFY</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}
+          title={<p style={{textAlign: 'center'}}>IP MODIFY</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -263,18 +295,7 @@ class ModifyIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { !this.state.loading && this.state.response &&
-              <Table
-                columns={columns}
-                dataSource={this.state.ipDetails}
-                bordered
-                rowKey="ip"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-            }
-            { !this.state.response &&
+            { this.state.ipDetails.length < 1 ?
               <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
@@ -300,18 +321,38 @@ class ModifyIp extends React.Component {
                 <Row>
                   <Col offset={8} span={16}>
                     { this.state.request.ip ?
-                      <Button type="primary" onClick={() => this.validate()} >
-                        IP modify
+                      <Button type="primary" onClick={() => this.validateIp()} >
+                        IP details
                       </Button>
                     :
                       <Button type="primary" disabled>
-                        IP modify
+                        IP details
                       </Button>
                     }
                   </Col>
                 </Row>
               </React.Fragment>
-
+            :
+              <React.Fragment>
+                <Table
+                  columns={columns}
+                  dataSource={this.state.ipDetails}
+                  bordered
+                  rowKey="ip"
+                  scroll={{x: 'auto'}}
+                  pagination={false}
+                  style={{marginBottom: 10}}
+                />
+                { ( this.state.ipDetails[0].status === 'USED' ) ?
+                  <Button type="primary" onClick={() => this.validateMac()}>
+                    Modify Ip
+                  </Button>
+                :
+                  <Button type="primary" disabled>
+                    Modify Ip
+                  </Button>
+                }
+              </React.Fragment>
 
 
 
@@ -325,7 +366,8 @@ class ModifyIp extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
+          { this.props.ipDetailError ? <Error component={'ipModify'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
+          { this.props.ipModifyError ? <Error component={'ipModify'} error={[this.props.ipModifyError]} visible={true} type={'ipModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -343,4 +385,5 @@ export default connect((state) => ({
   asset: state.infoblox.asset,
 
   ipDetailError: state.infoblox.ipDetailError,
+  ipModifyError: state.infoblox.ipModifyError,
 }))(ModifyIp);
