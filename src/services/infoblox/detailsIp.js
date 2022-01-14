@@ -28,7 +28,8 @@ class DetailsIp extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {}
+      request: {},
+      ipDetails: []
     };
   }
 
@@ -51,6 +52,7 @@ class DetailsIp extends React.Component {
   }
 
   setIp = e => {
+    console.log(e.target.value)
     let request = JSON.parse(JSON.stringify(this.state.request))
 
     request.ip = e.target.value
@@ -60,12 +62,14 @@ class DetailsIp extends React.Component {
 
 //http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
 
-  validate = async () => {
+  validateIp = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
     if (validIpAddressRegex.test(this.state.request.ip)) {
+      errors.ipError = null
+      this.setState({errors: errors})
       this.ipDetail()
     }
     else {
@@ -75,32 +79,26 @@ class DetailsIp extends React.Component {
   }
 
   ipDetail = async () => {
-    this.setState({loading: true})
+    this.setState({iploading: true})
     let rest = new Rest(
       "GET",
       resp => {
         let ipDetails = []
         ipDetails.push(resp.data)
-        this.setState({response: true, ipDetails: ipDetails})
+        this.setState({ipDetails: ipDetails})
       },
       error => {
         this.props.dispatch(ipDetailError(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
-    this.setState({loading: false})
-  }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
+    this.setState({iploading: false})
   }
 
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
-      response: false,
       ipDetails: [],
       request: {},
       errors: []
@@ -109,6 +107,8 @@ class DetailsIp extends React.Component {
 
 
   render() {
+
+    console.log(this.state.request)
 
     const columns = [
       {
@@ -182,31 +182,20 @@ class DetailsIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { !this.state.loading && this.state.response &&
-              <Table
-                columns={columns}
-                dataSource={this.state.ipDetails}
-                bordered
-                rowKey="ip"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-            }
-            { !this.state.response &&
+
               <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
                   </Col>
                   <Col span={16}>
-                  { this.state.loading ?
+                  { this.state.iploading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
                   :
                     <React.Fragment>
                       {this.state.errors.ipError ?
                         <React.Fragment>
-                          <Input style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                          <Input defaultValue={this.state.request.ip} style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                           <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
                         </React.Fragment>
                       :
@@ -219,21 +208,32 @@ class DetailsIp extends React.Component {
                 <Row>
                   <Col offset={8} span={16}>
                     { this.state.request.ip ?
-                      <Button type="primary" onClick={() => this.validate()} >
-                        IP detail
+                      <Button type="primary" onClick={() => this.validateIp()} >
+                        IP details
                       </Button>
                     :
                       <Button type="primary" disabled>
-                        IP detail
+                        IP details
                       </Button>
                     }
                   </Col>
                 </Row>
               </React.Fragment>
 
+              <Divider/>
 
-
-
+            { this.state.ipDetails.length < 1 ?
+              null
+            :
+              <Table
+                columns={columns}
+                dataSource={this.state.ipDetails}
+                bordered
+                rowKey="ip"
+                scroll={{x: 'auto'}}
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
             }
             </React.Fragment>
             :

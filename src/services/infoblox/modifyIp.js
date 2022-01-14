@@ -117,7 +117,7 @@ class ModifyIp extends React.Component {
   }
 
   ipDetail = async () => {
-    this.setState({loading: true})
+    this.setState({iploading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -136,7 +136,7 @@ class ModifyIp extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
-    this.setState({loading: false})
+    this.setState({iploading: false})
   }
 
   ipModify = async () => {
@@ -295,14 +295,14 @@ class ModifyIp extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-            { this.state.ipDetails.length < 1 ?
+
               <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
                   </Col>
                   <Col span={16}>
-                  { this.state.loading ?
+                  { this.state.iploading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
                   :
                     <React.Fragment>
@@ -332,7 +332,12 @@ class ModifyIp extends React.Component {
                   </Col>
                 </Row>
               </React.Fragment>
-            :
+
+              <Divider/>
+
+            { this.state.ipDetails.length < 1 ?
+              null
+              :
               <React.Fragment>
                 <Table
                   columns={columns}
@@ -353,8 +358,6 @@ class ModifyIp extends React.Component {
                   </Button>
                 }
               </React.Fragment>
-
-
 
             }
             </React.Fragment>
