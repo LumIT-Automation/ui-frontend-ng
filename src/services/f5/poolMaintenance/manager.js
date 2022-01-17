@@ -24,8 +24,10 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.partition) {
-      this.getPools()
+    if (this.state.visible) {
+      if (this.props.asset && this.props.partition) {
+        this.getPools()
+      }
     }
   }
 
@@ -34,8 +36,10 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
-      this.getPools()
+    if (this.state.visible) {
+      if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+        this.getPools()
+      }
     }
   }
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
+
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -213,7 +213,9 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        <React.Fragment>
+          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.setVirtualServersError]} visible={true} type={'setVirtualServersError'} /> : null }
+        </React.Fragment>
       </React.Fragment>
 
     )
@@ -222,5 +224,7 @@ class List extends React.Component {
 
 export default connect((state) => ({
   error: state.error.error,
-  virtualServers: state.f5.virtualServers
+
+  virtualServers: state.f5.virtualServers,
+
 }))(List);

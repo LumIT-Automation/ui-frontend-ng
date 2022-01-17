@@ -1,8 +1,8 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from "../../error/f5Error"
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
 import {
   setCertificates,
@@ -59,9 +59,10 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.request.routeDomain)
-    if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
-      this.main()
+    if (this.state.visible) {
+      if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+        this.main()
+      }
     }
   }
 

@@ -2,11 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch } from '../../_store/store.f5'
+import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch, setVirtualServersError } from '../../_store/store.f5'
 
 import List from './list'
 
@@ -66,7 +65,7 @@ class Manager extends React.Component {
         this.props.dispatch(setVirtualServers(resp))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setVirtualServersError(error))
         this.setState({loading: false})
       }
     )
@@ -91,7 +90,9 @@ class Manager extends React.Component {
         }
 
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        <React.Fragment>
+          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.virtualServersError]} visible={true} type={'setVirtualServersError'} /> : null }
+        </React.Fragment>
       </Space>
 
     )
@@ -104,5 +105,7 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   virtualServers: state.f5.virtualServers,
-  virtualServersFetch: state.f5.virtualServersFetch
+  virtualServersFetch: state.f5.virtualServersFetch,
+
+  virtualServersError: state.f5.virtualServersError
 }))(Manager);

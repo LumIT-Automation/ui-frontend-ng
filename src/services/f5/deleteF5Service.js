@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
+import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
 import {
@@ -41,6 +41,12 @@ class DeleteF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.state.visible) {
+      console.log('update delete')
+      if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+        this.fetchVirtualServers()
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -48,6 +54,20 @@ class DeleteF5Service extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+  }
+
+  fetchVirtualServers = async () => {
+
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log(resp)
+      },
+      error => {
+        console.log(error)
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
   }
 
   setServiceName = e => {
