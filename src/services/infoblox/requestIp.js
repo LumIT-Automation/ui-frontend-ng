@@ -515,7 +515,7 @@ class RequestIp extends React.Component {
         dataIndex: 'id',
         key: 'id',
         name: 'dable',
-        description: 'My name is Joe Black, I am 32 years old, living in Sidney No. 1 Lake Park.',
+        description: '',
       },
       {
         title: 'Network',
