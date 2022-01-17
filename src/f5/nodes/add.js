@@ -1,11 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setNodesFetch } from '../../_store/store.f5'
+import { setNodesFetch, addNodeError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -163,7 +162,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(setError(error))
+          this.props.dispatch(addNodeError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -281,7 +280,13 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.addNodeError ? <Error component={'add node'} error={[this.props.addNodeError]} visible={true} type={'addNodeError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -294,4 +299,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  addNodeError: state.f5.addNodeError
 }))(Add);

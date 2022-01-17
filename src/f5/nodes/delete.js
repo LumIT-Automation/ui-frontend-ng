@@ -2,10 +2,9 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setNodesFetch } from '../../_store/store.f5'
+import { setNodesFetch, deleteNodeError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -46,18 +45,20 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () => this.props.dispatch(setNodesFetch(true)) )
+        this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(deleteNodeError(error))
         this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${this.props.obj.name}/`, this.props.token )
   }
 
-  resetError = () => {
-    this.setState({ error: null})
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
+    setTimeout( () => this.props.dispatch(setNodesFetch(true)), 2030)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
@@ -117,8 +118,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.deleteNodeError ? <Error component={'delete node'} error={[this.props.deleteNodeError]} visible={true} type={'deleteNodeError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -131,4 +137,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  deleteNodeError: state.f5.deleteNodeError
 }))(Delete);

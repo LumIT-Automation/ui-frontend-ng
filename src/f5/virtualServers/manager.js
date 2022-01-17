@@ -40,7 +40,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.virtualServers) {
         this.fetchVirtualServers()
       }

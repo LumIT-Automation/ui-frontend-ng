@@ -27,7 +27,11 @@ import {
   setPartitionAddError,
   setPartitionModifyError,
   setPartitionDeleteError,
-  setNodesError,
+
+  nodesError,
+  addNodeError,
+  deleteNodeError,
+
   setMonitorTypesError,
   setMonitorsError,
   setPoolsError,
@@ -159,9 +163,16 @@ class Error extends Component {
           this.props.dispatch(setAssetDeleteError(null))
           break
 
-        case 'setNodesError':
-          this.props.dispatch(setNodesError(null))
+        case 'nodesError':
+          this.props.dispatch(nodesError(null))
           break
+        case 'addNodeError':
+          this.props.dispatch(addNodeError(null))
+          break
+        case 'deleteNodeError':
+          this.props.dispatch(deleteNodeError(null))
+          break
+
         case 'setMonitorTypesError':
           this.props.dispatch(setMonitorTypesError(null))
           break

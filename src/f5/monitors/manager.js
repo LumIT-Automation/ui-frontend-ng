@@ -2,11 +2,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setMonitorTypes, setMonitorsLoading, setMonitors, setMonitorsFetch } from '../../_store/store.f5'
+import { setMonitorTypes, setMonitorTypesError, setMonitorsLoading, setMonitors, setMonitorsFetch, setMonitorsError } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -43,7 +42,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.monitors) {
         this.fetchMonitors()
       }
@@ -64,25 +63,39 @@ class Manager extends React.Component {
     this.props.dispatch(setMonitorsLoading(true))
 
     let monitorTypes = await this.fetchMonitorsTypeList()
-    this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
 
-    let monitors = await this.fetchMonitorsAny()
-    let list = []
-
-    for (let t in monitors.data) {
-      let type = t
-      let values = Object.values(monitors.data[t])
-
-      values.forEach(o => {
-        o.forEach(m => {
-          Object.assign(m, {type: type});
-          list.push(m)
-        })
-      })
+    if (monitorTypes.status && monitorTypes.status !== 200 ) {
+      this.props.dispatch(setMonitorTypesError(monitorTypes))
+    }
+    else {
+      this.props.dispatch(setMonitorTypes(monitorTypes.data.items))
     }
 
-    this.props.dispatch(setMonitorsLoading(false))
-    this.props.dispatch(setMonitors(list))
+
+    let monitors = await this.fetchMonitorsAny()
+
+    if (monitors.status && monitors.status !== 200 ) {
+      this.props.dispatch(setMonitorsError(monitors))
+    }
+    else {
+      let list = []
+
+      for (let t in monitors.data) {
+        let type = t
+        let values = Object.values(monitors.data[t])
+
+        values.forEach(o => {
+          o.forEach(m => {
+            Object.assign(m, {type: type});
+            list.push(m)
+          })
+        })
+      }
+
+      this.props.dispatch(setMonitorsLoading(false))
+      this.props.dispatch(setMonitors(list))
+    }
+
   }
 
   fetchMonitorsTypeList = async () => {
@@ -93,7 +106,7 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setMonitorTypesError(error))
         this.setState({loading: false, response: false})
         r = error
       }
@@ -110,7 +123,7 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(setMonitorsError(error))
         this.setState({loading: false, response: false})
         r = error
       }
@@ -182,7 +195,10 @@ class Manager extends React.Component {
         }
 
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        <React.Fragment>
+          { this.props.monitorTypesError ? <Error component={'manager monitors'} error={[this.props.monitorTypesError]} visible={true} type={'setMonitorTypesError'} /> : null }
+          { this.props.monitorsError ? <Error component={'manager monitors'} error={[this.props.monitorsError]} visible={true} type={'setMonitorsError'} /> : null }
+        </React.Fragment>
       </Space>
 
     )
@@ -196,5 +212,7 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitors: state.f5.monitors,
-  monitorsFetch: state.f5.monitorsFetch
+  monitorsFetch: state.f5.monitorsFetch,
+  monitorsError: state.f5.monitorsError,
+  monitorTypesError: state.f5.monitorTypesError
 }))(Manager);

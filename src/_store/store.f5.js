@@ -128,8 +128,14 @@ const f5Slice = createSlice({
         setNodesFetch: (state, action) => {
           state.nodesFetch = action.payload
         },
-        setNodesError: (state, action) => {
+        nodesError: (state, action) => {
           state.nodesError = action.payload
+        },
+        addNodeError: (state, action) => {
+          state.addNodeError = action.payload
+        },
+        deleteNodeError: (state, action) => {
+          state.deleteNodeError = action.payload
         },
 
         setMonitorTypes: (state, action) => {
@@ -378,7 +384,9 @@ export const {
   setNodesLoading,
   setNodes,
   setNodesFetch,
-  setNodesError,
+  nodesError,
+  addNodeError,
+  deleteNodeError,
 
   setMonitorTypes,
   setMonitorTypesError,

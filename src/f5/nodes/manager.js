@@ -2,11 +2,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setNodesLoading, setNodes, setNodesFetch } from '../../_store/store.f5'
+import { setNodesLoading, setNodes, setNodesFetch, nodesError } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -20,8 +19,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
     };
   }
 
@@ -67,7 +64,7 @@ class Manager extends React.Component {
         this.props.dispatch(setNodes(resp))
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(nodesError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
@@ -98,7 +95,9 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+      <React.Fragment>
+        { this.props.nodesError ? <Error component={'node manager'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+      </React.Fragment>
       </Space>
 
     )
@@ -112,5 +111,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  nodesFetch: state.f5.nodesFetch
+  nodesFetch: state.f5.nodesFetch,
+  nodesError: state.f5.nodesError
 }))(Manager);
