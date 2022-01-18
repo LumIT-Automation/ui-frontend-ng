@@ -168,30 +168,48 @@ const f5Slice = createSlice({
         },
 
 
-        setPoolsLoading: (state, action) => {
+        poolsLoading: (state, action) => {
           state.poolsLoading = action.payload
         },
-        setPools: (state, action) => {
+        pools: (state, action) => {
           state.pools = action.payload.data.items
         },
-        setPoolsFetch: (state, action) => {
+        poolsFetch: (state, action) => {
           state.poolsFetch = action.payload
         },
-        setPoolsError: (state, action) => {
+        poolsError: (state, action) => {
           state.poolsError = action.payload
         },
+        addPoolError: (state, action) => {
+          state.addPoolError = action.payload
+        },
+        modifyPoolError: (state, action) => {
+          state.modifyPoolError = action.payload
+        },
+        deletePoolError: (state, action) => {
+          state.deletePoolError = action.payload
+        },
 
-        setPoolMembersLoading: (state, action) => {
+        poolMembersLoading: (state, action) => {
           state.poolMembersLoading = action.payload
         },
-        setPoolMembers: (state, action) => {
+        poolMembers: (state, action) => {
           state.poolMembers = action.payload.data.items
         },
-        setPoolMembersFetch: (state, action) => {
+        poolMembersFetch: (state, action) => {
           state.poolMembersFetch = action.payload
         },
-        setPoolMembersError: (state, action) => {
+        poolMembersError: (state, action) => {
           state.poolMembersError = action.payload
+        },
+        addPoolMemberError: (state, action) => {
+          state.addPoolMemberError = action.payload
+        },
+        modifyPoolMemberError: (state, action) => {
+          state.modifyPoolMemberError = action.payload
+        },
+        deletePoolMemberError: (state, action) => {
+          state.deletePoolMemberError = action.payload
         },
 
         profilesLoading: (state, action) => {
@@ -406,15 +424,21 @@ export const {
   modifyMonitorError,
   deleteMonitorError,
 
-  setPoolsLoading,
-  setPools,
-  setPoolsFetch,
-  setPoolsError,
+  poolsLoading,
+  pools,
+  poolsFetch,
+  poolsError,
+  addPoolError,
+  modifyPoolError,
+  deletePoolError,
 
-  setPoolMembersLoading,
-  setPoolMembers,
-  setPoolMembersFetch,
-  setPoolMembersError,
+  poolMembersLoading,
+  poolMembers,
+  poolMembersFetch,
+  poolMembersError,
+  addPoolMemberError,
+  modifyPoolMemberError,
+  deletePoolMemberError,
 
   profilesLoading,
   profiles,

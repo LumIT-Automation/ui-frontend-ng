@@ -2,11 +2,10 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setPoolsLoading, setPools, setPoolsFetch } from '../../_store/store.f5'
+import { poolsLoading, pools, poolsFetch, poolsError } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -29,7 +28,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.poolsError) {
-        this.props.dispatch(setPoolsFetch(false))
+        this.props.dispatch(poolsFetch(false))
         if (!this.props.pools) {
           this.fetchPools()
         }
@@ -42,16 +41,18 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.pools) {
         this.fetchPools()
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchPools()
       }
+    }
+    if (this.props.asset && this.props.partition) {
       if (this.props.poolsFetch) {
         this.fetchPools()
-        this.props.dispatch(setPoolsFetch(false))
+        this.props.dispatch(poolsFetch(false))
       }
     }
   }
@@ -61,25 +62,19 @@ class Manager extends React.Component {
 
 
   fetchPools = async () => {
-    this.props.dispatch(setPoolsLoading(true))
+    this.props.dispatch(poolsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setPools(resp))
+        this.props.dispatch(pools(resp))
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false})
+        this.props.dispatch(poolsError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
-    this.props.dispatch(setPoolsLoading(false))
+    this.props.dispatch(poolsLoading(false))
   }
-
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (
@@ -100,7 +95,10 @@ class Manager extends React.Component {
         <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+      <React.Fragment>
+        { this.props.poolsError ? <Error component={'pools manager'} error={[this.props.poolsError]} visible={true} type={'poolsError'} /> : null }
+      </React.Fragment>
+
       </Space>
 
     )
@@ -114,5 +112,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   pools: state.f5.pools,
-  poolsFetch: state.f5.poolsFetch
+  poolsFetch: state.f5.poolsFetch,
+  poolsError: state.f5.poolsError
 }))(Manager);

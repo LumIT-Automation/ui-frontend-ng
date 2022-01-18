@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setPoolsFetch } from '../../_store/store.f5'
+import { poolsFetch, addPoolError, addPoolMemberError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
@@ -12,9 +12,6 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -255,7 +252,8 @@ class Add extends React.Component {
           this.setState({loading: false, error: false}, () => this.addPoolMembers())
         },
         error => {
-          this.setState({loading: false, error: error, response: false}, () => this.props.dispatch(setPoolsFetch(true)))
+          this.props.dispatch(addPoolError(error))
+          this.setState({loading: false, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token, b)
@@ -298,20 +296,17 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.setState({loading: false, error: error, response: false})
+          this.props.dispatch(addPoolMemberError(error))
+          this.setState({loading: false, response: false})
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.state.request.name}/members/`, this.props.token, request)
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/poolf/${this.state.request.name}/members/`, this.props.token, request)
   }
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPoolsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(poolsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -482,7 +477,14 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.addPoolError ? <Error component={'add pool'} error={[this.props.addPoolError]} visible={true} type={'addPoolError'} /> : null }
+            { this.props.addPoolMemberError ? <Error component={'add pool'} error={[this.props.addPoolMemberError]} visible={true} type={'addPoolMemberError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -496,5 +498,7 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  monitors: state.f5.monitors
+  monitors: state.f5.monitors,
+  addPoolError: state.f5.addPoolError,
+  addPoolMemberError: state.f5.addPoolMemberError
 }))(Add);

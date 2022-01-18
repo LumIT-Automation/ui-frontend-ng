@@ -6,7 +6,7 @@ import Error from '../../error'
 
 import PoolMembers from '../poolMembers/manager'
 
-import { setPoolsFetch } from '../../_store/store.f5'
+import { poolsFetch } from '../../_store/store.f5'
 
 import { Form, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
@@ -266,7 +266,7 @@ class Modify extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPoolsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(poolsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

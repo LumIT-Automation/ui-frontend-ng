@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setPoolMembersLoading, setPoolMembers, setPoolMembersFetch } from '../../_store/store.f5'
+import { poolMembersLoading, poolMembers, poolMembersFetch } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -30,7 +30,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.obj) {
-      this.props.dispatch(setPoolMembersLoading(true))
+      this.props.dispatch(poolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
     }
   }
@@ -41,9 +41,9 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.poolMembersFetch  === true) {
-      this.props.dispatch(setPoolMembersLoading(true))
+      this.props.dispatch(poolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
-      this.props.dispatch(setPoolMembersFetch(false))
+      this.props.dispatch(poolMembersFetch(false))
     }
   }
 
@@ -59,11 +59,11 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setPoolMembersLoading(false))
-        this.setState({error: false}, () => this.props.dispatch(setPoolMembers(resp)))
+        this.props.dispatch(poolMembersLoading(false))
+        this.setState({error: false}, () => this.props.dispatch(poolMembers(resp)))
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)

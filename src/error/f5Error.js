@@ -38,8 +38,15 @@ import {
   modifyMonitorError,
   deleteMonitorError,
 
-  setPoolsError,
-  setPoolMembersError,
+  poolsError,
+  addPoolError,
+  modifyPoolError,
+  deletePoolError,
+
+  poolMembersError,
+  addPoolMemberError,
+  modifyPoolMemberError,
+  deletePoolMemberError,
 
   profilesError,
   addProfileError,
@@ -198,11 +205,30 @@ class Error extends Component {
           this.props.dispatch(deleteMonitorError(null))
           break
 
-        case 'setPoolsError':
-          this.props.dispatch(setPoolsError(null))
+        case 'poolsError':
+          this.props.dispatch(poolsError(null))
           break
-        case 'setPoolMembersError':
-          this.props.dispatch(setPoolMembersError(null))
+        case 'addPoolError':
+          this.props.dispatch(addPoolError(null))
+          break
+        case 'modifyPoolError':
+          this.props.dispatch(modifyPoolError(null))
+          break
+        case 'deletePoolError':
+          this.props.dispatch(deletePoolError(null))
+          break
+
+        case 'poolMembersError':
+          this.props.dispatch(poolMembersError(null))
+          break
+        case 'addPoolMemberError':
+          this.props.dispatch(addPoolMemberError(null))
+          break
+        case 'modifyPoolMemberError':
+          this.props.dispatch(modifyPoolMemberError(null))
+          break
+        case 'deletePoolMemberError':
+          this.props.dispatch(deletePoolMemberError(null))
           break
 
         case 'profilesError':

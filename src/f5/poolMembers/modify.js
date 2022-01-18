@@ -5,7 +5,7 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
-import { setPools, setPoolsFetch } from '../../_store/store.f5'
+import { pools, poolsFetch } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Radio, Spin, Result, Select, Table, Divider } from 'antd';
 
@@ -248,7 +248,7 @@ class Modify extends React.Component {
       let rest = new Rest(
         "PATCH",
         resp => {
-          this.setState({loading: false, response: true}, () => this.props.dispatch(setPoolsFetch(true)))
+          this.setState({loading: false, response: true}, () => this.props.dispatch(poolsFetch(true)))
           this.response()
         },
         error => {

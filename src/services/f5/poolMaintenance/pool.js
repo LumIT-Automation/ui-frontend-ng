@@ -4,8 +4,8 @@ import Rest from "../../../_helpers/Rest";
 import Error from '../../../error/f5Error'
 
 import {
-  setPoolMembers,
-  setPoolMembersError,
+  poolMembers,
+  poolMembersError,
 
   enableMemberError,
   disableMemberError,
@@ -52,7 +52,7 @@ class PoolDetails extends React.Component {
   main = async(pool) => {
     let members = await this.fetchMembers(pool)
     if (members.status && members.status !== 200) {
-      this.props.dispatch(setPoolMembersError(members))
+      this.props.dispatch(poolMembersError(members))
     }
     else {
       const membersConn = members.map( m => {
@@ -658,7 +658,7 @@ class PoolDetails extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'setPoolMembersError'} /> : null }
+            { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
             { this.props.enableMemberError ? <Error component={'poolMaint pool'} error={[this.props.enableMemberError]} visible={true} type={'enableMemberError'} /> : null }
             { this.props.disableError ? <Error component={'poolMaint pool'} error={[this.props.disableError]} visible={true} type={'disableError'} /> : null }
             { this.props.forceOfflineMemberError ? <Error component={'poolMaint pool'} error={[this.props.forceOfflineMemberError]} visible={true} type={'forceOfflineMemberError'} /> : null }

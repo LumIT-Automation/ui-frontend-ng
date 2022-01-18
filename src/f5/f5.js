@@ -16,7 +16,7 @@ import {
   setAssets,
   nodesFetch,
   monitorsFetch,
-  setPoolsFetch,
+  poolsFetch,
   profilesFetch,
   setVirtualServersFetch
 } from '../_store/store.f5'
@@ -81,7 +81,7 @@ class F5 extends React.Component {
   }
 
   poolsRefresh = () => {
-    this.props.dispatch(setPoolsFetch(true))
+    this.props.dispatch(poolsFetch(true))
   }
 
   profilesRefresh = () => {

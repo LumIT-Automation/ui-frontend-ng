@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolMembersFetch, setPoolMembersLoading } from '../../_store/store.f5'
+import { poolMembersFetch, poolMembersLoading } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -42,15 +42,15 @@ class Delete extends React.Component {
 
 
   deletePoolMember = async pool => {
-    this.props.dispatch(setPoolMembersLoading(true))
+    this.props.dispatch(poolMembersLoading(true))
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({response: true, error: false}, () => this.props.dispatch(setPoolMembersFetch(true)))
-        this.props.dispatch(setPoolMembersLoading(false))
+        this.setState({response: true, error: false}, () => this.props.dispatch(poolMembersFetch(true)))
+        this.props.dispatch(poolMembersLoading(false))
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.poolName}/member/${this.props.obj.name}/`, this.props.token )

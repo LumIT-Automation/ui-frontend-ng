@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error'
 
-import { setPoolMembersFetch, setPoolMembersLoading } from '../../_store/store.f5'
+import { poolMembersFetch, poolMembersLoading } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -114,11 +114,11 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, error: false, response: true}, () => this.props.dispatch(setPoolMembersFetch(true)) )
+          this.setState({loading: false, error: false, response: true}, () => this.props.dispatch(poolMembersFetch(true)) )
           this.response()
         },
         error => {
-          this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+          this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)

@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest";
 import Error from '../../error'
 
-import { setPoolMembersLoading, setPoolMembersFetch } from '../../_store/store.f5'
+import { poolMembersLoading, poolMembersFetch } from '../../_store/store.f5'
 
 import Delete from './delete'
 
@@ -43,9 +43,9 @@ class List extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.poolMembersFetch  === true) {
-      this.props.dispatch(setPoolMembersLoading(true))
+      this.props.dispatch(poolMembersLoading(true))
       this.fetchPoolMembers(this.props.obj.name)
-      this.props.dispatch(setPoolMembersFetch(false))
+      this.props.dispatch(poolMembersFetch(false))
     }
   }
 
@@ -137,11 +137,11 @@ class List extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setPoolMembersLoading(false))
+        this.props.dispatch(poolMembersLoading(false))
         this.setState({error: false, poolMembers: resp.data.items}, () => this.setRenderedMembers())
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
@@ -189,7 +189,7 @@ class List extends React.Component {
         this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
@@ -203,7 +203,7 @@ class List extends React.Component {
         this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
@@ -217,7 +217,7 @@ class List extends React.Component {
         this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(setPoolMembersLoading(false)))
+        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )

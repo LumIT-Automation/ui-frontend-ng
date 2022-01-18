@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../../_helpers/Rest'
 import Error from '../../../error/f5Error'
 
-import { setPools, setPoolsError } from '../../../_store/store.f5'
+import { pools, poolsError } from '../../../_store/store.f5'
 
 import AssetSelector from '../../../f5/assetSelector'
 import Pools from './pools'
@@ -63,11 +63,11 @@ class Manager extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setPools( resp ))
+        this.props.dispatch(pools( resp ))
       },
       error => {
         this.setState({loading: false})
-        this.props.dispatch(setPoolsError(error))
+        this.props.dispatch(poolsError(error))
       }
     )
     await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
@@ -113,7 +113,7 @@ class Manager extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.poolsError ? <Error component={'poolMaint manager'} error={[this.props.poolsError]} visible={true} type={'setPoolsError'} /> : null }
+            { this.props.poolsError ? <Error component={'poolMaint manager'} error={[this.props.poolsError]} visible={true} type={'poolsError'} /> : null }
           </React.Fragment>
         :
           null
