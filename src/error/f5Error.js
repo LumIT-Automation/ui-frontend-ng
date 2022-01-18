@@ -34,17 +34,23 @@ import {
 
   setMonitorTypesError,
   setMonitorsError,
+
   setPoolsError,
   setPoolMembersError,
-  setProfileTypesError,
-  setProfilesError,
+
+  profilesError,
+  addProfileError,
+  deleteProfileError,
+
   setVirtualServersError,
+
   setCertificatesError,
   setKeysError,
   certificateAddError,
   certificateDeleteError,
   keyAddError,
   keyDeleteError,
+
   setCreateL4ServiceError,
   setCreateL7ServiceError,
   setDeleteServiceError,
@@ -185,11 +191,14 @@ class Error extends Component {
         case 'setPoolMembersError':
           this.props.dispatch(setPoolMembersError(null))
           break
-        case 'setProfileTypesError':
-          this.props.dispatch(setProfileTypesError(null))
+        case 'profilesError':
+          this.props.dispatch(profilesError(null))
           break
-        case 'setProfilesError':
-          this.props.dispatch(setProfilesError(null))
+        case 'addProfileError':
+          this.props.dispatch(addProfileError(null))
+          break
+        case 'deleteProfileError':
+          this.props.dispatch(deleteProfileError(null))
           break
         case 'setVirtualServersError':
           this.props.dispatch(setVirtualServersError(null))

@@ -2,11 +2,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setProfileTypes, setProfilesLoading, setProfiles, setProfilesFetch } from '../../_store/store.f5'
+import { profilesLoading, profiles, profilesFetch, profilesError,  } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -30,7 +29,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.profilesError) {
-        this.props.dispatch(setProfilesFetch(false))
+        this.props.dispatch(profilesFetch(false))
         if (!this.props.profiles) {
           this.fetchProfiles()
         }
@@ -43,16 +42,18 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.profiles) {
         this.fetchProfiles()
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchProfiles()
       }
+    }
+    if (this.props.asset && this.props.partition) {
       if (this.props.profilesFetch) {
         this.fetchProfiles()
-        this.props.dispatch(setProfilesFetch(false))
+        this.props.dispatch(profilesFetch(false))
       }
     }
   }
@@ -61,45 +62,33 @@ class Manager extends React.Component {
   }
 
   fetchProfiles = async () => {
-    this.props.dispatch(setProfilesLoading(true))
+    this.props.dispatch(profilesLoading(true))
 
-    let profileTypes = await this.fetchProfilesTypeList()
-    this.props.dispatch(setProfileTypes(profileTypes.data.items))
+    let profs = await this.fetchProfilesAny()
 
-    let profiles = await this.fetchProfilesAny()
-    let list = []
+    if (profs.status && profs.status !== 200 ) {
+      this.props.dispatch(profilesError(profs))
+      this.props.dispatch(profilesLoading(false))
+    }
+    else {
+      let list = []
 
-    for (let t in profiles.data) {
-      let type = t
-      let values = Object.values(profiles.data[t])
+      for (let t in profs.data) {
+        let type = t
+        let values = Object.values(profs.data[t])
 
-      values.forEach(o => {
-        o.forEach(p => {
-          Object.assign(p, {type: type});
-          list.push(p)
+        values.forEach(o => {
+          o.forEach(p => {
+            Object.assign(p, {type: type});
+            list.push(p)
+          })
         })
-      })
+      }
+
+      this.props.dispatch(profilesLoading(false))
+      this.props.dispatch(profiles(list))
     }
 
-    this.props.dispatch(setProfilesLoading(false))
-    this.props.dispatch(setProfiles(list))
-  }
-
-  fetchProfilesTypeList = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
-    return r
   }
 
   fetchProfilesAny = async () => {
@@ -110,58 +99,11 @@ class Manager extends React.Component {
         r = resp
       },
       error => {
-        this.props.dispatch(setError(error))
-        this.setState({loading: false, response: false})
         r = error
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/ANY/`, this.props.token)
     return r
-  }
-
-/*
-  profilesLoop = async types => {
-
-    const promises = types.map(async type => {
-      const resp = await this.fetchProfilesByType(type)
-      resp.data.items.forEach(item => {
-        Object.assign(item, {type: type});
-      })
-      return resp
-    })
-
-    const response = await Promise.all(promises)
-
-    let list = []
-    response.forEach(r => {
-      r.data.items.forEach(m => {
-       list.push(m)
-      })
-    })
-
-    return list
-  }
-
-  fetchProfilesByType = async (type) => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-      this.props.dispatch(setError(error))
-      this.setState({loading: false, response: false})
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${type}/`, this.props.token)
-    return r
-  }
-
-*/
-  resetError = () => {
-    this.setState({ error: null})
   }
 
 
@@ -184,8 +126,10 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
         }
 
+        <React.Fragment>
+          { this.props.profilesError ? <Error component={'profiles manager'} error={[this.props.profilesError]} visible={true} type={'profilesError'} /> : null }
+        </React.Fragment>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -199,5 +143,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   profiles: state.f5.profiles,
-  profilesFetch: state.f5.profilesFetch
+  profilesFetch: state.f5.profilesFetch,
+  profilesError: state.f5.profilesError,
 }))(Manager);

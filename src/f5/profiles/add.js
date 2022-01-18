@@ -1,11 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setProfilesFetch } from '../../_store/store.f5'
+import { profilesFetch, addProfileError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -58,6 +57,33 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    this.fetchProfilesType()
+  }
+
+  fetchProfilesType = async () => {
+    let profTypes = await this.fetchProfileTypesList()
+
+    if (profTypes.status && profTypes.status !== 200 ) {
+      this.props.dispatch(addProfileError(profTypes))
+    }
+    else {
+      this.setState({profileTypes: profTypes.data.items})
+    }
+  }
+
+  fetchProfileTypesList = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/`, this.props.token)
+    return r
   }
 
   setProfileName = e => {
@@ -113,7 +139,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(setError(error))
+          this.props.dispatch(addProfileError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -123,13 +149,10 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setProfilesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(profilesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
   //Close and Error
   closeModal = () => {
@@ -188,7 +211,7 @@ class Add extends React.Component {
               help={this.state.errors.profileTypeError ? 'Please select profile type' : null }
             >
               <Select onChange={a => this.setProfileType(a)}>
-                {this.props.profileTypes ? this.props.profileTypes.map((m, i) => {
+                {this.state.profileTypes ? this.state.profileTypes.map((m, i) => {
                   return (
                     <Select.Option  key={i} value={m}>{m}</Select.Option>
                   )
@@ -225,7 +248,13 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.addProfileError ? <Error component={'add profile'} error={[this.props.addProfileError]} visible={true} type={'addProfileError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -238,5 +267,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  profileTypes: state.f5.profileTypes,
+  addProfileError: state.f5.addProfileError
 }))(Add);

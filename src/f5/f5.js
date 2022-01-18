@@ -14,10 +14,10 @@ import VirtualServers from './virtualServers/manager'
 
 import {
   setAssets,
-  setNodesFetch,
+  nodesFetch,
   setMonitorsFetch,
   setPoolsFetch,
-  setProfilesFetch,
+  profilesFetch,
   setVirtualServersFetch
 } from '../_store/store.f5'
 
@@ -73,7 +73,7 @@ class F5 extends React.Component {
 
 
   nodesRefresh = () => {
-    this.props.dispatch(setNodesFetch(true))
+    this.props.dispatch(nodesFetch(true))
   }
 
   monitorsRefresh = () => {
@@ -85,7 +85,7 @@ class F5 extends React.Component {
   }
 
   profilesRefresh = () => {
-    this.props.dispatch(setProfilesFetch(true))
+    this.props.dispatch(profilesFetch(true))
   }
 
   virtualServersRefresh = () => {

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { setNodesFetch, deleteNodeError } from '../../_store/store.f5'
+import { nodesFetch, deleteNodeError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -57,7 +57,7 @@ class Delete extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setNodesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(nodesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

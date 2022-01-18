@@ -119,13 +119,13 @@ const f5Slice = createSlice({
         },
 
 
-        setNodesLoading: (state, action) => {
+        nodesLoading: (state, action) => {
           state.nodesLoading = action.payload
         },
-        setNodes: (state, action) => {
+        nodes: (state, action) => {
           state.nodes = action.payload.data.items
         },
-        setNodesFetch: (state, action) => {
+        nodesFetch: (state, action) => {
           state.nodesFetch = action.payload
         },
         nodesError: (state, action) => {
@@ -185,24 +185,23 @@ const f5Slice = createSlice({
           state.poolMembersError = action.payload
         },
 
-        setProfileTypes: (state, action) => {
-          state.profileTypes = action.payload
-        },
-        setProfileTypes: (state, action) => {
-          state.profileTypes = action.payload
-        },
-
-        setProfilesLoading: (state, action) => {
+        profilesLoading: (state, action) => {
           state.profilesLoading = action.payload
         },
-        setProfiles: (state, action) => {
+        profiles: (state, action) => {
           state.profiles = action.payload
         },
-        setProfilesFetch: (state, action) => {
+        profilesFetch: (state, action) => {
           state.profilesFetch = action.payload
         },
-        setProfilesError: (state, action) => {
+        profilesError: (state, action) => {
           state.profilesError = action.payload
+        },
+        addProfileError: (state, action) => {
+          state.addProfileError = action.payload
+        },
+        deleteProfileError: (state, action) => {
+          state.deleteProfileError = action.payload
         },
 
 
@@ -316,7 +315,6 @@ const f5Slice = createSlice({
           state.poolMembers = null
           state.poolMembersFetch = null
 
-          state.profileTypes = null
           state.profilesLoading = null
           state.profiles = null
           state.profilesFetch = null
@@ -381,9 +379,9 @@ export const {
   setPartitionModifyError,
   setPartitionDeleteError,
 
-  setNodesLoading,
-  setNodes,
-  setNodesFetch,
+  nodesLoading,
+  nodes,
+  nodesFetch,
   nodesError,
   addNodeError,
   deleteNodeError,
@@ -406,13 +404,12 @@ export const {
   setPoolMembersFetch,
   setPoolMembersError,
 
-  setProfileTypes,
-  setProfileTypesError,
-
-  setProfilesLoading,
-  setProfiles,
-  setProfilesFetch,
-  setProfilesError,
+  profilesLoading,
+  profiles,
+  profilesFetch,
+  profilesError,
+  addProfileError,
+  deleteProfileError,
 
   setVirtualServersLoading,
   setVirtualServers,

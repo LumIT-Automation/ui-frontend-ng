@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { setNodesFetch, addNodeError } from '../../_store/store.f5'
+import { nodesFetch, addNodeError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -172,7 +172,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setNodesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(nodesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

@@ -1,11 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setError } from '../../_store/store.error'
-import { setProfilesFetch } from '../../_store/store.f5'
+import { profilesFetch, deleteProfileError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -48,18 +47,14 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () =>  this.props.dispatch(setProfilesFetch(true)) )
+        this.setState({loading: false, response: true}, () =>  this.props.dispatch(profilesFetch(true)) )
       },
       error => {
-        this.props.dispatch(setError(error))
+        this.props.dispatch(deleteProfileError(error))
         this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -119,8 +114,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.deleteProfileError ? <Error component={'delete profile'} error={[this.props.deleteProfileError]} visible={true} type={'deleteProfileError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -133,4 +133,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  deleteProfileError: state.f5.deleteProfileError
 }))(Delete);

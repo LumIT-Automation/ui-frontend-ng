@@ -404,8 +404,6 @@ class Add extends React.Component {
               <Button type="primary" onClick={() => this.oneMoreNode()}>
                 +
               </Button>
-              {//<Input id='nodesNumber' onBlur={e => this.setNodesNumber(e)} />
-              }
             </Form.Item>
 
             {

@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Error from '../../error'
 
-import Modify from './modify'
 import Delete from './delete'
 
 import { Table, Input, Button, Space } from 'antd';
@@ -135,22 +134,7 @@ class List extends React.Component {
         dataIndex: 'type',
         key: 'type',
        ...this.getColumnSearchProps('type'),
-     },/*
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.profile_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      },*/
+      },
       {
         title: 'Delete',
         align: 'center',

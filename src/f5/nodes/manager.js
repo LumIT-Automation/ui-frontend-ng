@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { setNodesLoading, setNodes, setNodesFetch, nodesError } from '../../_store/store.f5'
+import { nodesLoading, nodes, nodesFetch, nodesError } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -25,7 +25,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.nodesError) {
-        this.props.dispatch(setNodesFetch(false))
+        this.props.dispatch(nodesFetch(false))
         if (!this.props.nodes) {
           this.fetchNodes()
         }
@@ -38,16 +38,18 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.nodes) {
         this.fetchNodes()
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchNodes()
       }
+    }
+    if (this.props.asset && this.props.partition) {
       if (this.props.nodesFetch) {
         this.fetchNodes()
-        this.props.dispatch(setNodesFetch(false))
+        this.props.dispatch(nodesFetch(false))
       }
     }
   }
@@ -57,22 +59,18 @@ class Manager extends React.Component {
 
 
   fetchNodes = async () => {
-    this.props.dispatch(setNodesLoading(true))
+    this.props.dispatch(nodesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setNodes(resp))
+        this.props.dispatch(nodes(resp))
       },
       error => {
         this.props.dispatch(nodesError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
-    this.props.dispatch(setNodesLoading(false))
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
+    this.props.dispatch(nodesLoading(false))
   }
 
 

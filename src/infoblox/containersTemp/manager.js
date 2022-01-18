@@ -2,8 +2,6 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-//import { setNodesList } from '../../_store/store.f5'
-
 
 import List from './list'
 
