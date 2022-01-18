@@ -32,8 +32,11 @@ import {
   addNodeError,
   deleteNodeError,
 
-  setMonitorTypesError,
-  setMonitorsError,
+  monitorTypesError,
+  monitorsError,
+  addMonitorError,
+  modifyMonitorError,
+  deleteMonitorError,
 
   setPoolsError,
   setPoolMembersError,
@@ -42,7 +45,7 @@ import {
   addProfileError,
   deleteProfileError,
 
-  setVirtualServersError,
+  virtualServersError,
 
   setCertificatesError,
   setKeysError,
@@ -179,18 +182,29 @@ class Error extends Component {
           this.props.dispatch(deleteNodeError(null))
           break
 
-        case 'setMonitorTypesError':
-          this.props.dispatch(setMonitorTypesError(null))
+        case 'monitorTypesError':
+          this.props.dispatch(monitorTypesError(null))
           break
-        case 'setMonitorsError':
-          this.props.dispatch(setMonitorsError(null))
+        case 'monitorsError':
+          this.props.dispatch(monitorsError(null))
           break
+        case 'addMonitorError':
+          this.props.dispatch(addMonitorError(null))
+          break
+        case 'modifyMonitorError':
+          this.props.dispatch(modifyMonitorError(null))
+          break
+        case 'deleteMonitorError':
+          this.props.dispatch(deleteMonitorError(null))
+          break
+
         case 'setPoolsError':
           this.props.dispatch(setPoolsError(null))
           break
         case 'setPoolMembersError':
           this.props.dispatch(setPoolMembersError(null))
           break
+
         case 'profilesError':
           this.props.dispatch(profilesError(null))
           break
@@ -200,9 +214,11 @@ class Error extends Component {
         case 'deleteProfileError':
           this.props.dispatch(deleteProfileError(null))
           break
-        case 'setVirtualServersError':
-          this.props.dispatch(setVirtualServersError(null))
+
+        case 'virtualServersError':
+          this.props.dispatch(virtualServersError(null))
           break
+
         case 'setCertificatesError':
           this.props.dispatch(setCertificatesError(null))
           break

@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch, setVirtualServersError } from '../../_store/store.f5'
+import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch, virtualServersError } from '../../_store/store.f5'
 
 import List from './list'
 
@@ -47,6 +47,8 @@ class Manager extends React.Component {
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchVirtualServers()
       }
+    }
+    if (this.props.asset && this.props.partition) {
       if (this.props.virtualServersFetch) {
         this.fetchVirtualServers()
         this.props.dispatch(setVirtualServersFetch(false))
@@ -65,16 +67,12 @@ class Manager extends React.Component {
         this.props.dispatch(setVirtualServers(resp))
       },
       error => {
-        this.props.dispatch(setVirtualServersError(error))
+        this.props.dispatch(virtualServersError(error))
         this.setState({loading: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
     this.props.dispatch(setVirtualServersLoading(false))
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
 
@@ -91,7 +89,7 @@ class Manager extends React.Component {
 
 
         <React.Fragment>
-          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.virtualServersError]} visible={true} type={'setVirtualServersError'} /> : null }
+          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.virtualServersError]} visible={true} type={'virtualServersError'} /> : null }
         </React.Fragment>
       </Space>
 

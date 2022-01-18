@@ -214,7 +214,7 @@ class List extends React.Component {
           style={{marginBottom: 10}}
         />
         <React.Fragment>
-          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.setVirtualServersError]} visible={true} type={'setVirtualServersError'} /> : null }
+          { this.props.virtualServersError ? <Error component={'list vitrual server'} error={[this.props.virtualServersError]} visible={true} type={'virtualServersError'} /> : null }
         </React.Fragment>
       </React.Fragment>
 

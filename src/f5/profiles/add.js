@@ -12,9 +12,6 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },

@@ -15,7 +15,7 @@ import VirtualServers from './virtualServers/manager'
 import {
   setAssets,
   nodesFetch,
-  setMonitorsFetch,
+  monitorsFetch,
   setPoolsFetch,
   profilesFetch,
   setVirtualServersFetch
@@ -77,7 +77,7 @@ class F5 extends React.Component {
   }
 
   monitorsRefresh = () => {
-    this.props.dispatch(setMonitorsFetch(true))
+    this.props.dispatch(monitorsFetch(true))
   }
 
   poolsRefresh = () => {

@@ -138,24 +138,33 @@ const f5Slice = createSlice({
           state.deleteNodeError = action.payload
         },
 
-        setMonitorTypes: (state, action) => {
+        monitorTypes: (state, action) => {
           state.monitorTypes = action.payload
         },
-        setMonitorTypesError: (state, action) => {
+        monitorTypesError: (state, action) => {
           state.monitorTypesError = action.payload
         },
 
-        setMonitorsLoading: (state, action) => {
+        monitorsLoading: (state, action) => {
           state.monitorsLoading = action.payload
         },
-        setMonitors: (state, action) => {
+        monitors: (state, action) => {
           state.monitors = action.payload
         },
-        setMonitorsFetch: (state, action) => {
+        monitorsFetch: (state, action) => {
           state.monitorsFetch = action.payload
         },
-        setMonitorsError: (state, action) => {
+        monitorsError: (state, action) => {
           state.monitorsError = action.payload
+        },
+        addMonitorError: (state, action) => {
+          state.addMonitorError = action.payload
+        },
+        modifyMonitorError: (state, action) => {
+          state.modifyMonitorError = action.payload
+        },
+        deleteMonitorError: (state, action) => {
+          state.deleteMonitorError = action.payload
         },
 
 
@@ -215,7 +224,7 @@ const f5Slice = createSlice({
         setVirtualServersFetch: (state, action) => {
           state.virtualServersFetch = action.payload
         },
-        setVirtualServersError: (state, action) => {
+        virtualServersError: (state, action) => {
           state.virtualServersError = action.payload
         },
 
@@ -386,13 +395,16 @@ export const {
   addNodeError,
   deleteNodeError,
 
-  setMonitorTypes,
-  setMonitorTypesError,
+  monitorTypes,
+  monitorTypesError,
 
-  setMonitorsLoading,
-  setMonitors,
-  setMonitorsFetch,
-  setMonitorsError,
+  monitorsLoading,
+  monitors,
+  monitorsFetch,
+  monitorsError,
+  addMonitorError,
+  modifyMonitorError,
+  deleteMonitorError,
 
   setPoolsLoading,
   setPools,
@@ -414,7 +426,7 @@ export const {
   setVirtualServersLoading,
   setVirtualServers,
   setVirtualServersFetch,
-  setVirtualServersError,
+  virtualServersError,
 
   setCertificatesLoading,
   setCertificates,

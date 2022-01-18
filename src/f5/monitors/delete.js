@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setMonitorsFetch } from '../../_store/store.f5'
+import { monitorsFetch, deleteMonitorError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -47,18 +47,16 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () =>  this.props.dispatch(setMonitorsFetch(true)) )
+        this.setState({loading: false, response: true}, () =>  this.props.dispatch(monitorsFetch(true)) )
       },
       error => {
-        this.setState({loading: false, response: false, error: error})
+        this.props.dispatch(deleteMonitorError(error))
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
   //Close and Error
   closeModal = () => {
@@ -117,8 +115,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.deleteMonitorError ? <Error component={'delete monitor'} error={[this.props.deleteMonitorError]} visible={true} type={'deleteMonitorError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -131,4 +134,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  deleteMonitorError: state.f5.deleteMonitorError
 }))(Delete);

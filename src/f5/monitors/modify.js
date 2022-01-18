@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setMonitorsFetch } from '../../_store/store.f5'
+import { monitorsFetch, modifyMonitorError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result } from 'antd';
 
@@ -120,20 +120,17 @@ class Modify extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.setState({loading: false, response: false, error: error})
+          this.props.dispatch(modifyMonitorError(error))
+          this.setState({loading: false, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token, b )
     }
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setMonitorsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(monitorsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -229,8 +226,13 @@ class Modify extends React.Component {
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.modifyMonitorError ? <Error component={'modify monitor'} error={[this.props.modifyMonitorError]} visible={true} type={'modifyMonitorError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -243,5 +245,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors
+  modifyMonitorError: state.f5.modifyMonitorError
 }))(Modify);

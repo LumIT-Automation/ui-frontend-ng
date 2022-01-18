@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { profilesLoading, profiles, profilesFetch, profilesError,  } from '../../_store/store.f5'
+import { profilesLoading, profiles, profilesFetch, profilesError  } from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'

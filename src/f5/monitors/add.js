@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { setMonitorsFetch } from '../../_store/store.f5'
+import { monitorsFetch, addMonitorError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -142,7 +142,8 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.setState({loading: false, response: false, error: error})
+          this.props.dispatch(addMonitorError(error))
+          this.setState({loading: false, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/${this.state.request.monitorType}/`, this.props.token, b)
@@ -151,7 +152,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setMonitorsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(monitorsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -270,7 +271,13 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.addMonitorError ? <Error component={'add monitor'} error={[this.props.addMonitorError]} visible={true} type={'addMonitorError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -283,5 +290,6 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorTypes: state.f5.monitorTypes
+  monitorTypes: state.f5.monitorTypes,
+  addMonitorError: state.f5.addMonitorError
 }))(Add);
