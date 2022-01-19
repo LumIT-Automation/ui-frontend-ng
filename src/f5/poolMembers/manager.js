@@ -2,10 +2,15 @@ import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { poolMembersLoading, poolMembers, poolMembersFetch } from '../../_store/store.f5'
+import {
+  poolMembersLoading,
+  poolMembers,
+  poolMembersFetch,
+  poolMembersError
+} from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -50,10 +55,6 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   fetchPoolMembers = async (name) => {
     let rest = new Rest(
@@ -63,7 +64,8 @@ class Manager extends React.Component {
         this.setState({error: false}, () => this.props.dispatch(poolMembers(resp)))
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+        this.props.dispatch(poolMembersLoading(false))
+        this.props.dispatch(poolMembersError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
@@ -92,7 +94,9 @@ class Manager extends React.Component {
         <Alert message="Asset and Partition not set" type="error" />
       }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+      <React.Fragment>
+        { this.props.poolMembersError ? <Error component={'poolMembers manager'} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
+      </React.Fragment>
       </Space>
 
     )
@@ -106,5 +110,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   poolMembersLoading: state.f5.poolMembersLoading,
-  poolMembersFetch: state.f5.poolMembersFetch
+  poolMembersFetch: state.f5.poolMembersFetch,
+  poolMembersError: state.f5.poolMembersError
 }))(Manager);

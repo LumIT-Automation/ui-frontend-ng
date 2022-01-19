@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { poolMembersFetch, poolMembersLoading } from '../../_store/store.f5'
+import { poolMembersFetch, poolMembersLoading, addPoolMemberError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -114,11 +114,11 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, error: false, response: true}, () => this.props.dispatch(poolMembersFetch(true)) )
-          this.response()
+          this.setState({loading: false, response: true, error: false}, () => this.response())
         },
         error => {
-          this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+          this.props.dispatch(poolMembersLoading(false))
+          this.props.dispatch(addPoolMemberError(error))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
@@ -127,12 +127,8 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
+    this.props.dispatch(poolMembersFetch(true))
     setTimeout( () => this.closeModal(), 2100)
-
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -227,7 +223,13 @@ class Add extends React.Component {
         }
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.addPoolMemberError ? <Error component={'add poolMember'} error={[this.props.addPoolMemberError]} visible={true} type={'addPoolMemberError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -241,4 +243,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
+  addPoolMemberError: state.f5.addPoolMemberError
 }))(Add);

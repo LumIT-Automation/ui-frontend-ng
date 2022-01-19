@@ -11,9 +11,7 @@ import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
-/*
 
-*/
 
 class Delete extends React.Component {
 
@@ -51,7 +49,6 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(poolsFetch(true)))
       },
       error => {
-        console.log('errore')
         this.props.dispatch(deletePoolError(error))
         this.setState({loading: false, response: false})
       }
