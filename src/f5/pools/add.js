@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { poolsFetch, addPoolError, addPoolMemberError } from '../../_store/store.f5'
+import { poolsFetch, addPoolError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
@@ -35,8 +35,6 @@ class Add extends React.Component {
       error: null,
       errors: {},
       message:'',
-      nodesNumber: 0,
-      nodes: [],
       request: {}
     };
   }
@@ -161,71 +159,6 @@ class Add extends React.Component {
       this.setState({request: request, errors: errors})
   }
 
-  oneMoreNode = () => {
-    let nodesNumber = this.state.nodesNumber
-    let nodes = this.state.nodes
-    let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-
-    nodesNumber = nodesNumber + 1
-    nodes.push({id: nodesNumber})
-    delete errors.nodesNumberError
-    this.setState({nodesNumber: nodesNumber, errors: errors, request: request})
-  }
-
-  removeNode = (nodeId) => {
-    let nodes = Object.assign([], this.state.nodes);
-    let errors = Object.assign({}, this.state.errors);
-
-    if (nodeId) {
-      let index = nodes.findIndex((obj => obj.id === nodeId))
-      nodes.splice(index, 1)
-      delete errors.nodesError
-    }
-    else {
-      errors.nodesError = 'error'
-    }
-    this.setState({nodes: nodes, errors: errors})
-  }
-
-  setMemberName = (name, id) => {
-    let nodes = Object.assign([], this.state.nodes);
-    let errors = Object.assign({}, this.state.errors);
-
-    //const ipv4 = m
-    //const validIpAddressRegex = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
-    //const ipv4Regex = new RegExp(validIpAddressRegex);
-
-    //if (ipv4Regex.test(ipv4)) {
-    if (name) {
-      let index = nodes.findIndex((obj => obj.id === id))
-      //nodes[index].address = ipv4
-      nodes[index].name = name
-      delete errors.memberNameError
-    }
-    else {
-      errors.memberNameError = 'error'
-    }
-    this.setState({nodes: nodes, errors: errors})
-  }
-
-  setMemberPort = (p, id) => {
-    let nodes = Object.assign([], this.state.nodes);
-    let errors = Object.assign({}, this.state.errors);
-
-    const port = p.target.value
-
-    if (isNaN(port)) {
-      errors.memberPortError = 'error'
-    }
-    else {
-      let index = nodes.findIndex((obj => obj.id === id))
-      nodes[index].port = port
-      delete errors.memberPortError
-    }
-    this.setState({nodes: nodes, errors: errors})
-  }
-
   addPool = async () => {
     let request = Object.assign({}, this.state.request)
 
@@ -249,7 +182,7 @@ class Add extends React.Component {
       let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, error: false}, () => this.addPoolMembers())
+          this.setState({loading: false, response: true, error: false}, () => this.response())
         },
         error => {
           this.props.dispatch(addPoolError(error))
@@ -260,53 +193,10 @@ class Add extends React.Component {
     }
   }
 
-  addPoolMembers = async () => {
-    this.state.nodes.forEach(m => {
-      this.setState({message: null});
-      const request = {
-        "data":
-          {
-            "name": `${m.name}:${m.port}`,
-            "connectionLimit": 0,
-            "dynamicRatio": 1,
-            "ephemeral": "false",
-            "inheritProfile": "enabled",
-            "logging": "disabled",
-            "monitor": "default",
-            "priorityGroup": 0,
-            "rateLimit": "disabled",
-            "ratio": 1,
-            "state": "up",
-            "fqdn": {
-                "autopopulate": "disabled"
-            }
-          }
-      }
-      this.setState({loading: true})
-      this.addPoolMember(request)
-    })
-
-    this.response()
-  }
-
-  addPoolMember = async (request) => {
-      let rest = new Rest(
-        "POST",
-        resp => {
-          this.setState({loading: false, response: true}, () => this.response())
-        },
-        error => {
-          this.props.dispatch(addPoolMemberError(error))
-          this.setState({loading: false, response: false})
-        }
-      )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/poolf/${this.state.request.name}/members/`, this.props.token, request)
-  }
-
   response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(poolsFetch(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+    setTimeout( () => this.setState({ response: false }), 1000)
+    setTimeout( () => this.props.dispatch(poolsFetch(true)), 1030)
+    setTimeout( () => this.closeModal(), 1050)
   }
 
   //Close and Error
@@ -381,75 +271,13 @@ class Add extends React.Component {
               help={this.state.errors.monitorError ? 'Please select monitor' : null }
             >
               <Select onChange={m => this.setMonitor(m)} >
-                {this.props.monitors ? this.props.monitors.map((p, i) => {
+                {this.props.monitorTypes ? this.props.monitorTypes.map((p, i) => {
                   return (
-                    <Select.Option  key={i} value={p.fullPath}>{p.name}</Select.Option>
+                    <Select.Option  key={i} value={p}>{p}</Select.Option>
                   )
               }) : null}
               </Select>
             </Form.Item>
-
-            <Form.Item
-              label="One more node"
-              name='nodesNumber'
-              key="nodesNumber"
-              validateStatus={this.state.errors.nodesNumberError}
-              help={this.state.errors.nodesNumberError ? 'Please input a valid number of nodes' : null }
-            >
-              <Button type="primary" onClick={() => this.oneMoreNode()}>
-                +
-              </Button>
-            </Form.Item>
-
-            {
-              this.state.nodes.map((n, i) => {
-                let na = 'name' + n.id
-                let pa = 'port' + n.id
-                let r = 'remove' + n.id
-                return (
-                  <React.Fragment>
-                  <Form.Item
-                    label="Member"
-                    name={na}
-                    key={na}
-                    validateStatus={this.state.errors.memberNameError}
-                    help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
-                  >
-                    <Select onChange={m => this.setMemberName(m, n.id)} >
-                      {this.props.nodes ? this.props.nodes.map((p, i) => {
-                        return (
-                          <Select.Option key={i} value={p.name}>{p.address} - {p.name}</Select.Option>
-                        )
-                    }) : null}
-                    </Select>
-
-                  </Form.Item>
-                  <Form.Item
-                    label="Port"
-                    name={pa}
-                    key={pa}
-                    validateStatus={this.state.errors.memberPortError}
-                    help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
-                  >
-                    <Input id='memberPort' placeholder='port' onBlur={e => this.setMemberPort(e, n.id)}/>
-                  </Form.Item>
-                  <Form.Item
-                    label="Remove node"
-                    name={r}
-                    key={r}
-                    validateStatus={this.state.errors.removeNodeError}
-                    help={this.state.errors.removeNodeError ? 'Please input a valid number of nodes' : null }
-                  >
-                    <Button type="danger" onClick={() => this.removeNode(n.id)}>
-                      -
-                    </Button>
-                    <Divider/>
-                  </Form.Item>
-
-                  </React.Fragment>
-                )
-              })
-            }
 
             {this.state.message ?
               <Form.Item
@@ -480,7 +308,6 @@ class Add extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.addPoolError ? <Error component={'add pool'} error={[this.props.addPoolError]} visible={true} type={'addPoolError'} /> : null }
-            { this.props.addPoolMemberError ? <Error component={'add pool'} error={[this.props.addPoolMemberError]} visible={true} type={'addPoolMemberError'} /> : null }
           </React.Fragment>
         :
           null
@@ -498,7 +325,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  monitors: state.f5.monitors,
+  monitorTypes: state.f5.monitorTypes,
   addPoolError: state.f5.addPoolError,
-  addPoolMemberError: state.f5.addPoolMemberError
 }))(Add);

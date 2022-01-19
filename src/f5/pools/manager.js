@@ -5,7 +5,14 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { poolsLoading, pools, poolsFetch, poolsError } from '../../_store/store.f5'
+import {
+  poolsLoading,
+  pools,
+  poolsFetch,
+  poolsError,
+  monitorTypes,
+  monitorTypesError
+} from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -31,6 +38,7 @@ class Manager extends React.Component {
         this.props.dispatch(poolsFetch(false))
         if (!this.props.pools) {
           this.fetchPools()
+          this.fetchMonitorsTypeList()
         }
       }
     }
@@ -44,14 +52,17 @@ class Manager extends React.Component {
     if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
       if (!this.props.pools) {
         this.fetchPools()
+        this.fetchMonitorsTypeList()
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchPools()
+        this.fetchMonitorsTypeList()
       }
     }
     if (this.props.asset && this.props.partition) {
       if (this.props.poolsFetch) {
         this.fetchPools()
+        this.fetchMonitorsTypeList()
         this.props.dispatch(poolsFetch(false))
       }
     }
@@ -74,6 +85,19 @@ class Manager extends React.Component {
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
     this.props.dispatch(poolsLoading(false))
+  }
+
+  fetchMonitorsTypeList = async () => {
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(monitorTypes(resp.data.items))
+      },
+      error => {
+        this.props.dispatch(monitorTypesError(error))
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitors/`, this.props.token)
   }
 
   render() {

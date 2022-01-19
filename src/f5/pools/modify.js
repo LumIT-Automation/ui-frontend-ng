@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
 import PoolMembers from '../poolMembers/manager'
 
-import { poolsFetch } from '../../_store/store.f5'
+import { poolsFetch, modifyPoolError } from '../../_store/store.f5'
 
 import { Form, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
 
@@ -15,9 +15,6 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
-/*
-
-*/
 
 const layout = {
   labelCol: { span: 8 },
@@ -253,15 +250,12 @@ class Modify extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.setState({loading: false, response: false, error: error})
+          this.props.dispatch(modifyPoolError(error))
+          this.setState({loading: false, response: false})
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, b )
     }
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   response = () => {
@@ -339,9 +333,9 @@ class Modify extends React.Component {
           >
             <Select onChange={p => this.setMonitor(p)} >
 
-              {this.props.monitors ? this.props.monitors.map((p, i) => {
+              {this.props.monitorTypes ? this.props.monitorTypes.map((p, i) => {
                 return (
-                  <Select.Option  key={i} value={p.fullPath}>{p.name}</Select.Option>
+                  <Select.Option  key={i} value={p}>{p}</Select.Option>
                 )
             }) : null}
             </Select>
@@ -382,17 +376,18 @@ class Modify extends React.Component {
             <PoolMembers obj={this.props.obj}/>
           </Form.Item>
 
-
-
-
-
           </Form>
         }
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.modifyPoolError ? <Error component={'modify pool'} error={[this.props.modifyPoolError]} visible={true} type={'modifyPoolError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -405,5 +400,6 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitors: state.f5.monitors,
+  monitorTypes: state.f5.monitorTypes,
+  modifyPoolError: state.f5.modifyPoolError,
 }))(Modify);

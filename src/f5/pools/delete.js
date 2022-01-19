@@ -1,10 +1,10 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { poolsFetch, poolsLoading } from '../../_store/store.f5'
+import { poolsFetch, deletePoolError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -51,14 +51,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(poolsFetch(true)))
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolsLoading(false)))
+        console.log('errore')
+        this.props.dispatch(deletePoolError(error))
+        this.setState({loading: false, response: false})
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token )
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -118,8 +116,13 @@ class Delete extends React.Component {
 
         </Modal>
 
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.deletePoolError ? <Error component={'delete pool'} error={[this.props.deletePoolError]} visible={true} type={'deletePoolError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
 
       </Space>
 
@@ -132,4 +135,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
+  deletePoolError: state.f5.deletePoolError
 }))(Delete);
