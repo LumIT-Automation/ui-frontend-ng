@@ -155,6 +155,10 @@ class CreateF5Service extends React.Component {
   }
 
 
+
+
+
+  //SETTERS
   setServiceType = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -173,7 +177,7 @@ class CreateF5Service extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.target.value !== '') {
+    if (e.target.value !== '' || e.target.value !== undefined) {
       request.serviceName = e.target.value
       delete errors.serviceNameError
     }
@@ -188,13 +192,15 @@ class CreateF5Service extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (id) {
+    if (!isNaN(id) && id >= 0) {
       request.routeDomain = id
       delete errors.routeDomainError
     }
     else {
+      console.log('error')
       errors.routeDomainError = 'error'
     }
+    console.log(request)
     this.setState({request: request, errors: errors})
   }
 
@@ -308,12 +314,12 @@ class CreateF5Service extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (e.target.value !== '' ) {
-      request.nonitorSendString = e.target.value
-      delete errors.nonitorSendStringError
+      request.monitorSendString = e.target.value
+      delete errors.monitorSendStringError
     }
     else {
-      request.nonitorSendString = null
-      errors.nonitorSendStringError = 'Please input a valid monitor send string'
+      request.monitorSendString = null
+      errors.monitorSendStringError = 'Please input a valid monitor send string'
     }
 
     this.setState({request: request, errors: errors})
@@ -324,12 +330,12 @@ class CreateF5Service extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (e.target.value !== '' ) {
-      request.nonitorReceiveString = e.target.value
-      delete errors.nonitorReceiveStringError
+      request.monitorReceiveString = e.target.value
+      delete errors.monitorReceiveStringError
     }
     else {
-      request.nonitorReceiveString = null
-      errors.nonitorReceiveStringError = 'Please input a valid monitor receive string'
+      request.monitorReceiveString = null
+      errors.monitorReceiveStringError = 'Please input a valid monitor receive string'
     }
 
     this.setState({request: request, errors: errors})
@@ -337,7 +343,6 @@ class CreateF5Service extends React.Component {
 
 
   addNode = () => {
-    console.log('aaaaaaaaaaaaaa')
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
     let id = 0
@@ -470,7 +475,7 @@ class CreateF5Service extends React.Component {
     const b = {
       "data": {
         "virtualServer": {
-          "name": `${serviceName}`,
+          "name": `vs_${serviceName}`,
           "type": this.state.request.serviceType,
           "snat": this.state.request.snat,
           "routeDomainId": this.state.request.routeDomain,
@@ -491,7 +496,7 @@ class CreateF5Service extends React.Component {
           "nodes": this.state.request.nodes
         },
         "monitor": {
-          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "name": `mon_${serviceName}`,
           "type": this.state.request.monitorType
         }
       }
@@ -522,7 +527,7 @@ class CreateF5Service extends React.Component {
     const b = {
       "data": {
         "virtualServer": {
-          "name": `${serviceName}`,
+          "name": `vs_${serviceName}`,
           "type": this.state.request.serviceType,
           "snat": this.state.request.snat,
           "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
@@ -542,7 +547,7 @@ class CreateF5Service extends React.Component {
           "nodes": this.state.request.nodes
         },
         "monitor": {
-          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "name": `mon_${serviceName}`,
           "type": this.state.request.monitorType
         }
       }
@@ -572,7 +577,7 @@ class CreateF5Service extends React.Component {
     const b = {
       "data": {
         "virtualServer": {
-          "name": `${serviceName}`,
+          "name": `vs_${serviceName}`,
           "type": this.state.request.serviceType,
           "snat": this.state.request.snat,
           "routeDomainId": this.state.request.routeDomain,
@@ -613,7 +618,7 @@ class CreateF5Service extends React.Component {
           "nodes": this.state.request.nodes
         },
         "monitor": {
-          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "name": `mon_${serviceName}`,
           "type": this.state.request.monitorType,
           "send": `${this.state.request.monitorSendString}`,
           "recv": `${this.state.request.monitorReceiveString}`
@@ -645,7 +650,7 @@ class CreateF5Service extends React.Component {
     const b = {
       "data": {
         "virtualServer": {
-          "name": `${serviceName}`,
+          "name": `vs_${serviceName}`,
           "type": this.state.request.serviceType,
           "snat": this.state.request.snat,
           "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
@@ -685,7 +690,7 @@ class CreateF5Service extends React.Component {
           "nodes": this.state.request.nodes
         },
         "monitor": {
-          "name": `${this.state.request.monitorType}_${serviceName}`,
+          "name": `mon_${serviceName}`,
           "type": this.state.request.monitorType,
           "send": `${this.state.request.monitorSendString}`,
           "recv": `${this.state.request.monitorReceiveString}`
@@ -727,10 +732,11 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+    console.log(this.state.request)
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
+        <Button type="primary" shape='round' onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>CREATE LOAD BALANCER</p>}
@@ -1198,7 +1204,7 @@ class CreateF5Service extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a node:</p>
                   </Col>
                   <Col span={16}>
-                    <Button type="primary" onClick={() => this.addNode()}>
+                    <Button type="primary" shape='round' onClick={() => this.addNode()}>
                       +
                     </Button>
                   </Col>
@@ -1266,7 +1272,7 @@ class CreateF5Service extends React.Component {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
                         </Col>
                         <Col span={16}>
-                          <Button type="danger" onClick={() => this.removeNode(n.id)}>
+                          <Button type="danger" shape='round' onClick={() => this.removeNode(n.id)}>
                             -
                           </Button>
                         </Col>
@@ -1291,11 +1297,11 @@ class CreateF5Service extends React.Component {
                       this.state.request.lbMethod &&
                       this.state.request.monitorType
                       ?
-                      <Button type="primary" onClick={() => this.createService()} >
+                      <Button type="primary" shape='round' onClick={() => this.createService()} >
                         Create Load Balancer
                       </Button>
                     :
-                      <Button type="primary" onClick={() => this.createService()} disabled>
+                      <Button type="primary" shape='round' disabled>
                         Create Load Balancer
                       </Button>
                     }
