@@ -24,6 +24,15 @@ class Validators {
     }
   }
 
+  port = port => {
+    if (!isNaN(port) && port >= 0 && port < 65536) {
+      return true
+    }
+    else {
+      return false
+    }
+  }
+
 }
 
 export default Validators
