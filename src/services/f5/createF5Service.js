@@ -158,29 +158,6 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-/*
-setIp = e => {
-  let request = JSON.parse(JSON.stringify(this.state.request))
-  request.ip = e.target.value
-  this.setState({request: request})
-}
-
-setMacAddress = (m, id) => {
-  let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
-  let ipDetail = ipDetails[0]
-  ipDetail.macAddress = m.target.value
-  this.setState({ipDetails: ipDetails})
-}
-
-setServerName = (e, id) => {
-  let ipDetails = JSON.parse(JSON.stringify(this.state.ipDetails))
-  let ipDetail = ipDetails[0]
-  ipDetail.serverName = e.target.value
-  this.setState({ipDetails: ipDetails})
-}
-
-*/
-
 
 
   //SETTERS
@@ -297,8 +274,7 @@ setServerName = (e, id) => {
 
     let index = nodes.findIndex((obj => obj.id === nodeId))
     nodes[index].address = e.target.value
-    delete nodes[index].addressColor
-    delete nodes[index].addressError
+
     request.nodes = nodes
     this.setState({request: request})
   }
@@ -309,21 +285,18 @@ setServerName = (e, id) => {
 
     let index = nodes.findIndex((obj => obj.id === nodeId))
     nodes[index].name = e.target.value
-    delete nodes[index].nameColor
-    delete nodes[index].nameError
 
     request.nodes = nodes
     this.setState({request: request})
   }
 
   setNodePort = (nodeId, p) => {
+    console.log(p.target.value)
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
     let index = nodes.findIndex((obj => obj.id === nodeId))
-    nodes[index].port = parseInt(p.target.value)
-    delete nodes[index].portColor
-    delete nodes[index].portError
+    nodes[index].port = p.target.value
 
     request.nodes = nodes
     this.setState({request: request})
@@ -334,13 +307,18 @@ setServerName = (e, id) => {
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
-    let errors = {}
-    this.setState({errors: errors})
 
     if (!request.serviceType) {
       errors.serviceTypeError = true
       errors.serviceTypeColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.serviceTypeError
+      delete errors.serviceTypeColor
       this.setState({errors: errors})
     }
 
@@ -349,10 +327,20 @@ setServerName = (e, id) => {
       errors.serviceNameColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.serviceNameError
+      delete errors.serviceNameColor
+      this.setState({errors: errors})
+    }
 
     if (!request.snat) {
       errors.snatError = true
       errors.snatColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.snatError
+      delete errors.snatColor
       this.setState({errors: errors})
     }
 
@@ -361,10 +349,20 @@ setServerName = (e, id) => {
       errors.lbMethodColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.lbMethodError
+      delete errors.lbMethodColor
+      this.setState({errors: errors})
+    }
 
     if (!request.destination || !validators.ipv4(request.destination)) {
       errors.destinationError = true
       errors.destinationColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.destinationError
+      delete errors.destinationColor
       this.setState({errors: errors})
     }
 
@@ -373,39 +371,97 @@ setServerName = (e, id) => {
       errors.destinationPortColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.destinationPortError
+      delete errors.destinationPortColor
+      this.setState({errors: errors})
+    }
 
     if (!request.monitorType) {
       errors.monitorTypeError = true
       errors.monitorTypeColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.monitorTypeError
+      delete errors.monitorTypeColor
+      this.setState({errors: errors})
+    }
 
-    if (!request.monitorSendString) {
+    if (request.monitorType === 'L7' && !request.monitorSendString) {
       errors.monitorSendStringError = true
       errors.monitorSendStringColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.monitorSendStringError
+      delete errors.monitorSendStringColor
+      this.setState({errors: errors})
+    }
 
-    if (!request.monitorReceiveString) {
+    if (request.monitorType === 'L7' && !request.monitorReceiveString) {
       errors.monitorReceiveStringError = true
       errors.monitorReceiveStringColor = 'red'
       this.setState({errors: errors})
     }
+    else {
+      delete errors.monitorReceiveStringError
+      delete errors.monitorReceiveStringColor
+      this.setState({errors: errors})
+    }
 
-    //request.nodes[index].address
-    //request.nodes[index].name
-    //request.nodes[index].port
+    if (nodes.length > 0) {
+      nodes.forEach((node, i) => {
+        let index = nodes.findIndex((obj => obj.id === node.id))
+        errors[node.id] = {}
 
+        if (node.address && validators.ipv4(node.address)) {
+          delete errors[node.id].addressError
+          delete errors[node.id].addressColor
+          this.setState({errors: errors})
+        }
+        else {
+          errors[node.id].addressError = true
+          errors[node.id].addressColor = 'red'
+          this.setState({errors: errors})
+        }
+
+        if (!node.name) {
+          errors[node.id].nameError = true
+          errors[node.id].nameColor = 'red'
+          this.setState({errors: errors})
+        }
+        else {
+          delete errors[node.id].nameError
+          delete errors[node.id].nameColor
+          this.setState({errors: errors})
+        }
+
+        if (node.port && validators.port(node.port) ) {
+          delete errors[node.id].portError
+          delete errors[node.id].portColor
+          this.setState({errors: errors})
+        }
+        else {
+          errors[node.id].portError = true
+          errors[node.id].portColor = 'red'
+          this.setState({errors: errors})
+        }
+        if (Object.keys(errors[node.id]).length === 0) {
+          delete errors[node.id]
+          this.setState({errors: errors})
+        }
+      })
+    }
+
+    return errors
   }
 
   validation = async () => {
     let validation = await this.validationCheck()
-    console.log(validation)
-    if (validation) {
-      alert('cughia')
-    }
-    else {
-      alert('urrà')
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.createService()
     }
 
   }
@@ -699,6 +755,8 @@ setServerName = (e, id) => {
 
 
   render() {
+    console.log(this.state.request)
+    console.log(this.state.errors)
     return (
       <React.Fragment>
 
@@ -1125,29 +1183,57 @@ setServerName = (e, id) => {
                       :
                         <React.Fragment>
                           { this.state.monitorTypesL7 && this.state.monitorTypesL7.length > 0 ?
-                            <Select
-                              defaultValue={this.state.request.monitorType}
-                              value={this.state.request.monitorType}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            <React.Fragment>
+                              {this.state.errors.monitorTypeError ?
+                                <Select
+                                  defaultValue={this.state.request.monitorType}
+                                  value={this.state.request.monitorType}
+                                  showSearch
+                                  style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.setMonitorType(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.monitorTypesL7.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                                <Select
+                                  defaultValue={this.state.request.monitorType}
+                                  value={this.state.request.monitorType}
+                                  showSearch
+                                  style={{width: 450}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.setMonitorType(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.monitorTypesL7.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
                               }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.setMonitorType(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.monitorTypesL7.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            </React.Fragment>
                           :
                             null
                           }
@@ -1166,29 +1252,57 @@ setServerName = (e, id) => {
                       :
                         <React.Fragment>
                           { this.state.monitorTypesL4 && this.state.monitorTypesL4.length > 0 ?
-                            <Select
-                              defaultValue={this.state.request.monitorType}
-                              value={this.state.request.monitorType}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            <React.Fragment>
+                              {this.state.errors.monitorTypeError ?
+                                <Select
+                                  defaultValue={this.state.request.monitorType}
+                                  value={this.state.request.monitorType}
+                                  showSearch
+                                  style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.setMonitorType(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.monitorTypesL4.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                                <Select
+                                  defaultValue={this.state.request.monitorType}
+                                  value={this.state.request.monitorType}
+                                  showSearch
+                                  style={{width: 450}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.setMonitorType(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.monitorTypesL4.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n}>{n}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
                               }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.setMonitorType(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.monitorTypesL4.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            </React.Fragment>
                           :
                             null
                           }
@@ -1207,7 +1321,7 @@ setServerName = (e, id) => {
                       </Col>
                       <Col span={16}>
                       {this.state.errors.monitorSendStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: 'red'}} name="monitorSendString" id='monitorSendString' onChange={e => this.setMonitorSendString(e)} />
+                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorSendStringColor }} name="monitorSendString" id='monitorSendString' onChange={e => this.setMonitorSendString(e)} />
                       :
                         <Input.TextArea defaultValue={this.state.request.monitorSendString} style={{width: 450}} name="monitorSendString" id='monitorSendString' onChange={e => this.setMonitorSendString(e)} />
                       }
@@ -1220,7 +1334,7 @@ setServerName = (e, id) => {
                       </Col>
                       <Col span={16}>
                       {this.state.errors.monitorReceiveStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: 'red'}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.setMonitorReceiveString(e)} />
+                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorReceiveStringColor}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.setMonitorReceiveString(e)} />
                       :
                         <Input.TextArea defaultValue={this.state.request.monitorReceiveString} style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.setMonitorReceiveString(e)} />
                       }
@@ -1258,11 +1372,11 @@ setServerName = (e, id) => {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
                         </Col>
                         <Col span={16}>
-                        { n.addressError ?
-                          <Input name={address} id={address} style={{display: 'block', width: 450, borderColor: n.addressColor}} onChange={e => this.setNodeAddress(n.id, e)} />
-                        :
-                          <Input defaultValue={n.address} name={address} id={address} style={{display: 'block', width: 450, borderColor: n.addressColor}} onChange={e => this.setNodeAddress(n.id, e)} />
-                        }
+                          { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
+                            <Input key={address}  style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.setNodeAddress(n.id, e)} />
+                          :
+                            <Input defaultValue={n.address} key={address} style={{display: 'block', width: 450}} onChange={e => this.setNodeAddress(n.id, e)} />
+                          }
                         </Col>
                       </Row>
 
@@ -1271,11 +1385,11 @@ setServerName = (e, id) => {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                         </Col>
                         <Col span={16}>
-                        { n.nameError ?
-                          <Input name={name} id={name} style={{display: 'block', width: 450, borderColor: n.nameColor}} onChange={e => this.setNodeName(n.id, e)} />
-                        :
-                          <Input defaultValue={n.name} name={name} id={name} style={{display: 'block', width: 450, borderColor: n.nameColor}} onChange={e => this.setNodeName(n.id, e)} />
-                        }
+                          { this.state.errors[n.id] && this.state.errors[n.id].nameError ?
+                            <Input key={name} name={name} id={name} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}} onChange={e => this.setNodeName(n.id, e)} />
+                          :
+                            <Input defaultValue={n.name} key={name} name={name} id={name} style={{display: 'block', width: 450}} onChange={e => this.setNodeName(n.id, e)} />
+                          }
                         </Col>
                       </Row>
 
@@ -1284,11 +1398,11 @@ setServerName = (e, id) => {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
                         </Col>
                         <Col span={16}>
-                        { n.portError ?
-                          <Input name={port} id={port} style={{display: 'block', width: 450, borderColor: n.portColor}} onChange={e => this.setNodePort(n.id, e)} />
-                        :
-                          <Input defaultValue={n.port} name={port} id={port} style={{display: 'block', width: 450, borderColor: n.portColor}} onChange={e => this.setNodePort(n.id, e)} />
-                        }
+                          { this.state.errors[n.id] && this.state.errors[n.id].portError ?
+                            <Input key={port} name={port} id={port} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}} onChange={e => this.setNodePort(n.id, e)} />
+                          :
+                            <Input defaultValue={n.port} key={port} name={port} id={port} style={{display: 'block', width: 450}} onChange={e => this.setNodePort(n.id, e)} />
+                          }
                         </Col>
                       </Row>
 
