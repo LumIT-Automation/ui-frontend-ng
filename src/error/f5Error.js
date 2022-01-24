@@ -61,9 +61,9 @@ import {
   keyAddError,
   keyDeleteError,
 
-  setCreateL4ServiceError,
-  setCreateL7ServiceError,
-  setDeleteServiceError,
+  createL4ServiceError,
+  createL7ServiceError,
+  deleteServiceError,
   enableMemberError,
   disableMemberError,
   forceOfflineMemberError,
@@ -265,14 +265,14 @@ class Error extends Component {
           break
 
 
-        case 'setCreateL4ServiceError':
-          this.props.dispatch(setCreateL4ServiceError(null))
+        case 'createL4ServiceError':
+          this.props.dispatch(createL4ServiceError(null))
           break
-        case 'setCreateL7ServiceError':
-          this.props.dispatch(setCreateL7ServiceError(null))
+        case 'createL7ServiceError':
+          this.props.dispatch(createL7ServiceError(null))
           break
-        case 'setDeleteServiceError':
-          this.props.dispatch(setDeleteServiceError(null))
+        case 'deleteServiceError':
+          this.props.dispatch(deleteServiceError(null))
           break
         case 'enableMemberError':
           this.props.dispatch(enableMemberError(null))

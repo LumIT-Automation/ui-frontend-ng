@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { setVirtualServersLoading, setVirtualServers, setVirtualServersFetch, virtualServersError } from '../../_store/store.f5'
+import { virtualServersLoading, virtualServers, virtualServersFetch, virtualServersError } from '../../_store/store.f5'
 
 import List from './list'
 
@@ -27,7 +27,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
       if (!this.props.virtualServersError) {
-        this.props.dispatch(setVirtualServersFetch(false))
+        this.props.dispatch(virtualServersFetch(false))
         if (!this.props.virtualServers) {
           this.fetchVirtualServers()
         }
@@ -51,7 +51,7 @@ class Manager extends React.Component {
     if (this.props.asset && this.props.partition) {
       if (this.props.virtualServersFetch) {
         this.fetchVirtualServers()
-        this.props.dispatch(setVirtualServersFetch(false))
+        this.props.dispatch(virtualServersFetch(false))
       }
     }
   }
@@ -60,11 +60,11 @@ class Manager extends React.Component {
   }
 
   fetchVirtualServers = async () => {
-    this.props.dispatch(setVirtualServersLoading(true))
+    this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setVirtualServers(resp))
+        this.props.dispatch(virtualServers(resp))
       },
       error => {
         this.props.dispatch(virtualServersError(error))
@@ -72,7 +72,7 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
-    this.props.dispatch(setVirtualServersLoading(false))
+    this.props.dispatch(virtualServersLoading(false))
   }
 
 

@@ -18,7 +18,7 @@ import {
   monitorsFetch,
   poolsFetch,
   profilesFetch,
-  setVirtualServersFetch
+  virtualServersFetch
 } from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
@@ -89,7 +89,7 @@ class F5 extends React.Component {
   }
 
   virtualServersRefresh = () => {
-    this.props.dispatch(setVirtualServersFetch(true))
+    this.props.dispatch(virtualServersFetch(true))
   }
 
   resetError = () => {

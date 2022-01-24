@@ -12,8 +12,8 @@ import {
   setKeysError,
   setRouteDomains,
   setRouteDomainsError,
-  setCreateL4ServiceError,
-  setCreateL7ServiceError
+  createL4ServiceError,
+  createL7ServiceError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
@@ -534,7 +534,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setCreateL4ServiceError(error))
+        this.props.dispatch(createL4ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -585,7 +585,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setCreateL4ServiceError(error))
+        this.props.dispatch(createL4ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -658,7 +658,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setCreateL7ServiceError(error))
+        this.props.dispatch(createL7ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -730,7 +730,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setCreateL7ServiceError(error))
+        this.props.dispatch(createL7ServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -755,8 +755,6 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     return (
       <React.Fragment>
 
@@ -1461,8 +1459,8 @@ class CreateF5Service extends React.Component {
             { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'setRouteDomainsError'} /> : null }
 
-            { this.props.createL4ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL4ServiceError]} visible={true} type={'setCreateL4ServiceError'} /> : null }
-            { this.props.createL7ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL7ServiceError]} visible={true} type={'setCreateL7ServiceError'} /> : null }
+            { this.props.createL4ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL4ServiceError]} visible={true} type={'createL4ServiceError'} /> : null }
+            { this.props.createL7ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL7ServiceError]} visible={true} type={'createL7ServiceError'} /> : null }
           </React.Fragment>
         :
           null

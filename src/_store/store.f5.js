@@ -233,13 +233,13 @@ const f5Slice = createSlice({
 
 
 
-        setVirtualServersLoading: (state, action) => {
+        virtualServersLoading: (state, action) => {
           state.virtualServersLoading = action.payload
         },
-        setVirtualServers: (state, action) => {
+        virtualServers: (state, action) => {
           state.virtualServers = action.payload.data.items
         },
-        setVirtualServersFetch: (state, action) => {
+        virtualServersFetch: (state, action) => {
           state.virtualServersFetch = action.payload
         },
         virtualServersError: (state, action) => {
@@ -299,13 +299,13 @@ const f5Slice = createSlice({
           state.keyDeleteError = action.payload
         },
 
-        setCreateL4ServiceError: (state, action) => {
+        createL4ServiceError: (state, action) => {
           state.createL4ServiceError = action.payload
         },
-        setCreateL7ServiceError: (state, action) => {
+        createL7ServiceError: (state, action) => {
           state.createL7ServiceError = action.payload
         },
-        setDeleteServiceError: (state, action) => {
+        deleteServiceError: (state, action) => {
           state.deleteServiceError = action.payload
         },
 
@@ -447,9 +447,9 @@ export const {
   addProfileError,
   deleteProfileError,
 
-  setVirtualServersLoading,
-  setVirtualServers,
-  setVirtualServersFetch,
+  virtualServersLoading,
+  virtualServers,
+  virtualServersFetch,
   virtualServersError,
 
   setCertificatesLoading,
@@ -467,9 +467,9 @@ export const {
   keyAddError,
   keyDeleteError,
 
-  setCreateL4ServiceError,
-  setCreateL7ServiceError,
-  setDeleteServiceError,
+  createL4ServiceError,
+  createL7ServiceError,
+  deleteServiceError,
 
   enableMemberError,
   disableMemberError,

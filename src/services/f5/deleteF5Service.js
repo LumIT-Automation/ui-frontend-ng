@@ -5,15 +5,18 @@ import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
 import {
-  setDeleteServiceError
+  virtualServers,
+  virtualServersLoading,
+  virtualServersError,
+  deleteServiceError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Spin, Divider } from 'antd'
+import { Modal, Alert, Form, Input, Result, Button, Spin, Divider, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
@@ -34,6 +37,11 @@ class DeleteF5Service extends React.Component {
   }
 
   componentDidMount() {
+    if (this.state.visible) {
+      if ( (this.props.asset && this.props.partition) ) {
+        this.fetchVirtualServers()
+      }
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -42,7 +50,6 @@ class DeleteF5Service extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      console.log('update delete')
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.fetchVirtualServers()
       }
@@ -57,37 +64,58 @@ class DeleteF5Service extends React.Component {
   }
 
   fetchVirtualServers = async () => {
-
+    this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
+        this.props.dispatch(virtualServers(resp))
       },
       error => {
-        console.log(error)
+        this.props.dispatch(virtualServersError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/virtualservers/`, this.props.token)
+    this.props.dispatch(virtualServersLoading(false))
   }
 
   setServiceName = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    request.serviceName = e
+    this.setState({request: request})
+  }
+
+  //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (e.target.value) {
-      request.serviceName = e.target.value
-      delete errors.serviceNameError
+    if (!request.serviceName) {
+      errors.serviceNameError = true
+      errors.serviceNameColor = 'red'
+      this.setState({errors: errors})
     }
     else {
-      errors.serviceNameError = 'error'
+      delete errors.serviceNameError
+      delete errors.serviceNameColor
+      this.setState({errors: errors})
     }
-    this.setState({request: request, errors: errors})
+    return errors
+  }
+
+  validation = async () => {
+    console.log('validation')
+    let validation = await this.validationCheck()
+    console.log(validation)
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.deleteService()
+    }
+
   }
 
   deleteService = async () => {
+    console.log('cancello')
     let serviceName = this.state.request.serviceName
-    this.setState({message: null})
-
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -97,7 +125,7 @@ class DeleteF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(setDeleteServiceError(error))
+        this.props.dispatch(deleteServiceError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -106,7 +134,7 @@ class DeleteF5Service extends React.Component {
   }
 
   response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
+    //setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -114,12 +142,15 @@ class DeleteF5Service extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      response: false,
+      request: {}
     })
   }
 
 
   render() {
-
+    console.log(this.props.virtualServers)
+    console.log(this.state.request.serviceName)
     return (
       <React.Fragment>
 
@@ -141,55 +172,111 @@ class DeleteF5Service extends React.Component {
 
           { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
             <React.Fragment>
-              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
               { !this.state.loading && this.state.response &&
                 <Result
                    status="success"
                    title="Service Deleted"
                  />
               }
-              { !this.state.loading && !this.state.response &&
-                <Form
-                  {...layout}
-                  name="basic"
-                  initialValues={{
 
-                  }}
-                  onFinish={null}
-                  onFinishFailed={null}
-                >
-                  <Form.Item
-                    label="Service Name"
-                    name='serviceName'
-                    key="serviceName"
-                    validateStatus={this.state.errors.serviceNameError}
-                    help={this.state.errors.serviceNameError ? 'Please input a valid Service Name' : null }
-                  >
-                    <Input id='name' onBlur={e => this.setServiceName(e)} />
-                  </Form.Item>
-                  { this.state.request.serviceName ?
-                    <Form.Item
-                      wrapperCol={ {offset: 8 }}
-                      name="button"
-                      key="button"
-                    >
-                      <Button type="danger" onClick={() => this.deleteService()}>
+              {!this.state.response ?
+                <React.Fragment>
+                  <Row>
+                    <Col offset={2} span={6}>
+                      <p style={{marginRight: 25, float: 'right'}}>Service Name:</p>
+                    </Col>
+                    <Col span={16}>
+                      { this.props.virtualServersLoading ?
+                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                      :
+                        <React.Fragment>
+                          { this.props.virtualServers && this.props.virtualServers.length > 0 ?
+                            <React.Fragment>
+                              {this.state.errors.serviceNameError ?
+                                <Select
+                                  defaultValue={this.state.request.serviceName}
+                                  value={this.state.request.serviceName}
+                                  showSearch
+                                  style={{width: 450, border: `1px solid ${this.state.errors.serviceNameColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.setServiceName(n)}
+                                >
+                                  <React.Fragment>
+                                  {console.log(this.props.virtualServers)}
+                                    {this.props.virtualServers.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                              <React.Fragment>
+                                { this.state.loading ?
+                                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                                :
+                                  <Select
+                                    defaultValue={this.state.request.serviceName}
+                                    value={this.state.request.serviceName}
+                                    showSearch
+                                    style={{width: 450}}
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                    filterSort={(optionA, optionB) =>
+                                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                    }
+                                    onSelect={n => this.setServiceName(n)}
+                                  >
+                                    <React.Fragment>
+                                    {console.log(this.props.virtualServers)}
+                                      {this.props.virtualServers.map((n, i) => {
+                                        return (
+                                          <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                        )
+                                      })
+                                      }
+                                    </React.Fragment>
+                                  </Select>
+                                }
+                              </React.Fragment>
+
+                              }
+                            </React.Fragment>
+                          :
+                            null
+                          }
+                        </React.Fragment>
+                      }
+                    </Col>
+                  </Row>
+
+                  <br/>
+
+                  <Row>
+                    <Col offset={2} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
+                    </Col>
+                    <Col span={16}>
+                      <Button type="danger" onClick={() => this.validation()}>
                         Delete Service
                       </Button>
-                    </Form.Item>
-                    :
-                    <Form.Item
-                      wrapperCol={ {offset: 8 }}
-                      name="button"
-                      key="button"
-                    >
-                      <Button type="danger" onClick={() => this.deleteService()} disabled>
-                        Delete Service
-                      </Button>
-                    </Form.Item>
-                }
+                    </Col>
+                  </Row>
 
-                </Form>
+                  <br/>
+
+                </React.Fragment>
+              :
+                null
               }
             </React.Fragment>
           :
@@ -199,7 +286,8 @@ class DeleteF5Service extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deleteServiceError ? <Error component={'delete loadbalancer'} error={[this.props.deleteServiceError]} visible={true} type={'setDeleteServiceError'} /> : null }
+            { this.props.virtualServersError ? <Error component={'delete loadbalancer'} error={[this.props.virtualServersError]} visible={true} type={'virtualServersError'} /> : null }
+            { this.props.deleteServiceError ? <Error component={'delete loadbalancer'} error={[this.props.deleteServiceError]} visible={true} type={'deleteServiceError'} /> : null }
           </React.Fragment>
         :
           null
@@ -218,5 +306,8 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
+  virtualServers: state.f5.virtualServers,
+  virtualServersLoading: state.f5.virtualServersLoading,
+  virtualServersError: state.f5.virtualServersError,
   deleteServiceError: state.f5.deleteServiceError
 }))(DeleteF5Service);
