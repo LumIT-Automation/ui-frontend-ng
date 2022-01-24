@@ -133,12 +133,12 @@ class ReleaseIp extends React.Component {
         console.log(resp)
         request.isLoading = false
         if (resp.status !== 200) {
-          request.isReleased = 'Releasing NOT OK'
+          request.isReleased = 'NOT RELEASED'
           this.setState({requests: requests})
           this.props.dispatch(ipReleaseError(resp))
         }
         else {
-          request.isReleased = 'Releasing OK'
+          request.isReleased = 'RELEASED'
           this.setState({requests: requests})
         }
       } catch(resp) {
