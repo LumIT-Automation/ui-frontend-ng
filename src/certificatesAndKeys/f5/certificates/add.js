@@ -50,8 +50,10 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (e.target.value === 'pasteText') {
       request.sourceValue = e.target.value
+      delete request.selectedFile
     } else if (e.target.value === 'upload') {
       request.sourceValue = e.target.value
+      delete request.text
     }
     this.setState({request: request})
   }
@@ -70,6 +72,9 @@ class Add extends React.Component {
 
   readSingleFile = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    request.name = this.state.request.selectedFile.name
+    request.size = this.state.request.selectedFile.size
+    request.type = this.state.request.selectedFile.type
 
     var file = e.target.files[0];
     if (!file) {
@@ -83,6 +88,7 @@ class Add extends React.Component {
     reader.readAsText(file);
     this.setState({request: request})
   }
+
 
   installCertificate =  async () => {
     let certificateName = `${this.state.request.fileName}`
@@ -110,31 +116,6 @@ class Add extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token, request )
   }
 
-  fileSummary = () => {
-    if (this.state.request.selectedFile) {
-      return (
-        <Form.Item label="File Details">
-          <Card>
-              <p>Name: {this.state.request.selectedFile.name}</p>
-              <p>Type: {this.state.request.selectedFile.type}</p>
-              <p>Size: {this.state.request.selectedFile.size} Bytes</p>
-          </Card>
-        </Form.Item>
-
-      );
-    } else {
-        if (this.state.request.sourceValue === "upload") {
-          return (
-            <Form.Item label="File Details" >
-              <Card>
-
-              </Card>
-            </Form.Item>
-          )
-        }
-    }
-  }
-
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
@@ -155,7 +136,7 @@ class Add extends React.Component {
 
 
   render() {
-
+        console.log(this.state.request)
 
     return (
       <React.Fragment>
@@ -219,7 +200,17 @@ class Add extends React.Component {
               null
             }
 
-            {this.fileSummary()}
+            {this.state.request.selectedFile ?
+              <Form.Item label="File Details">
+                <Card>
+                    <p>Name: {this.state.request.name}</p>
+                    <p>Type: {this.state.request.type}</p>
+                    <p>Size: {this.state.request.size} Bytes</p>
+                </Card>
+              </Form.Item>
+              :
+              null
+            }
 
             { (this.props.asset) ?
               <Form.Item wrapperCol={ {offset: 8, span: 16 }}>
