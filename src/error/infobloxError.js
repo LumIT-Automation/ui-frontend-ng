@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
-import  { Redirect } from 'react-router-dom'
 import { logout } from '../_store/store.auth'
 
 import { setAuthorizationsError } from '../_store/store.authorizations'
@@ -45,31 +44,11 @@ import { Modal, Table, Result } from 'antd';
 //import tooMany from './429.gif'
 
 
-/*
-
-It is the modal for rendere response errors.
-It recieves
-  error={this.state.error} visible={true} resetError={() => this.resetError()}
-the error object, the boolean visible to rendere the modal, and the callback called on onCancel modal event.
-in order to render the object in antd table I create a list that contains the objec error.
-*/
-
-
-const initialState = {
-  visible: true,
-  error: [{}]
-};
 
 class Error extends Component {
 
-  constructor(props) {
-    super(props);
-    //this.state = initialState
-  }
-
   componentDidMount() {
     console.log('infoblox error mount')
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
@@ -81,13 +60,9 @@ class Error extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log('infoblox error update')
-
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
-
-
   }
 
   componentWillUnmount() {
@@ -100,80 +75,80 @@ class Error extends Component {
 
         case 'setAuthorizationsError':
           this.props.dispatch(setAuthorizationsError(null))
-          break
+          break;
 
 
         case 'addNewDnError':
           this.props.dispatch(addNewDnError(null))
-          break
+          break;
         case 'fetchInfobloxRolesError':
           this.props.dispatch(fetchInfobloxRolesError(null))
-          break
+          break;
         case 'addInfobloxPermissionError':
           this.props.dispatch(addInfobloxPermissionError(null))
-          break
+          break;
         case 'modifyInfobloxPermissionError':
           this.props.dispatch(modifyInfobloxPermissionError(null))
-          break
+          break;
         case 'deleteInfobloxPermissionError':
           this.props.dispatch(deleteInfobloxPermissionError(null))
-          break
+          break;
 
 
         case 'setPermissionsError':
         	this.props.dispatch(setPermissionsError(null))
-        	break
+        	break;
         case 'setIdentityGroupsError':
           this.props.dispatch(setIdentityGroupsError(null))
-          break
+          break;
 
         case 'setEnvironmentError':
         	this.props.dispatch(setEnvironmentError(null))
-        	break
+        	break;
         case 'setAssetsError':
         	this.props.dispatch(setAssetsError(null))
-        	break
+        	break;
         case 'setAssetAddError':
         	this.props.dispatch(setAssetAddError(null))
-        	break
+        	break;
         case 'setAssetModifyError':
         	this.props.dispatch(setAssetModifyError(null))
-        	break
+        	break;
         case 'setAssetDeleteError':
         	this.props.dispatch(setAssetDeleteError(null))
-        	break
+        	break;
         case 'setTreeError':
         	this.props.dispatch(setTreeError(null))
-        	break
+        	break;
         case 'networksError':
         	this.props.dispatch(networksError(null))
-        	break
+        	break;
         case 'containersError':
           console.log('case giusto')
         	this.props.dispatch(containersError(null))
-        	break
+        	break;
         case 'setRealNetworksError':
         	this.props.dispatch(setRealNetworksError(null))
-        	break
+        	break;
 
         case 'ipDetailError':
         	this.props.dispatch(ipDetailError(null))
-        	break
+        	break;
         case 'networkError':
           this.props.dispatch(networkError(null))
-          break
+          break;
         case 'containerError':
           this.props.dispatch(containerError(null))
-          break
+          break;
         case 'nextAvailableIpError':
           this.props.dispatch(nextAvailableIpError(null))
-          break
+          break;
         case 'ipModifyError':
           this.props.dispatch(ipModifyError(null))
-          break
+          break;
         case 'ipReleaseError':
           this.props.dispatch(ipReleaseError(null))
-          break
+          break;
 
       }
     }
@@ -242,48 +217,48 @@ class Error extends Component {
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
-            break
+            break;
           case 401:
             this.logout()
             //return <Result title={statusCode} />
-            break
+            break;
           case 403:
             return <Result status={statusCode} title={'403 - Forbidden'} />
-            break
+            break;
           case 404:
             return <Result status={statusCode} title={'404 - Not Found'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 409:
             return <Result title={'409 - Conflict'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 412:
             return <Result title={'412 - Precondition Failed'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 422:
             return <Result title={'422 - Unprocessable Entity'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 423:
             return <Result title={'423 - Locked'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 429:
             return <Result title={'429 - Too many requests'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
 
           case 500:
             return <Result title={'500'} />
-            break
+            break;
           case 502:
             return <Result title={statusCode} />
-            break
+            break;
           case 503:
             return <Result title={statusCode} />
-            break
+            break;
 
           default:
             return <Result status='error' />

@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
-import  { Redirect } from 'react-router-dom'
 import { logout } from './_store/store.auth'
 
 import { setError } from './_store/store.error'
@@ -10,12 +9,10 @@ import {
   setSuperAdminsPermissionsError,
   addNewDnError,
 
-  fetchF5RolesError,
   addF5PermissionError,
   modifyF5PermissionError,
   deleteF5PermissionError,
 
-  fetchInfobloxRolesError,
   addInfobloxPermissionError,
   modifyInfobloxPermissionError,
   deleteInfobloxPermissionError,
@@ -28,31 +25,10 @@ import { Modal, Table, Result } from 'antd';
 //import tooMany from './429.gif'
 
 
-/*
-
-It is the modal for rendere response errors.
-It recieves
-  error={this.state.error} visible={true} resetError={() => this.resetError()}
-the error object, the boolean visible to rendere the modal, and the callback called on onCancel modal event.
-in order to render the object in antd table I create a list that contains the objec error.
-*/
-
-
-const initialState = {
-  visible: true,
-  error: [{}]
-};
-
 class Error extends Component {
-
-  constructor(props) {
-    super(props);
-    //this.state = initialState
-  }
 
   componentDidMount() {
     console.log('error mount')
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
@@ -64,7 +40,6 @@ class Error extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log('error update')
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
@@ -80,7 +55,7 @@ class Error extends Component {
 
         case 'Error':
           this.props.dispatch(setError(null))
-          break
+          break;
 
         case 'setAuthorizationsError':
           this.props.dispatch(setAuthorizationsError(null))
@@ -113,6 +88,9 @@ class Error extends Component {
         case 'deleteInfobloxPermissionError':
           this.props.dispatch(deleteInfobloxPermissionError(null))
           break
+
+        default:
+          this.props.dispatch(setError(null))
 
       }
     }
@@ -174,55 +152,55 @@ class Error extends Component {
       },
     ]
 
-    let e = () => {
+    let renderError = () => {
       if (this.props.error && this.props.error[0]) {
         const statusCode = this.props.error[0].status
 
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
-            break
+            break;
           case 401:
             this.logout()
             //return <Result title={statusCode} />
-            break
+            break;
           case 403:
             return <Result status={statusCode} title={'403 - Forbidden'} />
-            break
+            break;
           case 404:
             return <Result status={statusCode} title={'404 - Not Found'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 409:
             return <Result title={'409 - Conflict'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 412:
             return <Result title={'412 - Precondition Failed'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 422:
             return <Result title={'422 - Unprocessable Entity'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 423:
             return <Result title={'423 - Locked'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 429:
             return <Result title={'429 - Too many requests'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
 
           case 500:
             return <Result title={'500'} />
-            break
+            break;
           case 502:
             return <Result title={statusCode} />
-            break
+            break;
           case 503:
             return <Result title={statusCode} />
-            break
+            break;
 
           default:
             return <Result status='error' />
@@ -246,7 +224,7 @@ class Error extends Component {
         width={750}
       >
         <React.Fragment>
-        {e()}
+        {renderError()}
 
         <Table
           dataSource={this.props.error}

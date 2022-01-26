@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import { setAssetsFetch, setAssetModifyError } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Radio, Spin, Result } from 'antd';
+import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

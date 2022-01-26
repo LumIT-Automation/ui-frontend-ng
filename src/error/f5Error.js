@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
-import  { Redirect } from 'react-router-dom'
 import { logout } from '../_store/store.auth'
 
 import { setAuthorizationsError } from '../_store/store.authorizations'
@@ -24,9 +23,6 @@ import {
   setAssetDeleteError,
   setPartitionsError,
   setRouteDomainsError,
-  setPartitionAddError,
-  setPartitionModifyError,
-  setPartitionDeleteError,
 
   nodesError,
   addNodeError,
@@ -77,31 +73,10 @@ import { Modal, Table, Result } from 'antd';
 //import tooMany from './429.gif'
 
 
-/*
-
-It is the modal for rendere response errors.
-It recieves
-  error={this.state.error} visible={true} resetError={() => this.resetError()}
-the error object, the boolean visible to rendere the modal, and the callback called on onCancel modal event.
-in order to render the object in antd table I create a list that contains the objec error.
-*/
-
-
-const initialState = {
-  visible: true,
-  error: [{}]
-};
-
 class Error extends Component {
-
-  constructor(props) {
-    super(props);
-    //this.state = initialState
-  }
 
   componentDidMount() {
     console.log('f5 error mount')
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
@@ -113,7 +88,6 @@ class Error extends Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log('f5 error update')
-    console.log('---------------------')
     console.log(this.props.component)
     console.log(this.props.error)
     console.log(this.props.type)
@@ -129,163 +103,163 @@ class Error extends Component {
 
         case 'setAuthorizationsError':
           this.props.dispatch(setAuthorizationsError(null))
-          break
+          break;
 
 
         case 'addNewDnError':
           this.props.dispatch(addNewDnError(null))
-          break
+          break;
         case 'fetchF5RolesError':
           this.props.dispatch(fetchF5RolesError(null))
-          break
+          break;
         case 'addF5PermissionError':
           this.props.dispatch(addF5PermissionError(null))
-          break
+          break;
         case 'modifyF5PermissionError':
           this.props.dispatch(modifyF5PermissionError(null))
-          break
+          break;
         case 'deleteF5PermissionError':
           this.props.dispatch(deleteF5PermissionError(null))
-          break
+          break;
 
 
         case 'setPermissionsError':
           this.props.dispatch(setPermissionsError(null))
-          break
+          break;
         case 'setIdentityGroupsError':
           this.props.dispatch(setIdentityGroupsError(null))
-          break
+          break;
 
         case 'setEnvironmentError':
           this.props.dispatch(setEnvironmentError(null))
-          break
+          break;
         case 'setAssetsError':
           this.props.dispatch(setAssetsError(null))
-          break
+          break;
         case 'setPartitionsError':
           this.props.dispatch(setPartitionsError(null))
-          break
+          break;
         case 'setRouteDomainsError':
           this.props.dispatch(setRouteDomainsError(null))
-          break
+          break;
 
         case 'setAssetAddError':
           this.props.dispatch(setAssetAddError(null))
-          break
+          break;
         case 'setAssetModifyError':
           this.props.dispatch(setAssetModifyError(null))
-          break
+          break;
         case 'setAssetDeleteError':
           this.props.dispatch(setAssetDeleteError(null))
-          break
+          break;
 
         case 'nodesError':
           this.props.dispatch(nodesError(null))
-          break
+          break;
         case 'addNodeError':
           this.props.dispatch(addNodeError(null))
-          break
+          break;
         case 'deleteNodeError':
           this.props.dispatch(deleteNodeError(null))
-          break
+          break;
 
         case 'monitorTypesError':
           this.props.dispatch(monitorTypesError(null))
-          break
+          break;
         case 'monitorsError':
           this.props.dispatch(monitorsError(null))
-          break
+          break;
         case 'addMonitorError':
           this.props.dispatch(addMonitorError(null))
-          break
+          break;
         case 'modifyMonitorError':
           this.props.dispatch(modifyMonitorError(null))
-          break
+          break;
         case 'deleteMonitorError':
           this.props.dispatch(deleteMonitorError(null))
-          break
+          break;
 
         case 'poolsError':
           this.props.dispatch(poolsError(null))
-          break
+          break;
         case 'addPoolError':
           this.props.dispatch(addPoolError(null))
-          break
+          break;
         case 'modifyPoolError':
           this.props.dispatch(modifyPoolError(null))
-          break
+          break;
         case 'deletePoolError':
           this.props.dispatch(deletePoolError(null))
-          break
+          break;
 
         case 'poolMembersError':
           this.props.dispatch(poolMembersError(null))
-          break
+          break;
         case 'addPoolMemberError':
           this.props.dispatch(addPoolMemberError(null))
-          break
+          break;
         case 'modifyPoolMemberError':
           this.props.dispatch(modifyPoolMemberError(null))
-          break
+          break;
         case 'deletePoolMemberError':
           this.props.dispatch(deletePoolMemberError(null))
-          break
+          break;
 
         case 'profilesError':
           this.props.dispatch(profilesError(null))
-          break
+          break;
         case 'addProfileError':
           this.props.dispatch(addProfileError(null))
-          break
+          break;
         case 'deleteProfileError':
           this.props.dispatch(deleteProfileError(null))
-          break
+          break;
 
         case 'virtualServersError':
           this.props.dispatch(virtualServersError(null))
-          break
+          break;
 
         case 'setCertificatesError':
           this.props.dispatch(setCertificatesError(null))
-          break
+          break;
         case 'setKeysError':
           this.props.dispatch(setKeysError(null))
-          break
+          break;
         case 'certificateAddError':
           this.props.dispatch(certificateAddError(null))
-          break
+          break;
         case 'certificateDeleteError':
           this.props.dispatch(certificateDeleteError(null))
-          break
+          break;
         case 'keyAddError':
           this.props.dispatch(keyAddError(null))
-          break
+          break;
         case 'keyDeleteError':
           this.props.dispatch(keyDeleteError(null))
-          break
+          break;
 
 
         case 'createL4ServiceError':
           this.props.dispatch(createL4ServiceError(null))
-          break
+          break;
         case 'createL7ServiceError':
           this.props.dispatch(createL7ServiceError(null))
-          break
+          break;
         case 'deleteServiceError':
           this.props.dispatch(deleteServiceError(null))
-          break
+          break;
         case 'enableMemberError':
           this.props.dispatch(enableMemberError(null))
-          break
+          break;
         case 'disableMemberError':
           this.props.dispatch(disableMemberError(null))
-          break
+          break;
         case 'forceOfflineMemberError':
           this.props.dispatch(forceOfflineMemberError(null))
-          break
+          break;
         case 'memberStatsError':
           this.props.dispatch(memberStatsError(null))
-          break
+          break;
 
       }
     }
@@ -354,48 +328,48 @@ class Error extends Component {
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
-            break
+            break;
           case 401:
             this.logout()
             //return <Result title={statusCode} />
-            break
+            break;
           case 403:
             return <Result status={statusCode} title={'403 - Forbidden'} />
-            break
+            break;
           case 404:
             return <Result status={statusCode} title={'404 - Not Found'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 409:
             return <Result title={'409 - Conflict'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break
+            break;
           case 412:
             return <Result title={'412 - Precondition Failed'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 422:
             return <Result title={'422 - Unprocessable Entity'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 423:
             return <Result title={'423 - Locked'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
           case 429:
             return <Result title={'429 - Too many requests'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break
+            break;
 
           case 500:
             return <Result title={'500'} />
-            break
+            break;
           case 502:
             return <Result title={statusCode} />
-            break
+            break;
           case 503:
             return <Result title={statusCode} />
-            break
+            break;
 
           default:
             return <Result status='error' />

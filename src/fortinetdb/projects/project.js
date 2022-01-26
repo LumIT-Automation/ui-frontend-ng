@@ -6,13 +6,10 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { Input, Button, Space, Modal, Spin, Table } from 'antd'
+import { Input, Button, Space, Modal, Table } from 'antd'
 
 import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
-
-const { TextArea } = Input;
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class Project extends React.Component {

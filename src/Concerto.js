@@ -5,7 +5,6 @@ import Rest from "./_helpers/Rest";
 import Error from './error'
 
 import { logout } from './_store/store.auth'
-import { setError } from './_store/store.error'
 import { setAuthorizations, setAuthorizationsError } from './_store/store.authorizations'
 
 import { Layout, Avatar, Menu, Dropdown  } from 'antd';
@@ -74,10 +73,6 @@ class Concerto extends Component {
   }
 
   resetPassword = () => {
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   deleteCookies = () => {

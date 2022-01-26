@@ -6,7 +6,7 @@ import Error from '../../error/infobloxError'
 
 import { setAssetsFetch, setAssetDeleteError } from '../../_store/store.infoblox'
 
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

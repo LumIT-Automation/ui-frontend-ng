@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
 import Rest from "../_helpers/Rest"
-import Error from '../error'
 
 import { setProjects, setProjectsLoading, setProjectsError, setProjectsFetch } from '../_store/store.fortinetdb'
 

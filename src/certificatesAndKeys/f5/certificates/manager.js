@@ -15,7 +15,7 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
+import { Alert } from 'antd'
 
 
 

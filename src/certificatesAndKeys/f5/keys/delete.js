@@ -6,7 +6,7 @@ import Error from "../../../error/f5Error"
 
 import { setKeysFetch, keyDeleteError } from '../../../_store/store.f5'
 
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

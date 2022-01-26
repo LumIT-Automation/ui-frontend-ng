@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../../error'
 
 import Delete from './delete'
 
