@@ -130,7 +130,7 @@ class List extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch( setTree(resp) )
+        //this.props.dispatch( tree(resp) )
 
         this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
       },
@@ -139,7 +139,7 @@ class List extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=ip`, this.props.token)
-    //this.props.dispatch(setTreeLoading(false))
+    //this.props.dispatch(treeLoading(false))
     //this.setState({visible: true})
   }
 

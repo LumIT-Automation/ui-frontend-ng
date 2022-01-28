@@ -8,9 +8,9 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 
 import {
-  setTreeLoading,
-  setTree,
-  setTreeFetch,
+  treeLoading,
+  tree,
+  treeFetch,
 } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -33,7 +33,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.asset) {
       if (!this.props.treeError) {
-        this.props.dispatch(setTreeFetch(false))
+        this.props.dispatch(treeFetch(false))
         if (!this.props.tree) {
           this.fetchTree()
         }
@@ -55,7 +55,7 @@ class Manager extends React.Component {
       }
       if (this.props.treeFetch) {
         this.fetchTree()
-        this.props.dispatch(setTreeFetch(false))
+        this.props.dispatch(treeFetch(false))
       }
     }
   }
@@ -64,11 +64,11 @@ class Manager extends React.Component {
   }
 
   fetchTree = async () => {
-    this.props.dispatch(setTreeLoading(true))
+    this.props.dispatch(treeLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch( setTree(resp) )
+        this.props.dispatch( tree(resp) )
       },
       error => {
         this.props.dispatch(setError(error))
@@ -76,7 +76,7 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
-    this.props.dispatch(setTreeLoading(false))
+    this.props.dispatch(treeLoading(false))
   }
 
   resetError = () => {

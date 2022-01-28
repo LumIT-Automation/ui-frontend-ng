@@ -24,10 +24,10 @@ import {
   modifyAssetError,
   deleteAssetError,
 
-  setTreeError,
+  treeError,
   networksError,
   containersError,
-  setRealNetworksError,
+  realNetworksError,
 
   ipDetailError,
   networkError,
@@ -117,8 +117,8 @@ class Error extends Component {
         case 'deleteAssetError':
         	this.props.dispatch(deleteAssetError(null))
         	break;
-        case 'setTreeError':
-        	this.props.dispatch(setTreeError(null))
+        case 'treeError':
+        	this.props.dispatch(treeError(null))
         	break;
         case 'networksError':
         	this.props.dispatch(networksError(null))
@@ -127,8 +127,8 @@ class Error extends Component {
           console.log('case giusto')
         	this.props.dispatch(containersError(null))
         	break;
-        case 'setRealNetworksError':
-        	this.props.dispatch(setRealNetworksError(null))
+        case 'realNetworksError':
+        	this.props.dispatch(realNetworksError(null))
         	break;
 
         case 'ipDetailError':

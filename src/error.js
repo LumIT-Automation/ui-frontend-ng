@@ -6,7 +6,7 @@ import { logout } from './_store/store.auth'
 import { setError } from './_store/store.error'
 import { setAuthorizationsError } from './_store/store.authorizations'
 import {
-  setSuperAdminsPermissionsError,
+  superAdminsPermissionsError,
   addNewDnError,
 
   addF5PermissionError,
@@ -61,8 +61,8 @@ class Error extends Component {
           this.props.dispatch(setAuthorizationsError(null))
           break
 
-        case 'setSuperAdminsPermissionsError':
-          this.props.dispatch(setSuperAdminsPermissionsError(null))
+        case 'superAdminsPermissionsError':
+          this.props.dispatch(superAdminsPermissionsError(null))
           break
 
         case 'addNewDnError':

@@ -210,7 +210,7 @@ class RequestIp extends React.Component {
   }
 
 
-  setNetwork = async (network, e, id) => {
+  network = async (network, e, id) => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let request = this.state.requests.find( r => r.id === id )
     this.setState({objectTypes: null})
@@ -540,7 +540,7 @@ class RequestIp extends React.Component {
                   }
                   key={obj.id}
                   style={{ width: '300px' }}
-                  onChange={(value, event) => this.setNetwork(value, event, obj.id)}>
+                  onChange={(value, event) => this.network(value, event, obj.id)}>
                   { this.state.real ?
                     this.state.real.map((n, i) => {
                     return (

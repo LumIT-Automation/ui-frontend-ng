@@ -64,55 +64,55 @@ const infobloxSlice = createSlice({
         state.deleteAssetError = action.payload
       },
 
-      setTreeLoading: (state, action) => {
+      treeLoading: (state, action) => {
         state.treeLoading = action.payload
       },
-      setTree: (state, action) => {
+      tree: (state, action) => {
         state.tree = [action.payload.data['/']]
       },
-      setTreeFetch: (state, action) => {
+      treeFetch: (state, action) => {
         state.treeFetch = action.payload
       },
-      setTreeError: (state, action) => {
+      treeError: (state, action) => {
         state.treeError = action.payload
       },
 
-      setNetworksLoading: (state, action) => {
+      networksLoading: (state, action) => {
         state.networksLoading = action.payload
       },
-      setNetworks: (state, action) => {
+      networks: (state, action) => {
         state.networks = action.payload.data
       },
-      setNetworksFetch: (state, action) => {
+      networksFetch: (state, action) => {
         state.networksFetch = action.payload
       },
       networksError: (state, action) => {
         state.networksError = action.payload
       },
 
-      setContainersLoading: (state, action) => {
+      containersLoading: (state, action) => {
         state.containersLoading = action.payload
       },
-      setContainers: (state, action) => {
+      containers: (state, action) => {
         state.containers = action.payload.data
       },
-      setContainersFetch: (state, action) => {
+      containersFetch: (state, action) => {
         state.containersFetch = action.payload
       },
       containersError: (state, action) => {
         state.containersError = action.payload
       },
 
-      setRealNetworksLoading: (state, action) => {
+      realNetworksLoading: (state, action) => {
         state.realNetworksLoading = action.payload
       },
-      setRealNetworks: (state, action) => {
+      realNetworks: (state, action) => {
         state.realNetworks = action.payload
       },
-      setRealNetworksFetch: (state, action) => {
+      realNetworksFetch: (state, action) => {
         state.RealNetworksFetch = action.payload
       },
-      setRealNetworksError: (state, action) => {
+      realNetworksError: (state, action) => {
         state.RealNetworksError = action.payload
       },
 
@@ -171,25 +171,25 @@ export const {
   modifyAssetError,
   deleteAssetError,
 
-  setTreeLoading,
-  setTree,
-  setTreeFetch,
-  setTreeError,
+  treeLoading,
+  tree,
+  treeFetch,
+  treeError,
 
-  setNetworksLoading,
-  setNetworks,
-  setNetworksFetch,
+  networksLoading,
+  networks,
+  networksFetch,
   networksError,
 
-  setContainersLoading,
-  setContainers,
-  setContainersFetch,
+  containersLoading,
+  containers,
+  containersFetch,
   containersError,
 
-  setRealNtworksLoading,
-  setRealNetworks,
-  setRealNetworksFetch,
-  setRealNetworksError,
+  realNetworksLoading,
+  realNetworks,
+  realNetworksFetch,
+  realNetworksError,
 
   ipDetailError,
   networkError,

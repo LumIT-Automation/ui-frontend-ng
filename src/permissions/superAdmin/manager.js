@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest"
 
-import { setSuperAdminsPermissions, setSuperAdminsPermissionsError, setSuperAdminsPermissionsBeauty } from '../../_store/store.permissions'
+import { superAdminsPermissions, superAdminsPermissionsError, superAdminsPermissionsBeauty } from '../../_store/store.permissions'
 
 import { Input, Button, Space, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'
@@ -126,11 +126,11 @@ class PermissionsTab extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(setSuperAdminsPermissions( resp ))
+        this.props.dispatch(superAdminsPermissions( resp ))
         this.superAdminsInRows()
       },
       error => {
-        this.props.dispatch(setSuperAdminsPermissionsError(error))
+        this.props.dispatch(superAdminsPermissionsError(error))
         this.setState({loading: false})
       }
     )
@@ -153,7 +153,7 @@ class PermissionsTab extends React.Component {
       }
 
     }
-    this.props.dispatch(setSuperAdminsPermissionsBeauty(list))
+    this.props.dispatch(superAdminsPermissionsBeauty(list))
   }
 
 
@@ -163,7 +163,7 @@ class PermissionsTab extends React.Component {
 
         {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.superAdmins}/>  }
 
-        {this.props.superAdminsPermissionsError ? <Error component={'manager superAdmin'} error={[this.props.superAdminsPermissionsError]} visible={true} type={'setSuperAdminsPermissionsError'}/> : null }
+        {this.props.superAdminsPermissionsError ? <Error component={'manager superAdmin'} error={[this.props.superAdminsPermissionsError]} visible={true} type={'superAdminsPermissionsError'}/> : null }
       </Space>
 
     )

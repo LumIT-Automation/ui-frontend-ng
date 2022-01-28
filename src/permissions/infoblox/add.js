@@ -275,7 +275,7 @@ class Add extends React.Component {
     return r
   }
 
-  setNetwork = network => {
+  network = network => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.network = {}
     request.network.name = network
@@ -480,7 +480,7 @@ class Add extends React.Component {
                         filterSort={(optionA, optionB) =>
                           optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                         }
-                        onChange={n => this.setNetwork(n)}
+                        onChange={n => this.network(n)}
                       >
                         {this.state.request.role === 'admin' ?
                           <Select.Option key={'any'} value={'any'}>any</Select.Option>

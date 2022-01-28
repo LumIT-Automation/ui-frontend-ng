@@ -8,7 +8,6 @@ import permissionsReducer from './store.permissions'
 import f5Reducer from './store.f5'
 import infobloxReducer from './store.infoblox'
 import fortinetdbReducer from './store.fortinetdb'
-import workflowsReducer from './store.workflows'
 
 /*
 store.js configures (configureStore) the store by defining its reducers:
@@ -24,6 +23,5 @@ export default configureStore({
         f5: f5Reducer,
         infoblox: infobloxReducer,
         fortinetdb: fortinetdbReducer,
-        workflows: workflowsReducer
     }
 })

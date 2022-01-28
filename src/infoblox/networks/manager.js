@@ -8,9 +8,9 @@ import Error from '../../error'
 import { setError } from '../../_store/store.error'
 
 import {
-  setNetworksLoading,
-  setNetworks,
-  setNetworksFetch
+  networksLoading,
+  networks,
+  networksFetch
 } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -52,7 +52,7 @@ class Manager extends React.Component {
       }
       if (this.props.networksFetch) {
         this.fetchNetworks()
-        this.props.dispatch(setNetworksFetch(false))
+        this.props.dispatch(networksFetch(false))
       }
     }
   }
@@ -61,11 +61,11 @@ class Manager extends React.Component {
   }
 
   fetchNetworks = async () => {
-    this.props.dispatch(setNetworksLoading(true))
+    this.props.dispatch(networksLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setNetworks(resp))
+        this.props.dispatch(networks(resp))
       },
       error => {
         this.props.dispatch(setError(error))
@@ -73,7 +73,7 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/networks/`, this.props.token)
-    this.props.dispatch(setNetworksLoading(false))
+    this.props.dispatch(networksLoading(false))
   }
 
 

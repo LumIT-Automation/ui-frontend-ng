@@ -29,7 +29,7 @@ const authorizationsSlice = createSlice({
         }
         state.igIdentifiers = list
       },
-      setF5Permissions: ( state, action) => {
+      f5Permissions: ( state, action) => {
         state.f5Permissions = action.payload.data.items
       }
     }
@@ -41,7 +41,7 @@ export const {
   setAuthorizations,
   setAuthorizationsError,
   identityGroups,
-  setF5Permissions,
+  f5Permissions,
   setIgIdentifiers
 } = actions
 export default reducer

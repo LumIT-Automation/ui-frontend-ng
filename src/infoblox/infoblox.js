@@ -9,8 +9,8 @@ import AssetSelector from './assetSelector'
 import Tree from './tree/manager'
 import {
   assets,
-  setNetworksFetch,
-  setTreeFetch
+  networksFetch,
+  treeFetch
 } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css'
@@ -63,30 +63,8 @@ class Infoblox extends React.Component {
     await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
-/*
-  fetchContainers = async () => {
-
-    this.props.dispatch(setContainersLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({error: false}, () => this.props.dispatch(setContainers(resp)) )
-        this.props.dispatch(setContainersLoading(false))
-      },
-      error => {
-        this.setState({error: error}, () => this.props.dispatch(setContainersLoading(false)))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/network-containers/`, this.props.token)
-  }
-*/
-
   treeRefresh = () => {
-    this.props.dispatch(setTreeFetch(true))
-  }
-
-  networksRefresh = () => {
-    this.props.dispatch(setNetworksFetch(true))
+    this.props.dispatch(treeFetch(true))
   }
 
   resetError = () => {
@@ -108,18 +86,6 @@ class Infoblox extends React.Component {
               </TabPane>
               : null
             }
-            {/* this.props.authorizations && (this.props.authorizations.containers_get || this.props.authorizations.any) ?
-              <TabPane tab="Containers" key="Containers">
-                <Containers/>
-              </TabPane>
-              : null
-            */}
-            {/* this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
-              <TabPane tab="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
-                {this.props.networksLoading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> : <Networks/> }
-              </TabPane>
-              : null
-            */}
 
           </Tabs>
 
@@ -139,10 +105,4 @@ export default connect((state) => ({
   tree: state.infoblox.tree,
   treeLoading: state.infoblox.treeLoading,
 
-  networks: state.infoblox.networks,
-  networksLoading: state.infoblox.networksLoading,
-/*
-  containers: state.infoblox.containers,
-  containersFetch: state.infoblox.containersFetch,
-*/
 }))(Infoblox);

@@ -176,7 +176,7 @@ class Modify extends React.Component {
     return r
   }
 
-  setNetwork = net => {
+  network = net => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.network.name = net
     this.setState({request: request})
@@ -356,7 +356,7 @@ class Modify extends React.Component {
                   filterSort={(optionA, optionB) =>
                     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                   }
-                  onChange={n => this.setNetwork(n)}
+                  onChange={n => this.network(n)}
                 >
                   {this.state.request.role === 'admin' ?
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>

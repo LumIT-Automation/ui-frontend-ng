@@ -50,7 +50,7 @@ class List extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch( setTree(resp) )
+        //this.props.dispatch( tree(resp) )
 
         this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
       },
@@ -59,7 +59,7 @@ class List extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=ip`, this.props.token)
-    //this.props.dispatch(setTreeLoading(false))
+    //this.props.dispatch(treeLoading(false))
     //this.setState({visible: true})
   }
 
@@ -70,20 +70,14 @@ class List extends React.Component {
   onSelect = (selectedKeys, info) => {
 
     if (info.node.type === 'network') {
-      let n = info.node.network
+      let n = info.node.title
       n = n.split('/')
       n = n[0]
-      this.fetchIps(n)
-      this.setState({ network: n})
+      this.setState({ network: n}, () => this.fetchIps(n))
     }
-    else {
-      alert('nnnnnnnnnnn')
-    }
-    //this.setState({visible: true})
   }
 
   onCheck = (checkedKeys, info) => {
-    ;
   }
 
   render() {
