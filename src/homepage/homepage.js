@@ -8,17 +8,17 @@ import Rest from "../_helpers/Rest"
 import Error from '../error'
 
 import {
-  setDevices,
-  setDevicesLoading,
-  setDevicesError,
+  devices,
+  devicesLoading,
+  devicesError,
 
-  setDdosses,
-  setDdossesLoading,
-  setDdossesError,
+  ddosses,
+  ddossesLoading,
+  ddossesError,
 
-  setProjects,
-  setProjectsLoading,
-  setProjectsError,
+  projects,
+  projectsLoading,
+  projectsError,
 } from '../_store/store.fortinetdb'
 
 //import List from './list'

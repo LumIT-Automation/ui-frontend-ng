@@ -4,7 +4,7 @@ import { Tabs, Space, Spin } from 'antd'
 import Rest from "../_helpers/Rest"
 import Error from '../error'
 
-import { setDdosses, setDdossesLoading, setDdossesError, setDdossesFetch } from '../_store/store.fortinetdb'
+import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from '../_store/store.fortinetdb'
 
 import List from './ddosses/list'
 
@@ -38,7 +38,7 @@ class Ddosses extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.ddossesFetch) {
       this.fetchDdosses()
-      this.props.dispatch(setDdossesFetch(false))
+      this.props.dispatch(ddossesFetch(false))
     }
   }
 
@@ -46,22 +46,22 @@ class Ddosses extends React.Component {
   }
 
   fetchDdosses = async () => {
-    this.props.dispatch(setDdossesLoading(true))
+    this.props.dispatch(ddossesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setDdosses(resp))
+        this.props.dispatch(ddosses(resp))
       },
       error => {
-        this.props.dispatch(setDdossesError(error))
+        this.props.dispatch(ddossesError(error))
       }
     )
     await rest.doXHR(`fortinetdb/ddosses/`, this.props.token)
-    this.props.dispatch(setDdossesLoading(false))
+    this.props.dispatch(ddossesLoading(false))
   }
 
   ddossesRefresh = () => {
-    this.props.dispatch(setDdossesFetch(true))
+    this.props.dispatch(ddossesFetch(true))
   }
 
 

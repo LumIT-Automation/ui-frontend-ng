@@ -33,110 +33,110 @@ const fortinetdbSlice = createSlice({
 
 
 
-      setDevicesLoading: (state, action) => {
+      devicesLoading: (state, action) => {
         state.devicesLoading = action.payload
       },
-      setDevices: (state, action) => {
+      devices: (state, action) => {
         state.devices = action.payload.data.items
       },
-      setDevicesFetch: (state, action) => {
+      devicesFetch: (state, action) => {
         state.devicesFetch = action.payload
       },
-      setDevicesError: (state, action) => {
+      devicesError: (state, action) => {
         state.devicesError = action.payload
       },
 
-      setDdossesLoading: (state, action) => {
+      ddossesLoading: (state, action) => {
         state.ddossesLoading = action.payload
       },
-      setDdosses: (state, action) => {
+      ddosses: (state, action) => {
         state.ddosses = action.payload.data.items
       },
-      setDdossesFetch: (state, action) => {
+      ddossesFetch: (state, action) => {
         state.ddossesFetch = action.payload
       },
-      setDdossesError: (state, action) => {
+      ddossesError: (state, action) => {
         state.ddossesError = action.payload
       },
 
-      setProjectsLoading: (state, action) => {
+      projectsLoading: (state, action) => {
         state.projectsLoading = action.payload
       },
-      setProjects: (state, action) => {
+      projects: (state, action) => {
         state.projects = action.payload.data.items
       },
-      setProjectsFetch: (state, action) => {
+      projectsFetch: (state, action) => {
         state.projectsFetch = action.payload
       },
-      setProjectsError: (state, action) => {
+      projectsError: (state, action) => {
         state.projectsError = action.payload
       },
 
 
-      setDevice: (state, action) => {
+      device: (state, action) => {
         state.device = action.payload
       },
-      setDeviceAddError: (state, action) => {
-        state.deviceAddError = action.payload
+      addDeviceError: (state, action) => {
+        state.addDeviceError = action.payload
       },
-      setDeviceModifyError: (state, action) => {
-        state.deviceModifyError = action.payload
+      modifyDeviceError: (state, action) => {
+        state.modifyDeviceError = action.payload
       },
-      setDeviceDeleteError: (state, action) => {
-        state.deviceDeleteError = action.payload
+      deleteDeviceError: (state, action) => {
+        state.deleteDeviceError = action.payload
       },
 
-      setDdos: (state, action) => {
+      ddos: (state, action) => {
         state.ddos = action.payload
       },
-      setDdosAddError: (state, action) => {
-        state.ddosAddError = action.payload
+      addDdosError: (state, action) => {
+        state.addDdosError = action.payload
       },
-      setDdosModifyError: (state, action) => {
-        state.ddosModifyError = action.payload
+      modifyDdosError: (state, action) => {
+        state.modifyDdosError = action.payload
       },
-      setDdosDeleteError: (state, action) => {
-        state.ddosDeleteError = action.payload
+      deleteDdosError: (state, action) => {
+        state.deleteDdosError = action.payload
       },
 
-      setProject: (state, action) => {
+      project: (state, action) => {
         state.project = action.payload
       },
-      setProjectAddError: (state, action) => {
+      projectAddError: (state, action) => {
         state.projectAddError = action.payload
       },
-      setProjectModifyError: (state, action) => {
+      projectModifyError: (state, action) => {
         state.projectModifyError = action.payload
       },
-      setProjectDeleteError: (state, action) => {
+      projectDeleteError: (state, action) => {
         state.projectDeleteError = action.payload
       },
 
 
 
-      setFirmwaresLoading: (state, action) => {
+      firmwaresLoading: (state, action) => {
         state.firmwaresLoading = action.payload
       },
-      setFirmwares: (state, action) => {
+      firmwares: (state, action) => {
         state.firmwares = action.payload.data.items
       },
-      setFirmwaresFetch: (state, action) => {
+      firmwaresFetch: (state, action) => {
         state.firmwaresFetch = action.payload
       },
-      setFirmwaresError: (state, action) => {
+      firmwaresError: (state, action) => {
         state.firmwaresError = action.payload
       },
 
-      setFirmwareLoading: (state, action) => {
+      firmwareLoading: (state, action) => {
         state.firmwareLoading = action.payload
       },
-      setFirmware: (state, action) => {
+      firmware: (state, action) => {
         state.firmware = action.payload.data.items
       },
-      setFirmwareFetch: (state, action) => {
+      firmwareFetch: (state, action) => {
         state.firmwareFetch = action.payload
       },
-      setFirmwareError: (state, action) => {
+      firmwareError: (state, action) => {
         state.firmwareError = action.payload
       },
 
@@ -161,47 +161,47 @@ export const {
   identityGroupsFetch,
   identityGroupsError,
 
-  setDevicesLoading,
-  setDevices,
-  setDevicesFetch,
-  setDevicesError,
+  devicesLoading,
+  devices,
+  devicesFetch,
+  devicesError,
 
-  setDdossesLoading,
-  setDdosses,
-  setDdossesFetch,
-  setDdossesError,
+  ddossesLoading,
+  ddosses,
+  ddossesFetch,
+  ddossesError,
 
-  setProjectsLoading,
-  setProjects,
-  setProjectsFetch,
-  setProjectsError,
+  projectsLoading,
+  projects,
+  projectsFetch,
+  projectsError,
 
-  setDevice,
-  setDeviceAddError,
-  setDeviceModifyError,
-  setDeviceDeleteError,
+  device,
+  addDeviceError,
+  modifyDeviceError,
+  deleteDeviceError,
 
-  setDdos,
-  setDdosAddError,
-  setDdosModifyError,
-  setDdosDeleteError,
+  ddos,
+  addDdosError,
+  modifyDdosError,
+  deleteDdosError,
 
-  setProject,
-  setProjectAddError,
-  setProjectModifyError,
-  setProjectDeleteError,
+  project,
+  projectAddError,
+  projectModifyError,
+  projectDeleteError,
 
 
 
-  setFirmwaresLoading,
-  setFirmwares,
-  setFirmwaresFetch,
-  setFirmwaresError,
+  firmwaresLoading,
+  firmwares,
+  firmwaresFetch,
+  firmwaresError,
 
-  setFirmwareLoading,
-  setFirmware,
-  setFirmwareFetch,
-  setFirmwareError,
+  firmwareLoading,
+  firmware,
+  firmwareFetch,
+  firmwareError,
 
   cleanUp
 } = actions

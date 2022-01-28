@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
 import Rest from "../_helpers/Rest"
 
-import { setProjects, setProjectsLoading, setProjectsError, setProjectsFetch } from '../_store/store.fortinetdb'
+import { projects, projectsLoading, projectsError, projectsFetch } from '../_store/store.fortinetdb'
 
 import List from './projects/list'
 
@@ -37,7 +37,7 @@ class Projects extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.projectsFetch) {
       this.fetchProjects()
-      this.props.dispatch(setProjectsFetch(false))
+      this.props.dispatch(projectsFetch(false))
     }
   }
 
@@ -45,22 +45,22 @@ class Projects extends React.Component {
   }
 
   fetchProjects = async () => {
-    this.props.dispatch(setProjectsLoading(true))
+    this.props.dispatch(projectsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setProjects(resp))
+        this.props.dispatch(projects(resp))
       },
       error => {
-        this.props.dispatch(setProjectsError(error))
+        this.props.dispatch(projectsError(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/`, this.props.token)
-    this.props.dispatch(setProjectsLoading(false))
+    this.props.dispatch(projectsLoading(false))
   }
 
   projectsRefresh = () => {
-    this.props.dispatch(setProjectsFetch(true))
+    this.props.dispatch(projectsFetch(true))
   }
 
 

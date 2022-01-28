@@ -9,10 +9,6 @@ import f5Reducer from './store.f5'
 import infobloxReducer from './store.infoblox'
 import fortinetdbReducer from './store.fortinetdb'
 
-/*
-store.js configures (configureStore) the store by defining its reducers:
-ssoAuth, f5.
-*/
 
 export default configureStore({
     reducer: {

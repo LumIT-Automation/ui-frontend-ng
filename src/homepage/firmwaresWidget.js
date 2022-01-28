@@ -9,7 +9,7 @@ import FirmwareTable from './firmwareTable'
 
 import { Modal, Table } from 'antd'
 
-import { setFirmwares, setFirmwaresLoading, setFirmwaresError } from '../_store/store.fortinetdb'
+import { firmwares, firmwaresLoading, firmwaresError } from '../_store/store.fortinetdb'
 
 class Firmware extends React.Component {
 
@@ -35,19 +35,19 @@ class Firmware extends React.Component {
   }
 
   fetchFirmware = async () => {
-    this.props.dispatch(setFirmwaresLoading(true))
+    this.props.dispatch(firmwaresLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
         console.log(resp)
-        this.props.dispatch(setFirmwares(resp))
+        this.props.dispatch(firmwares(resp))
       },
       error => {
-        this.props.dispatch(setFirmwaresError(error))
+        this.props.dispatch(firmwaresError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
-    this.props.dispatch(setFirmwaresLoading(false))
+    this.props.dispatch(firmwaresLoading(false))
   }
 
   hide = () => {

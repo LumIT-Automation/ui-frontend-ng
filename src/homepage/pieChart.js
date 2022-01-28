@@ -30,7 +30,7 @@ export default class Torta extends PureComponent {
     this.setState({firmwares: firmwares})
   }
 
-  setFirmware = f => {
+  firmware = f => {
     this.setState({firmware: f}, () => {})
   }
 
@@ -68,7 +68,7 @@ export default class Torta extends PureComponent {
 
                label={e => renderCustomizedLabel(e)}
                onClick={e => alert(e.firmware)}
-               onMouseOver={e => this.setFirmware(e.firmware)}
+               onMouseOver={e => this.firmware(e.firmware)}
              >
              <Tooltip content={<p>ciao</p>}/>
              </Pie>

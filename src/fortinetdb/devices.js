@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
 import Rest from "../_helpers/Rest"
 
-import { setDevices, setDevicesLoading, setDevicesError, setDevicesFetch } from '../_store/store.fortinetdb'
+import { devices, devicesLoading, devicesError, devicesFetch } from '../_store/store.fortinetdb'
 
 import List from './devices/list'
 
@@ -37,7 +37,7 @@ class Devices extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.devicesFetch) {
       this.fetchDevices()
-      this.props.dispatch(setDevicesFetch(false))
+      this.props.dispatch(devicesFetch(false))
     }
   }
 
@@ -45,22 +45,22 @@ class Devices extends React.Component {
   }
 
   fetchDevices = async () => {
-    this.props.dispatch(setDevicesLoading(true))
+    this.props.dispatch(devicesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setDevices(resp))
+        this.props.dispatch(devices(resp))
       },
       error => {
-        this.props.dispatch(setDevicesError(error))
+        this.props.dispatch(devicesError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/`, this.props.token)
-    this.props.dispatch(setDevicesLoading(false))
+    this.props.dispatch(devicesLoading(false))
   }
 
   devicesRefresh = () => {
-    this.props.dispatch(setDevicesFetch(true))
+    this.props.dispatch(devicesFetch(true))
   }
 
 
