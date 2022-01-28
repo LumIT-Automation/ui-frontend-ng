@@ -6,12 +6,12 @@ import Validators from '../../_helpers/validators'
 import Error from '../../error/f5Error'
 
 import {
-  setCertificates,
-  setCertificatesError,
-  setKeys,
-  setKeysError,
-  setRouteDomains,
-  setRouteDomainsError,
+  certificates,
+  certificatesError,
+  keys,
+  keysError,
+  routeDomains,
+  routeDomainsError,
   createL4ServiceError,
   createL7ServiceError
 } from '../../_store/store.f5'
@@ -77,36 +77,36 @@ class CreateF5Service extends React.Component {
   main = async () => {
 
     await this.setState({certificatesLoading: true})
-    let certificates = await this.fetchCertificates()
+    let fetchedCertificates = await this.fetchCertificates()
     await this.setState({certificatesLoading: false})
-    if (certificates.status && certificates.status !== 200 ) {
-      this.props.dispatch(setCertificatesError(certificates))
+    if (fetchedCertificates.status && fetchedCertificates.status !== 200 ) {
+      this.props.dispatch(certificatesError(fetchedCertificates))
       return
     }
     else {
-      this.props.dispatch(setCertificates( certificates ))
+      this.props.dispatch(certificates( fetchedCertificates ))
     }
 
     await this.setState({keysLoading: true})
-    let keys = await this.fetchKeys()
+    let fetchedKeys = await this.fetchKeys()
     await this.setState({keysLoading: false})
-    if (keys.status && keys.status !== 200 ) {
-      this.props.dispatch(setKeysError(keys))
+    if (fetchedKeys.status && fetchedKeys.status !== 200 ) {
+      this.props.dispatch(keysError(fetchedKeys))
       return
     }
     else {
-      this.props.dispatch(setKeys( keys ))
+      this.props.dispatch(keys( fetchedKeys ))
     }
 
     await this.setState({routeDomainsLoading: true})
-    let routeDomains = await this.fetchRouteDomains()
+    let fetchedRouteDomains = await this.fetchRouteDomains()
     await this.setState({routeDomainsLoading: false})
-    if (routeDomains.status && routeDomains.status !== 200 ) {
-      this.props.dispatch(setRouteDomainsError(routeDomains))
+    if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
+      this.props.dispatch(routeDomainsError(fetchedRouteDomains))
       return
     }
     else {
-      this.props.dispatch(setRouteDomains( routeDomains ))
+      this.props.dispatch(routeDomains( fetchedRouteDomains ))
     }
   }
 
@@ -173,7 +173,7 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  setRouteDomain = id => {
+  routeDomain = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.routeDomain = id
     this.setState({request: request})
@@ -203,13 +203,13 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  setCertificate = e => {
+  certificate = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.certificate = e
     this.setState({request: request})
   }
 
-  setKey = e => {
+  key = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.key = e
     this.setState({request: request})
@@ -892,7 +892,7 @@ class CreateF5Service extends React.Component {
                           filterSort={(optionA, optionB) =>
                             optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                           }
-                          onSelect={n => this.setRouteDomain(n)}
+                          onSelect={n => this.routeDomain(n)}
                         >
                           <React.Fragment>
                             {this.props.routeDomains.map((n, i) => {
@@ -1034,7 +1034,7 @@ class CreateF5Service extends React.Component {
                                 filterSort={(optionA, optionB) =>
                                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                                 }
-                                onSelect={n => this.setCertificate(n)}
+                                onSelect={n => this.certificate(n)}
                               >
                                 <React.Fragment>
                                   {this.props.certificates.map((n, i) => {
@@ -1076,7 +1076,7 @@ class CreateF5Service extends React.Component {
                                 filterSort={(optionA, optionB) =>
                                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                                 }
-                                onSelect={n => this.setKey(n)}
+                                onSelect={n => this.key(n)}
                               >
                                 <React.Fragment>
                                   {this.props.keys.map((n, i) => {
@@ -1455,9 +1455,9 @@ class CreateF5Service extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.certificatesError ? <Error component={'create loadbalancer'} error={[this.props.certificatesError]} visible={true} type={'setCertificatesError'} /> : null }
-            { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
-            { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'setRouteDomainsError'} /> : null }
+            { this.props.certificatesError ? <Error component={'create loadbalancer'} error={[this.props.certificatesError]} visible={true} type={'certificatesError'} /> : null }
+            { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'keysError'} /> : null }
+            { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
 
             { this.props.createL4ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL4ServiceError]} visible={true} type={'createL4ServiceError'} /> : null }
             { this.props.createL7ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL7ServiceError]} visible={true} type={'createL7ServiceError'} /> : null }

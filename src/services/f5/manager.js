@@ -5,8 +5,8 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
 import {
-  setAssets,
-  setAssetsError
+  assets,
+  assetsError
 } from '../../_store/store.f5'
 
 import CreateLoadBalancer from './createF5Service'
@@ -49,10 +49,10 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssets( resp ))
+        this.props.dispatch(assets( resp ))
       },
       error => {
-        this.props.dispatch(setAssetsError(error))
+        this.props.dispatch(assetsError(error))
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -81,7 +81,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        { this.props.assetsError ? <Error component={'services manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'services manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
 
       </React.Fragment>
     )

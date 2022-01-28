@@ -6,10 +6,10 @@ import Rest from "../../../_helpers/Rest"
 import Error from "../../../error/f5Error"
 
 import {
-  setCertificatesLoading,
-  setCertificates,
-  setCertificatesFetch,
-  setCertificatesError
+  certificatesLoading,
+  certificates,
+  certificatesFetch,
+  certificatesError
 } from '../../../_store/store.f5'
 
 import List from './list'
@@ -33,7 +33,7 @@ class CertificatesManager extends React.Component {
   componentDidMount() {
     if (!this.props.certificatesError) {
       if (this.props.asset && this.props.partition) {
-        this.props.dispatch(setCertificatesFetch(false))
+        this.props.dispatch(certificatesFetch(false))
         if (!this.props.certificates) {
           this.fetchCertificates()
         }
@@ -52,7 +52,7 @@ class CertificatesManager extends React.Component {
 
     if (this.props.certificatesFetch && this.props.asset && this.props.partition ) {
       this.fetchCertificates()
-      this.props.dispatch(setCertificatesFetch(false))
+      this.props.dispatch(certificatesFetch(false))
     }
   }
 
@@ -62,18 +62,18 @@ class CertificatesManager extends React.Component {
 
 
   fetchCertificates = async () => {
-    this.props.dispatch(setCertificatesLoading(true))
+    this.props.dispatch(certificatesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setCertificates( resp ))
+        this.props.dispatch(certificates( resp ))
       },
       error => {
-        this.props.dispatch(setCertificatesError(error))
+        this.props.dispatch(certificatesError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
-    this.props.dispatch(setCertificatesLoading(false))
+    this.props.dispatch(certificatesLoading(false))
   }
 
 
@@ -99,7 +99,7 @@ class CertificatesManager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
         }
 
-        { this.props.certificatesError ? <Error component={'certificates manager f5'} error={[this.props.certificatesError]} visible={true} type={'setCertificatesError'} /> : null }
+        { this.props.certificatesError ? <Error component={'certificates manager f5'} error={[this.props.certificatesError]} visible={true} type={'certificatesError'} /> : null }
 
       </React.Fragment>
     )

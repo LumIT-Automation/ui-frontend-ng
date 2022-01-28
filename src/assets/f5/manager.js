@@ -5,10 +5,10 @@ import Rest from "../../_helpers/Rest"
 import Error from "../../error/f5Error"
 
 import {
-  setAssetsLoading,
-  setAssets,
-  setAssetsFetch,
-  setAssetsError
+  assetsLoading,
+  assets,
+  assetsFetch,
+  assetsError
 } from '../../_store/store.f5'
 
 import List from './list'
@@ -26,7 +26,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.assetsError) {
-      this.props.dispatch(setAssetsFetch(false))
+      this.props.dispatch(assetsFetch(false))
       if (!this.props.assets) {
         this.fetchAssets()
       }
@@ -40,7 +40,7 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assetsFetch) {
       this.fetchAssets()
-      this.props.dispatch(setAssetsFetch(false))
+      this.props.dispatch(assetsFetch(false))
     }
   }
 
@@ -48,18 +48,18 @@ class Manager extends React.Component {
   }
 
   fetchAssets = async () => {
-    this.props.dispatch(setAssetsLoading(true))
+    this.props.dispatch(assetsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssets( resp ))
+        this.props.dispatch(assets( resp ))
       },
       error => {
-        this.props.dispatch(setAssetsError(error))
+        this.props.dispatch(assetsError(error))
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
-    this.props.dispatch(setAssetsLoading(false))
+    this.props.dispatch(assetsLoading(false))
   }
 
 
@@ -79,7 +79,7 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error component={'asset manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'asset manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
 
       </React.Fragment>
     )

@@ -8,7 +8,7 @@ import Error from '../error'
 import AssetSelector from './assetSelector'
 import Tree from './tree/manager'
 import {
-  setAssets,
+  assets,
   setNetworksFetch,
   setTreeFetch
 } from '../_store/store.infoblox'
@@ -54,7 +54,7 @@ class Infoblox extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
+        this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
       },
       error => {
         this.setState({loading: false, error: error})

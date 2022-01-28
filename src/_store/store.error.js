@@ -3,10 +3,10 @@ import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/t
 /*
 create Slice creates a small piece of the store, in this case the slice for the balancers.
 It has a name, an initial state, and several methods that set the state,
-  setAssets
-  setAsset
-  setPartitions
-  setPartition
+  assets
+  asset
+  partitions
+  partition
   setPoolList
   cleanUp
 Methods (called actions) must be exported.

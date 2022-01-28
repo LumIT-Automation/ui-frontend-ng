@@ -3,10 +3,10 @@ import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/t
 /*
 create Slice creates a small piece of the store, in this case the slice for the balancers.
 It has a name, an initial state, and several methods that set the state,
-  setAssets
-  setAsset
-  setPartitions
-  setPartition
+  assets
+  asset
+  partitions
+  partition
   setPoolList
   cleanUp
 Methods (called actions) must be exported.
@@ -17,104 +17,104 @@ const f5Slice = createSlice({
     name: 'f5',
     initialState: {},
     reducers: {
-        setPermissionsLoading: (state, action) => {
+        permissionsLoading: (state, action) => {
           state.permissionsLoading = action.payload
         },
-        setPermissions: (state, action) => {
+        permissions: (state, action) => {
           state.permissions = action.payload
         },
-        setPermissionsFetch: (state, action) => {
+        permissionsFetch: (state, action) => {
           state.permissionsFetch = action.payload
         },
-        setPermissionsError: (state, action) => {
+        permissionsError: (state, action) => {
           state.permissionsError = action.payload
         },
 
-        setIdentityGroupsLoading: (state, action) => {
+        identityGroupsLoading: (state, action) => {
           state.identityGroupsLoading = action.payload
         },
-        setIdentityGroups: (state, action) => {
+        identityGroups: (state, action) => {
           state.identityGroups = action.payload.data.items
         },
-        setIdentityGroupsFetch: (state, action) => {
+        identityGroupsFetch: (state, action) => {
           state.identityGroupsFetch = action.payload
         },
-        setIdentityGroupsError: (state, action) => {
+        identityGroupsError: (state, action) => {
           state.identityGroupsError = action.payload
         },
 
-        setEnvironment: (state, action) => {
+        environment: (state, action) => {
           state.environment = action.payload
         },
-        setEnvironmentError: (state, action) => {
+        environmentError: (state, action) => {
           state.environmentError = action.payload
         },
 
-        setAssetsLoading: (state, action) => {
+        assetsLoading: (state, action) => {
           state.assetsLoading = action.payload
         },
-        setAssets: (state, action) => {
+        assets: (state, action) => {
           state.assets = action.payload.data.items
         },
-        setAssetsFetch: (state, action) => {
+        assetsFetch: (state, action) => {
           state.assetsFetch = action.payload
         },
-        setAssetsError: (state, action) => {
+        assetsError: (state, action) => {
           state.assetsError = action.payload
         },
 
-        setAsset: (state, action) => {
+        asset: (state, action) => {
           state.asset = action.payload
         },
-        setAssetAddError: (state, action) => {
-          state.assetAddError = action.payload
+        addAssetError: (state, action) => {
+          state.addAssetError = action.payload
         },
-        setAssetModifyError: (state, action) => {
-          state.assetModifyError = action.payload
+        modifyAssetError: (state, action) => {
+          state.modifyAssetError = action.payload
         },
-        setAssetDeleteError: (state, action) => {
-          state.assetDeleteError = action.payload
+        deleteAssetError: (state, action) => {
+          state.deleteAssetError = action.payload
         },
 
-        setPartitionsLoading: (state, action) => {
+        partitionsLoading: (state, action) => {
           state.partitionsLoading = action.payload
         },
-        setPartitions: (state, action) => {
+        partitions: (state, action) => {
           state.partitions = action.payload.data.items
         },
-        setPartitionsFetch: (state, action) => {
+        partitionsFetch: (state, action) => {
           state.partitionsFetch = action.payload
         },
-        setPartitionsError: (state, action) => {
+        partitionsError: (state, action) => {
           state.partitionsError = action.payload
         },
         clearPartitions: (state, action) => {
           state.partitions = null
         },
 
-        setRouteDomainsLoading: (state, action) => {
+        routeDomainsLoading: (state, action) => {
           state.routeDomainsLoading = action.payload
         },
-        setRouteDomains: (state, action) => {
+        routeDomains: (state, action) => {
           state.routeDomains = action.payload.data.items
         },
-        setRouteDomainsFetch: (state, action) => {
+        routeDomainsFetch: (state, action) => {
           state.routeDomainsFetch = action.payload
         },
-        setRouteDomainsError: (state, action) => {
+        routeDomainsError: (state, action) => {
           state.routeDomainsError = action.payload
         },
 
-        setPartition: (state, action) => {
+        partition: (state, action) => {
           state.partition = action.payload
         },
-        setPartitionAddError: (state, action) => {
+        partitionAddError: (state, action) => {
           state.partitionAddError = action.payload
         },
-        setPartitionModifyError: (state, action) => {
+        partitionModifyError: (state, action) => {
           state.partitionModifyError = action.payload
         },
-        setPartitionDeleteError: (state, action) => {
+        partitionDeleteError: (state, action) => {
           state.partitionDeleteError = action.payload
         },
 
@@ -247,29 +247,29 @@ const f5Slice = createSlice({
         },
 
 
-        setCertificatesLoading: (state, action) => {
+        certificatesLoading: (state, action) => {
           state.certificatesLoading = action.payload
         },
-        setCertificates: (state, action) => {
+        certificates: (state, action) => {
           state.certificates = action.payload.data.items
         },
-        setCertificatesFetch: (state, action) => {
+        certificatesFetch: (state, action) => {
           state.certificatesFetch = action.payload
         },
-        setCertificatesError: (state, action) => {
+        certificatesError: (state, action) => {
           state.certificatesError = action.payload
         },
 
-        setKeysLoading: (state, action) => {
+        keysLoading: (state, action) => {
           state.keysLoading = action.payload
         },
-        setKeys: (state, action) => {
+        keys: (state, action) => {
           state.keys = action.payload.data.items
         },
-        setKeysFetch: (state, action) => {
+        keysFetch: (state, action) => {
           state.keysFetch = action.payload
         },
-        setKeysError: (state, action) => {
+        keysError: (state, action) => {
           state.keysError = action.payload
         },
 
@@ -367,44 +367,44 @@ const f5Slice = createSlice({
 const { actions, reducer } = f5Slice;
 
 export const {
-  setPermissionsLoading,
-  setPermissions,
-  setPermissionsFetch,
-  setPermissionsError,
+  permissionsLoading,
+  permissions,
+  permissionsFetch,
+  permissionsError,
 
-  setIdentityGroupsLoading,
-  setIdentityGroups,
-  setIdentityGroupsFetch,
-  setIdentityGroupsError,
+  identityGroupsLoading,
+  identityGroups,
+  identityGroupsFetch,
+  identityGroupsError,
 
-  setEnvironment,
-  setEnvironmentError,
+  environment,
+  environmentError,
 
-  setAssetsLoading,
-  setAssets,
-  setAssetsFetch,
-  setAssetsError,
+  assetsLoading,
+  assets,
+  assetsFetch,
+  assetsError,
 
-  setAsset,
-  setAssetAddError,
-  setAssetModifyError,
-  setAssetDeleteError,
+  asset,
+  addAssetError,
+  modifyAssetError,
+  deleteAssetError,
 
-  setPartitionsLoading,
-  setPartitions,
-  setPartitionsFetch,
-  setPartitionsError,
+  partitionsLoading,
+  partitions,
+  partitionsFetch,
+  partitionsError,
   clearPartitions,
 
-  setRouteDomainsLoading,
-  setRouteDomains,
-  setRouteDomainsFetch,
-  setRouteDomainsError,
+  routeDomainsLoading,
+  routeDomains,
+  routeDomainsFetch,
+  routeDomainsError,
 
-  setPartition,
-  setPartitionAddError,
-  setPartitionModifyError,
-  setPartitionDeleteError,
+  partition,
+  partitionAddError,
+  partitionModifyError,
+  partitionDeleteError,
 
   nodesLoading,
   nodes,
@@ -452,15 +452,15 @@ export const {
   virtualServersFetch,
   virtualServersError,
 
-  setCertificatesLoading,
-  setCertificates,
-  setCertificatesFetch,
-  setCertificatesError,
+  certificatesLoading,
+  certificates,
+  certificatesFetch,
+  certificatesError,
 
-  setKeysLoading,
-  setKeys,
-  setKeysFetch,
-  setKeysError,
+  keysLoading,
+  keys,
+  keysFetch,
+  keysError,
 
   certificateAddError,
   certificateDeleteError,

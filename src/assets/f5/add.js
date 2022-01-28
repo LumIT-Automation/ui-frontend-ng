@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { setAssetsFetch, setAssetAddError } from '../../_store/store.f5'
+import { assetsFetch, addAssetError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
@@ -218,7 +218,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(setAssetAddError(error))
+          this.props.dispatch(addAssetError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -228,7 +228,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setAssetsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(assetsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -402,7 +402,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetAddError ? <Error component={'asset add f5'} error={[this.props.assetAddError]} visible={true} type={'setAssetAddError'} /> : null }
+            { this.props.addAssetError ? <Error component={'asset add f5'} error={[this.props.addAssetError]} visible={true} type={'addAssetError'} /> : null }
           </React.Fragment>
         :
           null
@@ -416,6 +416,6 @@ class Add extends React.Component {
 export default connect((state) => ({
 
   token: state.ssoAuth.token,
- 	assetAddError: state.f5.assetAddError,
+ 	addAssetError: state.f5.addAssetError,
 
 }))(Add);

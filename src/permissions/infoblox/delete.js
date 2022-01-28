@@ -8,7 +8,7 @@ import {
   deleteInfobloxPermissionError,
 } from '../../_store/store.permissions'
 
-import { setPermissionsFetch } from '../../_store/store.infoblox'
+import { permissionsFetch } from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -50,7 +50,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () => this.props.dispatch(setPermissionsFetch(true)) )
+        this.setState({loading: false, response: true}, () => this.props.dispatch(permissionsFetch(true)) )
       },
       error => {
         this.props.dispatch(deleteInfobloxPermissionError(error))

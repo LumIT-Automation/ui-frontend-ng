@@ -5,15 +5,15 @@ import Error from '../../error/infobloxError'
 import Rest from '../../_helpers/Rest'
 
 import {
-  setPermissionsLoading,
-  setPermissions,
-  setPermissionsFetch,
-  setPermissionsError,
+  permissionsLoading,
+  permissions,
+  permissionsFetch,
+  permissionsError,
 
-  setAssets,
-  setAssetsError,
-  setIdentityGroups,
-  setIdentityGroupsError,
+  assets,
+  assetsError,
+  identityGroups,
+  identityGroupsError,
 } from '../../_store/store.infoblox'
 
 import List from './list'
@@ -36,7 +36,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
-      this.props.dispatch(setPermissionsFetch(false))
+      this.props.dispatch(permissionsFetch(false))
       if (!this.props.permissions) {
         this.main()
       }
@@ -50,7 +50,7 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.permissionsFetch) {
       this.main()
-      this.props.dispatch(setPermissionsFetch(false))
+      this.props.dispatch(permissionsFetch(false))
     }
   }
 
@@ -59,48 +59,48 @@ class Manager extends React.Component {
 
 
   main = async () => {
-    this.props.dispatch(setPermissionsLoading(true))
+    this.props.dispatch(permissionsLoading(true))
 
-    let assets = await this.fetchAssets()
-    if (assets.status && assets.status !== 200 ) {
-      this.props.dispatch(setAssetsError(assets))
-      this.props.dispatch(setPermissionsLoading(false))
+    let fetchedAssets = await this.fetchAssets()
+    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+      this.props.dispatch(assetsError(fetchedAssets))
+      this.props.dispatch(permissionsLoading(false))
       return
     }
     else {
-      this.props.dispatch(setAssets( assets ))
+      this.props.dispatch(assets( fetchedAssets ))
     }
 
-    let identityGroups = await this.fetchIdentityGroups()
-    if (identityGroups.status && identityGroups.status !== 200 ) {
-      this.props.dispatch(setIdentityGroupsError(identityGroups))
-      this.props.dispatch(setPermissionsLoading(false))
+    let fetchedIdentityGroups = await this.fetchIdentityGroups()
+    if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+      this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+      this.props.dispatch(permissionsLoading(false))
       return
     }
     else {
-      this.props.dispatch(setIdentityGroups( identityGroups ))
+      this.props.dispatch(identityGroups( fetchedIdentityGroups ))
     }
 
-    let permissions = await this.fetchPermissions()
-    if (permissions.status && permissions.status !== 200 ) {
-      this.props.dispatch(setPermissionsError(permissions))
-      this.props.dispatch(setPermissionsLoading(false))
+    let fetchedPermissions = await this.fetchPermissions()
+    if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
+      this.props.dispatch(permissionsError(fetchedPermissions))
+      this.props.dispatch(permissionsLoading(false))
       return
     }
     else {
-      this.props.dispatch(setPermissions(permissions))
+      this.props.dispatch(permissions(fetchedPermissions))
     }
 
-    if ((assets.status && assets.status !== 200 ) ||
-        (identityGroups.status && identityGroups.status !== 200 ) ||
-        (permissions.status && permissions.status !== 200 ) ) {
-      this.props.dispatch(setPermissionsLoading(false))
+    if ((fetchedAssets.status && fetchedAssets.status !== 200 ) ||
+        (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) ||
+        (fetchedPermissions.status && fetchedPermissions.status !== 200 ) ) {
+      this.props.dispatch(permissionsLoading(false))
       return
     }
     else {
-      let permissionsWithAssets = await this.addAssetDetails(assets, permissions)
-      this.props.dispatch(setPermissions( permissionsWithAssets ))
-      this.props.dispatch(setPermissionsLoading(false))
+      let permissionsWithAssets = await this.addAssetDetails(fetchedAssets, fetchedPermissions)
+      this.props.dispatch(permissions( permissionsWithAssets ))
+      this.props.dispatch(permissionsLoading(false))
     }
   }
 
@@ -194,9 +194,9 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'setIdentityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error component={'manager infoblox'} error={[this.props.permissionsError]} visible={true} type={'setPermissionsError'} /> : null }
+        { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error component={'manager infoblox'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
 
       </React.Fragment>
     )

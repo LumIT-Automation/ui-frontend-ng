@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { setAssetsFetch, setAssetDeleteError } from '../../_store/store.f5'
+import { assetsFetch, deleteAssetError } from '../../_store/store.f5'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -45,10 +45,10 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () =>  this.props.dispatch(setAssetsFetch(true)) )
+        this.setState({loading: false, response: true}, () =>  this.props.dispatch(assetsFetch(true)) )
       },
       error => {
-        this.props.dispatch(setAssetDeleteError(error))
+        this.props.dispatch(deleteAssetError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -114,7 +114,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetDeleteError ? <Error component={'asset delete f5'} error={[this.props.assetDeleteError]} visible={true} type={'setAssetDeleteError'} /> : null }
+            { this.props.deleteAssetError ? <Error component={'asset delete f5'} error={[this.props.deleteAssetError]} visible={true} type={'deleteAssetError'} /> : null }
           </React.Fragment>
         :
           null
@@ -129,6 +129,6 @@ class Delete extends React.Component {
 export default connect((state) => ({
 
   token: state.ssoAuth.token,
- 	assetDeleteError: state.f5.assetDeleteError,
+ 	deleteAssetError: state.f5.deleteAssetError,
 
 }))(Delete);

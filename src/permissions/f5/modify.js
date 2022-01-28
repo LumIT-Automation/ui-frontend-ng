@@ -10,8 +10,8 @@ import {
 } from '../../_store/store.permissions'
 
 import {
-  setPermissionsFetch,
-  setPartitionsError
+  permissionsFetch,
+  partitionsError
 } from '../../_store/store.f5'
 
 import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
@@ -85,7 +85,7 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
-  setAsset = id => {
+  asset = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.partition.asset_id = id
     this.setState({request: request}, () => this.fetchPartitions())
@@ -132,14 +132,14 @@ class Modify extends React.Component {
         this.setState({partitions: resp.data.items, partitionsLoading: false})
       },
       error => {
-        this.props.dispatch(setPartitionsError(error))
+        this.props.dispatch(partitionsError(error))
       }
     )
     await rest.doXHR(`f5/${this.state.request.partition.asset_id}/partitions/`, this.props.token)
     this.setState({partitionsLoading: false})
   }
 
-  setPartition = partition => {
+  partition = partition => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.partition.name = partition
     this.setState({request: request})
@@ -179,7 +179,7 @@ class Modify extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(permissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -266,7 +266,7 @@ class Modify extends React.Component {
               name='asset'
               key="asset"
             >
-              <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
+              <Select id='asset' placeholder="select" onChange={id => this.asset(id) }>
                 {this.props.assets ? this.props.assets.map((a, i) => {
                 return (
                   <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
@@ -319,7 +319,7 @@ class Modify extends React.Component {
                   filterSort={(optionA, optionB) =>
                     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                   }
-                  onChange={n => this.setPartition(n)}
+                  onChange={n => this.partition(n)}
                 >
                   {this.state.request.role === 'admin' ?
                     <Select.Option key={'any'} value={'any'}>any</Select.Option>
@@ -381,7 +381,7 @@ class Modify extends React.Component {
           { this.props.modifyF5PermissionError ? <Error component={'modify f5'} error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
           { this.props.fetchF5RolesError ? <Error component={'modify f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
 
-          { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
+          { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
           </React.Fragment>
         :
           null

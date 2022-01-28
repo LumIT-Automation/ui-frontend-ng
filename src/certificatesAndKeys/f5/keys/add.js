@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from "../../../error/f5Error"
 
-import { setKeysFetch, keyAddError } from '../../../_store/store.f5'
+import { keysFetch, keyAddError } from '../../../_store/store.f5'
 
 import { Form, Input, Button, Card, Radio, Alert, Spin, Result, Modal } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
@@ -117,7 +117,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setKeysFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(keysFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

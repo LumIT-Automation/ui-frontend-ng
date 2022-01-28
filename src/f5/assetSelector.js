@@ -5,10 +5,10 @@ import Rest from "../_helpers/Rest"
 import Error from '../error/f5Error'
 
 import {
-  setEnvironment,
-  setAsset,
-  setPartition,
-  setPartitionsError,
+  environment,
+  asset,
+  partition,
+  partitionsError,
 } from '../_store/store.f5'
 
 import "antd/dist/antd.css"
@@ -31,7 +31,7 @@ class AssetSelector extends React.Component {
 
   componentDidMount() {
     if (this.props.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
@@ -41,17 +41,17 @@ class AssetSelector extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assets !== prevProps.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
   componentWillUnmount() {
-    this.props.dispatch(setEnvironment(null))
-    this.props.dispatch(setAsset(null))
-    this.props.dispatch(setPartition(null))
+    this.props.dispatch(environment(null))
+    this.props.dispatch(asset(null))
+    this.props.dispatch(partition(null))
   }
 
-  setEnvironmentList = () => {
+  environmentList = () => {
     const items = Object.assign([], this.props.assets)
     const list = items.map( e => {
       return e.environment
@@ -63,11 +63,11 @@ class AssetSelector extends React.Component {
     })
   }
 
-  setEnvironment = e => {
+  environment = e => {
     this.setState({ environment: e, envAssets: null, partitions: null }, () => this.setEnvAssets(e))
-    this.props.dispatch(setEnvironment(e))
-    this.props.dispatch(setAsset(null))
-    this.props.dispatch(setPartition(null))
+    this.props.dispatch(environment(e))
+    this.props.dispatch(asset(null))
+    this.props.dispatch(partition(null))
   }
 
   setEnvAssets = e => {
@@ -77,11 +77,11 @@ class AssetSelector extends React.Component {
     this.setState({ envAssets: envAssets })
   }
 
-  setAsset = async address => {
-    let asset = await this.assetSelect(address)
-    this.fetchAssetPartitions(asset)
-    this.props.dispatch(setAsset(asset))
-    this.props.dispatch(setPartition(null))
+  asset = async address => {
+    let fetchedAsset = await this.assetSelect(address)
+    this.fetchPartitions(fetchedAsset)
+    this.props.dispatch(asset(fetchedAsset))
+    this.props.dispatch(partition(null))
   }
 
   assetSelect = async (address) => {
@@ -92,7 +92,7 @@ class AssetSelector extends React.Component {
     return asset
   }
 
-  fetchAssetPartitions = async (asset) => {
+  fetchPartitions = async (asset) => {
     this.setState({partitionsLoading: true})
     let rest = new Rest(
       "GET",
@@ -100,15 +100,15 @@ class AssetSelector extends React.Component {
         this.setState({ partitions: resp.data.items })
       },
       error => {
-        this.props.dispatch(setPartitionsError(error))
+        this.props.dispatch(partitionsError(error))
       }
     )
     await rest.doXHR(`f5/${asset.id}/partitions/`, this.props.token)
     this.setState({partitionsLoading: false})
   }
 
-  setPartition = p => {
-    this.props.dispatch(setPartition(p))
+  partition = p => {
+    this.props.dispatch(partition(p))
   }
 
 
@@ -128,7 +128,7 @@ class AssetSelector extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onChange={e => this.setEnvironment(e)}
+              onChange={e => this.environment(e)}
               style={{ width: 200, marginLeft: '10px' }}
             >
               {this.state.environments.map((n, i) => {
@@ -151,7 +151,7 @@ class AssetSelector extends React.Component {
                 filterSort={(optionA, optionB) =>
                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                 }
-                onChange={n => this.setAsset(n)}
+                onChange={n => this.asset(n)}
                 style={{ width: 350, marginLeft: '10px' }}
               >
               {this.state.envAssets.map((n, i) => {
@@ -185,7 +185,7 @@ class AssetSelector extends React.Component {
                   filterSort={(optionA, optionB) =>
                     optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                   }
-                  onChange={p => this.setPartition(p)}
+                  onChange={p => this.partition(p)}
                   style={{ width: 200, marginLeft: '10px' }}
                 >
                    {this.state.partitions.map((p, i) => {
@@ -203,7 +203,7 @@ class AssetSelector extends React.Component {
           </Col>
         </Row>
 
-        { this.props.partitionsError ? <Error component={'f5 asset selector'} error={[this.props.partitionsError]} visible={true} type={'setPartitionsError'} /> : null }
+        { this.props.partitionsError ? <Error component={'f5 asset selector'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
 
       </React.Fragment>
     )

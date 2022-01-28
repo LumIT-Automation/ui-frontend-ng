@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import { setAssetsFetch, setAssetModifyError } from '../../_store/store.infoblox'
+import { assetsFetch, modifyAssetError } from '../../_store/store.infoblox'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 
@@ -213,7 +213,7 @@ class Modify extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(setAssetModifyError(error))
+          this.props.dispatch(modifyAssetError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -227,7 +227,7 @@ class Modify extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setAssetsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(assetsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -395,7 +395,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetModifyError ? <Error component={'asset modify infoblox'} error={[this.props.assetModifyError]} visible={true} type={'setAssetModifyError'} /> : null }
+            { this.props.modifyAssetError ? <Error component={'asset modify infoblox'} error={[this.props.modifyAssetError]} visible={true} type={'modifyAssetError'} /> : null }
           </React.Fragment>
         :
           null
@@ -410,6 +410,6 @@ class Modify extends React.Component {
 export default connect((state) => ({
 
   token: state.ssoAuth.token,
- 	assetModifyError: state.infoblox.assetModifyError,
+ 	modifyAssetError: state.infoblox.modifyAssetError,
 
 }))(Modify);

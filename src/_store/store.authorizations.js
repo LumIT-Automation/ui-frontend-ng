@@ -19,7 +19,7 @@ const authorizationsSlice = createSlice({
         console.log(action.payload)
         state.authorizationsError = action.payload
       },
-      setIdentityGroups: ( state, action) => {
+      identityGroups: ( state, action) => {
         state.identityGroups = action.payload.data.items
       },
       setIgIdentifiers: ( state, action) => {
@@ -40,7 +40,7 @@ const { actions, reducer } = authorizationsSlice;
 export const {
   setAuthorizations,
   setAuthorizationsError,
-  setIdentityGroups,
+  identityGroups,
   setF5Permissions,
   setIgIdentifiers
 } = actions

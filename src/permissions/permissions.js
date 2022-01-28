@@ -6,8 +6,8 @@ import SuperAdmin from './superAdmin/manager'
 import F5 from './f5/manager'
 import Infoblox from './infoblox/manager'
 
-import { setPermissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
-import { setPermissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
+import { permissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
+import { permissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
 import '../App.css'

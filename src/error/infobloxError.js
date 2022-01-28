@@ -14,15 +14,15 @@ import {
 } from '../_store/store.permissions'
 
 import {
-  setPermissionsError,
-  setIdentityGroupsError,
+  permissionsError,
+  identityGroupsError,
 
-  setEnvironmentError,
-  setAssetsError,
+  environmentError,
+  assetsError,
 
-  setAssetAddError,
-  setAssetModifyError,
-  setAssetDeleteError,
+  addAssetError,
+  modifyAssetError,
+  deleteAssetError,
 
   setTreeError,
   networksError,
@@ -95,27 +95,27 @@ class Error extends Component {
           break;
 
 
-        case 'setPermissionsError':
-        	this.props.dispatch(setPermissionsError(null))
+        case 'permissionsError':
+        	this.props.dispatch(permissionsError(null))
         	break;
-        case 'setIdentityGroupsError':
-          this.props.dispatch(setIdentityGroupsError(null))
+        case 'identityGroupsError':
+          this.props.dispatch(identityGroupsError(null))
           break;
 
-        case 'setEnvironmentError':
-        	this.props.dispatch(setEnvironmentError(null))
+        case 'environmentError':
+        	this.props.dispatch(environmentError(null))
         	break;
-        case 'setAssetsError':
-        	this.props.dispatch(setAssetsError(null))
+        case 'assetsError':
+        	this.props.dispatch(assetsError(null))
         	break;
-        case 'setAssetAddError':
-        	this.props.dispatch(setAssetAddError(null))
+        case 'addAssetError':
+        	this.props.dispatch(addAssetError(null))
         	break;
-        case 'setAssetModifyError':
-        	this.props.dispatch(setAssetModifyError(null))
+        case 'modifyAssetError':
+        	this.props.dispatch(modifyAssetError(null))
         	break;
-        case 'setAssetDeleteError':
-        	this.props.dispatch(setAssetDeleteError(null))
+        case 'deleteAssetError':
+        	this.props.dispatch(deleteAssetError(null))
         	break;
         case 'setTreeError':
         	this.props.dispatch(setTreeError(null))

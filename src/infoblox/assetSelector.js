@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import Error from '../error'
 
-import { setEnvironment, setAsset } from '../_store/store.infoblox'
+import { environment, asset } from '../_store/store.infoblox'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Row } from 'antd';
@@ -24,7 +24,7 @@ class InfobloxAssetSelector extends React.Component {
 
   componentDidMount() {
     if (this.props.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
@@ -34,16 +34,16 @@ class InfobloxAssetSelector extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assets !== prevProps.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
   componentWillUnmount() {
-    this.props.dispatch(setEnvironment(null))
-    this.props.dispatch(setAsset(null))
+    this.props.dispatch(environment(null))
+    this.props.dispatch(asset(null))
   }
 
-  setEnvironmentList = () => {
+  environmentList = () => {
     const items = Object.assign([], this.props.assets)
     const list = items.map( e => {
       return e.environment
@@ -55,9 +55,9 @@ class InfobloxAssetSelector extends React.Component {
     })
   }
 
-  setEnvironment = e => {
+  environment = e => {
     this.setState({ environment: e }, () => this.setEnvAssets(e))
-    this.props.dispatch(setEnvironment(e))
+    this.props.dispatch(environment(e))
   }
 
   setEnvAssets = e => {
@@ -67,11 +67,11 @@ class InfobloxAssetSelector extends React.Component {
     this.setState({ envAssets: envAssets })
   }
 
-  setAsset = address => {
-    let asset = this.props.assets.find( a => {
+  asset = address => {
+    let fetchedAsset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.props.dispatch(setAsset(asset))
+    this.props.dispatch(asset(fetchedAsset))
   }
 
   assetString = () => {
@@ -114,7 +114,7 @@ class InfobloxAssetSelector extends React.Component {
               size={'default'}
             >
               <Form.Item name='environment' label="Environment">
-                <Select onChange={e => this.setEnvironment(e)} style={{ width: 200 }}>
+                <Select onChange={e => this.environment(e)} style={{ width: 200 }}>
 
                   {this.state.environments.map((n, i) => {
                   return (
@@ -126,7 +126,7 @@ class InfobloxAssetSelector extends React.Component {
               </Form.Item>
 
               <Form.Item name='asset' label="Asset">
-                <Select onChange={a => this.setAsset(a)} style={{ width: 350 }}>
+                <Select onChange={a => this.asset(a)} style={{ width: 350 }}>
 
                   {this.state.envAssets.map((n, i) => {
                   return (

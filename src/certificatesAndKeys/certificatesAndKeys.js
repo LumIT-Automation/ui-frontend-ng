@@ -10,10 +10,10 @@ import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
 import {
-  setAssets,
-  setAssetsError,
-  setCertificatesFetch,
-  setKeysFetch
+  assets,
+  assetsError,
+  certificatesFetch,
+  keysFetch
 } from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
@@ -57,10 +57,10 @@ class CertificatesAndKeys extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
+        this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
       },
       error => {
-        this.props.dispatch(setAssetsError(error))
+        this.props.dispatch(assetsError(error))
         this.setState({loading: false})
       }
     )
@@ -69,11 +69,11 @@ class CertificatesAndKeys extends React.Component {
 
 
   certificatesRefresh = () => {
-    this.props.dispatch(setCertificatesFetch(true))
+    this.props.dispatch(certificatesFetch(true))
   }
 
   keysRefresh = () => {
-    this.props.dispatch(setKeysFetch(true))
+    this.props.dispatch(keysFetch(true))
   }
 
 
@@ -129,7 +129,7 @@ class CertificatesAndKeys extends React.Component {
           </TabPane>
         </Tabs>
 
-        { this.props.assetsError ? <Error component={'certKey manager f5'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'certKey manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
 
       </Space>
     )

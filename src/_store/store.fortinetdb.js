@@ -5,29 +5,29 @@ const fortinetdbSlice = createSlice({
     initialState: {},
     reducers: {
 
-      setPermissionsLoading: (state, action) => {
+      permissionsLoading: (state, action) => {
         state.permissionsLoading = action.payload
       },
-      setPermissions: (state, action) => {
+      permissions: (state, action) => {
         state.permissions = action.payload
       },
-      setPermissionsFetch: (state, action) => {
+      permissionsFetch: (state, action) => {
         state.permissionsFetch = action.payload
       },
-      setPermissionsError: (state, action) => {
+      permissionsError: (state, action) => {
         state.permissionsError = action.payload
       },
 
-      setIdentityGroupsLoading: (state, action) => {
+      identityGroupsLoading: (state, action) => {
         state.identityGroupsLoading = action.payload
       },
-      setIdentityGroups: (state, action) => {
+      identityGroups: (state, action) => {
         state.identityGroups = action.payload.data.items
       },
-      setIdentityGroupsFetch: (state, action) => {
+      identityGroupsFetch: (state, action) => {
         state.identityGroupsFetch = action.payload
       },
-      setIdentityGroupsError: (state, action) => {
+      identityGroupsError: (state, action) => {
         state.identityGroupsError = action.payload
       },
 
@@ -151,15 +151,15 @@ const fortinetdbSlice = createSlice({
 const { actions, reducer } = fortinetdbSlice;
 
 export const {
-  setPermissionsLoading,
-  setPermissions,
-  setPermissionsFetch,
-  setPermissionsError,
+  permissionsLoading,
+  permissions,
+  permissionsFetch,
+  permissionsError,
 
-  setIdentityGroupsLoading,
-  setIdentityGroups,
-  setIdentityGroupsFetch,
-  setIdentityGroupsError,
+  identityGroupsLoading,
+  identityGroups,
+  identityGroupsFetch,
+  identityGroupsError,
 
   setDevicesLoading,
   setDevices,

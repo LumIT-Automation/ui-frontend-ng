@@ -13,12 +13,13 @@ import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
 
 import {
-  setAssets,
+  assets,
   nodesFetch,
   monitorsFetch,
   poolsFetch,
   profilesFetch,
-  virtualServersFetch
+  virtualServersFetch,
+  resetObjects
 } from '../_store/store.f5'
 
 import 'antd/dist/antd.css';
@@ -41,6 +42,8 @@ class F5 extends React.Component {
   }
 
   componentDidMount() {
+    console.log('monto F5')
+    this.props.dispatch(resetObjects())
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.fetchAssets()
     }
@@ -54,6 +57,8 @@ class F5 extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('smonto F5')
+    this.props.dispatch(resetObjects())
   }
 
 
@@ -62,7 +67,7 @@ class F5 extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(setAssets( resp )))
+        this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
       },
       error => {
         this.setState({loading: false, error: error})

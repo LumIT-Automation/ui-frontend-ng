@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { setAssetsFetch, setAssetModifyError } from '../../_store/store.f5'
+import { assetsFetch, modifyAssetError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 
@@ -213,7 +213,7 @@ class Modify extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(setAssetModifyError(error))
+          this.props.dispatch(modifyAssetError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -224,7 +224,7 @@ class Modify extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setAssetsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(assetsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -391,7 +391,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetModifyError ? <Error component={'asset modify f5'} error={[this.props.assetModifyError]} visible={true} type={'setAssetModifyError'} /> : null }
+            { this.props.modifyAssetError ? <Error component={'asset modify f5'} error={[this.props.modifyAssetError]} visible={true} type={'modifyAssetError'} /> : null }
           </React.Fragment>
         :
           null
@@ -405,6 +405,6 @@ class Modify extends React.Component {
 export default connect((state) => ({
 
   token: state.ssoAuth.token,
- 	assetModifyError: state.f5.assetModifyError,
+ 	modifyAssetError: state.f5.modifyAssetError,
 
 }))(Modify);

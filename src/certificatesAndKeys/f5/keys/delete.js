@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../../_helpers/Rest"
 import Error from "../../../error/f5Error"
 
-import { setKeysFetch, keyDeleteError } from '../../../_store/store.f5'
+import { keysFetch, keyDeleteError } from '../../../_store/store.f5'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -51,7 +51,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () => this.props.dispatch(setKeysFetch(true)) )
+        this.setState({loading: false, response: true}, () => this.props.dispatch(keysFetch(true)) )
       },
       error => {
         this.props.dispatch(keyDeleteError(error))

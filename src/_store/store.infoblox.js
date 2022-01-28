@@ -5,63 +5,63 @@ const infobloxSlice = createSlice({
     initialState: {},
     reducers: {
 
-      setPermissionsLoading: (state, action) => {
+      permissionsLoading: (state, action) => {
         state.permissionsLoading = action.payload
       },
-      setPermissions: (state, action) => {
+      permissions: (state, action) => {
         state.permissions = action.payload
       },
-      setPermissionsFetch: (state, action) => {
+      permissionsFetch: (state, action) => {
         state.permissionsFetch = action.payload
       },
-      setPermissionsError: (state, action) => {
+      permissionsError: (state, action) => {
         state.permissionsError = action.payload
       },
 
-      setIdentityGroupsLoading: (state, action) => {
+      identityGroupsLoading: (state, action) => {
         state.identityGroupsLoading = action.payload
       },
-      setIdentityGroups: (state, action) => {
+      identityGroups: (state, action) => {
         state.identityGroups = action.payload.data.items
       },
-      setIdentityGroupsFetch: (state, action) => {
+      identityGroupsFetch: (state, action) => {
         state.identityGroupsFetch = action.payload
       },
-      setIdentityGroupsError: (state, action) => {
+      identityGroupsError: (state, action) => {
         state.identityGroupsError = action.payload
       },
 
-      setEnvironment: (state, action) => {
+      environment: (state, action) => {
         state.environment = action.payload
       },
-      setEnvironmentError: (state, action) => {
+      environmentError: (state, action) => {
         state.environmentError = action.payload
       },
 
-      setAssetsLoading: (state, action) => {
+      assetsLoading: (state, action) => {
         state.assetsLoading = action.payload
       },
-      setAssets: (state, action) => {
+      assets: (state, action) => {
         state.assets = action.payload.data.items
       },
-      setAssetsFetch: (state, action) => {
+      assetsFetch: (state, action) => {
         state.assetsFetch = action.payload
       },
-      setAssetsError: (state, action) => {
+      assetsError: (state, action) => {
         state.assetsError = action.payload
       },
 
-      setAsset: (state, action) => {
+      asset: (state, action) => {
         state.asset = action.payload
       },
-      setAssetAddError: (state, action) => {
-        state.assetAddError = action.payload
+      addAssetError: (state, action) => {
+        state.addAssetError = action.payload
       },
-      setAssetModifyError: (state, action) => {
-        state.assetModifyError = action.payload
+      modifyAssetError: (state, action) => {
+        state.modifyAssetError = action.payload
       },
-      setAssetDeleteError: (state, action) => {
-        state.assetDeleteError = action.payload
+      deleteAssetError: (state, action) => {
+        state.deleteAssetError = action.payload
       },
 
       setTreeLoading: (state, action) => {
@@ -148,28 +148,28 @@ const infobloxSlice = createSlice({
 const { actions, reducer } = infobloxSlice;
 
 export const {
-  setPermissionsLoading,
-  setPermissions,
-  setPermissionsFetch,
-  setPermissionsError,
+  permissionsLoading,
+  permissions,
+  permissionsFetch,
+  permissionsError,
 
-  setIdentityGroupsLoading,
-  setIdentityGroups,
-  setIdentityGroupsFetch,
-  setIdentityGroupsError,
+  identityGroupsLoading,
+  identityGroups,
+  identityGroupsFetch,
+  identityGroupsError,
 
-  setEnvironment,
-  setEnvironmentError,
+  environment,
+  environmentError,
 
-  setAssetsLoading,
-  setAssets,
-  setAssetsFetch,
-  setAssetsError,
+  assetsLoading,
+  assets,
+  assetsFetch,
+  assetsError,
 
-  setAsset,
-  setAssetAddError,
-  setAssetModifyError,
-  setAssetDeleteError,
+  asset,
+  addAssetError,
+  modifyAssetError,
+  deleteAssetError,
 
   setTreeLoading,
   setTree,

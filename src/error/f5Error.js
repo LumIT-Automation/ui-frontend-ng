@@ -14,15 +14,15 @@ import {
 
 } from '../_store/store.permissions'
 import {
-  setPermissionsError,
-  setIdentityGroupsError,
-  setEnvironmentError,
-  setAssetsError,
-  setAssetAddError,
-  setAssetModifyError,
-  setAssetDeleteError,
-  setPartitionsError,
-  setRouteDomainsError,
+  permissionsError,
+  identityGroupsError,
+  environmentError,
+  assetsError,
+  addAssetError,
+  modifyAssetError,
+  deleteAssetError,
+  partitionsError,
+  routeDomainsError,
 
   nodesError,
   addNodeError,
@@ -50,8 +50,8 @@ import {
 
   virtualServersError,
 
-  setCertificatesError,
-  setKeysError,
+  certificatesError,
+  keysError,
   certificateAddError,
   certificateDeleteError,
   keyAddError,
@@ -123,34 +123,34 @@ class Error extends Component {
           break;
 
 
-        case 'setPermissionsError':
-          this.props.dispatch(setPermissionsError(null))
+        case 'permissionsError':
+          this.props.dispatch(permissionsError(null))
           break;
-        case 'setIdentityGroupsError':
-          this.props.dispatch(setIdentityGroupsError(null))
-          break;
-
-        case 'setEnvironmentError':
-          this.props.dispatch(setEnvironmentError(null))
-          break;
-        case 'setAssetsError':
-          this.props.dispatch(setAssetsError(null))
-          break;
-        case 'setPartitionsError':
-          this.props.dispatch(setPartitionsError(null))
-          break;
-        case 'setRouteDomainsError':
-          this.props.dispatch(setRouteDomainsError(null))
+        case 'identityGroupsError':
+          this.props.dispatch(identityGroupsError(null))
           break;
 
-        case 'setAssetAddError':
-          this.props.dispatch(setAssetAddError(null))
+        case 'environmentError':
+          this.props.dispatch(environmentError(null))
           break;
-        case 'setAssetModifyError':
-          this.props.dispatch(setAssetModifyError(null))
+        case 'assetsError':
+          this.props.dispatch(assetsError(null))
           break;
-        case 'setAssetDeleteError':
-          this.props.dispatch(setAssetDeleteError(null))
+        case 'partitionsError':
+          this.props.dispatch(partitionsError(null))
+          break;
+        case 'routeDomainsError':
+          this.props.dispatch(routeDomainsError(null))
+          break;
+
+        case 'addAssetError':
+          this.props.dispatch(addAssetError(null))
+          break;
+        case 'modifyAssetError':
+          this.props.dispatch(modifyAssetError(null))
+          break;
+        case 'deleteAssetError':
+          this.props.dispatch(deleteAssetError(null))
           break;
 
         case 'nodesError':
@@ -219,11 +219,11 @@ class Error extends Component {
           this.props.dispatch(virtualServersError(null))
           break;
 
-        case 'setCertificatesError':
-          this.props.dispatch(setCertificatesError(null))
+        case 'certificatesError':
+          this.props.dispatch(certificatesError(null))
           break;
-        case 'setKeysError':
-          this.props.dispatch(setKeysError(null))
+        case 'keysError':
+          this.props.dispatch(keysError(null))
           break;
         case 'certificateAddError':
           this.props.dispatch(certificateAddError(null))

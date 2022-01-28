@@ -6,10 +6,10 @@ import Rest from "../../../_helpers/Rest"
 import Error from "../../../error/f5Error"
 
 import {
-  setKeysLoading,
-  setKeys,
-  setKeysFetch,
-  setKeysError
+  keysLoading,
+  keys,
+  keysFetch,
+  keysError
 } from '../../../_store/store.f5'
 
 import List from './list'
@@ -33,7 +33,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (!this.props.keysError) {
       if (this.props.asset && this.props.partition) {
-        this.props.dispatch(setKeysFetch(false))
+        this.props.dispatch(keysFetch(false))
         if (!this.props.keys) {
           this.fetchKeys()
         }
@@ -52,7 +52,7 @@ class Manager extends React.Component {
 
     if (this.props.keysFetch && this.props.asset && this.props.partition ) {
       this.fetchKeys()
-      this.props.dispatch(setKeysFetch(false))
+      this.props.dispatch(keysFetch(false))
     }
   }
 
@@ -63,18 +63,18 @@ class Manager extends React.Component {
 
 
   fetchKeys = async () => {
-    this.props.dispatch(setKeysLoading(true))
+    this.props.dispatch(keysLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setKeys( resp ))
+        this.props.dispatch(keys( resp ))
       },
       error => {
-        this.props.dispatch(setKeysError(error))
+        this.props.dispatch(keysError(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
-    this.props.dispatch(setKeysLoading(false))
+    this.props.dispatch(keysLoading(false))
   }
 
 
@@ -100,7 +100,7 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
         }
 
-        { this.props.keysError ? <Error component={'keys manager f5'} error={[this.props.keysError]} visible={true} type={'setKeysError'} /> : null }
+        { this.props.keysError ? <Error component={'keys manager f5'} error={[this.props.keysError]} visible={true} type={'keysError'} /> : null }
 
       </React.Fragment>
     )

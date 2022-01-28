@@ -5,8 +5,8 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
 import {
-  setAssets,
-  setAssetsError
+  assets,
+  assetsError
 } from '../../_store/store.infoblox'
 
 import DetailsIp from './detailsIp'
@@ -50,10 +50,10 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAssets( resp ))
+        this.props.dispatch(assets( resp ))
       },
       error => {
-        this.props.dispatch(setAssetsError(error))
+        this.props.dispatch(assetsError(error))
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
@@ -86,7 +86,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        { this.props.assetsError ? <Error component={'services manager infoblox'} error={[this.props.assetsError]} visible={true} type={'setAssetsError'} /> : null }
+        { this.props.assetsError ? <Error component={'services manager infoblox'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
 
       </React.Fragment>
     )

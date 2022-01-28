@@ -11,9 +11,9 @@ import {
 } from '../../_store/store.permissions'
 
 import {
-  setPermissionsFetch,
-  setIdentityGroups,
-  setIdentityGroupsError,
+  permissionsFetch,
+  identityGroups,
+  identityGroupsError,
   networksError,
   containersError,
 } from '../../_store/store.infoblox'
@@ -131,11 +131,11 @@ class Add extends React.Component {
 
       let identityGroups = await this.fetchIdentityGroups()
       if (identityGroups.status && identityGroups.status !== 200 ) {
-        this.props.dispatch(setIdentityGroupsError(identityGroups))
+        this.props.dispatch(identityGroupsError(identityGroups))
         return
       }
       else {
-        this.props.dispatch(setIdentityGroups( identityGroups ))
+        this.props.dispatch(identityGroups( identityGroups ))
       }
       this.setDn(this.state.newDn)
     }
@@ -185,7 +185,7 @@ class Add extends React.Component {
     return r
   }
 
-  setAsset = id => {
+  asset = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.assetId = id
     this.setState({request: request}, () => this.fetchNetworks())
@@ -315,7 +315,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(permissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -420,7 +420,7 @@ class Add extends React.Component {
                 <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
               </Col>
               <Col span={16}>
-                <Select style={{width: 350}} id='asset' onChange={id => this.setAsset(id) }>
+                <Select style={{width: 350}} id='asset' onChange={id => this.asset(id) }>
                   {this.props.assets ? this.props.assets.map((a, i) => {
                     return (
                       <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>

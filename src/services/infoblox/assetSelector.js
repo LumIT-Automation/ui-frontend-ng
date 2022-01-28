@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import Error from '../../error'
 
-import { setEnvironment, setAsset } from '../../_store/store.infoblox'
+import { environment, asset } from '../../_store/store.infoblox'
 
 import "antd/dist/antd.css"
 import { Form, Select, Row } from 'antd';
@@ -24,7 +24,7 @@ class AssetSelector extends React.Component {
 
   componentDidMount() {
     if (this.props.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
@@ -34,15 +34,15 @@ class AssetSelector extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assets !== prevProps.assets) {
-      this.setEnvironmentList()
+      this.environmentList()
     }
   }
 
   componentWillUnmount() {
-    this.props.dispatch(setAsset(null))
+    this.props.dispatch(asset(null))
   }
 
-  setEnvironmentList = () => {
+  environmentList = () => {
     const items = JSON.parse(JSON.stringify(this.props.assets))
     const list = items.map( e => {
       return e.environment
@@ -54,9 +54,9 @@ class AssetSelector extends React.Component {
     })
   }
 
-  setEnvironment = e => {
+  environment = e => {
     this.setState({ environment: e }, () => this.setEnvAssets(e))
-    this.props.dispatch(setEnvironment(e))
+    this.props.dispatch(environment(e))
   }
 
   setEnvAssets = e => {
@@ -66,11 +66,11 @@ class AssetSelector extends React.Component {
     this.setState({ envAssets: envAssets })
   }
 
-  setAsset = address => {
-    let asset = this.props.assets.find( a => {
+  asset = address => {
+    let fetchedAsset = this.props.assets.find( a => {
       return a.address === address
     })
-    this.props.dispatch(setAsset(asset))
+    this.props.dispatch(asset(fetchedAsset))
   }
 
 
@@ -95,7 +95,7 @@ class AssetSelector extends React.Component {
               style={{paddingLeft: '300px'}}
             >
               <Form.Item name='environment' label="Environment">
-                <Select onChange={e => this.setEnvironment(e)} style={{ width: 200 }}>
+                <Select onChange={e => this.environment(e)} style={{ width: 200 }}>
 
                   {this.state.environments.map((n, i) => {
                   return (
@@ -107,7 +107,7 @@ class AssetSelector extends React.Component {
               </Form.Item>
 
               <Form.Item name='asset' label="Asset">
-                <Select onChange={a => this.setAsset(a)} style={{ width: 350 }}>
+                <Select onChange={a => this.asset(a)} style={{ width: 350 }}>
 
                   {this.state.envAssets.map((n, i) => {
                   return (

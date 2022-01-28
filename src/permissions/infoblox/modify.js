@@ -10,7 +10,7 @@ import {
 } from '../../_store/store.permissions'
 
 import {
-  setPermissionsFetch,
+  permissionsFetch,
   networksError,
   containersError
 } from '../../_store/store.infoblox'
@@ -86,7 +86,7 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
-  setAsset = id => {
+  asset = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.network.asset_id = id
     this.setState({request: request}, () => this.fetchNetworks())
@@ -216,7 +216,7 @@ class Modify extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(setPermissionsFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(permissionsFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -303,7 +303,7 @@ class Modify extends React.Component {
               name="asset"
               key="asset"
             >
-              <Select id='asset' placeholder="select" onChange={id => this.setAsset(id) }>
+              <Select id='asset' placeholder="select" onChange={id => this.asset(id) }>
                 {this.props.assets ? this.props.assets.map((a, i) => {
                 return (
                   <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
