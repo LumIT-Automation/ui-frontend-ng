@@ -15,7 +15,7 @@ import {
   containersError
 } from '../../_store/store.infoblox'
 
-import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select } from 'antd';
+import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select, Row, Col } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
@@ -33,7 +33,6 @@ class Modify extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      message:'',
       request: {}
     };
   }
@@ -52,8 +51,13 @@ class Modify extends React.Component {
   }
 
   details = async () => {
-    this.ig()
     this.setState({visible: true})
+    this.main()
+    console.log(this.props.obj)
+  }
+
+  main = async () => {
+    this.ig()
     let request = {}
     request.cn = this.props.obj.identity_group_name
     request.dn = this.props.obj.identity_group_identifier
@@ -75,23 +79,8 @@ class Modify extends React.Component {
     this.setState({items: items})
   }
 
-  setDn = dn => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.dn = dn
 
-    let cn = this.props.identityGroups.find( ig => {
-      return ig.identity_group_identifier === dn
-    })
-    request.cn = cn.name
-    this.setState({request: request})
-  }
-
-  asset = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.network.asset_id = id
-    this.setState({request: request}, () => this.fetchNetworks())
-  }
-
+  //FETCH
   fetchRoles = async () => {
     this.setState({rolesLoading: true})
     let rest = new Rest(
@@ -117,12 +106,6 @@ class Modify extends React.Component {
       newList.push(newRole)
     }
     this.setState({rolesBeauty: newList})
-  }
-
-  setRole = role => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.role = role
-    this.setState({request: request})
   }
 
   fetchNetworks = async () => {
@@ -176,15 +159,52 @@ class Modify extends React.Component {
     return r
   }
 
-  network = net => {
+
+
+  //SETTER
+  setDn = dn => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.dn = dn
+
+    let cn = this.props.identityGroups.find( ig => {
+      return ig.identity_group_identifier === dn
+    })
+    request.cn = cn.name
+    this.setState({request: request})
+  }
+
+  setAsset = id => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.network.asset_id = id
+    this.setState({request: request}, () => this.fetchNetworks())
+  }
+
+  setRole = role => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.role = role
+    this.setState({request: request})
+  }
+
+  setNetwork = net => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.network.name = net
     this.setState({request: request})
   }
 
-  modifyPermission = async () => {
 
-    this.setState({message: null});
+
+
+  //VALIDATION
+  validation = async () => {
+    if (this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.network.asset_id) {
+      this.modifyPermission()
+    }
+  }
+
+
+
+
+  modifyPermission = async () => {
 
     const b = {
       "data":
@@ -204,7 +224,7 @@ class Modify extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.response()
+        this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
         this.props.dispatch(modifyInfobloxPermissionError(error))
@@ -229,6 +249,12 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let name = () => {
+      let n = `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}`
+      return n
+    }
+
     return (
       <React.Fragment>
 
@@ -248,169 +274,172 @@ class Modify extends React.Component {
         { !this.state.loading && this.state.response &&
           <Result
              status="success"
-             title="Modify"
+             title="Permission modified"
            />
         }
         { !this.state.loading && !this.state.response &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={{
-              remember: true,
-              asset: this.state.request.asset ? `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}` : null,
-              role: this.state.request.role,
-            }}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-            <Form.Item
-              label="Distinguished Name"
-              name="dn"
-              key="dn"
-            >
-              <React.Fragment>
+          <React.Fragment>
+            <Row>
               { this.state.items && this.state.items.length > 0 ?
-                <Select
-                  defaultValue={this.state.request.dn}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  }
-                  onChange={n => this.setDn(n)}
-                >
+                <React.Fragment>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                  </Col>
+                  <Col span={16}>
+                    <Select
+                      defaultValue={this.state.request.dn}
+                      value={this.state.request.dn}
+                      showSearch
+                      style={{width: 350}}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      onSelect={n => this.setDn(n)}
+                    >
+                      <React.Fragment>
+                        {this.state.items.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        }
+                      </React.Fragment>
+                    </Select>
+                  </Col>
+                </React.Fragment>
+              :
+                <React.Fragment>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                  </Col>
+                  <Col>
+                    <Select disabled value={null} onChange={null}>
+                    </Select>
+                  </Col>
+                </React.Fragment>
+              }
+            </Row>
+            <br/>
+
+            <Row>
+              <React.Fragment>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
+                </Col>
+                { this.state.request && this.state.request.asset ?
+                  <Col span={16}>
+                    <Select style={{width: 350}} defaultValue={name()} id='asset' onChange={id => this.setAsset(id) }>
+                      {this.props.assets ? this.props.assets.map((a, i) => {
+                        return (
+                          <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
+                        )
+                        })
+                      :
+                        null
+                      }
+                    </Select>
+                  </Col>
+                :
+                  <Col>
+                    <Select style={{width: 350}} disabled value={null} onChange={null}>
+                    </Select>
+                  </Col>
+                }
+              </React.Fragment>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 25, float: 'right'}}>Role:</p>
+              </Col>
+
+              <Col span={16}>
+                { this.state.rolesLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+                :
                   <React.Fragment>
-                    {this.state.items.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                      )
-                    })
+                    { this.state.request && this.state.request.role ?
+                      <Select style={{width: 350}} id='role' defaultValue={this.state.request.role} onChange={r => this.setRole(r) }>
+                        {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
+                          return (
+                            <Select.Option  key={i} value={a}>{a}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </Select>
+                    :
+                      <Select style={{width: 350}} disabled value={null} onChange={null}>
+                      </Select>
                     }
                   </React.Fragment>
-                </Select>
-                :
-                <Select disabled value={null} onChange={null}>
-                </Select>
-              }
-              </React.Fragment>
-            </Form.Item>
-
-            <Form.Item
-              label="Asset"
-              name="asset"
-              key="asset"
-            >
-              <Select id='asset' placeholder="select" onChange={id => this.asset(id) }>
-                {this.props.assets ? this.props.assets.map((a, i) => {
-                return (
-                  <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-                )
-              }) : null}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Role"
-              name="role"
-              key="role"
-            >
-            { this.state.rolesLoading ?
-              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-              :
-              <Select id='role' onChange={r => this.setRole(r) }>
-                {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                  return (
-                    <Select.Option  key={i} value={a}>{a}</Select.Option>
-                  )
-                })
-                :
-                null
                 }
-              </Select>
-            }
-            </Form.Item>
+              </Col>
+            </Row>
+            <br/>
 
-            <Form.Item
-              label="Network"
-              name="network"
-              key="network"
-              validateStatus={this.state.errors.networkName}
-              help={this.state.errors.networkName ? 'Network not found' : null }
-            >
-
-            { this.state.networksLoading ?
-              <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-              :
-              <React.Fragment>
-              { this.state.nets && this.state.nets.length > 0 ?
-                <Select
-                  defaultValue={this.state.request.network.name}
-                  showSearch
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  }
-                  onChange={n => this.network(n)}
-                >
-                  {this.state.request.role === 'admin' ?
-                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                    <React.Fragment>
-                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    {this.state.nets.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                      )
-                    })
-                    }
-                    </React.Fragment>
-                  }
-                </Select>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 25, float: 'right'}}>Network:</p>
+              </Col>
+              <Col span={16}>
+                { this.state.networksLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
                 :
-                <Select disabled value={null} onChange={null}>
-                </Select>
-              }
-              </React.Fragment>
-            }
+                  <React.Fragment>
+                      { (this.state.nets && this.state.nets.length > 0) ?
+                        <Select
+                          defaultValue={this.state.request.network ? this.state.request.network.name : null}
+                          showSearch
+                          style={{width: 350}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onChange={n => this.setNetwork(n)}
+                        >
+                          {this.state.request.role === 'admin' ?
+                            <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                          :
+                            <React.Fragment>
+                              <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                              {this.state.nets.map((n, i) => {
+                                return (
+                                    <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          }
+                        </Select>
+                      :
+                        <Select style={{width: 350}} disabled value={null} onChange={null}>
+                        </Select>
+                      }
+                  </React.Fragment>
+                }
+              </Col>
+            </Row>
+            <br/>
 
-            </Form.Item>
-
-
-            {this.state.message ?
-              <Form.Item
-
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
-
-              : null
-            }
-
-            <Form.Item
-              wrapperCol={ {offset: 6 }}
-              name="button"
-              key="button"
-            >
-              { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.network.asset_id ?
-                <Button type="primary" onClick={() => this.modifyPermission()} >
+            <Row>
+              <Col offset={8} span={16}>
+                <Button type="primary" onClick={() => this.validation()} >
                   Modify Permission
                 </Button>
-                :
-                <Button type="primary" onClick={() => this.modifyPermission()} disabled>
-                  Modify Permission
-                </Button>
-              }
-            </Form.Item>
+              </Col>
+            </Row>
 
-          </Form>
+          </React.Fragment>
         }
         </Modal>
 
