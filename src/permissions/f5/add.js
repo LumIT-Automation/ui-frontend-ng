@@ -362,7 +362,6 @@ class Add extends React.Component {
                   </React.Fragment>
                 }
               </Row>
-
               <br/>
 
               <Row>
@@ -375,8 +374,6 @@ class Add extends React.Component {
                   <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.handleNewDn()} />
                 </Col>
               </Row>
-
-
               <br/>
 
               <Row>
@@ -396,7 +393,6 @@ class Add extends React.Component {
                   </Select>
                 </Col>
               </Row>
-
               <br/>
 
               <Row>
@@ -420,7 +416,6 @@ class Add extends React.Component {
                   }
                 </Col>
               </Row>
-
               <br/>
 
               <Row>
@@ -468,7 +463,6 @@ class Add extends React.Component {
                   }
                 </Col>
               </Row>
-
               <br/>
 
               {this.state.message ?
