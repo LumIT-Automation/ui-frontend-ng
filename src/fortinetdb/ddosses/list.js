@@ -122,17 +122,11 @@ class List extends React.Component {
 
   render() {
 
-/*
-
-"SERVIZIO": "DDoS Management"
-*/
-
-
     const columns = [
       {
         title: "MANAGED_OBJECT",
         align: "center",
-     		width: 'auto',
+     		width: 200,
         dataIndex: "MANAGED_OBJECT",
         key: "MANAGED_OBJECT",
         ...this.getColumnSearchProps('MANAGED_OBJECT'),
@@ -143,17 +137,9 @@ class List extends React.Component {
         ),
       },
       {
-        title: "ID_PROGETTO",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "ID_PROGETTO",
-        key: "ID_PROGETTO",
-        ...this.getColumnSearchProps('ID_PROGETTO')
-      },
-      {
         title: "MO_DESCRIZIONE",
         align: "center",
-     		width: 'auto',
+     		width: 200,
         dataIndex: "MO_DESCRIZIONE",
         key: "MO_DESCRIZIONE",
         ...this.getColumnSearchProps('MO_DESCRIZIONE')
@@ -161,7 +147,7 @@ class List extends React.Component {
       {
         title: "MO_NET",
         align: "center",
-     		width: 'auto',
+     		width: 200,
         dataIndex: "MO_NET",
         key: "MO_NET",
         ...this.getColumnSearchProps('MO_NET')
@@ -169,50 +155,18 @@ class List extends React.Component {
       {
         title: "MO_AUTOMITIGATION",
         align: "center",
-     		width: 250,
+     		width: 200,
         dataIndex: "MO_AUTOMITIGATION",
         key: "MO_AUTOMITIGATION",
         ...this.getColumnSearchProps('MO_AUTOMITIGATION')
       },
       {
-        title: "MO_TEMPLATE_MITIGATION",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "MO_TEMPLATE_MITIGATION",
-        key: "MO_TEMPLATE_MITIGATION",
-        ...this.getColumnSearchProps('MO_TEMPLATE_MITIGATION')
-      },
-      {
-        title: "MO_PROATTIVITA_MITIGATION",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "MO_PROATTIVITA_MITIGATION",
-        key: "MO_PROATTIVITA_MITIGATION",
-        ...this.getColumnSearchProps('MO_PROATTIVITA_MITIGATION')
-      },
-      {
-        title: "MO_CODICE_SERVIZIO",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "MO_CODICE_SERVIZIO",
-        key: "MO_CODICE_SERVIZIO",
-        ...this.getColumnSearchProps('MO_CODICE_SERVIZIO')
-      },
-      {
         title: "MO_BANDA",
         align: "center",
-     		width: 'auto',
+        width: 200,
         dataIndex: "MO_BANDA",
         key: "MO_BANDA",
         ...this.getColumnSearchProps('MO_BANDA')
-      },
-      {
-        title: "MO_NOTE",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "MO_NOTE",
-        key: "MO_NOTE",
-        ...this.getColumnSearchProps('MO_NOTE')
       },
       {
         title: "MO_ATTIVAZIONE_ANNO",
@@ -225,7 +179,7 @@ class List extends React.Component {
       {
         title: "MO_ATTIVAZIONE_MESE",
         align: "center",
-     		width: 'auto',
+     		width: 250,
         dataIndex: "MO_ATTIVAZIONE_MESE",
         key: "MO_ATTIVAZIONE_MESE",
         ...this.getColumnSearchProps('MO_ATTIVAZIONE_MESE')
@@ -233,35 +187,11 @@ class List extends React.Component {
       {
         title: "MO_STATUS",
         align: "center",
-     		width: 'auto',
+     		width: 200,
         dataIndex: "MO_STATUS",
         key: "MO_STATUS",
         ...this.getColumnSearchProps('MO_STATUS')
       },
-      {
-        title: "NOME_PROGETTO",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "NOME_PROGETTO",
-        key: "NOME_PROGETTO",
-        ...this.getColumnSearchProps('NOME_PROGETTO')
-      },
-      {
-        title: "ID_SERVIZIO",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "ID_SERVIZIO",
-        key: "ID_SERVIZIO",
-        ...this.getColumnSearchProps('ID_SERVIZIO')
-      },
-      {
-        title: "SERVIZIO",
-        align: "center",
-     		width: 'auto',
-        dataIndex: "SERVIZIO",
-        key: "SERVIZIO",
-        ...this.getColumnSearchProps('SERVIZIO')
-      }
     ]
 
     return (
