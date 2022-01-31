@@ -191,6 +191,18 @@ class ReleaseIp extends React.Component {
         ),
       },
       {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        width: 50,
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isReleased}
+          </Space>
+        ),
+      },
+      {
         title: 'id',
         align: 'center',
         dataIndex: 'id',
@@ -230,18 +242,7 @@ class ReleaseIp extends React.Component {
           </Button>
         ),
       },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        width: 50,
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isReleased}
-          </Space>
-        ),
-      },
+
     ]
 
     return (

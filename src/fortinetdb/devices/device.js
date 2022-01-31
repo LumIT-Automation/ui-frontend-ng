@@ -183,27 +183,20 @@ class Device extends React.Component {
 
 
   render() {
+    
     const columns = [
       {
         title: "SERIALE",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "SERIALE",
         key: "SERIALE",
-        ...this.getColumnSearchProps('SERIALE')
-      },
-      {
-        title: "ID_PROGETTO",
-        align: "center",
-        width: "auto",
-        dataIndex: "ID_PROGETTO",
-        key: "ID_PROGETTO",
-        ...this.getColumnSearchProps('ID_PROGETTO')
+        ...this.getColumnSearchProps('SERIALE'),
       },
       {
         title: "MODELLO",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "MODELLO",
         key: "MODELLO",
         ...this.getColumnSearchProps('MODELLO')
@@ -211,7 +204,7 @@ class Device extends React.Component {
       {
         title: "FIRMWARE",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "FIRMWARE",
         key: "FIRMWARE",
         ...this.getColumnSearchProps('FIRMWARE')
@@ -219,7 +212,7 @@ class Device extends React.Component {
       {
         title: "DESCRIZIONE",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "DESCRIZIONE",
         key: "DESCRIZIONE",
         ...this.getColumnSearchProps('DESCRIZIONE')
@@ -227,7 +220,7 @@ class Device extends React.Component {
       {
         title: "HA",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "HA",
         key: "HA",
         ...this.getColumnSearchProps('HA')
@@ -235,111 +228,15 @@ class Device extends React.Component {
       {
         title: "VDOM",
         align: "center",
-        width: "auto",
+     		width: 150,
         dataIndex: "VDOM",
         key: "VDOM",
         ...this.getColumnSearchProps('VDOM')
       },
       {
-        title: "IP_MGMT",
-        align: "center",
-        width: "auto",
-        dataIndex: "IP_MGMT",
-        key: "IP_MGMT",
-        ...this.getColumnSearchProps('IP_MGMT')
-      },
-      {
-        title: "PORT_MGMT",
-        align: "center",
-        width: "auto",
-        dataIndex: "PORT_MGMT",
-        key: "PORT_MGMT",
-        ...this.getColumnSearchProps('PORT_MGMT')
-      },
-      {
-        title: "REVERSE",
-        align: "center",
-        width: "auto",
-        dataIndex: "REVERSE",
-        key: "REVERSE",
-        ...this.getColumnSearchProps('REVERSE')
-      },
-      {
-        title: "INDIRIZZO",
-        align: "center",
-        width: "auto",
-        dataIndex: "INDIRIZZO",
-        key: "INDIRIZZO",
-        ...this.getColumnSearchProps('INDIRIZZO')
-      },
-      {
-        title: "POSIZIONE",
-        align: "center",
-        width: "auto",
-        dataIndex: "POSIZIONE",
-        key: "POSIZIONE",
-        ...this.getColumnSearchProps('POSIZIONE')
-      },
-      {
-        title: "KEYMAKER",
-        align: "center",
-        width: "auto",
-        dataIndex: "KEYMAKER",
-        key: "KEYMAKER",
-        ...this.getColumnSearchProps('KEYMAKER')
-      },
-      {
-        title: "USERADMIN",
-        align: "center",
-        width: "auto",
-        dataIndex: "USERADMIN",
-        key: "USERADMIN",
-        ...this.getColumnSearchProps('USERADMIN')
-      },
-      {
-        title: "PUBLIC_NET",
-        align: "center",
-        width: "auto",
-        dataIndex: "PUBLIC_NET",
-        key: "PUBLIC_NET",
-        ...this.getColumnSearchProps('PUBLIC_NET')
-      },
-      {
-        title: "CODICE_SERVIZIO",
-        align: "center",
-        width: "auto",
-        dataIndex: "CODICE_SERVIZIO",
-        key: "CODICE_SERVIZIO",
-        ...this.getColumnSearchProps('CODICE_SERVIZIO')
-      },
-      {
-        title: "NOTE_APPARATO",
-        align: "center",
-        width: "auto",
-        dataIndex: "NOTE_APPARATO",
-        key: "NOTE_APPARATO",
-        ...this.getColumnSearchProps('NOTE_APPARATO')
-      },
-      {
-        title: "ASSISTENZA",
-        align: "center",
-        width: "auto",
-        dataIndex: "ASSISTENZA",
-        key: "ASSISTENZA",
-        ...this.getColumnSearchProps('ASSISTENZA')
-      },
-      {
-        title: "PROFILO",
-        align: "center",
-        width: "auto",
-        dataIndex: "PROFILO",
-        key: "PROFILO",
-        ...this.getColumnSearchProps('PROFILO')
-      },
-      {
         title: "ATTIVAZIONE_ANNO",
         align: "center",
-        width: "auto",
+     		width: 200,
         dataIndex: "ATTIVAZIONE_ANNO",
         key: "ATTIVAZIONE_ANNO",
         ...this.getColumnSearchProps('ATTIVAZIONE_ANNO')
@@ -347,151 +244,83 @@ class Device extends React.Component {
       {
         title: "ATTIVAZIONE_MESE",
         align: "center",
-        width: "auto",
+     		width: 200,
         dataIndex: "ATTIVAZIONE_MESE",
         key: "ATTIVAZIONE_MESE",
         ...this.getColumnSearchProps('ATTIVAZIONE_MESE')
       },
       {
-        title: "DISK_STATUS",
-        align: "center",
-        width: "auto",
-        dataIndex: "DISK_STATUS",
-        key: "DISK_STATUS",
-        ...this.getColumnSearchProps('DISK_STATUS')
-      },
-      {
-        title: "AUTENTICAZIONE",
-        align: "center",
-        width: "auto",
-        dataIndex: "AUTENTICAZIONE",
-        key: "AUTENTICAZIONE",
-        ...this.getColumnSearchProps('AUTENTICAZIONE')
-      },
-      {
-        title: "SERVIZI",
-        align: "center",
-        width: "auto",
-        dataIndex: "SERVIZI",
-        key: "SERVIZI",
-        ...this.getColumnSearchProps('SERVIZI')
-      },
-      {
-        title: "ADDURL_MGMT",
-        align: "center",
-        width: "auto",
-        dataIndex: "ADDURL_MGMT",
-        key: "ADDURL_MGMT",
-        ...this.getColumnSearchProps('ADDURL_MGMT')
-      },
-      {
-        title: "SNMP_COMMUNITY",
-        align: "center",
-        width: "auto",
-        dataIndex: "SNMP_COMMUNITY",
-        key: "SNMP_COMMUNITY",
-        ...this.getColumnSearchProps('SNMP_COMMUNITY')
-      },
-      {
-        title: "SNMP_PORT",
-        align: "center",
-        width: "auto",
-        dataIndex: "SNMP_PORT",
-        key: "SNMP_PORT",
-        ...this.getColumnSearchProps('SNMP_PORT')
-      },
-      {
         title: "STATUS_APPARATO",
         align: "center",
-        width: "auto",
+     		width: 200,
         dataIndex: "STATUS_APPARATO",
         key: "STATUS_APPARATO",
         ...this.getColumnSearchProps('STATUS_APPARATO')
       },
       {
-        title: "BACKUP_SCRIPT",
-        align: "center",
-        width: "auto",
-        dataIndex: "BACKUP_SCRIPT",
-        key: "BACKUP_SCRIPT",
-        ...this.getColumnSearchProps('BACKUP_SCRIPT')
-      },
-      {
         title: "BACKUP_STATUS",
         align: "center",
-        width: "auto",
+     		width: 200,
         dataIndex: "BACKUP_STATUS",
         key: "BACKUP_STATUS",
         ...this.getColumnSearchProps('BACKUP_STATUS')
       },
       {
-        title: "BACKUP_TSTAMP",
+        title: "VENDOR",
         align: "center",
-        width: "auto",
-        dataIndex: "BACKUP_TSTAMP",
-        key: "BACKUP_TSTAMP",
-        ...this.getColumnSearchProps('BACKUP_TSTAMP')
+     		width: 150,
+        dataIndex: "VENDOR",
+        key: "VENDOR",
+        ...this.getColumnSearchProps('VENDOR')
       },
       {
-        title: "BACKUP_CHECKSUM",
+        title: "EOS_FIRWMARE",
         align: "center",
-        width: "auto",
-        dataIndex: "BACKUP_CHECKSUM",
-        key: "BACKUP_CHECKSUM",
-        ...this.getColumnSearchProps('BACKUP_CHECKSUM')
+     		width: 200,
+        dataIndex: "EOS_FIRWMARE",
+        key: "EOS_FIRWMARE",
+        ...this.getColumnSearchProps('EOS_FIRWMARE')
       },
       {
-        title: "comune",
+        title: "EOS_HARDWARE",
         align: "center",
-        width: "auto",
+        width: 200,
+        dataIndex: "EOS_HARDWARE",
+        key: "EOS_HARDWARE",
+        ...this.getColumnSearchProps('EOS_HARDWARE')
+      },
+      {
+        title: "COMUNE",
+        align: "center",
+        width: 150,
+        columnWidth: 'auto',
         dataIndex: "comune",
         key: "comune",
         ...this.getColumnSearchProps('comune')
       },
       {
-        title: "provincia",
+        title: "PROVINCIA",
         align: "center",
-        width: "auto",
+        width: 150,
         dataIndex: "provincia",
         key: "provincia",
         ...this.getColumnSearchProps('provincia')
       },
       {
-        title: "targa",
+        title: "REGIONE",
         align: "center",
-        width: "auto",
-        dataIndex: "targa",
-        key: "targa",
-        ...this.getColumnSearchProps('targa')
-      },
-      {
-        title: "regione",
-        align: "center",
-        width: "auto",
+        width: 150,
         dataIndex: "regione",
         key: "regione",
-        ...this.getColumnSearchProps('regione'),
+        ...this.getColumnSearchProps('regione')
       },
       {
-        title: "extra_data",
+        title: "detail",
         align: "center",
-        width: "auto",
-        dataIndex: "extra_data",
-        key: "extra_data",
-        ...this.getColumnSearchProps('extra_data'),
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.state.extraLoading ?
-               <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
-               :
-               <TextArea
-               defaultValue={obj.extra_data}
-               value={this.state.extraData}
-               onChange={e => this.setExtraData( e.target.value) }
-               onBlur={e => this.modifyExtraData(e)} />
-            }
-          </Space>
-        ),
+     		width: 150,
+        dataIndex: "detail",
+        key: "detail",
+        ...this.getColumnSearchProps('detail')
       }
     ]
 
