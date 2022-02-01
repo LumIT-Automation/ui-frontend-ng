@@ -96,7 +96,7 @@ class DetailsIp extends React.Component {
     this.setState({
       visible: false,
       ipDetails: [],
-      errors: []
+      errors: {}
     })
   }
 

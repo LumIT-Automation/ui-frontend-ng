@@ -758,7 +758,7 @@ class CreateF5Service extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" shape='round' onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
+        <Button type="primary" onClick={() => this.details()}>CREATE LOAD BALANCER</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>CREATE LOAD BALANCER</p>}

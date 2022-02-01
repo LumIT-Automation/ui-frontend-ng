@@ -64,6 +64,7 @@ class DeleteF5Service extends React.Component {
   }
 
   fetchVirtualServers = async () => {
+    console.log('ppppppppppppppppppppppppppppppppppp')
     this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",
@@ -103,9 +104,7 @@ class DeleteF5Service extends React.Component {
   }
 
   validation = async () => {
-    console.log('validation')
     let validation = await this.validationCheck()
-    console.log(validation)
 
     if (Object.keys(this.state.errors).length === 0) {
       this.deleteService()
@@ -114,7 +113,6 @@ class DeleteF5Service extends React.Component {
   }
 
   deleteService = async () => {
-    console.log('cancello')
     let serviceName = this.state.request.serviceName
     this.setState({loading: true})
 
@@ -149,8 +147,6 @@ class DeleteF5Service extends React.Component {
 
 
   render() {
-    console.log(this.props.virtualServers)
-    console.log(this.state.request.serviceName)
     return (
       <React.Fragment>
 
@@ -208,7 +204,6 @@ class DeleteF5Service extends React.Component {
                                   onSelect={n => this.setServiceName(n)}
                                 >
                                   <React.Fragment>
-                                  {console.log(this.props.virtualServers)}
                                     {this.props.virtualServers.map((n, i) => {
                                       return (
                                         <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
@@ -237,7 +232,6 @@ class DeleteF5Service extends React.Component {
                                     onSelect={n => this.setServiceName(n)}
                                   >
                                     <React.Fragment>
-                                    {console.log(this.props.virtualServers)}
                                       {this.props.virtualServers.map((n, i) => {
                                         return (
                                           <Select.Option key={i} value={n.name}>{n.name}</Select.Option>

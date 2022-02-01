@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from "../../error/infobloxError"
+import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
+import Error from '../../error/infobloxError'
 
 import {
   ipDetailError,
@@ -20,6 +21,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const netLoadIcon = <LoadingOutlined style={{ fontSize: 30 }} spin />
+const responseIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -50,6 +52,11 @@ class RequestIp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
+    console.log('componentDidUpdate')
+    console.log(this.state.requests)
+
+
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
@@ -153,6 +160,8 @@ class RequestIp extends React.Component {
     return list
   }
 
+
+  //SETTER
   setRequests = () => {
     //let n = this.state.counter + 1
     let id = 0
@@ -164,7 +173,7 @@ class RequestIp extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n, macAddress: '00:00:00:00:00:00', objectTypes: null}
+    let r = {id: n, macAddress: '00:00:00:00:00:00'}
     let list = JSON.parse(JSON.stringify(this.state.requests))
     list.push(r)
     this.setState({requests: list})
@@ -210,10 +219,28 @@ class RequestIp extends React.Component {
   }
 
 
-  network = async (network, e, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    this.setState({objectTypes: null})
+
+
+  setNetworkManager = async (network, e, id) => {
+    let reset = await this.reset(id)
+    if (reset) {
+      this.setNetwork(network, id)
+    }
+  }
+
+  reset = async (id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    delete request.objectType
+    request.objectTypesLoading = true
+    request.blocked = false
+    this.setState({blocked: true, requests: requests, objectTypes: []})
+    return request
+  }
+
+  setNetwork = async (network, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
 
     let objectTypes = []
     let prefix = network.split('/')
@@ -221,146 +248,157 @@ class RequestIp extends React.Component {
     let subnetMask
     let gateway
 
-    if (e) {
-      const result = this.state.real.find( real => real.network === network )
-      if (result.isContainer) {
-        this.state.networks.forEach((item, i) => {
-          if (item.network_container === network ) {
-            if (item.extattrs && item.extattrs['Object Type'] ) {
-              objectTypes.push(item.extattrs['Object Type'].value)
-            }
+    const result = this.state.real.find( real => real.network === network )
+    if (result.isContainer) {
+      this.state.networks.forEach((item, i) => {
+        if (item.network_container === network ) {
+          if (item.extattrs && item.extattrs['Object Type'] ) {
+            objectTypes.push(item.extattrs['Object Type'].value)
           }
-        })
-        let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
-        //this.setState({objectTypes: unique})
-        request.objectTypes = unique
-      }
-      else {
-        //this.setState({objectTypes: null})
-        request.objectTypes = null
-      }
-      let info = await this.fetchNetwork(prefix)
-
-      if (info && info.extattrs) {
-        if (info.extattrs.Mask) {
-          subnetMask = info.extattrs.Mask.value
         }
-        if (info.extattrs.Gateway) {
-          gateway = info.extattrs.Gateway.value
-        }
-      }
-      delete errors.networkError
+      })
+      let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
+      //this.setState({objectTypes: unique})
+      request.objectTypes = unique
+      request.objectTypesLoading = false
     }
     else {
-      errors.networkError = 'error'
+      //this.setState({objectTypes: null})
+      delete request.objectTypes
+      request.objectTypesLoading = false
     }
+    let info = await this.fetchNetwork(prefix)
+
+    if (info && info.extattrs) {
+      if (info.extattrs.Mask) {
+        subnetMask = info.extattrs.Mask.value
+      }
+      if (info.extattrs.Gateway) {
+        gateway = info.extattrs.Gateway.value
+      }
+    }
+    delete request.networkError
+    delete request.networkColor
+
     request.prefix = prefix
     request.subnetMask = subnetMask
     request.gateway = gateway
     request.network = network
-    request.errors = errors
-    //this.setState({prefix: prefix, subnetMask: subnetMask, gateway: gateway, network: network, errors: errors})
+    delete request.blocked
+    this.setState({requests: requests, blocked: false})
   }
 
-  setObjectType = async (e, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let objectType
-
-    if (e) {
-      objectType = e
-      delete errors.objectTypeError
-    }
-    else {
-      errors.objectTypeError = 'error'
-    }
+  setObjectType = async (objectType, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
     request.objectType = objectType
-    request.errors = errors
+    delete request.objectTypeError
+    delete request.objectTypeColor
+
     if (objectType === 'Heartbeat') {
       request.macAddress2 = '00:00:00:00:00:00'
+      request.serverName2 = ''
     }
-    this.setState({errors: errors})
+    else {
+      delete request.macAddress2
+      delete request.serverName2
+    }
+    this.setState({requests: requests})
   }
 
   setServerName = (e, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let serverName
-
-    if (e) {
-      serverName = e.target.value
-      delete errors.serverNameError
-    }
-    else {
-      errors.serverNameError = 'error'
-    }
-    request.serverName = serverName
-    request.errors = errors
-    //this.setState({serverName: serverName, errors: errors})
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.serverName = e.target.value
+    delete request.serverNameError
+    delete request.serverNameColor
+    this.setState({requests: requests})
   }
 
   setServerName2 = (e, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let serverName
-
-    if (e) {
-      serverName = e.target.value
-      delete errors.serverName2Error
-    }
-    else {
-      errors.serverName2Error = 'error'
-    }
-    request.serverName2 = serverName
-    request.errors = errors
-    //this.setState({serverName: serverName, errors: errors})
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.serverName2 = e.target.value
+    delete request.serverName2Error
+    delete request.serverName2Color
+    this.setState({requests: requests})
   }
 
   setMacAddress = (m, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let mac = m.target.value
-
-    const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
-    const macRegex = new RegExp(validMacAddressRegex);
-
-    if (macRegex.test(mac)) {
-      let macAddress = mac
-      request.macAddress = macAddress
-      delete errors.macAddressError
-      //this.setState({macAddress: mac, errors: errors})
-    }
-    else {
-      request.macAddress = ''
-      errors.macAddressError = 'error'
-    }
-    request.errors = errors
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.macAddress = m.target.value
+    delete request.macAddressError
+    delete request.macAddressColor
+    this.setState({requests: requests})
   }
 
   setMacAddress2 = (m, id) => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let request = this.state.requests.find( r => r.id === id )
-    let mac = m.target.value
-
-    const validMacAddressRegex = "^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$"
-    const macRegex = new RegExp(validMacAddressRegex);
-
-    if (macRegex.test(mac)) {
-      let macAddress = mac
-      request.macAddress2 = macAddress
-      delete errors.macAddress2Error
-      //this.setState({macAddress: mac, errors: errors})
-    }
-    else {
-      request.macAddress2 = ''
-      errors.macAddress2Error = 'error'
-    }
-    request.errors = errors
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.macAddress2 = m.target.value
+    delete request.macAddress2Error
+    delete request.macAddress2Color
+    this.setState({requests: requests})
   }
 
 
+
+  //validation
+
+  validation = async () => {
+    let valid = await this.validationCheck()
+    if (valid) {
+      this.sendRequests()
+    }
+  }
+
+  validationCheck = async () => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let validators = new Validators()
+    let ok = true
+
+    requests.forEach((request, i) => {
+      if (!request.network) {
+        request.networkError = 'error'
+        request.networkColor = 'red'
+        ok = false
+      }
+      if (!request.objectType) {
+        request.objectTypeError = 'error'
+        request.objectTypeColor = 'red'
+        ok = false
+      }
+      if (!request.serverName) {
+        request.serverNameError = 'error'
+        request.serverNameColor = 'red'
+        ok = false
+      }
+      if (!validators.macAddress(request.macAddress)) {
+        request.macAddressError = 'error'
+        request.macAddressColor = 'red'
+        ok = false
+      }
+      if (request.objectType === 'Heartbeat') {
+        if (!request.serverName2) {
+          request.serverName2Error = 'error'
+          request.serverName2Color = 'red'
+          ok = false
+        }
+        if (!validators.macAddress(request.macAddress2)) {
+          request.macAddress2Error = 'error'
+          request.macAddress2Color = 'red'
+          ok = false
+        }
+      }
+    })
+
+    this.setState({requests: requests})
+    return ok
+  }
+
   sendRequests = async () => {
-    this.setState({loading: true})
+    this.setState({loading: true, response: false, responseLoading: true})
     let response = []
 
     for await (const request of this.state.requests) {
@@ -377,9 +415,7 @@ class RequestIp extends React.Component {
         this.setState({foo: false})
       }
     }
-
-
-    this.setState({response: response, loading: false})
+    this.setState({response: response, loading: false, responseLoading: false})
   }
 
   nextAvailableIp = async r => {
@@ -524,35 +560,67 @@ class RequestIp extends React.Component {
         key: 'network',
         render: (name, obj)  => (
           <React.Fragment>
-          { this.state.networkLoading ?
+            { this.state.networkLoading ?
               <Spin indicator={netLoadIcon} style={{margin: 'auto auto'}}/>
-              :
+            :
               <React.Fragment>
-                <Select
-                  showSearch
-                  defaultValue={obj.network}
-                  optionFilterProp="children"
-                  filterOption={(input, option) =>
-                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                  filterSort={(optionA, optionB) =>
-                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  }
-                  key={obj.id}
-                  style={{ width: '300px' }}
-                  onChange={(value, event) => this.network(value, event, obj.id)}>
-                  { this.state.real ?
-                    this.state.real.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                      )
-                    })
+                { this.state.blocked && !obj.blocked ?
+                  <Select defaultValue={obj.network} style={{ width: '300px'}} disabled/>
+                :
+                  <React.Fragment>
+                  {obj.networkError ?
+                    <Select
+                      showSearch
+                      defaultValue={obj.network}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      key={obj.id}
+                      style={{ width: '300px', border: `1px solid ${obj.networkColor}` }}
+                      onChange={(value, event) => this.setNetworkManager(value, event, obj.id)}>
+                      { this.state.real ?
+                        this.state.real.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                          )
+                        })
+                        :
+                        null
+                      }
+                    </Select>
                     :
-                    null
+                    <Select
+                      showSearch
+                      defaultValue={obj.network}
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      key={obj.id}
+                      style={{ width: '300px' }}
+                      onChange={(value, event) => this.setNetworkManager(value, event, obj.id)}>
+                      { this.state.real ?
+                        this.state.real.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+                          )
+                        })
+                        :
+                        null
+                      }
+                    </Select>
                   }
-                </Select>
+                  </React.Fragment>
+                }
               </React.Fragment>
-          }
+            }
           </React.Fragment>
         ),
       },
@@ -562,18 +630,45 @@ class RequestIp extends React.Component {
         dataIndex: 'objectType',
         key: 'objectType',
         render: (name, obj)  => (
-          <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
-            <Select.Option key={'-'} value={null}>-</Select.Option>
-            { obj.objectTypes ?
-              obj.objectTypes.map((n, i) => {
-              return (
-                <Select.Option key={i} value={n}>{n}</Select.Option>
-                )
-              })
+          <React.Fragment>
+            {obj.objectTypesLoading ?
+              <Spin indicator={netLoadIcon} style={{margin: 'auto auto'}}/>
+            :
+            <React.Fragment>
+              {!obj.network ?
+                <Select style={{ width: '100%'}} disabled/>
               :
-              null
+                <React.Fragment>
+                  {obj.objectTypeError ?
+                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%', border: `1px solid ${obj.objectTypeColor}` }} onChange={e => this.setObjectType(e, obj.id)}>
+                      { obj.objectTypes ?
+                        obj.objectTypes.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        :
+                        <Select.Option key={'-'} value={'-'}>-</Select.Option>
+                      }
+                    </Select>
+                  :
+                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
+                      { obj.objectTypes ?
+                        obj.objectTypes.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        :
+                        <Select.Option key={'-'} value={'-'}>-</Select.Option>
+                      }
+                    </Select>
+                  }
+                </React.Fragment>
+              }
+            </React.Fragment>
             }
-          </Select>
+          </React.Fragment>
         ),
       },
       {
@@ -583,15 +678,29 @@ class RequestIp extends React.Component {
         key: 'serverName',
         render: (name, obj)  => (
           <React.Fragment>
-          { (obj.objectType === 'Heartbeat') ?
-          <React.Fragment>
-            <Input placeholder={obj.serverName} id='snHeartbeat1' style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
-            <Divider/>
-            <Input placeholder={obj.serverName} id='snHeartbeat2' style={{ width: '150px' }} onChange={e => this.setServerName2(e, obj.id)} />
-          </React.Fragment>
+            { (obj.objectType === 'Heartbeat') ?
+              <React.Fragment>
+                {obj.serverNameError ?
+                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: obj.serverNameColor }} onChange={e => this.setServerName(e, obj.id)} />
+                :
+                  <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
+                }
+                <Divider/>
+                {obj.serverName2Error ?
+                  <Input placeholder={obj.serverName2} style={{ width: '150px', borderColor: obj.serverName2Color }} onChange={e => this.setServerName2(e, obj.id)} />
+                :
+                  <Input placeholder={obj.serverName2} style={{ width: '150px' }} onChange={e => this.setServerName2(e, obj.id)} />
+                }
+              </React.Fragment>
             :
-            <Input placeholder={obj.serverName} id='serverName' style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
-          }
+              <React.Fragment>
+                {obj.serverNameError ?
+                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: obj.serverNameColor }} onChange={e => this.setServerName(e, obj.id)} />
+                :
+                  <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
+                }
+              </React.Fragment>
+            }
           </React.Fragment>
         ),
       },
@@ -603,13 +712,27 @@ class RequestIp extends React.Component {
         render: (name, obj)  => (
           <React.Fragment>
           { (obj.objectType === 'Heartbeat') ?
-          <React.Fragment>
-            <Input defaultValue={obj.macAddress} id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
-            <Divider/>
-            <Input defaultValue={obj.macAddress2} id='macAddress' style={{ width: '150px', margitnTop: '10px' }} onChange={e => this.setMacAddress2(e, obj.id)} />
-          </React.Fragment>
-            :
-            <Input defaultValue={obj.macAddress} id='macAddress' style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+            <React.Fragment>
+              {obj.macAddressError ?
+                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: obj.macAddressColor }} onChange={e => this.setMacAddress(e, obj.id)} />
+              :
+                <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+              }
+              <Divider/>
+              {obj.macAddress2Error ?
+                <Input defaultValue={obj.macAddress2} style={{ width: '150px', borderColor: obj.macAddress2Color }} onChange={e => this.setMacAddress2(e, obj.id)} />
+              :
+                <Input defaultValue={obj.macAddress2} style={{ width: '150px' }} onChange={e => this.setMacAddress2(e, obj.id)} />
+              }
+            </React.Fragment>
+          :
+            <React.Fragment>
+              {obj.macAddressError ?
+                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: obj.macAddressColor }} onChange={e => this.setMacAddress(e, obj.id)} />
+              :
+                <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+              }
+            </React.Fragment>
           }
           </React.Fragment>
         ),
@@ -756,23 +879,29 @@ class RequestIp extends React.Component {
                   pagination={false}
                   style={{marginBottom: 10}}
                 />
-                <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.sendRequests()}>
+                <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validation()}>
                   Request Ip
                 </Button>
                 <br/>
               </React.Fragment>
               { this.state.response.length !== 0  ?
                 <React.Fragment>
-                  <Divider/>
-                  <Table
-                    columns={response}
-                    dataSource={this.state.response}
-                    bordered
-                    rowKey="id"
-                    scroll={{x: 'auto'}}
-                    pagination={false}
-                    style={{marginBottom: 10}}
-                  />
+                  {this.state.responseLoading ?
+                    <Spin indicator={responseIcon} style={{margin: '10% 45%'}}/>
+                  :
+                    <React.Fragment>
+                      <Divider/>
+                      <Table
+                        columns={response}
+                        dataSource={this.state.response}
+                        bordered
+                        rowKey="id"
+                        scroll={{x: 'auto'}}
+                        pagination={false}
+                        style={{marginBottom: 10}}
+                      />
+                    </React.Fragment>
+                  }
                 </React.Fragment>
               :
                 null

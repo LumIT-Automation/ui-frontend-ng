@@ -80,7 +80,7 @@ class ModifyIp extends React.Component {
     if (validators.ipv4(this.state.ip)) {
       delete errors.ipError
       delete errors.ipColor
-      this.setState({errors: errors}, () => this.ipDetail())
+      this.setState({errors: errors}, () => this.ipDetails())
     }
     else {
       errors.ipError = 'Please input a valid ip'
@@ -150,7 +150,7 @@ class ModifyIp extends React.Component {
 
   }
 
-  fetchedDetails = async () => {
+  ipDetails = async () => {
     console.log('ipDetail')
     this.setState({ipDetailLoading: true})
     let rest = new Rest(
@@ -193,7 +193,7 @@ class ModifyIp extends React.Component {
         "PATCH",
         resp => {
           this.setState({ipModifyLoading: false})
-          this.fetchedDetails()
+          this.ipDetails()
         },
         error => {
           this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
