@@ -1,8 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from "../../error/infobloxError"
+import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
+import Error from '../../error/infobloxError'
 
 import {
   ipDetailError,
@@ -28,13 +29,11 @@ class DetailsIp extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {},
       ipDetails: []
     };
   }
 
   componentDidMount() {
-
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -51,29 +50,26 @@ class DetailsIp extends React.Component {
     this.setState({visible: true})
   }
 
+  //main, fetch, set, validation, call to post, put , delete
+
   setIp = e => {
-    console.log(e.target.value)
-    let request = JSON.parse(JSON.stringify(this.state.request))
-
-    request.ip = e.target.value
-
-    this.setState({request: request})
+    let ip = e.target.value
+    this.setState({ip: ip})
   }
-
-//http://10.0.111.21/api/v1/infoblox/1/ipv4/10.8.1.3/
 
   validateIp = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+    let validators = new Validators()
 
-    if (validIpAddressRegex.test(this.state.request.ip)) {
-      errors.ipError = null
-      this.setState({errors: errors})
-      this.ipDetail()
+    if (validators.ipv4(this.state.ip)) {
+      delete errors.ipError
+      delete errors.ipColor
+      this.setState({errors: errors}, () => this.ipDetail())
     }
     else {
       errors.ipError = 'Please input a valid ip'
+      errors.ipColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -91,7 +87,7 @@ class DetailsIp extends React.Component {
         this.props.dispatch(ipDetailError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
     this.setState({iploading: false})
   }
 
@@ -100,15 +96,12 @@ class DetailsIp extends React.Component {
     this.setState({
       visible: false,
       ipDetails: [],
-      request: {},
       errors: []
     })
   }
 
 
   render() {
-
-    console.log(this.state.request)
 
     const columns = [
       {
@@ -195,11 +188,10 @@ class DetailsIp extends React.Component {
                     <React.Fragment>
                       {this.state.errors.ipError ?
                         <React.Fragment>
-                          <Input defaultValue={this.state.request.ip} style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onChange={e => this.setIp(e)} />
-                          <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
+                          <Input defaultValue={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                         </React.Fragment>
                       :
-                        <Input defaultValue={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input defaultValue={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       }
                     </React.Fragment>
                   }
@@ -207,15 +199,9 @@ class DetailsIp extends React.Component {
                 </Row>
                 <Row>
                   <Col offset={8} span={16}>
-                    { this.state.request.ip ?
-                      <Button type="primary" onClick={() => this.validateIp()} >
-                        IP details
-                      </Button>
-                    :
-                      <Button type="primary" disabled>
-                        IP details
-                      </Button>
-                    }
+                    <Button type="primary" onClick={() => this.validateIp()} >
+                      IP details
+                    </Button>
                   </Col>
                 </Row>
               </React.Fragment>

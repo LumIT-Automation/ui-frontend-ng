@@ -78,11 +78,13 @@ class ModifyIp extends React.Component {
     let validators = new Validators()
 
     if (validators.ipv4(this.state.ip)) {
-      errors.ipError = null
-      this.setState({errors: errors}, () => this.fetchedDetails())
+      delete errors.ipError
+      delete errors.ipColor
+      this.setState({errors: errors}, () => this.ipDetail())
     }
     else {
       errors.ipError = 'Please input a valid ip'
+      errors.ipColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -114,7 +116,6 @@ class ModifyIp extends React.Component {
   }
 
   validateServerName = async () => {
-    console.log('valitation servername')
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
@@ -338,8 +339,7 @@ class ModifyIp extends React.Component {
                     <React.Fragment>
                       {this.state.errors.ipError ?
                         <React.Fragment>
-                          <Input defaultValue={this.state.ip} style={{width: 450, borderColor: 'red'}} name="ip" id='ip' onChange={e => this.setIp(e)} />
-                          <p style={{color: 'red'}}>{this.state.errors.ipError}</p>
+                          <Input defaultValue={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                         </React.Fragment>
                       :
                         <Input defaultValue={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
@@ -350,15 +350,9 @@ class ModifyIp extends React.Component {
                 </Row>
                 <Row>
                   <Col offset={8} span={16}>
-                    { this.state.ip ?
-                      <Button type="primary" onClick={() => this.validateIp()} >
-                        IP details
-                      </Button>
-                    :
-                      <Button type="primary" disabled>
-                        IP details
-                      </Button>
-                    }
+                    <Button type="primary" onClick={() => this.validateIp()} >
+                      IP details
+                    </Button>
                   </Col>
                 </Row>
               </React.Fragment>
