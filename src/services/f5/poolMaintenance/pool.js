@@ -4,7 +4,6 @@ import Rest from "../../../_helpers/Rest";
 import Error from '../../../error/f5Error'
 
 import {
-  poolMembers,
   poolMembersError,
 
   enableMemberError,

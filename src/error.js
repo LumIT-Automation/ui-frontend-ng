@@ -159,48 +159,37 @@ class Error extends Component {
         switch(statusCode) {
           case 400:
             return <Result title={'400 - Bad Request'} />
-            break;
           case 401:
             this.logout()
             //return <Result title={statusCode} />
             break;
           case 403:
             return <Result status={statusCode} title={'403 - Forbidden'} />
-            break;
           case 404:
             return <Result status={statusCode} title={'404 - Not Found'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break;
           case 409:
             return <Result title={'409 - Conflict'} />
             //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
-            break;
           case 412:
             return <Result title={'412 - Precondition Failed'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break;
           case 422:
             return <Result title={'422 - Unprocessable Entity'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break;
           case 423:
             return <Result title={'423 - Locked'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break;
           case 429:
             return <Result title={'429 - Too many requests'} />
             //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-            break;
 
           case 500:
             return <Result title={'500'} />
-            break;
           case 502:
             return <Result title={statusCode} />
-            break;
           case 503:
             return <Result title={statusCode} />
-            break;
 
           default:
             return <Result status='error' />

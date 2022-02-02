@@ -11,16 +11,10 @@ import {
 
 import AssetSelector from './assetSelector'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Row, Col, Space } from 'antd'
+import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class ReleaseIp extends React.Component {

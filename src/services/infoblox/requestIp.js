@@ -6,7 +6,6 @@ import Validators from '../../_helpers/validators'
 import Error from '../../error/infobloxError'
 
 import {
-  ipDetailError,
   networksError,
   containersError,
   networkError,

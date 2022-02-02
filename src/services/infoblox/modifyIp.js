@@ -17,11 +17,6 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-}
-
 
 
 class ModifyIp extends React.Component {
