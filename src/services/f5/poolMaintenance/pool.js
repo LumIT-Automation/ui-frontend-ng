@@ -90,7 +90,7 @@ class PoolDetails extends React.Component {
         return n
       })
 
-      await this.setState({members: membersState})
+      this.setState({members: membersState})
     }
   }
 
@@ -110,57 +110,39 @@ class PoolDetails extends React.Component {
   }
 
 
-  enableMemberHandler = async (member) => {
+
+
+  statusAndSession = async (member, state, session) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
+
     const index = this.state.members.findIndex(m => {
       return m.name === member.name
     })
 
-    members[index].isLoading = true
-    await this.setState({members: members})
+    members[index].state = state
+    members[index].session = session
 
-    let enable = await this.enableMember(member.name)
-    if (enable.status && enable.status !== 200) {
-      members = JSON.parse(JSON.stringify(this.state.members))
-      members[index].isLoading = false
-      await this.setState({members: members})
-      this.props.dispatch(enableMemberError(enable))
-    }
-
-    let sleep = await this.sleep(2000)
-
-    let fetchMember = await this.fetchMember(member)
-    if (fetchMember.status && fetchMember.status !== 200) {
-      members = JSON.parse(JSON.stringify(this.state.members))
-      members[index].isLoading = false
-      await this.setState({members: members})
-      this.props.dispatch(enableMemberError(fetchMember))
-    }
-
-    members = JSON.parse(JSON.stringify(this.state.members))
-    members[index].state = fetchMember.state
-    members[index].session = fetchMember.session
-    if (fetchMember.state === 'up' && fetchMember.session === 'monitor-enabled') {
+    if (state === 'up' && session === 'monitor-enabled') {
       members[index].status = 'enabled'
       members[index].color = '#90ee90'
     }
-    else if (fetchMember.state === 'up' && fetchMember.session === 'user-disabled') {
+    else if (state === 'up' && session === 'user-disabled') {
       members[index].status = 'disabled'
       members[index].color = 'black'
     }
-    else if (fetchMember.state === 'checking' && fetchMember.session === 'user-disabled') {
+    else if (state === 'checking' && session === 'user-disabled') {
       members[index].status = 'checking'
       members[index].color = 'blue'
     }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'monitor-enabled') {
+    else if (state === 'down' && session === 'monitor-enabled') {
       members[index].status = 'checking'
       members[index].color = 'red'
     }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'user-enabled') {
+    else if (state === 'down' && session === 'user-enabled') {
       members[index].status = 'rechecking'
       members[index].color = 'blue'
     }
-    else if (fetchMember.state === 'user-down' && fetchMember.session === 'user-disabled') {
+    else if (state === 'user-down' && session === 'user-disabled') {
       members[index].status = 'force offline'
       members[index].color = 'black'
     }
@@ -168,12 +150,42 @@ class PoolDetails extends React.Component {
       members[index].status = 'other'
       members[index].color = 'grey'
     }
-    await this.setState({members: members})
+
+    this.setState({members: members})
+    return members
+  }
+
+
+  enableMemberHandler = async (member) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    const index = this.state.members.findIndex(m => {
+      return m.name === member.name
+    })
+
+    members[index].isLoading = true
+    this.setState({members: members})
+
+    let enable = await this.enableMember(member.name)
+    if (enable.status && enable.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(enableMemberError(enable))
+    }
+
+    let fetchMember = await this.fetchMember(member)
+    if (fetchMember.status && fetchMember.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(enableMemberError(fetchMember))
+    }
+
+    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    await this.setState({members: members})
-
+    this.setState({members: members})
   }
 
   disableMemberHandler = async (member) => {
@@ -183,64 +195,29 @@ class PoolDetails extends React.Component {
     })
 
     members[index].isLoading = true
-    await this.setState({members: members})
+    this.setState({members: members})
 
     let disable = await this.disableMember(member)
     if (disable.status && disable.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      await this.setState({members: members})
+      this.setState({members: members})
       this.props.dispatch(disableMemberError(disable))
     }
-
-    let sleep = await this.sleep(2000)
 
     let fetchMember = await this.fetchMember(member)
     if (fetchMember.status && fetchMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      await this.setState({members: members})
+      this.setState({members: members})
       this.props.dispatch(enableMemberError(fetchMember))
     }
 
-    members = JSON.parse(JSON.stringify(this.state.members))
-    members[index].state = fetchMember.state
-    members[index].session = fetchMember.session
-
-    if (fetchMember.state === 'up' && fetchMember.session === 'monitor-enabled') {
-      members[index].status = 'enabled'
-      members[index].color = '#90ee90'
-    }
-    else if (fetchMember.state === 'up' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'disabled'
-      members[index].color = 'black'
-    }
-    else if (fetchMember.state === 'checking' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'checking'
-      members[index].color = 'blue'
-    }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'monitor-enabled') {
-      members[index].status = 'checking'
-      members[index].color = 'red'
-    }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'user-enabled') {
-      members[index].status = 'rechecking'
-      members[index].color = 'blue'
-    }
-    else if (fetchMember.state === 'user-down' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'force offline'
-      members[index].color = 'black'
-    }
-    else {
-      members[index].status = 'other'
-      members[index].color = 'grey'
-    }
-    await this.setState({members: members})
+    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    await this.setState({members: members})
-
+    this.setState({members: members})
   }
 
   forceOfflineMemberHandler = async (member) => {
@@ -250,68 +227,29 @@ class PoolDetails extends React.Component {
     })
 
     members[index].isLoading = true
-    await this.setState({members: members})
+    this.setState({members: members})
 
     let forceOffline = await this.forceOfflineMember(member)
     if (forceOffline.status && forceOffline.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      await this.setState({members: members})
+      this.setState({members: members})
       this.props.dispatch(forceOfflineMemberError(forceOffline))
     }
-
-    let sleep = await this.sleep(2000)
 
     let fetchMember = await this.fetchMember(member)
     if (fetchMember.status && fetchMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      await this.setState({members: members})
+      this.setState({members: members})
       this.props.dispatch(enableMemberError(fetchMember))
     }
 
-    members = JSON.parse(JSON.stringify(this.state.members))
-    members[index].state = fetchMember.state
-    members[index].session = fetchMember.session
-
-    if (fetchMember.state === 'up' && fetchMember.session === 'monitor-enabled') {
-      members[index].status = 'enabled'
-      members[index].color = '#90ee90'
-    }
-    else if (fetchMember.state === 'up' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'disabled'
-      members[index].color = 'black'
-    }
-    else if (fetchMember.state === 'checking' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'checking'
-      members[index].color = 'blue'
-    }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'monitor-enabled') {
-      members[index].status = 'checking'
-      members[index].color = 'red'
-    }
-    else if (fetchMember.state === 'down' && fetchMember.session === 'user-enabled') {
-      members[index].status = 'rechecking'
-      members[index].color = 'blue'
-    }
-    else if (fetchMember.state === 'user-down' && fetchMember.session === 'user-disabled') {
-      members[index].status = 'force offline'
-      members[index].color = 'black'
-    }
-    else {
-      members[index].status = 'other'
-      members[index].color = 'grey'
-    }
-    await this.setState({members: members})
+    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    await this.setState({members: members})
-
-  }
-
-  sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    this.setState({members: members})
   }
 
   enableMember = async (memberName) => {
@@ -659,7 +597,7 @@ class PoolDetails extends React.Component {
           <React.Fragment>
             { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
             { this.props.enableMemberError ? <Error component={'poolMaint pool'} error={[this.props.enableMemberError]} visible={true} type={'enableMemberError'} /> : null }
-            { this.props.disableError ? <Error component={'poolMaint pool'} error={[this.props.disableError]} visible={true} type={'disableError'} /> : null }
+            { this.props.disableMemberError ? <Error component={'poolMaint pool'} error={[this.props.disableMemberError]} visible={true} type={'disableMemberError'} /> : null }
             { this.props.forceOfflineMemberError ? <Error component={'poolMaint pool'} error={[this.props.forceOfflineMemberError]} visible={true} type={'forceOfflineMemberError'} /> : null }
             { this.props.memberStatsError ? <Error component={'poolMaint pool'} error={[this.props.memberStatsError]} visible={true} type={'memberStatsError'} /> : null }
 
@@ -683,7 +621,7 @@ export default connect((state) => ({
   poolMembersError: state.f5.poolMembersError,
 
   enableMemberError: state.f5.enableMemberError,
-  disableError: state.f5.disableMemberError,
+  disableMemberError: state.f5.disableMemberError,
   forceOfflineMemberError: state.f5.forceOfflineMemberError,
   memberStatsError: state.f5.memberStatsError,
 
