@@ -6,10 +6,16 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { Input, Button, Space, Modal, Table } from 'antd'
+import { devices, devicesLoading, devicesError, devicesFetch } from '../../_store/store.fortinetdb'
+
+import List from '../devices/list'
+
+import { Input, Button, Space, Modal, Table, Tabs, Spin } from 'antd'
 
 import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { LoadingOutlined, SearchOutlined, ReloadOutlined } from '@ant-design/icons'
+const { TabPane } = Tabs;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class Project extends React.Component {
@@ -39,7 +45,7 @@ class Project extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.fetchProject()
+    this.main()
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -120,6 +126,12 @@ class Project extends React.Component {
     this.setState({ searchText: '' });
   };
 
+
+  main = () => {
+    this.fetchProject()
+    this.fetchDevices()
+  }
+
   fetchProject = async () => {
     this.setState({loading: true})
     let rest = new Rest(
@@ -134,6 +146,24 @@ class Project extends React.Component {
       }
     )
     await rest.doXHR(`fortinetdb/project/${this.props.obj.ID_PROGETTO}/`, this.props.token)
+  }
+
+
+  //http://10.0.111.23/api/v1/fortinetdb/devices/?fby=ID_PROGETTO&fval=1509
+  fetchDevices = async () => {
+    this.setState({devicesLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(devices(resp))
+        this.setState({devicesLoading: false})
+      },
+      error => {
+        this.setState({devicesLoading: false, response: false})
+        //this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`fortinetdb/devices/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
   }
 
   setExtraData = e => {
@@ -182,6 +212,7 @@ class Project extends React.Component {
 //NOME, ACCOUNT, RAGIONE SOCIALE, SEGMENTO, SERVIZIO
 
   render() {
+    console.log(this.props.devices)
     const columns = [
       {
         title: "NOME",
@@ -252,6 +283,23 @@ class Project extends React.Component {
             scroll={{x: 'auto'}}
           >
           </Table>
+
+          <React.Fragment>
+            <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
+              <Tabs type="card">
+                {this.state.devicesLoading ?
+                  <TabPane key="devices" tab="Devices">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                :
+                  <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDevices()}/></span>>
+                    <List/>
+                  </TabPane>
+                }
+              </Tabs>
+
+            </Space>
+          </React.Fragment>
         </Modal>
 
         {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
@@ -264,4 +312,6 @@ class Project extends React.Component {
 export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
+
+  devices: state.fortinetdb.devices
 }))(Project);

@@ -97,8 +97,8 @@ class CustomSider extends Component {
 
           { this.props.fortinetdbAuth && (this.props.fortinetdbAuth || this.props.fortinetdbAuth.any) ?
             <React.Fragment>
-              <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICES</Link></Menu.Item>
               <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECTS</Link></Menu.Item>
+              <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICES</Link></Menu.Item>
               <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOSSES</Link></Menu.Item>
               <Divider style={{border: '1vh solid #f0f2f5'}}/>
             </React.Fragment>
