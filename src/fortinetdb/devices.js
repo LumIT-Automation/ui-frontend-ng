@@ -26,7 +26,7 @@ class Devices extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.devices) {
+    if (!this.props.devices || this.props.devices.length === 0) {
       this.fetchDevices()
     }
   }

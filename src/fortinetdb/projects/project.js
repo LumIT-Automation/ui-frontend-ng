@@ -249,7 +249,9 @@ class Project extends React.Component {
   }
 
   //Close and Error
-  closeModal = () => {
+  closeModal = async () => {
+    await this.resetDevices()
+    await this.resetDdosses()
     this.setState({
       visible: false,
     })

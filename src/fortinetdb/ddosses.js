@@ -26,7 +26,7 @@ class Ddosses extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.ddosses) {
+    if (!this.props.ddosses || this.props.ddosses.length === 0) {
       this.fetchDdosses()
     }
   }
