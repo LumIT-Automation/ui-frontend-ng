@@ -458,6 +458,7 @@ class CreateF5Service extends React.Component {
   }
 
   validation = async () => {
+    console.log(this.state.errors)
     let validation = await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
