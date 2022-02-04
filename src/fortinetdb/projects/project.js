@@ -293,7 +293,7 @@ class Project extends React.Component {
                   </TabPane>
                 :
                   <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDevices()}/></span>>
-                    <List/>
+                    <List height={350} pagination={5}/>
                   </TabPane>
                 }
               </Tabs>

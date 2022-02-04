@@ -290,11 +290,11 @@ class List extends React.Component {
         <Table
           columns={columns}
           dataSource={this.props.devices}
-          scroll={{ x: 'auto', y: 650}}
+          scroll={{ x: 'auto', y: this.props.height}}
           bordered
           rowKey="SERIALE"
           //pagination={false}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: this.props.pagination }}
           style={{marginBottom: 10}}
         />
 
