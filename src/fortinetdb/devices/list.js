@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
 import Device from './device'
 
@@ -117,28 +116,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log('this.props.devices')
-    console.log(this.props.devices)
-
-/*
-"MANAGED_OBJECT": "TMS-CUST-FACEBOOK-EU",
-"ID_PROGETTO": 1508,
-"MO_DESCRIZIONE": "FACEBOOK FastKaleiDoS - Rete EUROPA",
-"MO_NET": "1.0.0.0/8",
-"MO_AUTOMITIGATION": 1,
-"MO_TEMPLATE_MITIGATION": "FACEBOOK-EU-AUTOMITIGATION",
-"MO_PROATTIVITA_MITIGATION": 1,
-"MO_CODICE_SERVIZIO": "",
-"MO_BANDA": 10240000,
-"MO_NOTE": "",
-"MO_ATTIVAZIONE_ANNO": 2020,
-"MO_ATTIVAZIONE_MESE": 4,
-"MO_STATUS": 2,
-"NOME_PROGETTO": "FACEBOOK FastKaleiDoS",
-"ID_SERVIZIO": 100,
-"SERVIZIO": "DDoS Management"
-*/
-
 
     const columns = [
       {
@@ -297,8 +274,6 @@ class List extends React.Component {
           pagination={{ pageSize: this.props.pagination }}
           style={{marginBottom: 10}}
         />
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} /> : <Error visible={false} />}
 
       </React.Fragment>
     )

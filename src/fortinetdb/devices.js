@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
-import Rest from "../_helpers/Rest"
+import Rest from '../_helpers/Rest'
+import Error from '../error/fortinetdbError'
 
 import { devices, devicesLoading, devicesError, devicesFetch } from '../_store/store.fortinetdb'
 
@@ -81,6 +82,9 @@ class Devices extends React.Component {
           </Tabs>
 
         </Space>
+
+        { this.props.devicesError ? <Error component={'fortinetdb devices'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -97,35 +101,3 @@ export default connect((state) => ({
   devicesError: state.fortinetdb.devicesError,
   devicesFetch: state.fortinetdb.devicesFetch
 }))(Devices);
-
-
-
-
-
-/*
-<React.Fragment>
-  <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-    <Tabs type="card">
-      { this.props.fortinetdbauth && (this.props.fortinetdbauth.assets_get || this.props.fortinetdbauth.any) ?
-        <React.Fragment>
-          {this.props.devicesLoading ?
-            <TabPane key="Fortinetdb" tab="Fortinetdb">
-              <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-            </TabPane>
-            :
-            <TabPane key="devices" tab=<span>Fortinetdb <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.devicesDevicesRefresh()}/></span>>
-              <List/>
-            </TabPane>
-          }
-        </React.Fragment>
-        :
-        null
-      }
-
-    </Tabs>
-
-  </Space>
-</React.Fragment>
-
-
-*/

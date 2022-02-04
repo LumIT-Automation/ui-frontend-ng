@@ -32,6 +32,18 @@ const fortinetdbSlice = createSlice({
       },
 
 
+      projectsLoading: (state, action) => {
+        state.projectsLoading = action.payload
+      },
+      projects: (state, action) => {
+        state.projects = action.payload.data.items
+      },
+      projectsFetch: (state, action) => {
+        state.projectsFetch = action.payload
+      },
+      projectsError: (state, action) => {
+        state.projectsError = action.payload
+      },
 
       devicesLoading: (state, action) => {
         state.devicesLoading = action.payload
@@ -59,59 +71,27 @@ const fortinetdbSlice = createSlice({
         state.ddossesError = action.payload
       },
 
-      projectsLoading: (state, action) => {
-        state.projectsLoading = action.payload
-      },
-      projects: (state, action) => {
-        state.projects = action.payload.data.items
-      },
-      projectsFetch: (state, action) => {
-        state.projectsFetch = action.payload
-      },
-      projectsError: (state, action) => {
-        state.projectsError = action.payload
-      },
 
+      project: (state, action) => {
+        state.project = action.payload
+      },
+      projectError: (state, action) => {
+        state.projectError = action.payload
+      },
 
       device: (state, action) => {
         state.device = action.payload
       },
-      addDeviceError: (state, action) => {
-        state.addDeviceError = action.payload
-      },
-      modifyDeviceError: (state, action) => {
-        state.modifyDeviceError = action.payload
-      },
-      deleteDeviceError: (state, action) => {
-        state.deleteDeviceError = action.payload
+      deviceError: (state, action) => {
+        state.deviceError = action.payload
       },
 
       ddos: (state, action) => {
         state.ddos = action.payload
       },
-      addDdosError: (state, action) => {
-        state.addDdosError = action.payload
+      ddosError: (state, action) => {
+        state.ddosError = action.payload
       },
-      modifyDdosError: (state, action) => {
-        state.modifyDdosError = action.payload
-      },
-      deleteDdosError: (state, action) => {
-        state.deleteDdosError = action.payload
-      },
-
-      project: (state, action) => {
-        state.project = action.payload
-      },
-      projectAddError: (state, action) => {
-        state.projectAddError = action.payload
-      },
-      projectModifyError: (state, action) => {
-        state.projectModifyError = action.payload
-      },
-      projectDeleteError: (state, action) => {
-        state.projectDeleteError = action.payload
-      },
-
 
 
       firmwaresLoading: (state, action) => {
@@ -161,6 +141,11 @@ export const {
   identityGroupsFetch,
   identityGroupsError,
 
+  projectsLoading,
+  projects,
+  projectsFetch,
+  projectsError,
+
   devicesLoading,
   devices,
   devicesFetch,
@@ -171,26 +156,15 @@ export const {
   ddossesFetch,
   ddossesError,
 
-  projectsLoading,
-  projects,
-  projectsFetch,
-  projectsError,
-
-  device,
-  addDeviceError,
-  modifyDeviceError,
-  deleteDeviceError,
-
-  ddos,
-  addDdosError,
-  modifyDdosError,
-  deleteDdosError,
 
   project,
-  projectAddError,
-  projectModifyError,
-  projectDeleteError,
+  projectError,
 
+  device,
+  deviceError,
+
+  ddos,
+  ddosError,
 
 
   firmwaresLoading,

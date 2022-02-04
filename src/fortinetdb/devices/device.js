@@ -1,10 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import { setError } from '../../_store/store.error'
+import {
+  deviceError
+} from '../../_store/store.fortinetdb'
 
 import { Input, Button, Space, Modal, Spin, Table } from 'antd'
 
@@ -132,8 +134,8 @@ class Device extends React.Component {
         this.setState({loading: false, device: device, extraData: resp.data.extra_data})
       },
       error => {
+        this.props.dispatch(deviceError(error))
         this.setState({loading: false, response: false})
-        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token)
@@ -158,6 +160,7 @@ class Device extends React.Component {
           this.fetchDevice()
         },
         error => {
+          this.props.dispatch(deviceError(error))
           this.setState({extraLoading: false, response: false, error: error})
         }
       )
@@ -170,10 +173,6 @@ class Device extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -183,7 +182,7 @@ class Device extends React.Component {
 
 
   render() {
-    
+
     const columns = [
       {
         title: "SERIALE",
@@ -353,7 +352,15 @@ class Device extends React.Component {
           </Table>
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+
+            { this.props.deviceError ? <Error component={'fortinetdb device'} error={[this.props.deviceError]} visible={true} type={'deviceError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
     )
@@ -362,5 +369,5 @@ class Device extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	deviceError: state.fortinetdb.deviceError
 }))(Device);

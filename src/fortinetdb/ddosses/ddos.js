@@ -1,10 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import { setError } from '../../_store/store.error'
+import {
+  ddosError
+} from '../../_store/store.fortinetdb'
 
 import { Input, Button, Space, Modal, Table } from 'antd'
 
@@ -129,8 +131,8 @@ class Ddos extends React.Component {
         this.setState({loading: false, ddos: ddos, extraData: resp.data.extra_data})
       },
       error => {
+        this.props.dispatch(ddosError(error))
         this.setState({loading: false, response: false})
-        this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`fortinetdb/ddos/${this.props.obj.MANAGED_OBJECT}/`, this.props.token)
@@ -165,10 +167,6 @@ class Ddos extends React.Component {
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -276,7 +274,15 @@ class Ddos extends React.Component {
           </Table>
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        {this.state.visible ?
+          <React.Fragment>
+
+            { this.props.ddosError ? <Error component={'fortinetdb ddos'} error={[this.props.ddosError]} visible={true} type={'ddosError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
 
       </React.Fragment>
     )
@@ -285,5 +291,5 @@ class Ddos extends React.Component {
 
 export default connect((state) => ({
   token: state.ssoAuth.token,
- 	error: state.error.error,
+ 	ddosError: state.fortinetdb.ddosError
 }))(Ddos);

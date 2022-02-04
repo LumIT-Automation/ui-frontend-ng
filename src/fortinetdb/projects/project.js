@@ -1,16 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
-
-import { setError } from '../../_store/store.error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
 import {
+  projectError,
+
   devices,
   devicesLoading,
   devicesError,
   devicesFetch,
+
   ddosses,
   ddossesLoading,
   ddossesError,
@@ -137,10 +138,32 @@ class Project extends React.Component {
   };
 
 
-  main = () => {
+  main = async () => {
+    await this.resetDevices()
+    await this.resetDdosses()
     this.fetchProject()
     this.fetchDevices()
     this.fetchDdosses()
+  }
+
+  resetDevices = async () => {
+    let d = {
+      data: {
+        items: []
+      }
+    }
+    this.props.dispatch(devices(d))
+    return true
+  }
+
+  resetDdosses = async () => {
+    let d = {
+      data: {
+        items: []
+      }
+    }
+    this.props.dispatch(ddosses(d))
+    return true
   }
 
   fetchProject = async () => {
@@ -153,7 +176,7 @@ class Project extends React.Component {
       },
       error => {
         this.setState({loading: false, response: false})
-        this.props.dispatch(setError(error))
+        this.props.dispatch(projectError(error))
       }
     )
     await rest.doXHR(`fortinetdb/project/${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -170,8 +193,8 @@ class Project extends React.Component {
         this.setState({devicesLoading: false})
       },
       error => {
+        this.props.dispatch(devicesError(error))
         this.setState({devicesLoading: false, response: false})
-        //this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -182,14 +205,12 @@ class Project extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('resp')
-        console.log(resp)
         this.props.dispatch(ddosses(resp))
         this.setState({ddossesLoading: false})
       },
       error => {
+        this.props.dispatch(ddossesError(error))
         this.setState({ddossesLoading: false, response: false})
-        //this.props.dispatch(setError(error))
       }
     )
     await rest.doXHR(`fortinetdb/ddosses/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -215,6 +236,7 @@ class Project extends React.Component {
         },
         error => {
           this.setState({extraLoading: false, response: false, error: error})
+          this.props.dispatch(projectError(error))
         }
       )
       await rest.doXHR(`/fortinetdb/project/${this.props.obj.ID_PROGETTO}/`, this.props.token, b )
@@ -224,10 +246,6 @@ class Project extends React.Component {
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -339,7 +357,19 @@ class Project extends React.Component {
           </React.Fragment>
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
+        {this.state.visible ?
+          <React.Fragment>
+
+            { this.props.projectError ? <Error component={'fortinetdb project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
+            { this.props.devicesError ? <Error component={'fortinetdb project'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
+            { this.props.ddossesError ? <Error component={'fortinetdb project'} error={[this.props.ddossesError]} visible={true} type={'ddossesError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
+
 
       </React.Fragment>
     )
@@ -351,5 +381,9 @@ export default connect((state) => ({
  	error: state.error.error,
 
   devices: state.fortinetdb.devices,
-  ddosses: state.fortinetdb.ddosses
+  ddosses: state.fortinetdb.ddosses,
+
+  projectError: state.fortinetdb.projectError,
+  devicesError: state.fortinetdb.devicesError,
+  ddossesError: state.fortinetdb.ddossesError,
 }))(Project);

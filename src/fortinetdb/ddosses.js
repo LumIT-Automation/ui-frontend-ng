@@ -1,8 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
-import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Rest from '../_helpers/Rest'
+import Error from '../error/fortinetdbError'
 
 import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from '../_store/store.fortinetdb'
 
@@ -82,6 +82,9 @@ class Ddosses extends React.Component {
           </Tabs>
 
         </Space>
+
+        { this.props.ddossesError ? <Error component={'fortinetdb ddosses'} error={[this.props.ddossesError]} visible={true} type={'ddossesError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -98,35 +101,3 @@ export default connect((state) => ({
   ddossesError: state.fortinetdb.ddossesError,
   ddossesFetch: state.fortinetdb.ddossesFetch
 }))(Ddosses);
-
-
-
-
-
-/*
-<React.Fragment>
-  <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-    <Tabs type="card">
-      { this.props.fortinetdbauth && (this.props.fortinetdbauth.assets_get || this.props.fortinetdbauth.any) ?
-        <React.Fragment>
-          {this.props.ddossesLoading ?
-            <TabPane key="Fortinetdb" tab="Fortinetdb">
-              <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-            </TabPane>
-            :
-            <TabPane key="ddosses" tab=<span>Fortinetdb <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.ddossesDdossesRefresh()}/></span>>
-              <List/>
-            </TabPane>
-          }
-        </React.Fragment>
-        :
-        null
-      }
-
-    </Tabs>
-
-  </Space>
-</React.Fragment>
-
-
-*/
