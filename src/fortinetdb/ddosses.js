@@ -76,7 +76,7 @@ class Ddosses extends React.Component {
               </TabPane>
             :
               <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.ddossesRefresh()}/></span>>
-                <List/>
+                <List height={600} pagination={10}/>
               </TabPane>
             }
           </Tabs>

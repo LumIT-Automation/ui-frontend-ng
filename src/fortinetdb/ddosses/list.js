@@ -199,11 +199,11 @@ class List extends React.Component {
         <Table
           columns={columns}
           dataSource={this.props.ddosses}
-          scroll={{ x: 'auto', y: 650}}
+          scroll={{ x: 'auto', y: this.props.height}}
           bordered
           rowKey="MANAGED_OBJECT"
           //pagination={false}
-          pagination={{ pageSize: 10 }}
+          pagination={{ pageSize: this.props.pagination }}
           style={{marginBottom: 10}}
         />
 

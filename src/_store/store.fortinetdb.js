@@ -37,8 +37,6 @@ const fortinetdbSlice = createSlice({
         state.devicesLoading = action.payload
       },
       devices: (state, action) => {
-        console.log('store')
-        console.log(action.payload.data.items)
         state.devices = action.payload.data.items
       },
       devicesFetch: (state, action) => {

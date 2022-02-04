@@ -6,9 +6,19 @@ import Error from '../../error'
 
 import { setError } from '../../_store/store.error'
 
-import { devices, devicesLoading, devicesError, devicesFetch } from '../../_store/store.fortinetdb'
+import {
+  devices,
+  devicesLoading,
+  devicesError,
+  devicesFetch,
+  ddosses,
+  ddossesLoading,
+  ddossesError,
+  ddossesFetch,
+} from '../../_store/store.fortinetdb'
 
-import List from '../devices/list'
+import Devices from '../devices/list'
+import Ddosses from '../ddosses/list'
 
 import { Input, Button, Space, Modal, Table, Tabs, Spin } from 'antd'
 
@@ -130,6 +140,7 @@ class Project extends React.Component {
   main = () => {
     this.fetchProject()
     this.fetchDevices()
+    this.fetchDdosses()
   }
 
   fetchProject = async () => {
@@ -164,6 +175,24 @@ class Project extends React.Component {
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
+  }
+
+  fetchDdosses = async () => {
+    this.setState({ddossesLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log('resp')
+        console.log(resp)
+        this.props.dispatch(ddosses(resp))
+        this.setState({ddossesLoading: false})
+      },
+      error => {
+        this.setState({ddossesLoading: false, response: false})
+        //this.props.dispatch(setError(error))
+      }
+    )
+    await rest.doXHR(`fortinetdb/ddosses/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
   }
 
   setExtraData = e => {
@@ -212,7 +241,6 @@ class Project extends React.Component {
 //NOME, ACCOUNT, RAGIONE SOCIALE, SEGMENTO, SERVIZIO
 
   render() {
-    console.log(this.props.devices)
     const columns = [
       {
         title: "NOME",
@@ -293,7 +321,16 @@ class Project extends React.Component {
                   </TabPane>
                 :
                   <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDevices()}/></span>>
-                    <List height={350} pagination={5}/>
+                    <Devices height={350} pagination={5}/>
+                  </TabPane>
+                }
+                {this.state.ddossesLoading ?
+                  <TabPane key="ddosses" tab="Ddosses">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                :
+                  <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDdosses()}/></span>>
+                    <Ddosses height={350} pagination={5}/>
                   </TabPane>
                 }
               </Tabs>
@@ -313,5 +350,6 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
  	error: state.error.error,
 
-  devices: state.fortinetdb.devices
+  devices: state.fortinetdb.devices,
+  ddosses: state.fortinetdb.ddosses
 }))(Project);
