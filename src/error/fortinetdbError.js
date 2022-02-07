@@ -16,8 +16,9 @@ import {
   deviceError,
   ddosError,
 
-  firmwaresError,
-  firmwareError,
+  fieldError,
+  valueError
+
 } from '../_store/store.fortinetdb'
 
 import { Modal, Table, Result } from 'antd';
@@ -59,7 +60,7 @@ class Error extends Component {
           break;
         case 'devicesError':
           this.props.dispatch(devicesError(null))
-          break;
+          break;field
         case 'ddossesError':
           this.props.dispatch(ddossesError(null))
           break;
@@ -75,11 +76,11 @@ class Error extends Component {
           this.props.dispatch(ddosError(null))
           break;
 
-        case 'firmwaresError':
-          this.props.dispatch(firmwaresError(null))
+        case 'fieldError':
+          this.props.dispatch(fieldError(null))
           break;
-        case 'firmwareError':
-          this.props.dispatch(firmwareError(null))
+        case 'valueError':
+          this.props.dispatch(valueError(null))
           break;
 
       }

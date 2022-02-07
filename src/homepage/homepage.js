@@ -25,9 +25,18 @@ import {
 import AmericanPie from './pieChart'
 import Victory from './victory'
 import Map from './maps'
-import Firmwares from './firmwares'
 
-import { Spin, Card, Row, Col, Table } from 'antd'
+import Servizio from './servizio'
+import Segmento from './segmento'
+
+import Firmware from './firmware'
+import Modello from './modello'
+import BackupStatus from './backupStatus'
+import EosFirmware from './eosFirmware'
+import EosHardware from './eosHardware'
+
+
+import { Spin, Card, Row, Col, Table, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -53,7 +62,6 @@ class Homepage extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
   }
 
   componentWillUnmount() {
@@ -71,7 +79,6 @@ class Homepage extends React.Component {
       "GET",
       resp => {
         this.props.dispatch(projects(resp))
-        console.log('fetch projects OK')
       },
       error => {
         this.props.dispatch(projectsError(error))
@@ -85,7 +92,6 @@ class Homepage extends React.Component {
       "GET",
       resp => {
         this.props.dispatch(devices(resp))
-        console.log('fetch devices OK')
       },
       error => {
         this.props.dispatch(devicesError(error))
@@ -105,50 +111,69 @@ class Homepage extends React.Component {
         :
           <React.Fragment>
             { this.props.projects ?
-            <React.Fragment>
-              <Row>
-                <Col span={17}>
-                  <Row>
-                    <Col span={10}>
-                      <Card title={<p style={{textAlign: 'center'}}>Firmwares</p>} bordered={true}>
-                        <Firmwares/>
-                      </Card>
-                    </Col>
-                    <Col offset={1} span={10}>
-                      <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                        <Victory/>
-                      </Card>
-                    </Col>
-                  </Row>
-                </Col>
-              </Row>
-            </React.Fragment>
+              <React.Fragment>
+                <Row>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>Servizio</p>} bordered={true}>
+                      <Servizio/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>Segmento</p>} bordered={true}>
+                      <Segmento/>
+                    </Card>
+                  </Col>
+
+                </Row>
+              </React.Fragment>
             :
-            null
-          }
+              null
+            }
+
+            <Divider/>
+
             { this.props.devices ?
               <React.Fragment>
                 <Row>
                   <Col span={17}>
+
                     <Row>
-                      <Col span={10}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmwares</p>} bordered={true}>
-                          <Firmwares/>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
+                          <Firmware/>
                         </Card>
                       </Col>
-                      <Col offset={1} span={10}>
-                        <Card title={<p style={{textAlign: 'center'}}>Environment</p>} bordered={true}>
-                          <Victory/>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>Modello</p>} bordered={true}>
+                          <Modello/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>BackupStatus</p>} bordered={true}>
+                          <BackupStatus/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>EosFirmware</p>} bordered={true}>
+                          <EosFirmware/>
                         </Card>
                       </Col>
                     </Row>
+
+                    <Row>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>EosHardware</p>} bordered={true}>
+                          <EosHardware/>
+                        </Card>
+                      </Col>
+                    </Row>
+
                   </Col>
 
-
-                  <Col offset={0} span={6}>
-                  <Card title={<p style={{textAlign: 'center'}}>Region</p>} bordered={true}>
-                    <Map />
-                  </Card>
+                  <Col offset={0} span={7}>
+                    <Card title={<p style={{textAlign: 'center'}}>Region</p>} bordered={true}>
+                      <Map />
+                    </Card>
                   </Col>
                 </Row>
               </React.Fragment>

@@ -8,16 +8,20 @@ import '../App.css'
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
 
-import FirmwareTable from './firmwareTable'
 import List from '../fortinetdb/devices/list'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
-import { firmwares, firmwaresLoading, firmwaresError } from '../_store/store.fortinetdb'
+import {
+  field,
+  fieldError,
+  value,
+  valueError
+} from '../_store/store.fortinetdb'
 
-class Firmware extends React.Component {
+class EosHardware extends React.Component {
 
   constructor(props) {
     super(props);
@@ -27,7 +31,9 @@ class Firmware extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchFirmware()
+    console.log('props')
+    console.log(this.props)
+    this.fetchField()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -40,37 +46,34 @@ class Firmware extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchFirmware = async () => {
+  fetchField = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(firmwares(resp))
+        this.setState({field: resp.data.items})
+        //this.props.dispatch(field(resp))
       },
       error => {
-        this.props.dispatch(firmwaresError(error))
+        this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=EOS_HARDWARE`, this.props.token)
     this.setState({loading: false})
   }
 
-  fetchFirmwareTable = async () => {
+  fetchValue = async () => {
     this.setState({loading: true})
-    console.log('èèèèèèèèèèèè')
-    console.log(this.state.value)
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('reerrrrrrrrrrrrrrrrrèèèèèèèèèèèè')
-        console.log(resp)
         this.setState({loading: false, devices: resp.data.items})
       },
       error => {
-        this.setState({loading: false, response: false})
+        this.setState({loading: false}, () => this.props.dispatch(valueError(error)))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=EOS_HARDWARE&fval=${this.state.value}`, this.props.token)
   }
 
   hide = () => {
@@ -87,12 +90,10 @@ class Firmware extends React.Component {
             target: "data",
             eventHandlers: {
               onClick: (e, n) => {
-                console.log(n.datum.FIRMWARE)
-                console.log(n.style.fill)
-                this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchFirmwareTable())
+                this.setState({visible: true, value: n.datum.EOS_HARDWARE}, () => this.fetchValue())
               },
               onMouseOver: (e, n) => {
-                this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
+                this.setState({name: n.datum.EOS_HARDWARE, color: n.style.fill})
               },
               onMouseLeave: (e, n) => {
                 this.setState({name: '', color: ''})
@@ -101,8 +102,8 @@ class Firmware extends React.Component {
           }]}
           standalone={false}
           width={300} height={300}
-          data={this.props.firmwares}
-          x="FIRMWARE"
+          data={this.state.field}
+          x="EOS_HARDWARE"
           y="COUNT"
           innerRadius={0} radius={80}
           labels={({ datum }) => datum.COUNT}
@@ -116,32 +117,33 @@ class Firmware extends React.Component {
         />
       </svg>
 
-      {
-        //<FirmwareTable visible={this.state.visible} value={this.state.value} hide={() => this.hide()}/>
-      }
       { this.state.visible ?
-        <Modal
-          title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          //onOk={() => this.setState({visible: true})}
-          onCancel={this.hide}
-          width={1500}
-        >
-          { this.state.loading ?
-             <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
-          :
-            <React.Fragment>
-              { this.state.devices ?
-                <List height={350} pagination={5} filteredDevices={this.state.devices}/>
-              :
-                null
-              }
-            </React.Fragment>
-          }
-        </Modal>
+        <React.Fragment>
+          <Modal
+            title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+            centered
+            destroyOnClose={true}
+            visible={this.state.visible}
+            footer={''}
+            //onOk={() => this.setState({visible: true})}
+            onCancel={this.hide}
+            width={1500}
+          >
+            { this.state.loading ?
+               <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+            :
+              <React.Fragment>
+                { this.state.devices ?
+                  <List height={350} pagination={5} filteredDevices={this.state.devices}/>
+                :
+                  null
+                }
+              </React.Fragment>
+            }
+          </Modal>
+          { this.props.fieldError ? <Error component={'EOS_HARDWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+          { this.props.valueError ? <Error component={'EOS_HARDWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+        </React.Fragment>
       :
         null
       }
@@ -156,5 +158,6 @@ export default connect((state) => ({
   token: state.ssoAuth.token,
   authorizations: state.authorizations.f5,
 
-  firmwares: state.fortinetdb.firmwares,
-}))(Firmware);
+  fieldError: state.fortinetdb.fieldError,
+  valueError: state.fortinetdb.valueError,
+}))(EosHardware);

@@ -93,31 +93,17 @@ const fortinetdbSlice = createSlice({
         state.ddosError = action.payload
       },
 
-
-      firmwaresLoading: (state, action) => {
-        state.firmwaresLoading = action.payload
+      field: (state, action) => {
+        state.field = action.payload.data.items
       },
-      firmwares: (state, action) => {
-        state.firmwares = action.payload.data.items
+      fieldError: (state, action) => {
+        state.fieldError = action.payload
       },
-      firmwaresFetch: (state, action) => {
-        state.firmwaresFetch = action.payload
+      value: (state, action) => {
+        state.value = action.payload.data.items
       },
-      firmwaresError: (state, action) => {
-        state.firmwaresError = action.payload
-      },
-
-      firmwareLoading: (state, action) => {
-        state.firmwareLoading = action.payload
-      },
-      firmware: (state, action) => {
-        state.firmware = action.payload.data.items
-      },
-      firmwareFetch: (state, action) => {
-        state.firmwareFetch = action.payload
-      },
-      firmwareError: (state, action) => {
-        state.firmwareError = action.payload
+      valueError: (state, action) => {
+        state.valueError = action.payload
       },
 
       cleanUp: (state, action) => {
@@ -166,16 +152,11 @@ export const {
   ddos,
   ddosError,
 
+  field,
+  fieldError,
 
-  firmwaresLoading,
-  firmwares,
-  firmwaresFetch,
-  firmwaresError,
-
-  firmwareLoading,
-  firmware,
-  firmwareFetch,
-  firmwareError,
+  value,
+  valueError,
 
   cleanUp
 } = actions

@@ -176,6 +176,11 @@ class List extends React.Component {
 
     return (
       <React.Fragment>
+        { this.props.filteredProjects && this.props.filteredProjects.length ?
+          <p>Projects: {this.props.filteredProjects.length}</p>
+        :
+          <p>Projects: {this.props.projects.length}</p>
+        }
         <Table
           columns={columns}
           dataSource={this.props.projects}
