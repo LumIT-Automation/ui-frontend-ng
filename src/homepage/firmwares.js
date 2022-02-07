@@ -1,13 +1,19 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
-import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory';
+import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
+import 'antd/dist/antd.css'
+import '../App.css'
 
-import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Rest from '../_helpers/Rest'
+import Error from '../error/fortinetdbError'
+
 import FirmwareTable from './firmwareTable'
+import List from '../fortinetdb/devices/list'
 
-import { Modal, Table } from 'antd'
+import { Modal, Table, Spin } from 'antd'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 import { firmwares, firmwaresLoading, firmwaresError } from '../_store/store.fortinetdb'
 
@@ -35,11 +41,10 @@ class Firmware extends React.Component {
   }
 
   fetchFirmware = async () => {
-    this.props.dispatch(firmwaresLoading(true))
+    this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(firmwares(resp))
       },
       error => {
@@ -47,7 +52,25 @@ class Firmware extends React.Component {
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
-    this.props.dispatch(firmwaresLoading(false))
+    this.setState({loading: false})
+  }
+
+  fetchFirmwareTable = async () => {
+    this.setState({loading: true})
+    console.log('èèèèèèèèèèèè')
+    console.log(this.state.value)
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log('reerrrrrrrrrrrrrrrrrèèèèèèèèèèèè')
+        console.log(resp)
+        this.setState({loading: false, devices: resp.data.items})
+      },
+      error => {
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
   }
 
   hide = () => {
@@ -64,8 +87,9 @@ class Firmware extends React.Component {
             target: "data",
             eventHandlers: {
               onClick: (e, n) => {
+                console.log(n.datum.FIRMWARE)
                 console.log(n.style.fill)
-                this.setState({visible: true, value: n.datum.FIRMWARE})
+                this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchFirmwareTable())
               },
               onMouseOver: (e, n) => {
                 this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
@@ -92,7 +116,35 @@ class Firmware extends React.Component {
         />
       </svg>
 
-      <FirmwareTable visible={this.state.visible} value={this.state.value} hide={() => this.hide()}/>
+      {
+        //<FirmwareTable visible={this.state.visible} value={this.state.value} hide={() => this.hide()}/>
+      }
+      { this.state.visible ?
+        <Modal
+          title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          //onOk={() => this.setState({visible: true})}
+          onCancel={this.hide}
+          width={1500}
+        >
+          { this.state.loading ?
+             <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+          :
+            <React.Fragment>
+              { this.state.devices ?
+                <List height={350} pagination={5} filteredDevices={this.state.devices}/>
+              :
+                null
+              }
+            </React.Fragment>
+          }
+        </Modal>
+      :
+        null
+      }
 
       </React.Fragment>
     );

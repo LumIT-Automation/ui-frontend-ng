@@ -266,7 +266,7 @@ class List extends React.Component {
       <React.Fragment>
         <Table
           columns={columns}
-          dataSource={this.props.devices}
+          dataSource={this.props.filteredDevices || this.props.devices}
           scroll={{ x: 'auto', y: this.props.height}}
           bordered
           rowKey="SERIALE"
