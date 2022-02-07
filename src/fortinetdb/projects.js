@@ -26,7 +26,7 @@ class Projects extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.projects) {
+    if (!this.props.projects || this.props.projects.length === 0) {
       this.fetchProjects()
     }
   }

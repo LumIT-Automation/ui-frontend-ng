@@ -179,7 +179,13 @@ class List extends React.Component {
         { this.props.filteredProjects && this.props.filteredProjects.length ?
           <p>Projects: {this.props.filteredProjects.length}</p>
         :
-          <p>Projects: {this.props.projects.length}</p>
+          <React.Fragment>
+            {this.props.projects && this.props.projects.length ?
+              <p>Projects: {this.props.projects.length}</p>
+            :
+              null
+            }
+          </React.Fragment>
         }
         <Table
           columns={columns}
