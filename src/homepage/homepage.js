@@ -24,7 +24,7 @@ import {
 //import List from './list'
 import AmericanPie from './pieChart'
 import Victory from './victory'
-import Map from './maps'
+import Italia from './italia'
 
 import Servizio from './servizio'
 import Segmento from './segmento'
@@ -102,7 +102,7 @@ class Homepage extends React.Component {
 
 
   render() {
-    console.log(this.state.mainLoading)
+    console.log(this.props.devices)
 
     return (
       <React.Fragment>
@@ -110,16 +110,71 @@ class Homepage extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
           <React.Fragment>
+
+            <br/>
+            <Divider orientation="left">Devices</Divider>
+
+            { this.props.devices ?
+              <React.Fragment>
+                <Row>
+                  <Col span={17}>
+
+                    <Row>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
+                          <Firmware/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
+                          <Modello/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
+                          <BackupStatus/>
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
+                          <EosFirmware/>
+                        </Card>
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col span={6}>
+                        <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
+                          <EosHardware/>
+                        </Card>
+                      </Col>
+                    </Row>
+
+                  </Col>
+
+                  <Col offset={0} span={7}>
+                    <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
+                      <Italia />
+                    </Card>
+                  </Col>
+                </Row>
+              </React.Fragment>
+              :
+              null
+            }
+
+            <br/>
+            <Divider orientation="left">Projects</Divider>
             { this.props.projects ?
               <React.Fragment>
                 <Row>
                   <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>Servizio</p>} bordered={true}>
+                    <Card title={<p style={{textAlign: 'center'}}>SERVIZIO</p>} bordered={true}>
                       <Servizio/>
                     </Card>
                   </Col>
                   <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>Segmento</p>} bordered={true}>
+                    <Card title={<p style={{textAlign: 'center'}}>SEGMENTO</p>} bordered={true}>
                       <Segmento/>
                     </Card>
                   </Col>
@@ -129,61 +184,11 @@ class Homepage extends React.Component {
             :
               null
             }
-
-            <Divider/>
-
-            { this.props.devices ?
-              <React.Fragment>
-                <Row>
-                  <Col span={17}>
-
-                    <Row>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Firmware</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>Modello</p>} bordered={true}>
-                          <Modello/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>BackupStatus</p>} bordered={true}>
-                          <BackupStatus/>
-                        </Card>
-                      </Col>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>EosFirmware</p>} bordered={true}>
-                          <EosFirmware/>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                    <Row>
-                      <Col span={6}>
-                        <Card title={<p style={{textAlign: 'center'}}>EosHardware</p>} bordered={true}>
-                          <EosHardware/>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                  </Col>
-
-                  <Col offset={0} span={7}>
-                    <Card title={<p style={{textAlign: 'center'}}>Region</p>} bordered={true}>
-                      <Map />
-                    </Card>
-                  </Col>
-                </Row>
-              </React.Fragment>
-              :
-              null
-            }
           </React.Fragment>
         }
 
         { this.props.devicesError ? <Error component={'homepage'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
+        { this.props.projectsError ? <Error component={'homepage'} error={[this.props.projectsError]} visible={true} type={'projectsError'} /> : null }
       </React.Fragment>
     )
   }

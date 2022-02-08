@@ -264,7 +264,7 @@ class List extends React.Component {
 
     return (
       <React.Fragment>
-        { this.props.filteredDevices && this.props.filteredDevices.length ?
+        { this.props.filteredDevices ?
           <p>Devices: {this.props.filteredDevices.length}</p>
         :
           <p>Devices: {this.props.devices.length}</p>
