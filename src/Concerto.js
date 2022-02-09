@@ -136,12 +136,10 @@ class Concerto extends Component {
                 <Switch>
                   <Route exact path='/' component={Homepage}/>
 
-
-                    <React.Fragment>
                       <Route path='/projects/' component={Projects}/>
                       <Route path='/devices/' component={Devices}/>
                       <Route path='/ddosses/' component={Ddosses}/>
-                    </React.Fragment>
+
 
 
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?

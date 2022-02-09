@@ -10,16 +10,18 @@ import Error from '../error/fortinetdbError'
 
 import List from '../fortinetdb/devices/list'
 
-import { Modal, Table, Spin } from 'antd'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
 import {
   field,
   fieldError,
   value,
   valueError
 } from '../_store/store.fortinetdb'
+
+import { Modal, Table, Spin } from 'antd'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+
+
 
 class Modello extends React.Component {
 

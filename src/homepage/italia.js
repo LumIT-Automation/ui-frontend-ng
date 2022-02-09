@@ -3,14 +3,8 @@ import { connect } from 'react-redux'
 import { VectorMap } from '@south-paw/react-vector-maps'
 import italy from './italy.json'
 
-import RegionTable from './regionTable'
-
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
-
-import { Modal, Table, Spin } from 'antd'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 import List from '../fortinetdb/devices/list'
 
@@ -21,6 +15,12 @@ import {
   value,
   valueError
 } from '../_store/store.fortinetdb'
+
+import { Modal, Table, Spin } from 'antd'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+
+
 
 
 
