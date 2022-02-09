@@ -60,7 +60,7 @@ class Error extends Component {
           break;
         case 'devicesError':
           this.props.dispatch(devicesError(null))
-          break;field
+          break;
         case 'ddossesError':
           this.props.dispatch(ddossesError(null))
           break;
