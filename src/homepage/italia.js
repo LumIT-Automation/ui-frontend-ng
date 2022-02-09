@@ -32,8 +32,7 @@ const Map = props => {
   const style = { margin: '1rem auto', fill: '#a82b2b', outline: 'none' }
 
   const [hovered, setHovered] = useState('None')
-  const [focused, setFocused] = useState('None')
-  const [clicked, setClicked] = useState('None')
+  const [count, setCount] = useState(0)
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
   const [fieldLoading, setFieldLoading] = useState(false)
@@ -58,10 +57,24 @@ const Map = props => {
     setFieldLoading(false)
   }
 
-
   useEffect(() => {
     fetchField()
   }, [])
+
+  const setRegionCount = region => {
+    setCount(0)
+    field.forEach( r => {
+      if (r.regione === region) {
+        if (r.COUNT) {
+          setCount(r.COUNT)
+        }
+        else {
+          setCount(0)
+        }
+      }
+    })
+
+  }
 
   //fetchField()
 
@@ -87,10 +100,10 @@ const Map = props => {
   }
 
   const layerProps = {
-    onMouseEnter: ({ target }) => setHovered(target.attributes.name.value),
-    onMouseLeave: ({ target }) => setHovered('None'),
-    onFocus: ({ target }) => setFocused(target.attributes.name.value),
-    onBlur: ({ target }) => setFocused('None'),
+    onMouseEnter: ({ target }) => {
+      setRegionCount(target.attributes.name.value)
+      setHovered(target.attributes.name.value)
+    },
     onClick: ({ target }) => {
       setVisible(true)
       setValue(target.attributes.name.value)
@@ -107,9 +120,8 @@ const Map = props => {
           <div style={style}>
             <VectorMap {...italy} layerProps={layerProps} />
             <hr />
-            <p>Hovered: {hovered && <code>{hovered}</code>}</p>
-            <p>Focused: {focused && <code>{focused}</code>}</p>
-            <p>Clicked: {clicked && <code>{clicked}</code>}</p>
+            <p>Region: {hovered && <code>{hovered}</code>}</p>
+            <p>Count: {count && <code>{count}</code>}</p>
           </div>
       }
 
