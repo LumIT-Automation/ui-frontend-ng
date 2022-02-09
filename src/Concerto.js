@@ -136,15 +136,13 @@ class Concerto extends Component {
                 <Switch>
                   <Route exact path='/' component={Homepage}/>
 
-                  { this.props.fortinetdbAuth && (this.props.fortinetdbAuth || this.props.fortinetdbAuth.any) ?
+
                     <React.Fragment>
                       <Route path='/projects/' component={Projects}/>
                       <Route path='/devices/' component={Devices}/>
                       <Route path='/ddosses/' component={Ddosses}/>
                     </React.Fragment>
-                  :
-                    null
-                  }
+
 
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
                     <Route path='/infoblox/' component={Infoblox}/>
