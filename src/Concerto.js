@@ -136,9 +136,15 @@ class Concerto extends Component {
                 <Switch>
                   <Route exact path='/' component={Homepage}/>
 
-                    <Route path='/devices/' component={Devices}/>
-                    <Route path='/projects/' component={Projects}/>
-                    <Route path='/ddosses/' component={Ddosses}/>
+                  { this.props.fortinetdbAuth && (this.props.fortinetdbAuth || this.props.fortinetdbAuth.any) ?
+                    <React.Fragment>
+                      <Route path='/projects/' component={Projects}/>
+                      <Route path='/devices/' component={Devices}/>
+                      <Route path='/ddosses/' component={Ddosses}/>
+                    </React.Fragment>
+                  :
+                    null
+                  }
 
                   { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
                     <Route path='/infoblox/' component={Infoblox}/>
@@ -175,9 +181,11 @@ class Concerto extends Component {
 export default connect((state) => ({
   username: state.ssoAuth.username,
   token: state.ssoAuth.token,
- 	error: state.error.error,
+
   authorizations: state.authorizations,
-  authorizationsError: state.authorizations.authorizationsError,
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
+  fortinetdbAuth: state.authorizations.fortinetdbAuth,
+
+  authorizationsError: state.authorizations.authorizationsError,
 }))(Concerto);
