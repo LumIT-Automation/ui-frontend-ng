@@ -151,7 +151,7 @@ class List extends React.Component {
       {
         title: "DESCRIZIONE",
         align: "center",
-     		width: 150,
+     		width: 250,
         dataIndex: "DESCRIZIONE",
         key: "DESCRIZIONE",
         ...this.getColumnSearchProps('DESCRIZIONE')

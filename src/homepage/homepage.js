@@ -69,83 +69,74 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.state.mainLoading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-        :
+
+        <br/>
+        <Divider orientation="left">Devices</Divider>
+
+
           <React.Fragment>
-
-            <br/>
-            <Divider orientation="left">Devices</Divider>
-
-
-              <React.Fragment>
-                <Row>
-                  <Col span={17}>
-
-                    <Row>
-                      <Col span={8}>
-                        <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
-                          <Firmware/>
-                        </Card>
-                      </Col>
-                      <Col span={8}>
-                        <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
-                          <Modello/>
-                        </Card>
-                      </Col>
-                      <Col span={8}>
-                        <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
-                          <BackupStatus/>
-                        </Card>
-                      </Col>
-
-                    </Row>
-
-                    <Row>
-                      <Col span={8}>
-                        <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
-                          <EosFirmware/>
-                        </Card>
-                      </Col>
-                      <Col span={8}>
-                        <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
-                          <EosHardware/>
-                        </Card>
-                      </Col>
-                    </Row>
-
-                  </Col>
-
-                  <Col offset={0} span={7}>
-                    <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
-                      <Italia />
-                    </Card>
-                  </Col>
-                </Row>
-              </React.Fragment>
-
-
-            <br/>
-            <Divider orientation="left">Projects</Divider>
-
-              <React.Fragment>
+            <Row>
+              <Col span={17}>
                 <Row>
                   <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>SERVIZIO</p>} bordered={true}>
-                      <Servizio/>
+                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
+                      <Firmware/>
                     </Card>
                   </Col>
                   <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>SEGMENTO</p>} bordered={true}>
-                      <Segmento/>
+                    <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
+                      <Modello/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
+                      <EosFirmware/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
+                      <EosHardware/>
                     </Card>
                   </Col>
 
-                </Row>
-              </React.Fragment>
 
+                </Row>
+                <Row>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
+                      <BackupStatus/>
+                    </Card>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col offset={0} span={7}>
+                <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
+                  <Italia />
+                </Card>
+              </Col>
+            </Row>
           </React.Fragment>
-        }
+
+
+        <br/>
+        <Divider orientation="left">Projects</Divider>
+
+          <React.Fragment>
+            <Row>
+              <Col span={6}>
+                <Card title={<p style={{textAlign: 'center'}}>SERVIZIO</p>} bordered={true}>
+                  <Servizio/>
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card title={<p style={{textAlign: 'center'}}>SEGMENTO</p>} bordered={true}>
+                  <Segmento/>
+                </Card>
+              </Col>
+
+            </Row>
+          </React.Fragment>
 
       </React.Fragment>
     )
