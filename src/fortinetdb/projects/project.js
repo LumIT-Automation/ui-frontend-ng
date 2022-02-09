@@ -189,15 +189,14 @@ class Project extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(devices(resp))
-        this.setState({devicesLoading: false})
+        this.setState({devices: resp.data.items})
       },
       error => {
         this.props.dispatch(devicesError(error))
-        this.setState({devicesLoading: false, response: false})
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
+    this.setState({devicesLoading: false})
   }
 
   fetchDdosses = async () => {
@@ -205,15 +204,15 @@ class Project extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(ddosses(resp))
-        this.setState({ddossesLoading: false})
+        console.log(resp)
+        this.setState({ddosses: resp.data.items})
       },
       error => {
         this.props.dispatch(ddossesError(error))
-        this.setState({ddossesLoading: false, response: false})
       }
     )
     await rest.doXHR(`fortinetdb/ddosses/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
+    this.setState({ddossesLoading: false})
   }
 
   setExtraData = e => {
@@ -341,7 +340,7 @@ class Project extends React.Component {
                   </TabPane>
                 :
                   <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDevices()}/></span>>
-                    <Devices height={350} pagination={5}/>
+                    <Devices height={350} pagination={5} filteredDevices={this.state.devices}/>
                   </TabPane>
                 }
                 {this.state.ddossesLoading ?
@@ -350,7 +349,7 @@ class Project extends React.Component {
                   </TabPane>
                 :
                   <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDdosses()}/></span>>
-                    <Ddosses height={350} pagination={5}/>
+                    <Ddosses height={350} pagination={5} filteredDdosses={this.state.ddosses}/>
                   </TabPane>
                 }
               </Tabs>

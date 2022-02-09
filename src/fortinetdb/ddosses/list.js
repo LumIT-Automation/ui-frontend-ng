@@ -191,9 +191,19 @@ class List extends React.Component {
 
     return (
       <React.Fragment>
+        { this.props.filteredDdosses && this.props.filteredDdosses.length ?
+          <p>Ddosses: {this.props.filteredDdosses.length}</p>
+        :
+          null
+        }
+        { this.props.ddosses && this.props.ddosses.length ?
+          <p>Total Ddosses: {this.props.ddosses.length}</p>
+        :
+          null
+        }
         <Table
           columns={columns}
-          dataSource={this.props.ddosses}
+          dataSource={this.props.filteredDdosses || this.props.ddosses}
           scroll={{ x: 'auto', y: this.props.height}}
           bordered
           rowKey="MANAGED_OBJECT"

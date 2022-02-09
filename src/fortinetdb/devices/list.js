@@ -116,6 +116,7 @@ class List extends React.Component {
 
 
   render() {
+    console.log(this.props)
 
     const columns = [
       {
@@ -264,10 +265,15 @@ class List extends React.Component {
 
     return (
       <React.Fragment>
-        { this.props.filteredDevices ?
+        { this.props.filteredDevices && this.props.filteredDevices.length ?
           <p>Devices: {this.props.filteredDevices.length}</p>
         :
-          <p>Devices: {this.props.devices.length}</p>
+          null
+        }
+        { this.props.devices && this.props.devices.length ?
+          <p>Total Devices: {this.props.devices.length}</p>
+        :
+          null
         }
 
         <Table

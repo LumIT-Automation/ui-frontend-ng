@@ -31,8 +31,6 @@ class Firmware extends React.Component {
   }
 
   componentDidMount() {
-    console.log('props')
-    console.log(this.props)
     this.fetchField()
   }
 
@@ -47,33 +45,33 @@ class Firmware extends React.Component {
   }
 
   fetchField = async () => {
-    this.setState({loading: true})
+    this.setState({fieldLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({field: resp.data.items})
-        //this.props.dispatch(field(resp))
       },
       error => {
         this.props.dispatch(fieldError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
-    this.setState({loading: false})
+    this.setState({fieldLoading: false})
   }
 
   fetchValue = async () => {
-    this.setState({loading: true})
+    this.setState({valueLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false, devices: resp.data.items})
+        this.setState({devices: resp.data.items})
       },
       error => {
-        this.setState({loading: false}, () => this.props.dispatch(valueError(error)))
+        this.props.dispatch(valueError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
+    this.setState({valueLoading: false})
   }
 
   hide = () => {
@@ -81,73 +79,80 @@ class Firmware extends React.Component {
   }
 
   render() {
+
     return (
       <React.Fragment>
-      <svg viewBox="0 0 300 300">
-        <VictoryPie
-          colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
-          events={[{
-            target: "data",
-            eventHandlers: {
-              onClick: (e, n) => {
-                this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
-              },
-              onMouseOver: (e, n) => {
-                this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
-              },
-              onMouseLeave: (e, n) => {
-                this.setState({name: '', color: ''})
-              }
-            }
-          }]}
-          standalone={false}
-          width={300} height={300}
-          data={this.state.field}
-          x="FIRMWARE"
-          y="COUNT"
-          innerRadius={0} radius={80}
-          labels={({ datum }) => datum.COUNT}
-        />
-        <VictoryLabel
-          textAnchor="start"
-          x={80}
-          y={280}
-          text={this.state.name}
-          style={{ fill: this.state.color }}
-        />
-      </svg>
-
-      { this.state.visible ?
-        <React.Fragment>
-          <Modal
-            title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
-            centered
-            destroyOnClose={true}
-            visible={this.state.visible}
-            footer={''}
-            //onOk={() => this.setState({visible: true})}
-            onCancel={this.hide}
-            width={1500}
-          >
-            { this.state.loading ?
-               <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
-            :
-              <React.Fragment>
-                { this.state.devices ?
-                  <List height={350} pagination={5} filteredDevices={this.state.devices}/>
-                :
-                  null
+        { this.state.fieldLoading ?
+          <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
+        :
+          <React.Fragment>
+          <svg viewBox="0 0 300 300">
+            <VictoryPie
+              colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
+              events={[{
+                target: "data",
+                eventHandlers: {
+                  onClick: (e, n) => {
+                    this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
+                  },
+                  onMouseOver: (e, n) => {
+                    this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
+                  },
+                  onMouseLeave: (e, n) => {
+                    this.setState({name: '', color: ''})
+                  }
                 }
-              </React.Fragment>
-            }
-          </Modal>
-          { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-          { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
-        </React.Fragment>
-      :
-        null
-      }
+              }]}
+              standalone={false}
+              width={300} height={300}
+              data={this.state.field}
+              x="FIRMWARE"
+              y="COUNT"
+              innerRadius={0} radius={80}
+              labels={({ datum }) => datum.COUNT}
+            />
+            <VictoryLabel
+              textAnchor="start"
+              x={80}
+              y={280}
+              text={this.state.name}
+              style={{ fill: this.state.color }}
+            />
+          </svg>
 
+          { this.state.visible ?
+            <React.Fragment>
+              <Modal
+                title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                centered
+                destroyOnClose={true}
+                visible={this.state.visible}
+                footer={''}
+                //onOk={() => this.setState({visible: true})}
+                onCancel={this.hide}
+                width={1500}
+              >
+                { this.state.valueLoading ?
+                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+                :
+                  <React.Fragment>
+                    { this.state.field ?
+                      <List height={550} pagination={5} filteredDevices={this.state.devices}/>
+                    :
+                      null
+                    }
+                  </React.Fragment>
+                }
+              </Modal>
+              { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+            </React.Fragment>
+          :
+            null
+          }
+
+          </React.Fragment>
+        }
       </React.Fragment>
     );
 

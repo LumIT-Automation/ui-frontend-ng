@@ -36,33 +36,26 @@ const Map = props => {
   const [clicked, setClicked] = useState('None')
   const [visible, setVisible] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [fieldLoading, setFieldLoading] = useState(false)
+  const [valueLoading, setValueLoading] = useState(false)
   const [value, setValue] = useState('None')
   const [field, setField] = useState([])
   const [values, setValues] = useState()
 
-  console.log('values')
-  console.log(values)
-
-
-
 
   const fetchField = async () => {
-    setLoading(true)
+    setFieldLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('fetchField')
-        console.log(resp)
         setField(resp.data.items)
-        //this.setState({field: resp.data.items})
-        //this.props.dispatch(field(resp))
       },
       error => {
         props.dispatch(fieldError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=regione`, props.token)
-    setLoading(false)
+    setFieldLoading(false)
   }
 
 
@@ -73,21 +66,18 @@ const Map = props => {
   //fetchField()
 
   const fetchValues = async value => {
-    setLoading(true)
+    setValueLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('fetchValue')
-        console.log(resp)
         setValues(resp.data.items)
       },
       error => {
-        setLoading(false)
         props.dispatch(valueError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${value}`, props.token)
-    setLoading(false)
+    setValueLoading(false)
   }
 
   const hide = () => {
@@ -102,28 +92,26 @@ const Map = props => {
     onFocus: ({ target }) => setFocused(target.attributes.name.value),
     onBlur: ({ target }) => setFocused('None'),
     onClick: ({ target }) => {
-      //const name = target.attributes.name.value;
-      //window.open(`https://www.google.com/search?q=${name}`)
-      console.log(target.attributes.name.value);
       setVisible(true)
       setValue(target.attributes.name.value)
       fetchValues(target.attributes.name.value)
-      console.log(props)
     }
   };
 
 
   return (
     <div style={style}>
-      <VectorMap {...italy} layerProps={layerProps} />
-      <hr />
-      <p>Hovered: {hovered && <code>{hovered}</code>}</p>
-      <p>Focused: {focused && <code>{focused}</code>}</p>
-      <p>Clicked: {clicked && <code>{clicked}</code>}</p>
-
-      {/*
-        <RegionTable visible={visible} value={value} hide={() => setVisible(false)}/>
-      */}
+      { fieldLoading ?
+          <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
+        :
+          <div style={style}>
+            <VectorMap {...italy} layerProps={layerProps} />
+            <hr />
+            <p>Hovered: {hovered && <code>{hovered}</code>}</p>
+            <p>Focused: {focused && <code>{focused}</code>}</p>
+            <p>Clicked: {clicked && <code>{clicked}</code>}</p>
+          </div>
+      }
 
         <Modal
           title={<p style={{textAlign: 'center'}}>{value}</p>}
@@ -135,12 +123,12 @@ const Map = props => {
           onCancel={hide}
           width={1500}
         >
-          { loading ?
+          { valueLoading ?
              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
           :
             <React.Fragment>
               { values ?
-                <List height={350} pagination={5} filteredDevices={values}/>
+                <List height={550} pagination={5} filteredDevices={values}/>
               :
                 null
               }

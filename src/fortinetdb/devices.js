@@ -76,7 +76,7 @@ class Devices extends React.Component {
               </TabPane>
             :
               <TabPane key="devices" tab=<span>Devices<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.devicesRefresh()}/></span>>
-                <List height={600} pagination={10}/>
+                <List height={550} pagination={10}/>
               </TabPane>
             }
           </Tabs>

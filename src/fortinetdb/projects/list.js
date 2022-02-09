@@ -116,6 +116,8 @@ class List extends React.Component {
 
   render() {
 
+    console.log(this.props.filteredProjects)
+
 
     const columns = [
       {
@@ -179,17 +181,17 @@ class List extends React.Component {
         { this.props.filteredProjects && this.props.filteredProjects.length ?
           <p>Projects: {this.props.filteredProjects.length}</p>
         :
-          <React.Fragment>
-            {this.props.projects && this.props.projects.length ?
-              <p>Projects: {this.props.projects.length}</p>
-            :
-              null
-            }
-          </React.Fragment>
+          null
         }
+        {this.props.projects && this.props.projects.length ?
+          <p>Total Projects: {this.props.projects.length}</p>
+        :
+          null
+        }
+
         <Table
           columns={columns}
-          dataSource={this.props.projects}
+          dataSource={this.props.filteredProjects || this.props.projects}
           scroll={{ x: 'auto', y: 650}}
           bordered
           rowKey="ID_PROGETTO"
