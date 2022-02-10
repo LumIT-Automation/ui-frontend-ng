@@ -1,7 +1,7 @@
 import React, { PureComponent, useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { VectorMap } from '@south-paw/react-vector-maps'
-import italy from './italy.json'
+import italyJSON from './italyJSON.json'
 
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
@@ -21,15 +21,17 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-
-
 const Map = props => {
 
+  const divStyle = {
+    color: 'blue',
+  };
 
-
-
-  const style = { margin: '1rem auto', fill: '#a82b2b', outline: 'none' }
+  const style = {
+    margin: '1rem auto',
+    fill: '#a82b2b',
+    outline: 'none',
+  }
 
   const [hovered, setHovered] = useState('None')
   const [count, setCount] = useState(0)
@@ -73,7 +75,12 @@ const Map = props => {
         }
       }
     })
+  }
 
+  const setRegionColor = region => {
+    if (region.attributes.fill) {
+      region.attributes.fill.value = 'pink'
+    }
   }
 
   //fetchField()
@@ -99,10 +106,16 @@ const Map = props => {
     setValues([])
   }
 
-  const layerProps = {
+  const events = {
     onMouseEnter: ({ target }) => {
       setRegionCount(target.attributes.name.value)
       setHovered(target.attributes.name.value)
+      target.attributes.fill.value = 'yellow'
+    },
+    onMouseLeave: ({ target }) => {
+      setRegionCount(target.attributes.name.value)
+      setHovered(target.attributes.name.value)
+      target.attributes.fill.value = '#a82b2b'
     },
     onClick: ({ target }) => {
       setVisible(true)
@@ -118,10 +131,10 @@ const Map = props => {
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <div style={style}>
-            <VectorMap {...italy} layerProps={layerProps} />
-            <hr />
             <p>Region: {hovered && <code>{hovered}</code>}</p>
-            <p>Count: {count && <code>{count}</code>}</p>
+            <p>Devices: {count && <code>{count}</code>}</p>
+            <hr />
+            <VectorMap {...italyJSON} layerProps={events} />
           </div>
       }
 
