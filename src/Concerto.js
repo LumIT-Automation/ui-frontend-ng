@@ -13,6 +13,7 @@ import { UserOutlined } from '@ant-design/icons';
 import CustomSider from './sider/sider'
 
 import Homepage from './homepage/homepage'
+import Historys from './history/historys'
 
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'
@@ -135,6 +136,7 @@ class Concerto extends Component {
               >
                 <Switch>
                   <Route exact path='/' component={Homepage}/>
+                  <Route exact path='/historys/' component={Historys}/>
 
                       <Route path='/projects/' component={Projects}/>
                       <Route path='/devices/' component={Devices}/>

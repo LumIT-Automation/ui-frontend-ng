@@ -93,6 +93,7 @@ class CustomSider extends Component {
         >
 
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+          <Menu.Item key="historys" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
 

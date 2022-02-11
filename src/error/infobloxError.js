@@ -36,6 +36,8 @@ import {
   ipModifyError,
   ipReleaseError,
 
+  historysError,
+
 } from '../_store/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
@@ -149,6 +151,11 @@ class Error extends Component {
         case 'ipReleaseError':
           this.props.dispatch(ipReleaseError(null))
           break;
+
+        case 'historysError':
+          this.props.dispatch(historysError(null))
+          break;
+
 
       }
     }

@@ -136,6 +136,19 @@ const infobloxSlice = createSlice({
         state.ipReleaseError = action.payload
       },
 
+      historysLoading: ( state, action) => {
+        state.historysLoading = action.payload
+      },
+      historys: ( state, action) => {
+        state.historys = action.payload.data.items
+      },
+      historysFetch: ( state, action) => {
+        state.historysFetch = action.payload
+      },
+      historysError: ( state, action) => {
+        state.historysError = action.payload
+      },
+
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -197,6 +210,11 @@ export const {
   nextAvailableIpError,
   ipModifyError,
   ipReleaseError,
+
+  historysLoading,
+  historys,
+  historysFetch,
+  historysError,
 
   cleanUp
 } = actions

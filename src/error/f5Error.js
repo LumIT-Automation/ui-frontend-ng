@@ -63,7 +63,9 @@ import {
   enableMemberError,
   disableMemberError,
   forceOfflineMemberError,
-  memberStatsError
+  memberStatsError,
+
+  historysError,
 
 } from '../_store/store.f5'
 
@@ -260,6 +262,10 @@ class Error extends Component {
         case 'memberStatsError':
           this.props.dispatch(memberStatsError(null))
           break;
+
+        case 'historysError':
+            this.props.dispatch(historysError(null))
+            break;
 
       }
     }

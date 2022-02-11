@@ -322,6 +322,19 @@ const f5Slice = createSlice({
           state.memberStatsError = action.payload
         },
 
+        historysLoading: ( state, action) => {
+          state.historysLoading = action.payload
+        },
+        historys: ( state, action) => {
+          state.historys = action.payload.data.items
+        },
+        historysFetch: ( state, action) => {
+          state.historysFetch = action.payload
+        },
+        historysError: ( state, action) => {
+          state.historysError = action.payload
+        },
+
 
         resetObjects: (state, action) => {
 
@@ -475,6 +488,11 @@ export const {
   disableMemberError,
   forceOfflineMemberError,
   memberStatsError,
+
+  historysLoading,
+  historys,
+  historysFetch,
+  historysError,
 
   resetObjects,
   cleanUp
