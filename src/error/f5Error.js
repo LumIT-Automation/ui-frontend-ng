@@ -67,6 +67,8 @@ import {
 
   historysError,
 
+  configurationError,
+
 } from '../_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
@@ -265,6 +267,10 @@ class Error extends Component {
 
         case 'historysError':
             this.props.dispatch(historysError(null))
+            break;
+
+        case 'configurationError':
+            this.props.dispatch(configurationError(null))
             break;
 
       }

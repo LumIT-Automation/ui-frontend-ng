@@ -30,10 +30,13 @@ import Servizio from './servizio'
 import Segmento from './segmento'
 
 import Firmware from './firmware'
+import Firmware0 from './firmware0'
 import Modello from './modello'
 import BackupStatus from './backupStatus'
 import EosFirmware from './eosFirmware'
 import EosHardware from './eosHardware'
+
+import Attivazione from './attivazione'
 
 
 import { Spin, Card, Row, Col, Table, Divider } from 'antd'
@@ -69,7 +72,7 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      
+
         <br/>
         <Divider orientation="left">Devices</Divider>
 
@@ -83,29 +86,42 @@ class Homepage extends React.Component {
                   </Card>
                 </Col>
                 <Col span={6}>
-                  <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
-                    <Modello/>
+                  <Card title={<p style={{textAlign: 'center'}}>FIRMWARE0</p>} bordered={true}>
+                    <Firmware0/>
                   </Card>
                 </Col>
-                <Col span={6}>
-                  <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
-                    <EosFirmware/>
-                  </Card>
-                </Col>
-                <Col span={6}>
-                  <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
-                    <EosHardware/>
-                  </Card>
-                </Col>
+                {/*
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
+                      <Modello/>
+                    </Card>
+                  </Col>
+                */}
 
-
-              </Row>
-              <Row>
                 <Col span={6}>
                   <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
                     <BackupStatus/>
                   </Card>
                 </Col>
+                <Col span={6}>
+                  <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
+                    <Attivazione/>
+                  </Card>
+                </Col>
+
+              </Row>
+              <Row>
+              <Col span={6}>
+                <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
+                  <EosFirmware/>
+                </Card>
+              </Col>
+              <Col span={6}>
+                <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
+                  <EosHardware/>
+                </Card>
+              </Col>
+
               </Row>
             </Col>
 

@@ -82,7 +82,7 @@ class CustomSider extends Component {
     //<Sider width={150} className="site-layout-background" trigger={null}>
     return (
 
-      <Sider width={250} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
+      <Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
             {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
           </Button>
@@ -138,7 +138,7 @@ class CustomSider extends Component {
           }
 
           { this.props.f5auth && (this.props.f5auth.certificates_get || this.props.f5auth.any) ?
-            <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES and KEYS</Link></Menu.Item>
+            <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
             :
             null
           }
@@ -171,7 +171,7 @@ class CustomSider extends Component {
              null
           }
 
-          <Menu.Item key="settings" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/settings/">SETTINGS</Link></Menu.Item>
+          <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
         </Menu>
       </Sider>
     )

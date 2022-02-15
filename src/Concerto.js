@@ -26,6 +26,7 @@ import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 import Service from './services/services'
 import Assets from './assets/assets'
 import Permissions from './permissions/permissions'
+import Configurations from './configurations/configurations'
 
 
 import './App.css';
@@ -163,6 +164,7 @@ class Concerto extends Component {
                     <Route path='/permissions/' component={Permissions}/>
                     : null
                   }
+                  <Route path='/configurations/' component={Configurations}/>
 
                 </Switch>
               </Content>

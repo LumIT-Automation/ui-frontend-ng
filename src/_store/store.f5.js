@@ -335,6 +335,27 @@ const f5Slice = createSlice({
           state.historysError = action.payload
         },
 
+        configurationLoading: ( state, action) => {
+          console.log('configurationLoading')
+          console.log(action.payload)
+          state.configurationLoading = action.payload
+        },
+        configuration: ( state, action) => {
+          console.log('configuration')
+          console.log(action.payload)
+          state.configuration = action.payload
+        },
+        configurationFetch: ( state, action) => {
+          console.log('configurationFetch')
+          console.log(action.payload)
+          state.configurationFetch = action.payload
+        },
+        configurationError: ( state, action) => {
+          console.log('configurationError')
+          console.log(action.payload)
+          state.configurationError = action.payload
+        },
+
 
         resetObjects: (state, action) => {
 
@@ -493,6 +514,11 @@ export const {
   historys,
   historysFetch,
   historysError,
+
+  configurationLoading,
+  configuration,
+  configurationFetch,
+  configurationError,
 
   resetObjects,
   cleanUp
