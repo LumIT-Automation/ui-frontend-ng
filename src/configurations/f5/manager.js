@@ -14,7 +14,7 @@ import {
 
 import List from './list'
 
-import { Spin } from 'antd';
+import { Spin, Button } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
@@ -26,6 +26,7 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      requests: []
     };
   }
 
@@ -84,10 +85,41 @@ class Manager extends React.Component {
   }
 
 
+  setRequests = () => {
+    //let n = this.state.counter + 1
+    let id = 0
+    let n = 0
+    this.state.requests.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let r = {id: n}
+    let list = JSON.parse(JSON.stringify(this.state.requests))
+    list.push(r)
+    this.setState({requests: list})
+  }
+
+  removeRequest = r => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let newList = requests.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({requests: newList})
+  }
+
+
 
   render() {
     return (
       <React.Fragment>
+        <Button type="primary" onClick={() => this.setRequests()}>
+          +
+        </Button>
+        <br/>
+        <br/>
 
         <List/>
 

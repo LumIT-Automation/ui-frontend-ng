@@ -91,6 +91,7 @@ class DetailsIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      ip: null,
       ipDetails: [],
       errors: {}
     })
@@ -148,6 +149,12 @@ class DetailsIp extends React.Component {
         dataIndex: 'names',
         key: 'recordA',
       },
+      {
+        title: 'Reference',
+        align: 'center',
+        dataIndex: ['extattrs', 'Reference', 'value'],
+        key: 'reference',
+      }
     ];
 
     return (

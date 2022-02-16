@@ -52,10 +52,6 @@ class RequestIp extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
 
-    console.log('componentDidUpdate')
-    console.log(this.state.requests)
-
-
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
