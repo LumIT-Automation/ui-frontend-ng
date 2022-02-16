@@ -289,6 +289,64 @@ class Rest {
           }
         }
 
+        else if (this.method === "PUT") {
+          try {
+            const response = await fetch(CONFIG.BACKEND_URL + resource, {
+              method: 'PUT',
+              headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(payload)
+            });
+            //let c = response.bla()
+            if (response.ok) {
+              json = await response.json();
+              //e.g. get partitions, get nodes, etc.
+              if (json && json.data) {
+                this.onSuccess(json);
+              }
+              //
+              else {
+                this.onSuccess(response);
+              }
+            }
+            else {
+              try {
+                //e.g. 400, get non existent partitions,
+                json = await response.json();
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    reason: json.reason,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+              catch {
+                //e.g. 404, /../partitionsccc
+
+                this.onError(
+                  {
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  }
+                )
+              }
+            }
+          }
+          catch (error) {
+            this.onError({
+              message: error.message,
+              type: error.name
+            });
+          }
+        }
+
         else if (this.method === "DELETE") {
           try {
             const response = await fetch(CONFIG.BACKEND_URL + resource, {
