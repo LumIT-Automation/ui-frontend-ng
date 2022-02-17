@@ -67,6 +67,8 @@ import {
 
   configurationError,
 
+  genericError
+
 } from '../_store/store.f5'
 
 import { Modal, Table, Result } from 'antd';
@@ -271,6 +273,8 @@ class Error extends Component {
             this.props.dispatch(configurationError(null))
             break;
 
+        default:
+          this.props.dispatch(genericError(null))
       }
     }
   }

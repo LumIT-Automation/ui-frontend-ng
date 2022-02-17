@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
-import Rest from "../../_helpers/Rest"
+
+import Rest from '../../_helpers/Rest'
+import Error from '../../ConcertoError'
 
 import { superAdminPermissions, superAdminPermissionsError, superAdminPermissionsBeauty } from '../../_store/store.authorizations'
 

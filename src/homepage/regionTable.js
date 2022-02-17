@@ -1,10 +1,14 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../_helpers/Rest"
-import Error from '../error'
 
-import { setError } from '../_store/store.error'
+import Rest from '../_helpers/Rest'
+import Error from '../error/fortinetdbError'
+
+import {
+  value,
+  valueError
+} from '../_store/store.fortinetdb'
 
 import { Input, Button, Space, Modal, Spin, Table } from 'antd'
 
@@ -30,7 +34,6 @@ class RegionTable extends React.Component {
   }
 
   componentDidMount() {
-    console.log('regionTable mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,12 +41,8 @@ class RegionTable extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('regionTable update')
-    console.log(this.props)
     if (this.props.visible) {
-      console.log(this.props.visible)
       if (prevProps.value !== this.props.value ) {
-        console.log('chiamo main')
         this.main()
       }
     }
@@ -145,8 +144,8 @@ class RegionTable extends React.Component {
       },
       error => {
         r = error
-        this.setState({loading: false, response: false})
-        this.props.dispatch(setError(error))
+        this.setState({loading: false})
+        this.props.dispatch(valueError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${this.props.value}`, this.props.token)
@@ -172,20 +171,11 @@ class RegionTable extends React.Component {
           this.fetchDevice()
         },
         error => {
-          this.setState({extraLoading: false, response: false, error: error})
+          this.setState({extraLoading: false, error: error})
         }
       )
       await rest.doXHR(`/fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token, b )
     }
-  }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
-  }
-
-  resetError = () => {
-    this.setState({ error: null})
   }
 
   //Close and Error
@@ -542,7 +532,7 @@ class RegionTable extends React.Component {
 
         </Modal>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+        { this.props.valueError ? <Error component={'ITALIA'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
 
       </React.Fragment>
     )
@@ -551,5 +541,5 @@ class RegionTable extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+ 	valueError: state.fortinetdb.valueError,
 }))(RegionTable);

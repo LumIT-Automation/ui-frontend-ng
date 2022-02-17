@@ -2,7 +2,7 @@ import React from 'react'
 import { Component, } from "react";
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import Rest from './_helpers/Rest'
-import Error from './error'
+import Error from './ConcertoError'
 
 import {
   logout
@@ -176,7 +176,9 @@ class Concerto extends Component {
             </Layout>
           </Layout>
         </BrowserRouter>
+
         { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'authorizationsError'} /> : null }
+
       </Layout>
     )
   }

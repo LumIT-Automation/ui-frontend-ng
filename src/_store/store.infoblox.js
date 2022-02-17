@@ -166,6 +166,10 @@ const infobloxSlice = createSlice({
         state.historysError = action.payload
       },
 
+      genericError: (state, action) => {
+        state.genericError = action.payload
+      },
+
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -182,6 +186,13 @@ export const {
   permissions,
   permissionsFetch,
   permissionsError,
+
+  addPermissionError,
+  modifyPermissionError,
+  deletePermissionError,
+
+  fetchRolesError,
+  addNewDnError,
 
   identityGroupsLoading,
   identityGroups,
@@ -232,6 +243,8 @@ export const {
   historys,
   historysFetch,
   historysError,
+
+  genericError,
 
   cleanUp
 } = actions

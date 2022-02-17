@@ -4,8 +4,6 @@ import { Component } from "react";
 import { logout } from '../_store/store.authentication'
 
 import {
-  permissionsError,
-  identityGroupsError,
 
   projectsError,
   devicesError,
@@ -17,7 +15,9 @@ import {
   ddosError,
 
   fieldError,
-  valueError
+  valueError,
+
+  genericError
 
 } from '../_store/store.fortinetdb'
 
@@ -83,6 +83,8 @@ class Error extends Component {
           this.props.dispatch(valueError(null))
           break;
 
+        default:
+          this.props.dispatch(genericError(null))
       }
     }
   }

@@ -37,6 +37,8 @@ import {
 
   historysError,
 
+  genericError
+
 } from '../_store/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
@@ -155,6 +157,8 @@ class Error extends Component {
           this.props.dispatch(historysError(null))
           break;
 
+        default:
+          this.props.dispatch(genericError(null))
 
       }
     }

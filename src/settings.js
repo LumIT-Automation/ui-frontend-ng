@@ -3,10 +3,8 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
-import Rest from "./_helpers/Rest";
 import { assets, cleanUp } from './_store/store.f5'
 
-import Error from './error'
 
 import 'antd/dist/antd.css';
 import './App.css'
@@ -41,9 +39,6 @@ class Settings extends React.Component {
     this.props.dispatch(cleanUp())
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -206,7 +201,7 @@ class Settings extends React.Component {
 
         </Tabs>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
     )
   }
@@ -215,7 +210,7 @@ class Settings extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+
   assets: state.f5.assets,
   permissions: state.permissions.f5
 }))(Settings);

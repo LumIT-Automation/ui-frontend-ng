@@ -5,18 +5,6 @@ import { logout } from './_store/store.authentication'
 
 import { setError } from './_store/store.error'
 import { authorizationsError, superAdminPermissionsError } from './_store/store.authorizations'
-import {
-  addNewDnError,
-
-  addF5PermissionError,
-  modifyF5PermissionError,
-  deleteF5PermissionError,
-
-  addInfobloxPermissionError,
-  modifyInfobloxPermissionError,
-  deleteInfobloxPermissionError,
-} from './_store/store.permissions'
-
 
 import { Modal, Table, Result } from 'antd';
 
@@ -64,29 +52,6 @@ class Error extends Component {
           this.props.dispatch(superAdminPermissionsError(null))
           break
 
-        case 'addNewDnError':
-          this.props.dispatch(addNewDnError(null))
-          break
-
-        case 'addF5PermissionError':
-          this.props.dispatch(addF5PermissionError(null))
-          break
-        case 'modifyF5PermissionError':
-          this.props.dispatch(modifyF5PermissionError(null))
-          break
-        case 'deleteF5PermissionError':
-          this.props.dispatch(deleteF5PermissionError(null))
-          break
-
-        case 'addInfobloxPermissionError':
-          this.props.dispatch(addInfobloxPermissionError(null))
-          break
-        case 'modifyInfobloxPermissionError':
-          this.props.dispatch(modifyInfobloxPermissionError(null))
-          break
-        case 'deleteInfobloxPermissionError':
-          this.props.dispatch(deleteInfobloxPermissionError(null))
-          break
 
         default:
           this.props.dispatch(setError(null))

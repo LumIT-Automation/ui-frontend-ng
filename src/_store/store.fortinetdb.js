@@ -106,6 +106,11 @@ const fortinetdbSlice = createSlice({
         state.valueError = action.payload
       },
 
+      genericError: (state, action) => {
+        state.genericError = action.payload
+      },
+
+
       cleanUp: (state, action) => {
         for (const l in state) {
           state[l] = null
@@ -157,6 +162,8 @@ export const {
 
   value,
   valueError,
+
+  genericError,
 
   cleanUp
 } = actions
