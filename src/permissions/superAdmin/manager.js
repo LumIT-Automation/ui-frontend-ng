@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Error from '../../error'
 import Rest from "../../_helpers/Rest"
 
-import { superAdminsPermissions, superAdminsPermissionsError, superAdminsPermissionsBeauty } from '../../_store/store.permissions'
+import { superAdminPermissions, superAdminPermissionsError, superAdminPermissionsBeauty } from '../../_store/store.authorizations'
 
 import { Input, Button, Space, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'
@@ -126,34 +126,34 @@ class PermissionsTab extends React.Component {
       "GET",
       resp => {
         this.setState({loading: false})
-        this.props.dispatch(superAdminsPermissions( resp ))
-        this.superAdminsInRows()
+        this.props.dispatch(superAdminPermissions( resp ))
+        this.superAdminInRows()
       },
       error => {
-        this.props.dispatch(superAdminsPermissionsError(error))
+        this.props.dispatch(superAdminPermissionsError(error))
         this.setState({loading: false})
       }
     )
     await rest.doXHR("superadmins", this.props.token )
   }
 
-  superAdminsInRows = () => {
-    let superAdmins = JSON.parse(JSON.stringify(this.props.superAdmins))
+  superAdminInRows = () => {
+    let superAdmin = JSON.parse(JSON.stringify(this.props.superAdmin))
     let list = []
 
-    for ( let s in superAdmins) {
+    for ( let s in superAdmin) {
 
       const regex = /(cn=)([\w\d]+)/gm
-      let m = regex.exec(superAdmins[s]);
+      let m = regex.exec(superAdmin[s]);
       try {
-        list.push({'dn': superAdmins[s], 'name': m[2]})
+        list.push({'dn': superAdmin[s], 'name': m[2]})
       }
       catch {
         ;
       }
 
     }
-    this.props.dispatch(superAdminsPermissionsBeauty(list))
+    this.props.dispatch(superAdminPermissionsBeauty(list))
   }
 
 
@@ -161,9 +161,9 @@ class PermissionsTab extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
-        {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.superAdmins}/>  }
+        {this.state.loading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List list={this.props.superAdmin}/>  }
 
-        {this.props.superAdminsPermissionsError ? <Error component={'manager superAdmin'} error={[this.props.superAdminsPermissionsError]} visible={true} type={'superAdminsPermissionsError'}/> : null }
+        {this.props.superAdminPermissionsError ? <Error component={'manager superAdmin'} error={[this.props.superAdminPermissionsError]} visible={true} type={'superAdminPermissionsError'}/> : null }
       </Space>
 
     )
@@ -172,7 +172,7 @@ class PermissionsTab extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	superAdminsPermissionsError: state.permissions.superAdminsPermissionsError,
-  authorizations: state.authorizations.f5,
-  superAdmins: state.permissions.superAdminsPermissions
+
+  superAdmin: state.authorizations.superAdminPermissions,
+ 	superAdminPermissionsError: state.authorizations.superAdminPermissionsError,
 }))(PermissionsTab);

@@ -5,12 +5,9 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
 import {
-  fetchF5RolesError,
-  modifyF5PermissionError
-} from '../../_store/store.permissions'
-
-import {
   permissionsFetch,
+  fetchRolesError,
+  modifyPermissionError,
   partitionsError
 } from '../../_store/store.f5'
 
@@ -88,7 +85,7 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchF5RolesError(error))
+        this.props.dispatch(fetchRolesError(error))
         this.setState({rolesLoading: false})
       }
     )
@@ -188,7 +185,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyF5PermissionError(error))
+        this.props.dispatch(modifyPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -409,8 +406,8 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.modifyF5PermissionError ? <Error component={'modify f5'} error={[this.props.modifyF5PermissionError]} visible={true} type={'modifyF5PermissionError'} /> : null }
-            { this.props.fetchF5RolesError ? <Error component={'modify f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+            { this.props.modifyPermissionError ? <Error component={'modify f5'} error={[this.props.modifyPermissionError]} visible={true} type={'modifyPermissionError'} /> : null }
+            { this.props.fetchRolesError ? <Error component={'modify f5'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
 
             { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
           </React.Fragment>
@@ -426,12 +423,11 @@ class Modify extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
-  modifyF5PermissionError: state.permissions.modifyF5PermissionError,
-  fetchF5RolesError: state.permissions.fetchF5RolesError,
+  assets: state.f5.assets,
+  identityGroups: state.f5.identityGroups,
 
+  modifyPermissionError: state.f5.modifyPermissionError,
+  fetchRolesError: state.f5.fetchRolesError,
   partitionsError: state.f5.partitionsError,
 
-  identityGroups: state.f5.identityGroups,
-  permissions: state.f5.permissions,
-  assets: state.f5.assets,
 }))(Modify);

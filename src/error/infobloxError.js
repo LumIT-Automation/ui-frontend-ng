@@ -3,19 +3,18 @@ import { connect } from 'react-redux'
 import { Component } from "react";
 import { logout } from '../_store/store.authentication'
 
-import { setAuthorizationsError } from '../_store/store.authorizations'
-import {
-  addNewDnError,
-
-  fetchInfobloxRolesError,
-  addInfobloxPermissionError,
-  modifyInfobloxPermissionError,
-  deleteInfobloxPermissionError,
-} from '../_store/store.permissions'
+import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   permissionsError,
   identityGroupsError,
+
+  addNewDnError,
+
+  fetchRolesError,
+  addPermissionError,
+  modifyPermissionError,
+  deletePermissionError,
 
   environmentError,
   assetsError,
@@ -75,25 +74,25 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
-        case 'setAuthorizationsError':
-          this.props.dispatch(setAuthorizationsError(null))
+        case 'authorizationsError':
+          this.props.dispatch(authorizationsError(null))
           break;
 
 
         case 'addNewDnError':
           this.props.dispatch(addNewDnError(null))
           break;
-        case 'fetchInfobloxRolesError':
-          this.props.dispatch(fetchInfobloxRolesError(null))
+        case 'fetchRolesError':
+          this.props.dispatch(fetchRolesError(null))
           break;
-        case 'addInfobloxPermissionError':
-          this.props.dispatch(addInfobloxPermissionError(null))
+        case 'addPermissionError':
+          this.props.dispatch(addPermissionError(null))
           break;
-        case 'modifyInfobloxPermissionError':
-          this.props.dispatch(modifyInfobloxPermissionError(null))
+        case 'modifyPermissionError':
+          this.props.dispatch(modifyPermissionError(null))
           break;
-        case 'deleteInfobloxPermissionError':
-          this.props.dispatch(deleteInfobloxPermissionError(null))
+        case 'deletePermissionError':
+          this.props.dispatch(deletePermissionError(null))
           break;
 
 

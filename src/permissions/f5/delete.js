@@ -1,11 +1,13 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
-import { deleteF5PermissionError } from '../../_store/store.permissions'
-import { permissionsFetch } from '../../_store/store.f5'
+import {
+  permissionsFetch,
+  deletePermissionError
+ } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -50,7 +52,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(permissionsFetch(true)) )
       },
       error => {
-        this.props.dispatch(deleteF5PermissionError(error))
+        this.props.dispatch(deletePermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -114,7 +116,7 @@ class Delete extends React.Component {
 
         </Modal>
 
-      { this.props.deleteF5PermissionError ? <Error error={[this.props.deleteF5PermissionError]} visible={true} type={'deleteF5PermissionError'} /> : null }
+      { this.props.deletePermissionError ? <Error error={[this.props.deletePermissionError]} visible={true} type={'deletePermissionError'} /> : null }
 
       </React.Fragment>
 
@@ -124,5 +126,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	deleteF5PermissionError: state.permissions.deleteF5PermissionError,
+ 	deletePermissionError: state.f5.deletePermissionError,
 }))(Delete);

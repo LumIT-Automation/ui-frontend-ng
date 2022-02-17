@@ -4,7 +4,6 @@ const infobloxSlice = createSlice({
     name: 'infoblox',
     initialState: {},
     reducers: {
-
       permissionsLoading: (state, action) => {
         state.permissionsLoading = action.payload
       },
@@ -16,6 +15,24 @@ const infobloxSlice = createSlice({
       },
       permissionsError: (state, action) => {
         state.permissionsError = action.payload
+      },
+
+
+      addPermissionError: ( state, action) => {
+        state.addPermissionError = action.payload
+      },
+      modifyPermissionError: ( state, action) => {
+        state.modifyPermissionError = action.payload
+      },
+      deletePermissionError: ( state, action) => {
+        state.deletePermissionError = action.payload
+      },
+
+      fetchRolesError: ( state, action) => {
+        state.fetchRolesError = action.payload
+      },
+      addNewDnError: ( state, action) => {
+        state.addNewDnError = action.payload
       },
 
       identityGroupsLoading: (state, action) => {

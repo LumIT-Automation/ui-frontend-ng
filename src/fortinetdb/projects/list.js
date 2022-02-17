@@ -175,6 +175,10 @@ class List extends React.Component {
       }
     ]
 
+    let randomKey = () => {
+      return Math.random().toString()
+    }
+
 
     return (
       <React.Fragment>
@@ -194,7 +198,7 @@ class List extends React.Component {
           dataSource={this.props.filteredProjects || this.props.projects}
           scroll={{ x: 'auto', y: 650}}
           bordered
-          rowKey="ID_PROGETTO"
+          rowKey={randomKey}
           //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}

@@ -3,18 +3,16 @@ import { connect } from 'react-redux'
 import { Component } from "react";
 import { logout } from '../_store/store.authentication'
 
-import { setAuthorizationsError } from '../_store/store.authorizations'
-import {
-  addNewDnError,
+import { authorizationsError } from '../_store/store.authorizations'
 
-  fetchF5RolesError,
-  addF5PermissionError,
-  modifyF5PermissionError,
-  deleteF5PermissionError,
-
-} from '../_store/store.permissions'
 import {
   permissionsError,
+  addNewDnError,
+  fetchRolesError,
+  addPermissionError,
+  modifyPermissionError,
+  deletePermissionError,
+
   identityGroupsError,
   environmentError,
   assetsError,
@@ -105,25 +103,25 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
-        case 'setAuthorizationsError':
-          this.props.dispatch(setAuthorizationsError(null))
+        case 'authorizationsError':
+          this.props.dispatch(authorizationsError(null))
           break;
 
 
         case 'addNewDnError':
           this.props.dispatch(addNewDnError(null))
           break;
-        case 'fetchF5RolesError':
-          this.props.dispatch(fetchF5RolesError(null))
+        case 'fetchRolesError':
+          this.props.dispatch(fetchRolesError(null))
           break;
-        case 'addF5PermissionError':
-          this.props.dispatch(addF5PermissionError(null))
+        case 'addPermissionError':
+          this.props.dispatch(addPermissionError(null))
           break;
-        case 'modifyF5PermissionError':
-          this.props.dispatch(modifyF5PermissionError(null))
+        case 'modifyPermissionError':
+          this.props.dispatch(modifyPermissionError(null))
           break;
-        case 'deleteF5PermissionError':
-          this.props.dispatch(deleteF5PermissionError(null))
+        case 'deletePermissionError':
+          this.props.dispatch(deletePermissionError(null))
           break;
 
 

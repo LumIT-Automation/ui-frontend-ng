@@ -137,7 +137,7 @@ class List extends React.Component {
         <br/>
         <Table
           columns={columns}
-          dataSource={this.props.superAdmins}
+          dataSource={this.props.superAdmin}
           bordered
           rowKey="dn"
           scroll={{x: 'auto'}}
@@ -153,6 +153,6 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
-  superAdmins: state.permissions.superAdminsPermissionsBeauty
+  //authorizations: state.authorizations.f5,
+  superAdmin: state.authorizations.superAdminPermissionsBeauty
 }))(List);

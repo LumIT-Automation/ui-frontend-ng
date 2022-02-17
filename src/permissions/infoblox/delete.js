@@ -4,11 +4,11 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import {
-  deleteInfobloxPermissionError,
-} from '../../_store/store.permissions'
 
-import { permissionsFetch } from '../../_store/store.infoblox'
+import {
+  permissionsFetch,
+  deletePermissionError
+} from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -53,7 +53,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(permissionsFetch(true)) )
       },
       error => {
-        this.props.dispatch(deleteInfobloxPermissionError(error))
+        this.props.dispatch(deletePermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -122,7 +122,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.deleteInfobloxPermissionError ? <Error component={'delete infoblox'} error={[this.props.deleteInfobloxPermissionError]} visible={true} type={'deleteInfobloxPermissionError'} /> : null }
+          { this.props.deletePermissionError ? <Error component={'delete infoblox'} error={[this.props.deletePermissionError]} visible={true} type={'deletePermissionError'} /> : null }
           </React.Fragment>
         :
           null
@@ -135,5 +135,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	deleteInfobloxPermissionError: state.permissions.deleteInfobloxPermissionError,
+ 	deletePermissionError: state.infoblox.deletePermissionError,
 }))(Delete);

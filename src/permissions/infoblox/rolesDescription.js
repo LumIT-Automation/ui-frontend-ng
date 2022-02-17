@@ -4,7 +4,9 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import { fetchInfobloxRolesError } from '../../_store/store.permissions'
+import {
+  fetchRolesError
+} from '../../_store/store.infoblox'
 
 import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
@@ -49,7 +51,7 @@ class RolesDescription extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
-        this.props.dispatch(fetchInfobloxRolesError(error))
+        this.props.dispatch(fetchRolesError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -138,7 +140,7 @@ class RolesDescription extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.fetchInfobloxRolesError ? <Error component={'roledescription infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+          { this.props.fetchRolesError ? <Error component={'roledescription infoblox'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
           </React.Fragment>
         :
           null
@@ -151,5 +153,5 @@ class RolesDescription extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
+  fetchRolesError: state.infoblox.fetchRolesError,
 }))(RolesDescription);

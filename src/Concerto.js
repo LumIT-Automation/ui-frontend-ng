@@ -4,8 +4,13 @@ import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import Rest from './_helpers/Rest'
 import Error from './error'
 
-import { logout } from './_store/store.authentication'
-import { setAuthorizations, setAuthorizationsError } from './_store/store.authorizations'
+import {
+  logout
+} from './_store/store.authentication'
+import {
+  authorizations,
+  authorizationsError
+} from './_store/store.authorizations'
 
 import { Layout, Avatar, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
@@ -61,14 +66,14 @@ class Concerto extends Component {
 
 
   fetchAuthorizations = async () => {
-
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(setAuthorizations( resp ))
+        console.log(resp)
+        this.props.dispatch(authorizations( resp ))
       },
       error => {
-        this.props.dispatch(setAuthorizationsError(error))
+        this.props.dispatch(authorizationsError(error))
       }
     )
     await rest.doXHR(`authorizations/`, this.props.token)
@@ -171,7 +176,7 @@ class Concerto extends Component {
             </Layout>
           </Layout>
         </BrowserRouter>
-        { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'setAuthorizationsError'} /> : null }
+        { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'authorizationsError'} /> : null }
       </Layout>
     )
   }

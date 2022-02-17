@@ -5,12 +5,9 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
 import {
-  fetchInfobloxRolesError,
-  modifyInfobloxPermissionError
-} from '../../_store/store.permissions'
-
-import {
   permissionsFetch,
+  fetchRolesError,
+  modifyPermissionError,
   networksError,
   containersError
 } from '../../_store/store.infoblox'
@@ -89,7 +86,7 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchInfobloxRolesError(error))
+        this.props.dispatch(fetchRolesError(error))
         this.setState({rolesLoading: false, response: false})
       }
     )
@@ -227,7 +224,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyInfobloxPermissionError(error))
+        this.props.dispatch(modifyPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -445,8 +442,8 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.modifyInfobloxPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyInfobloxPermissionError]} visible={true} type={'modifyInfobloxPermissionError'} /> : null }
-          { this.props.fetchInfobloxRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+          { this.props.modifyPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyPermissionError]} visible={true} type={'modifyPermissionError'} /> : null }
+          { this.props.fetchRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
 
           { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
           { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
@@ -463,14 +460,13 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  
+  assets: state.infoblox.assets,
+  identityGroups: state.infoblox.identityGroups,
 
-  modifyInfobloxPermissionError: state.permissions.modifyInfobloxPermissionError,
-  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
-
+  modifyPermissionError: state.infoblox.modifyPermissionError,
+  fetchRolesError: state.infoblox.fetchRolesError,
   networksError: state.infoblox.networksError,
   containersError: state.infoblox.containersError,
 
-  identityGroups: state.infoblox.identityGroups,
-  permissions: state.infoblox.permissions,
-  assets: state.infoblox.assets,
 }))(Modify);

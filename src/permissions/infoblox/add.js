@@ -5,15 +5,13 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
 import {
-  fetchInfobloxRolesError,
-  addNewDnError,
-  addInfobloxPermissionError,
-} from '../../_store/store.permissions'
-
-import {
   permissionsFetch,
+  fetchRolesError,
+  addNewDnError,
+  addPermissionError,
   identityGroups,
   identityGroupsError,
+
   networksError,
   containersError,
 } from '../../_store/store.infoblox'
@@ -199,7 +197,7 @@ class Add extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchInfobloxRolesError(error))
+        this.props.dispatch(fetchRolesError(error))
         this.setState({rolesLoading: false, response: false})
       }
     )
@@ -306,7 +304,7 @@ class Add extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(addInfobloxPermissionError(error))
+        this.props.dispatch(addPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -533,8 +531,8 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.addInfobloxPermissionError ? <Error component={'add infoblox'} error={[this.props.addInfobloxPermissionError]} visible={true} type={'addInfobloxPermissionError'} /> : null }
-          { this.props.fetchInfobloxRolesError ? <Error component={'add infoblox'} error={[this.props.fetchInfobloxRolesError]} visible={true} type={'fetchInfobloxRolesError'} /> : null }
+          { this.props.addPermissionError ? <Error component={'add infoblox'} error={[this.props.addPermissionError]} visible={true} type={'addPermissionError'} /> : null }
+          { this.props.fetchRolesError ? <Error component={'add infoblox'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
           { this.props.addNewDnError ? <Error component={'add infoblox'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
           { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
@@ -551,15 +549,17 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
-  fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,
-  networksError: state.infoblox.networksError,
-  containersError: state.infoblox.containersError,
-  addNewDnError: state.permissions.addNewDnError,
-
-  addInfobloxPermissionError: state.permissions.addInfobloxPermissionError,
+  assets: state.infoblox.assets,
 
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
-  assets: state.infoblox.assets,
+
+  fetchRolesError: state.infoblox.fetchRolesError,
+  addNewDnError: state.infoblox.addNewDnError,
+
+  networksError: state.infoblox.networksError,
+  containersError: state.infoblox.containersError,
+
+  addPermissionError: state.infoblox.addPermissionError,
+
 }))(Add);

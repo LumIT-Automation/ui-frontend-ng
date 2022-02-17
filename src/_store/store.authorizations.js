@@ -8,17 +8,28 @@ const authorizationsSlice = createSlice({
     name: 'authorizations',
     initialState: {},
     reducers: {
-      setAuthorizations: (state, action) => {
+
+      authorizations: (state, action) => {
         for (const l in action.payload.data) {
           state[l] = action.payload.data[l].data.items
-          //state.f5
-          //state.infoblox
         }
       },
-      setAuthorizationsError: (state, action) => {
-        console.log(action.payload)
+      authorizationsError: (state, action) => {
         state.authorizationsError = action.payload
       },
+
+
+      superAdminPermissions: ( state, action) => {
+        state.superAdminPermissions = action.payload.data.items
+      },
+      superAdminPermissionsError: ( state, action) => {
+        state.superAdminPermissionsError = action.payload
+      },
+      superAdminPermissionsBeauty: ( state, action) => {
+        state.superAdminPermissionsBeauty = action.payload
+      },
+
+
       identityGroups: ( state, action) => {
         state.identityGroups = action.payload.data.items
       },
@@ -29,19 +40,20 @@ const authorizationsSlice = createSlice({
         }
         state.igIdentifiers = list
       },
-      f5Permissions: ( state, action) => {
-        state.f5Permissions = action.payload.data.items
-      }
     }
 })
 
 const { actions, reducer } = authorizationsSlice;
 
 export const {
-  setAuthorizations,
-  setAuthorizationsError,
+  authorizations,
+  authorizationsError,
+
+  superAdminPermissions,
+  superAdminPermissionsError,
+  superAdminPermissionsBeauty,
+
   identityGroups,
-  f5Permissions,
   setIgIdentifiers
 } = actions
 export default reducer

@@ -4,20 +4,7 @@ import { Component } from "react";
 import { logout } from './_store/store.authentication'
 
 import { setError } from './_store/store.error'
-import { setAuthorizationsError } from './_store/store.authorizations'
-import {
-  superAdminsPermissionsError,
-  addNewDnError,
-
-  addF5PermissionError,
-  modifyF5PermissionError,
-  deleteF5PermissionError,
-
-  addInfobloxPermissionError,
-  modifyInfobloxPermissionError,
-  deleteInfobloxPermissionError,
-} from './_store/store.permissions'
-
+import { authorizationsError, superAdminPermissionsError } from './_store/store.authorizations'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -57,12 +44,12 @@ class Error extends Component {
           this.props.dispatch(setError(null))
           break;
 
-        case 'setAuthorizationsError':
-          this.props.dispatch(setAuthorizationsError(null))
+        case 'authorizationsError':
+          this.props.dispatch(authorizationsError(null))
           break
 
-        case 'superAdminsPermissionsError':
-          this.props.dispatch(superAdminsPermissionsError(null))
+        case 'superAdminPermissionsError':
+          this.props.dispatch(superAdminPermissionsError(null))
           break
 
         case 'addNewDnError':

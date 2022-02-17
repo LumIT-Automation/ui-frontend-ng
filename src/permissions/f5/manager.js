@@ -1,8 +1,9 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error/f5Error'
+
 import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
 import {
   permissionsLoading,
@@ -201,14 +202,14 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  assetsError: state.f5.assetsError,
-  identityGroupsError: state.f5.identityGroupsError,
-  permissionsError: state.f5.permissionsError,
-
   assets: state.f5.assets,
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
 
   permissionsFetch: state.f5.permissionsFetch,
-  identityGroupsFetch: state.f5.identityGroupsFetch
+  identityGroupsFetch: state.f5.identityGroupsFetch,
+
+  assetsError: state.f5.assetsError,
+  identityGroupsError: state.f5.identityGroupsError,
+  permissionsError: state.f5.permissionsError,
 }))(Manager);

@@ -5,15 +5,13 @@ import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
 import {
-  fetchF5RolesError,
-  addNewDnError,
-  addF5PermissionError,
-} from '../../_store/store.permissions'
-
-import {
   permissionsFetch,
+  fetchRolesError,
+  addNewDnError,
+  addPermissionError,
   identityGroups,
   identityGroupsError,
+
   partitionsError
 } from '../../_store/store.f5'
 
@@ -198,7 +196,7 @@ class Add extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchF5RolesError(error))
+        this.props.dispatch(fetchRolesError(error))
         this.setState({rolesLoading: false, response: false})
       }
     )
@@ -270,7 +268,7 @@ class Add extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(addF5PermissionError(error))
+        this.props.dispatch(addPermissionError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -491,8 +489,8 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addF5PermissionError ? <Error component={'add f5'} error={[this.props.addF5PermissionError]} visible={true} type={'addF5PermissionError'} /> : null }
-            { this.props.fetchF5RolesError ? <Error component={'add f5'} error={[this.props.fetchF5RolesError]} visible={true} type={'fetchF5RolesError'} /> : null }
+            { this.props.addPermissionError ? <Error component={'add f5'} error={[this.props.addPermissionError]} visible={true} type={'addPermissionError'} /> : null }
+            { this.props.fetchRolesError ? <Error component={'add f5'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
             { this.props.addNewDnError ? <Error component={'add f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
 
             { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
@@ -508,13 +506,15 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
-  addF5PermissionError: state.permissions.addF5PermissionError,
-  fetchF5RolesError: state.permissions.fetchF5RolesError,
-  addNewDnError: state.permissions.addNewDnError,
-  partitionsError: state.f5.partitionsError,
+  assets: state.f5.assets,
 
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
-  assets: state.f5.assets,
+
+  fetchRolesError: state.f5.fetchRolesError,
+  addNewDnError: state.f5.addNewDnError,
+
+  partitionsError: state.f5.partitionsError,
+  addPermissionError: state.f5.addPermissionError,
+
 }))(Add);

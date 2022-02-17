@@ -1,18 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
-/*
-create Slice creates a small piece of the store, in this case the slice for the balancers.
-It has a name, an initial state, and several methods that set the state,
-  assets
-  asset
-  partitions
-  partition
-  setPoolList
-  cleanUp
-Methods (called actions) must be exported.
-*/
-
-
 const f5Slice = createSlice({
     name: 'f5',
     initialState: {},
@@ -28,6 +15,23 @@ const f5Slice = createSlice({
         },
         permissionsError: (state, action) => {
           state.permissionsError = action.payload
+        },
+
+        addPermissionError: ( state, action) => {
+          state.addPermissionError = action.payload
+        },
+        modifyPermissionError: ( state, action) => {
+          state.modifyPermissionError = action.payload
+        },
+        deletePermissionError: ( state, action) => {
+          state.deletePermissionError = action.payload
+        },
+
+        fetchRolesError: ( state, action) => {
+          state.fetchRolesError = action.payload
+        },
+        addNewDnError: ( state, action) => {
+          state.addNewDnError = action.payload
         },
 
         identityGroupsLoading: (state, action) => {
@@ -405,6 +409,13 @@ export const {
   permissions,
   permissionsFetch,
   permissionsError,
+
+  addPermissionError,
+  modifyPermissionError,
+  deletePermissionError,
+
+  fetchRolesError,
+  addNewDnError,
 
   identityGroupsLoading,
   identityGroups,

@@ -86,7 +86,7 @@ class CustomSider extends Component {
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
             {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
           </Button>
-        <Divider style={{border: '1vh solid #f0f2f5'}}/>
+        <Divider style={{border: 'vh solid #f0f2f5'}}/>
         <Menu
           mode="inline"
           style={{ borderRight: 0 }}
@@ -101,7 +101,7 @@ class CustomSider extends Component {
               <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECT</Link></Menu.Item>
               <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICE</Link></Menu.Item>
               <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOS</Link></Menu.Item>
-              <Divider style={{border: '1vh solid #f0f2f5'}}/>
+              <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
             </React.Fragment>
 
 
