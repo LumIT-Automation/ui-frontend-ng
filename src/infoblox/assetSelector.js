@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 
-import Error from '../error'
+import Error from '../error/infobloxError'
 
 import { environment, asset } from '../_store/store.infoblox'
 
@@ -150,7 +150,7 @@ class InfobloxAssetSelector extends React.Component {
 };
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
   authorizations: state.authorizations.infoblox,
   environment: state.infoblox.environment,

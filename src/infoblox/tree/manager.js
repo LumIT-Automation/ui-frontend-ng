@@ -2,8 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
-import Rest from "../../_helpers/Rest";
-import Error from '../../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/infobloxError'
 
 import { setError } from '../../_store/store.error'
 
@@ -79,9 +79,6 @@ class Manager extends React.Component {
     this.props.dispatch(treeLoading(false))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -94,7 +91,7 @@ class Manager extends React.Component {
         <Alert message="Asset not set" type="error" />
       }
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
 
     )
@@ -102,8 +99,8 @@ class Manager extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
+ 	error: state.infoblox.error,
   authorizations: state.authorizations.f5,
   asset: state.infoblox.asset,
 

@@ -133,7 +133,7 @@ class Delete extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,

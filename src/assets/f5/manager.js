@@ -87,7 +87,7 @@ class Manager extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
   assets: state.f5.assets,

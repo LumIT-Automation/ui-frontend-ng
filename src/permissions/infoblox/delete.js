@@ -134,6 +134,6 @@ class Delete extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	deleteInfobloxPermissionError: state.permissions.deleteInfobloxPermissionError,
 }))(Delete);

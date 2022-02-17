@@ -612,7 +612,7 @@ class PoolDetails extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
 
   asset: state.f5.asset,
   partition: state.f5.partition,

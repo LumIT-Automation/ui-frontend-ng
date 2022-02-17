@@ -462,7 +462,7 @@ class Modify extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
 
   modifyInfobloxPermissionError: state.permissions.modifyInfobloxPermissionError,
   fetchInfobloxRolesError: state.permissions.fetchInfobloxRolesError,

@@ -13,7 +13,6 @@ import Add from './add'
 import { Space, Alert } from 'antd'
 
 
-
 class Manager extends React.Component {
 
   constructor(props) {
@@ -38,13 +37,13 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
       if (!this.props.nodes) {
         this.fetchNodes()
-      }
+      }/*
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchNodes()
-      }
+      }*/
     }
     if (this.props.asset && this.props.partition) {
       if (this.props.nodesFetch) {
@@ -78,36 +77,36 @@ class Manager extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
-      { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-         this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
-            <Add/>
+
+
+        { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+          <React.Fragment>
+            {this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
+              <Add/>
             :
-            null
-          :
-          null
-      }
-
-      { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          <List/>
-          :
+              null
+            }
+            <List/>
+          </React.Fragment>
+        :
           <Alert message="Asset and Partition not set" type="error" />
-      }
+        }
 
-      <React.Fragment>
-        { this.props.nodesError ? <Error component={'node manager'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
-      </React.Fragment>
+        <React.Fragment>
+          { this.props.nodesError ? <Error component={'node manager'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+        </React.Fragment>
       </Space>
-
     )
   }
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
+  
   nodes: state.f5.nodes,
   nodesFetch: state.f5.nodesFetch,
   nodesError: state.f5.nodesError

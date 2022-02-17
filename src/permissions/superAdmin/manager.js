@@ -171,7 +171,7 @@ class PermissionsTab extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	superAdminsPermissionsError: state.permissions.superAdminsPermissionsError,
   authorizations: state.authorizations.f5,
   superAdmins: state.permissions.superAdminsPermissions

@@ -507,7 +507,7 @@ class Add extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
 
   addF5PermissionError: state.permissions.addF5PermissionError,
   fetchF5RolesError: state.permissions.fetchF5RolesError,

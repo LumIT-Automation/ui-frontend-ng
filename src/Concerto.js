@@ -1,10 +1,10 @@
 import React from 'react'
 import { Component, } from "react";
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
-import Rest from "./_helpers/Rest";
+import Rest from './_helpers/Rest'
 import Error from './error'
 
-import { logout } from './_store/store.auth'
+import { logout } from './_store/store.authentication'
 import { setAuthorizations, setAuthorizationsError } from './_store/store.authorizations'
 
 import { Layout, Avatar, Menu, Dropdown  } from 'antd';
@@ -179,8 +179,8 @@ class Concerto extends Component {
 
 
 export default connect((state) => ({
-  username: state.ssoAuth.username,
-  token: state.ssoAuth.token,
+  username: state.authentication.username,
+  token: state.authentication.token,
 
   authorizations: state.authorizations,
   f5auth: state.authorizations.f5,

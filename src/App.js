@@ -3,7 +3,7 @@ import { Component, } from "react";
 
 import Login from './Login'
 import Concerto from './Concerto'
-import { login } from './_store/store.auth'
+import { login } from './_store/store.authentication'
 
 import './App.css';
 import 'antd/dist/antd.css';
@@ -35,7 +35,6 @@ class App extends Component {
 
 
   authenticate = () => {
-    console.log('isAuthenticated')
     return new Promise( (resolve, reject) => {
       let token, username;
       try {
@@ -71,5 +70,5 @@ class App extends Component {
 
 
 export default connect((state) => ({
-  authenticated: state.ssoAuth.authenticated,
+  authenticated: state.authentication.authenticated,
 }))(App);

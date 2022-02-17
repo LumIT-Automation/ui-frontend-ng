@@ -80,7 +80,7 @@ class Service extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
 
   infobloxAuthorizations: state.authorizations.infoblox,
   f5Authorizations: state.authorizations.f5,

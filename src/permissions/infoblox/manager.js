@@ -204,7 +204,7 @@ class Manager extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
 
   assetsError: state.infoblox.assetsError,

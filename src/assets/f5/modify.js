@@ -404,7 +404,7 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
 
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	modifyAssetError: state.f5.modifyAssetError,
 
 }))(Modify);

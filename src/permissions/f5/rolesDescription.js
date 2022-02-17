@@ -150,6 +150,6 @@ class RolesDescription extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
   fetchF5RolesError: state.permissions.fetchF5RolesError,
 }))(RolesDescription);

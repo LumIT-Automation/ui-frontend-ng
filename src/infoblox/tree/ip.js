@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
 
 import { Table, Input, Button, Space, Spin, Collapse } from 'antd'
 
@@ -145,11 +144,6 @@ class List extends React.Component {
 
 
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
-
   render() {
 
     const columns = [
@@ -213,7 +207,7 @@ class List extends React.Component {
             style={{marginBottom: 50}}
           />
         }
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
 
     )
@@ -221,9 +215,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  
   asset: state.infoblox.asset,
 
   tree: state.infoblox.tree

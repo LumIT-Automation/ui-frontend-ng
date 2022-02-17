@@ -248,7 +248,7 @@ class Add extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	keyAddError: state.f5.keyAddError,
   asset: state.f5.asset,
 }))(Add);

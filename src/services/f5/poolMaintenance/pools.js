@@ -172,7 +172,7 @@ class Pools extends React.Component {
 
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
   assets: state.f5.assets,
   asset: state.f5.asset,

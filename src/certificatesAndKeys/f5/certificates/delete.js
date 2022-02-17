@@ -131,7 +131,7 @@ class Delete extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	certificateDeleteError: state.f5.certificateDeleteError,
   asset: state.f5.asset,
 }))(Delete);

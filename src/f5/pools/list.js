@@ -1,7 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
 import Modify from './modify'
 import Delete from './delete'
@@ -10,11 +9,6 @@ import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
-
-
-/*
-
-*/
 
 
 class List extends React.Component {
@@ -120,9 +114,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -194,7 +185,7 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
 
     )
@@ -202,7 +193,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  error: state.error.error,
   authorizations: state.authorizations.f5,
   pools: state.f5.pools
 }))(List);

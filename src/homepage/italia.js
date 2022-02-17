@@ -173,7 +173,7 @@ const Map = props => {
 //export default Map
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
   fieldError: state.fortinetdb.fieldError,
   valueError: state.fortinetdb.valueError,
 }))(Map);

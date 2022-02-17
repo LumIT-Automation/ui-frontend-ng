@@ -1,8 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux'
 
-import Error from '../../error'
-
 import { environment, asset } from '../../_store/store.infoblox'
 
 import "antd/dist/antd.css"
@@ -74,11 +72,6 @@ class AssetSelector extends React.Component {
   }
 
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
-
   render() {
     return (
         <React.Fragment>
@@ -122,17 +115,15 @@ class AssetSelector extends React.Component {
 
           </Row>
 
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
         </React.Fragment>
       )
   }
 };
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
+
   environment: state.infoblox.environment,
   assets: state.infoblox.assets,
   asset: state.infoblox.asset,

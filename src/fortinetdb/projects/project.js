@@ -378,7 +378,7 @@ class Project extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
 
   devices: state.fortinetdb.devices,

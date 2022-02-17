@@ -368,6 +368,6 @@ class Device extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	deviceError: state.fortinetdb.deviceError
 }))(Device);

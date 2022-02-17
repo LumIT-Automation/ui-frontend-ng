@@ -7,7 +7,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 import Rest from "./_helpers/Rest";
 
-import { login } from './_store/store.auth'
+import { login } from './_store/store.authentication'
 
 import 'antd/dist/antd.css';
 

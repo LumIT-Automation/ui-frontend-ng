@@ -1,6 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
-import authReducer from './store.auth'
+import authenticationReducer from './store.authentication'
 import errorReducer from './store.error'
 import authorizationsReducer from './store.authorizations'
 import permissionsReducer from './store.permissions'
@@ -12,7 +12,7 @@ import fortinetdbReducer from './store.fortinetdb'
 
 export default configureStore({
     reducer: {
-        ssoAuth: authReducer,
+        authentication: authenticationReducer,
         error: errorReducer,
         authorizations: authorizationsReducer,
         permissions: permissionsReducer,

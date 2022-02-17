@@ -290,6 +290,6 @@ class Ddos extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	ddosError: state.fortinetdb.ddosError
 }))(Ddos);

@@ -424,7 +424,7 @@ class Modify extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
 
   modifyF5PermissionError: state.permissions.modifyF5PermissionError,
   fetchF5RolesError: state.permissions.fetchF5RolesError,

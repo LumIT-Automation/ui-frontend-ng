@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest"
-import Error from '../../error'
 
 import Ip from './ip'
 
@@ -63,9 +62,6 @@ class List extends React.Component {
     //this.setState({visible: true})
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
   onSelect = (selectedKeys, info) => {
 
@@ -106,7 +102,7 @@ class List extends React.Component {
             }
           </Col>
         </Row>
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
       </Space>
 
     )
@@ -114,9 +110,9 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  
   asset: state.infoblox.asset,
 
   tree: state.infoblox.tree

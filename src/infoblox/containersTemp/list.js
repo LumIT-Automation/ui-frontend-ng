@@ -234,7 +234,7 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers

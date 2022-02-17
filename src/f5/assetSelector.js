@@ -211,7 +211,7 @@ class AssetSelector extends React.Component {
 };
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
   partitionsError: state.f5.partitionsError,
   authorizations: state.authorizations.f5,

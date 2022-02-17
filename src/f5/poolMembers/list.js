@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest";
-import Error from '../../error'
 
 import { poolMembersLoading, poolMembersFetch } from '../../_store/store.f5'
 
@@ -223,9 +222,6 @@ class List extends React.Component {
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -336,7 +332,6 @@ class List extends React.Component {
             style={{marginLeft: '200px'}}
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -344,10 +339,11 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
- 	error: state.error.error,
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
+
   poolMembers: state.f5.poolMembers
 }))(List);

@@ -8,8 +8,8 @@ It has a name, an initial state and two methods that set the status,
 Methods (called actions) must be exported.
 */
 
-const authSlice = createSlice({
-    name: 'auth',
+const authenticationSlice = createSlice({
+    name: 'authentication',
     initialState: {
         authenticated: false,
         username: "",
@@ -29,7 +29,7 @@ const authSlice = createSlice({
     }
 })
 
-const { actions, reducer } = authSlice;
+const { actions, reducer } = authenticationSlice;
 
 export const { login, logout } = actions
 export default reducer

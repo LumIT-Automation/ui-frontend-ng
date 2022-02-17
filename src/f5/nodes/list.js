@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Error from '../../error'
 
 //import Modify from './modify'
 import Delete from './delete'
@@ -20,8 +19,7 @@ class List extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
@@ -117,9 +115,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -189,7 +184,6 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
       </Space>
 
     )
@@ -197,7 +191,7 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  error: state.error.error,
-  nodes: state.f5.nodes,
   authorizations: state.authorizations.f5,
+
+  nodes: state.f5.nodes,
 }))(List);

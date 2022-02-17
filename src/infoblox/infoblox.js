@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Divider } from 'antd'
 
 import Rest from "../_helpers/Rest"
-import Error from '../error'
+import Error from '../error/infobloxError'
 
 import AssetSelector from './assetSelector'
 import Tree from './tree/manager'
@@ -67,9 +67,6 @@ class Infoblox extends React.Component {
     this.props.dispatch(treeFetch(true))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
 
 
   render() {
@@ -89,7 +86,7 @@ class Infoblox extends React.Component {
 
           </Tabs>
 
-          {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
+
         </Space>
       </React.Fragment>
     )
@@ -98,7 +95,7 @@ class Infoblox extends React.Component {
 
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	error: state.error.error,
   authorizations: state.authorizations.infoblox,
 

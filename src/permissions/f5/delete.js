@@ -123,6 +123,6 @@ class Delete extends React.Component {
 }
 
 export default connect((state) => ({
-  token: state.ssoAuth.token,
+  token: state.authentication.token,
  	deleteF5PermissionError: state.permissions.deleteF5PermissionError,
 }))(Delete);
