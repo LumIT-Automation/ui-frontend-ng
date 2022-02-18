@@ -5,7 +5,12 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { nodesLoading, nodes, nodesFetch, nodesError } from '../../_store/store.f5'
+import {
+  nodesLoading,
+  nodes,
+  nodesFetch,
+  nodesError
+} from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -106,7 +111,7 @@ export default connect((state) => ({
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-  
+
   nodes: state.f5.nodes,
   nodesFetch: state.f5.nodesFetch,
   nodesError: state.f5.nodesError

@@ -180,7 +180,6 @@ class List extends React.Component {
           bordered
           rowKey="name"
           scroll={{x: 'auto'}}
-          //pagination={false}
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
@@ -192,6 +191,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations.f5,
-
   nodes: state.f5.nodes,
 }))(List);

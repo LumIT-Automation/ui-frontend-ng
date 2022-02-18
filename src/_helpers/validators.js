@@ -33,6 +33,17 @@ class Validators {
     }
   }
 
+  fqdn = fqdn => {
+    const validFqdnRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
+
+    if (fqdnRegex.test(fqdn)) {
+      return true
+    }
+    else {
+      return false
+    }
+  }
+
 }
 
 export default Validators
