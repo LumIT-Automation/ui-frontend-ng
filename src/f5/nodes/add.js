@@ -25,13 +25,6 @@ const layout = {
   wrapperCol: { span: 8 },
 };
 
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class Add extends React.Component {
 

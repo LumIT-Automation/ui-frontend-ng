@@ -5,7 +5,14 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { monitorTypes, monitorTypesError, monitorsLoading, monitors, monitorsFetch, monitorsError } from '../../_store/store.f5'
+import {
+  monitorTypes,
+  monitorTypesError,
+  monitorsLoading,
+  monitors,
+  monitorsFetch,
+  monitorsError
+} from '../../_store/store.f5'
 
 import List from './list'
 import Add from './add'
@@ -42,13 +49,13 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
       if (!this.props.monitors) {
         this.fetchMonitors()
-      }
+      }/*
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
         this.fetchMonitors()
-      }
+      }*/
 
     }
     if (this.props.asset && this.props.partition) {
@@ -138,20 +145,17 @@ class Manager extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-           this.props.authorizations && (this.props.authorizations.monitors_post || this.props.authorizations.any) ?
-              <Add/>
-            :
+          <React.Fragment>
+           {this.props.authorizations && (this.props.authorizations.monitors_post || this.props.authorizations.any) ?
+            <Add/>
+          :
             null
-          :
-          null
-        }
-
-        { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-          <List/>
-          :
+          }
+            <List/>
+          </React.Fragment>
+        :
           <Alert message="Asset and Partition not set" type="error" />
         }
-
 
         <React.Fragment>
           { this.props.monitorTypesError ? <Error component={'manager monitors'} error={[this.props.monitorTypesError]} visible={true} type={'monitorTypesError'} /> : null }
@@ -165,10 +169,11 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
+
   monitors: state.f5.monitors,
   monitorsFetch: state.f5.monitorsFetch,
   monitorsError: state.f5.monitorsError,

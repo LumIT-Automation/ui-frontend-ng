@@ -82,8 +82,6 @@ class Manager extends React.Component {
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
-
-
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
           <React.Fragment>
             {this.props.authorizations && (this.props.authorizations.nodes_post || this.props.authorizations.any) ?
