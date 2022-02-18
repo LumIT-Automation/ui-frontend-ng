@@ -203,13 +203,14 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+
         r = resp.data[0]
       },
       error => {
         this.props.dispatch(containerError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/networks/`, this.props.token)
     return r
   }
 
