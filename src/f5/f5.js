@@ -95,17 +95,12 @@ class F5 extends React.Component {
     this.props.dispatch(virtualServersFetch(true))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
-
   render() {
     return (
       <React.Fragment>
         <AssetSelector/>
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
-        
+
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           <Tabs type="card">
             { this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any) ?

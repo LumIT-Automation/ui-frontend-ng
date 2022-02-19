@@ -33,7 +33,6 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      message:'',
       request: {}
     };
   }
@@ -244,6 +243,8 @@ class Add extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      errors: {},
+      request: {}
     })
   }
 

@@ -96,19 +96,6 @@ const f5Slice = createSlice({
           state.partitions = null
         },
 
-        routeDomainsLoading: (state, action) => {
-          state.routeDomainsLoading = action.payload
-        },
-        routeDomains: (state, action) => {
-          state.routeDomains = action.payload.data.items
-        },
-        routeDomainsFetch: (state, action) => {
-          state.routeDomainsFetch = action.payload
-        },
-        routeDomainsError: (state, action) => {
-          state.routeDomainsError = action.payload
-        },
-
         partition: (state, action) => {
           state.partition = action.payload
         },
@@ -120,6 +107,19 @@ const f5Slice = createSlice({
         },
         partitionDeleteError: (state, action) => {
           state.partitionDeleteError = action.payload
+        },
+
+        routeDomainsLoading: (state, action) => {
+          state.routeDomainsLoading = action.payload
+        },
+        routeDomains: (state, action) => {
+          state.routeDomains = action.payload.data.items
+        },
+        routeDomainsFetch: (state, action) => {
+          state.routeDomainsFetch = action.payload
+        },
+        routeDomainsError: (state, action) => {
+          state.routeDomainsError = action.payload
         },
 
 
@@ -526,7 +526,7 @@ export const {
   configuration,
   configurationFetch,
   configurationError,
-  
+
   genericError,
 
   resetObjects,
