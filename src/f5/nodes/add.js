@@ -69,6 +69,7 @@ class Add extends React.Component {
     }
   }
 
+
   //FETCH
   fetchRouteDomains = async () => {
     let r
@@ -84,6 +85,7 @@ class Add extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
     return r
   }
+
 
   //SETTERS
   setName = e => {
@@ -141,6 +143,7 @@ class Add extends React.Component {
     if (!request.session) {
       errors.sessionError = true
       errors.sessionColor = 'red'
+      this.setState({errors: errors})
       }
     else {
       delete errors.sessionError
@@ -151,6 +154,7 @@ class Add extends React.Component {
     if (!request.state) {
       errors.stateError = true
       errors.stateColor = 'red'
+      this.setState({errors: errors})
       }
     else {
       delete errors.stateError
@@ -169,12 +173,10 @@ class Add extends React.Component {
     if (Object.keys(this.state.errors).length === 0) {
       this.addNode()
     }
-
   }
 
 
   //DISPOSAL ACTION
-
   addNode = async () => {
     let request = Object.assign({}, this.state.request)
 
