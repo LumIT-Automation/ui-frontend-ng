@@ -4,15 +4,16 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { monitorsFetch, modifyMonitorError } from '../../_store/store.f5'
+import {
+  monitorsFetch,
+  modifyMonitorError
+} from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Spin, Result } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-
-
 
 
 const layout = {
@@ -20,13 +21,6 @@ const layout = {
   wrapperCol: { span: 8 },
 };
 
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class Modify extends React.Component {
 
@@ -34,11 +28,8 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
-      message:'',
       request: {},
-      monitorFullList: []
     };
   }
 
@@ -61,71 +52,89 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
-  setInterval = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
 
-    if (e.target.value) {
-      request.interval = parseInt(e.target.value)
-      delete errors.intervalError
-    }
-    else {
-      errors.nameError = 'error'
-    }
-    this.setState({request: request, errors: errors})
+  //FETCH
+
+
+  //SETTERS
+  setInterval = e => {
+    let request = Object.assign({}, this.state.request)
+    request.interval = Number(e.target.value)
+    this.setState({request: request})
   }
 
   setTimeout = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    let request = Object.assign({}, this.state.request)
+    request.timeout = Number(e.target.value)
+    this.setState({request: request})
+  }
 
-    if (e.target.value) {
-      request.timeout = parseInt(e.target.value)
+  //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+
+    if (!request.interval || !Number.isInteger(request.interval)) {
+      errors.intervalError = true
+      errors.intervalColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.intervalError
+      delete errors.intervalColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.timeout || !Number.isInteger(request.timeout)) {
+      errors.timeoutError = true
+      errors.timeoutColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
       delete errors.timeoutError
-      }
-      else {
-        errors.timeoutError = 'error'
-      }
-      this.setState({request: request, errors: errors})
+      delete errors.timeoutColor
+      this.setState({errors: errors})
+    }
+
+    return errors
+  }
+
+  validation = async () => {
+    let validation = await this.validationCheck()
+    if (Object.keys(this.state.errors).length === 0) {
+      this.modifyMonitor()
+    }
   }
 
   modifyMonitor = async () => {
     let request = Object.assign({}, this.state.request)
-
-    if (isEmpty(request)){
-      this.setState({message: 'Please fill the form'})
-    }
-
-    else {
-      this.setState({message: null});
-
-      const b = {
-        "data":
-          {
-              "destination": "*:*",
-              "interval": this.state.request.interval,
-              "manualResume": "disabled",
-              "timeUntilUp": 0,
-              "timeout": this.state.request.timeout,
-              "transparent": "disabled",
-              "upInterval": 0
-          }
+    const b = {
+      "data":
+        {
+            "destination": "*:*",
+            "interval": this.state.request.interval,
+            "manualResume": "disabled",
+            "timeUntilUp": 0,
+            "timeout": this.state.request.timeout,
+            "transparent": "disabled",
+            "upInterval": 0
         }
+      }
 
-      this.setState({loading: true})
+    this.setState({loading: true})
 
-      let rest = new Rest(
-        "PATCH",
-        resp => {
-          this.setState({loading: false, response: true}, () => this.response())
-        },
-        error => {
-          this.props.dispatch(modifyMonitorError(error))
-          this.setState({loading: false, response: false})
-        }
-      )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token, b )
-    }
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        this.setState({loading: false, response: true}, () => this.response())
+      },
+      error => {
+        this.props.dispatch(modifyMonitorError(error))
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token, b )
   }
 
   response = () => {
@@ -138,6 +147,8 @@ class Modify extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      errors: {},
+      request: {}
     })
   }
 
@@ -151,7 +162,7 @@ class Modify extends React.Component {
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<div><p style={{textAlign: 'center'}}>MODIFY</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
+          title={<div><p style={{textAlign: 'center'}}>MODIFY MONITOR</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -168,60 +179,43 @@ class Modify extends React.Component {
            />
         }
         { !this.state.loading && !this.state.response &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={{
-              remember: true,
-              address: this.state.request.address,
-              name: this.state.request.name
-            }}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-            <Form.Item
-              label="Interval"
-              name="interval"
-              key="interval"
-              validateStatus={this.state.errors.intervalError}
-              help={this.state.errors.intervalError ? 'Please input a valid interval' : null }
-            >
-              <Input id='interval' placeholder="interval seconds" onBlur={e => this.setInterval(e)}/>
-            </Form.Item>
+          <React.Fragment>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Interval:</p>
+              </Col>
+              <Col span={16}>
+                {this.state.errors.intervalError ?
+                  <Input style={{width: 250, borderColor: this.state.errors.intervalColor}} name="interval" id='interval' onChange={e => this.setInterval(e)} />
+                :
+                  <Input defaultValue={this.state.request.interval} style={{width: 250}} name="interval" id='name' onChange={e => this.setInterval(e)} />
+                }
+              </Col>
+            </Row>
+            <br/>
 
-            <Form.Item
-              label="Timeout"
-              name="timeout"
-              key="timeout"
-              validateStatus={this.state.errors.timeoutError}
-              help={this.state.errors.timeoutError ? 'Please set a valid timeout' : null }
-            >
-              <Input id='timeout' placeholder="timeout seconds" onBlur={e => this.setTimeout(e)}/>
-            </Form.Item>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Timeout:</p>
+              </Col>
+              <Col span={16}>
+                {this.state.errors.timeoutError ?
+                  <Input style={{width: 250, borderColor: this.state.errors.timeoutColor}} name="timeout" id='timeout' onChange={e => this.setTimeout(e)} />
+                :
+                  <Input defaultValue={this.state.request.timeout} style={{width: 250}} name="timeout" id='name' onChange={e => this.setTimeout(e)} />
+                }
+              </Col>
+            </Row>
+            <br/>
 
-            {this.state.message ?
-              <Form.Item
-                wrapperCol={ {offset: 8, span: 16 }}
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
-
-              : null
-            }
-
-            <Form.Item
-              wrapperCol={ {offset: 8, span: 16 }}
-              name="button"
-              key="button"
-            >
-              <Button type="primary" onClick={() => this.modifyMonitor()}>
-                Modify Monitor
-              </Button>
-            </Form.Item>
-
-          </Form>
+            <Row>
+              <Col offset={8} span={16}>
+                <Button type="primary" shape='round' onClick={() => this.validation()} >
+                  Modify Node
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
         }
 
         </Modal>

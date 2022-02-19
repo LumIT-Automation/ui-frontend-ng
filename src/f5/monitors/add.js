@@ -9,13 +9,11 @@ import {
   addMonitorError
 } from '../../_store/store.f5'
 
-import { Form, Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-
-
 
 const layout = {
   labelCol: { span: 8 },
