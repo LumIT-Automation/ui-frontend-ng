@@ -321,7 +321,7 @@ class Add extends React.Component {
               <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Node
+                    Add Profile
                   </Button>
                 </Col>
               </Row>
