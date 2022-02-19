@@ -6,12 +6,16 @@ import Error from '../../error/f5Error'
 
 import PoolMembers from '../poolMembers/manager'
 
-import { poolsFetch, modifyPoolError } from '../../_store/store.f5'
+import {
+  poolsFetch,
+  modifyPoolError
+} from '../../_store/store.f5'
 
-import { Form, Button, Space, Modal, Spin, Result, Select, Divider } from 'antd';
+import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const monIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
@@ -21,13 +25,6 @@ const layout = {
   wrapperCol: { span: 8 },
 };
 
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class Modify extends React.Component {
 
@@ -35,10 +32,9 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
+      loadBalancingModes: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
+      request: {},
       errors: {},
-      message:'',
-      request: {}
     };
   }
 
@@ -56,206 +52,88 @@ class Modify extends React.Component {
   }
 
   details = () => {
+    console.log(this.props.obj)
     this.setState({visible: true})
     let request = Object.assign({}, this.props.obj)
     this.setState({request: request})
   }
 
-  genericValidator = e => {
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
 
-    switch(e.target.id) {
-
-      case 'tlsverify':
-        if (e.target.value) {
-          request.tlsverify = e.target.value
-          delete errors.tlsverifyError
-        }
-        else {
-          errors.tlsverifyError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
-
-      case 'datacenter':
-        if (e.target.value) {
-        request.datacenter = e.target.value
-          delete errors.datacenterError
-        }
-        else {
-          errors.datacenterError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
-
-      case 'environment':
-        if (e.target.value) {
-          request.environment = e.target.value
-          delete errors.environmentError
-        }
-        else {
-          errors.environmentError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
-
-      case 'position':
-        if (e.target.value) {
-          request.position = e.target.value
-          delete errors.positionError
-        }
-        else {
-          errors.positionError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
-
-      case 'username':
-        if (e.target.value) {
-          request.username = e.target.value
-          delete errors.usernameError
-        }
-        else {
-          errors.usernameError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
-
-      case 'password':
-        if (e.target.value) {
-          request.password = e.target.value
-          delete errors.passwordError
-        }
-        else {
-          errors.passwordError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break
+  //FETCH
 
 
-      default:
-
-    }
-  }
-
-  ipHostnameValidator = e => {
-
-    let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
-
-    switch(e.target.id) {
-
-      case 'address':
-        const ipv4 = e.target.value
-        const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
-
-        if (validIpAddressRegex.test(ipv4)) {
-          request.address = ipv4
-          delete errors.addressError
-        }
-        else {
-          errors.addressError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break;
-
-      case 'fqdn':
-        const fqdn = e.target.value
-        const validHostnameRegex = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$";
-        const fqdnRegex = new RegExp(validHostnameRegex);
-
-        if (fqdnRegex.test(fqdn)) {
-          request.fqdn = fqdn
-          delete errors.fqdnError
-        }
-        else {
-          errors.fqdnError = 'error'
-        }
-        this.setState({request: request, errors: errors})
-        break;
-
-      default:
-        //
-    }
-
-
-
-  }
-
+  //SETTERS
   setLbMethod = e => {
     let request = Object.assign({}, this.state.request)
-    let errors = Object.assign({}, this.state.errors)
-
-    switch (e) {
-      case 'round-robin':
-        request.lbMethod = 'round-robin'
-        delete errors.lbMethodError
-        break
-      case 'least-connections-member':
-        request.lbMethod = 'least-connections-member'
-        delete errors.lbMethodError
-        break
-      case 'observed-member':
-        request.lbMethod = 'observed-member'
-        delete errors.lbMethodError
-        break
-      case 'predictive-member':
-        request.lbMethod = 'predictive-member'
-        delete errors.lbMethodError
-        break
-      default:
-        errors.lbMethodError = 'error'
-    }
-    this.setState({request: request, errors: errors})
+    request.loadBalancingMode = e
+    this.setState({request: request})
   }
-
   setMonitor = e => {
     let request = Object.assign({}, this.state.request);
-    let errors = Object.assign({}, this.state.errors);
+    request.monitor = e
+    this.setState({request: request})
+  }
 
-    if (e) {
-      request.monitor = e
+
+  //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (!request.loadBalancingMode) {
+      errors.loadBalancingModeError = true
+      errors.loadBalancingModeColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.loadBalancingModeError
+      delete errors.loadBalancingModeColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.monitor) {
+      errors.monitorError = true
+      errors.monitorColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
       delete errors.monitorError
-      }
-      else {
-        errors.moitorError = 'error'
-      }
-      this.setState({request: request, errors: errors})
+      delete errors.monitorColor
+      this.setState({errors: errors})
+    }
+    return errors
+  }
+
+  validation = async () => {
+    let validation = await this.validationCheck()
+    if (Object.keys(this.state.errors).length === 0) {
+      this.modifyPool()
+    }
   }
 
   modifyPool = async () => {
     let request = Object.assign({}, this.state.request)
-
-    if (isEmpty(request)){
-      this.setState({message: 'Please fill the form'})
-    }
-
-    else {
-      this.setState({message: null});
-
-      const b = {
-        "data":
-          {
-            "monitor": this.state.request.monitor,
-            "loadBalancingMode": this.state.request.lbMethod
-          }
+    const b = {
+      "data":
+        {
+          "monitor": this.state.request.monitor,
+          "loadBalancingMode": this.state.request.loadBalancingMode
         }
+      }
 
-      this.setState({loading: true})
+    this.setState({loading: true})
 
-      let rest = new Rest(
-        "PATCH",
-        resp => {
-          this.setState({loading: false, response: true}, () => this.response())
-        },
-        error => {
-          this.props.dispatch(modifyPoolError(error))
-          this.setState({loading: false, response: false})
-        }
-      )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, b )
-    }
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        this.setState({loading: false, response: true}, () => this.response())
+      },
+      error => {
+        this.props.dispatch(modifyPoolError(error))
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/`, this.props.token, b )
   }
 
   response = () => {
@@ -264,10 +142,13 @@ class Modify extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
+
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
+      errors: {},
+      request: {}
     })
   }
 
@@ -290,94 +171,174 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.response &&
-          <Result
-             status="success"
-             title="Updated"
-           />
-        }
-        { !this.state.loading && !this.state.response &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={{
-              remember: true,
-              lbMethod: this.state.request.lbMethod,
-              monitor: this.state.request.monitor
-            }}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-          <Form.Item
-            label="Load Balancing Method"
-            name='lbMethod'
-            key="lbMethod"
-            validateStatus={this.state.errors.lbMethodError}
-            help={this.state.errors.lbMethodError ? 'Please input a valid Loadbalancing Method' : null }
-          >
-            <Select id='lbMethod' onChange={a => this.setLbMethod(a)}>
-              <Select.Option key={'round-robin'} value={'round-robin'}>round-robin</Select.Option>
-              <Select.Option key={'least-connections-member'} value={'least-connections-member'}>least-connections-member</Select.Option>
-              <Select.Option key={'observed-member'} value={'observed-member'}>observed-member</Select.Option>
-              <Select.Option key={'predictive-member'} value={'predictive-member'}>predictive-member</Select.Option>
-            </Select>
-          </Form.Item>
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+          { !this.state.loading && this.state.response &&
+            <Result
+               status="success"
+               title="Updated"
+             />
+          }
+          { !this.state.loading && !this.state.response &&
+            <React.Fragment>
 
-          <Form.Item
-            label="Monitor"
-            name="monitor"
-            key="monitor"
-            validateStatus={this.state.errors.monitorError}
-            help={this.state.errors.monitorError ? 'Please select monitor' : null }
-          >
-            <Select onChange={p => this.setMonitor(p)} >
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Loadbalancing Method:</p>
+                </Col>
+                <Col span={16}>
+                  <React.Fragment>
+                    { this.state.loadBalancingModes && this.state.loadBalancingModes.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.loadBalancingModeError ?
+                          <Select
+                            value={this.state.request.loadBalancingMode}
+                            showSearch
+                            style={{width: 250, border: `1px solid ${this.state.errors.loadBalancingModeColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.setLbMethod(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.loadBalancingModes.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.request.loadBalancingMode}
+                            showSearch
+                            style={{width: 250}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.setLbMethod(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.loadBalancingModes.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
+                    :
+                      null
+                    }
+                  </React.Fragment>
+                </Col>
+              </Row>
+              <br/>
 
-              {this.props.monitorTypes ? this.props.monitorTypes.map((p, i) => {
-                return (
-                  <Select.Option  key={i} value={p}>{p}</Select.Option>
-                )
-            }) : null}
-            </Select>
-          </Form.Item>
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor:</p>
+                </Col>
+                <Col span={16}>
+                  { this.props.monitorsLoading ?
+                    <Spin indicator={monIcon} style={{ margin: '0 10%'}}/>
+                  :
+                    <React.Fragment>
+                      { this.props.monitors && this.props.monitors.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.monitorError ?
+                            <Select
+                              value={this.state.request.monitor}
+                              showSearch
+                              style={{width: 250, border: `1px solid ${this.state.errors.monitorColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.setMonitor(n)}
+                            >
+                              <React.Fragment>
+                                {this.props.monitors.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              value={this.state.request.monitor}
+                              showSearch
+                              style={{width: 250}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.setMonitor(n)}
+                            >
+                              <React.Fragment>
+                                {this.props.monitors.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
+                </Col>
+              </Row>
+              <br/>
 
-          {this.state.message ?
-            <Form.Item
-              wrapperCol={ {offset: 8, span: 16 }}
-              name="message"
-              key="message"
-            >
-              <p style={{color: 'red'}}>{this.state.message}</p>
-            </Form.Item>
+              <Row>
+                <Col offset={8} span={16}>
+                  <Button type="primary" shape='round' onClick={() => this.validation()} >
+                    Modify Pool
+                  </Button>
+                </Col>
+              </Row>
 
-            : null
+              <Divider/>
+              <Form>
+              <Form.Item
+                label="Members"
+                name="memebers"
+                key="members"
+                noStyle={true}
+                validateStatus={this.state.errors.monitorError}
+                help={this.state.errors.monitorError ? 'Please select monitor' : null }
+              >
+                <PoolMembers obj={this.props.obj}/>
+              </Form.Item>
+
+              </Form>
+
+            </React.Fragment>
           }
 
-          <Form.Item
-            wrapperCol={ {offset: 8, span: 16 }}
-            name="button"
-            key="button"
-          >
-            <Button type="primary" onClick={() => this.modifyPool()}>
-              Modify Pool
-            </Button>
-          </Form.Item>
-
-          <Divider/>
-
-          <Form.Item
-            label="Members"
-            name="memebers"
-            key="members"
-            noStyle={true}
-            validateStatus={this.state.errors.monitorError}
-            help={this.state.errors.monitorError ? 'Please select monitor' : null }
-          >
-            <PoolMembers obj={this.props.obj}/>
-          </Form.Item>
-
-          </Form>
-        }
 
         </Modal>
 
@@ -397,9 +358,12 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorTypes: state.f5.monitorTypes,
+
+
+  monitors: state.f5.monitors,
+  monitorsLoading: state.f5.monitorsLoading,
   modifyPoolError: state.f5.modifyPoolError,
 }))(Modify);
