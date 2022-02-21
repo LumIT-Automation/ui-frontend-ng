@@ -100,7 +100,7 @@ class Manager extends React.Component {
       return
     }
     else {
-      let permissionsWithAssets = await this.addAssetDetails(fetchedAssets, fetchedPermissions)
+      let permissionsWithAssets = await this.assetAddDetails(fetchedAssets, fetchedPermissions)
       this.props.dispatch(permissions( permissionsWithAssets ))
       this.props.dispatch(permissionsLoading(false))
     }
@@ -151,7 +151,7 @@ class Manager extends React.Component {
     return r
   }
 
-  addAssetDetails = async (assets, permissions) => {
+  assetAddDetails = async (assets, permissions) => {
 
     //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))

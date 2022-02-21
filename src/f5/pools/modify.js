@@ -8,14 +8,14 @@ import PoolMembers from '../poolMembers/manager'
 
 import {
   poolsFetch,
-  modifyPoolError
+  poolModifyError
 } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const monIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const monIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
@@ -107,11 +107,11 @@ class Modify extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.modifyPool()
+      this.poolModify()
     }
   }
 
-  modifyPool = async () => {
+  poolModify = async () => {
     let request = Object.assign({}, this.state.request)
     const b = {
       "data":
@@ -129,7 +129,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyPoolError(error))
+        this.props.dispatch(poolModifyError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -344,7 +344,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.modifyPoolError ? <Error component={'modify pool'} error={[this.props.modifyPoolError]} visible={true} type={'modifyPoolError'} /> : null }
+            { this.props.poolModifyError ? <Error component={'modify pool'} error={[this.props.poolModifyError]} visible={true} type={'poolModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -365,5 +365,5 @@ export default connect((state) => ({
 
   monitors: state.f5.monitors,
   monitorsLoading: state.f5.monitorsLoading,
-  modifyPoolError: state.f5.modifyPoolError,
+  poolModifyError: state.f5.poolModifyError,
 }))(Modify);

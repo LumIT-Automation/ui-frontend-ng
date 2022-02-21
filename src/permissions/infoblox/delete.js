@@ -7,7 +7,7 @@ import Error from '../../error/infobloxError'
 
 import {
   permissionsFetch,
-  deletePermissionError
+  permissionDeleteError
 } from '../../_store/store.infoblox'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
@@ -45,7 +45,7 @@ class Delete extends React.Component {
   }
 
 
-  deletePermission = async () => {
+  permissionDelete = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -53,7 +53,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(permissionsFetch(true)) )
       },
       error => {
-        this.props.dispatch(deletePermissionError(error))
+        this.props.dispatch(permissionDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -105,7 +105,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deletePermission(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.permissionDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -122,7 +122,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.deletePermissionError ? <Error component={'delete infoblox'} error={[this.props.deletePermissionError]} visible={true} type={'deletePermissionError'} /> : null }
+          { this.props.permissionDeleteError ? <Error component={'delete infoblox'} error={[this.props.permissionDeleteError]} visible={true} type={'permissionDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -135,5 +135,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	deletePermissionError: state.infoblox.deletePermissionError,
+ 	permissionDeleteError: state.infoblox.permissionDeleteError,
 }))(Delete);

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import { assetsFetch, deleteAssetError } from '../../_store/store.infoblox'
+import { assetsFetch, assetDeleteError } from '../../_store/store.infoblox'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -42,7 +42,7 @@ class Delete extends React.Component {
   }
 
 
-  deleteAsset = async asset => {
+  assetDelete = async asset => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -50,7 +50,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () =>  this.props.dispatch(assetsFetch(true)) )
       },
       error => {
-        this.props.dispatch(deleteAssetError(error))
+        this.props.dispatch(assetDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -104,7 +104,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteAsset(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.assetDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -121,7 +121,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deleteAssetError ? <Error component={'asset delete infoblox'} error={[this.props.deleteAssetError]} visible={true} type={'deleteAssetError'} /> : null }
+            { this.props.assetDeleteError ? <Error component={'asset delete infoblox'} error={[this.props.assetDeleteError]} visible={true} type={'assetDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -136,6 +136,6 @@ class Delete extends React.Component {
 export default connect((state) => ({
 
   token: state.authentication.token,
- 	deleteAssetError: state.infoblox.deleteAssetError,
+ 	assetDeleteError: state.infoblox.assetDeleteError,
 
 }))(Delete);

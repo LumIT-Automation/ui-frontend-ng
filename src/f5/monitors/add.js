@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import {
   monitorsFetch,
-  addMonitorError
+  monitorAddError
 } from '../../_store/store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -132,13 +132,13 @@ class Add extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.addMonitor()
+      this.monitorAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  addMonitor = async () => {
+  monitorAdd = async () => {
     let request = Object.assign({}, this.state.request);
     const b = {
       "data":
@@ -159,7 +159,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(addMonitorError(error))
+        this.props.dispatch(monitorAddError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -331,7 +331,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addMonitorError ? <Error component={'add monitor'} error={[this.props.addMonitorError]} visible={true} type={'addMonitorError'} /> : null }
+            { this.props.monitorAddError ? <Error component={'add monitor'} error={[this.props.monitorAddError]} visible={true} type={'monitorAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -349,5 +349,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   monitorTypes: state.f5.monitorTypes,
-  addMonitorError: state.f5.addMonitorError
+  monitorAddError: state.f5.monitorAddError
 }))(Add);

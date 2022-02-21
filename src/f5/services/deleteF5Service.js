@@ -8,7 +8,7 @@ import {
   virtualServers,
   virtualServersLoading,
   virtualServersError,
-  deleteServiceError
+  serviceDeleteError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
@@ -107,12 +107,12 @@ class DeleteF5Service extends React.Component {
     let validation = await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.deleteService()
+      this.serviceDelete()
     }
 
   }
 
-  deleteService = async () => {
+  serviceDelete = async () => {
     let serviceName = this.state.request.serviceName
     this.setState({loading: true})
 
@@ -123,7 +123,7 @@ class DeleteF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(deleteServiceError(error))
+        this.props.dispatch(serviceDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -281,7 +281,7 @@ class DeleteF5Service extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.virtualServersError ? <Error component={'delete loadbalancer'} error={[this.props.virtualServersError]} visible={true} type={'virtualServersError'} /> : null }
-            { this.props.deleteServiceError ? <Error component={'delete loadbalancer'} error={[this.props.deleteServiceError]} visible={true} type={'deleteServiceError'} /> : null }
+            { this.props.serviceDeleteError ? <Error component={'delete loadbalancer'} error={[this.props.serviceDeleteError]} visible={true} type={'serviceDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -303,5 +303,5 @@ export default connect((state) => ({
   virtualServers: state.f5.virtualServers,
   virtualServersLoading: state.f5.virtualServersLoading,
   virtualServersError: state.f5.virtualServersError,
-  deleteServiceError: state.f5.deleteServiceError
+  serviceDeleteError: state.f5.serviceDeleteError
 }))(DeleteF5Service);

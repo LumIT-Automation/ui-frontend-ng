@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { profilesFetch, deleteProfileError } from '../../_store/store.f5'
+import { profilesFetch, profileDeleteError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -42,7 +42,7 @@ class Delete extends React.Component {
   }
 
 
-  deleteProfile = async profile => {
+  profileDelete = async profile => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -50,7 +50,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () =>  this.props.dispatch(profilesFetch(true)) )
       },
       error => {
-        this.props.dispatch(deleteProfileError(error))
+        this.props.dispatch(profileDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -99,7 +99,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteProfile(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.profileDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -116,7 +116,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deleteProfileError ? <Error component={'delete profile'} error={[this.props.deleteProfileError]} visible={true} type={'deleteProfileError'} /> : null }
+            { this.props.profileDeleteError ? <Error component={'delete profile'} error={[this.props.profileDeleteError]} visible={true} type={'profileDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -133,5 +133,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  deleteProfileError: state.f5.deleteProfileError
+  profileDeleteError: state.f5.profileDeleteError
 }))(Delete);

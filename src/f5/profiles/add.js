@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import {
   profilesFetch,
-  addProfileError
+  profileAddError
 } from '../../_store/store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -56,7 +56,7 @@ class Add extends React.Component {
 
     if (profTypes.status && profTypes.status !== 200 ) {
       this.setState({profileTypesLoading: false})
-      this.props.dispatch(addProfileError(profTypes))
+      this.props.dispatch(profileAddError(profTypes))
     }
     else {
       this.setState({profileTypesLoading: false})
@@ -128,13 +128,13 @@ class Add extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.addProfile()
+      this.profileAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  addProfile = async () => {
+  profileAdd = async () => {
     let request = Object.assign({}, this.state.request);
     const b = {
       "data":
@@ -151,7 +151,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(addProfileError(error))
+        this.props.dispatch(profileAddError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -296,7 +296,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addProfileError ? <Error component={'add profile'} error={[this.props.addProfileError]} visible={true} type={'addProfileError'} /> : null }
+            { this.props.profileAddError ? <Error component={'add profile'} error={[this.props.profileAddError]} visible={true} type={'profileAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -314,5 +314,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-  addProfileError: state.f5.addProfileError
+  profileAddError: state.f5.profileAddError
 }))(Add);

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { assetsFetch, modifyAssetError } from '../../_store/store.f5'
+import { assetsFetch, assetModifyError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 
@@ -180,7 +180,7 @@ class Modify extends React.Component {
 
   }
 
-  modifyAsset = async () => {
+  assetModify = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
 
     if (isEmpty(request)){
@@ -213,7 +213,7 @@ class Modify extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(modifyAssetError(error))
+          this.props.dispatch(assetModifyError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -380,7 +380,7 @@ class Modify extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.modifyAsset()}>
+              <Button type="primary" onClick={() => this.assetModify()}>
                 Modify Asset
               </Button>
             </Form.Item>
@@ -391,7 +391,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.modifyAssetError ? <Error component={'asset modify f5'} error={[this.props.modifyAssetError]} visible={true} type={'modifyAssetError'} /> : null }
+            { this.props.assetModifyError ? <Error component={'asset modify f5'} error={[this.props.assetModifyError]} visible={true} type={'assetModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -405,6 +405,6 @@ class Modify extends React.Component {
 export default connect((state) => ({
 
   token: state.authentication.token,
- 	modifyAssetError: state.f5.modifyAssetError,
+ 	assetModifyError: state.f5.assetModifyError,
 
 }))(Modify);

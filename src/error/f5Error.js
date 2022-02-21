@@ -7,44 +7,44 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   permissionsError,
-  addNewDnError,
-  fetchRolesError,
-  addPermissionError,
-  modifyPermissionError,
-  deletePermissionError,
+  newDnAddError,
+  rolesError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 
   identityGroupsError,
   environmentError,
   assetsError,
-  addAssetError,
-  modifyAssetError,
-  deleteAssetError,
+  assetAddError,
+  assetModifyError,
+  assetDeleteError,
   partitionsError,
   routeDomainsError,
 
   nodesError,
-  addNodeError,
-  deleteNodeError,
+  nodeAddError,
+  nodeDeleteError,
 
   monitorTypesError,
   monitorsError,
-  addMonitorError,
-  modifyMonitorError,
-  deleteMonitorError,
+  monitorAddError,
+  monitorModifyError,
+  monitorDeleteError,
 
   poolsError,
-  addPoolError,
-  modifyPoolError,
-  deletePoolError,
+  poolAddError,
+  poolModifyError,
+  poolDeleteError,
 
   poolMembersError,
-  addPoolMemberError,
-  modifyPoolMemberError,
-  deletePoolMemberError,
+  poolMemberAddError,
+  poolMemberModifyError,
+  poolMemberDeleteError,
 
   profilesError,
-  addProfileError,
-  deleteProfileError,
+  profileAddError,
+  profileDeleteError,
 
   virtualServersError,
 
@@ -55,13 +55,13 @@ import {
   keyAddError,
   keyDeleteError,
 
-  createL4ServiceError,
-  createL7ServiceError,
-  deleteServiceError,
-  enableMemberError,
-  disableMemberError,
-  forceOfflineMemberError,
-  memberStatsError,
+  l4ServiceCreateError,
+  l7ServiceCreateError,
+  serviceDeleteError,
+  poolMemberEnableError,
+  poolMemberDisableError,
+  poolMemberForceOfflineError,
+  poolMemberStatsError,
 
   historysError,
 
@@ -110,20 +110,20 @@ class Error extends Component {
           break;
 
 
-        case 'addNewDnError':
-          this.props.dispatch(addNewDnError(null))
+        case 'newDnAddError':
+          this.props.dispatch(newDnAddError(null))
           break;
-        case 'fetchRolesError':
-          this.props.dispatch(fetchRolesError(null))
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
           break;
-        case 'addPermissionError':
-          this.props.dispatch(addPermissionError(null))
+        case 'permissionAddError':
+          this.props.dispatch(permissionAddError(null))
           break;
-        case 'modifyPermissionError':
-          this.props.dispatch(modifyPermissionError(null))
+        case 'permissionModifyError':
+          this.props.dispatch(permissionModifyError(null))
           break;
-        case 'deletePermissionError':
-          this.props.dispatch(deletePermissionError(null))
+        case 'permissionDeleteError':
+          this.props.dispatch(permissionDeleteError(null))
           break;
 
 
@@ -147,24 +147,24 @@ class Error extends Component {
           this.props.dispatch(routeDomainsError(null))
           break;
 
-        case 'addAssetError':
-          this.props.dispatch(addAssetError(null))
+        case 'assetAddError':
+          this.props.dispatch(assetAddError(null))
           break;
-        case 'modifyAssetError':
-          this.props.dispatch(modifyAssetError(null))
+        case 'assetModifyError':
+          this.props.dispatch(assetModifyError(null))
           break;
-        case 'deleteAssetError':
-          this.props.dispatch(deleteAssetError(null))
+        case 'assetDeleteError':
+          this.props.dispatch(assetDeleteError(null))
           break;
 
         case 'nodesError':
           this.props.dispatch(nodesError(null))
           break;
-        case 'addNodeError':
-          this.props.dispatch(addNodeError(null))
+        case 'nodeAddError':
+          this.props.dispatch(nodeAddError(null))
           break;
-        case 'deleteNodeError':
-          this.props.dispatch(deleteNodeError(null))
+        case 'nodeDeleteError':
+          this.props.dispatch(nodeDeleteError(null))
           break;
 
         case 'monitorTypesError':
@@ -173,50 +173,50 @@ class Error extends Component {
         case 'monitorsError':
           this.props.dispatch(monitorsError(null))
           break;
-        case 'addMonitorError':
-          this.props.dispatch(addMonitorError(null))
+        case 'monitorAddError':
+          this.props.dispatch(monitorAddError(null))
           break;
-        case 'modifyMonitorError':
-          this.props.dispatch(modifyMonitorError(null))
+        case 'monitorModifyError':
+          this.props.dispatch(monitorModifyError(null))
           break;
-        case 'deleteMonitorError':
-          this.props.dispatch(deleteMonitorError(null))
+        case 'monitorDeleteError':
+          this.props.dispatch(monitorDeleteError(null))
           break;
 
         case 'poolsError':
           this.props.dispatch(poolsError(null))
           break;
-        case 'addPoolError':
-          this.props.dispatch(addPoolError(null))
+        case 'poolAddError':
+          this.props.dispatch(poolAddError(null))
           break;
-        case 'modifyPoolError':
-          this.props.dispatch(modifyPoolError(null))
+        case 'poolModifyError':
+          this.props.dispatch(poolModifyError(null))
           break;
-        case 'deletePoolError':
-          this.props.dispatch(deletePoolError(null))
+        case 'poolDeleteError':
+          this.props.dispatch(poolDeleteError(null))
           break;
 
         case 'poolMembersError':
           this.props.dispatch(poolMembersError(null))
           break;
-        case 'addPoolMemberError':
-          this.props.dispatch(addPoolMemberError(null))
+        case 'poolMemberAddError':
+          this.props.dispatch(poolMemberAddError(null))
           break;
-        case 'modifyPoolMemberError':
-          this.props.dispatch(modifyPoolMemberError(null))
+        case 'poolMemberModifyError':
+          this.props.dispatch(poolMemberModifyError(null))
           break;
-        case 'deletePoolMemberError':
-          this.props.dispatch(deletePoolMemberError(null))
+        case 'poolMemberDeleteError':
+          this.props.dispatch(poolMemberDeleteError(null))
           break;
 
         case 'profilesError':
           this.props.dispatch(profilesError(null))
           break;
-        case 'addProfileError':
-          this.props.dispatch(addProfileError(null))
+        case 'profileAddError':
+          this.props.dispatch(profileAddError(null))
           break;
-        case 'deleteProfileError':
-          this.props.dispatch(deleteProfileError(null))
+        case 'profileDeleteError':
+          this.props.dispatch(profileDeleteError(null))
           break;
 
         case 'virtualServersError':
@@ -243,26 +243,26 @@ class Error extends Component {
           break;
 
 
-        case 'createL4ServiceError':
-          this.props.dispatch(createL4ServiceError(null))
+        case 'l4ServiceCreateError':
+          this.props.dispatch(l4ServiceCreateError(null))
           break;
-        case 'createL7ServiceError':
-          this.props.dispatch(createL7ServiceError(null))
+        case 'l7ServiceCreateError':
+          this.props.dispatch(l7ServiceCreateError(null))
           break;
-        case 'deleteServiceError':
-          this.props.dispatch(deleteServiceError(null))
+        case 'serviceDeleteError':
+          this.props.dispatch(serviceDeleteError(null))
           break;
-        case 'enableMemberError':
-          this.props.dispatch(enableMemberError(null))
+        case 'poolMemberEnableError':
+          this.props.dispatch(poolMemberEnableError(null))
           break;
-        case 'disableMemberError':
-          this.props.dispatch(disableMemberError(null))
+        case 'poolMemberDisableError':
+          this.props.dispatch(poolMemberDisableError(null))
           break;
-        case 'forceOfflineMemberError':
-          this.props.dispatch(forceOfflineMemberError(null))
+        case 'poolMemberForceOfflineError':
+          this.props.dispatch(poolMemberForceOfflineError(null))
           break;
-        case 'memberStatsError':
-          this.props.dispatch(memberStatsError(null))
+        case 'poolMemberStatsError':
+          this.props.dispatch(poolMemberStatsError(null))
           break;
 
         case 'historysError':

@@ -6,8 +6,8 @@ import Error from '../../error/f5Error'
 
 import {
   permissionsFetch,
-  fetchRolesError,
-  modifyPermissionError,
+  rolesError,
+  permissionModifyError,
   partitionsError
 } from '../../_store/store.f5'
 
@@ -60,7 +60,7 @@ class Modify extends React.Component {
     request.asset = this.props.obj.asset
     request.partition = this.props.obj.partition
     await this.setState({request: request})
-    this.fetchRoles()
+    this.roles()
     this.fetchPartitions()
   }
 
@@ -77,7 +77,7 @@ class Modify extends React.Component {
 
 
   //FETCH
-  fetchRoles = async () => {
+  roles = async () => {
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
@@ -85,7 +85,7 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchRolesError(error))
+        this.props.dispatch(rolesError(error))
         this.setState({rolesLoading: false})
       }
     )
@@ -156,13 +156,13 @@ class Modify extends React.Component {
   //VALIDATION
   validation = async () => {
     if (this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.partition.asset_id) {
-      this.modifyPermission()
+      this.permissionModify()
     }
   }
 
 
   //POST, PATCH, DELETE
-  modifyPermission = async () => {
+  permissionModify = async () => {
 
     const b = {
       "data":
@@ -185,7 +185,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyPermissionError(error))
+        this.props.dispatch(permissionModifyError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -406,8 +406,8 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.modifyPermissionError ? <Error component={'modify f5'} error={[this.props.modifyPermissionError]} visible={true} type={'modifyPermissionError'} /> : null }
-            { this.props.fetchRolesError ? <Error component={'modify f5'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
+            { this.props.permissionModifyError ? <Error component={'modify f5'} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
+            { this.props.rolesError ? <Error component={'modify f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
 
             { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
           </React.Fragment>
@@ -426,8 +426,8 @@ export default connect((state) => ({
   assets: state.f5.assets,
   identityGroups: state.f5.identityGroups,
 
-  modifyPermissionError: state.f5.modifyPermissionError,
-  fetchRolesError: state.f5.fetchRolesError,
+  permissionModifyError: state.f5.permissionModifyError,
+  rolesError: state.f5.rolesError,
   partitionsError: state.f5.partitionsError,
 
 }))(Modify);

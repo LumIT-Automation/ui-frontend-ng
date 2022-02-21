@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import {
   poolsFetch,
-  addPoolError
+  poolAddError
 } from '../../_store/store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -116,11 +116,11 @@ class Add extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.addPool()
+      this.poolAdd()
     }
   }
 
-  addPool = async () => {
+  poolAdd = async () => {
     let request = Object.assign({}, this.state.request)
 
     const b = {
@@ -140,7 +140,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true, error: false}, () => this.response())
       },
       error => {
-        this.props.dispatch(addPoolError(error))
+        this.props.dispatch(poolAddError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -347,7 +347,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addPoolError ? <Error component={'add pool'} error={[this.props.addPoolError]} visible={true} type={'addPoolError'} /> : null }
+            { this.props.poolAddError ? <Error component={'add pool'} error={[this.props.poolAddError]} visible={true} type={'poolAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -367,5 +367,5 @@ export default connect((state) => ({
 
   monitors: state.f5.monitors,
   monitorsLoading: state.f5.monitorsLoading,
-  addPoolError: state.f5.addPoolError,
+  poolAddError: state.f5.poolAddError,
 }))(Add);

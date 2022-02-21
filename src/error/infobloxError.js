@@ -9,19 +9,19 @@ import {
   permissionsError,
   identityGroupsError,
 
-  addNewDnError,
+  newDnAddError,
 
-  fetchRolesError,
-  addPermissionError,
-  modifyPermissionError,
-  deletePermissionError,
+  rolesError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 
   environmentError,
   assetsError,
 
-  addAssetError,
-  modifyAssetError,
-  deleteAssetError,
+  assetAddError,
+  assetModifyError,
+  assetDeleteError,
 
   treeError,
   networksError,
@@ -81,20 +81,20 @@ class Error extends Component {
           break;
 
 
-        case 'addNewDnError':
-          this.props.dispatch(addNewDnError(null))
+        case 'newDnAddError':
+          this.props.dispatch(newDnAddError(null))
           break;
-        case 'fetchRolesError':
-          this.props.dispatch(fetchRolesError(null))
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
           break;
-        case 'addPermissionError':
-          this.props.dispatch(addPermissionError(null))
+        case 'permissionAddError':
+          this.props.dispatch(permissionAddError(null))
           break;
-        case 'modifyPermissionError':
-          this.props.dispatch(modifyPermissionError(null))
+        case 'permissionModifyError':
+          this.props.dispatch(permissionModifyError(null))
           break;
-        case 'deletePermissionError':
-          this.props.dispatch(deletePermissionError(null))
+        case 'permissionDeleteError':
+          this.props.dispatch(permissionDeleteError(null))
           break;
 
 
@@ -111,14 +111,14 @@ class Error extends Component {
         case 'assetsError':
         	this.props.dispatch(assetsError(null))
         	break;
-        case 'addAssetError':
-        	this.props.dispatch(addAssetError(null))
+        case 'assetAddError':
+        	this.props.dispatch(assetAddError(null))
         	break;
-        case 'modifyAssetError':
-        	this.props.dispatch(modifyAssetError(null))
+        case 'assetModifyError':
+        	this.props.dispatch(assetModifyError(null))
         	break;
-        case 'deleteAssetError':
-        	this.props.dispatch(deleteAssetError(null))
+        case 'assetDeleteError':
+        	this.props.dispatch(assetDeleteError(null))
         	break;
         case 'treeError':
         	this.props.dispatch(treeError(null))

@@ -6,10 +6,10 @@ import Error from '../../../error/f5Error'
 import {
   poolMembersError,
 
-  enableMemberError,
-  disableMemberError,
-  forceOfflineMemberError,
-  memberStatsError
+  poolMemberEnableError,
+  poolMemberDisableError,
+  poolMemberForceOfflineError,
+  poolMemberStatsError
 
 } from '../../../_store/store.f5'
 
@@ -156,7 +156,7 @@ class PoolDetails extends React.Component {
   }
 
 
-  enableMemberHandler = async (member) => {
+  poolMemberEnableHandler = async (member) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
     const index = this.state.members.findIndex(m => {
       return m.name === member.name
@@ -165,12 +165,12 @@ class PoolDetails extends React.Component {
     members[index].isLoading = true
     this.setState({members: members})
 
-    let enable = await this.enableMember(member.name)
+    let enable = await this.poolMemberEnable(member.name)
     if (enable.status && enable.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(enableMemberError(enable))
+      this.props.dispatch(poolMemberEnableError(enable))
     }
 
     let fetchMember = await this.fetchMember(member)
@@ -178,7 +178,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(enableMemberError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchMember))
     }
 
     let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
@@ -188,7 +188,7 @@ class PoolDetails extends React.Component {
     this.setState({members: members})
   }
 
-  disableMemberHandler = async (member) => {
+  poolMemberDisableHandler = async (member) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
     const index = this.state.members.findIndex(m => {
       return m.name === member.name
@@ -197,12 +197,12 @@ class PoolDetails extends React.Component {
     members[index].isLoading = true
     this.setState({members: members})
 
-    let disable = await this.disableMember(member)
+    let disable = await this.poolMemberDisable(member)
     if (disable.status && disable.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(disableMemberError(disable))
+      this.props.dispatch(poolMemberDisableError(disable))
     }
 
     let fetchMember = await this.fetchMember(member)
@@ -210,7 +210,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(enableMemberError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchMember))
     }
 
     let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
@@ -220,7 +220,7 @@ class PoolDetails extends React.Component {
     this.setState({members: members})
   }
 
-  forceOfflineMemberHandler = async (member) => {
+  poolMemberForceOfflineHandler = async (member) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
     const index = this.state.members.findIndex(m => {
       return m.name === member.name
@@ -229,12 +229,12 @@ class PoolDetails extends React.Component {
     members[index].isLoading = true
     this.setState({members: members})
 
-    let forceOffline = await this.forceOfflineMember(member)
+    let forceOffline = await this.poolMemberForceOffline(member)
     if (forceOffline.status && forceOffline.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(forceOfflineMemberError(forceOffline))
+      this.props.dispatch(poolMemberForceOfflineError(forceOffline))
     }
 
     let fetchMember = await this.fetchMember(member)
@@ -242,7 +242,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(enableMemberError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchMember))
     }
 
     let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
@@ -252,7 +252,7 @@ class PoolDetails extends React.Component {
     this.setState({members: members})
   }
 
-  enableMember = async (memberName) => {
+  poolMemberEnable = async (memberName) => {
     let r
     const b = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
@@ -268,7 +268,7 @@ class PoolDetails extends React.Component {
     return r
   }
 
-  disableMember = async (member) => {
+  poolMemberDisable = async (member) => {
     let r
     const b = {"data":{"state":"user-up", "session":"user-disabled"}}
     let rest = new Rest(
@@ -284,7 +284,7 @@ class PoolDetails extends React.Component {
     return r
   }
 
-  forceOfflineMember = async (member) => {
+  poolMemberForceOffline = async (member) => {
     let r
     const b = {"data":{"state":"user-down", "session":"user-disabled"}}
     let rest = new Rest(
@@ -330,7 +330,7 @@ class PoolDetails extends React.Component {
     if (!isMonitored) {
       const member = members[index]
 
-      this.interval = setInterval( () => this.memberStats(member), 3000)
+      this.interval = setInterval( () => this.poolMemberStats(member), 3000)
 
       const memberModified = Object.assign(member, {
         isMonitored: true,
@@ -364,14 +364,14 @@ class PoolDetails extends React.Component {
     this.setState({members: list})
   }
 
-  memberStats = async member => {
+  poolMemberStats = async member => {
     let rest = new Rest(
       'GET',
       resp => {
         this.refreshStats(member, resp.data)
       },
       error => {
-        this.props.dispatch(memberStatsError(error))
+        this.props.dispatch(poolMemberStatsError(error))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
@@ -477,7 +477,7 @@ class PoolDetails extends React.Component {
               Enable
             </Button>
             :
-            <Button type="primary" onClick={() => this.enableMemberHandler(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberEnableHandler(obj)}>
               Enable
             </Button>
           }
@@ -496,7 +496,7 @@ class PoolDetails extends React.Component {
               Disable
             </Button>
             :
-            <Button type="primary" onClick={() => this.disableMemberHandler(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberDisableHandler(obj)}>
               Disable
             </Button>
           }
@@ -515,7 +515,7 @@ class PoolDetails extends React.Component {
               Force Offline
             </Button>
             :
-            <Button type="primary" onClick={() => this.forceOfflineMemberHandler(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberForceOfflineHandler(obj)}>
               Force Offline
             </Button>
           }
@@ -596,10 +596,10 @@ class PoolDetails extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
-            { this.props.enableMemberError ? <Error component={'poolMaint pool'} error={[this.props.enableMemberError]} visible={true} type={'enableMemberError'} /> : null }
-            { this.props.disableMemberError ? <Error component={'poolMaint pool'} error={[this.props.disableMemberError]} visible={true} type={'disableMemberError'} /> : null }
-            { this.props.forceOfflineMemberError ? <Error component={'poolMaint pool'} error={[this.props.forceOfflineMemberError]} visible={true} type={'forceOfflineMemberError'} /> : null }
-            { this.props.memberStatsError ? <Error component={'poolMaint pool'} error={[this.props.memberStatsError]} visible={true} type={'memberStatsError'} /> : null }
+            { this.props.poolMemberEnableError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberEnableError]} visible={true} type={'poolMemberEnableError'} /> : null }
+            { this.props.poolMemberDisableError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberDisableError]} visible={true} type={'poolMemberDisableError'} /> : null }
+            { this.props.poolMemberForceOfflineError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberForceOfflineError]} visible={true} type={'poolMemberForceOfflineError'} /> : null }
+            { this.props.poolMemberStatsError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberStatsError]} visible={true} type={'poolMemberStatsError'} /> : null }
 
           </React.Fragment>
         :
@@ -620,9 +620,9 @@ export default connect((state) => ({
   poolMembers: state.f5.poolMembers,
   poolMembersError: state.f5.poolMembersError,
 
-  enableMemberError: state.f5.enableMemberError,
-  disableMemberError: state.f5.disableMemberError,
-  forceOfflineMemberError: state.f5.forceOfflineMemberError,
-  memberStatsError: state.f5.memberStatsError,
+  poolMemberEnableError: state.f5.poolMemberEnableError,
+  poolMemberDisableError: state.f5.poolMemberDisableError,
+  poolMemberForceOfflineError: state.f5.poolMemberForceOfflineError,
+  poolMemberStatsError: state.f5.poolMemberStatsError,
 
 }))(PoolDetails);

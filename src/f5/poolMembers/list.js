@@ -180,7 +180,7 @@ class List extends React.Component {
   }
 
 
-  enableMember = async (member) => {
+  poolMemberEnable = async (member) => {
     const b = { "data": { "state": "user-up", "session":"user-enabled" } }
     let rest = new Rest(
       "PATCH",
@@ -194,7 +194,7 @@ class List extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
   }
 
-  disableMember = async (member) => {
+  poolMemberDisable = async (member) => {
     const b = {"data":{"state":"user-up", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
@@ -208,7 +208,7 @@ class List extends React.Component {
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
   }
 
-  forceOfflineMember = async (member) => {
+  poolMemberForceOffline = async (member) => {
     const b = {"data":{"state":"user-down", "session":"user-disabled"}}
     let rest = new Rest(
       "PATCH",
@@ -272,7 +272,7 @@ class List extends React.Component {
         key: 'enable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.enableMember(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberEnable(obj)}>
               Enable
             </Button>
           </Space>
@@ -285,7 +285,7 @@ class List extends React.Component {
         key: 'disable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.disableMember(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberDisable(obj)}>
               Disable
             </Button>
           </Space>
@@ -298,7 +298,7 @@ class List extends React.Component {
         key: 'foff',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.forceOfflineMember(obj)}>
+            <Button type="primary" onClick={() => this.poolMemberForceOffline(obj)}>
               Force Offline
             </Button>
           </Space>

@@ -6,8 +6,8 @@ import Error from '../../error/infobloxError'
 
 import {
   permissionsFetch,
-  fetchRolesError,
-  modifyPermissionError,
+  rolesError,
+  permissionModifyError,
   networksError,
   containersError
 } from '../../_store/store.infoblox'
@@ -62,7 +62,7 @@ class Modify extends React.Component {
     request.asset = this.props.obj.asset
     request.network = this.props.obj.network
     await this.setState({request: request})
-    this.fetchRoles()
+    this.roles()
     this.fetchNetworks()
   }
 
@@ -78,7 +78,7 @@ class Modify extends React.Component {
 
 
   //FETCH
-  fetchRoles = async () => {
+  roles = async () => {
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
@@ -86,7 +86,7 @@ class Modify extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchRolesError(error))
+        this.props.dispatch(rolesError(error))
         this.setState({rolesLoading: false, response: false})
       }
     )
@@ -194,14 +194,14 @@ class Modify extends React.Component {
   //VALIDATION
   validation = async () => {
     if (this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.network.name && this.state.request.network.asset_id) {
-      this.modifyPermission()
+      this.permissionModify()
     }
   }
 
 
 
 
-  modifyPermission = async () => {
+  permissionModify = async () => {
 
     const b = {
       "data":
@@ -224,7 +224,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyPermissionError(error))
+        this.props.dispatch(permissionModifyError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -442,8 +442,8 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.modifyPermissionError ? <Error component={'modify infoblox'} error={[this.props.modifyPermissionError]} visible={true} type={'modifyPermissionError'} /> : null }
-          { this.props.fetchRolesError ? <Error component={'modify infoblox'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
+          { this.props.permissionModifyError ? <Error component={'modify infoblox'} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
+          { this.props.rolesError ? <Error component={'modify infoblox'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
 
           { this.props.networksError ? <Error component={'modify infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
           { this.props.containersError ? <Error component={'modify infoblox'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
@@ -464,8 +464,8 @@ export default connect((state) => ({
   assets: state.infoblox.assets,
   identityGroups: state.infoblox.identityGroups,
 
-  modifyPermissionError: state.infoblox.modifyPermissionError,
-  fetchRolesError: state.infoblox.fetchRolesError,
+  permissionModifyError: state.infoblox.permissionModifyError,
+  rolesError: state.infoblox.rolesError,
   networksError: state.infoblox.networksError,
   containersError: state.infoblox.containersError,
 

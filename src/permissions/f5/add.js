@@ -6,9 +6,9 @@ import Error from '../../error/f5Error'
 
 import {
   permissionsFetch,
-  fetchRolesError,
-  addNewDnError,
-  addPermissionError,
+  rolesError,
+  newDnAddError,
+  permissionAddError,
   identityGroups,
   identityGroupsError,
 
@@ -56,7 +56,7 @@ class Add extends React.Component {
   details = () => {
     this.ig()
     this.setState({visible: true})
-    this.fetchRoles()
+    this.roles()
   }
 
   ig = () => {
@@ -118,11 +118,11 @@ class Add extends React.Component {
       errors.newDn = null
       await this.setState({errors: errors})
 
-      let awaitDn = await this.addNewDn(this.state.newDn, this.state.newCn)
+      let awaitDn = await this.newDnAdd(this.state.newDn, this.state.newCn)
       this.setState({addDnLoading: false})
 
       if (awaitDn.status && awaitDn.status !== 201) {
-        this.props.dispatch(addNewDnError(awaitDn))
+        this.props.dispatch(newDnAddError(awaitDn))
         return
       }
 
@@ -142,7 +142,7 @@ class Add extends React.Component {
     }
   }
 
-  addNewDn = async (dn, cn) => {
+  newDnAdd = async (dn, cn) => {
     this.setState({addDnLoading: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
     let r
@@ -188,7 +188,7 @@ class Add extends React.Component {
     this.setState({request: request}, () => this.fetchPartitions())
   }
 
-  fetchRoles = async () => {
+  roles = async () => {
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
@@ -196,7 +196,7 @@ class Add extends React.Component {
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
         },
       error => {
-        this.props.dispatch(fetchRolesError(error))
+        this.props.dispatch(rolesError(error))
         this.setState({rolesLoading: false, response: false})
       }
     )
@@ -244,7 +244,7 @@ class Add extends React.Component {
 
 
 
-  addPermission = async () => {
+  permissionAdd = async () => {
     this.setState({message: null});
 
     const b = {
@@ -268,7 +268,7 @@ class Add extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(addPermissionError(error))
+        this.props.dispatch(permissionAddError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -472,11 +472,11 @@ class Add extends React.Component {
               <Row>
                 <Col offset={8} span={16}>
                   { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.assetId ?
-                    <Button type="primary" onClick={() => this.addPermission()} >
+                    <Button type="primary" onClick={() => this.permissionAdd()} >
                       Add Permission
                     </Button>
                   :
-                    <Button type="primary" onClick={() => this.addPermission()} disabled>
+                    <Button type="primary" onClick={() => this.permissionAdd()} disabled>
                       Add Permission
                     </Button>
                   }
@@ -489,9 +489,9 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addPermissionError ? <Error component={'add f5'} error={[this.props.addPermissionError]} visible={true} type={'addPermissionError'} /> : null }
-            { this.props.fetchRolesError ? <Error component={'add f5'} error={[this.props.fetchRolesError]} visible={true} type={'fetchRolesError'} /> : null }
-            { this.props.addNewDnError ? <Error component={'add f5'} error={[this.props.addNewDnError]} visible={true} type={'addNewDnError'} /> : null }
+            { this.props.permissionAddError ? <Error component={'add f5'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
+            { this.props.rolesError ? <Error component={'add f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            { this.props.newDnAddError ? <Error component={'add f5'} error={[this.props.newDnAddError]} visible={true} type={'newDnAddError'} /> : null }
 
             { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
           </React.Fragment>
@@ -511,10 +511,10 @@ export default connect((state) => ({
   identityGroups: state.f5.identityGroups,
   permissions: state.f5.permissions,
 
-  fetchRolesError: state.f5.fetchRolesError,
-  addNewDnError: state.f5.addNewDnError,
+  rolesError: state.f5.rolesError,
+  newDnAddError: state.f5.newDnAddError,
 
   partitionsError: state.f5.partitionsError,
-  addPermissionError: state.f5.addPermissionError,
+  permissionAddError: state.f5.permissionAddError,
 
 }))(Add);

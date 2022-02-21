@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { nodesFetch, deleteNodeError } from '../../_store/store.f5'
+import { nodesFetch, nodeDeleteError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -40,7 +40,7 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-  deleteNode = async node => {
+  nodeDelete = async node => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -48,7 +48,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(deleteNodeError(error))
+        this.props.dispatch(nodeDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -103,7 +103,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deleteNode(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.nodeDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -120,7 +120,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deleteNodeError ? <Error component={'delete node'} error={[this.props.deleteNodeError]} visible={true} type={'deleteNodeError'} /> : null }
+            { this.props.nodeDeleteError ? <Error component={'delete node'} error={[this.props.nodeDeleteError]} visible={true} type={'nodeDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -137,5 +137,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  deleteNodeError: state.f5.deleteNodeError
+  nodeDeleteError: state.f5.nodeDeleteError
 }))(Delete);

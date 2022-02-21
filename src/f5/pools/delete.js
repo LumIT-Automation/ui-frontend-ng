@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { poolsFetch, deletePoolError } from '../../_store/store.f5'
+import { poolsFetch, poolDeleteError } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -41,7 +41,7 @@ class Delete extends React.Component {
   }
 
 
-  deletePool = async pool => {
+  poolDelete = async pool => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -49,7 +49,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(poolsFetch(true)))
       },
       error => {
-        this.props.dispatch(deletePoolError(error))
+        this.props.dispatch(poolDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -98,7 +98,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deletePool(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.poolDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -115,7 +115,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deletePoolError ? <Error component={'delete pool'} error={[this.props.deletePoolError]} visible={true} type={'deletePoolError'} /> : null }
+            { this.props.poolDeleteError ? <Error component={'delete pool'} error={[this.props.poolDeleteError]} visible={true} type={'poolDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -132,5 +132,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  deletePoolError: state.f5.deletePoolError
+  poolDeleteError: state.f5.poolDeleteError
 }))(Delete);

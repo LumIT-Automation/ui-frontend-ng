@@ -9,7 +9,7 @@ import {
   nodesFetch,
   routeDomains,
   routeDomainsError,
-  addNodeError
+  nodeAddError
 } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -170,13 +170,13 @@ class Add extends React.Component {
     let validation = await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.addNode()
+      this.nodeAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  addNode = async () => {
+  nodeAdd = async () => {
     let request = Object.assign({}, this.state.request)
 
     if(request.routeDomain) {
@@ -198,7 +198,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(addNodeError(error))
+          this.props.dispatch(nodeAddError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -224,7 +224,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(addNodeError(error))
+          this.props.dispatch(nodeAddError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -386,7 +386,7 @@ class Add extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-            { this.props.addNodeError ? <Error component={'add node'} error={[this.props.addNodeError]} visible={true} type={'addNodeError'} /> : null }
+            { this.props.nodeAddError ? <Error component={'add node'} error={[this.props.nodeAddError]} visible={true} type={'nodeAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -404,5 +404,5 @@ export default connect((state) => ({
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
   routeDomainsError: state.f5.routeDomainsError,
-  addNodeError: state.f5.addNodeError
+  nodeAddError: state.f5.nodeAddError
 }))(Add);

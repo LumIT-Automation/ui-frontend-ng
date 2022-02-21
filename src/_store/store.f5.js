@@ -17,21 +17,21 @@ const f5Slice = createSlice({
           state.permissionsError = action.payload
         },
 
-        addPermissionError: ( state, action) => {
-          state.addPermissionError = action.payload
+        permissionAddError: ( state, action) => {
+          state.permissionAddError = action.payload
         },
-        modifyPermissionError: ( state, action) => {
-          state.modifyPermissionError = action.payload
+        permissionModifyError: ( state, action) => {
+          state.permissionModifyError = action.payload
         },
-        deletePermissionError: ( state, action) => {
-          state.deletePermissionError = action.payload
+        permissionDeleteError: ( state, action) => {
+          state.permissionDeleteError = action.payload
         },
 
-        fetchRolesError: ( state, action) => {
-          state.fetchRolesError = action.payload
+        rolesError: ( state, action) => {
+          state.rolesError = action.payload
         },
-        addNewDnError: ( state, action) => {
-          state.addNewDnError = action.payload
+        newDnAddError: ( state, action) => {
+          state.newDnAddError = action.payload
         },
 
         identityGroupsLoading: (state, action) => {
@@ -70,14 +70,14 @@ const f5Slice = createSlice({
         asset: (state, action) => {
           state.asset = action.payload
         },
-        addAssetError: (state, action) => {
-          state.addAssetError = action.payload
+        assetAddError: (state, action) => {
+          state.assetAddError = action.payload
         },
-        modifyAssetError: (state, action) => {
-          state.modifyAssetError = action.payload
+        assetModifyError: (state, action) => {
+          state.assetModifyError = action.payload
         },
-        deleteAssetError: (state, action) => {
-          state.deleteAssetError = action.payload
+        assetDeleteError: (state, action) => {
+          state.assetDeleteError = action.payload
         },
 
         partitionsLoading: (state, action) => {
@@ -91,9 +91,6 @@ const f5Slice = createSlice({
         },
         partitionsError: (state, action) => {
           state.partitionsError = action.payload
-        },
-        clearPartitions: (state, action) => {
-          state.partitions = null
         },
 
         partition: (state, action) => {
@@ -135,11 +132,11 @@ const f5Slice = createSlice({
         nodesError: (state, action) => {
           state.nodesError = action.payload
         },
-        addNodeError: (state, action) => {
-          state.addNodeError = action.payload
+        nodeAddError: (state, action) => {
+          state.nodeAddError = action.payload
         },
-        deleteNodeError: (state, action) => {
-          state.deleteNodeError = action.payload
+        nodeDeleteError: (state, action) => {
+          state.nodeDeleteError = action.payload
         },
 
         monitorTypes: (state, action) => {
@@ -161,14 +158,14 @@ const f5Slice = createSlice({
         monitorsError: (state, action) => {
           state.monitorsError = action.payload
         },
-        addMonitorError: (state, action) => {
-          state.addMonitorError = action.payload
+        monitorAddError: (state, action) => {
+          state.monitorAddError = action.payload
         },
-        modifyMonitorError: (state, action) => {
-          state.modifyMonitorError = action.payload
+        monitorModifyError: (state, action) => {
+          state.monitorModifyError = action.payload
         },
-        deleteMonitorError: (state, action) => {
-          state.deleteMonitorError = action.payload
+        monitorDeleteError: (state, action) => {
+          state.monitorDeleteError = action.payload
         },
 
 
@@ -184,14 +181,14 @@ const f5Slice = createSlice({
         poolsError: (state, action) => {
           state.poolsError = action.payload
         },
-        addPoolError: (state, action) => {
-          state.addPoolError = action.payload
+        poolAddError: (state, action) => {
+          state.poolAddError = action.payload
         },
-        modifyPoolError: (state, action) => {
-          state.modifyPoolError = action.payload
+        poolModifyError: (state, action) => {
+          state.poolModifyError = action.payload
         },
-        deletePoolError: (state, action) => {
-          state.deletePoolError = action.payload
+        poolDeleteError: (state, action) => {
+          state.poolDeleteError = action.payload
         },
 
         poolMembersLoading: (state, action) => {
@@ -206,14 +203,14 @@ const f5Slice = createSlice({
         poolMembersError: (state, action) => {
           state.poolMembersError = action.payload
         },
-        addPoolMemberError: (state, action) => {
-          state.addPoolMemberError = action.payload
+        poolMemberAddError: (state, action) => {
+          state.poolMemberAddError = action.payload
         },
-        modifyPoolMemberError: (state, action) => {
-          state.modifyPoolMemberError = action.payload
+        poolMemberModifyError: (state, action) => {
+          state.poolMemberModifyError = action.payload
         },
-        deletePoolMemberError: (state, action) => {
-          state.deletePoolMemberError = action.payload
+        poolMemberDeleteError: (state, action) => {
+          state.poolMemberDeleteError = action.payload
         },
 
         profilesLoading: (state, action) => {
@@ -228,14 +225,34 @@ const f5Slice = createSlice({
         profilesError: (state, action) => {
           state.profilesError = action.payload
         },
-        addProfileError: (state, action) => {
-          state.addProfileError = action.payload
+        profileAddError: (state, action) => {
+          state.profileAddError = action.payload
         },
-        deleteProfileError: (state, action) => {
-          state.deleteProfileError = action.payload
+        profileDeleteError: (state, action) => {
+          state.profileDeleteError = action.payload
         },
 
-
+        irulesLoading: (state, action) => {
+          state.irulesLoading = action.payload
+        },
+        irules: (state, action) => {
+          state.irules = action.payload
+        },
+        irulesFetch: (state, action) => {
+          state.irulesFetch = action.payload
+        },
+        irulesError: (state, action) => {
+          state.monitorsError = action.payload
+        },
+        iruleAddError: (state, action) => {
+          state.iruleAddError = action.payload
+        },
+        iruleModifyError: (state, action) => {
+          state.iruleModifyError = action.payload
+        },
+        iruleDeleteError: (state, action) => {
+          state.iruleDeleteError = action.payload
+        },
 
         virtualServersLoading: (state, action) => {
           state.virtualServersLoading = action.payload
@@ -303,27 +320,27 @@ const f5Slice = createSlice({
           state.keyDeleteError = action.payload
         },
 
-        createL4ServiceError: (state, action) => {
-          state.createL4ServiceError = action.payload
+        l4ServiceCreateError: (state, action) => {
+          state.l4ServiceCreateError = action.payload
         },
-        createL7ServiceError: (state, action) => {
-          state.createL7ServiceError = action.payload
+        l7ServiceCreateError: (state, action) => {
+          state.l7ServiceCreateError = action.payload
         },
-        deleteServiceError: (state, action) => {
-          state.deleteServiceError = action.payload
+        serviceDeleteError: (state, action) => {
+          state.serviceDeleteError = action.payload
         },
 
-        enableMemberError: (state, action) => {
-          state.enableMemberError = action.payload
+        poolMemberEnableError: (state, action) => {
+          state.poolMemberEnableError = action.payload
         },
-        disableMemberError: (state, action) => {
-          state.disableMemberError = action.payload
+        poolMemberDisableError: (state, action) => {
+          state.poolMemberDisableError = action.payload
         },
-        forceOfflineMemberError: (state, action) => {
-          state.forceOfflineMemberError = action.payload
+        poolMemberForceOfflineError: (state, action) => {
+          state.poolMemberForceOfflineError = action.payload
         },
-        memberStatsError: (state, action) => {
-          state.memberStatsError = action.payload
+        poolMemberStatsError: (state, action) => {
+          state.poolMemberStatsError = action.payload
         },
 
         historysLoading: ( state, action) => {
@@ -406,12 +423,12 @@ export const {
   permissionsFetch,
   permissionsError,
 
-  addPermissionError,
-  modifyPermissionError,
-  deletePermissionError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 
-  fetchRolesError,
-  addNewDnError,
+  rolesError,
+  newDnAddError,
 
   identityGroupsLoading,
   identityGroups,
@@ -427,32 +444,32 @@ export const {
   assetsError,
 
   asset,
-  addAssetError,
-  modifyAssetError,
-  deleteAssetError,
+  assetAddError,
+  assetModifyError,
+  assetDeleteError,
 
   partitionsLoading,
   partitions,
   partitionsFetch,
   partitionsError,
-  clearPartitions,
-
-  routeDomainsLoading,
-  routeDomains,
-  routeDomainsFetch,
-  routeDomainsError,
 
   partition,
   partitionAddError,
   partitionModifyError,
   partitionDeleteError,
 
+  routeDomainsLoading,
+  routeDomains,
+  routeDomainsFetch,
+  routeDomainsError,
+
   nodesLoading,
   nodes,
   nodesFetch,
   nodesError,
-  addNodeError,
-  deleteNodeError,
+
+  nodeAddError,
+  nodeDeleteError,
 
   monitorTypes,
   monitorTypesError,
@@ -461,32 +478,40 @@ export const {
   monitors,
   monitorsFetch,
   monitorsError,
-  addMonitorError,
-  modifyMonitorError,
-  deleteMonitorError,
+
+  monitorAddError,
+  monitorModifyError,
+  monitorDeleteError,
 
   poolsLoading,
   pools,
   poolsFetch,
   poolsError,
-  addPoolError,
-  modifyPoolError,
-  deletePoolError,
+
+  poolAddError,
+  poolModifyError,
+  poolDeleteError,
 
   poolMembersLoading,
   poolMembers,
   poolMembersFetch,
   poolMembersError,
-  addPoolMemberError,
-  modifyPoolMemberError,
-  deletePoolMemberError,
+
+  poolMemberAddError,
+  poolMemberModifyError,
+  poolMemberDeleteError,
+  poolMemberEnableError,
+  poolMemberDisableError,
+  poolMemberForceOfflineError,
+  poolMemberStatsError,
 
   profilesLoading,
   profiles,
   profilesFetch,
   profilesError,
-  addProfileError,
-  deleteProfileError,
+
+  profileAddError,
+  profileDeleteError,
 
   virtualServersLoading,
   virtualServers,
@@ -498,24 +523,21 @@ export const {
   certificatesFetch,
   certificatesError,
 
+  certificateAddError,
+  certificateDeleteError,
+
   keysLoading,
   keys,
   keysFetch,
   keysError,
 
-  certificateAddError,
-  certificateDeleteError,
   keyAddError,
   keyDeleteError,
 
-  createL4ServiceError,
-  createL7ServiceError,
-  deleteServiceError,
+  l4ServiceCreateError,
+  l7ServiceCreateError,
+  serviceDeleteError,
 
-  enableMemberError,
-  disableMemberError,
-  forceOfflineMemberError,
-  memberStatsError,
 
   historysLoading,
   historys,

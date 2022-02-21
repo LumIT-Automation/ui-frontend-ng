@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { profilesFetch, addProfileError } from '../../_store/store.f5'
+import { profilesFetch, profileAddError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -61,7 +61,7 @@ class Add extends React.Component {
     let profTypes = await this.fetchProfileTypesList()
 
     if (profTypes.status && profTypes.status !== 200 ) {
-      this.props.dispatch(addProfileError(profTypes))
+      this.props.dispatch(profileAddError(profTypes))
     }
     else {
       this.setState({profileTypes: profTypes.data.items})
@@ -112,7 +112,7 @@ class Add extends React.Component {
   }
 
 
-  addProfile = async () => {
+  profileAdd = async () => {
     let request = Object.assign({}, this.state.request)
 
     if (isEmpty(request)){
@@ -136,7 +136,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(addProfileError(error))
+          this.props.dispatch(profileAddError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -236,7 +236,7 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addProfile()}>
+              <Button type="primary" onClick={() => this.profileAdd()}>
                 Add Profile
               </Button>
             </Form.Item>
@@ -247,7 +247,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addProfileError ? <Error component={'add profile'} error={[this.props.addProfileError]} visible={true} type={'addProfileError'} /> : null }
+            { this.props.profileAddError ? <Error component={'add profile'} error={[this.props.profileAddError]} visible={true} type={'profileAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -264,5 +264,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  addProfileError: state.f5.addProfileError
+  profileAddError: state.f5.profileAddError
 }))(Add);

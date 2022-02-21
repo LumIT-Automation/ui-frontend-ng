@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import {
   poolMembersFetch,
-  deletePoolMemberError
+  poolMemberDeleteError
 } from '../../_store/store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
@@ -44,7 +44,7 @@ class Delete extends React.Component {
   }
 
 
-  deletePoolMember = async pool => {
+  poolMemberDelete = async pool => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -52,7 +52,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(poolMembersFetch(true)))
       },
       error => {
-        this.props.dispatch(deletePoolMemberError(error))
+        this.props.dispatch(poolMemberDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -102,7 +102,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.deletePoolMember(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.poolMemberDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -119,7 +119,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.deletePoolMemberError ? <Error component={'delete poolMember'} error={[this.props.deletePoolMemberError]} visible={true} type={'deletePoolMemberError'} /> : null }
+            { this.props.poolMemberDeleteError ? <Error component={'delete poolMember'} error={[this.props.poolMemberDeleteError]} visible={true} type={'poolMemberDeleteError'} /> : null }
 
           </React.Fragment>
         :
@@ -137,5 +137,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  deletePoolMemberError: state.f5.deletePoolMemberError
+  poolMemberDeleteError: state.f5.poolMemberDeleteError
 }))(Delete);

@@ -6,7 +6,7 @@ import Error from '../../error/f5Error'
 
 import {
   monitorsFetch,
-  modifyMonitorError
+  monitorModifyError
 } from '../../_store/store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
@@ -103,11 +103,11 @@ class Modify extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.modifyMonitor()
+      this.monitorModify()
     }
   }
 
-  modifyMonitor = async () => {
+  monitorModify = async () => {
     let request = Object.assign({}, this.state.request)
     const b = {
       "data":
@@ -130,7 +130,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(modifyMonitorError(error))
+        this.props.dispatch(monitorModifyError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -222,7 +222,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.modifyMonitorError ? <Error component={'modify monitor'} error={[this.props.modifyMonitorError]} visible={true} type={'modifyMonitorError'} /> : null }
+            { this.props.monitorModifyError ? <Error component={'modify monitor'} error={[this.props.monitorModifyError]} visible={true} type={'monitorModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -239,5 +239,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.f5.asset,
   partition: state.f5.partition,
-  modifyMonitorError: state.f5.modifyMonitorError
+  monitorModifyError: state.f5.monitorModifyError
 }))(Modify);

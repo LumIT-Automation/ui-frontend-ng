@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { poolMembersFetch, poolMembersLoading, addPoolMemberError } from '../../_store/store.f5'
+import { poolMembersFetch, poolMembersLoading, poolMemberAddError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 
@@ -83,7 +83,7 @@ class Add extends React.Component {
   }
 
 
-  addPoolMember = async () => {
+  poolMemberAdd = async () => {
 
     if ( isEmpty(this.state.port) || isEmpty(this.state.name) )  {
       this.setState({message: 'Please fill the form'})
@@ -118,7 +118,7 @@ class Add extends React.Component {
         },
         error => {
           this.props.dispatch(poolMembersLoading(false))
-          this.props.dispatch(addPoolMemberError(error))
+          this.props.dispatch(poolMemberAddError(error))
         }
       )
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
@@ -214,7 +214,7 @@ class Add extends React.Component {
               name="button"
               key="button"
             >
-              <Button type="primary" onClick={() => this.addPoolMember()}>
+              <Button type="primary" onClick={() => this.poolMemberAdd()}>
                 Add PoolMember
               </Button>
             </Form.Item>
@@ -225,7 +225,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addPoolMemberError ? <Error component={'add poolMember'} error={[this.props.addPoolMemberError]} visible={true} type={'addPoolMemberError'} /> : null }
+            { this.props.poolMemberAddError ? <Error component={'add poolMember'} error={[this.props.poolMemberAddError]} visible={true} type={'poolMemberAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -243,5 +243,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   nodes: state.f5.nodes,
-  addPoolMemberError: state.f5.addPoolMemberError
+  poolMemberAddError: state.f5.poolMemberAddError
 }))(Add);

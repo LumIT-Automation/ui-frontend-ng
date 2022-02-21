@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { assetsFetch, addAssetError } from '../../_store/store.f5'
+import { assetsFetch, assetAddError } from '../../_store/store.f5'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
@@ -173,7 +173,7 @@ class Add extends React.Component {
     }
   }
 
-  addAsset = async () => {
+  assetAdd = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let list = ["address", "fqdn", "tlsverify", "datacenter", "environment", "position", "username", "password"]
@@ -218,7 +218,7 @@ class Add extends React.Component {
           this.setState({loading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(addAssetError(error))
+          this.props.dispatch(assetAddError(error))
           this.setState({loading: false, response: false})
         }
       )
@@ -386,11 +386,11 @@ class Add extends React.Component {
               key="button"
             >
               { this.state.request.address && this.state.request.fqdn && this.state.request.datacenter && this.state.request.environment && this.state.request.position && !this.state.errors.tlsverify && this.state.request.username && this.state.request.password ?
-                <Button type="primary" onClick={() => this.addAsset()} >
+                <Button type="primary" onClick={() => this.assetAdd()} >
                   Add Permission
                 </Button>
               :
-                <Button type="primary" onClick={() => this.addAsset()} disabled>
+                <Button type="primary" onClick={() => this.assetAdd()} disabled>
                   Add Permission
                 </Button>
               }
@@ -402,7 +402,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.addAssetError ? <Error component={'asset add f5'} error={[this.props.addAssetError]} visible={true} type={'addAssetError'} /> : null }
+            { this.props.assetAddError ? <Error component={'asset add f5'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -416,6 +416,6 @@ class Add extends React.Component {
 export default connect((state) => ({
 
   token: state.authentication.token,
- 	addAssetError: state.f5.addAssetError,
+ 	assetAddError: state.f5.assetAddError,
 
 }))(Add);

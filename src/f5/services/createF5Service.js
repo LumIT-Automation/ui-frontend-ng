@@ -12,8 +12,8 @@ import {
   keysError,
   routeDomains,
   routeDomainsError,
-  createL4ServiceError,
-  createL7ServiceError
+  l4ServiceCreateError,
+  l7ServiceCreateError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
@@ -234,7 +234,7 @@ class CreateF5Service extends React.Component {
   }
 
 
-  addNode = () => {
+  nodeAdd = () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
     let id = 0
@@ -474,24 +474,24 @@ class CreateF5Service extends React.Component {
 
     if (this.state.request.serviceType === 'L4') {
       if (this.state.request.routeDomain) {
-        this.createL4Service()
+        this.l4ServiceCreate()
       }
       else {
-        this.createL4ServiceNoRD()
+        this.l4ServiceCreateNoRD()
       }
     }
     if (this.state.request.serviceType === 'L7') {
       if (this.state.request.routeDomain) {
-        this.createL7Service()
+        this.l7ServiceCreate()
       }
       else {
-        this.createL7ServiceNoRD()
+        this.l7ServiceCreateNoRD()
       }
     }
   }
 
 
-  createL4Service = async () => {
+  l4ServiceCreate = async () => {
     let serviceName = this.state.request.serviceName
 
     this.setState({message: null});
@@ -535,7 +535,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(createL4ServiceError(error))
+        this.props.dispatch(l4ServiceCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -543,7 +543,7 @@ class CreateF5Service extends React.Component {
 
   }
 
-  createL4ServiceNoRD = async () => {
+  l4ServiceCreateNoRD = async () => {
     let serviceName = this.state.request.serviceName
 
     this.setState({message: null});
@@ -586,7 +586,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(createL4ServiceError(error))
+        this.props.dispatch(l4ServiceCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -594,7 +594,7 @@ class CreateF5Service extends React.Component {
 
   }
 
-  createL7Service = async () => {
+  l7ServiceCreate = async () => {
     let serviceName = this.state.request.serviceName
     this.setState({message: null});
 
@@ -659,7 +659,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(createL7ServiceError(error))
+        this.props.dispatch(l7ServiceCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -667,7 +667,7 @@ class CreateF5Service extends React.Component {
 
   }
 
-  createL7ServiceNoRD = async () => {
+  l7ServiceCreateNoRD = async () => {
     let serviceName = this.state.request.serviceName
     this.setState({message: null});
 
@@ -731,7 +731,7 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(createL7ServiceError(error))
+        this.props.dispatch(l7ServiceCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -1351,7 +1351,7 @@ class CreateF5Service extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a node:</p>
                   </Col>
                   <Col span={16}>
-                    <Button type="primary" shape='round' onClick={() => this.addNode()}>
+                    <Button type="primary" shape='round' onClick={() => this.nodeAdd()}>
                       +
                     </Button>
                   </Col>
@@ -1460,8 +1460,8 @@ class CreateF5Service extends React.Component {
             { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'keysError'} /> : null }
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
 
-            { this.props.createL4ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL4ServiceError]} visible={true} type={'createL4ServiceError'} /> : null }
-            { this.props.createL7ServiceError ? <Error component={'create loadbalancer'} error={[this.props.createL7ServiceError]} visible={true} type={'createL7ServiceError'} /> : null }
+            { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
+            { this.props.l7ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l7ServiceCreateError]} visible={true} type={'l7ServiceCreateError'} /> : null }
           </React.Fragment>
         :
           null
@@ -1487,6 +1487,6 @@ export default connect((state) => ({
   routeDomains: state.f5.routeDomains,
   routeDomainsError: state.f5.routeDomainsError,
 
-  createL4ServiceError: state.f5.createL4ServiceError,
-  createL7ServiceError: state.f5.createL7ServiceError
+  l4ServiceCreateError: state.f5.l4ServiceCreateError,
+  l7ServiceCreateError: state.f5.l7ServiceCreateError
 }))(CreateF5Service);

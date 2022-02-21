@@ -18,21 +18,21 @@ const infobloxSlice = createSlice({
       },
 
 
-      addPermissionError: ( state, action) => {
-        state.addPermissionError = action.payload
+      permissionAddError: ( state, action) => {
+        state.permissionAddError = action.payload
       },
-      modifyPermissionError: ( state, action) => {
-        state.modifyPermissionError = action.payload
+      permissionModifyError: ( state, action) => {
+        state.permissionModifyError = action.payload
       },
-      deletePermissionError: ( state, action) => {
-        state.deletePermissionError = action.payload
+      permissionDeleteError: ( state, action) => {
+        state.permissionDeleteError = action.payload
       },
 
-      fetchRolesError: ( state, action) => {
-        state.fetchRolesError = action.payload
+      rolesError: ( state, action) => {
+        state.rolesError = action.payload
       },
-      addNewDnError: ( state, action) => {
-        state.addNewDnError = action.payload
+      newDnAddError: ( state, action) => {
+        state.newDnAddError = action.payload
       },
 
       identityGroupsLoading: (state, action) => {
@@ -71,14 +71,14 @@ const infobloxSlice = createSlice({
       asset: (state, action) => {
         state.asset = action.payload
       },
-      addAssetError: (state, action) => {
-        state.addAssetError = action.payload
+      assetAddError: (state, action) => {
+        state.assetAddError = action.payload
       },
-      modifyAssetError: (state, action) => {
-        state.modifyAssetError = action.payload
+      assetModifyError: (state, action) => {
+        state.assetModifyError = action.payload
       },
-      deleteAssetError: (state, action) => {
-        state.deleteAssetError = action.payload
+      assetDeleteError: (state, action) => {
+        state.assetDeleteError = action.payload
       },
 
       treeLoading: (state, action) => {
@@ -187,12 +187,12 @@ export const {
   permissionsFetch,
   permissionsError,
 
-  addPermissionError,
-  modifyPermissionError,
-  deletePermissionError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 
-  fetchRolesError,
-  addNewDnError,
+  rolesError,
+  newDnAddError,
 
   identityGroupsLoading,
   identityGroups,
@@ -208,9 +208,9 @@ export const {
   assetsError,
 
   asset,
-  addAssetError,
-  modifyAssetError,
-  deleteAssetError,
+  assetAddError,
+  assetModifyError,
+  assetDeleteError,
 
   treeLoading,
   tree,
