@@ -254,7 +254,7 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  removeNode = r => {
+  nodeRemove = r => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
 
@@ -1410,7 +1410,7 @@ class CreateF5Service extends React.Component {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
                         </Col>
                         <Col span={16}>
-                          <Button type="danger" shape='round' onClick={() => this.removeNode(n.id)}>
+                          <Button type="danger" shape='round' onClick={() => this.nodeRemove(n.id)}>
                             -
                           </Button>
                         </Col>

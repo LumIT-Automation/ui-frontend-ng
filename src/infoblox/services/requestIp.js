@@ -157,7 +157,7 @@ class RequestIp extends React.Component {
 
 
   //SETTER
-  setRequests = () => {
+  requestAdd = () => {
     //let n = this.state.counter + 1
     let id = 0
     let n = 0
@@ -174,7 +174,7 @@ class RequestIp extends React.Component {
     this.setState({requests: list})
   }
 
-  removeRequest = r => {
+  requestRemove = r => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let newList = requests.filter(n => {
       return r.id !== n.id
@@ -739,7 +739,7 @@ class RequestIp extends React.Component {
         dataIndex: 'remove',
         key: 'remove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRequest(obj)}>
+          <Button type="danger" onClick={() => this.requestRemove(obj)}>
             -
           </Button>
         ),
@@ -861,7 +861,7 @@ class RequestIp extends React.Component {
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
               <React.Fragment>
-                <Button type="primary" onClick={() => this.setRequests()}>
+                <Button type="primary" onClick={() => this.requestAdd()}>
                   +
                 </Button>
                 <br/>

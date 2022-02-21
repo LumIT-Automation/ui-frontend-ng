@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
-import Validators from '../../_helpers/validators'
 
 import {
   irulesFetch,
@@ -79,7 +78,6 @@ class Add extends React.Component {
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
 
     if (!request.name) {
       errors.nameError = true
@@ -208,7 +206,7 @@ class Add extends React.Component {
                   {this.state.errors.textError ?
                     <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} name="text" id='text' onChange={e => this.setText(e)} />
                   :
-                    <TextArea rows={25} defaultValue={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
+                    <TextArea rows={25} defaultValue={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
                   }
                 </Col>
               </Row>

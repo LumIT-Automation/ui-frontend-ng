@@ -20,7 +20,7 @@ import {
   nodesFetch,
   monitorsFetch,
   poolsFetch,
-  snatPoolFetch,
+  snatPoolsFetch,
   irulesFetch,
   profilesFetch,
   virtualServersFetch,

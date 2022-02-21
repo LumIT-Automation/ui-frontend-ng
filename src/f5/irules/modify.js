@@ -3,7 +3,6 @@ import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
-import Validators from '../../_helpers/validators'
 
 import {
   irulesFetch,
@@ -67,7 +66,6 @@ class Modify extends React.Component {
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
 
     if (!request.text) {
       errors.textError = true
