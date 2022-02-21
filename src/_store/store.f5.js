@@ -30,6 +30,7 @@ const f5Slice = createSlice({
         rolesError: ( state, action) => {
           state.rolesError = action.payload
         },
+
         newDnAddError: ( state, action) => {
           state.newDnAddError = action.payload
         },
@@ -96,15 +97,6 @@ const f5Slice = createSlice({
         partition: (state, action) => {
           state.partition = action.payload
         },
-        partitionAddError: (state, action) => {
-          state.partitionAddError = action.payload
-        },
-        partitionModifyError: (state, action) => {
-          state.partitionModifyError = action.payload
-        },
-        partitionDeleteError: (state, action) => {
-          state.partitionDeleteError = action.payload
-        },
 
         routeDomainsLoading: (state, action) => {
           state.routeDomainsLoading = action.payload
@@ -132,6 +124,7 @@ const f5Slice = createSlice({
         nodesError: (state, action) => {
           state.nodesError = action.payload
         },
+
         nodeAddError: (state, action) => {
           state.nodeAddError = action.payload
         },
@@ -158,6 +151,7 @@ const f5Slice = createSlice({
         monitorsError: (state, action) => {
           state.monitorsError = action.payload
         },
+
         monitorAddError: (state, action) => {
           state.monitorAddError = action.payload
         },
@@ -167,7 +161,6 @@ const f5Slice = createSlice({
         monitorDeleteError: (state, action) => {
           state.monitorDeleteError = action.payload
         },
-
 
         poolsLoading: (state, action) => {
           state.poolsLoading = action.payload
@@ -181,6 +174,7 @@ const f5Slice = createSlice({
         poolsError: (state, action) => {
           state.poolsError = action.payload
         },
+
         poolAddError: (state, action) => {
           state.poolAddError = action.payload
         },
@@ -203,6 +197,7 @@ const f5Slice = createSlice({
         poolMembersError: (state, action) => {
           state.poolMembersError = action.payload
         },
+
         poolMemberAddError: (state, action) => {
           state.poolMemberAddError = action.payload
         },
@@ -212,24 +207,40 @@ const f5Slice = createSlice({
         poolMemberDeleteError: (state, action) => {
           state.poolMemberDeleteError = action.payload
         },
+        poolMemberEnableError: (state, action) => {
+          state.poolMemberEnableError = action.payload
+        },
+        poolMemberDisableError: (state, action) => {
+          state.poolMemberDisableError = action.payload
+        },
+        poolMemberForceOfflineError: (state, action) => {
+          state.poolMemberForceOfflineError = action.payload
+        },
+        poolMemberStatsError: (state, action) => {
+          state.poolMemberStatsError = action.payload
+        },
 
-        profilesLoading: (state, action) => {
-          state.profilesLoading = action.payload
+        snatsLoading: (state, action) => {
+          state.snatsLoading = action.payload
         },
-        profiles: (state, action) => {
-          state.profiles = action.payload
+        snats: (state, action) => {
+          state.snats = action.payload
         },
-        profilesFetch: (state, action) => {
-          state.profilesFetch = action.payload
+        snatsFetch: (state, action) => {
+          state.snatsFetch = action.payload
         },
-        profilesError: (state, action) => {
-          state.profilesError = action.payload
+        snatsError: (state, action) => {
+          state.snatsError = action.payload
         },
-        profileAddError: (state, action) => {
-          state.profileAddError = action.payload
+
+        snatAddError: (state, action) => {
+          state.snatAddError = action.payload
         },
-        profileDeleteError: (state, action) => {
-          state.profileDeleteError = action.payload
+        snatModifyError: (state, action) => {
+          state.snatModifyError = action.payload
+        },
+        snatDeleteError: (state, action) => {
+          state.snatDeleteError = action.payload
         },
 
         irulesLoading: (state, action) => {
@@ -242,8 +253,9 @@ const f5Slice = createSlice({
           state.irulesFetch = action.payload
         },
         irulesError: (state, action) => {
-          state.monitorsError = action.payload
+          state.irulesError = action.payload
         },
+
         iruleAddError: (state, action) => {
           state.iruleAddError = action.payload
         },
@@ -253,20 +265,6 @@ const f5Slice = createSlice({
         iruleDeleteError: (state, action) => {
           state.iruleDeleteError = action.payload
         },
-
-        virtualServersLoading: (state, action) => {
-          state.virtualServersLoading = action.payload
-        },
-        virtualServers: (state, action) => {
-          state.virtualServers = action.payload.data.items
-        },
-        virtualServersFetch: (state, action) => {
-          state.virtualServersFetch = action.payload
-        },
-        virtualServersError: (state, action) => {
-          state.virtualServersError = action.payload
-        },
-
 
         certificatesLoading: (state, action) => {
           state.certificatesLoading = action.payload
@@ -279,19 +277,6 @@ const f5Slice = createSlice({
         },
         certificatesError: (state, action) => {
           state.certificatesError = action.payload
-        },
-
-        keysLoading: (state, action) => {
-          state.keysLoading = action.payload
-        },
-        keys: (state, action) => {
-          state.keys = action.payload.data.items
-        },
-        keysFetch: (state, action) => {
-          state.keysFetch = action.payload
-        },
-        keysError: (state, action) => {
-          state.keysError = action.payload
         },
 
         certificate: (state, action) => {
@@ -307,6 +292,19 @@ const f5Slice = createSlice({
           state.certificateDeleteError = action.payload
         },
 
+        keysLoading: (state, action) => {
+          state.keysLoading = action.payload
+        },
+        keys: (state, action) => {
+          state.keys = action.payload.data.items
+        },
+        keysFetch: (state, action) => {
+          state.keysFetch = action.payload
+        },
+        keysError: (state, action) => {
+          state.keysError = action.payload
+        },
+
         key: (state, action) => {
           state.key = action.payload
         },
@@ -320,6 +318,49 @@ const f5Slice = createSlice({
           state.keyDeleteError = action.payload
         },
 
+        profilesLoading: (state, action) => {
+          state.profilesLoading = action.payload
+        },
+        profiles: (state, action) => {
+          state.profiles = action.payload
+        },
+        profilesFetch: (state, action) => {
+          state.profilesFetch = action.payload
+        },
+        profilesError: (state, action) => {
+          state.profilesError = action.payload
+        },
+
+        profileAddError: (state, action) => {
+          state.profileAddError = action.payload
+        },
+        profileDeleteError: (state, action) => {
+          state.profileDeleteError = action.payload
+        },
+
+        virtualServersLoading: (state, action) => {
+          state.virtualServersLoading = action.payload
+        },
+        virtualServers: (state, action) => {
+          state.virtualServers = action.payload.data.items
+        },
+        virtualServersFetch: (state, action) => {
+          state.virtualServersFetch = action.payload
+        },
+        virtualServersError: (state, action) => {
+          state.virtualServersError = action.payload
+        },
+
+        virtualServerAddError: (state, action) => {
+          state.virtualServerAddError = action.payload
+        },
+        virtualServerModifyError: (state, action) => {
+          state.virtualServerModifyError = action.payload
+        },
+        virtualServerDeleteError: (state, action) => {
+          state.virtualServerDeleteError = action.payload
+        },
+
         l4ServiceCreateError: (state, action) => {
           state.l4ServiceCreateError = action.payload
         },
@@ -328,19 +369,6 @@ const f5Slice = createSlice({
         },
         serviceDeleteError: (state, action) => {
           state.serviceDeleteError = action.payload
-        },
-
-        poolMemberEnableError: (state, action) => {
-          state.poolMemberEnableError = action.payload
-        },
-        poolMemberDisableError: (state, action) => {
-          state.poolMemberDisableError = action.payload
-        },
-        poolMemberForceOfflineError: (state, action) => {
-          state.poolMemberForceOfflineError = action.payload
-        },
-        poolMemberStatsError: (state, action) => {
-          state.poolMemberStatsError = action.payload
         },
 
         historysLoading: ( state, action) => {
@@ -428,6 +456,7 @@ export const {
   permissionDeleteError,
 
   rolesError,
+
   newDnAddError,
 
   identityGroupsLoading,
@@ -454,9 +483,6 @@ export const {
   partitionsError,
 
   partition,
-  partitionAddError,
-  partitionModifyError,
-  partitionDeleteError,
 
   routeDomainsLoading,
   routeDomains,
@@ -505,18 +531,23 @@ export const {
   poolMemberForceOfflineError,
   poolMemberStatsError,
 
-  profilesLoading,
-  profiles,
-  profilesFetch,
-  profilesError,
+  snatsLoading,
+  snats,
+  snatsFetch,
+  snatsError,
 
-  profileAddError,
-  profileDeleteError,
+  snatAddError,
+  snatModifyError,
+  snatDeleteError,
 
-  virtualServersLoading,
-  virtualServers,
-  virtualServersFetch,
-  virtualServersError,
+  irulesLoading,
+  irules,
+  irulesFetch,
+  irulesError,
+
+  iruleAddError,
+  iruleModifyError,
+  iruleDeleteError,
 
   certificatesLoading,
   certificates,
@@ -534,10 +565,26 @@ export const {
   keyAddError,
   keyDeleteError,
 
+  profilesLoading,
+  profiles,
+  profilesFetch,
+  profilesError,
+
+  profileAddError,
+  profileDeleteError,
+
+  virtualServersLoading,
+  virtualServers,
+  virtualServersFetch,
+  virtualServersError,
+
+  virtualServerAddError,
+  virtualServerModifyError,
+  virtualServerDeleteError,
+
   l4ServiceCreateError,
   l7ServiceCreateError,
   serviceDeleteError,
-
 
   historysLoading,
   historys,
