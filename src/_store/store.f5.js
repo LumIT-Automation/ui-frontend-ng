@@ -220,34 +220,34 @@ const f5Slice = createSlice({
           state.poolMemberStatsError = action.payload
         },
 
-        snatsLoading: (state, action) => {
-          state.snatsLoading = action.payload
+        snatPoolsLoading: (state, action) => {
+          state.snatPoolsLoading = action.payload
         },
-        snats: (state, action) => {
-          state.snats = action.payload
+        snatPools: (state, action) => {
+          state.snatPools = action.payload.data.items
         },
-        snatsFetch: (state, action) => {
-          state.snatsFetch = action.payload
+        snatPoolsFetch: (state, action) => {
+          state.snatPoolsFetch = action.payload
         },
-        snatsError: (state, action) => {
-          state.snatsError = action.payload
+        snatPoolsError: (state, action) => {
+          state.snatPoolsError = action.payload
         },
 
-        snatAddError: (state, action) => {
-          state.snatAddError = action.payload
+        snatPoolAddError: (state, action) => {
+          state.snatPoolAddError = action.payload
         },
-        snatModifyError: (state, action) => {
-          state.snatModifyError = action.payload
+        snatPoolModifyError: (state, action) => {
+          state.snatPoolModifyError = action.payload
         },
-        snatDeleteError: (state, action) => {
-          state.snatDeleteError = action.payload
+        snatPoolDeleteError: (state, action) => {
+          state.snatPoolDeleteError = action.payload
         },
 
         irulesLoading: (state, action) => {
           state.irulesLoading = action.payload
         },
         irules: (state, action) => {
-          state.irules = action.payload
+          state.irules = action.payload.data.items
         },
         irulesFetch: (state, action) => {
           state.irulesFetch = action.payload
@@ -531,14 +531,14 @@ export const {
   poolMemberForceOfflineError,
   poolMemberStatsError,
 
-  snatsLoading,
-  snats,
-  snatsFetch,
-  snatsError,
+  snatPoolsLoading,
+  snatPools,
+  snatPoolsFetch,
+  snatPoolsError,
 
-  snatAddError,
-  snatModifyError,
-  snatDeleteError,
+  snatPoolAddError,
+  snatPoolModifyError,
+  snatPoolDeleteError,
 
   irulesLoading,
   irules,

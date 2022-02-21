@@ -59,11 +59,11 @@ import {
   poolMemberForceOfflineError,
   poolMemberStatsError,
 
-  snatsError,
+  snatPoolsError,
 
-  snatAddError,
-  snatModifyError,
-  snatDeleteError,
+  snatPoolAddError,
+  snatPoolModifyError,
+  snatPoolDeleteError,
 
   irulesError,
 
@@ -263,18 +263,18 @@ class Error extends Component {
           this.props.dispatch(poolMemberStatsError(null))
           break;
 
-        case 'snatsError':
-          this.props.dispatch(snatsError(null))
+        case 'snatPoolsError':
+          this.props.dispatch(snatPoolsError(null))
           break;
 
-        case 'snatAddError':
-          this.props.dispatch(snatAddError(null))
+        case 'snatPoolAddError':
+          this.props.dispatch(snatPoolAddError(null))
           break;
-        case 'snatModifyError':
-          this.props.dispatch(snatModifyError(null))
+        case 'snatPoolModifyError':
+          this.props.dispatch(snatPoolModifyError(null))
           break;
-        case 'snatDeleteError':
-          this.props.dispatch(snatDeleteError(null))
+        case 'snatPoolDeleteError':
+          this.props.dispatch(snatPoolDeleteError(null))
           break;
 
         case 'irulesError':

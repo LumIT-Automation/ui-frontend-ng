@@ -9,6 +9,7 @@ import AssetSelector from './assetSelector'
 import Nodes from './nodes/manager'
 import Monitors from './monitors/manager'
 import Pools from './pools/manager'
+import Irules from './irules/manager'
 import Profiles from './profiles/manager'
 import VirtualServers from './virtualServers/manager'
 
@@ -18,6 +19,7 @@ import {
   nodesFetch,
   monitorsFetch,
   poolsFetch,
+  irulesFetch,
   profilesFetch,
   virtualServersFetch,
   resetObjects
@@ -87,6 +89,10 @@ class F5 extends React.Component {
     this.props.dispatch(poolsFetch(true))
   }
 
+  irulesRefresh = () => {
+    this.props.dispatch(irulesFetch(true))
+  }
+
   profilesRefresh = () => {
     this.props.dispatch(profilesFetch(true))
   }
@@ -151,6 +157,22 @@ class F5 extends React.Component {
               null
             }
 
+            { this.props.authorizations && (this.props.authorizations.irules_get || this.props.authorizations.any) ?
+              <React.Fragment>
+                {this.props.irulesLoading ?
+                  <TabPane key="Irules" tab="Irules">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                :
+                  <TabPane key="Irules" tab=<span>Irules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.irulesRefresh()}/></span>>
+                    <Irules/>
+                  </TabPane>
+                }
+              </React.Fragment>
+            :
+              null
+            }
+
             { this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any) ?
               <React.Fragment>
                 {this.props.profilesLoading ?
@@ -201,6 +223,7 @@ export default connect((state) => ({
   nodesLoading: state.f5.nodesLoading,
   monitorsLoading: state.f5.monitorsLoading,
   poolsLoading: state.f5.poolsLoading,
+  irulesLoading: state.f5.irulesLoading,
   profilesLoading: state.f5.profilesLoading,
   virtualServersLoading: state.f5.virtualServersLoading,
 
