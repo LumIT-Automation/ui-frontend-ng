@@ -4,8 +4,8 @@ import "antd/dist/antd.css"
 
 //import Modify from './modify'
 import Irule from './detail'
+import Modify from './modify'
 import Delete from './delete'
-
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -136,6 +136,21 @@ class List extends React.Component {
         render: (name, record)  => (
           <Space size="small">
             {<Irule name={name} obj={record} />}
+          </Space>
+        ),
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.irule_modify || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
           </Space>
         ),
       },

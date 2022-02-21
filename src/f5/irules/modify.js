@@ -7,17 +7,16 @@ import Validators from '../../_helpers/validators'
 
 import {
   irulesFetch,
-  iruleAddError
+  iruleModifyError
 } from '../../_store/store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 const { TextArea } = Input;
 
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 const layout = {
@@ -26,7 +25,7 @@ const layout = {
 };
 
 
-class Add extends React.Component {
+class Modify extends React.Component {
 
   constructor(props) {
     super(props);
@@ -52,23 +51,12 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.main()
   }
-
-  main = async () => {
-
-  }
-
 
   //FETCH
 
 
   //SETTERS
-  setName = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.name = e.target.value
-    this.setState({request: request})
-  }
   setText = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.text = e.target.value
@@ -80,17 +68,6 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
-
-    if (!request.name) {
-      errors.nameError = true
-      errors.nameColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.nameError
-      delete errors.nameColor
-      this.setState({errors: errors})
-    }
 
     if (!request.text) {
       errors.textError = true
@@ -107,24 +84,21 @@ class Add extends React.Component {
   }
 
   validation = async () => {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     let validation = await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.iruleAdd()
+      this.iruleModify()
     }
   }
 
 
   //DISPOSAL ACTION
-  iruleAdd = async () => {
+  iruleModify = async () => {
     let request = Object.assign({}, this.state.request)
 
     const b = {
       "data":
         {
-          "name": this.state.request.name,
           "apiAnonymous": this.state.request.text
         }
       }
@@ -132,16 +106,16 @@ class Add extends React.Component {
     this.setState({loading: true})
 
     let rest = new Rest(
-      "POST",
+      "PATCH",
       resp => {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(iruleAddError(error))
+        this.props.dispatch(iruleModifyError(error))
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irules/`, this.props.token, b)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${this.props.obj.name}/`, this.props.token, b)
   }
 
   response = () => {
@@ -161,14 +135,13 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request.text)
     return (
       <Space direction='vertical'>
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>Add Irule</p>}
+          title={<p style={{textAlign: 'center'}}>Modify Irule</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -181,24 +154,11 @@ class Add extends React.Component {
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
-               title="Irule Added"
+               title="Irule Modified"
              />
           }
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={16}>
-                  {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
-                  :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
-                  }
-                </Col>
-              </Row>
-              <br/>
 
               <Row>
                 <Col offset={2} span={6}>
@@ -206,9 +166,9 @@ class Add extends React.Component {
                 </Col>
                 <Col span={10}>
                   {this.state.errors.textError ?
-                    <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} name="text" id='text' onChange={e => this.setText(e)} />
+                    <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} value={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
                   :
-                    <TextArea rows={25} defaultValue={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
+                    <TextArea rows={25} defaultValue={this.props.obj.apiAnonymous} value={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
                   }
                 </Col>
               </Row>
@@ -217,7 +177,7 @@ class Add extends React.Component {
               <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Irule
+                    Modify Irule
                   </Button>
                 </Col>
               </Row>
@@ -227,7 +187,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.iruleAddError ? <Error component={'add irule'} error={[this.props.iruleAddError]} visible={true} type={'iruleAddError'} /> : null }
+            { this.props.iruleModifyError ? <Error component={'modify irule'} error={[this.props.iruleModifyError]} visible={true} type={'iruleModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -245,5 +205,5 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-  iruleAddError: state.f5.iruleAddError
-}))(Add);
+  iruleModifyError: state.f5.iruleModifyError
+}))(Modify);
