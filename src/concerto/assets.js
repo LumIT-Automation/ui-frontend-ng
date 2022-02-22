@@ -2,8 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
-import F5 from './f5/manager'
-import Infoblox from './infoblox/manager'
+import F5 from '../f5/assets/manager'
+import Infoblox from '../infoblox/assets/manager'
 
 import { assetsFetch as f5AssetsFetch } from '../_store/store.f5'
 import { assetsFetch as infobloxAssetsFetch } from '../_store/store.infoblox'

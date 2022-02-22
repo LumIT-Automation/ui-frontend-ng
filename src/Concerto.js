@@ -15,7 +15,7 @@ import {
 import { Layout, Avatar, Menu, Dropdown  } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 
-import CustomSider from './sider/sider'
+import CustomSider from './concerto/sider'
 
 import Homepage from './homepage/homepage'
 import Historys from './history/historys'
@@ -29,7 +29,7 @@ import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
 import Service from './services/services'
-import Assets from './assets/assets'
+import Assets from './concerto/assets'
 import Permissions from './permissions/permissions'
 import Configurations from './configurations/configurations'
 
