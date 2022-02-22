@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
-import F5 from './f5/manager'
+import F5 from '../f5/configuration/manager'
 
 import { configurationFetch as f5ConfigurationFetch } from '../_store/store.f5'
 

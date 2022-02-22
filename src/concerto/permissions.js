@@ -3,8 +3,8 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
 import SuperAdmin from './superAdmin/manager'
-import F5 from './f5/manager'
-import Infoblox from './infoblox/manager'
+import F5 from '../f5/permissions/manager'
+import Infoblox from '../infoblox/permissions/manager'
 
 import { permissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
 import { permissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'

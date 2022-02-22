@@ -236,7 +236,7 @@ class Add extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={1500}
+          width={1000}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.response &&
@@ -283,20 +283,26 @@ class Add extends React.Component {
                       <Col offset={2} span={6}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
                       </Col>
-                      <Col span={16}>
+                      <Col span={7}>
                         { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                          <Input key={address}  style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.setAddress(n.id, e)} />
+                          <Input
+                            key={address}
+                            defaultValue={n.address}
+                            value={n.address}
+                            style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}}
+                            onChange={e => this.setAddress(n.id, e)}
+                          />
                         :
-                          <Input defaultValue={n.address} key={address} style={{display: 'block', width: 250}} onChange={e => this.setAddress(n.id, e)} />
+                          <Input
+                            key={address}
+                            defaultValue={n.address}
+                            value={n.address}
+                            style={{display: 'block', width: 250}}
+                            onChange={e => this.setAddress(n.id, e)}
+                          />
                         }
                       </Col>
-                    </Row>
-
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove member:</p>
-                      </Col>
-                      <Col span={16}>
+                      <Col span={1}>
                         <Button type="danger" shape='round' onClick={() => this.memberRemove(n.id)}>
                           -
                         </Button>

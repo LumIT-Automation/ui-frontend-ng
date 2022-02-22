@@ -1,5 +1,5 @@
 import React from 'react'
-import { Component, } from "react";
+import { Component, } from "react"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
@@ -12,26 +12,29 @@ import {
   authorizationsError
 } from './_store/store.authorizations'
 
-import { Layout, Avatar, Menu, Dropdown  } from 'antd';
-import { UserOutlined } from '@ant-design/icons';
+import { Layout, Avatar, Menu, Dropdown  } from 'antd'
+import { UserOutlined } from '@ant-design/icons'
 
 import CustomSider from './concerto/sider'
 
 import Homepage from './homepage/homepage'
 import Historys from './history/historys'
 
+import Service from './concerto/services'
+import Assets from './concerto/assets'
+import Permissions from './concerto/permissions'
+import Configurations from './concerto/configurations'
+
+
+
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'
 import Projects from './fortinetdb/projects'
-
 import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
-import Service from './services/services'
-import Assets from './concerto/assets'
-import Permissions from './permissions/permissions'
-import Configurations from './configurations/configurations'
+
 
 
 import './App.css';
