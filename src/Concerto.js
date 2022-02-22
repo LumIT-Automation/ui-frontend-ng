@@ -16,16 +16,12 @@ import { Layout, Avatar, Menu, Dropdown  } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 
 import CustomSider from './concerto/sider'
-
 import Homepage from './homepage/homepage'
-import Historys from './history/historys'
-
+import Historys from './concerto/historys'
 import Service from './concerto/services'
 import Assets from './concerto/assets'
 import Permissions from './concerto/permissions'
 import Configurations from './concerto/configurations'
-
-
 
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'

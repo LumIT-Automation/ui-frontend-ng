@@ -2,8 +2,8 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
-import F5 from './f5/manager'
-import Infoblox from './infoblox/manager'
+import F5 from '../f5/history/manager'
+import Infoblox from '../infoblox/history/manager'
 
 import { historysFetch as f5HistorysFetch } from '../_store/store.f5'
 import { historysFetch as infobloxHistorysFetch } from '../_store/store.infoblox'
