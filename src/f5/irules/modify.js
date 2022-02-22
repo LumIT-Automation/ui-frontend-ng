@@ -50,6 +50,8 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let request = Object.assign({}, this.props.obj)
+    this.setState({request: request})
   }
 
   //FETCH
@@ -166,7 +168,7 @@ class Modify extends React.Component {
                   {this.state.errors.textError ?
                     <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} value={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
                   :
-                    <TextArea rows={25} defaultValue={this.props.obj.apiAnonymous} value={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
+                    <TextArea rows={25} value={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
                   }
                 </Col>
               </Row>

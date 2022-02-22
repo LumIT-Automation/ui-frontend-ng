@@ -12,8 +12,6 @@ import {
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
-const { TextArea } = Input;
-
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
@@ -32,7 +30,9 @@ class Modify extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {}
+      request: {
+        members: []
+      },
     };
   }
 
@@ -51,33 +51,106 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let request = JSON.parse(JSON.stringify(this.props.obj))
+    let n = 1
+    let newList = []
+    request.members.forEach(member => {
+
+      let newMember = {}
+      newMember.id = n
+      let list = member.split('/')
+      console.log(list)
+      newMember.address = list[2]
+      newList.push(newMember)
+      n = n + 1
+      console.log(newMember)
+      console.log(newList)
+
+    });
+
+    request.members = newList
+    console.log(request)
+
+    this.setState({request: request})
   }
+
 
   //FETCH
 
 
   //SETTERS
-  setText = e => {
+  memberAdd = () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.text = e.target.value
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
+    let id = 0
+    let n = 0
+
+    this.state.request.members.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let member = {id: n}
+    members.push(member)
+    request.members = members
+
+    this.setState({request: request})
+  }
+
+  memberRemove = r => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
+
+    let list = members.filter(n => {
+      return r !== n.id
+    })
+
+    request.members = list
+
+    this.setState({request: request})
+  }
+
+  setAddress = (memberId, e) => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
+
+    let index = members.findIndex((obj => obj.id === memberId))
+    members[index].address = e.target.value
+
+    request.members = members
     this.setState({request: request})
   }
 
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.text) {
-      errors.textError = true
-      errors.textColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.textError
-      delete errors.textColor
-      this.setState({errors: errors})
+    if (members.length > 0) {
+      members.forEach((member, i) => {
+        let index = members.findIndex((obj => obj.id === member.id))
+        errors[member.id] = {}
+
+        if (member.address && validators.ipv4(member.address)) {
+          delete errors[member.id].addressError
+          delete errors[member.id].addressColor
+          this.setState({errors: errors})
+        }
+        else {
+          errors[member.id].addressError = true
+          errors[member.id].addressColor = 'red'
+          this.setState({errors: errors})
+        }
+
+        if (Object.keys(errors[member.id]).length === 0) {
+          delete errors[member.id]
+          this.setState({errors: errors})
+        }
+      })
     }
 
     return errors
@@ -85,10 +158,18 @@ class Modify extends React.Component {
 
   validation = async () => {
     let validation = await this.validationCheck()
-
     if (Object.keys(this.state.errors).length === 0) {
-      this.snatPoolModify()
+      this.addPart()
     }
+  }
+
+  addPart = () => {
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
+    let list = []
+    members.forEach((member, i) => {
+      list.push(`/${this.props.partition}/${member.address}`)
+    })
+    this.setState({list: list}, () => this.snatPoolModify() )
   }
 
 
@@ -99,7 +180,7 @@ class Modify extends React.Component {
     const b = {
       "data":
         {
-          "apiAnonymous": this.state.request.text
+          "members": this.state.list
         }
       }
 
@@ -115,7 +196,7 @@ class Modify extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatPool/${this.props.obj.name}/`, this.props.token, b)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpool/${this.props.obj.name}/`, this.props.token, b)
   }
 
   response = () => {
@@ -135,6 +216,8 @@ class Modify extends React.Component {
 
 
   render() {
+    console.log(this.props.obj)
+    console.log(this.state.request)
     return (
       <Space direction='vertical'>
 
@@ -159,20 +242,78 @@ class Modify extends React.Component {
           }
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
-
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Text:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
-                <Col span={10}>
-                  {this.state.errors.textError ?
-                    <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} value={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
-                  :
-                    <TextArea rows={25} defaultValue={this.props.obj.apiAnonymous} value={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
-                  }
+                <Col span={16}>
+                  <Input disabled value={this.state.request.name} style={{width: 250}} name="name" id='name' />
                 </Col>
               </Row>
               <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a member:</p>
+                </Col>
+                <Col span={16}>
+                  <Button type="primary" shape='round' onClick={() => this.memberAdd()}>
+                    +
+                  </Button>
+                </Col>
+              </Row>
+              <br/>
+
+              { this.state.request.members ?
+                this.state.request.members.map((n, i) => {
+                let address = 'address' + n.id
+
+                return (
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                      </Col>
+                      <Col span={16}>
+                        { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
+                          <Input
+                            key={address}
+                            defaultValue={n.address}
+                            value={n.address}
+                            style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}}
+                            onChange={e => this.setAddress(n.id, e)}
+                          />
+                        :
+                          <Input
+                            key={address}
+                            defaultValue={n.address}
+                            value={n.address}
+                            style={{display: 'block', width: 250}}
+                            onChange={e => this.setAddress(n.id, e)}
+                          />
+                        }
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove member:</p>
+                      </Col>
+                      <Col span={16}>
+                        <Button type="danger" shape='round' onClick={() => this.memberRemove(n.id)}>
+                          -
+                        </Button>
+                      </Col>
+                    </Row>
+
+                    <br/>
+
+                  </React.Fragment>
+                )
+                })
+                :
+                null
+              }
 
               <Row>
                 <Col offset={8} span={16}>

@@ -30,15 +30,16 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {},
-      members: []
+      request: {
+        members: []
+      },
     };
   }
 
   componentDidMount() {
-    let members = JSON.parse(JSON.stringify(this.state.members))
-    members.push({id:1})
-    this.setState({members: members})
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.members.push({id:1})
+    this.setState({request: request})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,11 +47,11 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.state.visible === true){
-      if (this.state.members && this.state.members.length === 0) {
-        let members = JSON.parse(JSON.stringify(this.state.members))
-        members.push({id:1})
-        this.setState({members: members})
+    if (this.state.visible){
+      if (this.state.request.members && this.state.request.members.length === 0) {
+        let request = JSON.parse(JSON.stringify(this.state.request))
+        request.members.push({id:1})
+        this.setState({request: request})
       }
     }
   }
@@ -68,51 +69,59 @@ class Add extends React.Component {
 
   //SETTERS
   memberAdd = () => {
-    //let n = this.state.counter + 1
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
     let id = 0
     let n = 0
-    this.state.members.forEach(r => {
+
+    this.state.request.members.forEach(r => {
       if (r.id > id) {
         id = r.id
       }
     });
     n = id + 1
 
-    let r = {id: n}
-    let list = JSON.parse(JSON.stringify(this.state.members))
-    list.push(r)
-    this.setState({members: list})
+    let member = {id: n}
+    members.push(member)
+    request.members = members
+
+    this.setState({request: request})
   }
 
   memberRemove = r => {
-    let members = JSON.parse(JSON.stringify(this.state.members))
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
+
     let list = members.filter(n => {
       return r !== n.id
     })
-    this.setState({members: list})
+
+    request.members = list
+
+    this.setState({request: request})
   }
 
   setName = (e, id) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
-    delete request.nameError
-    delete request.nameColor
     this.setState({request: request})
   }
 
   setAddress = (memberId, e) => {
-    let members = JSON.parse(JSON.stringify(this.state.members))
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
 
     let index = members.findIndex((obj => obj.id === memberId))
     members[index].address = e.target.value
 
-    this.setState({members: members})
+    request.members = members
+    this.setState({request: request})
   }
 
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let members = JSON.parse(JSON.stringify(this.state.members))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
@@ -127,47 +136,41 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
 
-    members.forEach((member, i) => {
-      let index = members.findIndex((obj => obj.id === member.id))
-      errors[member.id] = {}
+    if (members.length > 0) {
+      members.forEach((member, i) => {
+        let index = members.findIndex((obj => obj.id === member.id))
+        errors[member.id] = {}
 
-      if (!member.address || !validators.ipv4(member.address)) {
-        errors[member.id].addressError = true
-        errors[member.id].addressColor = 'red'
-        this.setState({errors: errors})
-      }
-      else {
-        delete errors[member.id].addressError
-        delete errors[member.id].addressColor
-        this.setState({errors: errors})
-      }
-    })
+        if (member.address && validators.ipv4(member.address)) {
+          delete errors[member.id].addressError
+          delete errors[member.id].addressColor
+          this.setState({errors: errors})
+        }
+        else {
+          errors[member.id].addressError = true
+          errors[member.id].addressColor = 'red'
+          this.setState({errors: errors})
+        }
+
+        if (Object.keys(errors[member.id]).length === 0) {
+          delete errors[member.id]
+          this.setState({errors: errors})
+        }
+      })
+    }
 
     return errors
   }
 
   validation = async () => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let ok = false
     let validation = await this.validationCheck()
-
-    errors.forEach((error, i) => {
-      if (Object.keys(error).length === 0) {
-        ok = true
-      }
-      else {
-        ok = false
-      }
-    })
-
-    if (ok = true) {
+    if (Object.keys(this.state.errors).length === 0) {
       this.addPart()
     }
-
   }
 
   addPart = () => {
-    let members = JSON.parse(JSON.stringify(this.state.members))
+    let members = JSON.parse(JSON.stringify(this.state.request.members))
     let list = []
     members.forEach((member, i) => {
       list.push(`/${this.props.partition}/${member.address}`)
@@ -178,7 +181,6 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   snatPoolAdd = async () => {
-    console.log('snatpooladd')
     let request = Object.assign({}, this.state.request)
 
     const b = {
@@ -221,8 +223,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.members)
-    console.log(this.state.errors)
     return (
       <Space direction='vertical'>
 
@@ -273,8 +273,8 @@ class Add extends React.Component {
               </Row>
               <br/>
 
-              { this.state.members ?
-                this.state.members.map((n, i) => {
+              { this.state.request.members ?
+                this.state.request.members.map((n, i) => {
                 let address = 'address' + n.id
 
                 return (
@@ -285,9 +285,9 @@ class Add extends React.Component {
                       </Col>
                       <Col span={16}>
                         { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                          <Input key={address}  style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.setAddress(n.id, e)} />
+                          <Input key={address}  style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.setAddress(n.id, e)} />
                         :
-                          <Input defaultValue={n.address} key={address} style={{display: 'block', width: 450}} onChange={e => this.setAddress(n.id, e)} />
+                          <Input defaultValue={n.address} key={address} style={{display: 'block', width: 250}} onChange={e => this.setAddress(n.id, e)} />
                         }
                       </Col>
                     </Row>
