@@ -228,7 +228,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   { this.state.monitorTypesLoading ?
-                    <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
                     <React.Fragment>
                       { this.props.monitorTypes && this.props.monitorTypes.length > 0 ?

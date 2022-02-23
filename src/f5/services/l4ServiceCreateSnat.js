@@ -34,6 +34,7 @@ const layout = {
 body: irule e snatpool
 @Marco irule nella post del servizio
 
+leggi datagroup
 confornta ip e network
 chiedi ip a infoblox sulla network
 crea snatpool

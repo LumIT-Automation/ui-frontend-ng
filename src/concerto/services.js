@@ -38,14 +38,6 @@ class Service extends React.Component {
     return (
       <React.Fragment>
 
-        <React.Fragment>
-          <Divider orientation="left" plain>
-            HISTORY
-          </Divider>
-          <br/>
-          <br/>
-        </React.Fragment>
-
         { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
           <React.Fragment>
             <Divider orientation="left" plain >

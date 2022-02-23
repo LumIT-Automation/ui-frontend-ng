@@ -6,13 +6,14 @@ import {connect} from "react-redux";
 import '../sider.css';
 import { Menu } from 'antd';
 import { Layout, Divider, Button } from 'antd';
-import { HomeOutlined,
+import {
+  HomeOutlined,
+  ClockCircleOutlined,
   SettingOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
   ApartmentOutlined,
   FastForwardOutlined
-
  } from '@ant-design/icons';
 
 import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
@@ -93,7 +94,7 @@ class CustomSider extends Component {
         >
 
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
-          <Menu.Item key="historys" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
+          <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
 

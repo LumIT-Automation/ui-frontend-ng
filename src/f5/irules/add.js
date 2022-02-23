@@ -9,13 +9,11 @@ import {
   iruleAddError
 } from '../../_store/store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 const { TextArea } = Input;
-
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 

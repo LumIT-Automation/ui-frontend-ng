@@ -14,12 +14,6 @@ import {
 
 import List from './list'
 
-import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
-
-
 
 class Manager extends React.Component {
 
