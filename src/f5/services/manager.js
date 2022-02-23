@@ -9,7 +9,8 @@ import {
   assetsError
 } from '../../_store/store.f5'
 
-import CreateLoadBalancer from './createF5Service'
+import L7ServiceCreate from './l7ServiceCreate'
+import L4ServiceCreate from './l4ServiceCreate'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
@@ -66,8 +67,13 @@ class Manager extends React.Component {
       <React.Fragment>
         <Row>
           <Col span={4} offset={2} >
-            <p>Create Load Balancer</p>
-            <CreateLoadBalancer/>
+            <p>L7 Load Balancer</p>
+            <L7ServiceCreate/>
+          </Col>
+
+          <Col span={4} offset={2} >
+            <p>L4 Load Balancer</p>
+            <L4ServiceCreate/>
           </Col>
 
           <Col span={4} offset={2}>
