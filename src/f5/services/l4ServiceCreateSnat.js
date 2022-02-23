@@ -33,6 +33,12 @@ const layout = {
 /*
 body: irule e snatpool
 @Marco irule nella post del servizio
+
+confornta ip e network
+chiedi ip a infoblox sulla network
+crea snatpool
+crea irule
+setta irule
 */
 
 class CreateF5Service extends React.Component {
@@ -522,10 +528,10 @@ class CreateF5Service extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>L4 CREATE</Button>
+        <Button type="primary" onClick={() => this.details()}>L4 CREATE SNAT</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>L4 CREATE</p>}
+          title={<p style={{textAlign: 'center'}}>L4 CREATE SNAT</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

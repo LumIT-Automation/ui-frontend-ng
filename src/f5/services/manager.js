@@ -11,6 +11,7 @@ import {
 
 import L7ServiceCreate from './l7ServiceCreate'
 import L4ServiceCreate from './l4ServiceCreate'
+import L4ServiceCreateSnat from './l4ServiceCreateSnat'
 import DeleteLoadBalancer from './deleteF5Service'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
@@ -76,11 +77,20 @@ class Manager extends React.Component {
             <L4ServiceCreate/>
           </Col>
 
+          <Col span={4} offset={2} >
+            <p>L4 with Snat</p>
+            <L4ServiceCreateSnat/>
+          </Col>
+
           <Col span={4} offset={2}>
             <p>Delete Load Balancer</p>
             <DeleteLoadBalancer/>
           </Col>
+        </Row>
+        <br/>
+        <br/>
 
+        <Row>
           <Col span={4} offset={2}>
             <p>Pool Maintenance</p>
             <PoolMaintenance/>

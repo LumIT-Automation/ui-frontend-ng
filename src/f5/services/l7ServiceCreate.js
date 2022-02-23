@@ -36,12 +36,6 @@ const layout = {
 /*
 body: irule e snatpool
 @Marco irule nella post del servizio
-crea L7 e L4
-
-crea L4 con regola
-chiedi ip a infoblox
-crean snatpool
-crea irule
 */
 
 class CreateF5Service extends React.Component {
