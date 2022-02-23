@@ -15,12 +15,8 @@ import {
   irules,
   irulesError,
   iruleAddError,
-  certificates,
-  certificatesError,
-  keys,
-  keysError,
+
   l4ServiceCreateError,
-  l7ServiceCreateError
 } from '../../_store/store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
@@ -37,7 +33,6 @@ const layout = {
 /*
 body: irule e snatpool
 @Marco irule nella post del servizio
-crea L7 e L4
 
 crea L4 con regola
 chiedi ip a infoblox
@@ -52,13 +47,10 @@ class CreateF5Service extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      message:'',
-      serviceTypes: ['L4', 'L7'],
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
-      monitorTypesL7: ['tcp-half-open', 'http'],
-      monitorTypesL4: ['tcp-half-open'],
+      monitorTypes: ['tcp-half-open'],
       request: {
-        routeDomain: null,
+        routeDomain: '',
         certificate: null,
         key: null,
         source: "0.0.0.0/0",
@@ -123,28 +115,6 @@ class CreateF5Service extends React.Component {
       this.props.dispatch(irules( irulesFetched ))
     }
 
-    await this.setState({certificatesLoading: true})
-    let fetchedCertificates = await this.certificatesFetch()
-    await this.setState({certificatesLoading: false})
-    if (fetchedCertificates.status && fetchedCertificates.status !== 200 ) {
-      this.props.dispatch(certificatesError(fetchedCertificates))
-      return
-    }
-    else {
-      this.props.dispatch(certificates( fetchedCertificates ))
-    }
-
-    await this.setState({keysLoading: true})
-    let fetchedKeys = await this.keysFetch()
-    await this.setState({keysLoading: false})
-    if (fetchedKeys.status && fetchedKeys.status !== 200 ) {
-      this.props.dispatch(keysError(fetchedKeys))
-      return
-    }
-    else {
-      this.props.dispatch(keys( fetchedKeys ))
-    }
-
   }
 
 
@@ -194,44 +164,8 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-  certificatesFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
-    return r
-  }
-
-  keysFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
-    return r
-  }
-
 
   //SETTERS
-  serviceTypeSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.serviceType = e
-    this.setState({request: request})
-  }
-
   serviceNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.serviceName = e.target.value
@@ -378,17 +312,6 @@ class CreateF5Service extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.serviceType) {
-      errors.serviceTypeError = true
-      errors.serviceTypeColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.serviceTypeError
-      delete errors.serviceTypeColor
-      this.setState({errors: errors})
-    }
-
     if (!request.serviceName) {
       errors.serviceNameError = true
       errors.serviceNameColor = 'red'
@@ -527,20 +450,7 @@ class CreateF5Service extends React.Component {
   validation = async () => {
     let validation = await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.createService()
-    }
-  }
-
-
-  createService = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
-
-    if (this.state.request.serviceType === 'L4') {
       this.l4ServiceCreate()
-    }
-    if (this.state.request.serviceType === 'L7') {
-      this.l7ServiceCreate()
     }
   }
 
@@ -549,13 +459,11 @@ class CreateF5Service extends React.Component {
   l4ServiceCreate = async () => {
     let serviceName = this.state.request.serviceName
 
-    this.setState({message: null});
-
     const b = {
       "data": {
         "virtualServer": {
           "name": `vs_${serviceName}`,
-          "type": this.state.request.serviceType,
+          "type": 'L4',
           "snat": this.state.request.snat,
           "routeDomainId": this.state.request.routeDomain,
           "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
@@ -591,79 +499,6 @@ class CreateF5Service extends React.Component {
       },
       error => {
         this.props.dispatch(l4ServiceCreateError(error))
-        this.setState({loading: false, response: false})
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
-
-  }
-
-  l7ServiceCreate = async () => {
-    let serviceName = this.state.request.serviceName
-    this.setState({message: null});
-
-    const b = {
-      "data": {
-        "virtualServer": {
-          "name": `vs_${serviceName}`,
-          "type": this.state.request.serviceType,
-          "snat": this.state.request.snat,
-          "routeDomainId": this.state.request.routeDomain,
-          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-          "mask": '255.255.255.255',
-          "source": this.state.request.source
-        },
-        "profiles": [
-          {
-            "name": `tcp-wan-optimized_${serviceName}`,
-            "type": "tcp",
-            "defaultsFrom": "/Common/tcp-wan-optimized",
-            "context": "clientside"
-          },
-          {
-            "name": `tcp-lan-optimized_${serviceName}`,
-            "type": "tcp",
-            "defaultsFrom": "/Common/tcp-lan-optimized",
-            "context": "serverside"
-          },
-          {
-            "name": `http_${serviceName}`,
-            "type": "http",
-            "defaultsFrom": "/Common/http"
-          },
-          {
-            "name": `client-ssl_${serviceName}`,
-            "type": "client-ssl",
-            "cert": this.state.request.certificate,
-            "key": this.state.request.key,
-            "chain": "",
-            "context": "clientside"
-          }
-        ],
-        "pool": {
-          "name": `pool_${serviceName}`,
-          "loadBalancingMode": this.state.request.lbMethod,
-          "nodes": this.state.request.nodes
-        },
-        "monitor": {
-          "name": `mon_${serviceName}`,
-          "type": this.state.request.monitorType,
-          "send": `${this.state.request.monitorSendString}`,
-          "recv": `${this.state.request.monitorReceiveString}`
-        }
-      }
-    }
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        this.setState({loading: false, response: true})
-        this.response()
-      },
-      error => {
-        this.props.dispatch(l7ServiceCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -720,75 +555,6 @@ class CreateF5Service extends React.Component {
               }
               { !this.state.loading && !this.state.response &&
                 <React.Fragment>
-                <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Service Type:</p>
-                  </Col>
-                  <Col span={16}>
-                    { this.state.serviceTypesLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                    <React.Fragment>
-                      { this.state.serviceTypes && this.state.serviceTypes.length > 0 ?
-                        <React.Fragment>
-                          {this.state.errors.serviceTypeError ?
-                            <Select
-                              defaultValue={this.state.request.serviceType}
-                              value={this.state.request.serviceType}
-                              showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.serviceTypeColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.serviceTypeSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.serviceTypes.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          :
-                            <Select
-                              defaultValue={this.state.request.serviceType}
-                              value={this.state.request.serviceType}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.serviceTypeSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.serviceTypes.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        null
-                      }
-                    </React.Fragment>
-                    }
-                  </Col>
-                </Row>
-                <br/>
 
                 <Row>
                   <Col offset={2} span={6}>
@@ -877,7 +643,7 @@ class CreateF5Service extends React.Component {
                                   <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
                                   {this.props.snatPools.map((n, i) => {
                                     return (
-                                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                     )
                                   })
                                   }
@@ -990,96 +756,6 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                { this.state.request.serviceType === 'L7' ?
-                  <React.Fragment>
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate:</p>
-                      </Col>
-                      <Col span={16}>
-                        { this.state.certificatesLoading ?
-                          <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                        :
-                          <React.Fragment>
-                            { this.props.certificates && this.props.certificates.length > 0 ?
-                              <Select
-                                defaultValue={this.state.request.certificate}
-                                value={this.state.request.certificate}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.certificateSet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.certificates.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              null
-                            }
-                          </React.Fragment>
-                        }
-                      </Col>
-                    </Row>
-                    <br/>
-
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
-                      </Col>
-                      <Col span={16}>
-                        { this.state.keysLoading ?
-                          <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                        :
-                          <React.Fragment>
-                            { this.props.keys && this.props.keys.length > 0 ?
-                              <Select
-                                defaultValue={this.state.request.key}
-                                value={this.state.request.key}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.keySet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.keys.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              null
-                            }
-                          </React.Fragment>
-                        }
-                      </Col>
-                    </Row>
-                    <br/>
-                  </React.Fragment>
-                :
-                  null
-                }
-
                 <Row>
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Load Balancing Methods:</p>
@@ -1150,179 +826,74 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                { this.state.request.serviceType === 'L7' ?
-                  <Row>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
-                    </Col>
-                    <Col span={16}>
-                      { this.state.monitorTypesL7Loading ?
-                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                      :
-                        <React.Fragment>
-                          { this.state.monitorTypesL7 && this.state.monitorTypesL7.length > 0 ?
-                            <React.Fragment>
-                              {this.state.errors.monitorTypeError ?
-                                <Select
-                                  defaultValue={this.state.request.monitorType}
-                                  value={this.state.request.monitorType}
-                                  showSearch
-                                  style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.monitorTypesLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                      <React.Fragment>
+                        { this.state.monitorTypes && this.state.monitorTypes.length > 0 ?
+                          <React.Fragment>
+                            {this.state.errors.monitorTypeError ?
+                              <Select
+                                defaultValue={this.state.request.monitorType}
+                                value={this.state.request.monitorType}
+                                showSearch
+                                style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={n => this.monitorTypeSet(n)}
+                              >
+                                <React.Fragment>
+                                  {this.state.monitorTypes.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                                    )
+                                  })
                                   }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                </React.Fragment>
+                              </Select>
+                            :
+                              <Select
+                                defaultValue={this.state.request.monitorType}
+                                value={this.state.request.monitorType}
+                                showSearch
+                                style={{width: 450}}
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={n => this.monitorTypeSet(n)}
+                              >
+                                <React.Fragment>
+                                  {this.state.monitorTypes.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                                    )
+                                  })
                                   }
-                                  onSelect={n => this.monitorTypeSet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.monitorTypesL7.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              :
-                                <Select
-                                  defaultValue={this.state.request.monitorType}
-                                  value={this.state.request.monitorType}
-                                  showSearch
-                                  style={{width: 450}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                  }
-                                  onSelect={n => this.monitorTypeSet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.monitorTypesL7.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              }
-                            </React.Fragment>
-                          :
-                            null
-                          }
-                        </React.Fragment>
-                      }
-                    </Col>
-                  </Row>
-                :
-                  <Row>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
-                    </Col>
-                    <Col span={16}>
-                      { this.state.monitorTypesL4Loading ?
-                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                      :
-                        <React.Fragment>
-                          { this.state.monitorTypesL4 && this.state.monitorTypesL4.length > 0 ?
-                            <React.Fragment>
-                              {this.state.errors.monitorTypeError ?
-                                <Select
-                                  defaultValue={this.state.request.monitorType}
-                                  value={this.state.request.monitorType}
-                                  showSearch
-                                  style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                  }
-                                  onSelect={n => this.monitorTypeSet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.monitorTypesL4.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              :
-                                <Select
-                                  defaultValue={this.state.request.monitorType}
-                                  value={this.state.request.monitorType}
-                                  showSearch
-                                  style={{width: 450}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                  }
-                                  onSelect={n => this.monitorTypeSet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.monitorTypesL4.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              }
-                            </React.Fragment>
-                          :
-                            null
-                          }
-                        </React.Fragment>
-                      }
-                    </Col>
-                  </Row>
-                }
-
-                { this.state.request.monitorType === 'http' ?
-                  <React.Fragment>
-                    <br/>
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor send string:</p>
-                      </Col>
-                      <Col span={16}>
-                      {this.state.errors.monitorSendStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorSendStringColor }} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
-                      :
-                        <Input.TextArea defaultValue={this.state.request.monitorSendString} style={{width: 450}} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
-                      }
-                      </Col>
-                    </Row>
-                    <br/>
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor receive string:</p>
-                      </Col>
-                      <Col span={16}>
-                      {this.state.errors.monitorReceiveStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorReceiveStringColor}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
-                      :
-                        <Input.TextArea defaultValue={this.state.request.monitorReceiveString} style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
-                      }
-                      </Col>
-                    </Row>
-                  </React.Fragment>
-                :
-                  null
-                }
-
+                                </React.Fragment>
+                              </Select>
+                            }
+                          </React.Fragment>
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+                  </Col>
+                </Row>
                 <br/>
 
                 <Row>
@@ -1406,21 +977,9 @@ class CreateF5Service extends React.Component {
 
                 <Row>
                   <Col offset={8} span={16}>
-                    { /*this.state.request.serviceType &&
-                      this.state.request.serviceName &&
-                      this.state.request.snat &&
-                      this.state.request.destination &&
-                      this.state.request.destinationPort &&
-                      this.state.request.lbMethod &&
-                      this.state.request.monitorType
-                      */
-
-
-                      <Button type="primary" shape='round' onClick={() => this.validation()} >
-                        Create Load Balancer
-                      </Button>
-
-                    }
+                    <Button type="primary" shape='round' onClick={() => this.validation()} >
+                      Create Load Balancer
+                    </Button>
                   </Col>
                 </Row>
               </React.Fragment>
@@ -1442,11 +1001,7 @@ class CreateF5Service extends React.Component {
             { this.props.irulesError ? <Error component={'create loadbalancer'} error={[this.props.irulesError]} visible={true} type={'irulesError'} /> : null }
             { this.props.iruleAddError ? <Error component={'create loadbalancer'} error={[this.props.iruleAddError]} visible={true} type={'iruleAddError'} /> : null }
 
-            { this.props.certificatesError ? <Error component={'create loadbalancer'} error={[this.props.certificatesError]} visible={true} type={'certificatesError'} /> : null }
-            { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'keysError'} /> : null }
-
             { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
-            { this.props.l7ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l7ServiceCreateError]} visible={true} type={'l7ServiceCreateError'} /> : null }
           </React.Fragment>
         :
           null
@@ -1475,11 +1030,5 @@ export default connect((state) => ({
   snatPoolsError: state.f5.snatPoolsError,
   snatPoolAddError: state.f5.snatPoolAddError,
 
-  certificates: state.f5.certificates,
-  certificatesError: state.f5.certificatesError,
-  keys: state.f5.keys,
-  keysError: state.f5.keysError,
-
   l4ServiceCreateError: state.f5.l4ServiceCreateError,
-  l7ServiceCreateError: state.f5.l7ServiceCreateError
 }))(CreateF5Service);

@@ -52,8 +52,7 @@ class CreateF5Service extends React.Component {
       visible: false,
       errors: {},
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
-      monitorTypesL7: ['tcp-half-open', 'http'],
-      monitorTypesL4: ['tcp-half-open'],
+      monitorTypes: ['tcp-half-open', 'http'],
       request: {
         routeDomain: '',
         certificate: null,
@@ -1071,11 +1070,11 @@ class CreateF5Service extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor Type:</p>
                   </Col>
                   <Col span={16}>
-                    { this.state.monitorTypesL7Loading ?
+                    { this.state.monitorTypesLoading ?
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     :
                       <React.Fragment>
-                        { this.state.monitorTypesL7 && this.state.monitorTypesL7.length > 0 ?
+                        { this.state.monitorTypes && this.state.monitorTypes.length > 0 ?
                           <React.Fragment>
                             {this.state.errors.monitorTypeError ?
                               <Select
@@ -1093,7 +1092,7 @@ class CreateF5Service extends React.Component {
                                 onSelect={n => this.monitorTypeSet(n)}
                               >
                                 <React.Fragment>
-                                  {this.state.monitorTypesL7.map((n, i) => {
+                                  {this.state.monitorTypes.map((n, i) => {
                                     return (
                                       <Select.Option key={i} value={n}>{n}</Select.Option>
                                     )
@@ -1117,7 +1116,7 @@ class CreateF5Service extends React.Component {
                                 onSelect={n => this.monitorTypeSet(n)}
                               >
                                 <React.Fragment>
-                                  {this.state.monitorTypesL7.map((n, i) => {
+                                  {this.state.monitorTypes.map((n, i) => {
                                     return (
                                       <Select.Option key={i} value={n}>{n}</Select.Option>
                                     )
