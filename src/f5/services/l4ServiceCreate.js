@@ -9,13 +9,6 @@ import {
   routeDomains,
   routeDomainsError,
 
-  snatPools,
-  snatPoolsError,
-  snatPoolAddError,
-  irules,
-  irulesError,
-  iruleAddError,
-
   l4ServiceCreateError,
 } from '../../_store/store.f5'
 
@@ -24,16 +17,13 @@ import AssetSelector from '../../f5/assetSelector'
 import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
+const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
 }
 
-/*
-body: irule e snatpool
-@Marco irule nella post del servizio
-*/
 
 class CreateF5Service extends React.Component {
 
@@ -46,8 +36,6 @@ class CreateF5Service extends React.Component {
       monitorTypes: ['tcp-half-open'],
       request: {
         routeDomain: '',
-        certificate: null,
-        key: null,
         source: "0.0.0.0/0",
         nodes: []
       }
@@ -87,29 +75,6 @@ class CreateF5Service extends React.Component {
     else {
       this.props.dispatch(routeDomains( routeDomainsFetched ))
     }
-
-    await this.setState({snatPoolsLoading: true})
-    let snatPoolsFetched = await this.snatPoolsFetch()
-    await this.setState({snatPoolsLoading: false})
-    if (snatPoolsFetched.status && snatPoolsFetched.status !== 200 ) {
-      this.props.dispatch(snatPoolsError(snatPoolsFetched))
-      return
-    }
-    else {
-      this.props.dispatch(snatPools( snatPoolsFetched ))
-    }
-
-    await this.setState({irulesLoading: true})
-    let irulesFetched = await this.irulesFetch()
-    await this.setState({irulesLoading: false})
-    if (irulesFetched.status && irulesFetched.status !== 200 ) {
-      this.props.dispatch(irulesError(irulesFetched))
-      return
-    }
-    else {
-      this.props.dispatch(irules( irulesFetched ))
-    }
-
   }
 
 
@@ -129,36 +94,6 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-  snatPoolsFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpools/`, this.props.token)
-    return r
-  }
-
-  irulesFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irules/`, this.props.token)
-    return r
-  }
-
 
   //SETTERS
   serviceNameSet = e => {
@@ -173,15 +108,21 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  iruleSet = name => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.irule = name
-    this.setState({request: request})
-  }
-
   snatSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.snat = e
+    this.setState({request: request})
+  }
+
+  snatPoolAddressSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.snatPoolAddress = e.target.value
+    this.setState({request: request})
+  }
+
+  codeSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.code = e.target.value
     this.setState({request: request})
   }
 
@@ -200,18 +141,6 @@ class CreateF5Service extends React.Component {
   destinationPortSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.destinationPort = e.target.value
-    this.setState({request: request})
-  }
-
-  certificateSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.certificate = e
-    this.setState({request: request})
-  }
-
-  keySet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.key = e
     this.setState({request: request})
   }
 
@@ -327,6 +256,19 @@ class CreateF5Service extends React.Component {
       delete errors.snatError
       delete errors.snatColor
       this.setState({errors: errors})
+    }
+
+    if (request.snat && request.snat === 'snat') {
+      if (!request.snatPoolAddress || !validators.ipv4(request.snatPoolAddress)) {
+        errors.snatPoolAddressError = true
+        errors.snatPoolAddressColor = 'red'
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.snatPoolAddressError
+        delete errors.snatPoolAddressColor
+        this.setState({errors: errors})
+      }
     }
 
     if (!request.destination || !validators.ipv4(request.destination)) {
@@ -477,6 +419,18 @@ class CreateF5Service extends React.Component {
           "loadBalancingMode": this.state.request.lbMethod,
           "nodes": this.state.request.nodes
         },
+        "irules": [
+          {
+            "name": `irule_${serviceName}`,
+            "code": this.state.request.code
+          }
+        ],
+        "snatPool": {
+          "name": `snatpool_${serviceName}`,
+          "members": [
+            this.state.request.snatPoolAddress
+          ]
+        },
         "monitor": {
           "name": `mon_${serviceName}`,
           "type": this.state.request.monitorType
@@ -607,121 +561,106 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
-                  </Col>
-                  <Col span={16}>
-                    { this.state.snatPoolsLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                      <React.Fragment>
-                        { this.props.snatPools && this.props.snatPools.length > 0 ?
-                          <React.Fragment>
-                            {this.state.errors.snatError ?
-                              <Select
-                                defaultValue={this.state.request.snat}
-                                value={this.state.request.snat}
-                                showSearch
-                                style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.snatSet(n)}
-                              >
-                                <React.Fragment>
-                                  <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                                  <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                  {this.props.snatPools.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              <Select
-                                defaultValue={this.state.request.snat}
-                                value={this.state.request.snat}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.snatSet(n)}
-                              >
+                {1 !== 0 ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
+                      </Col>
+                      <Col span={16}>
+                        <React.Fragment>
+                          {this.state.errors.snatError ?
+                            <Select
+                              defaultValue={this.state.request.snat}
+                              value={this.state.request.snat}
+                              showSearch
+                              style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.snatSet(n)}
+                            >
                               <React.Fragment>
                                 <Select.Option key={'none'} value={'none'}>none</Select.Option>
                                 <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                {this.props.snatPools.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
+                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
                               </React.Fragment>
-                              </Select>
-                            }
-                          </React.Fragment>
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-                  </Col>
-                </Row>
-                <br/>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.snat}
+                              value={this.state.request.snat}
+                              showSearch
+                              style={{width: 450}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.snatSet(n)}
+                            >
+                              <React.Fragment>
+                                <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                                <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      </Col>
+                    </Row>
+                    <br/>
 
-                <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Irule (optional):</p>
-                  </Col>
-                  <Col span={16}>
-                    { this.state.irulesLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    { this.state.request.snat === 'snat' ?
+                      <React.Fragment>
+                        <Row>
+                          <Col offset={2} span={6}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool address:</p>
+                          </Col>
+                          <Col span={16}>
+                            <React.Fragment>
+                              {this.state.errors.snatPoolAddressError ?
+                                <Input style={{width: 450, borderColor: this.state.errors.snatPoolAddressColor}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
+                              :
+                                <Input defaultValue={this.state.request.snatPoolAddress} style={{width: 450}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
+                              }
+                              <br/>
+                            </React.Fragment>
+                          </Col>
+                        </Row>
+                        <br/>
+                      </React.Fragment>
                     :
-                    <React.Fragment>
-                      { this.props.irules && this.props.irules.length > 0 ?
-                        <Select
-                          defaultValue={this.state.request.irule}
-                          value={this.state.request.irule}
-                          showSearch
-                          style={{width: 450}}
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                          }
-                          filterSort={(optionA, optionB) =>
-                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                          }
-                          onSelect={n => this.iruleSet(n)}
-                        >
-                          <React.Fragment>
-                            {this.props.irules.map((n, i) => {
-                              return (
-                                <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                              )
-                            })
-                            }
-                          </React.Fragment>
-                        </Select>
-                      :
-                        null
-                      }
-                    </React.Fragment>
+                      null
                     }
-                  </Col>
-                </Row>
-                <br/>
+
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
+                      </Col>
+                      <Col span={16}>
+                        <TextArea
+                          rows={25}
+                          defaultValue={this.state.request.code}
+                          value={this.state.request.code}
+                          style={{width: 450}}
+                          name="code"
+                          id='code'
+                          onChange={e => this.codeSet(e)}
+                        />
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
 
                 <Row>
                   <Col offset={2} span={6}>
@@ -990,12 +929,6 @@ class CreateF5Service extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-
-            { this.props.snatPoolsError ? <Error component={'create loadbalancer'} error={[this.props.snatPoolsError]} visible={true} type={'snatPoolsError'} /> : null }
-            { this.props.snatPoolAddError ? <Error component={'create loadbalancer'} error={[this.props.snatPoolAddError]} visible={true} type={'snatPoolAddError'} /> : null }
-            { this.props.irulesError ? <Error component={'create loadbalancer'} error={[this.props.irulesError]} visible={true} type={'irulesError'} /> : null }
-            { this.props.iruleAddError ? <Error component={'create loadbalancer'} error={[this.props.iruleAddError]} visible={true} type={'iruleAddError'} /> : null }
-
             { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
           </React.Fragment>
         :
@@ -1016,14 +949,6 @@ export default connect((state) => ({
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
   routeDomainsError: state.f5.routeDomainsError,
-
-  irules: state.f5.irules,
-  irulesError: state.f5.irulesError,
-  iruleAddError: state.f5.iruleAddError,
-
-  snatPools: state.f5.snatPools,
-  snatPoolsError: state.f5.snatPoolsError,
-  snatPoolAddError: state.f5.snatPoolAddError,
 
   l4ServiceCreateError: state.f5.l4ServiceCreateError,
 }))(CreateF5Service);

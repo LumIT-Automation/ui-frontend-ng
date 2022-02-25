@@ -24,6 +24,8 @@ import AssetSelector from '../../f5/assetSelector'
 import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
+import CreateF5Service from './l4ServiceCreate'
+
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
@@ -31,18 +33,23 @@ const layout = {
 }
 
 /*
-body: irule e snatpool
-@Marco irule nella post del servizio
 
 leggi datagroup
 confornta ip e network
 chiedi ip a infoblox sulla network
-crea snatpool
-crea irule
-setta irule
+setta snatpool e membri
+setta irule name e codice
 */
 
-class CreateF5Service extends React.Component {
+class CreateF5ServiceSnat extends React.Component {
+  render() {
+    return (
+      <CreateF5Service/>
+    )
+  }
+}
+/*
+class CreateF5ServiceSnat extends CreateF5Service {
 
   constructor(props) {
     super(props);
@@ -1014,7 +1021,7 @@ class CreateF5Service extends React.Component {
     )
   }
 }
-
+*/
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
@@ -1033,4 +1040,4 @@ export default connect((state) => ({
   snatPoolAddError: state.f5.snatPoolAddError,
 
   l4ServiceCreateError: state.f5.l4ServiceCreateError,
-}))(CreateF5Service);
+}))(CreateF5ServiceSnat);

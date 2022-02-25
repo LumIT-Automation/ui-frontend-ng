@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
@@ -61,14 +61,15 @@ class Add extends React.Component {
 
 
   //SETTERS
-  setName = e => {
+  nameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
     this.setState({request: request})
   }
-  setText = e => {
+  
+  codeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.text = e.target.value
+    request.code = e.target.value
     this.setState({request: request})
   }
 
@@ -88,14 +89,14 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.text) {
-      errors.textError = true
-      errors.textColor = 'red'
+    if (!request.code) {
+      errors.codeError = true
+      errors.codeColor = 'red'
       this.setState({errors: errors})
     }
     else {
-      delete errors.textError
-      delete errors.textColor
+      delete errors.codeError
+      delete errors.codeColor
       this.setState({errors: errors})
     }
 
@@ -121,7 +122,7 @@ class Add extends React.Component {
       "data":
         {
           "name": this.state.request.name,
-          "apiAnonymous": this.state.request.text
+          "apiAnonymous": this.state.request.code
         }
       }
 
@@ -157,7 +158,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request.text)
+    console.log(this.state.request.code)
     return (
       <Space direction='vertical'>
 
@@ -188,9 +189,9 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   }
                 </Col>
               </Row>
@@ -198,13 +199,28 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Text:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Code:</p>
                 </Col>
                 <Col span={10}>
-                  {this.state.errors.textError ?
-                    <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} name="text" id='text' onChange={e => this.setText(e)} />
+                  {this.state.errors.codeError ?
+                    <TextArea
+                      rows={25}
+                      defaultValue={this.state.request.code}
+                      value={this.state.request.code}
+                      style={{borderColor: this.state.errors.codeColor}}
+                      name="code"
+                      id='code'
+                      onChange={e => this.codeSet(e)}
+                    />
                   :
-                    <TextArea rows={25} defaultValue={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
+                    <TextArea
+                      rows={25}
+                      defaultValue={this.state.request.code}
+                      value={this.state.request.code}
+                      name="code"
+                      id='code'
+                      onChange={e => this.codeSet(e)}
+                    />
                   }
                 </Col>
               </Row>
