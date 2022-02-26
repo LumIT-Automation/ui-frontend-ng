@@ -1,6 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin } from 'antd';
+import { Tabs, Space, Spin } from 'antd'
+import 'antd/dist/antd.css'
+import '../App.css'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import SuperAdmin from './superAdmin/manager'
 import F5 from '../f5/permissions/manager'
@@ -9,9 +12,6 @@ import Infoblox from '../infoblox/permissions/manager'
 import { permissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
 import { permissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
 
-import 'antd/dist/antd.css';
-import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 

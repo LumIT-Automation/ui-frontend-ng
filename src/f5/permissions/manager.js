@@ -1,6 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import { Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
@@ -20,9 +22,6 @@ import {
 
 import List from './list'
 import Add from './add'
-
-import { Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
@@ -106,6 +105,8 @@ class Manager extends React.Component {
     }
   }
 
+
+  //FETCH
   fetchAssets = async () => {
     let r
     let rest = new Rest(
@@ -152,7 +153,6 @@ class Manager extends React.Component {
   }
 
   assetAddDetails = async (assets, permissions) => {
-
     //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
@@ -184,7 +184,7 @@ class Manager extends React.Component {
             <br/>
             <br/>
           </React.Fragment>
-          :
+        :
           null
         }
 

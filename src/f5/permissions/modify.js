@@ -11,7 +11,7 @@ import {
   partitionsError
 } from '../../_store/store.f5'
 
-import { Form, Button, Space, Modal, Spin, Result, AutoComplete, Select,  Row, Col, Input } from 'antd';
+import { Button, Space, Modal, Spin, Result, AutoComplete, Select,  Row, Col, Input } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />

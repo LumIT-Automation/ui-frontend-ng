@@ -164,7 +164,7 @@ class CreateF5Service extends React.Component {
 
   nodeAdd = () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let nodes = request.nodes
     let id = 0
     let n = 0
 

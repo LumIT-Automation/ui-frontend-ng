@@ -57,7 +57,7 @@ class Add extends React.Component {
 
   main = async () => {
     await this.setState({routeDomainsLoading: true})
-    let fetchedRouteDomains = await this.fetchRouteDomains()
+    let fetchedRouteDomains = await this.routeDomainsGet()
     await this.setState({routeDomainsLoading: false})
     if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
       this.props.dispatch(routeDomainsError(fetchedRouteDomains))
@@ -70,7 +70,7 @@ class Add extends React.Component {
 
 
   //FETCH
-  fetchRouteDomains = async () => {
+  routeDomainsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -102,7 +102,6 @@ class Add extends React.Component {
     request.routeDomain = id
     this.setState({request: request})
   }
-
   setStatus = e => {
     let request = Object.assign({}, this.state.request);
     request.session = e[0]
@@ -310,34 +309,34 @@ class Add extends React.Component {
                   { this.state.routeDomainsLoading ?
                     <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
                   :
-                  <React.Fragment>
-                    { this.props.routeDomains && this.props.routeDomains.length > 0 ?
-                      <Select
-                        value={this.state.request.routeDomain}
-                        showSearch
-                        style={{width: 250}}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                        }
-                        onSelect={n => this.routeDomain(n)}
-                      >
-                        <React.Fragment>
-                          {this.props.routeDomains.map((n, i) => {
-                            return (
-                              <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
-                            )
-                          })
+                    <React.Fragment>
+                      { this.props.routeDomains && this.props.routeDomains.length > 0 ?
+                        <Select
+                          value={this.state.request.routeDomain}
+                          showSearch
+                          style={{width: 250}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                           }
-                        </React.Fragment>
-                      </Select>
-                    :
-                      null
-                    }
-                  </React.Fragment>
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.routeDomain(n)}
+                        >
+                          <React.Fragment>
+                            {this.props.routeDomains.map((n, i) => {
+                              return (
+                                <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
+                              )
+                            })
+                            }
+                          </React.Fragment>
+                        </Select>
+                      :
+                        null
+                      }
+                    </React.Fragment>
                   }
                 </Col>
               </Row>

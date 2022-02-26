@@ -1,6 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
+
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
@@ -15,8 +18,6 @@ import {
   partitionsError
 } from '../../_store/store.f5'
 
-import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd';
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const layout = {
@@ -34,9 +35,7 @@ class Add extends React.Component {
       visible: false,
       errors: {},
       message:'',
-      request: {
-        partition: {}
-      }
+      request: {}
     };
   }
 
@@ -56,20 +55,82 @@ class Add extends React.Component {
   details = () => {
     this.ig()
     this.setState({visible: true})
-    this.roles()
+    this.rolesGet()
   }
+
 
   ig = () => {
     let items = []
 
-    let identityGroups = JSON.parse(JSON.stringify(this.props.identityGroups))
-    identityGroups.forEach( ig => {
+    let dns = JSON.parse(JSON.stringify(this.props.identityGroups))
+    dns.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-    this.setState({items: items})
+    this.setState({dns: items})
   }
 
-  setDn = async dn => {
+  privilegesBeautify = () => {
+    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+    let newList = []
+
+    for (let r in fetchedList) {
+      let newRole = fetchedList[r].role
+      newList.push(newRole)
+    }
+    this.setState({rolesBeauty: newList})
+  }
+
+
+  //GET
+  dnsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
+  }
+
+  rolesGet = async () => {
+    this.setState({rolesLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.privilegesBeautify()})
+        },
+      error => {
+        this.props.dispatch(rolesError(error))
+        this.setState({rolesLoading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
+    this.setState({rolesLoading: false})
+  }
+
+  partitionsGet = async (id) => {
+    this.setState({partitionsLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.setState({partitions: resp.data.items, partitionsLoading: false})
+      },
+      error => {
+        this.props.dispatch(partitionsError(error))
+      }
+    )
+    await rest.doXHR(`f5/${this.state.request.asset}/partitions/`, this.props.token)
+    this.setState({partitionsLoading: false})
+  }
+
+
+  //SET
+  dnSet = async dn => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.dn = dn
 
@@ -80,15 +141,15 @@ class Add extends React.Component {
     await this.setState({request: request, newDn: null})
   }
 
-  setNewDn = async e => {
+  newDnSet = async e => {
     let dn = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (this.state.items.includes(dn)) {
+    if (this.state.dns.includes(dn)) {
       errors.newDn = null
       await this.setState({errors: errors})
-      this.setDn(dn)
+      this.dnSet(dn)
     }
     else {
       request.dn = ''
@@ -110,7 +171,26 @@ class Add extends React.Component {
     }
   }
 
-  handleNewDn = async () => {
+  assetSet = id => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.asset = id
+    this.setState({request: request}, () => this.partitionsGet())
+  }
+
+  roleSet = role => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.role = role
+    this.setState({request: request})
+  }
+
+  partitionSet = partitionName => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.partition = {}
+    request.partition.name = partitionName
+    this.setState({request: request})
+  }
+
+  newDnHandle = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (this.state.newDn && this.state.newCn) {
@@ -126,7 +206,7 @@ class Add extends React.Component {
         return
       }
 
-      let identityGroups = await this.fetchIdentityGroups()
+      let identityGroups = await this.identityGroupsGet()
       if (identityGroups.status && identityGroups.status !== 200 ) {
         this.props.dispatch(identityGroupsError(identityGroups))
         return
@@ -134,7 +214,7 @@ class Add extends React.Component {
       else {
         this.props.dispatch(identityGroups( identityGroups ))
       }
-      this.setDn(this.state.newDn)
+      this.dnSet(this.state.newDn)
     }
     else {
       errors.newDn = 'error'
@@ -142,6 +222,69 @@ class Add extends React.Component {
     }
   }
 
+
+  //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (!request.dn) {
+      errors.dnError = true
+      errors.dnColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.dnError
+      delete errors.dnColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.asset) {
+      errors.assetError = true
+      errors.assetColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.assetError
+      delete errors.assetColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.role) {
+      errors.roleError = true
+      errors.roleColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.roleError
+      delete errors.roleColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.partition) {
+      errors.partitionError = true
+      errors.partitionColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.partitionError
+      delete errors.partitionColor
+      this.setState({errors: errors})
+    }
+
+    return errors
+  }
+
+  validation = async () => {
+    let validation = await this.validationCheck()
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.permissionAdd()
+    }
+  }
+
+
+  //DISPOSAL ACTION
   newDnAdd = async (dn, cn) => {
     this.setState({addDnLoading: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -167,83 +310,6 @@ class Add extends React.Component {
     return r
   }
 
-  fetchIdentityGroups = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR("f5/identity-groups/", this.props.token)
-    return r
-  }
-
-  asset = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.assetId = id
-    this.setState({request: request}, () => this.fetchPartitions())
-  }
-
-  roles = async () => {
-    this.setState({rolesLoading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
-        },
-      error => {
-        this.props.dispatch(rolesError(error))
-        this.setState({rolesLoading: false, response: false})
-      }
-    )
-    await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
-    this.setState({rolesLoading: false})
-  }
-
-  beautifyPrivileges = () => {
-    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
-    let newList = []
-
-    for (let r in fetchedList) {
-      let newRole = fetchedList[r].role
-      newList.push(newRole)
-    }
-    this.setState({rolesBeauty: newList})
-  }
-
-  setRole = role => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.role = role
-    this.setState({request: request})
-  }
-
-  fetchPartitions = async (id) => {
-    this.setState({partitionsLoading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({partitions: resp.data.items, partitionsLoading: false})
-      },
-      error => {
-        this.props.dispatch(partitionsError(error))
-      }
-    )
-    await rest.doXHR(`f5/${this.state.request.assetId}/partitions/`, this.props.token)
-    this.setState({partitionsLoading: false})
-  }
-
-  partition = partition => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.partition.name = partition
-    this.setState({request: request})
-  }
-
-
-
   permissionAdd = async () => {
     this.setState({message: null});
 
@@ -255,7 +321,7 @@ class Add extends React.Component {
           "role": this.state.request.role,
           "partition": {
             "name": this.state.request.partition.name,
-            "id_asset": this.state.request.assetId
+            "id_asset": this.state.request.asset
           }
         }
       }
@@ -292,6 +358,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state.request)
     return (
       <React.Fragment>
 
@@ -317,48 +384,66 @@ class Add extends React.Component {
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
               <Row>
-                { this.state.items && this.state.items.length > 0 ?
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                </Col>
+                <Col span={16}>
                   <React.Fragment>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
-                    </Col>
-                    <Col span={16}>
-                      <Select
-                        defaultValue={this.state.request.dn}
-                        value={this.state.request.dn}
-                        showSearch
-                        style={{width: 350}}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    { this.state.dns && this.state.dns.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.dnError ?
+                          <Select
+                            value={this.state.request.dn}
+                            showSearch
+                            style={{width: 350, border: `1px solid ${this.state.errors.dnColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.dnSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.dns.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.request.dn}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.dnSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.dns.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
                         }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                        }
-                        onSelect={n => this.setDn(n)}
-                      >
-                        <React.Fragment>
-                          {this.state.items.map((n, i) => {
-                            return (
-                              <Select.Option key={i} value={n}>{n}</Select.Option>
-                            )
-                          })
-                          }
-                        </React.Fragment>
-                      </Select>
-                    </Col>
+                      </React.Fragment>
+                    :
+                      null
+                    }
                   </React.Fragment>
-                :
-                  <React.Fragment>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
-                    </Col>
-                    <Col>
-                      <Select disabled value={null} onChange={null}>
-                      </Select>
-                    </Col>
-                  </React.Fragment>
-                }
+                </Col>
               </Row>
               <br/>
 
@@ -368,8 +453,8 @@ class Add extends React.Component {
                   {this.state.errors.newDn ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
                 </Col>
                 <Col span={16}>
-                  <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.setNewDn(e)} />
-                  <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.handleNewDn()} />
+                  <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.newDnSet(e)} />
+                  <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newDnHandle()} />
                 </Col>
               </Row>
               <br/>
@@ -379,16 +464,65 @@ class Add extends React.Component {
                   <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
                 </Col>
                 <Col span={16}>
-                  <Select style={{width: 350}} id='asset' onChange={id => this.asset(id) }>
-                    {this.props.assets ? this.props.assets.map((a, i) => {
-                      return (
-                        <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-                      )
-                      })
+                  { this.props.assetsLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                :
+                  <React.Fragment>
+                    { this.props.assets && this.props.assets.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.assetError ?
+                          <Select
+                            value={this.state.request.asset}
+                            showSearch
+                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.assetSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.props.assets.map((a, i) => {
+                                return (
+                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.request.asset}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.assetSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.props.assets.map((a, i) => {
+                                return (
+                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
                     :
                       null
                     }
-                  </Select>
+                  </React.Fragment>
+                }
                 </Col>
               </Row>
               <br/>
@@ -399,18 +533,63 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   { this.state.rolesLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
-                    <Select style={{width: 350}} id='role' onChange={r => this.setRole(r) }>
-                      {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                        return (
-                          <Select.Option  key={i} value={a}>{a}</Select.Option>
-                          )
-                        })
+                    <React.Fragment>
+                      { this.state.rolesBeauty && this.state.rolesBeauty.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.roleError ?
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesBeauty.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesBeauty.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
                       :
                         null
                       }
-                    </Select>
+                    </React.Fragment>
                   }
                 </Col>
               </Row>
@@ -425,38 +604,70 @@ class Add extends React.Component {
                     <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
                   :
                     <React.Fragment>
-                        { (this.state.partitions && this.state.partitions.length > 0) ?
-                          <Select
-                            defaultValue={this.state.partition ? this.state.request.partition.name : null}
-                            showSearch
-                            style={{width: 350}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onChange={n => this.partition(n)}
-                          >
-                            {this.state.request.role === 'admin' ?
-                            <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                            :
-                            <React.Fragment>
-                              <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                              {this.state.partitions.map((n, i) => {
-                                return (
-                                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                )
-                              })
+                      { (this.state.partitions && this.state.partitions.length > 0) ?
+                        <React.Fragment>
+                          {this.state.errors.partitionError ?
+                            <Select
+                              defaultValue={this.state.partition ? this.state.request.partition.name : null}
+                              showSearch
+                              style={{width: 350, border: `1px solid ${this.state.errors.partitionColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                               }
-                            </React.Fragment>
-                            }
-                          </Select>
-                        :
-                          <Select style={{width: 350}} disabled value={null} onChange={null}>
-                          </Select>
-                        }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onChange={n => this.partitionSet(n)}
+                            >
+                              {this.state.request.role === 'admin' ?
+                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                              :
+                                <React.Fragment>
+                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                                  {this.state.partitions.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              }
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.partition ? this.state.request.partition.name : null}
+                              showSearch
+                              style={{width: 350}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onChange={n => this.partitionSet(n)}
+                            >
+                              {this.state.request.role === 'admin' ?
+                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                              :
+                                <React.Fragment>
+                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                                  {this.state.partitions.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              }
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        <Select style={{width: 350}} disabled value={null} onChange={null}>
+                        </Select>
+                      }
                     </React.Fragment>
                   }
                 </Col>
@@ -471,15 +682,9 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={8} span={16}>
-                  { this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.assetId ?
-                    <Button type="primary" onClick={() => this.permissionAdd()} >
-                      Add Permission
-                    </Button>
-                  :
-                    <Button type="primary" onClick={() => this.permissionAdd()} disabled>
-                      Add Permission
-                    </Button>
-                  }
+                  <Button type="primary" onClick={() => this.validation()}>
+                    Add Permission
+                  </Button>
                 </Col>
               </Row>
 
@@ -516,5 +721,4 @@ export default connect((state) => ({
 
   partitionsError: state.f5.partitionsError,
   permissionAddError: state.f5.permissionAddError,
-
 }))(Add);
