@@ -211,6 +211,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  permissions: state.f5.permissions,
-  authorizations: state.authorizations.f5
+  authorizations: state.authorizations.f5,
+  permissions: state.f5.permissions  
 }))(List);

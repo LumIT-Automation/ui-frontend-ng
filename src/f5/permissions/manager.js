@@ -11,13 +11,13 @@ import {
   permissionsLoading,
   permissions,
   permissionsFetch,
-  permissionsError,
 
   assets,
-  assetsError,
   identityGroups,
-  identityGroupsFetch,
+
+  assetsError,
   identityGroupsError,
+  permissionsError,
 } from '../../_store/store.f5'
 
 import List from './list'
@@ -62,7 +62,9 @@ class Manager extends React.Component {
   main = async () => {
     this.props.dispatch(permissionsLoading(true))
 
-    let fetchedAssets = await this.fetchAssets()
+    let fetchedAssets = await this.assetsGet()
+    console.log('assets')
+    console.log(fetchedAssets)
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       this.props.dispatch(assetsError(fetchedAssets))
       this.props.dispatch(permissionsLoading(false))
@@ -72,7 +74,9 @@ class Manager extends React.Component {
       this.props.dispatch(assets( fetchedAssets ))
     }
 
-    let fetchedIdentityGroups = await this.fetchIdentityGroups()
+    let fetchedIdentityGroups = await this.identityGroupsGet()
+    console.log('identityGroups')
+    console.log(fetchedIdentityGroups)
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
       this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
       this.props.dispatch(permissionsLoading(false))
@@ -82,7 +86,9 @@ class Manager extends React.Component {
       this.props.dispatch(identityGroups( fetchedIdentityGroups ))
     }
 
-    let fetchedPermissions = await this.fetchPermissions()
+    let fetchedPermissions = await this.permissionsGet()
+    console.log('permissions')
+    console.log(fetchedPermissions)
     if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
       this.props.dispatch(permissionsError(fetchedPermissions))
       this.props.dispatch(permissionsLoading(false))
@@ -99,15 +105,17 @@ class Manager extends React.Component {
       return
     }
     else {
-      let permissionsWithAssets = await this.assetAddDetails(fetchedAssets, fetchedPermissions)
+      let permissionsWithAssets = await this.assetWithDetails(fetchedAssets, fetchedPermissions)
+      console.log('permissionsWithAssets')
+      console.log(permissionsWithAssets)
       this.props.dispatch(permissions( permissionsWithAssets ))
       this.props.dispatch(permissionsLoading(false))
     }
   }
 
 
-  //FETCH
-  fetchAssets = async () => {
+  //GET
+  assetsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -122,7 +130,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchIdentityGroups = async () => {
+  identityGroupsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -137,7 +145,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchPermissions = async () => {
+  permissionsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -152,7 +160,7 @@ class Manager extends React.Component {
     return r
   }
 
-  assetAddDetails = async (assets, permissions) => {
+  assetWithDetails = async (assets, permissions) => {
     //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
@@ -207,7 +215,6 @@ export default connect((state) => ({
   permissions: state.f5.permissions,
 
   permissionsFetch: state.f5.permissionsFetch,
-  identityGroupsFetch: state.f5.identityGroupsFetch,
 
   assetsError: state.f5.assetsError,
   identityGroupsError: state.f5.identityGroupsError,

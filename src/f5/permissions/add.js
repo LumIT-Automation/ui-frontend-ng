@@ -53,56 +53,29 @@ class Add extends React.Component {
   }
 
   details = () => {
-    this.ig()
+    this.identityGroupIds()
     this.setState({visible: true})
-    this.rolesGet()
+    this.rolesAndPrivilegesGet()
   }
 
 
-  ig = () => {
+  identityGroupIds = () => {
     let items = []
-
-    let dns = JSON.parse(JSON.stringify(this.props.identityGroups))
-    dns.forEach( ig => {
+    let identityGroupIds = JSON.parse(JSON.stringify(this.props.identityGroups))
+    identityGroupIds.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-    this.setState({dns: items})
-  }
-
-  privilegesBeautify = () => {
-    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
-    let newList = []
-
-    for (let r in fetchedList) {
-      let newRole = fetchedList[r].role
-      newList.push(newRole)
-    }
-    this.setState({rolesBeauty: newList})
+    this.setState({identityGroupIds: items})
   }
 
 
   //GET
-  dnsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR("f5/identity-groups/", this.props.token)
-    return r
-  }
-
-  rolesGet = async () => {
+  rolesAndPrivilegesGet = async () => {
     this.setState({rolesLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.privilegesBeautify()})
+        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.rolesNames()})
         },
       error => {
         this.props.dispatch(rolesError(error))
@@ -111,6 +84,17 @@ class Add extends React.Component {
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
     this.setState({rolesLoading: false})
+  }
+
+  rolesNames = () => {
+    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+    let newList = []
+
+    for (let r in fetchedList) {
+      let newRole = fetchedList[r].role
+      newList.push(newRole)
+    }
+    this.setState({rolesNames: newList})
   }
 
   partitionsGet = async (id) => {
@@ -130,33 +114,33 @@ class Add extends React.Component {
 
 
   //SET
-  dnSet = async dn => {
+  identityGroupIdSet = async identityGroupId => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.dn = dn
+    request.identityGroupId = identityGroupId
 
     let cn = this.props.identityGroups.find( ig => {
-      return ig.identity_group_identifier === dn
+      return ig.identity_group_identifier === identityGroupId
     })
     request.cn = cn.name
     await this.setState({request: request, newDn: null})
   }
 
   newDnSet = async e => {
-    let dn = e.target.value
+    let identityGroupId = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (this.state.dns.includes(dn)) {
+    if (this.state.identityGroupIds.includes(identityGroupId)) {
       errors.newDn = null
       await this.setState({errors: errors})
-      this.dnSet(dn)
+      this.identityGroupIdSet(identityGroupId)
     }
     else {
-      request.dn = ''
+      request.identityGroupId = ''
       request.cn = ''
       await this.setState({request: request})
 
-      let list = dn.split(',')
+      let list = identityGroupId.split(',')
       let cns = []
 
       let found = list.filter(i => {
@@ -167,7 +151,7 @@ class Add extends React.Component {
         }
       })
       errors.newDn = null
-      this.setState({newDn: dn, newCn: cns[0], errors: errors})
+      this.setState({newDn: identityGroupId, newCn: cns[0], errors: errors})
     }
   }
 
@@ -214,7 +198,7 @@ class Add extends React.Component {
       else {
         this.props.dispatch(identityGroups( identityGroups ))
       }
-      this.dnSet(this.state.newDn)
+      this.identityGroupIdSet(this.state.newDn)
     }
     else {
       errors.newDn = 'error'
@@ -228,14 +212,14 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (!request.dn) {
-      errors.dnError = true
-      errors.dnColor = 'red'
+    if (!request.identityGroupId) {
+      errors.identityGroupIdError = true
+      errors.identityGroupIdColor = 'red'
       this.setState({errors: errors})
     }
     else {
-      delete errors.dnError
-      delete errors.dnColor
+      delete errors.identityGroupIdError
+      delete errors.identityGroupIdColor
       this.setState({errors: errors})
     }
 
@@ -285,7 +269,7 @@ class Add extends React.Component {
 
 
   //DISPOSAL ACTION
-  newDnAdd = async (dn, cn) => {
+  newDnAdd = async (identityGroupId, cn) => {
     this.setState({addDnLoading: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
     let r
@@ -293,7 +277,7 @@ class Add extends React.Component {
       "data":
         {
           "name": cn,
-          "identity_group_identifier": dn
+          "identity_group_identifier": identityGroupId
         }
       }
 
@@ -317,7 +301,7 @@ class Add extends React.Component {
       "data":
         {
           "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.dn,
+          "identity_group_identifier": this.state.request.identityGroupId,
           "role": this.state.request.role,
           "partition": {
             "name": this.state.request.partition.name,
@@ -358,7 +342,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
     return (
       <React.Fragment>
 
@@ -389,13 +372,13 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   <React.Fragment>
-                    { this.state.dns && this.state.dns.length > 0 ?
+                    { this.state.identityGroupIds && this.state.identityGroupIds.length > 0 ?
                       <React.Fragment>
-                        {this.state.errors.dnError ?
+                        {this.state.errors.identityGroupIdError ?
                           <Select
-                            value={this.state.request.dn}
+                            value={this.state.request.identityGroupId}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.dnColor}`}}
+                            style={{width: 350, border: `1px solid ${this.state.errors.identityGroupIdColor}`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -403,10 +386,10 @@ class Add extends React.Component {
                             filterSort={(optionA, optionB) =>
                               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                             }
-                            onSelect={n => this.dnSet(n)}
+                            onSelect={n => this.identityGroupIdSet(n)}
                           >
                             <React.Fragment>
-                              {this.state.dns.map((n, i) => {
+                              {this.state.identityGroupIds.map((n, i) => {
                                 return (
                                   <Select.Option key={i} value={n}>{n}</Select.Option>
                                 )
@@ -416,7 +399,7 @@ class Add extends React.Component {
                           </Select>
                         :
                           <Select
-                            value={this.state.request.dn}
+                            value={this.state.request.identityGroupId}
                             showSearch
                             style={{width: 350}}
                             optionFilterProp="children"
@@ -426,10 +409,10 @@ class Add extends React.Component {
                             filterSort={(optionA, optionB) =>
                               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                             }
-                            onSelect={n => this.dnSet(n)}
+                            onSelect={n => this.identityGroupIdSet(n)}
                           >
                             <React.Fragment>
-                              {this.state.dns.map((n, i) => {
+                              {this.state.identityGroupIds.map((n, i) => {
                                 return (
                                   <Select.Option key={i} value={n}>{n}</Select.Option>
                                 )
@@ -455,6 +438,74 @@ class Add extends React.Component {
                 <Col span={16}>
                   <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.newDnSet(e)} />
                   <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newDnHandle()} />
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Role:</p>
+                </Col>
+                <Col span={16}>
+                  { this.state.rolesLoading ?
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                  :
+                    <React.Fragment>
+                      { this.state.rolesNames && this.state.rolesNames.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.roleError ?
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesNames.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesNames.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
                 </Col>
               </Row>
               <br/>
@@ -523,74 +574,6 @@ class Add extends React.Component {
                     }
                   </React.Fragment>
                 }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Role:</p>
-                </Col>
-                <Col span={16}>
-                  { this.state.rolesLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                  :
-                    <React.Fragment>
-                      { this.state.rolesBeauty && this.state.rolesBeauty.length > 0 ?
-                        <React.Fragment>
-                          {this.state.errors.roleError ?
-                            <Select
-                              value={this.state.request.role}
-                              showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.roleSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.rolesBeauty.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          :
-                            <Select
-                              value={this.state.request.role}
-                              showSearch
-                              style={{width: 350}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.roleSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.rolesBeauty.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        null
-                      }
-                    </React.Fragment>
-                  }
                 </Col>
               </Row>
               <br/>
