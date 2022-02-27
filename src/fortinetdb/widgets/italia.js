@@ -3,10 +3,8 @@ import { connect } from 'react-redux'
 import { VectorMap } from '@south-paw/react-vector-maps'
 import italyJSON from './italyJSON.json'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
-
-import List from '../fortinetdb/devices/list'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
 import {
   devices,
@@ -14,7 +12,9 @@ import {
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
+
+import List from '../devices/list'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'

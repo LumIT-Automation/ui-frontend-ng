@@ -22,21 +22,19 @@ import {
 } from '../_store/store.fortinetdb'
 
 //import List from './list'
-import AmericanPie from './pieChart'
-import Victory from './victory'
-import Italia from './italia'
+import Italia from '../fortinetdb/widgets/italia'
 
-import Servizio from './servizio'
-import Segmento from './segmento'
+import Servizio from '../fortinetdb/widgets/servizio'
+import Segmento from '../fortinetdb/widgets/segmento'
 
-import Firmware from './firmware'
-import Firmware0 from './firmware0'
-import Modello from './modello'
-import BackupStatus from './backupStatus'
-import EosFirmware from './eosFirmware'
-import EosHardware from './eosHardware'
+import Firmware from '../fortinetdb/widgets/firmware'
+import Firmware0 from '../fortinetdb/widgets/firmware0'
+import Modello from '../fortinetdb/widgets/modello'
+import BackupStatus from '../fortinetdb/widgets/backupStatus'
+import EosFirmware from '../fortinetdb/widgets/eosFirmware'
+import EosHardware from '../fortinetdb/widgets/eosHardware'
 
-import Attivazione from './attivazione'
+import Attivazione from '../fortinetdb/widgets/attivazione'
 
 
 import { Spin, Card, Row, Col, Table, Divider } from 'antd'

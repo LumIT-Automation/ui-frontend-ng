@@ -3,27 +3,26 @@ import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
-
-import List from '../fortinetdb/devices/list'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
 import {
   field,
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
+
+import List from '../devices/list'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-
-class Firmware extends React.Component {
+class Attivazione extends React.Component {
 
   constructor(props) {
     super(props);
@@ -51,13 +50,14 @@ class Firmware extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.setState({field: resp.data.items})
       },
       error => {
         this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=ATTIVAZIONE_ANNO,ATTIVAZIONE_MESE`, this.props.token)
     this.setState({fieldLoading: false})
   }
 
@@ -72,7 +72,7 @@ class Firmware extends React.Component {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.value}`, this.props.token)
     this.setState({valueLoading: false})
   }
 
@@ -81,7 +81,6 @@ class Firmware extends React.Component {
   }
 
   render() {
-
     return (
       <React.Fragment>
         { this.state.fieldLoading ?
@@ -95,10 +94,10 @@ class Firmware extends React.Component {
                 target: "data",
                 eventHandlers: {
                   onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
+                    this.setState({visible: true, value: n.datum.BACKUP_STATUS}, () => this.fetchValue())
                   },
                   onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
+                    this.setState({name: n.datum.BACKUP_STATUS, color: n.style.fill})
                   },
                   onMouseLeave: (e, n) => {
                     this.setState({name: '', color: ''})
@@ -108,7 +107,7 @@ class Firmware extends React.Component {
               standalone={false}
               width={300} height={300}
               data={this.state.field}
-              x="FIRMWARE"
+              x="BACKUP_STATUS"
               y="COUNT"
               innerRadius={0} radius={80}
               labels={({ datum }) => datum.COUNT}
@@ -146,8 +145,8 @@ class Firmware extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.fieldError ? <Error component={'BACKUP_STATUS'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'BACKUP_STATUS'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null
@@ -167,4 +166,4 @@ export default connect((state) => ({
 
   fieldError: state.fortinetdb.fieldError,
   valueError: state.fortinetdb.valueError,
-}))(Firmware);
+}))(Attivazione);

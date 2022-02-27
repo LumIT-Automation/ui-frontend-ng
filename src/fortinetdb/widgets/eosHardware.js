@@ -3,19 +3,19 @@ import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import List from '../fortinetdb/devices/list'
+import List from '../devices/list'
 
 import {
   field,
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'

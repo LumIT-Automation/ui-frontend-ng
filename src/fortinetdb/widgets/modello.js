@@ -3,19 +3,19 @@ import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import List from '../fortinetdb/devices/list'
+import List from '../devices/list'
 
 import {
   field,
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
@@ -23,7 +23,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class EosFirmware extends React.Component {
+class Modello extends React.Component {
 
   constructor(props) {
     super(props);
@@ -57,7 +57,7 @@ class EosFirmware extends React.Component {
         this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=EOS_FIRMWARE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=MODELLO`, this.props.token)
     this.setState({fieldLoading: false})
   }
 
@@ -72,7 +72,7 @@ class EosFirmware extends React.Component {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=EOS_FIRMWARE&fval=${this.state.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.state.value}`, this.props.token)
     this.setState({valueLoading: false})
   }
 
@@ -94,10 +94,10 @@ class EosFirmware extends React.Component {
                 target: "data",
                 eventHandlers: {
                   onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.EOS_FIRMWARE}, () => this.fetchValue())
+                    this.setState({visible: true, value: n.datum.MODELLO}, () => this.fetchValue())
                   },
                   onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.EOS_FIRMWARE, color: n.style.fill})
+                    this.setState({name: n.datum.MODELLO, color: n.style.fill})
                   },
                   onMouseLeave: (e, n) => {
                     this.setState({name: '', color: ''})
@@ -107,7 +107,7 @@ class EosFirmware extends React.Component {
               standalone={false}
               width={300} height={300}
               data={this.state.field}
-              x="EOS_FIRMWARE"
+              x="MODELLO"
               y="COUNT"
               innerRadius={0} radius={80}
               labels={({ datum }) => datum.COUNT}
@@ -145,8 +145,8 @@ class EosFirmware extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'EOS_FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'EOS_FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.fieldError ? <Error component={'MODELLO'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'MODELLO'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null
@@ -166,4 +166,4 @@ export default connect((state) => ({
 
   fieldError: state.fortinetdb.fieldError,
   valueError: state.fortinetdb.valueError,
-}))(EosFirmware);
+}))(Modello);

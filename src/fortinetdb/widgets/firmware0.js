@@ -3,26 +3,27 @@ import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import List from '../fortinetdb/devices/list'
+import List from '../devices/list'
 
 import {
   field,
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
 
-import { Modal, Table, Spin } from 'antd'
+import { Modal, Table, Spin, Select } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
-class BackupStatus extends React.Component {
+
+class Firmware extends React.Component {
 
   constructor(props) {
     super(props);
@@ -56,12 +57,12 @@ class BackupStatus extends React.Component {
         this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=BACKUP_STATUS`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
     this.setState({fieldLoading: false})
   }
 
-  fetchValue = async () => {
-    this.setState({valueLoading: true})
+  fetchValue = async e => {
+    this.setState({valueLoading: true, visible: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -71,7 +72,7 @@ class BackupStatus extends React.Component {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${e}`, this.props.token)
     this.setState({valueLoading: false})
   }
 
@@ -80,45 +81,32 @@ class BackupStatus extends React.Component {
   }
 
   render() {
+    console.log(typeof(this.state.field))
     return (
       <React.Fragment>
         { this.state.fieldLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
-          <svg viewBox="0 0 300 300">
-            <VictoryPie
-              colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
-              events={[{
-                target: "data",
-                eventHandlers: {
-                  onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.BACKUP_STATUS}, () => this.fetchValue())
-                  },
-                  onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.BACKUP_STATUS, color: n.style.fill})
-                  },
-                  onMouseLeave: (e, n) => {
-                    this.setState({name: '', color: ''})
-                  }
-                }
-              }]}
-              standalone={false}
-              width={300} height={300}
-              data={this.state.field}
-              x="BACKUP_STATUS"
-              y="COUNT"
-              innerRadius={0} radius={80}
-              labels={({ datum }) => datum.COUNT}
-            />
-            <VictoryLabel
-              textAnchor="start"
-              x={80}
-              y={280}
-              text={this.state.name}
-              style={{ fill: this.state.color }}
-            />
-          </svg>
+          <Select
+            showSearch
+            defaultValue={null}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            key={null}
+            style={{ width: '200px' }}
+            onChange={e => this.fetchValue(e)}>
+            {this.state.field && this.state.field.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n.FIRMWARE}>{n.FIRMWARE}</Select.Option>
+              )})
+            }
+          </Select>
 
           { this.state.visible ?
             <React.Fragment>
@@ -144,8 +132,8 @@ class BackupStatus extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'BACKUP_STATUS'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'BACKUP_STATUS'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null
@@ -165,4 +153,4 @@ export default connect((state) => ({
 
   fieldError: state.fortinetdb.fieldError,
   valueError: state.fortinetdb.valueError,
-}))(BackupStatus);
+}))(Firmware);

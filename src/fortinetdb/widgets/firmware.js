@@ -3,19 +3,19 @@ import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/fortinetdbError'
 
-import List from '../fortinetdb/projects/list'
+import List from '../devices/list'
 
 import {
   field,
   fieldError,
   value,
   valueError
-} from '../_store/store.fortinetdb'
+} from '../../_store/store.fortinetdb'
 
 import { Modal, Table, Spin } from 'antd'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
@@ -23,7 +23,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class Servizio extends React.Component {
+class Firmware extends React.Component {
 
   constructor(props) {
     super(props);
@@ -57,7 +57,7 @@ class Servizio extends React.Component {
         this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/?fieldValues=SERVIZIO`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
     this.setState({fieldLoading: false})
   }
 
@@ -66,14 +66,13 @@ class Servizio extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
-        this.setState({projects: resp.data.items})
+        this.setState({devices: resp.data.items})
       },
       error => {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/?fby=SERVIZIO&fval=${this.state.value}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
     this.setState({valueLoading: false})
   }
 
@@ -82,6 +81,7 @@ class Servizio extends React.Component {
   }
 
   render() {
+
     return (
       <React.Fragment>
         { this.state.fieldLoading ?
@@ -95,10 +95,10 @@ class Servizio extends React.Component {
                 target: "data",
                 eventHandlers: {
                   onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.SERVIZIO}, () => this.fetchValue())
+                    this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
                   },
                   onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.SERVIZIO, color: n.style.fill})
+                    this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
                   },
                   onMouseLeave: (e, n) => {
                     this.setState({name: '', color: ''})
@@ -108,7 +108,7 @@ class Servizio extends React.Component {
               standalone={false}
               width={300} height={300}
               data={this.state.field}
-              x="Servizio"
+              x="FIRMWARE"
               y="COUNT"
               innerRadius={0} radius={80}
               labels={({ datum }) => datum.COUNT}
@@ -139,15 +139,15 @@ class Servizio extends React.Component {
                 :
                   <React.Fragment>
                     { this.state.field ?
-                      <List height={550} pagination={5} filteredProjects={this.state.projects}/>
+                      <List height={550} pagination={5} filteredDevices={this.state.devices}/>
                     :
                       null
                     }
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'Servizio'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'Servizio'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null
@@ -167,4 +167,4 @@ export default connect((state) => ({
 
   fieldError: state.fortinetdb.fieldError,
   valueError: state.fortinetdb.valueError,
-}))(Servizio);
+}))(Firmware);
