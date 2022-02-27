@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { Tabs, Space, Spin, Form, Input, Button } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 
-import { assets, cleanUp } from './_store/store.f5'
+import { assets, cleanUp } from './f5/store.f5'
 
 
 import 'antd/dist/antd.css';

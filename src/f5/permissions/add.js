@@ -16,7 +16,7 @@ import {
   identityGroupsError,
 
   partitionsError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />

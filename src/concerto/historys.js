@@ -5,7 +5,7 @@ import { Tabs, Space, Spin } from 'antd';
 import F5 from '../f5/history/manager'
 import Infoblox from '../infoblox/history/manager'
 
-import { historysFetch as f5HistorysFetch } from '../_store/store.f5'
+import { historysFetch as f5HistorysFetch } from '../f5/store.f5'
 import { historysFetch as infobloxHistorysFetch } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';

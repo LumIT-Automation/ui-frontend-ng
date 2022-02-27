@@ -7,7 +7,7 @@ import Error from '../../error/f5Error'
 import {
   assets,
   assetsError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import L7ServiceCreate from './l7ServiceCreate'
 import L4ServiceCreate from './l4ServiceCreate'

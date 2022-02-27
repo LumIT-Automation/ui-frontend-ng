@@ -9,7 +9,7 @@ import SuperAdmin from './superAdmin/manager'
 import F5 from '../f5/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
 
-import { permissionsFetch as f5PermissionsFetch } from '../_store/store.f5'
+import { permissionsFetch as f5PermissionsFetch } from '../f5/store.f5'
 import { permissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
 
 const { TabPane } = Tabs;

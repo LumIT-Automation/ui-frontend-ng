@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { profilesFetch, profileAddError } from '../../_store/store.f5'
+import { profilesFetch, profileAddError } from '../store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 

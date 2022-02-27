@@ -9,7 +9,7 @@ import {
   virtualServersLoading,
   virtualServersError,
   serviceDeleteError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 

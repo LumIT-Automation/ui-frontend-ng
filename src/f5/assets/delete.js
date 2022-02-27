@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { assetsFetch, assetDeleteError } from '../../_store/store.f5'
+import { assetsFetch, assetDeleteError } from '../store.f5'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'

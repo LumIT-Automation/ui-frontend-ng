@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
-import { virtualServersLoading, virtualServers, virtualServersFetch, virtualServersError } from '../../_store/store.f5'
+import { virtualServersLoading, virtualServers, virtualServersFetch, virtualServersError } from '../store.f5'
 
 import List from './list'
 

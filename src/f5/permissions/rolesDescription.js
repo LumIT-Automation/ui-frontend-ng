@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { rolesError } from '../../_store/store.f5'
+import { rolesError } from '../store.f5'
 
 import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';

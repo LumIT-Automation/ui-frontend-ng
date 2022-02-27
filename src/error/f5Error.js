@@ -102,7 +102,7 @@ import {
 
   genericError
 
-} from '../_store/store.f5'
+} from '../f5/store.f5'
 
 import { Modal, Table, Result } from 'antd';
 

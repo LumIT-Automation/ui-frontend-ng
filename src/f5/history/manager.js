@@ -10,7 +10,7 @@ import {
   historysFetch,
   historysError,
 
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import List from './list'
 

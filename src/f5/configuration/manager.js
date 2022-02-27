@@ -8,7 +8,7 @@ import {
   configurationFetch,
   configurationError,
 
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import { Spin, Button, Table, Input } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';

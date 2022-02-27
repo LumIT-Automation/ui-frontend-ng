@@ -10,7 +10,7 @@ import {
   routeDomainsError,
 
   l4ServiceCreateError,
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 

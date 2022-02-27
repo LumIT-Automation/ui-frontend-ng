@@ -11,7 +11,7 @@ import {
   poolMemberForceOfflineError,
   poolMemberStatsError
 
-} from '../../../_store/store.f5'
+} from '../../store.f5'
 
 import { Modal, Button, Space, Table, Spin } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';

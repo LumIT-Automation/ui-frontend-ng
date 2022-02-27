@@ -9,7 +9,7 @@ import PoolMembers from '../poolMembers/manager'
 import {
   poolsFetch,
   poolModifyError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
 

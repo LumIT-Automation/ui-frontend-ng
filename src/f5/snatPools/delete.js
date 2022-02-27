@@ -7,7 +7,7 @@ import Error from '../../error/f5Error'
 import {
   snatPoolsFetch,
   snatPoolDeleteError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'

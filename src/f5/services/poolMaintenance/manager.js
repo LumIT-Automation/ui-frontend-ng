@@ -5,7 +5,7 @@ import "antd/dist/antd.css"
 import Rest from '../../../_helpers/Rest'
 import Error from '../../../error/f5Error'
 
-import { pools, poolsError } from '../../../_store/store.f5'
+import { pools, poolsError } from '../../store.f5'
 
 import AssetSelector from '../../../f5/assetSelector'
 import Pools from './pools'

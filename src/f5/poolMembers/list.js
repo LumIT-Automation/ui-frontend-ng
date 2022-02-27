@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 
 import Rest from "../../_helpers/Rest";
 
-import { poolMembersLoading, poolMembersFetch } from '../../_store/store.f5'
+import { poolMembersLoading, poolMembersFetch } from '../store.f5'
 
 import Delete from './delete'
 

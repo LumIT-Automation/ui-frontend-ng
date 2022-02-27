@@ -4,7 +4,7 @@ import authenticationReducer from './store.authentication'
 import errorReducer from './store.error'
 import authorizationsReducer from './store.authorizations'
 
-import f5Reducer from './store.f5'
+import f5Reducer from '../f5/store.f5'
 import infobloxReducer from './store.infoblox'
 import fortinetdbReducer from './store.fortinetdb'
 

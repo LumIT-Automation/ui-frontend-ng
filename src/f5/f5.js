@@ -25,7 +25,7 @@ import {
   profilesFetch,
   virtualServersFetch,
   resetObjects
-} from '../_store/store.f5'
+} from '../f5/store.f5'
 
 import 'antd/dist/antd.css';
 import '../App.css'

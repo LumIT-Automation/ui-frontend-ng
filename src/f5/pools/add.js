@@ -7,7 +7,7 @@ import Error from '../../error/f5Error'
 import {
   poolsFetch,
   poolAddError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 

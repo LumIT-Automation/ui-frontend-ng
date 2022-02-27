@@ -4,7 +4,7 @@ import { Tabs, Space, Spin } from 'antd';
 
 import F5 from '../f5/configuration/manager'
 
-import { configurationFetch as f5ConfigurationFetch } from '../_store/store.f5'
+import { configurationFetch as f5ConfigurationFetch } from '../f5/store.f5'
 
 import 'antd/dist/antd.css';
 import '../App.css'

@@ -9,7 +9,7 @@ import {
   rolesError,
   permissionModifyError,
   partitionsError
-} from '../../_store/store.f5'
+} from '../store.f5'
 
 import { Button, Space, Modal, Spin, Result, AutoComplete, Select,  Row, Col, Input } from 'antd';
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';

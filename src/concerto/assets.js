@@ -5,7 +5,7 @@ import { Tabs, Space, Spin } from 'antd';
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 
-import { assetsFetch as f5AssetsFetch } from '../_store/store.f5'
+import { assetsFetch as f5AssetsFetch } from '../f5/store.f5'
 import { assetsFetch as infobloxAssetsFetch } from '../_store/store.infoblox'
 
 import 'antd/dist/antd.css';
