@@ -216,16 +216,16 @@ class Add extends React.Component {
     }
   }
 
-  assetSet = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.asset = id
-    this.setState({request: request}, () => this.partitionsGet())
-  }
-
   roleSet = role => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
+  }
+
+  assetSet = id => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.asset = id
+    this.setState({request: request}, () => this.partitionsGet())
   }
 
   partitionSet = partitionName => {
@@ -293,9 +293,6 @@ class Add extends React.Component {
 
     if (Object.keys(this.state.errors).length === 0) {
       this.permissionAdd()
-    }
-    else {
-      console.log(this.state.errors)
     }
   }
 
@@ -372,7 +369,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state)
     return (
       <React.Fragment>
 
