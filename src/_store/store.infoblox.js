@@ -31,8 +31,8 @@ const infobloxSlice = createSlice({
       rolesError: ( state, action) => {
         state.rolesError = action.payload
       },
-      newDnAddError: ( state, action) => {
-        state.newDnAddError = action.payload
+      newIdentityGroupAddError: ( state, action) => {
+        state.newIdentityGroupAddError = action.payload
       },
 
       identityGroupsLoading: (state, action) => {
@@ -192,7 +192,7 @@ export const {
   permissionDeleteError,
 
   rolesError,
-  newDnAddError,
+  newIdentityGroupAddError,
 
   identityGroupsLoading,
   identityGroups,

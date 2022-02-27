@@ -9,7 +9,7 @@ import {
   permissionsError,
   identityGroupsError,
 
-  newDnAddError,
+  newIdentityGroupAddError,
 
   rolesError,
   permissionAddError,
@@ -81,8 +81,8 @@ class Error extends Component {
           break;
 
 
-        case 'newDnAddError':
-          this.props.dispatch(newDnAddError(null))
+        case 'newIdentityGroupAddError':
+          this.props.dispatch(newIdentityGroupAddError(null))
           break;
         case 'rolesError':
           this.props.dispatch(rolesError(null))

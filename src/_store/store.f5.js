@@ -31,8 +31,8 @@ const f5Slice = createSlice({
           state.rolesError = action.payload
         },
 
-        newDnAddError: ( state, action) => {
-          state.newDnAddError = action.payload
+        newIdentityGroupAddError: ( state, action) => {
+          state.newIdentityGroupAddError = action.payload
         },
 
         identityGroupsLoading: (state, action) => {
@@ -457,7 +457,7 @@ export const {
 
   rolesError,
 
-  newDnAddError,
+  newIdentityGroupAddError,
 
   identityGroupsLoading,
   identityGroups,

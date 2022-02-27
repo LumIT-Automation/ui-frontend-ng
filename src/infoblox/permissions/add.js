@@ -7,7 +7,7 @@ import Error from '../../error/infobloxError'
 import {
   permissionsFetch,
   rolesError,
-  newDnAddError,
+  newIdentityGroupAddError,
   permissionAddError,
   identityGroups,
   identityGroupsError,
@@ -87,7 +87,7 @@ class Add extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (this.state.items.includes(dn)) {
-      errors.newDn = null
+      errors.newIdentityGroup = null
       await this.setState({errors: errors})
       this.setDn(dn)
     }
@@ -106,24 +106,24 @@ class Add extends React.Component {
           cns.push(cn[1])
         }
       })
-      errors.newDn = null
-      this.setState({newDn: dn, newCn: cns[0], errors: errors})
+      errors.newIdentityGroup = null
+      this.setState({newIdentityGroup: dn, newCn: cns[0], errors: errors})
     }
   }
 
   handleNewDn = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (this.state.newDn && this.state.newCn) {
+    if (this.state.newIdentityGroup && this.state.newCn) {
 
-      errors.newDn = null
+      errors.newIdentityGroup = null
       await this.setState({errors: errors})
 
-      let awaitDn = await this.newDnAdd(this.state.newDn, this.state.newCn)
+      let awaitDn = await this.newIdentityGroupAdd(this.state.newIdentityGroup, this.state.newCn)
       this.setState({addDnLoading: false})
 
       if (awaitDn.status && awaitDn.status !== 201) {
-        this.props.dispatch(newDnAddError(awaitDn))
+        this.props.dispatch(newIdentityGroupAddError(awaitDn))
         return
       }
 
@@ -135,15 +135,15 @@ class Add extends React.Component {
       else {
         this.props.dispatch(identityGroups( identityGroups ))
       }
-      this.setDn(this.state.newDn)
+      this.setDn(this.state.newIdentityGroup)
     }
     else {
-      errors.newDn = 'error'
+      errors.newIdentityGroup = 'error'
       this.setState({errors: errors})
     }
   }
 
-  newDnAdd = async (dn, cn) => {
+  newIdentityGroupAdd = async (dn, cn) => {
     this.setState({addDnLoading: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
     let r
@@ -402,10 +402,10 @@ class Add extends React.Component {
             <Row>
               <Col offset={2} span={6}>
                 <p style={{marginRight: 25, float: 'right'}}>Add new Dn (optional):</p>
-                {this.state.errors.newDn ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
+                {this.state.errors.newIdentityGroup ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
               </Col>
               <Col span={16}>
-                <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.setNewDn(e)} />
+                <Input style={{width: 350}} name="newIdentityGroup" id='newIdentityGroup' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.setNewDn(e)} />
                 <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.handleNewDn()} />
               </Col>
             </Row>
@@ -533,7 +533,7 @@ class Add extends React.Component {
           <React.Fragment>
           { this.props.permissionAddError ? <Error component={'add infoblox'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
           { this.props.rolesError ? <Error component={'add infoblox'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-          { this.props.newDnAddError ? <Error component={'add infoblox'} error={[this.props.newDnAddError]} visible={true} type={'newDnAddError'} /> : null }
+          { this.props.newIdentityGroupAddError ? <Error component={'add infoblox'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
 
           { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
           { this.props.containersError ? <Error component={'add infoblox'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
@@ -555,7 +555,7 @@ export default connect((state) => ({
   permissions: state.infoblox.permissions,
 
   rolesError: state.infoblox.rolesError,
-  newDnAddError: state.infoblox.newDnAddError,
+  newIdentityGroupAddError: state.infoblox.newIdentityGroupAddError,
 
   networksError: state.infoblox.networksError,
   containersError: state.infoblox.containersError,

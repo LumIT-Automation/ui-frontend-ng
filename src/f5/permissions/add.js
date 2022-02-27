@@ -10,7 +10,7 @@ import Error from '../../error/f5Error'
 import {
   permissionsFetch,
   rolesError,
-  newDnAddError,
+  newIdentityGroupAddError,
   permissionAddError,
   identityGroups,
   identityGroupsError,
@@ -33,9 +33,8 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      request: {},
       errors: {},
-      message:'',
-      request: {}
     };
   }
 
@@ -53,48 +52,75 @@ class Add extends React.Component {
   }
 
   details = () => {
-    this.identityGroupIds()
     this.setState({visible: true})
-    this.rolesAndPrivilegesGet()
+    this.main()
   }
 
-
-  identityGroupIds = () => {
+  main = async () => {
+    let fetchedIdentityGroups = await this.identityGroupsGet()
+    if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+      this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+      return
+    }
+    else {
+      this.props.dispatch(identityGroups( fetchedIdentityGroups ))
+    }
     let items = []
     let identityGroupIds = JSON.parse(JSON.stringify(this.props.identityGroups))
     identityGroupIds.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
     this.setState({identityGroupIds: items})
+
+    await this.setState({rolesLoading: true})
+    let fetchedRolesAndPrivileges = await this.rolesAndPrivilegesGet()
+    if (fetchedRolesAndPrivileges.status && fetchedRolesAndPrivileges.status !== 200 ) {
+      this.props.dispatch(rolesError(fetchedRolesAndPrivileges))
+      await this.setState({rolesLoading: false})
+      return
+    }
+    else {
+      await this.setState({rolesAndPrivileges: fetchedRolesAndPrivileges.data.items, rolesLoading: false})
+      let rolesAndPrivileges = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+      let newList = []
+
+      for (let r in rolesAndPrivileges) {
+        newList.push(rolesAndPrivileges[r].role)
+      }
+      this.setState({rolesNames: newList})
+    }
   }
 
 
   //GET
-  rolesAndPrivilegesGet = async () => {
-    this.setState({rolesLoading: true})
+  identityGroupsGet = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.rolesNames()})
-        },
+        r = resp
+      },
       error => {
-        this.props.dispatch(rolesError(error))
-        this.setState({rolesLoading: false, response: false})
+        r = error
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
+  }
+
+  rolesAndPrivilegesGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
-    this.setState({rolesLoading: false})
-  }
-
-  rolesNames = () => {
-    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
-    let newList = []
-
-    for (let r in fetchedList) {
-      let newRole = fetchedList[r].role
-      newList.push(newRole)
-    }
-    this.setState({rolesNames: newList})
+    return r
   }
 
   partitionsGet = async (id) => {
@@ -122,16 +148,16 @@ class Add extends React.Component {
       return ig.identity_group_identifier === identityGroupId
     })
     request.cn = cn.name
-    await this.setState({request: request, newDn: null})
+    await this.setState({request: request, newIdentityGroup: null})
   }
 
-  newDnSet = async e => {
+  newIdentityGroupSet = async e => {
     let identityGroupId = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (this.state.identityGroupIds.includes(identityGroupId)) {
-      errors.newDn = null
+      errors.newIdentityGroup =
       await this.setState({errors: errors})
       this.identityGroupIdSet(identityGroupId)
     }
@@ -150,8 +176,43 @@ class Add extends React.Component {
           cns.push(cn[1])
         }
       })
-      errors.newDn = null
-      this.setState({newDn: identityGroupId, newCn: cns[0], errors: errors})
+      delete errors.newIdentityGroup
+      this.setState({newIdentityGroup: identityGroupId, newCn: cns[0], errors: errors})
+    }
+  }
+
+  newIdentityGroupHandle = async () => {
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (this.state.newIdentityGroup && this.state.newCn) {
+
+      delete errors.newIdentityGroupError
+      delete errors.newIdentityGroupColor
+      await this.setState({errors: errors})
+
+      let awaitIdentityGroup = await this.newIdentityGroupAdd(this.state.newIdentityGroup, this.state.newCn)
+      this.setState({identityGroupAddLoading: false})
+
+      if (awaitIdentityGroup.status && awaitIdentityGroup.status !== 201) {
+        this.props.dispatch(newIdentityGroupAddError(awaitIdentityGroup))
+        return
+      }
+
+      let identityGroupsFetched = await this.identityGroupsGet()
+      if (identityGroupsFetched.status && identityGroupsFetched.status !== 200 ) {
+        this.props.dispatch(identityGroupsError(identityGroupsFetched))
+        return
+      }
+      else {
+        this.props.dispatch(identityGroups( identityGroupsFetched ))
+        this.main()
+        this.identityGroupIdSet(this.state.newIdentityGroup)
+      }
+    }
+    else {
+      errors.newIdentityGroupError = true
+      errors.newIdentityGroupColor = 'red'
+      this.setState({errors: errors})
     }
   }
 
@@ -172,38 +233,6 @@ class Add extends React.Component {
     request.partition = {}
     request.partition.name = partitionName
     this.setState({request: request})
-  }
-
-  newDnHandle = async () => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-
-    if (this.state.newDn && this.state.newCn) {
-
-      errors.newDn = null
-      await this.setState({errors: errors})
-
-      let awaitDn = await this.newDnAdd(this.state.newDn, this.state.newCn)
-      this.setState({addDnLoading: false})
-
-      if (awaitDn.status && awaitDn.status !== 201) {
-        this.props.dispatch(newDnAddError(awaitDn))
-        return
-      }
-
-      let identityGroups = await this.identityGroupsGet()
-      if (identityGroups.status && identityGroups.status !== 200 ) {
-        this.props.dispatch(identityGroupsError(identityGroups))
-        return
-      }
-      else {
-        this.props.dispatch(identityGroups( identityGroups ))
-      }
-      this.identityGroupIdSet(this.state.newDn)
-    }
-    else {
-      errors.newDn = 'error'
-      this.setState({errors: errors})
-    }
   }
 
 
@@ -265,12 +294,15 @@ class Add extends React.Component {
     if (Object.keys(this.state.errors).length === 0) {
       this.permissionAdd()
     }
+    else {
+      console.log(this.state.errors)
+    }
   }
 
 
   //DISPOSAL ACTION
-  newDnAdd = async (identityGroupId, cn) => {
-    this.setState({addDnLoading: true})
+  newIdentityGroupAdd = async (identityGroupId, cn) => {
+    this.setState({identityGroupAddLoading: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
     let r
     const b = {
@@ -295,8 +327,7 @@ class Add extends React.Component {
   }
 
   permissionAdd = async () => {
-    this.setState({message: null});
-
+    this.setState({loading: true})
     const b = {
       "data":
         {
@@ -310,7 +341,6 @@ class Add extends React.Component {
         }
       }
 
-    this.setState({loading: true})
 
     let rest = new Rest(
       "POST",
@@ -342,6 +372,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state)
     return (
       <React.Fragment>
 
@@ -368,7 +399,7 @@ class Add extends React.Component {
             <React.Fragment>
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
+                  <p style={{marginRight: 25, float: 'right'}}>Identity group:</p>
                 </Col>
                 <Col span={16}>
                   <React.Fragment>
@@ -432,12 +463,24 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Add new Dn (optional):</p>
-                  {this.state.errors.newDn ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
+                  <p style={{marginRight: 25, float: 'right'}}>New IdentityGroup (optional):</p>
+                  {this.state.errors.newIdentityGroup ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
                 </Col>
                 <Col span={16}>
-                  <Input style={{width: 350}} name="newDn" id='newDn' defaultValue="cn= ,cn= ,dc= ,dc= " onBlur={e => this.newDnSet(e)} />
-                  <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newDnHandle()} />
+                { this.state.identityGroupAddLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                :
+                  <React.Fragment>
+                    <Input
+                      name="newIdentityGroup"
+                      id='newIdentityGroup'
+                      style={{width: 350}}
+                      placeholder="cn= ,cn= ,dc= ,dc= "
+                      onBlur={e => this.newIdentityGroupSet(e)}
+                    />
+                    <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newIdentityGroupHandle()} />
+                  </React.Fragment>
+                }
                 </Col>
               </Row>
               <br/>
@@ -657,12 +700,6 @@ class Add extends React.Component {
               </Row>
               <br/>
 
-              {this.state.message ?
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              :
-                null
-              }
-
               <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" onClick={() => this.validation()}>
@@ -679,7 +716,7 @@ class Add extends React.Component {
           <React.Fragment>
             { this.props.permissionAddError ? <Error component={'add f5'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
             { this.props.rolesError ? <Error component={'add f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-            { this.props.newDnAddError ? <Error component={'add f5'} error={[this.props.newDnAddError]} visible={true} type={'newDnAddError'} /> : null }
+            { this.props.newIdentityGroupAddError ? <Error component={'add f5'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
 
             { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
           </React.Fragment>
@@ -700,7 +737,7 @@ export default connect((state) => ({
   permissions: state.f5.permissions,
 
   rolesError: state.f5.rolesError,
-  newDnAddError: state.f5.newDnAddError,
+  newIdentityGroupAddError: state.f5.newIdentityGroupAddError,
 
   partitionsError: state.f5.partitionsError,
   permissionAddError: state.f5.permissionAddError,
