@@ -1,6 +1,8 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
@@ -8,9 +10,6 @@ import {
   permissionsFetch,
   permissionDeleteError
  } from '../store.f5'
-
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
-import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
@@ -43,7 +42,6 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-
   permissionDelete = async () => {
     this.setState({loading: true})
     let rest = new Rest(
@@ -75,7 +73,7 @@ class Delete extends React.Component {
         <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
+          title={<div><p style={{textAlign: 'center'}}>Delete permission</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
