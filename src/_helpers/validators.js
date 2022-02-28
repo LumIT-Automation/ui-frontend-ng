@@ -1,4 +1,4 @@
-
+let Netmask = require('netmask').Netmask  //https://www.npmjs.com/package/netmask
 
 class Validators {
 
@@ -42,6 +42,23 @@ class Validators {
     else {
       return false
     }
+  }
+
+  ipInSubnet = (subnet, ips) => {
+    console.log(subnet)
+    console.log(ips)
+    let block = new Netmask(subnet)
+    let ok
+
+    ips.forEach((ip, i) => {
+      if (block.contains(ip)) {
+        ok = true
+      }
+      else {
+        ok = false
+      }
+    });
+    return ok
   }
 
 }

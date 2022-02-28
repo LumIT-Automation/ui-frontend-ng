@@ -111,6 +111,19 @@ const f5Slice = createSlice({
           state.routeDomainsError = action.payload
         },
 
+        dataGroupsLoading: (state, action) => {
+          state.dataGroupsLoading = action.payload
+        },
+        dataGroups: (state, action) => {
+          state.dataGroups = action.payload.data.items
+        },
+        dataGroupsFetch: (state, action) => {
+          state.dataGroupsFetch = action.payload
+        },
+        dataGroupsError: (state, action) => {
+          state.dataGroupsError = action.payload
+        },
+
 
         nodesLoading: (state, action) => {
           state.nodesLoading = action.payload
@@ -488,6 +501,11 @@ export const {
   routeDomains,
   routeDomainsFetch,
   routeDomainsError,
+
+  dataGroupsLoading,
+  dataGroups,
+  dataGroupsFetch,
+  dataGroupsError,
 
   nodesLoading,
   nodes,

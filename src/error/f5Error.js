@@ -30,6 +30,8 @@ import {
 
   routeDomainsError,
 
+  dataGroupsError,
+
   nodesError,
 
   nodeAddError,
@@ -192,6 +194,10 @@ class Error extends Component {
 
         case 'routeDomainsError':
           this.props.dispatch(routeDomainsError(null))
+          break;
+
+        case 'dataGroupsError':
+          this.props.dispatch(dataGroupsError(null))
           break;
 
         case 'nodesError':

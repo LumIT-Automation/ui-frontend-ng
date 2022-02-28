@@ -64,7 +64,6 @@ class DeleteF5Service extends React.Component {
   }
 
   fetchVirtualServers = async () => {
-    console.log('ppppppppppppppppppppppppppppppppppp')
     this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",

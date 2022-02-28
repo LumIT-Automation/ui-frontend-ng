@@ -9,6 +9,9 @@ import {
   routeDomains,
   routeDomainsError,
 
+  dataGroups,
+  dataGroupsError,
+
   l4ServiceCreateError,
 } from '../store.f5'
 
@@ -55,7 +58,6 @@ class CreateF5Service extends React.Component {
         this.main()
       }
     }
-    //
     if (this.state.request && this.state.request.nodes && this.state.request.nodes.length <= 0) {
       let request = JSON.parse(JSON.stringify(this.state.request))
       let list = []
@@ -83,6 +85,17 @@ class CreateF5Service extends React.Component {
     else {
       this.props.dispatch(routeDomains( routeDomainsFetched ))
     }
+
+    await this.setState({dataGroupsLoading: true})
+    let dataGroupsFetched = await this.dataGroupsFetch()
+    await this.setState({dataGroupsLoading: false})
+    if (dataGroupsFetched.status && dataGroupsFetched.status !== 200 ) {
+      this.props.dispatch(dataGroupsError(dataGroupsFetched))
+      return
+    }
+    else {
+      this.props.dispatch(dataGroups( dataGroupsFetched ))
+    }
   }
 
 
@@ -99,6 +112,21 @@ class CreateF5Service extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
+    return r
+  }
+
+  dataGroupsFetch = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/datagroups/internal/`, this.props.token)
     return r
   }
 
@@ -393,9 +421,27 @@ class CreateF5Service extends React.Component {
   }
 
   validation = async () => {
+    let validators = new Validators()
     let validation = await this.validationCheck()
+    let subnet = '10.0.0.0/8'
+    let ips = [this.state.request.destination]
+
+    if (validators.ipInSubnet(subnet, ips)) {
+      alert('si')
+    }
+    else {
+      alert('no')
+    }
+
     if (Object.keys(this.state.errors).length === 0) {
-      this.l4ServiceCreate()
+
+      if (validators.ipInSubnet(subnet, [this.state.request.destination])) {
+        alert('si')
+      }
+      else {
+        alert('no')
+      }
+      //this.l4ServiceCreate()
     }
   }
 
@@ -1012,6 +1058,7 @@ class CreateF5Service extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
+            { this.props.dataGroupsError ? <Error component={'create loadbalancer'} error={[this.props.dataGroupsError]} visible={true} type={'dataGroupsError'} /> : null }
             { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
           </React.Fragment>
         :
@@ -1031,7 +1078,9 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
-  routeDomainsError: state.f5.routeDomainsError,
+  dataGroups: state.f5.dataGroups,
 
+  routeDomainsError: state.f5.routeDomainsError,
+  dataGroupsError: state.f5.dataGroupsError,
   l4ServiceCreateError: state.f5.l4ServiceCreateError,
 }))(CreateF5Service);
