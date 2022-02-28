@@ -55,6 +55,7 @@ class CreateF5Service extends React.Component {
         this.main()
       }
     }
+    //
     if (this.state.request && this.state.request.nodes && this.state.request.nodes.length <= 0) {
       let request = JSON.parse(JSON.stringify(this.state.request))
       let list = []
