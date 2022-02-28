@@ -47,6 +47,9 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.request.assetId !== this.state.request.assetId) {
+      this.networksGet()
+    }
   }
 
   componentWillUnmount() {
@@ -130,14 +133,14 @@ class Add extends React.Component {
     let nets = await this.fetchNets()
     if (nets.status && nets.status !== 200) {
       this.props.dispatch(networksError( nets ))
-      await this.setState({networksLoading: false})
+      await this.setState({networks: null, networksLoading: false})
       return
     }
 
     let containers = await this.fetchContainers()
     if (containers.status && containers.status !== 200) {
       this.props.dispatch(containersError( containers ))
-      await this.setState({networksLoading: false})
+      await this.setState({networks: null, networksLoading: false})
       return
     }
 
@@ -156,7 +159,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/${this.state.request.asset}/networks/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.assetId}/networks/`, this.props.token)
     return r
   }
 
@@ -171,7 +174,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/${this.state.request.asset}/network-containers/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.state.request.assetId}/network-containers/`, this.props.token)
     return r
   }
 
@@ -261,8 +264,8 @@ class Add extends React.Component {
 
   assetSet = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.asset = id
-    this.setState({request: request}, () => this.networksGet())
+    request.assetId = id
+    this.setState({request: request})
   }
 
   networkSet = networkName => {
@@ -289,7 +292,7 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.asset) {
+    if (!request.assetId) {
       errors.assetError = true
       errors.assetColor = 'red'
       this.setState({errors: errors})
@@ -370,7 +373,7 @@ class Add extends React.Component {
           "role": this.state.request.role,
           "network": {
             "name": this.state.request.network.name,
-            "id_asset": this.state.request.asset
+            "id_asset": this.state.request.assetId
           }
         }
       }
@@ -599,7 +602,7 @@ class Add extends React.Component {
                       <React.Fragment>
                         {this.state.errors.assetError ?
                           <Select
-                            value={this.state.request.asset}
+                            value={this.state.request.assetId}
                             showSearch
                             style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
                             optionFilterProp="children"
@@ -622,7 +625,7 @@ class Add extends React.Component {
                           </Select>
                         :
                           <Select
-                            value={this.state.request.asset}
+                            value={this.state.request.assetId}
                             showSearch
                             style={{width: 350}}
                             optionFilterProp="children"

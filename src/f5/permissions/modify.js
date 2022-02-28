@@ -1,6 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
+
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
@@ -8,17 +11,18 @@ import {
   permissionsFetch,
   rolesError,
   permissionModifyError,
+  identityGroups,
+  identityGroupsError,
+
   partitionsError
 } from '../store.f5'
 
-import { Button, Space, Modal, Spin, Result, AutoComplete, Select,  Row, Col, Input } from 'antd';
-import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 const layout = {
-  labelCol: { span: 8 },
+  labelCol: { span: 6 },
   wrapperCol: { span: 12 },
-}
+};
 
 
 
@@ -28,8 +32,8 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      request: {},
       errors: {},
-      request: {}
     };
   }
 
@@ -41,70 +45,97 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.request.assetId !== this.state.request.assetId) {
+      this.partitionsGet()
+    }
   }
 
   componentWillUnmount() {
   }
 
-  details = async () => {
+  details = () => {
     this.setState({visible: true})
     this.main()
   }
 
   main = async () => {
-    this.ig()
+    let obj = JSON.parse(JSON.stringify(this.props.obj))
     let request = {}
-    request.cn = this.props.obj.identity_group_name
-    request.dn = this.props.obj.identity_group_identifier
-    request.role = this.props.obj.role
-    request.asset = this.props.obj.asset
-    request.partition = this.props.obj.partition
+    request.cn = obj.identity_group_name
+    request.identityGroupId = obj.identity_group_identifier
+    request.role = obj.role
+    request.asset = obj.asset
+    request.assetId = obj.asset.id
+    request.partition = obj.partition
     await this.setState({request: request})
-    this.roles()
-    this.fetchPartitions()
-  }
 
-  ig = () => {
+    let fetchedIdentityGroups = await this.identityGroupsGet()
+    if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+      this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+      return
+    }
+    else {
+      this.props.dispatch(identityGroups( fetchedIdentityGroups ))
+    }
     let items = []
-
-    let identityGroups = JSON.parse(JSON.stringify(this.props.identityGroups))
-    identityGroups.forEach( ig => {
+    let identityGroupIds = JSON.parse(JSON.stringify(this.props.identityGroups))
+    identityGroupIds.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-    this.setState({items: items})
+    await this.setState({identityGroupIds: items})
+
+    await this.setState({rolesLoading: true})
+    let fetchedRolesAndPrivileges = await this.rolesAndPrivilegesGet()
+    if (fetchedRolesAndPrivileges.status && fetchedRolesAndPrivileges.status !== 200 ) {
+      this.props.dispatch(rolesError(fetchedRolesAndPrivileges))
+      await this.setState({rolesLoading: false})
+      return
+    }
+    else {
+      await this.setState({rolesAndPrivileges: fetchedRolesAndPrivileges.data.items, rolesLoading: false})
+      let rolesAndPrivileges = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
+      let newList = []
+
+      for (let r in rolesAndPrivileges) {
+        newList.push(rolesAndPrivileges[r].role)
+      }
+      this.setState({rolesNames: newList})
+    }
   }
 
 
-
-  //FETCH
-  roles = async () => {
-    this.setState({rolesLoading: true})
+  //GET
+  identityGroupsGet = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPrivileges()})
-        },
+        r = resp
+      },
       error => {
-        this.props.dispatch(rolesError(error))
-        this.setState({rolesLoading: false})
+        r = error
+      }
+    )
+    await rest.doXHR("f5/identity-groups/", this.props.token)
+    return r
+  }
+
+  rolesAndPrivilegesGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
       }
     )
     await rest.doXHR(`f5/roles/?related=privileges`, this.props.token)
-    this.setState({rolesLoading: false})
+    return r
   }
 
-  beautifyPrivileges = () => {
-    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
-    let list = []
-
-    for (let r in fetchedList) {
-      let newRole = fetchedList[r].role
-      list.push(newRole)
-    }
-    this.setState({rolesBeauty: list})
-  }
-
-  fetchPartitions = async (id) => {
+  partitionsGet = async (id) => {
     this.setState({partitionsLoading: true})
     let rest = new Rest(
       "GET",
@@ -113,76 +144,127 @@ class Modify extends React.Component {
       },
       error => {
         this.props.dispatch(partitionsError(error))
+        this.setState({partitions: null, partitionsLoading: false})
       }
     )
-    await rest.doXHR(`f5/${this.state.request.partition.asset_id}/partitions/`, this.props.token)
-    this.setState({partitionsLoading: false})
+    await rest.doXHR(`f5/${this.state.request.assetId}/partitions/`, this.props.token)
   }
 
 
-
-  //SETTER
-  setDn = dn => {
+  //SET
+  identityGroupIdSet = async identityGroupId => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.dn = dn
+    request.identityGroupId = identityGroupId
 
     let cn = this.props.identityGroups.find( ig => {
-      return ig.identity_group_identifier === dn
+      return ig.identity_group_identifier === identityGroupId
     })
     request.cn = cn.name
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
-  setAsset = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.partition.asset_id = id
-    this.setState({request: request}, () => this.fetchPartitions())
-  }
-
-  setRole = role => {
+  roleSet = role => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
   }
 
-  setPartition = partition => {
+  assetSet = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.partition.name = partition
+    request.assetId = id
+    this.setState({request: request})
+  }
+
+  partitionSet = partitionName => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.partition = {}
+    request.partition.name = partitionName
     this.setState({request: request})
   }
 
 
-
   //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (!request.identityGroupId) {
+      errors.identityGroupIdError = true
+      errors.identityGroupIdColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.identityGroupIdError
+      delete errors.identityGroupIdColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.assetId) {
+      errors.assetError = true
+      errors.assetColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.assetError
+      delete errors.assetColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.role) {
+      errors.roleError = true
+      errors.roleColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.roleError
+      delete errors.roleColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.partition) {
+      errors.partitionError = true
+      errors.partitionColor = 'red'
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.partitionError
+      delete errors.partitionColor
+      this.setState({errors: errors})
+    }
+
+    return errors
+  }
+
   validation = async () => {
-    if (this.state.request.cn && this.state.request.dn && this.state.request.role && this.state.request.partition.name && this.state.request.partition.asset_id) {
+    let validation = await this.validationCheck()
+
+    if (Object.keys(this.state.errors).length === 0) {
       this.permissionModify()
     }
   }
 
 
-  //POST, PATCH, DELETE
+  //DISPOSAL ACTION
   permissionModify = async () => {
-
+    this.setState({loading: true})
     const b = {
       "data":
         {
           "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.dn,
+          "identity_group_identifier": this.state.request.identityGroupId,
           "role": this.state.request.role,
           "partition": {
-              "name": this.state.request.partition.name,
-              "id_asset": this.state.request.partition.asset_id
+            "name": this.state.request.partition.name,
+            "id_asset": this.state.request.assetId
           }
         }
       }
 
-    this.setState({loading: true})
 
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        this.response()
       },
       error => {
         this.props.dispatch(permissionModifyError(error))
@@ -202,26 +284,20 @@ class Modify extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      request: {},
+      partitions: []
     })
   }
 
 
   render() {
-
-    console.log(this.state.loading)
-
-    let name = () => {
-      let n = `${this.state.request.asset.fqdn} - ${this.state.request.asset.address}`
-      return n
-    }
-
     return (
       <React.Fragment>
 
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>MODIFY PERMISSION</p>}
+          title={<p style={{textAlign: 'center'}}>Modify permission</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -234,83 +310,72 @@ class Modify extends React.Component {
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
-               title="Permission modified"
+               title="Modifyed"
              />
           }
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
-
               <Row>
-                { this.state.items && this.state.items.length > 0 ?
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Identity group:</p>
+                </Col>
+                <Col span={16}>
                   <React.Fragment>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
-                    </Col>
-                    <Col span={16}>
-                      <Select
-                        defaultValue={this.state.request.dn}
-                        value={this.state.request.dn}
-                        showSearch
-                        style={{width: 350}}
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                        }
-                        onSelect={n => this.setDn(n)}
-                      >
-                        <React.Fragment>
-                          {this.state.items.map((n, i) => {
-                            return (
-                              <Select.Option key={i} value={n}>{n}</Select.Option>
-                            )
-                          })
-                          }
-                        </React.Fragment>
-                      </Select>
-                    </Col>
-                  </React.Fragment>
-                :
-                  <React.Fragment>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 25, float: 'right'}}>Distinguished Name:</p>
-                    </Col>
-                    <Col>
-                      <Select disabled value={null} onChange={null}>
-                      </Select>
-                    </Col>
-                  </React.Fragment>
-                }
-              </Row>
-              <br/>
-
-              <Row>
-                <React.Fragment>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
-                  </Col>
-                  { this.state.request && this.state.request.asset ?
-                    <Col span={16}>
-                      <Select style={{width: 350}} defaultValue={name()} id='asset' onChange={id => this.setAsset(id) }>
-                        {this.props.assets ? this.props.assets.map((a, i) => {
-                          return (
-                            <Select.Option  key={i} value={a.id}>{a.fqdn} - {a.address}</Select.Option>
-                          )
-                          })
+                    { this.state.identityGroupIds && this.state.identityGroupIds.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.identityGroupIdError ?
+                          <Select
+                            value={this.state.request.identityGroupId}
+                            showSearch
+                            style={{width: 350, border: `1px solid ${this.state.errors.identityGroupIdColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.identityGroupIdSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.identityGroupIds.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
                         :
-                          null
+                          <Select
+                            value={this.state.request.identityGroupId}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.identityGroupIdSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.identityGroupIds.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
                         }
-                      </Select>
-                    </Col>
-                  :
-                    <Col>
-                      <Select style={{width: 350}} disabled value={null} onChange={null}>
-                      </Select>
-                    </Col>
-                  }
-                </React.Fragment>
+                      </React.Fragment>
+                    :
+                      null
+                    }
+                  </React.Fragment>
+                </Col>
               </Row>
               <br/>
 
@@ -318,29 +383,134 @@ class Modify extends React.Component {
                 <Col offset={2} span={6}>
                   <p style={{marginRight: 25, float: 'right'}}>Role:</p>
                 </Col>
-
                 <Col span={16}>
                   { this.state.rolesLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
                     <React.Fragment>
-                      { this.state.request && this.state.request.role ?
-                        <Select style={{width: 350}} id='role' defaultValue={this.state.request.role} onChange={r => this.setRole(r) }>
-                          {this.state.rolesBeauty ? this.state.rolesBeauty.map((a, i) => {
-                            return (
-                              <Select.Option  key={i} value={a}>{a}</Select.Option>
-                              )
-                            })
+                      { this.state.rolesNames && this.state.rolesNames.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.roleError ?
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesNames.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
                           :
-                            null
+                            <Select
+                              value={this.state.request.role}
+                              showSearch
+                              style={{width: 350}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.roleSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.rolesNames.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
                           }
-                        </Select>
+                        </React.Fragment>
                       :
-                        <Select style={{width: 350}} disabled value={null} onChange={null}>
-                        </Select>
+                        null
                       }
                     </React.Fragment>
                   }
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
+                </Col>
+                <Col span={16}>
+                  { this.props.assetsLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                :
+                  <React.Fragment>
+                    { this.props.assets && this.props.assets.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.assetError ?
+                          <Select
+                            value={this.state.request.assetId}
+                            showSearch
+                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.assetSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.props.assets.map((a, i) => {
+                                return (
+                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.request.assetId}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.assetSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.props.assets.map((a, i) => {
+                                return (
+                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
+                    :
+                      null
+                    }
+                  </React.Fragment>
+                }
                 </Col>
               </Row>
               <br/>
@@ -354,38 +524,70 @@ class Modify extends React.Component {
                     <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
                   :
                     <React.Fragment>
-                        { (this.state.partitions && this.state.partitions.length > 0) ?
-                          <Select
-                            defaultValue={this.state.request.partition ? this.state.request.partition.name : null}
-                            showSearch
-                            style={{width: 350}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onChange={n => this.setPartition(n)}
-                          >
-                            {this.state.request.role === 'admin' ?
-                              <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                            :
-                              <React.Fragment>
+                      { (this.state.partitions && this.state.partitions.length > 0) ?
+                        <React.Fragment>
+                          {this.state.errors.partitionError ?
+                            <Select
+                              value={this.state.request.partition ? this.state.request.partition.name : null}
+                              showSearch
+                              style={{width: 350, border: `1px solid ${this.state.errors.partitionColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onChange={n => this.partitionSet(n)}
+                            >
+                              {this.state.request.role === 'admin' ?
                                 <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                {this.state.partitions.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            }
-                          </Select>
-                        :
-                          <Select style={{width: 350}} disabled value={null} onChange={null}>
-                          </Select>
-                        }
+                              :
+                                <React.Fragment>
+                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                                  {this.state.partitions.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              }
+                            </Select>
+                          :
+                            <Select
+                              value={this.state.request.partition ? this.state.request.partition.name : null}
+                              showSearch
+                              style={{width: 350}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onChange={n => this.partitionSet(n)}
+                            >
+                              {this.state.request.role === 'admin' ?
+                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                              :
+                                <React.Fragment>
+                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                                  {this.state.partitions.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              }
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        <Select style={{width: 350}} disabled value={null} onChange={null}>
+                        </Select>
+                      }
                     </React.Fragment>
                   }
                 </Col>
@@ -394,7 +596,7 @@ class Modify extends React.Component {
 
               <Row>
                 <Col offset={8} span={16}>
-                  <Button type="primary" onClick={() => this.validation()} >
+                  <Button type="primary" onClick={() => this.validation()}>
                     Modify Permission
                   </Button>
                 </Col>
@@ -406,28 +608,29 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.permissionModifyError ? <Error component={'modify f5'} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
-            { this.props.rolesError ? <Error component={'modify f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-
-            { this.props.partitionsError ? <Error component={'modify f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
+            { this.props.identityGroupsError ? <Error component={'permissionModify f5'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+            { this.props.rolesError ? <Error component={'permissionModify f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            { this.props.partitionsError ? <Error component={'permissionModify f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
+            { this.props.permissionModifyError ? <Error component={'permissionModify f5'} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
           </React.Fragment>
         :
           null
         }
-      </React.Fragment>
 
+      </React.Fragment>
     )
   }
 }
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   assets: state.f5.assets,
+
   identityGroups: state.f5.identityGroups,
+  permissions: state.f5.permissions,
 
-  permissionModifyError: state.f5.permissionModifyError,
   rolesError: state.f5.rolesError,
+  identityGroupsError: state.f5.identityGroupsError,
   partitionsError: state.f5.partitionsError,
-
+  permissionModifyError: state.f5.permissionModifyError,
 }))(Modify);

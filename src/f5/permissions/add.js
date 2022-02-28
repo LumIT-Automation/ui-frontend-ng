@@ -46,6 +46,9 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevState.request.assetId !== this.state.request.assetId) {
+      this.partitionsGet()
+    }
   }
 
   componentWillUnmount() {
@@ -132,10 +135,10 @@ class Add extends React.Component {
       },
       error => {
         this.props.dispatch(partitionsError(error))
+        this.setState({partitions: null, partitionsLoading: false})
       }
     )
-    await rest.doXHR(`f5/${this.state.request.asset}/partitions/`, this.props.token)
-    this.setState({partitionsLoading: false})
+    await rest.doXHR(`f5/${this.state.request.assetId}/partitions/`, this.props.token)
   }
 
 
@@ -222,10 +225,10 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  assetSet = id => {
+  assetIdSet = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.asset = id
-    this.setState({request: request}, () => this.partitionsGet())
+    request.assetId = id
+    this.setState({request: request})
   }
 
   partitionSet = partitionName => {
@@ -252,7 +255,7 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.asset) {
+    if (!request.assetId) {
       errors.assetError = true
       errors.assetColor = 'red'
       this.setState({errors: errors})
@@ -333,7 +336,7 @@ class Add extends React.Component {
           "role": this.state.request.role,
           "partition": {
             "name": this.state.request.partition.name,
-            "id_asset": this.state.request.asset
+            "id_asset": this.state.request.assetId
           }
         }
       }
@@ -375,7 +378,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD PERMISSION</p>}
+          title={<p style={{textAlign: 'center'}}>Add permission</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -562,7 +565,7 @@ class Add extends React.Component {
                       <React.Fragment>
                         {this.state.errors.assetError ?
                           <Select
-                            value={this.state.request.asset}
+                            value={this.state.request.assetId}
                             showSearch
                             style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
                             optionFilterProp="children"
@@ -572,7 +575,7 @@ class Add extends React.Component {
                             filterSort={(optionA, optionB) =>
                               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                             }
-                            onSelect={n => this.assetSet(n)}
+                            onSelect={n => this.assetIdSet(n)}
                           >
                             <React.Fragment>
                               {this.props.assets.map((a, i) => {
@@ -585,7 +588,7 @@ class Add extends React.Component {
                           </Select>
                         :
                           <Select
-                            value={this.state.request.asset}
+                            value={this.state.request.assetId}
                             showSearch
                             style={{width: 350}}
                             optionFilterProp="children"
@@ -595,7 +598,7 @@ class Add extends React.Component {
                             filterSort={(optionA, optionB) =>
                               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                             }
-                            onSelect={n => this.assetSet(n)}
+                            onSelect={n => this.assetIdSet(n)}
                           >
                             <React.Fragment>
                               {this.props.assets.map((a, i) => {
@@ -710,11 +713,11 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.permissionAddError ? <Error component={'add f5'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
-            { this.props.rolesError ? <Error component={'add f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-            { this.props.newIdentityGroupAddError ? <Error component={'add f5'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
-
-            { this.props.partitionsError ? <Error component={'add f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
+            { this.props.identityGroupsError ? <Error component={'permissionAdd f5'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+            { this.props.rolesError ? <Error component={'permissionAdd f5'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            { this.props.partitionsError ? <Error component={'permissionAdd f5'} error={[this.props.partitionsError]} visible={true} type={'partitionsError'} /> : null }
+            { this.props.newIdentityGroupAddError ? <Error component={'permissionAdd f5'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
+            { this.props.permissionAddError ? <Error component={'permissionAdd f5'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -733,8 +736,8 @@ export default connect((state) => ({
   permissions: state.f5.permissions,
 
   rolesError: state.f5.rolesError,
+  identityGroupsError: state.f5.identityGroupsError,
   newIdentityGroupAddError: state.f5.newIdentityGroupAddError,
-
   partitionsError: state.f5.partitionsError,
   permissionAddError: state.f5.permissionAddError,
 }))(Add);

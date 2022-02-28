@@ -10,12 +10,12 @@ import fortinetdbReducer from './store.fortinetdb'
 
 
 export default configureStore({
-    reducer: {
-        authentication: authenticationReducer,
-        authorizations: authorizationsReducer,
-        error: errorReducer,
-        f5: f5Reducer,
-        infoblox: infobloxReducer,
-        fortinetdb: fortinetdbReducer,
-    }
+  reducer: {
+    authentication: authenticationReducer,
+    authorizations: authorizationsReducer,
+    error: errorReducer,
+    f5: f5Reducer,
+    infoblox: infobloxReducer,
+    fortinetdb: fortinetdbReducer,
+  }
 })

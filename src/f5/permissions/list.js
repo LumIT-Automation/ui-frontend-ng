@@ -114,7 +114,6 @@ class List extends React.Component {
   };
 
 
-
   render() {
     const columns = [
       {
@@ -212,5 +211,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations.f5,
-  permissions: state.f5.permissions  
+  permissions: state.f5.permissions
 }))(List);
