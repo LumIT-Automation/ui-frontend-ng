@@ -37,7 +37,7 @@ class CreateF5Service extends React.Component {
       request: {
         routeDomain: '',
         source: "0.0.0.0/0",
-        nodes: []
+        nodes: [{id: 1}]
       }
     };
   }
@@ -54,6 +54,13 @@ class CreateF5Service extends React.Component {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
+    }
+    if (this.state.request && this.state.request.nodes && this.state.request.nodes.length <= 0) {
+      let request = JSON.parse(JSON.stringify(this.state.request))
+      let list = []
+      list.push({id: 1})
+      request.nodes = list
+      this.setState({request: request})
     }
   }
 
@@ -396,47 +403,89 @@ class CreateF5Service extends React.Component {
   l4ServiceCreate = async () => {
     let serviceName = this.state.request.serviceName
 
-    const b = {
-      "data": {
-        "virtualServer": {
-          "name": `vs_${serviceName}`,
-          "type": 'L4',
-          "snat": this.state.request.snat,
-          "routeDomainId": this.state.request.routeDomain,
-          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-          "mask": '255.255.255.255',
-          "source": '0.0.0.0/0'
-        },
-        "profiles": [
-          {
-            "name": `fastl4_${serviceName}`,
-            "type": "fastl4",
-            "idleTimeout": 300
+    let b = {}
+
+    if (this.state.request.snat === 'snat') {
+      b = {
+        "data": {
+          "virtualServer": {
+            "name": `vs_${serviceName}`,
+            "type": 'L4',
+            "snat": this.state.request.snat,
+            "routeDomainId": this.state.request.routeDomain,
+            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+            "mask": '255.255.255.255',
+            "source": '0.0.0.0/0'
+          },
+          "profiles": [
+            {
+              "name": `fastl4_${serviceName}`,
+              "type": "fastl4",
+              "idleTimeout": 300
+            }
+          ],
+          "pool": {
+            "name": `pool_${serviceName}`,
+            "loadBalancingMode": this.state.request.lbMethod,
+            "nodes": this.state.request.nodes
+          },
+          "irules": [
+            {
+              "name": `irule_${serviceName}`,
+              "code": this.state.request.code
+            }
+          ],
+          "snatPool": {
+            "name": `snatpool_${serviceName}`,
+            "members": [
+              this.state.request.snatPoolAddress
+            ]
+          },
+          "monitor": {
+            "name": `mon_${serviceName}`,
+            "type": this.state.request.monitorType
           }
-        ],
-        "pool": {
-          "name": `pool_${serviceName}`,
-          "loadBalancingMode": this.state.request.lbMethod,
-          "nodes": this.state.request.nodes
-        },
-        "irules": [
-          {
-            "name": `irule_${serviceName}`,
-            "code": this.state.request.code
-          }
-        ],
-        "snatPool": {
-          "name": `snatpool_${serviceName}`,
-          "members": [
-            this.state.request.snatPoolAddress
-          ]
-        },
-        "monitor": {
-          "name": `mon_${serviceName}`,
-          "type": this.state.request.monitorType
         }
       }
     }
+    else {
+      b = {
+        "data": {
+          "virtualServer": {
+            "name": `vs_${serviceName}`,
+            "type": 'L4',
+            "snat": this.state.request.snat,
+            "routeDomainId": this.state.request.routeDomain,
+            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+            "mask": '255.255.255.255',
+            "source": '0.0.0.0/0'
+          },
+          "profiles": [
+            {
+              "name": `fastl4_${serviceName}`,
+              "type": "fastl4",
+              "idleTimeout": 300
+            }
+          ],
+          "pool": {
+            "name": `pool_${serviceName}`,
+            "loadBalancingMode": this.state.request.lbMethod,
+            "nodes": this.state.request.nodes
+          },
+          "irules": [
+            {
+              "name": `irule_${serviceName}`,
+              "code": this.state.request.code
+            }
+          ],
+          "monitor": {
+            "name": `mon_${serviceName}`,
+            "type": this.state.request.monitorType
+          }
+        }
+      }
+    }
+
 
     this.setState({loading: true})
 
@@ -646,7 +695,7 @@ class CreateF5Service extends React.Component {
                       </Col>
                       <Col span={16}>
                         <TextArea
-                          rows={25}
+                          rows={5}
                           defaultValue={this.state.request.code}
                           value={this.state.request.code}
                           style={{width: 450}}
@@ -847,6 +896,9 @@ class CreateF5Service extends React.Component {
                   let address = 'address' + n.id
                   let name = 'name' + n.id
                   let port = 'port' + n.id
+                  let randomKey = () => {
+                    return Math.random().toString()
+                  }
 
                   return (
                     <React.Fragment>
@@ -856,9 +908,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                            <Input key={address}  style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.nodeAddressSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.address}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}}
+                              onChange={e => this.nodeAddressSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.address} key={address} style={{display: 'block', width: 450}} onChange={e => this.nodeAddressSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.address}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodeAddressSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
@@ -869,9 +931,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].nameError ?
-                            <Input key={name} name={name} id={name} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}} onChange={e => this.nodeNameSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.name}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}}
+                              onChange={e => this.nodeNameSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.name} key={name} name={name} id={name} style={{display: 'block', width: 450}} onChange={e => this.nodeNameSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.name}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodeNameSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
@@ -882,9 +954,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].portError ?
-                            <Input key={port} name={port} id={port} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}} onChange={e => this.nodePortSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.port}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}}
+                              onChange={e => this.nodePortSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.port} key={port} name={port} id={port} style={{display: 'block', width: 450}} onChange={e => this.nodePortSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.port}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodePortSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
