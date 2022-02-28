@@ -415,7 +415,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD PERMISSION</p>}
+          title={<p style={{textAlign: 'center'}}>Add permission</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -670,7 +670,7 @@ class Add extends React.Component {
                         <React.Fragment>
                           {this.state.errors.networkError ?
                             <Select
-                              defaultValue={this.state.network ? this.state.request.network.network : null}
+                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
                               showSearch
                               style={{width: 350, border: `1px solid ${this.state.errors.networkColor}`}}
                               optionFilterProp="children"
@@ -698,7 +698,7 @@ class Add extends React.Component {
                             </Select>
                           :
                             <Select
-                              defaultValue={this.state.network ? this.state.request.network.network : null}
+                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
                               showSearch
                               style={{width: 350}}
                               optionFilterProp="children"
@@ -750,11 +750,11 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.permissionAddError ? <Error component={'add infoblox'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
-            { this.props.rolesError ? <Error component={'add infoblox'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-            { this.props.newIdentityGroupAddError ? <Error component={'add infoblox'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
-
-            { this.props.networksError ? <Error component={'add infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+            { this.props.identityGroupsError ? <Error component={'permissionAdd infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+            { this.props.rolesError ? <Error component={'permissionAdd infoblox'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            { this.props.networksError ? <Error component={'permissionAdd infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+            { this.props.newIdentityGroupAddError ? <Error component={'permissionAdd infoblox'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
+            { this.props.permissionAddError ? <Error component={'permissionAdd infoblox'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -773,8 +773,8 @@ export default connect((state) => ({
   permissions: state.infoblox.permissions,
 
   rolesError: state.infoblox.rolesError,
+  identityGroupsError: state.infoblox.identityGroupsError,
   newIdentityGroupAddError: state.infoblox.newIdentityGroupAddError,
-
   networksError: state.infoblox.networksError,
   permissionAddError: state.infoblox.permissionAddError,
 }))(Add);

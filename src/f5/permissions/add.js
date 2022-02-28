@@ -565,7 +565,7 @@ class Add extends React.Component {
                       <React.Fragment>
                         {this.state.errors.assetError ?
                           <Select
-                            value={this.state.request.assetId}
+                            value={this.state.request ? this.state.request.assetId : null}
                             showSearch
                             style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
                             optionFilterProp="children"
@@ -588,7 +588,7 @@ class Add extends React.Component {
                           </Select>
                         :
                           <Select
-                            value={this.state.request.assetId}
+                            value={this.state.request ? this.state.request.assetId : null}
                             showSearch
                             style={{width: 350}}
                             optionFilterProp="children"
@@ -633,7 +633,7 @@ class Add extends React.Component {
                         <React.Fragment>
                           {this.state.errors.partitionError ?
                             <Select
-                              defaultValue={this.state.partition ? this.state.request.partition.name : null}
+                              value={this.state.request && this.state.request.partition ? this.state.request.partition.name : null}
                               showSearch
                               style={{width: 350, border: `1px solid ${this.state.errors.partitionColor}`}}
                               optionFilterProp="children"
@@ -661,7 +661,7 @@ class Add extends React.Component {
                             </Select>
                           :
                             <Select
-                              defaultValue={this.state.partition ? this.state.request.partition.name : null}
+                              value={this.state.request && this.state.request.partition ? this.state.request.partition.name : null}
                               showSearch
                               style={{width: 350}}
                               optionFilterProp="children"
