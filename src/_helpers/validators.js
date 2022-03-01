@@ -45,20 +45,24 @@ class Validators {
   }
 
   ipInSubnet = (subnet, ips) => {
-    console.log(subnet)
-    console.log(ips)
     let block = new Netmask(subnet)
-    let ok
+    let ok = 0
 
     ips.forEach((ip, i) => {
       if (block.contains(ip)) {
-        ok = true
+        ok += 1
       }
       else {
-        ok = false
+        ok += 0
       }
     });
-    return ok
+
+    if (ips.length === ok) {
+      return true
+    }
+    else {
+      return false
+    }
   }
 
 }

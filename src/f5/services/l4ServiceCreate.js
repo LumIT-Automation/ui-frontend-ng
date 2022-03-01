@@ -94,7 +94,20 @@ class CreateF5Service extends React.Component {
       return
     }
     else {
-      this.props.dispatch(dataGroups( dataGroupsFetched ))
+      let list = []
+      dataGroupsFetched.data.items.forEach((dg, i) => {
+        if (dg.type === 'ip') {
+          if (dg.records) {
+            dg.records.forEach((record, i) => {
+              if (record.name) {
+                list.push(dg)
+              }
+            });
+          }
+        }
+      })
+      this.setState({networkDataGroups: list})
+      //this.props.dispatch(dataGroups( dataGroupsFetched ))
     }
   }
 
@@ -204,18 +217,20 @@ class CreateF5Service extends React.Component {
     let id = 0
     let n = 0
 
-    this.state.request.nodes.forEach(r => {
-      if (r.id > id) {
-        id = r.id
-      }
-    });
-    n = id + 1
+    if (nodes) {
+      nodes.forEach(r => {
+        if (r.id > id) {
+          id = r.id
+        }
+      });
+      n = id + 1
 
-    let node = {id: n}
-    nodes.push(node)
-    request.nodes = nodes
+      let node = {id: n}
+      nodes.push(node)
+      request.nodes = nodes
 
-    this.setState({request: request})
+      this.setState({request: request})
+    }    
   }
 
   nodeRemove = r => {
@@ -421,27 +436,37 @@ class CreateF5Service extends React.Component {
   }
 
   validation = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
     let validation = await this.validationCheck()
-    let subnet = '10.0.0.0/8'
-    let ips = [this.state.request.destination]
 
-    if (validators.ipInSubnet(subnet, ips)) {
-      alert('si')
-    }
-    else {
-      alert('no')
-    }
+
 
     if (Object.keys(this.state.errors).length === 0) {
+      let ips = []
+      ips.push(this.state.request.destination)
+      this.state.request.nodes.forEach((node, i) => {
+        ips.push(node.address)
+      })
 
-      if (validators.ipInSubnet(subnet, [this.state.request.destination])) {
-        alert('si')
-      }
-      else {
-        alert('no')
-      }
-      //this.l4ServiceCreate()
+      this.state.networkDataGroups.forEach((dg, i) => {
+        dg.records.forEach((record, i) => {
+          if (record.name) {
+            if (validators.ipInSubnet(record.name, ips)) {
+              request.snat = 'snat'
+
+              //call infoblox
+              request.snatPoolAddress = '192.168.12.68'
+
+              let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
+              console.log(irule)
+              request.code = irule
+              this.setState({request: request})
+            }
+          }
+        });
+      });
+      this.l4ServiceCreate()
     }
   }
 
