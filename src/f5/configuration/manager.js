@@ -1,19 +1,20 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Spin, Button, Table, Input, Checkbox } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
+
 import Error from '../../error/f5Error'
 import Rest from '../../_helpers/Rest'
 
 import {
+  configurationLoading,
+  configuration,
   configurationFetch,
   configurationError,
-
 } from '../store.f5'
 
-import { Spin, Button, Table, Input } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -29,7 +30,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (!this.props.configurationError) {
       this.props.dispatch(configurationFetch(false))
-      if (!this.state.configuration) {
+      if (!this.props.configuration) {
         this.main()
       }
     }
@@ -51,27 +52,24 @@ class Manager extends React.Component {
 
 
   main = async () => {
-    this.setState({loading: true})
-
-    let fetchedConfiguration = await this.fetchConfiguration()
+    this.props.dispatch(configurationLoading(true))
+    let fetchedConfiguration = await this.configurationGet()
     if (fetchedConfiguration.status && fetchedConfiguration.status !== 200 ) {
       this.props.dispatch(configurationError(fetchedConfiguration))
-      this.setState({loading: false})
+      this.props.dispatch(configurationLoading(false))
       return
     }
     else {
-      //this.props.dispatch(configuration( JSON.parse(fetchedConfiguration.data.configuration) ))
-      this.setState({configuration: JSON.parse(fetchedConfiguration.data.configuration)} )
-      this.setState({loading: false})
+      this.props.dispatch(configuration(JSON.parse(fetchedConfiguration.data.configuration)))
+      this.props.dispatch(configurationLoading(false))
     }
   }
 
-  fetchConfiguration = async () => {
+  configurationGet = async () => {
     let r
     let rest = new Rest(
       "GET",
       resp => {
-
         r = resp
       },
       error => {
@@ -86,12 +84,11 @@ class Manager extends React.Component {
   addRecord = () => {
     let list = []
     let n
-    if (this.state.configuration.length === 0) {
+    if (this.props.configuration.length === 0) {
       n = 1
     }
-    this.state.configuration.forEach(r => {
+    this.props.configuration.forEach(r => {
       list.push(Number(r.id))
-
     });
 
     let m = Math.max(...list)
@@ -99,40 +96,38 @@ class Manager extends React.Component {
       n = m + 1
     }
 
-    let l = JSON.parse(JSON.stringify(this.state.configuration))
+    let l = JSON.parse(JSON.stringify(this.props.configuration))
     let r = {id: n}
     l.push(r)
-    this.setState({configuration: l} )
+    this.props.dispatch(configuration((l)))
   }
 
   removeRecord = r => {
-    let configuration = JSON.parse(JSON.stringify(this.state.configuration))
-    let newList = configuration.filter(n => {
+    let conf = JSON.parse(JSON.stringify(this.props.configuration))
+    let newList = conf.filter(n => {
       return r.id !== n.id
     })
-    this.setState({configuration: newList})
+    this.props.dispatch(configuration((newList)))
   }
 
-  setNetwork = (e, id) => {
-    let configuration = JSON.parse(JSON.stringify(this.state.configuration))
-    let record = configuration.find( r => r.id === id )
-    record.network = e.target.value
-    this.setState({configuration: configuration})
+  keySet = (e, id) => {
+    let conf = JSON.parse(JSON.stringify(this.props.configuration))
+    let record = conf.find( r => r.id === id )
+    record.key = e.target.value
+    this.props.dispatch(configuration((conf)))
   }
 
-  setSnat = (e, id) => {
-    let configuration = JSON.parse(JSON.stringify(this.state.configuration))
-    let record = configuration.find( r => r.id === id )
-    record.snat = e.target.value
-    this.setState({configuration: configuration})
+  valueSet = (e, id) => {
+    let conf = JSON.parse(JSON.stringify(this.props.configuration))
+    let record = conf.find( r => r.id === id )
+    record.value = e.target.checked
+    this.props.dispatch(configuration((conf)))
   }
-
-
 
 
   modifyConfiguration = async () => {
-    let conf = JSON.stringify(this.state.configuration)
-    console.log(conf)
+    let conf = JSON.stringify(this.props.configuration)
+
     const b = {
       "data":
         {
@@ -140,7 +135,7 @@ class Manager extends React.Component {
         }
       }
 
-    this.setState({loading: true})
+    this.props.dispatch(configurationLoading(true))
 
     let rest = new Rest(
       "PUT",
@@ -149,47 +144,46 @@ class Manager extends React.Component {
       },
       error => {
         this.props.dispatch(configurationError(error))
-        this.setState({loading: false})
+        this.props.dispatch(configurationLoading(false))
       }
     )
     await rest.doXHR(`f5/configuration/global/`, this.props.token, b )
-
   }
 
 
 
   render() {
 
-    console.log(this.state.configuration)
+    console.log(this.props.configuration)
 
     const columns = [
       {
-        title: 'Network',
+        title: 'Key',
         align: 'center',
-        dataIndex: 'network',
-        key: 'network',
+        dataIndex: 'key',
+        key: 'key',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.networkError ?
-              <Input id='network' defaultValue={obj.network} style={{ width: '250px', borderColor: 'red' }} onBlur={e => this.setNetwork(e, obj.id)} />
+            {obj.keyError ?
+              <Input id='key' defaultValue={obj.key} style={{ width: '250px', borderColor: 'red' }} onBlur={e => this.keySet(e, obj.id)} />
             :
-              <Input id='network' defaultValue={obj.network} style={{ width: '250px'}} onBlur={e => this.setNetwork(e, obj.id)} />
+              <Input id='key' defaultValue={obj.key} style={{ width: '250px'}} onBlur={e => this.keySet(e, obj.id)} />
             }
           </React.Fragment>
         ),
 
       },
       {
-        title: 'Snat',
+        title: 'Value',
         align: 'center',
-        dataIndex: 'snat',
-        key: 'snat',
+        dataIndex: 'value',
+        key: 'value',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.snatError ?
-              <Input id='snat' defaultValue={obj.snat} style={{ width: '250px', borderColor: 'red' }} onBlur={e => this.setSnat(e, obj.id)} />
+            {obj.valueError ?
+              <Checkbox style={{ borderColor: 'red' }} checked={obj.value} onChange={e => this.valueSet(e, obj.id)}/>
             :
-              <Input id='snat' defaultValue={obj.snat} style={{ width: '250px'}} onBlur={e => this.setSnat(e, obj.id)} />
+              <Checkbox style={{ borderColor: 'red' }} checked={obj.value} onChange={e => this.valueSet(e, obj.id)}/>
             }
           </React.Fragment>
         ),
@@ -213,38 +207,35 @@ class Manager extends React.Component {
     }
     return (
       <React.Fragment>
+        {this.props.configurationLoading ?
+          <Spin indicator={spinIcon} style={{margin: '20% 48%'}}/>
+        :
+          <React.Fragment>
+            <br/>
+            <Button type="primary" onClick={() => this.addRecord()}>
+              +
+            </Button>
+            <br/>
+            <br/>
 
-      {this.state.loading ?
-        <Spin indicator={spinIcon} style={{margin: '20% 48%'}}/>
-      :
-        <React.Fragment>
-          <br/>
-          <Button type="primary" onClick={() => this.addRecord()}>
-            +
-          </Button>
-          <br/>
-          <br/>
+            <Table
+              columns={columns}
+              dataSource={this.props.configuration}
+              bordered
+              rowKey={randomKey}
+              scroll={{x: 'auto'}}
+              pagination={{ pageSize: 10 }}
+              style={{marginBottom: 10}}
+            />
 
-          <Table
-            columns={columns}
-            dataSource={this.state.configuration}
-            bordered
-            rowKey={randomKey}
-            scroll={{x: 'auto'}}
-            pagination={{ pageSize: 10 }}
-            style={{marginBottom: 10}}
-          />
-
-          <Button type="primary" style={{float: "right", marginTop: '15px'}} onClick={() => this.modifyConfiguration()} >
-            modifyConfiguration
-          </Button>
-        </React.Fragment>
-      }
-
-
-
+            <Button type="primary" style={{float: "right", marginTop: '15px'}} onClick={() => this.modifyConfiguration()} >
+              modifyConfiguration
+            </Button>
+          </React.Fragment>
+        }
 
         { this.props.configurationError ? <Error component={'manager f5'} error={[this.props.configurationError]} visible={true} type={'configurationError'} /> : null }
+
       </React.Fragment>
     )
   }
@@ -253,6 +244,8 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
+  configurationLoading: state.f5.configurationLoading,
+  configuration: state.f5.configuration,
   configurationError: state.f5.configurationError,
   configurationFetch: state.f5.configurationFetch,
 }))(Manager);

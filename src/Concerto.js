@@ -1,19 +1,28 @@
 import React from 'react'
+import {connect} from "react-redux"
 import { Component, } from "react"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
+import './App.css'
+import 'antd/dist/antd.css'
+import { Layout, Avatar, Menu, Dropdown  } from 'antd'
+import { UserOutlined } from '@ant-design/icons'
+
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 
 import {
   logout
 } from './_store/store.authentication'
+
 import {
   authorizations,
   authorizationsError
 } from './_store/store.authorizations'
 
-import { Layout, Avatar, Menu, Dropdown  } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
+import {
+  configuration,
+  configurationError
+} from './f5/store.f5'
 
 import CustomSider from './concerto/sider'
 import Homepage from './concerto/homepage'
@@ -30,10 +39,6 @@ import Infoblox from './infoblox/infoblox'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
-import './App.css';
-import 'antd/dist/antd.css';
-import {connect} from "react-redux";
-
 const { Header, Content } = Layout;
 
 
@@ -47,7 +52,8 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    this.fetchAuthorizations()
+    this.authorizationsGet()
+    this.configurationGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -61,18 +67,31 @@ class Concerto extends Component {
   }
 
 
-  fetchAuthorizations = async () => {
+  authorizationsGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {
         console.log(resp)
-        this.props.dispatch(authorizations( resp ))
+        this.props.dispatch(authorizations(resp))
       },
       error => {
         this.props.dispatch(authorizationsError(error))
       }
     )
     await rest.doXHR(`authorizations/`, this.props.token)
+  }
+
+  configurationGet = async () => {
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(configuration(JSON.parse(resp.data.configuration)))
+      },
+      error => {
+        this.props.dispatch(configurationError(error))
+      }
+    )
+    await rest.doXHR("f5/configuration/global/", this.props.token)
   }
 
   resetPassword = () => {

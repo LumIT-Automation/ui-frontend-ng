@@ -101,6 +101,8 @@ import {
   historysError,
 
   configurationError,
+  configurationModify,
+  configurationModifyError,
 
   genericError
 
@@ -361,6 +363,9 @@ class Error extends Component {
 
         case 'configurationError':
             this.props.dispatch(configurationError(null))
+            break;
+        case 'configurationModifyError':
+            this.props.dispatch(configurationModifyError(null))
             break;
 
         default:

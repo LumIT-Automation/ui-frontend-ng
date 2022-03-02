@@ -410,6 +410,13 @@ const f5Slice = createSlice({
           state.configurationError = action.payload
         },
 
+        configurationModify: ( state, action) => {
+          state.configurationModify = action.payload
+        },
+        configurationModifyError: ( state, action) => {
+          state.configurationModifyError = action.payload
+        },
+
         genericError: ( state, action) => {
           state.genericError = action.payload
         },
@@ -613,6 +620,9 @@ export const {
   configuration,
   configurationFetch,
   configurationError,
+
+  configurationModify,
+  configurationModifyError,
 
   genericError,
 
