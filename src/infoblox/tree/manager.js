@@ -11,7 +11,7 @@ import {
   treeLoading,
   tree,
   treeFetch,
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 import List from './list'
 

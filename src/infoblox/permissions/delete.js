@@ -9,7 +9,7 @@ import Error from '../../error/infobloxError'
 import {
   permissionsFetch,
   permissionDeleteError
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />

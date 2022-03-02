@@ -1,7 +1,7 @@
 import React from 'react';
 import { connect } from 'react-redux'
 
-import { environment, asset } from '../../_store/store.infoblox'
+import { environment, asset } from '../store.infoblox'
 
 import "antd/dist/antd.css"
 import { Form, Select, Row } from 'antd';

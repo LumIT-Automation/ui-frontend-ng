@@ -7,7 +7,7 @@ import Error from '../../error/infobloxError'
 
 import {
   ipReleaseError,
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 import AssetSelector from './assetSelector'
 

@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import { assetsFetch, assetDeleteError } from '../../_store/store.infoblox'
+import { assetsFetch, assetDeleteError } from '../store.infoblox'
 
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'

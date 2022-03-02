@@ -1,6 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin, Divider } from 'antd';
+import { Tabs, Space, Spin, Divider } from 'antd'
+import 'antd/dist/antd.css';
+import '../App.css'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
 import Error from '../error/f5Error'
@@ -27,10 +30,6 @@ import {
   resetObjects
 } from '../f5/store.f5'
 
-import 'antd/dist/antd.css';
-import '../App.css'
-
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -239,7 +238,6 @@ class F5 extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	assetsError: state.f5.assetsError,
   authorizations: state.authorizations.f5,
 
   nodesLoading: state.f5.nodesLoading,
@@ -250,4 +248,5 @@ export default connect((state) => ({
   profilesLoading: state.f5.profilesLoading,
   virtualServersLoading: state.f5.virtualServersLoading,
 
+  assetsError: state.f5.assetsError,
 }))(F5);

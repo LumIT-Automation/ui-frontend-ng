@@ -26,7 +26,6 @@ import {
   treeError,
   networksError,
   containersError,
-  realNetworksError,
 
   ipDetailError,
   networkError,
@@ -39,7 +38,7 @@ import {
 
   genericError
 
-} from '../_store/store.infoblox'
+} from '../infoblox/store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -129,9 +128,6 @@ class Error extends Component {
         case 'containersError':
           console.log('case giusto')
         	this.props.dispatch(containersError(null))
-        	break;
-        case 'realNetworksError':
-        	this.props.dispatch(realNetworksError(null))
         	break;
 
         case 'ipDetailError':

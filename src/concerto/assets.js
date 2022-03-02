@@ -1,16 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin } from 'antd';
+import { Tabs, Space, Spin } from 'antd'
+import 'antd/dist/antd.css'
+import '../App.css'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 
 import { assetsFetch as f5AssetsFetch } from '../f5/store.f5'
-import { assetsFetch as infobloxAssetsFetch } from '../_store/store.infoblox'
+import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store.infoblox'
 
-import 'antd/dist/antd.css';
-import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 

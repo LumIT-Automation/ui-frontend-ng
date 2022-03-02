@@ -7,7 +7,7 @@ import Error from '../../error/infobloxError'
 import {
   assets,
   assetsError
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 import DetailsIp from './detailsIp'
 import RequestIp from './requestIp'

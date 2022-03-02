@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 
 import Error from '../error/infobloxError'
 
-import { environment, asset } from '../_store/store.infoblox'
+import { environment, asset } from '../infoblox/store.infoblox'
 
 import "antd/dist/antd.css"
 import { Space, Form, Select, Row } from 'antd';

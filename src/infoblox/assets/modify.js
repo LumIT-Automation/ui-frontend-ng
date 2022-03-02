@@ -4,7 +4,7 @@ import "antd/dist/antd.css"
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/infobloxError'
 
-import { assetsFetch, assetModifyError } from '../../_store/store.infoblox'
+import { assetsFetch, assetModifyError } from '../store.infoblox'
 
 import { Form, Input, Button, Modal, Radio, Spin, Result } from 'antd';
 

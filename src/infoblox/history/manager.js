@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import Error from '../../error/infobloxError'
 import Rest from '../../_helpers/Rest'
 
@@ -10,9 +10,10 @@ import {
   historysFetch,
   historysError,
 
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 import List from './list'
+
 
 
 class Manager extends React.Component {
@@ -86,6 +87,7 @@ class Manager extends React.Component {
         <List/>
 
         { this.props.historysError ? <Error component={'manager infoblox'} error={[this.props.historysError]} visible={true} type={'historysError'} /> : null }
+        
       </React.Fragment>
     )
   }

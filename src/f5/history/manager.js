@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import Error from '../../error/f5Error'
 import Rest from '../../_helpers/Rest'
 
@@ -86,6 +86,7 @@ class Manager extends React.Component {
         <List/>
 
         { this.props.historysError ? <Error component={'manager f5'} error={[this.props.historysError]} visible={true} type={'historysError'} /> : null }
+        
       </React.Fragment>
     )
   }

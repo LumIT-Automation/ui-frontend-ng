@@ -6,7 +6,7 @@ import Error from '../../error/infobloxError'
 
 import {
   rolesError
-} from '../../_store/store.infoblox'
+} from '../store.infoblox'
 
 import { Space, Modal, Table, List } from 'antd';
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';

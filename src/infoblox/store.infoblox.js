@@ -94,43 +94,11 @@ const infobloxSlice = createSlice({
         state.treeError = action.payload
       },
 
-      networksLoading: (state, action) => {
-        state.networksLoading = action.payload
-      },
-      networks: (state, action) => {
-        state.networks = action.payload.data
-      },
-      networksFetch: (state, action) => {
-        state.networksFetch = action.payload
-      },
       networksError: (state, action) => {
         state.networksError = action.payload
       },
-
-      containersLoading: (state, action) => {
-        state.containersLoading = action.payload
-      },
-      containers: (state, action) => {
-        state.containers = action.payload.data
-      },
-      containersFetch: (state, action) => {
-        state.containersFetch = action.payload
-      },
       containersError: (state, action) => {
         state.containersError = action.payload
-      },
-
-      realNetworksLoading: (state, action) => {
-        state.realNetworksLoading = action.payload
-      },
-      realNetworks: (state, action) => {
-        state.realNetworks = action.payload
-      },
-      realNetworksFetch: (state, action) => {
-        state.RealNetworksFetch = action.payload
-      },
-      realNetworksError: (state, action) => {
-        state.RealNetworksError = action.payload
       },
 
       ipDetailError: (state, action) => {
@@ -217,20 +185,8 @@ export const {
   treeFetch,
   treeError,
 
-  networksLoading,
-  networks,
-  networksFetch,
   networksError,
-
-  containersLoading,
-  containers,
-  containersFetch,
   containersError,
-
-  realNetworksLoading,
-  realNetworks,
-  realNetworksFetch,
-  realNetworksError,
 
   ipDetailError,
   networkError,

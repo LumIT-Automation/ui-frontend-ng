@@ -10,7 +10,7 @@ import F5 from '../f5/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
 
 import { permissionsFetch as f5PermissionsFetch } from '../f5/store.f5'
-import { permissionsFetch as infobloxPermissionsFetch } from '../_store/store.infoblox'
+import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store.infoblox'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
