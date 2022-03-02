@@ -7,6 +7,9 @@ import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
 
+import Modify from '../services/modifyIp'
+import Delete from '../services/releaseIp'
+
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
@@ -152,14 +155,30 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'modify',
         key: 'modify',
-        ...this.getColumnSearchProps('modify'),
+        /*render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.ipv4_patch || this.props.authorizations.any) ?
+              <Modify name={name} obj={obj} />
+            :
+              '-'
+            }
+          </Space>
+        ),*/
       },
       {
         title: 'release',
         align: 'center',
         dataIndex: 'release',
         key: 'release',
-        ...this.getColumnSearchProps('release'),
+        /*render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.ipv4_delete || this.props.authorizations.any) ?
+              <Delete name={name} obj={obj} />
+            :
+              '-'
+            }
+          </Space>
+        ),*/
       },
     ];
 
@@ -187,5 +206,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.infoblox,
 }))(List);

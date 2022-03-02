@@ -1,15 +1,15 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
+import { Space, Modal, Table, List } from 'antd'
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+
+import Rest from '../../_helpers/Rest'
 import Error from '../../error/infobloxError'
 
 import {
   rolesError
 } from '../store.infoblox'
-
-import { Space, Modal, Table, List } from 'antd';
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 
 
 
@@ -40,14 +40,14 @@ class RolesDescription extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.showRoles()
+    this.rolesGet()
   }
 
-  showRoles = async () => {
-
+  rolesGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
@@ -55,7 +55,7 @@ class RolesDescription extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`infoblox/roless/?related=privileges`, this.props.token)
+    await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
   }
 
   beautifyPriv = () => {
@@ -68,7 +68,6 @@ class RolesDescription extends React.Component {
       newRole.description = fetchedList[r].description
       newRole.privileges = <List size="small" dataSource={fetchedList[r].privileges} renderItem={item => <List.Item >{item}</List.Item>} />
       newList.push(newRole)
-
     }
     this.setState({rolesBeauty: newList})
   }

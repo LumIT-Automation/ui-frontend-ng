@@ -1,13 +1,15 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import "antd/dist/antd.css"
+import { Space, Modal, Table, List } from 'antd'
+import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
 
-import { rolesError } from '../store.f5'
-
-import { Space, Modal, Table, List } from 'antd';
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import {
+  rolesError
+} from '../store.f5'
 
 
 
@@ -38,13 +40,14 @@ class RolesDescription extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.roles()
+    this.rolesGet()
   }
 
-  roles = async () => {
+  rolesGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {
@@ -65,7 +68,6 @@ class RolesDescription extends React.Component {
       newRole.description = fetchedList[r].description
       newRole.privileges = <List size="small" dataSource={fetchedList[r].privileges} renderItem={item => <List.Item >{item}</List.Item>} />
       newList.push(newRole)
-
     }
     this.setState({rolesBeauty: newList})
   }
