@@ -1,5 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import "antd/dist/antd.css"
+import { Select, Row, Col, Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from "../_helpers/Rest"
 import Error from '../error/f5Error'
@@ -11,11 +14,8 @@ import {
   partitionsError,
 } from '../f5/store.f5'
 
-import "antd/dist/antd.css"
-import { Select, Row, Col, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons'
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+
 
 
 class AssetSelector extends React.Component {
@@ -79,7 +79,7 @@ class AssetSelector extends React.Component {
 
   asset = async address => {
     let fetchedAsset = await this.assetSelect(address)
-    this.fetchPartitions(fetchedAsset)
+    this.partitionsGet(fetchedAsset)
     this.props.dispatch(asset(fetchedAsset))
     this.props.dispatch(partition(null))
   }
@@ -92,7 +92,7 @@ class AssetSelector extends React.Component {
     return asset
   }
 
-  fetchPartitions = async (asset) => {
+  partitionsGet = async (asset) => {
     this.setState({partitionsLoading: true})
     let rest = new Rest(
       "GET",
@@ -212,12 +212,13 @@ class AssetSelector extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
-  partitionsError: state.f5.partitionsError,
   authorizations: state.authorizations.f5,
+
   environment: state.f5.environment,
   assets: state.f5.assets,
   asset: state.f5.asset,
   partitions: state.f5.partitions,
   partition: state.f5.partition,
+
+  partitionsError: state.f5.partitionsError,
 }))(AssetSelector);

@@ -10,7 +10,7 @@ import {
   ipModifyError,
 } from '../store.infoblox'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../assetSelector'
 
 import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'

@@ -1,16 +1,14 @@
 import React from 'react'
 import { connect } from 'react-redux'
+import "antd/dist/antd.css"
+import { Select, Row, Col, Spin } from 'antd'
 
 import Error from '../error/infobloxError'
-
 import { environment, asset } from '../infoblox/store.infoblox'
 
-import "antd/dist/antd.css"
-import { Space, Form, Select, Row } from 'antd';
 
 
-
-class InfobloxAssetSelector extends React.Component {
+class AssetSelector extends React.Component {
 
   constructor(props) {
     super(props);
@@ -44,7 +42,7 @@ class InfobloxAssetSelector extends React.Component {
   }
 
   environmentList = () => {
-    const items = Object.assign([], this.props.assets)
+    const items = JSON.parse(JSON.stringify(this.props.assets))
     const list = items.map( e => {
       return e.environment
     })
@@ -94,66 +92,71 @@ class InfobloxAssetSelector extends React.Component {
     }
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
 
   render() {
     return (
-        <Space direction='vertical' style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
-        <br/>
-          <Row>
-            <Form
-              labelCol={{ span: 25 }}
-              wrapperCol={{ span: 40 }}
-              layout="inline"
-              initialValues={{
-                size: 'default',
-              }}
-              size={'default'}
+      <React.Fragment>
+      <br/>
+        <Row style={{paddingLeft: '300px'}}>
+        <Col>
+          Environment:
+          <Select
+            showSearch
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onChange={e => this.environment(e)}
+            style={{ width: 200, marginLeft: '10px' }}
+          >
+            {this.state.environments.map((n, i) => {
+            return (
+              <Select.Option key={i} value={n}>{n}</Select.Option>
+            )
+          })}
+          </Select>
+        </Col>
+
+        <Col offset={1}>
+          Asset:
+          { this.state.envAssets ?
+            <Select
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onChange={n => this.asset(n)}
+              style={{ width: 350, marginLeft: '10px' }}
             >
-              <Form.Item name='environment' label="Environment">
-                <Select onChange={e => this.environment(e)} style={{ width: 200 }}>
-
-                  {this.state.environments.map((n, i) => {
-                  return (
-                    <Select.Option  key={i} value={n}>{n}</Select.Option>
-                  )
-                })}
-                </Select>
-
-              </Form.Item>
-
-              <Form.Item name='asset' label="Asset">
-                <Select onChange={a => this.asset(a)} style={{ width: 350 }}>
-
-                  {this.state.envAssets.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
-                  )
-                })}
-                </Select>
-
-              </Form.Item>
-
-            </Form>
-
-          </Row>
-
-
-        {this.props.error ? <Error error={[this.props.error]} visible={true} resetError={() => this.resetError()} /> : <Error visible={false} />}
-
-        </Space>
-      )
+            {this.state.envAssets.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
+              )
+            })}
+            </Select>
+            :
+            <Select disabled value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
+            </Select>
+          }
+        </Col>
+        </Row>
+      </React.Fragment>
+    )
   }
 };
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
   authorizations: state.authorizations.infoblox,
+
   environment: state.infoblox.environment,
   assets: state.infoblox.assets,
   asset: state.infoblox.asset,
-}))(InfobloxAssetSelector);
+}))(AssetSelector);

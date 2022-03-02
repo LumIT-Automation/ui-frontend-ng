@@ -13,7 +13,7 @@ import {
   nextAvailableIpError,
 } from '../store.infoblox'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../assetSelector'
 
 import { Space, Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
