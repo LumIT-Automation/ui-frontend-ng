@@ -1,13 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Table, Input, Button, Space, Spin, Collapse } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
 
-import { Table, Input, Button, Space, Spin, Collapse } from 'antd'
-
-import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
@@ -116,33 +115,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  closeModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
-
-
-
-  fetchIps = async network => {
-    this.setState({ipLoading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        //this.props.dispatch( tree(resp) )
-
-        this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
-      },
-      error => {
-        this.setState({error: error, ipLoading: false})
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=ip`, this.props.token)
-    //this.props.dispatch(treeLoading(false))
-    //this.setState({visible: true})
-  }
-
-
 
   render() {
 
@@ -195,7 +167,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         { this.props.ipLoading ?
           <Spin indicator={spinIcon} style={{margin: '50% 45%'}}/>
-          :
+        :
           <Table
             columns={columns}
             dataSource={this.props.ipv4Info}
@@ -207,7 +179,6 @@ class List extends React.Component {
             style={{marginBottom: 50}}
           />
         }
-
       </Space>
 
     )
@@ -217,8 +188,4 @@ class List extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
-  
-  asset: state.infoblox.asset,
-
-  tree: state.infoblox.tree
 }))(List);

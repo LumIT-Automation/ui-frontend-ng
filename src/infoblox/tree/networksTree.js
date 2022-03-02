@@ -1,17 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-
-import Rest from "../../_helpers/Rest"
-
-import Ip from './ip'
-
+import 'antd/dist/antd.css'
 import { Tree, Space, Collapse, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/infobloxError'
+
+import IpsList from './ipsList'
 
 
-class List extends React.Component {
+
+class NetworksTree extends React.Component {
 
   constructor(props) {
     super(props);
@@ -28,7 +28,7 @@ class List extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -38,20 +38,13 @@ class List extends React.Component {
   }
 
 
-  closeModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
 
-  fetchIps = async network => {
+  ipsGet = async network => {
     this.setState({ipLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch( tree(resp) )
-
-        this.setState({ipv4Info: resp.data[1].ipv4Info, ipLoading: false})
+        this.setState({ipv4Info: resp.data.ipv4Info, ipLoading: false})
       },
       error => {
         this.setState({error: error, ipLoading: false})
@@ -64,12 +57,12 @@ class List extends React.Component {
 
 
   onSelect = (selectedKeys, info) => {
-
     if (info.node.type === 'network') {
+      console.log(info.node)
       let n = info.node.title
       n = n.split('/')
       n = n[0]
-      this.setState({ network: n}, () => this.fetchIps(n))
+      this.setState({ network: n}, () => this.ipsGet(n))
     }
   }
 
@@ -81,8 +74,8 @@ class List extends React.Component {
 
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Row gutter={200}>
-          <Col>
+        <Row>
+          <Col span={6}>
             <Tree
               defaultExpandAll
               showLine
@@ -94,10 +87,10 @@ class List extends React.Component {
               treeData={this.props.tree}
             />
           </Col>
-          <Col >
+          <Col offset={2} span={14}>
             { this.state.network ?
-              <Ip ipLoading={this.state.ipLoading} ipv4Info={this.state.ipv4Info} />
-              :
+              <IpsList ipLoading={this.state.ipLoading} ipv4Info={this.state.ipv4Info} />
+            :
               null
             }
           </Col>
@@ -112,8 +105,8 @@ class List extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
-  
+
   asset: state.infoblox.asset,
 
   tree: state.infoblox.tree
-}))(List);
+}))(NetworksTree);
