@@ -211,18 +211,6 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  monitorSendStringSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.monitorSendString = e.target.value
-    this.setState({request: request})
-  }
-
-  monitorReceiveStringSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.monitorReceiveString = e.target.value
-    this.setState({request: request})
-  }
-
   nodeAdd = () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let nodes = request.nodes
@@ -378,32 +366,8 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (request.monitorType === 'L7' && !request.monitorSendString) {
-      errors.monitorSendStringError = true
-      errors.monitorSendStringColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.monitorSendStringError
-      delete errors.monitorSendStringColor
-      this.setState({errors: errors})
-    }
-
-    if (request.monitorType === 'L7' && !request.monitorReceiveString) {
-      errors.monitorReceiveStringError = true
-      errors.monitorReceiveStringColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.monitorReceiveStringError
-      delete errors.monitorReceiveStringColor
-      this.setState({errors: errors})
-    }
-
     if (nodes.length > 0) {
       nodes.forEach((node, i) => {
-        console.log(i)
-        //let index = nodes.findIndex((obj => obj.id === node.id))
         errors[node.id] = {}
 
         if (node.address && validators.ipv4(node.address)) {
@@ -539,7 +503,7 @@ class CreateF5Service extends React.Component {
     }
 
     this.setState({loading: true})
-    
+
     let rest = new Rest(
       "POST",
       resp => {

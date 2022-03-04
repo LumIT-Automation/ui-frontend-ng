@@ -15,21 +15,12 @@ import {
   dataGroups,
   dataGroupsError,
 
-  snatPools,
-  snatPoolsError,
-  snatPoolAddError,
-  irules,
-  irulesError,
-  iruleAddError,
-  certificates,
-  certificatesError,
-  keys,
-  keysError,
   l7ServiceCreateError
 } from '../store.f5'
 
 import AssetSelector from '../../f5/assetSelector'
 
+const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
@@ -47,17 +38,18 @@ class CreateF5Service extends React.Component {
       errors: {},
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypes: ['tcp-half-open', 'http'],
-      request: {
-        routeDomain: '',
-        certificate: null,
-        key: null,
-        source: "0.0.0.0/0",
-        nodes: []
-      }
+      request: {}
     };
   }
 
   componentDidMount() {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let list = []
+    list.push({id: 1})
+    request.nodes = list
+    request.routeDomain = ''
+    request.source = '0.0.0.0/0'
+    this.setState({request: request})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -65,10 +57,25 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
+    }
+    if ( (this.state.request && !this.state.request.nodes) || this.state.request.nodes.length <= 0) {
+      let list = []
+      list.push({id: 1})
+      request.nodes = list
+      this.setState({request: request})
+    }
+    if (!('routeDomain' in request)) {
+      request.routeDomain = ''
+      this.setState({request: request})
+    }
+    if (!('source' in request)) {
+      request.source = '0.0.0.0/0'
+      this.setState({request: request})
     }
   }
 
@@ -91,50 +98,29 @@ class CreateF5Service extends React.Component {
       this.props.dispatch(routeDomains( routeDomainsFetched ))
     }
 
-    await this.setState({snatPoolsLoading: true})
-    let snatPoolsFetched = await this.snatPoolsFetch()
-    await this.setState({snatPoolsLoading: false})
-    if (snatPoolsFetched.status && snatPoolsFetched.status !== 200 ) {
-      this.props.dispatch(snatPoolsError(snatPoolsFetched))
+    await this.setState({dataGroupsLoading: true})
+    let dataGroupsFetched = await this.dataGroupsFetch()
+    await this.setState({dataGroupsLoading: false})
+    if (dataGroupsFetched.status && dataGroupsFetched.status !== 200 ) {
+      this.props.dispatch(dataGroupsError(dataGroupsFetched))
       return
     }
     else {
-      this.props.dispatch(snatPools( snatPoolsFetched ))
+      let list = []
+      dataGroupsFetched.data.items.forEach((dg, i) => {
+        if (dg.type === 'ip') {
+          if (dg.records) {
+            dg.records.forEach((record, i) => {
+              if (record.name) {
+                list.push(dg)
+              }
+            });
+          }
+        }
+      })
+      this.setState({networkDataGroups: list})
+      //this.props.dispatch(dataGroups( dataGroupsFetched ))
     }
-
-    await this.setState({irulesLoading: true})
-    let irulesFetched = await this.irulesFetch()
-    await this.setState({irulesLoading: false})
-    if (irulesFetched.status && irulesFetched.status !== 200 ) {
-      this.props.dispatch(irulesError(irulesFetched))
-      return
-    }
-    else {
-      this.props.dispatch(irules( irulesFetched ))
-    }
-
-    await this.setState({certificatesLoading: true})
-    let fetchedCertificates = await this.certificatesFetch()
-    await this.setState({certificatesLoading: false})
-    if (fetchedCertificates.status && fetchedCertificates.status !== 200 ) {
-      this.props.dispatch(certificatesError(fetchedCertificates))
-      return
-    }
-    else {
-      this.props.dispatch(certificates( fetchedCertificates ))
-    }
-
-    await this.setState({keysLoading: true})
-    let fetchedKeys = await this.keysFetch()
-    await this.setState({keysLoading: false})
-    if (fetchedKeys.status && fetchedKeys.status !== 200 ) {
-      this.props.dispatch(keysError(fetchedKeys))
-      return
-    }
-    else {
-      this.props.dispatch(keys( fetchedKeys ))
-    }
-
   }
 
 
@@ -154,7 +140,7 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-  snatPoolsFetch = async () => {
+  dataGroupsFetch = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -165,52 +151,7 @@ class CreateF5Service extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpools/`, this.props.token)
-    return r
-  }
-
-  irulesFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irules/`, this.props.token)
-    return r
-  }
-
-  certificatesFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
-    return r
-  }
-
-  keysFetch = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/datagroups/internal/`, this.props.token)
     return r
   }
 
@@ -240,9 +181,9 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  iruleSet = name => {
+  codeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.irule = name
+    request.code = e.target.value
     this.setState({request: request})
   }
 
@@ -264,18 +205,6 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  certificateSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.certificate = e
-    this.setState({request: request})
-  }
-
-  keySet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.key = e
-    this.setState({request: request})
-  }
-
   monitorTypeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.monitorType = e
@@ -294,24 +223,38 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
+  certificateSet = cert => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.certificate = cert.target.value
+    this.setState({request: request})
+  }
+
+  keySet = key => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.key = key.target.value
+    this.setState({request: request})
+  }
+
   nodeAdd = () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let nodes = request.nodes
     let id = 0
     let n = 0
 
-    this.state.request.nodes.forEach(r => {
-      if (r.id > id) {
-        id = r.id
-      }
-    });
-    n = id + 1
+    if (nodes) {
+      nodes.forEach(node => {
+        if (node.id > id) {
+          id = node.id
+        }
+      });
+      n = id + 1
 
-    let node = {id: n}
-    nodes.push(node)
-    request.nodes = nodes
+      let node = {id: n}
+      nodes.push(node)
+      request.nodes = nodes
 
-    this.setState({request: request})
+      this.setState({request: request})
+    }
   }
 
   nodeRemove = r => {
@@ -390,6 +333,19 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (request.snat && request.snat === 'snat') {
+      if (!request.snatPoolAddress || !validators.ipv4(request.snatPoolAddress)) {
+        errors.snatPoolAddressError = true
+        errors.snatPoolAddressColor = 'red'
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.snatPoolAddressError
+        delete errors.snatPoolAddressColor
+        this.setState({errors: errors})
+      }
+    }
+
     if (!request.destination || !validators.ipv4(request.destination)) {
       errors.destinationError = true
       errors.destinationColor = 'red'
@@ -409,28 +365,6 @@ class CreateF5Service extends React.Component {
     else {
       delete errors.destinationPortError
       delete errors.destinationPortColor
-      this.setState({errors: errors})
-    }
-
-    if (!request.certificate) {
-      errors.certificateError = true
-      errors.certificateColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.certificateError
-      delete errors.certificateColor
-      this.setState({errors: errors})
-    }
-
-    if (!request.key) {
-      errors.keyError = true
-      errors.keyColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.keyError
-      delete errors.keyColor
       this.setState({errors: errors})
     }
 
@@ -456,7 +390,7 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (request.monitorType === 'L7' && !request.monitorSendString) {
+    if (request.monitorType === 'http' && !request.monitorSendString) {
       errors.monitorSendStringError = true
       errors.monitorSendStringColor = 'red'
       this.setState({errors: errors})
@@ -467,7 +401,7 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (request.monitorType === 'L7' && !request.monitorReceiveString) {
+    if (request.monitorType === 'http' && !request.monitorReceiveString) {
       errors.monitorReceiveStringError = true
       errors.monitorReceiveStringColor = 'red'
       this.setState({errors: errors})
@@ -478,9 +412,30 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (!request.certificate) {
+      errors.certificateError = true
+      errors.certificateColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.certificateError
+      delete errors.certificateColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.key) {
+      errors.keyError = true
+      errors.keyColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.keyError
+      delete errors.keyColor
+      this.setState({errors: errors})
+    }
+
     if (nodes.length > 0) {
       nodes.forEach((node, i) => {
-        let index = nodes.findIndex((obj => obj.id === node.id))
         errors[node.id] = {}
 
         if (node.address && validators.ipv4(node.address)) {
@@ -536,7 +491,8 @@ class CreateF5Service extends React.Component {
   l7ServiceCreate = async () => {
     let serviceName = this.state.request.serviceName
 
-    const b = {
+    let b = {}
+    b = {
       "data": {
         "virtualServer": {
           "name": `vs_${serviceName}`,
@@ -568,8 +524,8 @@ class CreateF5Service extends React.Component {
           {
             "name": `client-ssl_${serviceName}`,
             "type": "client-ssl",
-            "cert": this.state.request.certificate,
-            "key": this.state.request.key,
+            "cert": btoa(this.state.request.certificate),
+            "key": btoa(this.state.request.key),
             "chain": "",
             "context": "clientside"
           }
@@ -581,12 +537,36 @@ class CreateF5Service extends React.Component {
         },
         "monitor": {
           "name": `mon_${serviceName}`,
-          "type": this.state.request.monitorType,
-          "send": `${this.state.request.monitorSendString}`,
-          "recv": `${this.state.request.monitorReceiveString}`
+          "type": this.state.request.monitorType
         }
       }
     }
+
+    if (this.state.request.monitorType === 'http') {
+      b.data.monitor.send = this.state.request.monitorSendString
+      b.data.monitor.recv = this.state.request.monitorReceiveString
+    }
+
+    if (this.state.request.snat === 'snat') {
+      b.data.snatPool = {
+        "name": `snatpool_${serviceName}`,
+        "members": [
+          this.state.request.snatPoolAddress
+        ]
+      }
+    }
+
+    if (this.state.request.code) {
+      if ( (this.state.request.code !== '') || (this.state.request.code !== undefined) ) {
+        b.data.irules = [
+          {
+            "name": `irule_${serviceName}`,
+            "code": this.state.request.code
+          }
+        ]
+      }
+    }
+
 
     this.setState({loading: true})
 
@@ -616,7 +596,7 @@ class CreateF5Service extends React.Component {
       visible: false,
       response: false,
       request: {},
-      errors: []
+      errors: {}
     })
   }
 
@@ -710,121 +690,113 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
-                  </Col>
-                  <Col span={16}>
-                    { this.state.snatPoolsLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                {1 !== 0 ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
+                      </Col>
+                      <Col span={16}>
+                        <React.Fragment>
+                          {this.state.errors.snatError ?
+                            <Select
+                              defaultValue={this.state.request.snat}
+                              value={this.state.request.snat}
+                              showSearch
+                              style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.snatSet(n)}
+                            >
+                              <React.Fragment>
+                                <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                                <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.snat}
+                              value={this.state.request.snat}
+                              showSearch
+                              style={{width: 450}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.snatSet(n)}
+                            >
+                              <React.Fragment>
+                                <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                                <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    { this.state.request.snat === 'snat' ?
+                      <React.Fragment>
+                        <Row>
+                          <Col offset={2} span={6}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool address:</p>
+                          </Col>
+                          <Col span={16}>
+                            <React.Fragment>
+                              {this.state.errors.snatPoolAddressError ?
+                                <Input style={{width: 450, borderColor: this.state.errors.snatPoolAddressColor}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
+                              :
+                                <Input defaultValue={this.state.request.snatPoolAddress} style={{width: 450}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
+                              }
+                              <br/>
+                            </React.Fragment>
+                          </Col>
+                        </Row>
+                        <br/>
+                      </React.Fragment>
+                    :
+                      null
+                    }
+
+                    { this.props.configuration && this.props.configuration[0] && this.props.configuration[0].key === 'iruleHide' && this.props.configuration[0].value ?
+                      null
                     :
                       <React.Fragment>
-                        { this.props.snatPools && this.props.snatPools.length > 0 ?
-                          <React.Fragment>
-                            {this.state.errors.snatError ?
-                              <Select
-                                defaultValue={this.state.request.snat}
-                                value={this.state.request.snat}
-                                showSearch
-                                style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.snatSet(n)}
-                              >
-                                <React.Fragment>
-                                  <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                                  <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                  {this.props.snatPools.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              <Select
-                                defaultValue={this.state.request.snat}
-                                value={this.state.request.snat}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.snatSet(n)}
-                              >
-                                <React.Fragment>
-                                  <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                                  <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                  {this.props.snatPools.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            }
-                          </React.Fragment>
-                        :
-                          null
-                        }
+                        <Row>
+                          <Col offset={2} span={6}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
+                          </Col>
+                          <Col span={16}>
+                            <TextArea
+                              rows={5}
+                              defaultValue={this.state.request.code}
+                              value={this.state.request.code}
+                              style={{width: 450}}
+                              name="code"
+                              id='code'
+                              onChange={e => this.codeSet(e)}
+                            />
+                          </Col>
+                        </Row>
+                        <br/>
                       </React.Fragment>
                     }
-                  </Col>
-                </Row>
-                <br/>
 
-                <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Irule (optional):</p>
-                  </Col>
-                  <Col span={16}>
-                    { this.state.irulesLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                    <React.Fragment>
-                      { this.props.irules && this.props.irules.length > 0 ?
-                        <Select
-                          defaultValue={this.state.request.irule}
-                          value={this.state.request.irule}
-                          showSearch
-                          style={{width: 450}}
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                          }
-                          filterSort={(optionA, optionB) =>
-                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                          }
-                          onSelect={n => this.iruleSet(n)}
-                        >
-                          <React.Fragment>
-                            {this.props.irules.map((n, i) => {
-                              return (
-                                <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                              )
-                            })
-                            }
-                          </React.Fragment>
-                        </Select>
-                      :
-                        null
-                      }
-                    </React.Fragment>
-                    }
-                  </Col>
-                </Row>
-                <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
 
                 <Row>
                   <Col offset={2} span={6}>
@@ -859,66 +831,26 @@ class CreateF5Service extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate:</p>
                   </Col>
                   <Col span={16}>
-                    { this.state.certificatesLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    {this.state.errors.certificateError ?
+                      <TextArea
+                        rows={5}
+                        defaultValue={this.state.request.certificate}
+                        value={this.state.request.certificate}
+                        style={{width: 450, borderColor: 'red'}}
+                        name="certificate"
+                        id='certificate'
+                        onChange={e => this.certificateSet(e)}
+                      />
                     :
-                      <React.Fragment>
-                        { this.props.certificates && this.props.certificates.length > 0 ?
-                          <React.Fragment>
-                            {this.state.errors.certificateError ?
-                              <Select
-                                defaultValue={this.state.request.certificate}
-                                value={this.state.request.certificate}
-                                showSearch
-                                style={{width: 450, border: `1px solid ${this.state.errors.certificateColor}`}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.certificateSet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.certificates.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              <Select
-                                defaultValue={this.state.request.certificate}
-                                value={this.state.request.certificate}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.certificateSet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.certificates.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            }
-                          </React.Fragment>
-                        :
-                          null
-                        }
-                      </React.Fragment>
+                      <TextArea
+                        rows={5}
+                        defaultValue={this.state.request.certificate}
+                        value={this.state.request.certificate}
+                        style={{width: 450}}
+                        name="certificate"
+                        id='certificate'
+                        onChange={e => this.certificateSet(e)}
+                      />
                     }
                   </Col>
                 </Row>
@@ -929,66 +861,26 @@ class CreateF5Service extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
                   </Col>
                   <Col span={16}>
-                    { this.state.keysLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    {this.state.errors.keyError ?
+                      <TextArea
+                        rows={5}
+                        defaultValue={this.state.request.key}
+                        value={this.state.request.key}
+                        style={{width: 450, borderColor: 'red'}}
+                        name="key"
+                        id='key'
+                        onChange={e => this.keySet(e)}
+                      />
                     :
-                      <React.Fragment>
-                        { this.props.keys && this.props.keys.length > 0 ?
-                          <React.Fragment>
-                            {this.state.errors.keyError ?
-                              <Select
-                                defaultValue={this.state.request.key}
-                                value={this.state.request.key}
-                                showSearch
-                                style={{width: 450, border: `1px solid ${this.state.errors.keyColor}`}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.keySet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.keys.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            :
-                              <Select
-                                defaultValue={this.state.request.key}
-                                value={this.state.request.key}
-                                showSearch
-                                style={{width: 450}}
-                                optionFilterProp="children"
-                                filterOption={(input, option) =>
-                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                }
-                                filterSort={(optionA, optionB) =>
-                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                }
-                                onSelect={n => this.keySet(n)}
-                              >
-                                <React.Fragment>
-                                  {this.props.keys.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              </Select>
-                            }
-                          </React.Fragment>
-                        :
-                          null
-                        }
-                      </React.Fragment>
+                      <TextArea
+                        rows={5}
+                        defaultValue={this.state.request.key}
+                        value={this.state.request.key}
+                        style={{width: 450}}
+                        name="key"
+                        id='key'
+                        onChange={e => this.keySet(e)}
+                      />
                     }
                   </Col>
                 </Row>
@@ -1185,6 +1077,9 @@ class CreateF5Service extends React.Component {
                   let address = 'address' + n.id
                   let name = 'name' + n.id
                   let port = 'port' + n.id
+                  let randomKey = () => {
+                    return Math.random().toString()
+                  }
 
                   return (
                     <React.Fragment>
@@ -1194,9 +1089,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                            <Input key={address}  style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}} onChange={e => this.nodeAddressSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.address}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}}
+                              onChange={e => this.nodeAddressSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.address} key={address} style={{display: 'block', width: 450}} onChange={e => this.nodeAddressSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.address}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodeAddressSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
@@ -1207,9 +1112,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].nameError ?
-                            <Input key={name} name={name} id={name} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}} onChange={e => this.nodeNameSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.name}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}}
+                              onChange={e => this.nodeNameSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.name} key={name} name={name} id={name} style={{display: 'block', width: 450}} onChange={e => this.nodeNameSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.name}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodeNameSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
@@ -1220,9 +1135,19 @@ class CreateF5Service extends React.Component {
                         </Col>
                         <Col span={16}>
                           { this.state.errors[n.id] && this.state.errors[n.id].portError ?
-                            <Input key={port} name={port} id={port} style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}} onChange={e => this.nodePortSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.port}
+                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}}
+                              onChange={e => this.nodePortSet(n.id, e)}
+                            />
                           :
-                            <Input defaultValue={n.port} key={port} name={port} id={port} style={{display: 'block', width: 450}} onChange={e => this.nodePortSet(n.id, e)} />
+                            <Input
+                              key={i}
+                              defaultValue={n.port}
+                              style={{display: 'block', width: 450}}
+                              onChange={e => this.nodePortSet(n.id, e)}
+                            />
                           }
                         </Col>
                       </Row>
@@ -1267,15 +1192,7 @@ class CreateF5Service extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-
-            { this.props.snatPoolsError ? <Error component={'create loadbalancer'} error={[this.props.snatPoolsError]} visible={true} type={'snatPoolsError'} /> : null }
-            { this.props.snatPoolAddError ? <Error component={'create loadbalancer'} error={[this.props.snatPoolAddError]} visible={true} type={'snatPoolAddError'} /> : null }
-            { this.props.irulesError ? <Error component={'create loadbalancer'} error={[this.props.irulesError]} visible={true} type={'irulesError'} /> : null }
-            { this.props.iruleAddError ? <Error component={'create loadbalancer'} error={[this.props.iruleAddError]} visible={true} type={'iruleAddError'} /> : null }
-
-            { this.props.certificatesError ? <Error component={'create loadbalancer'} error={[this.props.certificatesError]} visible={true} type={'certificatesError'} /> : null }
-            { this.props.keysError ? <Error component={'create loadbalancer'} error={[this.props.keysError]} visible={true} type={'keysError'} /> : null }
-
+            { this.props.dataGroupsError ? <Error component={'create loadbalancer'} error={[this.props.dataGroupsError]} visible={true} type={'dataGroupsError'} /> : null }
             { this.props.l7ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l7ServiceCreateError]} visible={true} type={'l7ServiceCreateError'} /> : null }
           </React.Fragment>
         :
@@ -1292,23 +1209,14 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
+  configuration: state.f5.configuration,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
+  dataGroups: state.f5.dataGroups,
+
   routeDomainsError: state.f5.routeDomainsError,
-
-  irules: state.f5.irules,
-  irulesError: state.f5.irulesError,
-  iruleAddError: state.f5.iruleAddError,
-
-  snatPools: state.f5.snatPools,
-  snatPoolsError: state.f5.snatPoolsError,
-  snatPoolAddError: state.f5.snatPoolAddError,
-
-  certificates: state.f5.certificates,
-  certificatesError: state.f5.certificatesError,
-  keys: state.f5.keys,
-  keysError: state.f5.keysError,
-
+  dataGroupsError: state.f5.dataGroupsError,
   l7ServiceCreateError: state.f5.l7ServiceCreateError
 }))(CreateF5Service);
