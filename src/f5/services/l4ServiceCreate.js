@@ -1,6 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../error/f5Error'
@@ -17,15 +20,13 @@ import {
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
-
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
 }
+
 
 
 class CreateF5Service extends React.Component {
@@ -37,15 +38,18 @@ class CreateF5Service extends React.Component {
       errors: {},
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypes: ['tcp-half-open'],
-      request: {
-        routeDomain: '',
-        source: "0.0.0.0/0",
-        nodes: [{id: 1}]
-      }
+      request: {}
     };
   }
 
   componentDidMount() {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let list = []
+    list.push({id: 1})
+    request.nodes = list
+    request.routeDomain = ''
+    request.source = '0.0.0.0/0'
+    this.setState({request: request})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -53,16 +57,24 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
     }
-    if (this.state.request && this.state.request.nodes && this.state.request.nodes.length <= 0) {
-      let request = JSON.parse(JSON.stringify(this.state.request))
+    if ( (this.state.request && !this.state.request.nodes) || this.state.request.nodes.length <= 0) {
       let list = []
       list.push({id: 1})
       request.nodes = list
+      this.setState({request: request})
+    }
+    if (!('routeDomain' in request)) {
+      request.routeDomain = ''
+      this.setState({request: request})
+    }
+    if (!('source' in request)) {
+      request.source = '0.0.0.0/0'
       this.setState({request: request})
     }
   }
@@ -459,7 +471,6 @@ class CreateF5Service extends React.Component {
               request.snatPoolAddress = '192.168.12.68'
 
               let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
-              console.log(irule)
               request.code = irule
               this.setState({request: request})
             }
@@ -593,7 +604,7 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.props.configuration)
+    console.log(this.state.request)
     return (
       <React.Fragment>
 

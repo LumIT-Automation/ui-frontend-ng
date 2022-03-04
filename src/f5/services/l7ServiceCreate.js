@@ -1,6 +1,9 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../error/f5Error'
@@ -8,6 +11,9 @@ import Error from '../../error/f5Error'
 import {
   routeDomains,
   routeDomainsError,
+
+  dataGroups,
+  dataGroupsError,
 
   snatPools,
   snatPoolsError,
@@ -24,19 +30,13 @@ import {
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const layout = {
   labelCol: { span: 8 },
   wrapperCol: { span: 8 },
 }
 
-/*
-body: irule e snatpool
-@Marco irule nella post del servizio
-*/
+
 
 class CreateF5Service extends React.Component {
 
@@ -228,15 +228,21 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  iruleSet = name => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.irule = name
-    this.setState({request: request})
-  }
-
   snatSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.snat = e
+    this.setState({request: request})
+  }
+
+  snatPoolAddressSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.snatPoolAddress = e.target.value
+    this.setState({request: request})
+  }
+
+  iruleSet = name => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.irule = name
     this.setState({request: request})
   }
 
@@ -616,7 +622,6 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
     return (
       <React.Fragment>
 
