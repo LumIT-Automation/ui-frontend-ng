@@ -71,7 +71,6 @@ class Concerto extends Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(authorizations(resp))
       },
       error => {

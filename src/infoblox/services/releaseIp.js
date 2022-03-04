@@ -98,7 +98,6 @@ class ReleaseIp extends React.Component {
         request.ipError = null
       }
       else {
-        console.log('error')
         request.ipError = 'Please input a valid ip'
         error = true
       }
@@ -124,7 +123,6 @@ class ReleaseIp extends React.Component {
       this.setState({requests: requests})
       try {
         const resp = await this.releaseIp(request)
-        console.log(resp)
         request.isLoading = false
         if (resp.status !== 200) {
           request.isReleased = 'NOT RELEASED'
@@ -169,7 +167,6 @@ class ReleaseIp extends React.Component {
 
 
   render() {
-    console.log(this.state.requests)
 
     const requests = [
       {

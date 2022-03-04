@@ -230,9 +230,9 @@ class CreateF5Service extends React.Component {
     let n = 0
 
     if (nodes) {
-      nodes.forEach(r => {
-        if (r.id > id) {
-          id = r.id
+      nodes.forEach(node => {
+        if (node.id > id) {
+          id = node.id
         }
       });
       n = id + 1
@@ -402,7 +402,8 @@ class CreateF5Service extends React.Component {
 
     if (nodes.length > 0) {
       nodes.forEach((node, i) => {
-        let index = nodes.findIndex((obj => obj.id === node.id))
+        console.log(i)
+        //let index = nodes.findIndex((obj => obj.id === node.id))
         errors[node.id] = {}
 
         if (node.address && validators.ipv4(node.address)) {
@@ -453,6 +454,8 @@ class CreateF5Service extends React.Component {
     let validation = await this.validationCheck()
 
 
+    console.log(request)
+
 
     if (Object.keys(this.state.errors).length === 0) {
       let ips = []
@@ -461,22 +464,19 @@ class CreateF5Service extends React.Component {
         ips.push(node.address)
       })
 
-      this.state.networkDataGroups.forEach((dg, i) => {
-        dg.records.forEach((record, i) => {
-          if (record.name) {
-            if (validators.ipInSubnet(record.name, ips)) {
-              request.snat = 'snat'
-
-              //call infoblox
-              request.snatPoolAddress = '192.168.12.68'
-
-              let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
-              request.code = irule
-              this.setState({request: request})
+      if (request.snat === 'snat') {
+        this.state.networkDataGroups.forEach((dg, i) => {
+          dg.records.forEach((record, i) => {
+            if (record.name) {
+              if (validators.ipInSubnet(record.name, ips)) {
+                let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
+                request.code = irule
+                this.setState({request: request})
+              }
             }
-          }
-        });
-      });
+          });
+        })
+      }
       this.l4ServiceCreate()
     }
   }
@@ -484,94 +484,62 @@ class CreateF5Service extends React.Component {
 
   //DISPOSAL ACTION
   l4ServiceCreate = async () => {
+    console.log('post')
     let serviceName = this.state.request.serviceName
 
     let b = {}
+    b = {
+        "data": {
+          "virtualServer": {
+            "name": `vs_${serviceName}`,
+            "type": 'L4',
+            "snat": this.state.request.snat,
+            "routeDomainId": this.state.request.routeDomain,
+            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+            "mask": '255.255.255.255',
+            "source": '0.0.0.0/0'
+          },
+          "profiles": [
+            {
+              "name": `fastl4_${serviceName}`,
+              "type": "fastl4",
+              "idleTimeout": 300
+            }
+          ],
+          "pool": {
+            "name": `pool_${serviceName}`,
+            "loadBalancingMode": this.state.request.lbMethod,
+            "nodes": this.state.request.nodes
+          },
+          "monitor": {
+            "name": `mon_${serviceName}`,
+            "type": this.state.request.monitorType
+          }
+        }
+      }
 
     if (this.state.request.snat === 'snat') {
-      b = {
-        "data": {
-          "virtualServer": {
-            "name": `vs_${serviceName}`,
-            "type": 'L4',
-            "snat": this.state.request.snat,
-            "routeDomainId": this.state.request.routeDomain,
-            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-            "mask": '255.255.255.255',
-            "source": '0.0.0.0/0'
-          },
-          "profiles": [
-            {
-              "name": `fastl4_${serviceName}`,
-              "type": "fastl4",
-              "idleTimeout": 300
-            }
-          ],
-          "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.nodes
-          },
-          "irules": [
-            {
-              "name": `irule_${serviceName}`,
-              "code": this.state.request.code
-            }
-          ],
-          "snatPool": {
-            "name": `snatpool_${serviceName}`,
-            "members": [
-              this.state.request.snatPoolAddress
-            ]
-          },
-          "monitor": {
-            "name": `mon_${serviceName}`,
-            "type": this.state.request.monitorType
-          }
-        }
-      }
-    }
-    else {
-      b = {
-        "data": {
-          "virtualServer": {
-            "name": `vs_${serviceName}`,
-            "type": 'L4',
-            "snat": this.state.request.snat,
-            "routeDomainId": this.state.request.routeDomain,
-            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-            "mask": '255.255.255.255',
-            "source": '0.0.0.0/0'
-          },
-          "profiles": [
-            {
-              "name": `fastl4_${serviceName}`,
-              "type": "fastl4",
-              "idleTimeout": 300
-            }
-          ],
-          "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.nodes
-          },
-          "irules": [
-            {
-              "name": `irule_${serviceName}`,
-              "code": this.state.request.code
-            }
-          ],
-          "monitor": {
-            "name": `mon_${serviceName}`,
-            "type": this.state.request.monitorType
-          }
-        }
+      b.data.snatPool = {
+        "name": `snatpool_${serviceName}`,
+        "members": [
+          this.state.request.snatPoolAddress
+        ]
       }
     }
 
+    if (this.state.request.code) {
+      if ( (this.state.request.code !== '') || (this.state.request.code !== undefined) ) {
+        b.data.irules = [
+          {
+            "name": `irule_${serviceName}`,
+            "code": this.state.request.code
+          }
+        ]
+      }
+    }
 
     this.setState({loading: true})
-
+    
     let rest = new Rest(
       "POST",
       resp => {
@@ -584,7 +552,6 @@ class CreateF5Service extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
-
   }
 
   response = () => {
@@ -598,13 +565,14 @@ class CreateF5Service extends React.Component {
       visible: false,
       response: false,
       request: {},
-      errors: []
+      errors: {}
     })
   }
 
 
   render() {
     console.log(this.state.request)
+    console.log(this.state.errors)
     return (
       <React.Fragment>
 
@@ -775,24 +743,27 @@ class CreateF5Service extends React.Component {
                     { this.props.configuration && this.props.configuration[0] && this.props.configuration[0].key === 'iruleHide' && this.props.configuration[0].value ?
                       null
                     :
-                      <Row>
-                        <Col offset={2} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
-                        </Col>
-                        <Col span={16}>
-                          <TextArea
-                            rows={5}
-                            defaultValue={this.state.request.code}
-                            value={this.state.request.code}
-                            style={{width: 450}}
-                            name="code"
-                            id='code'
-                            onChange={e => this.codeSet(e)}
-                          />
-                        </Col>
-                      </Row>
+                      <React.Fragment>
+                        <Row>
+                          <Col offset={2} span={6}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
+                          </Col>
+                          <Col span={16}>
+                            <TextArea
+                              rows={5}
+                              defaultValue={this.state.request.code}
+                              value={this.state.request.code}
+                              style={{width: 450}}
+                              name="code"
+                              id='code'
+                              onChange={e => this.codeSet(e)}
+                            />
+                          </Col>
+                        </Row>
+                        <br/>
+                      </React.Fragment>
                     }
-                    <br/>
+
                   </React.Fragment>
                 :
                   null
