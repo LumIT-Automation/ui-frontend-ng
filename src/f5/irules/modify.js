@@ -9,18 +9,13 @@ import {
   iruleModifyError
 } from '../store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd'
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd'
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Modify extends React.Component {
@@ -94,14 +89,10 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   iruleModify = async () => {
-    let request = Object.assign({}, this.state.request)
-
-    const b = {
-      "data":
-        {
-          "apiAnonymous": this.state.request.text
-        }
-      }
+    let b = {}
+    b.data = {
+      "apiAnonymous": this.state.request.text
+    }
 
     this.setState({loading: true})
 

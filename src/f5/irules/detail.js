@@ -1,11 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import Rest from '../../_helpers/Rest'
-import Error from '../../error/f5Error'
-
-import { Modal, Button, Space, Input } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+import { Modal, Button, Space, Input } from 'antd'
 
 const { TextArea } = Input;
 
@@ -43,9 +38,6 @@ class Detail extends React.Component {
     this.setState({
       visible: false,
       members: [],
-    })
-    this.state.members.map( m => {
-      clearInterval(m.intervalId)
     })
   }
 

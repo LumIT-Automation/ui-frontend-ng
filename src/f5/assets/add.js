@@ -79,6 +79,7 @@ class Add extends React.Component {
   }
 
   tlsverifySet = e => {
+    console.log(e)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.tlsverify = e.target.value
     this.setState({request: request})
@@ -352,12 +353,12 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
-                  <Radio.Group id='tlsverify' style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 :
-                  <Radio.Group id='tlsverify' style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>

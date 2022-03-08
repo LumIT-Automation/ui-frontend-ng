@@ -9,18 +9,13 @@ import {
   iruleAddError
 } from '../store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd'
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Add extends React.Component {
@@ -66,7 +61,7 @@ class Add extends React.Component {
     request.name = e.target.value
     this.setState({request: request})
   }
-  
+
   codeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.code = e.target.value
@@ -116,15 +111,11 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   iruleAdd = async () => {
-    let request = Object.assign({}, this.state.request)
-
-    const b = {
-      "data":
-        {
-          "name": this.state.request.name,
-          "apiAnonymous": this.state.request.code
-        }
-      }
+    let b = {}
+    b.data = {
+      "name": this.state.request.name,
+      "apiAnonymous": this.state.request.code
+    }
 
     this.setState({loading: true})
 
