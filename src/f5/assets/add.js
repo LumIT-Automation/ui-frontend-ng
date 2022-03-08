@@ -251,7 +251,8 @@ class Add extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      request: {}
+      request: {},
+      errors: {}
     })
   }
 

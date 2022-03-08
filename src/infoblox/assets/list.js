@@ -1,13 +1,12 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
+import { Table, Input, Button, Space } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined } from '@ant-design/icons'
 
-import Delete from './delete'
 import Modify from './modify'
-
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import Delete from './delete'
 
 
 
@@ -158,7 +157,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-           { this.props.infobloxAuth && (this.props.infobloxAuth.asset_patch || this.props.infobloxAuth.any) ?
+           { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
             <Modify name={name} obj={obj} />
             :
             '-'
@@ -173,7 +172,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.infobloxAuth && (this.props.infobloxAuth.asset_delete || this.props.infobloxAuth.any) ?
+            { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -182,7 +181,6 @@ class List extends React.Component {
         ),
       }
     ];
-
 
     return (
       <Table
@@ -198,9 +196,8 @@ class List extends React.Component {
   }
 }
 
+
 export default connect((state) => ({
-
+  authorizations: state.authorizations.infoblox,
   assets: state.infoblox.assets,
-  infobloxAuth: state.authorizations.infoblox
-
 }))(List);

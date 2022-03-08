@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
+import 'antd/dist/antd.css'
+
+import Rest from '../../_helpers/Rest'
 import Error from '../../error/infobloxError'
 
 import {
@@ -28,18 +29,18 @@ class Manager extends React.Component {
     if (!this.props.assetsError) {
       this.props.dispatch(assetsFetch(false))
       if (!this.props.assets) {
-        this.fetchAssets()
+        this.main()
       }
     }
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assetsFetch) {
-      this.fetchAssets()
+      this.main()
       this.props.dispatch(assetsFetch(false))
     }
   }
@@ -47,23 +48,33 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchAssets = async () => {
+  main = async () => {
     this.props.dispatch(assetsLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(assets( resp ))
-      },
-      error => {
-        this.props.dispatch(assetsError(error))
-      }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
+    let fetchedAssets = await this.assetsGet()
+    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+      this.props.dispatch(assetsError(fetchedAssets))
+      this.props.dispatch(permissionsLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(assets( fetchedAssets ))
+    }
     this.props.dispatch(assetsLoading(false))
   }
 
-  resetError = () => {
-    this.setState({ error: null})
+  assetsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("infoblox/assets/", this.props.token)
+    return r
   }
 
 
@@ -90,12 +101,11 @@ class Manager extends React.Component {
   }
 }
 
-
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
 
   assets: state.infoblox.assets,
-  assetsError: state.infoblox.assetsError,
+ 	assetsError: state.infoblox.assetsError,
   assetsFetch: state.infoblox.assetsFetch
 }))(Manager);
