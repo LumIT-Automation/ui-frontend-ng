@@ -92,7 +92,7 @@ class Add extends React.Component {
     request.name = e.target.value
     this.setState({request: request})
   }
-  setAddress = e => {
+  addressSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.address = e.target.value
     this.setState({request: request})
@@ -293,9 +293,9 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.addressError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.addressColor}} name="address" id='address' onChange={e => this.setAddress(e)} />
+                    <Input style={{width: 250, borderColor: this.state.errors.addressColor}} name="address" id='address' onChange={e => this.addressSet(e)} />
                   :
-                    <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.setAddress(e)} />
+                    <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
                   }
                 </Col>
               </Row>

@@ -1,8 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from "../../error/f5Error"
+import 'antd/dist/antd.css'
+
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
 
 import {
   assetsLoading,
@@ -28,7 +29,7 @@ class Manager extends React.Component {
     if (!this.props.assetsError) {
       this.props.dispatch(assetsFetch(false))
       if (!this.props.assets) {
-        this.fetchAssets()
+        this.main()
       }
     }
   }
@@ -39,7 +40,7 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.assetsFetch) {
-      this.fetchAssets()
+      this.main()
       this.props.dispatch(assetsFetch(false))
     }
   }
@@ -47,19 +48,33 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchAssets = async () => {
+  main = async () => {
     this.props.dispatch(assetsLoading(true))
+    let fetchedAssets = await this.assetsGet()
+    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+      this.props.dispatch(assetsError(fetchedAssets))
+      this.props.dispatch(permissionsLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(assets( fetchedAssets ))
+    }
+    this.props.dispatch(assetsLoading(false))
+  }
+
+  assetsGet = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(assets( resp ))
+        r = resp
       },
       error => {
-        this.props.dispatch(assetsError(error))
+        r = error
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
-    this.props.dispatch(assetsLoading(false))
+    return r
   }
 
 

@@ -1,8 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-import { Spin } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
@@ -22,8 +20,6 @@ import {
 
 import List from './list'
 import Add from './add'
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -63,8 +59,6 @@ class Manager extends React.Component {
     this.props.dispatch(permissionsLoading(true))
 
     let fetchedAssets = await this.assetsGet()
-    console.log('assets')
-    console.log(fetchedAssets)
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       this.props.dispatch(assetsError(fetchedAssets))
       this.props.dispatch(permissionsLoading(false))
@@ -198,9 +192,9 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error component={'manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error component={'manager f5'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error component={'manager f5'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
+        { this.props.assetsError ? <Error component={'permissions manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error component={'permissions manager f5'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error component={'permissions manager f5'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
       </React.Fragment>
     )
   }

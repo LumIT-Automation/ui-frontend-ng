@@ -1,10 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
-import Rest from "../../_helpers/Rest"
+import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'
 
 import {
@@ -328,19 +328,16 @@ class Add extends React.Component {
 
   permissionAdd = async () => {
     this.setState({loading: true})
-    const b = {
-      "data":
-        {
-          "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.identityGroupId,
-          "role": this.state.request.role,
-          "partition": {
-            "name": this.state.request.partition.name,
-            "id_asset": this.state.request.assetId
-          }
-        }
+    let b = {}
+    b.data = {
+      "identity_group_name": this.state.request.cn,
+      "identity_group_identifier": this.state.request.identityGroupId,
+      "role": this.state.request.role,
+      "partition": {
+        "name": this.state.request.partition.name,
+        "id_asset": this.state.request.assetId
       }
-
+    }
 
     let rest = new Rest(
       "POST",
