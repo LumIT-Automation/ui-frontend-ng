@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import { ResponsiveContainer } from 'recharts';
 
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'

@@ -1,6 +1,6 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../error/infobloxError'

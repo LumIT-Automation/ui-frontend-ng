@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'

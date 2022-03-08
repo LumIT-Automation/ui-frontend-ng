@@ -1,4 +1,4 @@
-import React from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import ReactDOM from 'react-dom';
 import { VictoryGroup, VictoryPie, VictoryLabel } from 'victory'

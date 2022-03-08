@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import { Select, Row, Col, Spin } from 'antd'
 
 import Error from '../error/infobloxError'

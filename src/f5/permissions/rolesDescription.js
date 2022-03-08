@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import { Space, Modal, Table, List } from 'antd'
 import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
 

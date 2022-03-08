@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
+import 'antd/dist/antd.css'
 import { Select, Row, Col, Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
