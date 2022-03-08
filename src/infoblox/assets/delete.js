@@ -1,13 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error/infobloxError'
-
-import { assetsFetch, assetDeleteError } from '../store.infoblox'
-
+import 'antd/dist/antd.css'
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/infobloxError'
+
+import {
+  assetsFetch,
+  assetDeleteError
+} from '../store.infoblox'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
@@ -20,7 +22,6 @@ class Delete extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
     };
   }
 
@@ -41,7 +42,6 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-
   assetDelete = async asset => {
     this.setState({loading: true})
     let rest = new Rest(
@@ -58,10 +58,6 @@ class Delete extends React.Component {
 
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -71,7 +67,6 @@ class Delete extends React.Component {
 
 
   render() {
-
     return (
       <React.Fragment>
 
@@ -134,8 +129,6 @@ class Delete extends React.Component {
 
 
 export default connect((state) => ({
-
   token: state.authentication.token,
  	assetDeleteError: state.infoblox.assetDeleteError,
-
 }))(Delete);

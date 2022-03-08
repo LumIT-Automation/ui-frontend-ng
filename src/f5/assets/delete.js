@@ -1,13 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import "antd/dist/antd.css"
-import Rest from "../../_helpers/Rest"
-import Error from '../../error/f5Error'
-
-import { assetsFetch, assetDeleteError } from '../store.f5'
-
+import 'antd/dist/antd.css'
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
+import Rest from '../../_helpers/Rest'
+import Error from '../../error/f5Error'
+
+import {
+  assetsFetch,
+  assetDeleteError
+} from '../store.f5'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
@@ -127,8 +129,6 @@ class Delete extends React.Component {
 
 
 export default connect((state) => ({
-
   token: state.authentication.token,
  	assetDeleteError: state.f5.assetDeleteError,
-
 }))(Delete);
