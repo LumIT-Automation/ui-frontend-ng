@@ -16,7 +16,6 @@ import {
 
   monitorsLoading,
   monitors,
-  monitorsFetch,
   monitorsError
 } from '../store.f5'
 

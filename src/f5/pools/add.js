@@ -17,11 +17,6 @@ const monIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
 
 class Add extends React.Component {
 
@@ -121,15 +116,11 @@ class Add extends React.Component {
   }
 
   poolAdd = async () => {
-    let request = Object.assign({}, this.state.request)
-
-    const b = {
-      "data":
-        {
-          "name": this.state.request.name,
-          "monitor": this.state.request.monitor,
-          "loadBalancingMode": this.state.request.lbMethod
-        }
+    let b = {}
+    b.data = {
+      "name": this.state.request.name,
+      "monitor": this.state.request.monitor,
+      "loadBalancingMode": this.state.request.lbMethod
     }
 
     this.setState({loading: true})

@@ -11,19 +11,13 @@ import {
   poolModifyError
 } from '../store.f5'
 
-import { Form, Input, Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
+import { Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const monIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
-
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Modify extends React.Component {
@@ -112,14 +106,11 @@ class Modify extends React.Component {
   }
 
   poolModify = async () => {
-    let request = Object.assign({}, this.state.request)
-    const b = {
-      "data":
-        {
-          "monitor": this.state.request.monitor,
-          "loadBalancingMode": this.state.request.loadBalancingMode
-        }
-      }
+    let b = {}
+    b.data = {
+      "monitor": this.state.request.monitor,
+      "loadBalancingMode": this.state.request.loadBalancingMode
+    }
 
     this.setState({loading: true})
 
@@ -322,19 +313,8 @@ class Modify extends React.Component {
               </Row>
 
               <Divider/>
-              <Form>
-              <Form.Item
-                label="Members"
-                name="memebers"
-                key="members"
-                noStyle={true}
-                validateStatus={this.state.errors.monitorError}
-                help={this.state.errors.monitorError ? 'Please select monitor' : null }
-              >
-                <PoolMembers obj={this.props.obj}/>
-              </Form.Item>
 
-              </Form>
+              <PoolMembers obj={this.props.obj}/>
 
             </React.Fragment>
           }

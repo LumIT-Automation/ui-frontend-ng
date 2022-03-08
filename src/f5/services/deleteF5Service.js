@@ -13,14 +13,10 @@ import {
 
 import AssetSelector from '../../f5/assetSelector'
 
-import { Modal, Alert, Form, Input, Result, Button, Spin, Divider, Row, Col, Select } from 'antd'
+import { Modal, Alert, Result, Button, Spin, Divider, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-}
 
 
 

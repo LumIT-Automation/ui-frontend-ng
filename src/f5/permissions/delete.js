@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
+import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/f5Error'

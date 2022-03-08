@@ -10,17 +10,12 @@ import {
   snatPoolAddError
 } from '../store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Add extends React.Component {
@@ -138,7 +133,6 @@ class Add extends React.Component {
 
     if (members.length > 0) {
       members.forEach((member, i) => {
-        let index = members.findIndex((obj => obj.id === member.id))
         errors[member.id] = {}
 
         if (member.address && validators.ipv4(member.address)) {
@@ -181,15 +175,11 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   snatPoolAdd = async () => {
-    let request = Object.assign({}, this.state.request)
-
-    const b = {
-      "data":
-        {
-          "name": this.state.request.name,
-          "members": this.state.list
-        }
-      }
+    let b = {}
+    b.data = {
+      "name": this.state.request.name,
+      "members": this.state.list
+    }
 
     this.setState({loading: true})
 

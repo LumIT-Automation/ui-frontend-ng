@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Form, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -12,7 +12,6 @@ import {
   routeDomains,
   routeDomainsError,
 
-  dataGroups,
   dataGroupsError,
 
   l7ServiceCreateError
@@ -22,10 +21,6 @@ import AssetSelector from '../../f5/assetSelector'
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-}
 
 
 
@@ -1074,12 +1069,6 @@ class CreateF5Service extends React.Component {
 
                 { this.state.request.nodes ?
                   this.state.request.nodes.map((n, i) => {
-                  let address = 'address' + n.id
-                  let name = 'name' + n.id
-                  let port = 'port' + n.id
-                  let randomKey = () => {
-                    return Math.random().toString()
-                  }
 
                   return (
                     <React.Fragment>

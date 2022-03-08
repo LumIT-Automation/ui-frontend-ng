@@ -16,10 +16,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const profIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
+
 
 class Add extends React.Component {
 
@@ -135,13 +132,10 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   profileAdd = async () => {
-    let request = Object.assign({}, this.state.request);
-    const b = {
-      "data":
-        {
-          "name": this.state.request.name,
-        }
-      }
+    let b = {}
+    b.data = {
+      "name": this.state.request.name,
+    }
 
     this.setState({loading: true})
 

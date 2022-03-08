@@ -405,7 +405,7 @@ class PoolDetails extends React.Component {
       visible: false,
       members: [],
     })
-    this.state.members.map( m => {
+    this.state.members.forEach( m => {
       clearInterval(m.intervalId)
     })
   }

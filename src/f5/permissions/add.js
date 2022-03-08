@@ -20,10 +20,6 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const layout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 12 },
-};
 
 
 
@@ -303,15 +299,12 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   newIdentityGroupAdd = async (identityGroupId, cn) => {
     this.setState({identityGroupAddLoading: true})
-    let request = JSON.parse(JSON.stringify(this.state.request))
     let r
-    const b = {
-      "data":
-        {
-          "name": cn,
-          "identity_group_identifier": identityGroupId
-        }
-      }
+    let b = {}
+    b.data = {
+      "name": cn,
+      "identity_group_identifier": identityGroupId
+    }
 
     let rest = new Rest(
       "POST",

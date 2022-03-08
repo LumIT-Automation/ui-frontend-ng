@@ -10,17 +10,12 @@ import {
   snatPoolModifyError
 } from '../store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Modify extends React.Component {
@@ -125,14 +120,12 @@ class Modify extends React.Component {
 
   //VALIDATION
   validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
     let members = JSON.parse(JSON.stringify(this.state.request.members))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
     if (members.length > 0) {
       members.forEach((member, i) => {
-        let index = members.findIndex((obj => obj.id === member.id))
         errors[member.id] = {}
 
         if (member.address && validators.ipv4(member.address)) {
@@ -175,14 +168,10 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   snatPoolModify = async () => {
-    let request = Object.assign({}, this.state.request)
-
-    const b = {
-      "data":
-        {
-          "members": this.state.list
-        }
-      }
+    let b = {}
+    b.data = {
+      "members": this.state.list
+    }
 
     this.setState({loading: true})
 

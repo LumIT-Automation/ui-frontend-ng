@@ -16,11 +16,6 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
 
 class Modify extends React.Component {
 
@@ -108,19 +103,16 @@ class Modify extends React.Component {
   }
 
   monitorModify = async () => {
-    let request = Object.assign({}, this.state.request)
-    const b = {
-      "data":
-        {
-            "destination": "*:*",
-            "interval": this.state.request.interval,
-            "manualResume": "disabled",
-            "timeUntilUp": 0,
-            "timeout": this.state.request.timeout,
-            "transparent": "disabled",
-            "upInterval": 0
-        }
-      }
+    let b = {}
+    b.data = {
+        "destination": "*:*",
+        "interval": this.state.request.interval,
+        "manualResume": "disabled",
+        "timeUntilUp": 0,
+        "timeout": this.state.request.timeout,
+        "transparent": "disabled",
+        "upInterval": 0
+    }
 
     this.setState({loading: true})
 

@@ -12,18 +12,13 @@ import {
   nodeAddError
 } from '../store.f5'
 
-import { Form, Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 class Add extends React.Component {

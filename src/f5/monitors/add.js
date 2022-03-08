@@ -9,16 +9,13 @@ import {
   monitorAddError
 } from '../store.f5'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd'
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
+
 
 class Add extends React.Component {
 
@@ -139,17 +136,13 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   monitorAdd = async () => {
-    let request = Object.assign({}, this.state.request);
-    const b = {
-      "data":
-        {
-          "interval": this.state.request.interval,
-          "name": this.state.request.name,
-          "state": this.state.request.monitorType,
-          "interval": this.state.request.interval,
-          "timeout": this.state.request.timeout
-        }
-      }
+    let b = {}
+    b.data = {
+      "interval": this.state.request.interval,
+      "name": this.state.request.name,
+      "state": this.state.request.monitorType,
+      "timeout": this.state.request.timeout
+    }
 
     this.setState({loading: true})
 

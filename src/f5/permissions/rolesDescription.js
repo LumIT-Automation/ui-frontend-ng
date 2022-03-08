@@ -1,8 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Space, Modal, Table, List } from 'antd'
-import { LoadingOutlined, QuestionCircleOutlined } from '@ant-design/icons'
+import { Modal, Table, List } from 'antd'
+import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
 import Error from '../../error/f5Error'
