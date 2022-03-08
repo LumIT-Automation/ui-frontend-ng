@@ -48,12 +48,10 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.main()
   }
 
-  main = async () => {
-  }
 
+  //SETTER
   addressSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.address = e.target.value
@@ -266,7 +264,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD ASSET</p>}
+          title={<p style={{textAlign: 'center'}}>Add asset</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

@@ -48,12 +48,10 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.main()
   }
 
-  main = async () => {
-  }
 
+  //SETTER
   addressSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.address = e.target.value
