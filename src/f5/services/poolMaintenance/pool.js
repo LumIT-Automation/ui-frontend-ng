@@ -254,7 +254,12 @@ class PoolDetails extends React.Component {
 
   poolMemberEnable = async (memberName) => {
     let r
-    const b = { "data": { "state": "user-up", "session":"user-enabled" } }
+    let b = {}
+    b.data = {
+      "state": "user-up",
+      "session":"user-enabled"
+    }
+
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -270,7 +275,12 @@ class PoolDetails extends React.Component {
 
   poolMemberDisable = async (member) => {
     let r
-    const b = {"data":{"state":"user-up", "session":"user-disabled"}}
+    let b = {}
+    b.data = {
+      "state":"user-up",
+      "session":"user-disabled"
+    }
+
     let rest = new Rest(
       "PATCH",
       resp => {
@@ -286,7 +296,12 @@ class PoolDetails extends React.Component {
 
   poolMemberForceOffline = async (member) => {
     let r
-    const b = {"data":{"state":"user-down", "session":"user-disabled"}}
+    let b = {}
+    b.data = {
+      "state":"user-down",
+      "session":"user-disabled"
+    }
+
     let rest = new Rest(
       "PATCH",
       resp => {

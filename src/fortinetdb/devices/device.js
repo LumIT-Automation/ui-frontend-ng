@@ -144,13 +144,14 @@ class Device extends React.Component {
   }
 
   modifyExtraData = async e => {
-    this.setState({extraLoading: true})
+    let b = {}
     if (e.target && e.target.value) {
-      const b = {
-        "data": {
-          "extra_data": e.target.value
-        }
+      b.data = {
+        "extra_data": e.target.value
       }
+
+      this.setState({extraLoading: true})
+      
       let rest = new Rest(
         "PATCH",
         resp => {

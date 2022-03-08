@@ -21,10 +21,6 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const layout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 12 },
-};
 
 
 
@@ -340,15 +336,12 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   newIdentityGroupAdd = async (identityGroupId, cn) => {
     this.setState({identityGroupAddLoading: true})
-    let request = JSON.parse(JSON.stringify(this.state.request))
     let r
-    const b = {
-      "data":
-        {
-          "name": cn,
-          "identity_group_identifier": identityGroupId
-        }
-      }
+    let b = {}
+    b.data = {
+      "name": cn,
+      "identity_group_identifier": identityGroupId
+    }
 
     let rest = new Rest(
       "POST",
@@ -365,19 +358,16 @@ class Add extends React.Component {
 
   permissionAdd = async () => {
     this.setState({loading: true})
-    const b = {
-      "data":
-        {
-          "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.identityGroupId,
-          "role": this.state.request.role,
-          "network": {
-            "name": this.state.request.network.name,
-            "id_asset": this.state.request.assetId
-          }
-        }
+    let b = {}
+    b.data = {
+      "identity_group_name": this.state.request.cn,
+      "identity_group_identifier": this.state.request.identityGroupId,
+      "role": this.state.request.role,
+      "network": {
+        "name": this.state.request.network.name,
+        "id_asset": this.state.request.assetId
       }
-
+    }
 
     let rest = new Rest(
       "POST",

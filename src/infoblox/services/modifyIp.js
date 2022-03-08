@@ -170,34 +170,31 @@ class ModifyIp extends React.Component {
   }
 
   ipModify = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    this.setState({ipModifyLoading: true})
-    const b = {
-      "data":
-        {
-          "mac": `${request.macAddress}`,
-          "extattrs": {
-              "Name Server": {
-                  "value": `${request.serverName}`
-              }
-          },
-        }
-      }
-
-      let rest = new Rest(
-        "PATCH",
-        resp => {
-          this.setState({ipModifyLoading: false})
-          this.ipDetails()
-        },
-        error => {
-          this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
-
-        }
-      )
-      await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, b )
-
+    let b = {}
+    b.data = {
+      "mac": `${this.state.request.macAddress}`,
+      "extattrs": {
+          "Name Server": {
+              "value": `${this.state.request.serverName}`
+          }
+      },
     }
+
+    this.setState({ipModifyLoading: true})
+
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        this.setState({ipModifyLoading: false})
+        this.ipDetails()
+      },
+      error => {
+        this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
+
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, b )
+  }
 
 
   //Close and Error

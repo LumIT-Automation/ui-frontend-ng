@@ -84,7 +84,7 @@ class Add extends React.Component {
 
 
   poolMemberAdd = async () => {
-
+    let b = {}
     if ( isEmpty(this.state.port) || isEmpty(this.state.name) )  {
       this.setState({message: 'Please fill the form'})
     }
@@ -92,25 +92,23 @@ class Add extends React.Component {
     else {
       this.setState({message: null});
 
-      const b = {
-        "data":
-          {
-            "name": `${this.state.name}:${this.state.port}`,
-            "connectionLimit": 0,
-            "dynamicRatio": 1,
-            "ephemeral": "false",
-            "inheritProfile": "enabled",
-            "logging": "disabled",
-            "monitor": "default",
-            "priorityGroup": 0,
-            "rateLimit": "disabled",
-            "ratio": 1,
-            "state": "up",
-            "fqdn": {
-                "autopopulate": "disabled"
-            }
-          }
+      b.data = {
+        "name": `${this.state.name}:${this.state.port}`,
+        "connectionLimit": 0,
+        "dynamicRatio": 1,
+        "ephemeral": "false",
+        "inheritProfile": "enabled",
+        "logging": "disabled",
+        "monitor": "default",
+        "priorityGroup": 0,
+        "rateLimit": "disabled",
+        "ratio": 1,
+        "state": "up",
+        "fqdn": {
+            "autopopulate": "disabled"
+        }
       }
+
       let rest = new Rest(
         "POST",
         resp => {

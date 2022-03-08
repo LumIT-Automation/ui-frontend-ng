@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
+import { Button, Modal, Spin, Result, Select, Row, Col } from 'antd'
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
@@ -20,10 +20,6 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-const layout = {
-  labelCol: { span: 6 },
-  wrapperCol: { span: 12 },
-};
 
 
 
@@ -283,20 +279,18 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   permissionModify = async () => {
-    this.setState({loading: true})
-    const b = {
-      "data":
-        {
-          "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.identityGroupId,
-          "role": this.state.request.role,
-          "network": {
-            "name": this.state.request.network.name,
-            "id_asset": this.state.request.assetId
-          }
-        }
+    let b = {}
+    b.data = {
+      "identity_group_name": this.state.request.cn,
+      "identity_group_identifier": this.state.request.identityGroupId,
+      "role": this.state.request.role,
+      "network": {
+        "name": this.state.request.network.name,
+        "id_asset": this.state.request.assetId
       }
+    }
 
+    this.setState({loading: true})
 
     let rest = new Rest(
       "PATCH",

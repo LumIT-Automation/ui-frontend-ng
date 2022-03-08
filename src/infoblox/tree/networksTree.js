@@ -1,8 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Tree, Space, Collapse, Row, Col } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import { Tree, Space, Row, Col } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/infobloxError'

@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Table, Input, Button, Space, Spin, Collapse } from 'antd'
+import { Table, Input, Button, Space, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 

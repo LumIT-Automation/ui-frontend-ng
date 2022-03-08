@@ -1,4 +1,4 @@
-import React, { PureComponent, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { VectorMap } from '@south-paw/react-vector-maps'
 import italyJSON from './italyJSON.json'
@@ -7,25 +7,18 @@ import Rest from '../../_helpers/Rest'
 import Error from '../../error/fortinetdbError'
 
 import {
-  devices,
-  field,
   fieldError,
-  value,
   valueError
 } from '../../_store/store.fortinetdb'
 
 import List from '../devices/list'
 
-import { Modal, Table, Spin } from 'antd'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { Modal, Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 const Map = props => {
-
-  const divStyle = {
-    color: 'blue',
-  };
 
   const style = {
     margin: '1rem auto',
@@ -36,7 +29,6 @@ const Map = props => {
   const [hovered, setHovered] = useState('None')
   const [count, setCount] = useState(0)
   const [visible, setVisible] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [fieldLoading, setFieldLoading] = useState(false)
   const [valueLoading, setValueLoading] = useState(false)
   const [value, setValue] = useState('None')
@@ -75,12 +67,6 @@ const Map = props => {
         }
       }
     })
-  }
-
-  const setRegionColor = region => {
-    if (region.attributes.fill) {
-      region.attributes.fill.value = 'pink'
-    }
   }
 
   //fetchField()

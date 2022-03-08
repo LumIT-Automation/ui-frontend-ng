@@ -94,7 +94,7 @@ class Add extends React.Component {
   }
   routeDomain = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.routeDomain = id
+    request.routeDomain = id.toString()
     this.setState({request: request})
   }
   setStatus = e => {
@@ -154,13 +154,10 @@ class Add extends React.Component {
       delete errors.stateColor
       this.setState({errors: errors})
     }
-
     return errors
   }
 
   validation = async () => {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
@@ -172,59 +169,32 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   nodeAdd = async () => {
     let request = Object.assign({}, this.state.request)
+    let b = {}
+    b.data = {
+      "address": this.state.request.address,
+      "name": this.state.request.name,
+      "session": this.state.request.session,
+      "state": this.state.request.state
+    }
 
     if(request.routeDomain) {
-      const b = {
-        "data":
-          {
-            "address": `${this.state.request.address}%${request.routeDomain}`,
-            "name": this.state.request.name,
-            "session": this.state.request.session,
-            "state": this.state.request.state
-          }
-        }
-
-      this.setState({loading: true})
-
-      let rest = new Rest(
-        "POST",
-        resp => {
-          this.setState({loading: false, response: true}, () => this.response())
-        },
-        error => {
-          this.props.dispatch(nodeAddError(error))
-          this.setState({loading: false, response: false})
-        }
-      )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, b)
-
+      b.data.address = `${this.state.request.address}%${request.routeDomain}`
     }
-    else {
-      const b = {
-        "data":
-          {
-            "address": this.state.request.address,
-            "name": this.state.request.name,
-            "session": this.state.request.session,
-            "state": this.state.request.state
-          }
-        }
 
-      this.setState({loading: true})
 
-      let rest = new Rest(
-        "POST",
-        resp => {
-          this.setState({loading: false, response: true}, () => this.response())
-        },
-        error => {
-          this.props.dispatch(nodeAddError(error))
-          this.setState({loading: false, response: false})
-        }
-      )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, b)
+    this.setState({loading: true})
 
-    }
+    let rest = new Rest(
+      "POST",
+      resp => {
+        this.setState({loading: false, response: true}, () => this.response())
+      },
+      error => {
+        this.props.dispatch(nodeAddError(error))
+        this.setState({loading: false, response: false})
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, b)
   }
 
   response = () => {

@@ -12,7 +12,7 @@ import {
   configuration,
   configurationFetch,
   configurationError,
-  
+
   configurationModifyError,
 } from '../store.f5'
 
@@ -130,13 +130,10 @@ class Manager extends React.Component {
 
   modifyConfiguration = async () => {
     let conf = JSON.stringify(this.props.configuration)
-
-    const b = {
-      "data":
-        {
-          "configuration": conf
-        }
-      }
+    let b = {}
+    b.data = {
+      "configuration": conf
+    }
 
     this.props.dispatch(configurationLoading(true))
 

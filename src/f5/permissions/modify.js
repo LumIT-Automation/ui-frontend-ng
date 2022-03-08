@@ -242,20 +242,18 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   permissionModify = async () => {
-    this.setState({loading: true})
-    const b = {
-      "data":
-        {
-          "identity_group_name": this.state.request.cn,
-          "identity_group_identifier": this.state.request.identityGroupId,
-          "role": this.state.request.role,
-          "partition": {
-            "name": this.state.request.partition.name,
-            "id_asset": this.state.request.assetId
-          }
-        }
+    let b = {}
+    b.data = {
+      "identity_group_name": this.state.request.cn,
+      "identity_group_identifier": this.state.request.identityGroupId,
+      "role": this.state.request.role,
+      "partition": {
+        "name": this.state.request.partition.name,
+        "id_asset": this.state.request.assetId
       }
+    }
 
+    this.setState({loading: true})
 
     let rest = new Rest(
       "PATCH",

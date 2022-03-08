@@ -6,8 +6,6 @@ import { Space, Alert } from 'antd'
 import Rest from '../../_helpers/Rest'
 import Error from '../../error/infobloxError'
 
-import { setError } from '../../_store/store.error'
-
 import {
   treeLoading,
   tree,

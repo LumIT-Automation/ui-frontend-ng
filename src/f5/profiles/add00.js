@@ -114,6 +114,7 @@ class Add extends React.Component {
 
   profileAdd = async () => {
     let request = Object.assign({}, this.state.request)
+    let b = {}
 
     if (isEmpty(request)){
       this.setState({message: 'Please fill the form'})
@@ -121,12 +122,9 @@ class Add extends React.Component {
 
     else {
       this.setState({message: null});
-      const b = {
-        "data":
-          {
-            "name": this.state.request.name,
-          }
-        }
+      b.data = {
+        "name": this.state.request.name,
+      }
 
       this.setState({loading: true})
 

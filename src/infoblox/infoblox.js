@@ -14,7 +14,6 @@ import Tree from './tree/manager'
 import {
   assets,
   assetsError,
-  networksFetch,
   treeFetch
 } from '../infoblox/store.infoblox'
 
@@ -76,14 +75,19 @@ class Infoblox extends React.Component {
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           <Tabs type="card">
             { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
-              <TabPane tab="Tree" tab=<span>Network Tree <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.treeRefresh()}/></span>>
+              <React.Fragment>
                 {this.props.treeLoading ?
-                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  <TabPane tab='Network Tree'>
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
                 :
-                  <Tree/>
+                  <TabPane tab=<span>Network Tree <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.treeRefresh()}/></span> >
+                    <Tree/>
+                  </TabPane>
                 }
-              </TabPane>
-              : null
+              </React.Fragment>
+            :
+              null
             }
           </Tabs>
         </Space>
