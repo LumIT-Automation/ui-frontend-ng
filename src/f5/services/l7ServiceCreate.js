@@ -492,53 +492,53 @@ class CreateF5Service extends React.Component {
     let serviceName = this.state.request.serviceName
 
     let b = {}
-    b = {
-      "data": {
-        "virtualServer": {
-          "name": `vs_${serviceName}`,
-          "type": 'L7',
-          "snat": this.state.request.snat,
-          "routeDomainId": this.state.request.routeDomain,
-          "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-          "mask": '255.255.255.255',
-          "source": this.state.request.source
+    b.data = {
+      "virtualServer": {
+        "name": `vs_${serviceName}`,
+        "type": 'L7',
+        "snat": this.state.request.snat,
+        "routeDomainId": this.state.request.routeDomain,
+        "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+        "mask": '255.255.255.255',
+        "source": this.state.request.source
+      },
+      "profiles": [
+        {
+          "name": `tcp-wan-optimized_${serviceName}`,
+          "type": "tcp",
+          "defaultsFrom": "/Common/tcp-wan-optimized",
+          "context": "clientside"
         },
-        "profiles": [
-          {
-            "name": `tcp-wan-optimized_${serviceName}`,
-            "type": "tcp",
-            "defaultsFrom": "/Common/tcp-wan-optimized",
-            "context": "clientside"
-          },
-          {
-            "name": `tcp-lan-optimized_${serviceName}`,
-            "type": "tcp",
-            "defaultsFrom": "/Common/tcp-lan-optimized",
-            "context": "serverside"
-          },
-          {
-            "name": `http_${serviceName}`,
-            "type": "http",
-            "defaultsFrom": "/Common/http"
-          },
-          {
-            "name": `client-ssl_${serviceName}`,
-            "type": "client-ssl",
-            "cert": btoa(this.state.request.certificate),
-            "key": btoa(this.state.request.key),
-            "chain": "",
-            "context": "clientside"
-          }
-        ],
-        "pool": {
-          "name": `pool_${serviceName}`,
-          "loadBalancingMode": this.state.request.lbMethod,
-          "nodes": this.state.request.nodes
+        {
+          "name": `tcp-lan-optimized_${serviceName}`,
+          "type": "tcp",
+          "defaultsFrom": "/Common/tcp-lan-optimized",
+          "context": "serverside"
         },
-        "monitor": {
-          "name": `mon_${serviceName}`,
-          "type": this.state.request.monitorType
+        {
+          "name": `http_${serviceName}`,
+          "type": "http",
+          "defaultsFrom": "/Common/http"
+        },
+        {
+          "name": `client-ssl_${serviceName}`,
+          "type": "client-ssl",
+          "certName": `${serviceName}`,
+          "cert": btoa(this.state.request.certificate),
+          "keyName": `${serviceName}`,
+          "key": btoa(this.state.request.key),
+          "chain": "",
+          "context": "clientside"
         }
+      ],
+      "pool": {
+        "name": `pool_${serviceName}`,
+        "loadBalancingMode": this.state.request.lbMethod,
+        "nodes": this.state.request.nodes
+      },
+      "monitor": {
+        "name": `mon_${serviceName}`,
+        "type": this.state.request.monitorType
       }
     }
 

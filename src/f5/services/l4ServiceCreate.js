@@ -452,35 +452,33 @@ class CreateF5Service extends React.Component {
     let serviceName = this.state.request.serviceName
 
     let b = {}
-    b = {
-        "data": {
-          "virtualServer": {
-            "name": `vs_${serviceName}`,
-            "type": 'L4',
-            "snat": this.state.request.snat,
-            "routeDomainId": this.state.request.routeDomain,
-            "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-            "mask": '255.255.255.255',
-            "source": '0.0.0.0/0'
-          },
-          "profiles": [
-            {
-              "name": `fastl4_${serviceName}`,
-              "type": "fastl4",
-              "idleTimeout": 300
-            }
-          ],
-          "pool": {
-            "name": `pool_${serviceName}`,
-            "loadBalancingMode": this.state.request.lbMethod,
-            "nodes": this.state.request.nodes
-          },
-          "monitor": {
-            "name": `mon_${serviceName}`,
-            "type": this.state.request.monitorType
-          }
+    b.data = {
+      "virtualServer": {
+        "name": `vs_${serviceName}`,
+        "type": 'L4',
+        "snat": this.state.request.snat,
+        "routeDomainId": this.state.request.routeDomain,
+        "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+        "mask": '255.255.255.255',
+        "source": '0.0.0.0/0'
+      },
+      "profiles": [
+        {
+          "name": `fastl4_${serviceName}`,
+          "type": "fastl4",
+          "idleTimeout": 300
         }
+      ],
+      "pool": {
+        "name": `pool_${serviceName}`,
+        "loadBalancingMode": this.state.request.lbMethod,
+        "nodes": this.state.request.nodes
+      },
+      "monitor": {
+        "name": `mon_${serviceName}`,
+        "type": this.state.request.monitorType
       }
+    }
 
     if (this.state.request.snat === 'snat') {
       b.data.snatPool = {

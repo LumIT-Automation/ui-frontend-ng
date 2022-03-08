@@ -70,6 +70,7 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         r = resp
       },
       error => {
