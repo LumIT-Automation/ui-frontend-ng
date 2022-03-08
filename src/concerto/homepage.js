@@ -1,25 +1,7 @@
-import React, { PureComponent } from 'react'
+import React from 'react'
 import { connect } from 'react-redux'
-import { ResponsiveContainer } from 'recharts';
-
 import 'antd/dist/antd.css'
-
-import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
-
-import {
-  devices,
-  devicesLoading,
-  devicesError,
-
-  ddosses,
-  ddossesLoading,
-  ddossesError,
-
-  projects,
-  projectsLoading,
-  projectsError,
-} from '../_store/store.fortinetdb'
+import { Card, Row, Col, Divider } from 'antd'
 
 //import List from './list'
 import Italia from '../fortinetdb/widgets/italia'
@@ -35,11 +17,6 @@ import EosFirmware from '../fortinetdb/widgets/eosFirmware'
 import EosHardware from '../fortinetdb/widgets/eosHardware'
 
 import Attivazione from '../fortinetdb/widgets/attivazione'
-
-
-import { Spin, Card, Row, Col, Table, Divider } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
 
 
@@ -70,7 +47,7 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      {/*
+
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>
@@ -141,7 +118,7 @@ class Homepage extends React.Component {
             </Row>
           </React.Fragment>
         </React.Fragment>
-      */}
+
       </React.Fragment>
     )
   }

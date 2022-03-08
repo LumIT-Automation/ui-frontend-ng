@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Modal, Spin, Result, Select, Input, Row, Col, Radio } from 'antd'
+import { Button, Modal, Spin, Result, Input, Row, Col, Radio } from 'antd'
 import { LoadingOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -15,10 +15,6 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 

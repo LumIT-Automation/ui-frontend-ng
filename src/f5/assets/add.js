@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Modal, Spin, Result, Select, Input, Row, Col, Radio } from 'antd'
+import { Button, Modal, Spin, Result, Input, Row, Col, Radio } from 'antd'
 import { LoadingOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -15,10 +15,6 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
 
 
 
@@ -208,8 +204,6 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   assetAdd = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let b = {}
 
     b.data = {
@@ -359,13 +353,13 @@ class Add extends React.Component {
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
                   <Radio.Group id='tlsverify' style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
-                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                    <Radio key='1' value='1'>Yes</Radio>
+                    <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 :
                   <Radio.Group id='tlsverify' style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
-                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                    <Radio key='1' value='1'>Yes</Radio>
+                    <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 }
               </Col>

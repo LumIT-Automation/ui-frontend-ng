@@ -53,7 +53,7 @@ class Manager extends React.Component {
     let fetchedAssets = await this.assetsGet()
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       this.props.dispatch(assetsError(fetchedAssets))
-      this.props.dispatch(permissionsLoading(false))
+      this.props.dispatch(assetsLoading(false))
       return
     }
     else {

@@ -101,7 +101,6 @@ import {
   historysError,
 
   configurationError,
-  configurationModify,
   configurationModifyError,
 
   genericError

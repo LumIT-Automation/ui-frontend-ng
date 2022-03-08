@@ -12,6 +12,8 @@ import {
   configuration,
   configurationFetch,
   configurationError,
+  
+  configurationModifyError,
 } from '../store.f5'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -144,7 +146,7 @@ class Manager extends React.Component {
         this.main()
       },
       error => {
-        this.props.dispatch(configurationError(error))
+        this.props.dispatch(configurationModifyError(error))
         this.props.dispatch(configurationLoading(false))
       }
     )
