@@ -194,7 +194,7 @@ class Add extends React.Component {
   }
 
   validation = async () => {
-    let validation = await this.validationCheck()
+    await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
       this.assetAdd()
@@ -204,10 +204,7 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   assetAdd = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let b = {}
-
     b.data = {
       "address": this.state.request.address,
       "fqdn": this.state.request.fqdn,
@@ -354,14 +351,14 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
-                  <Radio.Group id='tlsverify' style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
-                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                  <Radio.Group style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                    <Radio key='1' value='1'>Yes</Radio>
+                    <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 :
-                  <Radio.Group id='tlsverify' style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" id='tlsverify' onChange={e => this.tlsverifySet(e)}>
-                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                    <Radio key='1' value='1'>Yes</Radio>
+                    <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 }
               </Col>

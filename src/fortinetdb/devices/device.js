@@ -8,13 +8,11 @@ import {
   deviceError
 } from '../../_store/store.fortinetdb'
 
-import { Input, Button, Space, Modal, Spin, Table } from 'antd'
+import { Input, Button, Space, Modal, Table } from 'antd'
 
 import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined } from '@ant-design/icons'
 
-const { TextArea } = Input;
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class Device extends React.Component {

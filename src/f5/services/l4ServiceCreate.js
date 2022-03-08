@@ -410,7 +410,7 @@ class CreateF5Service extends React.Component {
   validation = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
-    let validation = await this.validationCheck()
+    await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
       let ips = []

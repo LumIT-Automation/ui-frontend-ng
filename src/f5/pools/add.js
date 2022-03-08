@@ -109,7 +109,7 @@ class Add extends React.Component {
   }
 
   validation = async () => {
-    let validation = await this.validationCheck()
+    await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
       this.poolAdd()
     }

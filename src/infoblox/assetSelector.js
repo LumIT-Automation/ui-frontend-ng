@@ -1,10 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Select, Row, Col, Spin } from 'antd'
+import { Select, Row, Col } from 'antd'
 
-import Error from '../error/infobloxError'
-import { environment, asset } from '../infoblox/store.infoblox'
+
+import {
+  environment,
+  asset
+} from '../infoblox/store.infoblox'
 
 
 

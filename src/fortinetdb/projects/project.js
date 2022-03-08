@@ -8,14 +8,10 @@ import {
   projectError,
 
   devices,
-  devicesLoading,
   devicesError,
-  devicesFetch,
 
   ddosses,
-  ddossesLoading,
   ddossesError,
-  ddossesFetch,
 } from '../../_store/store.fortinetdb'
 
 import Devices from '../devices/list'

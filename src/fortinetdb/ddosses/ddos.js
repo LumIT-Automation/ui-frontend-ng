@@ -11,7 +11,7 @@ import {
 import { Input, Button, Space, Modal, Table } from 'antd'
 
 import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined } from '@ant-design/icons'
 
 
 class Ddos extends React.Component {
