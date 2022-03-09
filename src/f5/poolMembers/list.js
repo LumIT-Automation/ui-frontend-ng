@@ -32,7 +32,7 @@ class List extends React.Component {
   componentDidMount() {
     if (this.props.obj && (this.state.poolMembers === null)) {
 
-      this.fetchPoolMembers(this.props.obj.name)
+      this.poolMembersGet(this.props.obj.name)
     }
   }
 
@@ -43,7 +43,7 @@ class List extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.poolMembersFetch  === true) {
       this.props.dispatch(poolMembersLoading(true))
-      this.fetchPoolMembers(this.props.obj.name)
+      this.poolMembersGet(this.props.obj.name)
       this.props.dispatch(poolMembersFetch(false))
     }
   }
@@ -132,7 +132,7 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  fetchPoolMembers = async (name) => {
+  poolMembersGet = async (name) => {
     let rest = new Rest(
       "GET",
       resp => {
@@ -190,7 +190,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
@@ -208,7 +208,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
@@ -227,7 +227,7 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.fetchPoolMembers(this.props.obj.name) )
+        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
       },
       error => {
         this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))

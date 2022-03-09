@@ -51,7 +51,7 @@ class Manager extends React.Component {
   main = async () => {
     this.props.dispatch(historysLoading(true))
 
-    let fetchedHistorys = await this.fetchHistorys()
+    let fetchedHistorys = await this.historyGet()
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
       this.props.dispatch(historysError(fetchedHistorys))
       this.props.dispatch(historysLoading(false))
@@ -64,7 +64,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchHistorys = async () => {
+  historyGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -87,7 +87,7 @@ class Manager extends React.Component {
         <List/>
 
         { this.props.historysError ? <Error component={'manager infoblox'} error={[this.props.historysError]} visible={true} type={'historysError'} /> : null }
-        
+
       </React.Fragment>
     )
   }

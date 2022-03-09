@@ -47,7 +47,7 @@ class F5 extends React.Component {
   componentDidMount() {
     this.props.dispatch(resetObjects())
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchAssets()
+      this.assetsGet()
     }
   }
 
@@ -63,7 +63,7 @@ class F5 extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  assetsGet = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",

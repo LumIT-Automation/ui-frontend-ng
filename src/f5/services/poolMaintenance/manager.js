@@ -53,11 +53,11 @@ class Manager extends React.Component {
 
   getPools = () => {
     if (this.props.asset.id) {
-      this.fetchPools(this.props.asset.id, this.props.partition)
+      this.poolsGet(this.props.asset.id, this.props.partition)
     }
   }
 
-  fetchPools = async (id, partition) => {
+  poolsGet = async (id, partition) => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",

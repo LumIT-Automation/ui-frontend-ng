@@ -46,8 +46,6 @@ class DetailsIp extends React.Component {
     this.setState({visible: true})
   }
 
-  //main, fetch, set, validation, call to post, put , delete
-
   setIp = e => {
     let ip = e.target.value
     this.setState({ip: ip})

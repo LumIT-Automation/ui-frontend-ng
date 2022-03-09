@@ -32,7 +32,7 @@ class Manager extends React.Component {
       if (!this.props.treeError) {
         this.props.dispatch(treeFetch(false))
         if (!this.props.tree) {
-          this.fetchTree()
+          this.treeGet()
         }
       }
     }
@@ -45,12 +45,12 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.asset && (prevProps.asset !== this.props.asset)) {
       if (!this.props.tree) {
-        this.fetchTree()
+        this.treeGet()
       }
     }
     if (this.props.asset) {
       if (this.props.treeFetch) {
-        this.fetchTree()
+        this.treeGet()
         this.props.dispatch(treeFetch(false))
       }
     }
@@ -59,7 +59,7 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchTree = async () => {
+  treeGet = async () => {
     this.props.dispatch(treeLoading(true))
     let rest = new Rest(
       "GET",

@@ -35,7 +35,7 @@ class DeleteF5Service extends React.Component {
   componentDidMount() {
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) ) {
-        this.fetchVirtualServers()
+        this.virtualServersGet()
       }
     }
   }
@@ -47,7 +47,7 @@ class DeleteF5Service extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
-        this.fetchVirtualServers()
+        this.virtualServersGet()
       }
     }
   }
@@ -59,7 +59,7 @@ class DeleteF5Service extends React.Component {
     this.setState({visible: true})
   }
 
-  fetchVirtualServers = async () => {
+  virtualServersGet = async () => {
     this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",

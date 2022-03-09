@@ -2,7 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import '../App.css'
-
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Tabs, Space, Spin, Divider } from 'antd'
 
@@ -36,7 +35,7 @@ class CertificatesAndKeys extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchAssets()
+      this.assetsGet()
     }
   }
 
@@ -51,7 +50,7 @@ class CertificatesAndKeys extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  assetsGet = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",

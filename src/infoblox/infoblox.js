@@ -32,7 +32,7 @@ class Infoblox extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.fetchAssets()
+      this.assetsGet()
     }
   }
 
@@ -47,7 +47,7 @@ class Infoblox extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  assetsGet = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",

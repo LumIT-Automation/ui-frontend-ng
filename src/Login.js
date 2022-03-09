@@ -59,7 +59,6 @@ class Login extends Component {
           document.cookie = "token="+response.access;
           document.cookie = "username="+data.username;
 
-          //this.fetchAuthorizations()
         },
 
         error => {

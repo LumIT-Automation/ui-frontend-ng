@@ -29,7 +29,7 @@ class PermissionsTab extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchSuperAdmin()
+    this.superAdminsGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -121,7 +121,7 @@ class PermissionsTab extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  fetchSuperAdmin = async () => {
+  superAdminsGet = async () => {
     this.setState({loading: true})
     let rest = new Rest(
       "GET",

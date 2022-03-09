@@ -56,7 +56,7 @@ class Manager extends React.Component {
   main = async () => {
     this.props.dispatch(permissionsLoading(true))
 
-    let fetchedAssets = await this.fetchAssets()
+    let fetchedAssets = await this.assetsGet()
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       this.props.dispatch(assetsError(fetchedAssets))
       this.props.dispatch(permissionsLoading(false))
@@ -66,7 +66,7 @@ class Manager extends React.Component {
       this.props.dispatch(assets( fetchedAssets ))
     }
 
-    let fetchedIdentityGroups = await this.fetchIdentityGroups()
+    let fetchedIdentityGroups = await this.identityGroupsGet()
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
       this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
       this.props.dispatch(permissionsLoading(false))
@@ -76,7 +76,7 @@ class Manager extends React.Component {
       this.props.dispatch(identityGroups( fetchedIdentityGroups ))
     }
 
-    let fetchedPermissions = await this.fetchPermissions()
+    let fetchedPermissions = await this.permissionsGet()
     if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
       this.props.dispatch(permissionsError(fetchedPermissions))
       this.props.dispatch(permissionsLoading(false))
@@ -100,7 +100,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  assetsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -116,7 +116,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchIdentityGroups = async () => {
+  identityGroupsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -131,7 +131,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchPermissions = async () => {
+  permissionsGet = async () => {
     let r
     let rest = new Rest(
       "GET",

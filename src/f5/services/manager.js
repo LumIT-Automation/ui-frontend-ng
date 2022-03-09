@@ -29,7 +29,7 @@ class Manager extends React.Component {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       if (!this.props.assetsError) {
         if (!this.props.assets) {
-          this.fetchAssets()
+          this.assetsGet()
         }
       }
     }
@@ -46,7 +46,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchAssets = async () => {
+  assetsGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {

@@ -44,12 +44,12 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.fetchProfilesType()
+    this.profilesTypeGet()
   }
 
-  fetchProfilesType = async () => {
+  profilesTypeGet = async () => {
     this.setState({profileTypesLoading: true})
-    let profTypes = await this.fetchProfileTypesList()
+    let profTypes = await this.profileTypesListGet()
 
     if (profTypes.status && profTypes.status !== 200 ) {
       this.setState({profileTypesLoading: false})
@@ -61,7 +61,7 @@ class Add extends React.Component {
     }
   }
 
-  fetchProfileTypesList = async () => {
+  profileTypesListGet = async () => {
     let r
     let rest = new Rest(
       "GET",

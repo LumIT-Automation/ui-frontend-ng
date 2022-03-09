@@ -135,14 +135,14 @@ class Modify extends React.Component {
   networksGet = async () => {
     this.setState({networksLoading: true})
 
-    let nets = await this.fetchNets()
+    let nets = await this.netsGet()
     if (nets.status && nets.status !== 200) {
       this.props.dispatch(networksError( nets ))
       await this.setState({networks: null, networksLoading: false})
       return
     }
 
-    let containers = await this.fetchContainers()
+    let containers = await this.containersGet()
     if (containers.status && containers.status !== 200) {
       this.props.dispatch(containersError( containers ))
       await this.setState({networks: null, networksLoading: false})
@@ -153,7 +153,7 @@ class Modify extends React.Component {
     this.setState({networks: networks, networksLoading: false})
   }
 
-  fetchNets = async () => {
+  netsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -168,7 +168,7 @@ class Modify extends React.Component {
     return r
   }
 
-  fetchContainers = async () => {
+  containersGet = async () => {
     let r
     let rest = new Rest(
       "GET",

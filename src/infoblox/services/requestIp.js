@@ -73,8 +73,8 @@ class RequestIp extends React.Component {
 
   main = async () => {
     this.setState({networkLoading: true})
-    let networks = await this.fetchNetworks()
-    let containers = await this.fetchContainers()
+    let networks = await this.networksGet()
+    let containers = await this.containersGet()
     let real, realNetworks, realContainers
 
     if (networks) {
@@ -94,7 +94,7 @@ class RequestIp extends React.Component {
 
   }
 
-  fetchNetworks = async () => {
+  networksGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -110,7 +110,7 @@ class RequestIp extends React.Component {
     return r
   }
 
-  fetchContainers = async () => {
+  containersGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -183,7 +183,7 @@ class RequestIp extends React.Component {
   }
 
 
-  fetchNetwork = async network => {
+  networkGet = async network => {
     let r
     let rest = new Rest(
       "GET",
@@ -198,7 +198,7 @@ class RequestIp extends React.Component {
     return r
   }
 
-  fetchContainer = async container => {
+  conatinerGet = async container => {
     let r
     let rest = new Rest(
       "GET",
@@ -263,7 +263,7 @@ class RequestIp extends React.Component {
       delete request.objectTypes
       request.objectTypesLoading = false
     }
-    let info = await this.fetchNetwork(prefix)
+    let info = await this.networkGet(prefix)
 
     if (info && info.extattrs) {
       if (info.extattrs.Mask) {

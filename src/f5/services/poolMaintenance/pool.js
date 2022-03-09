@@ -49,7 +49,7 @@ class PoolDetails extends React.Component {
   }
 
   main = async(pool) => {
-    let members = await this.fetchMembers(pool)
+    let members = await this.poolMembersGet(pool)
     if (members.status && members.status !== 200) {
       this.props.dispatch(poolMembersError(members))
     }
@@ -94,7 +94,7 @@ class PoolDetails extends React.Component {
     }
   }
 
-  fetchMembers = async (pool) => {
+  poolMembersGet = async (pool) => {
     let r
     let rest = new Rest(
       "GET",
@@ -173,15 +173,15 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberEnableError(enable))
     }
 
-    let fetchMember = await this.fetchMember(member)
-    if (fetchMember.status && fetchMember.status !== 200) {
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -205,15 +205,15 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberDisableError(disable))
     }
 
-    let fetchMember = await this.fetchMember(member)
-    if (fetchMember.status && fetchMember.status !== 200) {
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -237,15 +237,15 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberForceOfflineError(forceOffline))
     }
 
-    let fetchMember = await this.fetchMember(member)
-    if (fetchMember.status && fetchMember.status !== 200) {
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchMember))
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchMember.state, fetchMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -315,7 +315,7 @@ class PoolDetails extends React.Component {
     return r
   }
 
-  fetchMember = async member => {
+  poolMemberGet = async member => {
     let r
     let rest = new Rest(
       'GET',
@@ -409,7 +409,7 @@ class PoolDetails extends React.Component {
       return m
     })
 
-    this.fetchMembers(this.props.obj, this.props.asset.id)
+    this.poolMembersGet(this.props.obj, this.props.asset.id)
     this.setState({members: list})
   }
 

@@ -36,7 +36,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.obj) {
       this.props.dispatch(poolMembersLoading(true))
-      this.fetchPoolMembers(this.props.obj.name)
+      this.poolMembersGet(this.props.obj.name)
     }
   }
 
@@ -47,7 +47,7 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.props.poolMembersFetch  === true) {
       this.props.dispatch(poolMembersLoading(true))
-      this.fetchPoolMembers(this.props.obj.name)
+      this.poolMembersGet(this.props.obj.name)
       this.props.dispatch(poolMembersFetch(false))
     }
   }
@@ -56,7 +56,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchPoolMembers = async (name) => {
+  poolMembersGet = async (name) => {
     let rest = new Rest(
       "GET",
       resp => {
