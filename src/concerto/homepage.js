@@ -47,7 +47,7 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-
+      {/*
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>
@@ -118,7 +118,7 @@ class Homepage extends React.Component {
             </Row>
           </React.Fragment>
         </React.Fragment>
-
+      */}
       </React.Fragment>
     )
   }
