@@ -5,7 +5,7 @@ import { Modal, Table, List } from 'antd'
 import { QuestionCircleOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
-import Error from '../../error/f5Error'
+import Error from '../error'
 
 import {
   rolesError

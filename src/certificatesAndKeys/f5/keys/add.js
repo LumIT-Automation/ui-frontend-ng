@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from "../../../_helpers/Rest"
-import Error from "../../../error/f5Error"
+import Error from "../../../f5/error"
 
 import { keysFetch, keyAddError } from '../../../f5/store.f5'
 

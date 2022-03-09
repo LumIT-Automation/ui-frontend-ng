@@ -6,7 +6,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../../error/f5Error'
+import Error from '../error'
 
 import {
   routeDomains,

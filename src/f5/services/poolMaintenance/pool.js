@@ -1,7 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import Rest from "../../../_helpers/Rest";
-import Error from '../../../error/f5Error'
+import { Modal, Button, Space, Table, Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
+import Rest from '../../../_helpers/Rest'
+import Error from '../../error'
 
 import {
   poolMembersError,
@@ -13,8 +15,6 @@ import {
 
 } from '../../store.f5'
 
-import { Modal, Button, Space, Table, Spin } from 'antd';
-import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 

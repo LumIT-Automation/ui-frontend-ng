@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import { Spin, Button, Table, Input, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-import Error from '../../error/f5Error'
+import Error from '../error'
 import Rest from '../../_helpers/Rest'
 
 import {

@@ -1,9 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Component } from "react";
-import { logout } from '../_store/store.authentication'
+import { Component } from 'react'
 
-import { authorizationsError } from '../_store/store.authorizations'
+import { Modal, Table, Result } from 'antd'
+
+import {
+  logout
+} from '../_store/store.authentication'
+
+import {
+  authorizationsError
+} from '../_store/store.authorizations'
 
 import {
   permissionsError,
@@ -105,9 +112,9 @@ import {
 
   genericError
 
-} from '../f5/store.f5'
+} from './store.f5'
 
-import { Modal, Table, Result } from 'antd';
+
 
 //import notFound from './404.gif'
 //import tooMany from './429.gif'

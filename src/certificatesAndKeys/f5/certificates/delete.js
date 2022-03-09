@@ -1,16 +1,20 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from "../../../_helpers/Rest"
-import Error from "../../../error/f5Error"
-
-import { certificatesFetch, certificateDeleteError } from '../../../f5/store.f5'
-
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
+import Rest from '../../../_helpers/Rest'
+import Error from '../../../f5/error'
+
+import {
+  certificatesFetch,
+  certificateDeleteError
+} from '../../../f5/store.f5'
+
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
+
 
 
 class Delete extends React.Component {

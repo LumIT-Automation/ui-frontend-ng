@@ -5,7 +5,7 @@ import { Button, Modal, Spin, Result, Input, Row, Col, Radio } from 'antd'
 import { LoadingOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../../error/f5Error'
+import Error from '../error'
 import Validators from '../../_helpers/validators'
 
 import {

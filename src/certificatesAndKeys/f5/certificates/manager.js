@@ -1,9 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Alert } from 'antd'
 
-import Rest from "../../../_helpers/Rest"
-import Error from "../../../error/f5Error"
+import Rest from '../../../_helpers/Rest'
+import Error from '../../../f5/error'
 
 import {
   certificatesLoading,
@@ -15,27 +16,24 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Alert } from 'antd'
 
 
-
-class CertificatesManager extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
   componentDidMount() {
-    if (!this.props.certificatesError) {
-      if (this.props.asset && this.props.partition) {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.certificatesError) {
         this.props.dispatch(certificatesFetch(false))
         if (!this.props.certificates) {
-          this.fetchCertificates()
+          this.certificatesGet()
         }
       }
     }
@@ -46,13 +44,17 @@ class CertificatesManager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.certificates && this.props.asset && this.props.partition ) {
-      this.fetchCertificates()
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+      if (!this.props.certificates) {
+        this.certificatesGet()
+      }
     }
 
-    if (this.props.certificatesFetch && this.props.asset && this.props.partition ) {
-      this.fetchCertificates()
-      this.props.dispatch(certificatesFetch(false))
+    if (this.props.asset && this.props.partition) {
+      if (this.props.certificatesFetch) {
+        this.certificatesGet()
+        this.props.dispatch(certificatesFetch(false))
+      }
     }
   }
 
@@ -61,7 +63,7 @@ class CertificatesManager extends React.Component {
 
 
 
-  fetchCertificates = async () => {
+  certificatesGet = async () => {
     this.props.dispatch(certificatesLoading(true))
     let rest = new Rest(
       "GET",
@@ -72,7 +74,7 @@ class CertificatesManager extends React.Component {
         this.props.dispatch(certificatesError(error))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificates/`, this.props.token)
     this.props.dispatch(certificatesLoading(false))
   }
 
@@ -115,4 +117,4 @@ export default connect((state) => ({
   certificates: state.f5.certificates,
   certificatesFetch: state.f5.certificatesFetch,
   certificatesError:  state.f5.certificatesError
-}))(CertificatesManager);
+}))(Manager);

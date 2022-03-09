@@ -3,11 +3,11 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../../../_helpers/Rest'
-import Error from '../../../error/f5Error'
+import Error from '../../error'
 
 import { pools, poolsError } from '../../store.f5'
 
-import AssetSelector from '../../../f5/assetSelector'
+import AssetSelector from '../../assetSelector'
 import Pools from './pools'
 
 import { Modal, Alert, Button, Divider, Spin } from 'antd'

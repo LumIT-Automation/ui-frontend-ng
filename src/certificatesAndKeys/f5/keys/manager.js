@@ -1,9 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Alert } from 'antd'
 
-import Rest from "../../../_helpers/Rest"
-import Error from "../../../error/f5Error"
+import Rest from '../../../_helpers/Rest'
+import Error from '../../../f5/error'
 
 import {
   keysLoading,
@@ -15,8 +16,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Alert } from 'antd'
-
 
 
 class Manager extends React.Component {
@@ -25,17 +24,16 @@ class Manager extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: '',
-      error: null
+      searchedColumn: ''
     };
   }
 
   componentDidMount() {
-    if (!this.props.keysError) {
-      if (this.props.asset && this.props.partition) {
+    if (this.props.asset && this.props.partition) {
+      if (!this.props.keysError) {
         this.props.dispatch(keysFetch(false))
         if (!this.props.keys) {
-          this.fetchKeys()
+          this.keysGet()
         }
       }
     }
@@ -46,13 +44,17 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.keys && this.props.asset && this.props.partition ) {
-      this.fetchKeys()
+    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+      if (!this.props.keys) {
+        this.keysGet()
+      }
     }
 
-    if (this.props.keysFetch && this.props.asset && this.props.partition ) {
-      this.fetchKeys()
-      this.props.dispatch(keysFetch(false))
+    if (this.props.asset && this.props.partition) {
+      if (this.props.keysFetch) {
+        this.keysGet()
+        this.props.dispatch(keysFetch(false))
+      }
     }
   }
 
@@ -61,8 +63,7 @@ class Manager extends React.Component {
 
 
 
-
-  fetchKeys = async () => {
+  keysGet = async () => {
     this.props.dispatch(keysLoading(true))
     let rest = new Rest(
       "GET",
@@ -73,19 +74,19 @@ class Manager extends React.Component {
         this.props.dispatch(keysError(error))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/keys/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/keys/`, this.props.token)
     this.props.dispatch(keysLoading(false))
   }
 
 
   render() {
+
     return (
       <React.Fragment>
         <br/>
         { (this.props.asset && this.props.asset.id ) && this.props.partition  ?
           <React.Fragment>
-          {/*certificates_post da sostituire con keys_post*/}
-            {this.props.authorizations && (this.props.authorizations.certificates_post || this.props.authorizations.any) ?
+            {this.props.authorizations && (this.props.authorizations.keys_post || this.props.authorizations.any) ?
               <React.Fragment>
                 <Add/>
                 <br/>

@@ -4,15 +4,15 @@ import 'antd/dist/antd.css'
 import { Select, Row, Col, Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-import Rest from "../_helpers/Rest"
-import Error from '../error/f5Error'
+import Rest from '../_helpers/Rest'
+import Error from './error'
 
 import {
   environment,
   asset,
   partition,
   partitionsError,
-} from '../f5/store.f5'
+} from './store.f5'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
