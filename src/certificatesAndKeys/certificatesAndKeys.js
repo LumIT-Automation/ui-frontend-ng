@@ -77,6 +77,8 @@ class CertificatesAndKeys extends React.Component {
 
 
   render() {
+    console.log('cert')
+    console.log(this.props.asset)
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
         <Tabs type="card">
@@ -144,4 +146,7 @@ export default connect((state) => ({
 
   certificatesLoading: state.f5.certificatesLoading,
   keysLoading: state.f5.keysLoading,
+
+
+  asset: state.f5.asset
 }))(CertificatesAndKeys);

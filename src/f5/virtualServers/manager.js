@@ -1,15 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
-import { virtualServersLoading, virtualServers, virtualServersFetch, virtualServersError } from '../store.f5'
+import {
+  virtualServersLoading,
+  virtualServers,
+  virtualServersFetch,
+  virtualServersError
+} from '../store.f5'
 
 import List from './list'
-
-import { Space, Alert } from 'antd';
 
 
 
@@ -18,9 +22,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null
     };
   }
 
@@ -29,7 +30,7 @@ class Manager extends React.Component {
       if (!this.props.virtualServersError) {
         this.props.dispatch(virtualServersFetch(false))
         if (!this.props.virtualServers) {
-          this.fetchVirtualServers()
+          this.virtualServersGet()
         }
       }
     }
@@ -40,18 +41,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.virtualServers) {
-        this.fetchVirtualServers()
+        this.virtualServersGet()
+      }
+      if (this.props.virtualServersFetch) {
+        this.virtualServersGet()
+        this.props.dispatch(virtualServersFetch(false))
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchVirtualServers()
-      }
-    }
-    if (this.props.asset && this.props.partition) {
-      if (this.props.virtualServersFetch) {
-        this.fetchVirtualServers()
-        this.props.dispatch(virtualServersFetch(false))
+        this.virtualServersGet()
       }
     }
   }
@@ -59,7 +58,7 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchVirtualServers = async () => {
+  virtualServersGet = async () => {
     this.props.dispatch(virtualServersLoading(true))
     let rest = new Rest(
       "GET",

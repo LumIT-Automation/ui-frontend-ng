@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -15,8 +16,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
-
 
 
 class Manager extends React.Component {
@@ -24,10 +23,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null,
-      profileFullList: []
     };
   }
 
@@ -36,7 +31,7 @@ class Manager extends React.Component {
       if (!this.props.profilesError) {
         this.props.dispatch(profilesFetch(false))
         if (!this.props.profiles) {
-          this.fetchProfiles()
+          this.profilesGet()
         }
       }
     }
@@ -47,18 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.profiles) {
-        this.fetchProfiles()
+        this.profilesGet()
+      }
+      if (this.props.profilesFetch) {
+        this.profilesGet()
+        this.props.dispatch(profilesFetch(false))
       }
       if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchProfiles()
-      }
-    }
-    if (this.props.asset && this.props.partition) {
-      if (this.props.profilesFetch) {
-        this.fetchProfiles()
-        this.props.dispatch(profilesFetch(false))
+        this.profilesGet()
       }
     }
   }
@@ -66,10 +59,10 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchProfiles = async () => {
+  profilesGet = async () => {
     this.props.dispatch(profilesLoading(true))
 
-    let profs = await this.fetchProfilesAny()
+    let profs = await this.profilesAnyGet()
 
     if (profs.status && profs.status !== 200 ) {
       this.props.dispatch(profilesError(profs))
@@ -96,7 +89,7 @@ class Manager extends React.Component {
 
   }
 
-  fetchProfilesAny = async () => {
+  profilesAnyGet = async () => {
     let r
     let rest = new Rest(
       "GET",

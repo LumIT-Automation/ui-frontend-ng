@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -17,8 +18,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
-
 
 
 class Manager extends React.Component {
@@ -26,10 +25,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null,
-      monitorFullList: []
     };
   }
 
@@ -38,7 +33,7 @@ class Manager extends React.Component {
       if (!this.props.monitorsError) {
         this.props.dispatch(monitorsFetch(false))
         if (!this.props.monitors) {
-          this.fetchMonitors()
+          this.monitorsGet()
         }
       }
     }
@@ -49,19 +44,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.monitors) {
-        this.fetchMonitors()
-      }/*
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchMonitors()
-      }*/
-
-    }
-    if (this.props.asset && this.props.partition) {
+        this.monitorsGet()
+      }
       if (this.props.monitorsFetch) {
-        this.fetchMonitors()
+        this.monitorsGet()
         this.props.dispatch(monitorsFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.monitorsGet()
       }
     }
   }
@@ -69,10 +61,10 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchMonitors = async () => {
+  monitorsGet = async () => {
     this.props.dispatch(monitorsLoading(true))
 
-    let monTypes = await this.fetchMonitorsTypeList()
+    let monTypes = await this.monitorsGetTypeList()
 
     if (monTypes.status && monTypes.status !== 200 ) {
       this.props.dispatch(monitorTypesError(monTypes))
@@ -82,7 +74,7 @@ class Manager extends React.Component {
     }
 
 
-    let mons = await this.fetchMonitorsAny()
+    let mons = await this.monitorsGetAny()
 
     if (mons.status && mons.status !== 200 ) {
       this.props.dispatch(monitorsError(mons))
@@ -109,7 +101,7 @@ class Manager extends React.Component {
 
   }
 
-  fetchMonitorsTypeList = async () => {
+  monitorsGetTypeList = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -124,7 +116,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchMonitorsAny = async () => {
+  monitorsGetAny = async () => {
     let r
     let rest = new Rest(
       "GET",

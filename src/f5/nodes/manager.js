@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -15,7 +16,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
 
 
 class Manager extends React.Component {
@@ -31,7 +31,7 @@ class Manager extends React.Component {
       if (!this.props.nodesError) {
         this.props.dispatch(nodesFetch(false))
         if (!this.props.nodes) {
-          this.fetchNodes()
+          this.nodesGet()
         }
       }
     }
@@ -42,18 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.nodes) {
-        this.fetchNodes()
-      }/*
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchNodes()
-      }*/
-    }
-    if (this.props.asset && this.props.partition) {
+        this.nodesGet()
+      }
       if (this.props.nodesFetch) {
-        this.fetchNodes()
+        this.nodesGet()
         this.props.dispatch(nodesFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.nodesGet()
       }
     }
   }
@@ -62,7 +60,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchNodes = async () => {
+  nodesGet = async () => {
     this.props.dispatch(nodesLoading(true))
     let rest = new Rest(
       "GET",

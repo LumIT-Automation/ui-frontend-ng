@@ -44,16 +44,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.keys) {
         this.keysGet()
       }
-    }
-
-    if (this.props.asset && this.props.partition) {
       if (this.props.keysFetch) {
         this.keysGet()
         this.props.dispatch(keysFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.keysGet()
       }
     }
   }

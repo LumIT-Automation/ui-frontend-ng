@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -15,7 +16,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
 
 
 class Manager extends React.Component {
@@ -31,7 +31,7 @@ class Manager extends React.Component {
       if (!this.props.snatPoolsError) {
         this.props.dispatch(snatPoolsFetch(false))
         if (!this.props.snatPools) {
-          this.fetchSnatPools()
+          this.snatPoolsGet()
         }
       }
     }
@@ -42,18 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.snatPools) {
-        this.fetchSnatPools()
-      }/*
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchSnatPools()
-      }*/
-    }
-    if (this.props.asset && this.props.partition) {
+        this.snatPoolsGet()
+      }
       if (this.props.snatPoolsFetch) {
-        this.fetchSnatPools()
+        this.snatPoolsGet()
         this.props.dispatch(snatPoolsFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.snatPoolsGet()
       }
     }
   }
@@ -62,7 +60,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchSnatPools = async () => {
+  snatPoolsGet = async () => {
     this.props.dispatch(snatPoolsLoading(true))
     let rest = new Rest(
       "GET",

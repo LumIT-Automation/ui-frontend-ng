@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -22,8 +23,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd';
-
 
 
 class Manager extends React.Component {
@@ -31,9 +30,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null
     };
   }
 
@@ -42,8 +38,8 @@ class Manager extends React.Component {
       if (!this.props.poolsError) {
         this.props.dispatch(poolsFetch(false))
         if (!this.props.pools) {
-          this.fetchPools()
-          this.fetchMonitors()
+          this.poolsGet()
+          this.monitorsGet()
         }
       }
     }
@@ -54,21 +50,19 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
-      if (!this.props.pools) {
-        this.fetchPools()
-        this.fetchMonitors()
-      }/*
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchPools()
-        this.fetchMonitorsTypeList()
-      }*/
-    }
     if (this.props.asset && this.props.partition) {
+      if (!this.props.pools) {
+        this.poolsGet()
+        this.monitorsGet()
+      }
       if (this.props.poolsFetch) {
-        this.fetchPools()
-        this.fetchMonitors()
+        this.poolsGet()
+        this.monitorsGet()
         this.props.dispatch(poolsFetch(false))
+      }
+      if ( (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+          this.poolsGet()
+          this.monitorsGet()
       }
     }
   }
@@ -76,10 +70,10 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchMonitors = async () => {
+  monitorsGet = async () => {
     this.props.dispatch(monitorsLoading(true))
 
-    let monTypes = await this.fetchMonitorsTypeList()
+    let monTypes = await this.monitorsTypeListGet()
 
     if (monTypes.status && monTypes.status !== 200 ) {
       this.props.dispatch(monitorTypesError(monTypes))
@@ -89,7 +83,7 @@ class Manager extends React.Component {
     }
 
 
-    let mons = await this.fetchMonitorsAny()
+    let mons = await this.monitorsAnyGet()
 
     if (mons.status && mons.status !== 200 ) {
       this.props.dispatch(monitorsError(mons))
@@ -116,7 +110,7 @@ class Manager extends React.Component {
 
   }
 
-  fetchMonitorsTypeList = async () => {
+  monitorsTypeListGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -131,7 +125,7 @@ class Manager extends React.Component {
     return r
   }
 
-  fetchMonitorsAny = async () => {
+  monitorsAnyGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -147,7 +141,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchPools = async () => {
+  poolsGet = async () => {
     this.props.dispatch(poolsLoading(true))
     let rest = new Rest(
       "GET",

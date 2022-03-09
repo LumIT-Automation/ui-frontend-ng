@@ -59,7 +59,7 @@ class F5 extends React.Component {
   }
 
   componentWillUnmount() {
-    this.props.dispatch(resetObjects())
+    //this.props.dispatch(resetObjects())
   }
 
 
@@ -107,6 +107,9 @@ class F5 extends React.Component {
   }
 
   render() {
+    console.log('f5')
+    console.log(this.props.asset)
+    console.log(this.props.partition)
     return (
       <React.Fragment>
         <AssetSelector/>
@@ -249,4 +252,7 @@ export default connect((state) => ({
   virtualServersLoading: state.f5.virtualServersLoading,
 
   assetsError: state.f5.assetsError,
+
+  asset: state.f5.asset,
+  partition: state.f5.partition
 }))(F5);

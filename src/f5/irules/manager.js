@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -15,7 +16,6 @@ import {
 import List from './list'
 import Add from './add'
 
-import { Space, Alert } from 'antd'
 
 
 class Manager extends React.Component {
@@ -31,7 +31,7 @@ class Manager extends React.Component {
       if (!this.props.irulesError) {
         this.props.dispatch(irulesFetch(false))
         if (!this.props.irules) {
-          this.fetchIrules()
+          this.irulesGet()
         }
       }
     }
@@ -42,18 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.irules) {
-        this.fetchIrules()
-      }/*
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.fetchIrules()
-      }*/
-    }
-    if (this.props.asset && this.props.partition) {
+        this.irulesGet()
+      }
       if (this.props.irulesFetch) {
-        this.fetchIrules()
+        this.irulesGet()
         this.props.dispatch(irulesFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.irulesGet()
       }
     }
   }
@@ -62,7 +60,7 @@ class Manager extends React.Component {
   }
 
 
-  fetchIrules = async () => {
+  irulesGet = async () => {
     this.props.dispatch(irulesLoading(true))
     let rest = new Rest(
       "GET",

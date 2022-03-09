@@ -23,8 +23,6 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: ''
     };
   }
 
@@ -44,16 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) && (this.props.partition !== null) ) {
+    if ( (this.props.asset && this.props.partition) ) {
       if (!this.props.certificates) {
         this.certificatesGet()
       }
-    }
-
-    if (this.props.asset && this.props.partition) {
       if (this.props.certificatesFetch) {
         this.certificatesGet()
         this.props.dispatch(certificatesFetch(false))
+      }
+      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
+        this.certificatesGet()
       }
     }
   }

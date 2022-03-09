@@ -421,6 +421,9 @@ const f5Slice = createSlice({
 
         resetObjects: (state, action) => {
 
+          state.asset = null
+          state.partition = null
+
           state.nodesLoading= null
           state.nodes = null
           state.nodesFetch = null
