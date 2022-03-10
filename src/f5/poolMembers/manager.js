@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Modal, Button, Space, Table, Spin, Divider } from 'antd'
+import { Modal, Button, Space, Table, Spin, Divider} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -642,8 +642,7 @@ class PoolDetails extends React.Component {
             null
           }
 
-          { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-            this.props.poolMembersLoading ?
+          { this.props.poolMembersLoading ?
               <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
             :
               <Table
@@ -652,10 +651,7 @@ class PoolDetails extends React.Component {
                 pagination={false}
                 rowKey="name"
                 scroll={{x: 'auto'}}
-                //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
               />
-          :
-            <Alert message="Asset and Partition not set" type="error" />
           }
         </Modal>
 
