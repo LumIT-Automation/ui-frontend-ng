@@ -9,10 +9,6 @@ import Add from './add'
 import Delete from './delete'
 
 import {
-  nodesLoading,
-  nodes,
-  nodesError,
-
   poolMembersLoading,
   poolMembers,
   poolMembersFetch,
@@ -46,22 +42,12 @@ class PoolDetails extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-
       if (!this.props.poolMembersError) {
         if (this.props.poolMembersFetch) {
           this.props.dispatch(poolMembersFetch(false))
           this.main(this.props.obj)
         }
       }
-
-      if (this.props.asset && this.props.partition) {
-        if (!this.props.nodesError) {
-          if (!this.props.nodes) {
-            this.nodesGet()
-          }
-        }
-      }
-
     }
   }
 
@@ -72,21 +58,6 @@ class PoolDetails extends React.Component {
   details = () => {
     this.setState({visible: true})
     this.main(this.props.obj)
-  }
-
-  nodesGet = async () => {
-    this.props.dispatch(nodesLoading(true))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.props.dispatch(nodes(resp))
-      },
-      error => {
-        this.props.dispatch(nodesError(error))
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
-    this.props.dispatch(nodesLoading(false))
   }
 
   main = async(pool) => {
@@ -594,7 +565,7 @@ class PoolDetails extends React.Component {
         key: 'monitoring',
         render: (name, obj)  => (
           <Space size="small">
-            {obj.isMonitored ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },/*
@@ -660,10 +631,12 @@ class PoolDetails extends React.Component {
         >
           { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
              this.props.authorizations && (this.props.authorizations.poolMembers_post || this.props.authorizations.any) ?
-              <div>
+              <React.Fragment>
                 <br/>
                 <Add obj={this.props.obj}/>
-              </div>
+                <br/>
+                <br/>
+              </React.Fragment>
               :
               null
             :
@@ -713,8 +686,6 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-  nodes: state.f5.nodes,
-  nodesError: state.f5.nodesError,
   poolMembers: state.f5.poolMembers,
   poolMembersLoading: state.f5.poolMembersLoading,
   poolMembersFetch: state.f5.poolMembersFetch,

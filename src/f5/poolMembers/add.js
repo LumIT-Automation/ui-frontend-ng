@@ -3,33 +3,24 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
+import Validators from '../../_helpers/validators'
 
 import {
-  poolMembersFetch,
+  nodes,
+  nodesError,
   poolMembersLoading,
+  poolMembersFetch,
   poolMemberAddError
 } from '../store.f5'
 
-import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
-
-const layout = {
-  labelCol: { span: 8 },
-  wrapperCol: { span: 8 },
-};
-
-function isEmpty(obj) {
-  for(var prop in obj) {
-    if(obj.hasOwnProperty(prop))
-      return false;
-    }
-    return true;
-}
 
 class Add extends React.Component {
 
@@ -37,12 +28,8 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      error: null,
       errors: {},
-      message:'',
-      nodesNumber: 0,
-      name: '',
-      port: 0
+      request: {}
     };
   }
 
@@ -54,6 +41,17 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    /*
+    if (this.state.visible) {
+      if (this.props.asset && this.props.partition) {
+        if (!this.props.nodesError) {
+          if (!this.props.nodes) {
+            this.main()
+          }
+        }
+      }
+    }
+    */
   }
 
   componentWillUnmount() {
@@ -61,43 +59,99 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    this.main()
   }
 
-  setMemberName = (name) => {
-    let errors = Object.assign({}, this.state.errors);
-    if (name) {
-      this.setState({name: name, errors: errors})
+
+  main = async () => {
+    await this.setState({nodesLoading: true})
+    let nodesFetched = await this.nodesGet()
+    await this.setState({nodesLoading: false})
+    if (nodesFetched.status && nodesFetched.status !== 200 ) {
+      this.props.dispatch(nodesError(nodesFetched))
+      return
     }
     else {
-      errors.memberNameError = 'error'
+      this.props.dispatch(nodes( nodesFetched ))
     }
-
   }
 
-  setMemberPort = e => {
-    let errors = Object.assign({}, this.state.errors);
 
-    let port = e.target.value
-    if (isNaN(port)) {
-      errors.memberPortError = 'error'
+  //FETCH
+  nodesGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    return r
+  }
+
+
+  //SETTERS
+  poolMemberSet = id => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.poolMember = id.toString()
+    this.setState({request: request})
+  }
+
+  portSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.port = e.target.value
+    this.setState({request: request})
+  }
+
+  //VALIDATION
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let validators = new Validators()
+
+    if (!request.poolMember) {
+      errors.poolMemberError = true
+      errors.poolMemberColor = 'red'
+      this.setState({errors: errors})
     }
     else {
-      this.setState({port: port, errors: errors})
+      delete errors.poolMemberError
+      delete errors.poolMemberColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.port || !validators.port(request.port)) {
+      errors.portError = true
+      errors.portColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.portError
+      delete errors.portColor
+      this.setState({errors: errors})
+    }
+
+    return errors
+  }
+
+  validation = async () => {
+    await this.validationCheck()
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.poolMemberAdd()
     }
   }
 
 
+  //DISPOSAL ACTION
   poolMemberAdd = async () => {
     let b = {}
-    if ( isEmpty(this.state.port) || isEmpty(this.state.name) )  {
-      this.setState({message: 'Please fill the form'})
-    }
-
-    else {
-      this.setState({message: null});
-
-      b.data = {
-        "name": `${this.state.name}:${this.state.port}`,
+    b.data = {
+        "name": `${this.state.request.poolMember}:${this.state.request.port}`,
         "connectionLimit": 0,
         "dynamicRatio": 1,
         "ephemeral": "false",
@@ -113,24 +167,27 @@ class Add extends React.Component {
         }
       }
 
-      let rest = new Rest(
+
+    this.props.dispatch(poolMembersLoading(true))
+
+    let rest = new Rest(
         "POST",
         resp => {
-          this.setState({loading: false, response: true, error: false}, () => this.response())
+          this.props.dispatch(poolMembersLoading(false))
+          this.setState({response: true}, () => this.response())
         },
         error => {
           this.props.dispatch(poolMembersLoading(false))
           this.props.dispatch(poolMemberAddError(error))
         }
       )
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
-    }
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
   }
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    this.props.dispatch(poolMembersFetch(true))
-    setTimeout( () => this.closeModal(), 2100)
+    setTimeout( () => this.props.dispatch(poolMembersFetch(true)), 2030)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
@@ -145,10 +202,10 @@ class Add extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button icon={addIcon} style={{marginLeft: '200px'}} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD POOL</p>}
+          title={<p style={{textAlign: 'center'}}>Add Pool Member</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -157,76 +214,112 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-        { !this.state.loading && this.state.response &&
-          <Result
-             status="success"
-             title="Added"
-           />
-        }
-        { !this.state.loading && !this.state.response &&
-          <Form
-            {...layout}
-            name="basic"
-            initialValues={{ remember: true }}
-            onFinish={null}
-            onFinishFailed={null}
-          >
-              <Form.Item
-                label="Member"
-                name='name'
-                key='name'
-                validateStatus={this.state.errors.memberNameError}
-                help={this.state.errors.memberNameError ? 'Please input a valid name' : null }
-              >
-                <Select onChange={m => this.setMemberName(m)} >
-                  {this.props.nodes ? this.props.nodes.map((p, i) => {
-                    return (
-                      <Select.Option key={i} value={p.name}>{p.address} - {p.name}</Select.Option>
-                    )
-                }) : null}
-                </Select>
+          { this.props.poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+          { !this.props.poolMembersLoading && this.state.response &&
+            <Result
+               status="success"
+               title="Member Added"
+             />
+          }
+          { !this.props.poolMembersLoading && !this.state.response &&
+            <React.Fragment>
 
-              </Form.Item>
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Nodes:</p>
+                </Col>
+                <Col span={16}>
+                  { this.state.nodesLoading ?
+                    <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
+                  :
+                    <React.Fragment>
+                      { this.props.nodes && this.props.nodes.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.poolMemberError ?
+                            <Select
+                              value={this.state.request.poolMember}
+                              showSearch
+                              style={{width: 250, border: `1px solid ${this.state.errors.poolMemberColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.poolMemberSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.props.nodes.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              value={this.state.request.poolMember}
+                              showSearch
+                              style={{width: 250}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.poolMemberSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.props.nodes.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
+                </Col>
+              </Row>
+              <br/>
 
-              <Form.Item
-                label="Port"
-                name='port'
-                key='port'
-                validateStatus={this.state.errors.memberPortError}
-                help={this.state.errors.memberPortError ? 'Please input a valid port' : null }
-              >
-                <Input placeholder='port' onBlur={e => this.setMemberPort(e)}/>
-              </Form.Item>
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
+                </Col>
+                <Col span={16}>
+                  {this.state.errors.portError ?
+                    <Input style={{width: 250, borderColor: this.state.errors.portColor}} name="port" id='port' onChange={e => this.portSet(e)} />
+                  :
+                    <Input defaultValue={this.state.request.port} style={{width: 250}} name="port" id='port' onChange={e => this.portSet(e)} />
+                  }
+                </Col>
+              </Row>
+              <br/>
 
-            {this.state.message ?
-              <Form.Item
-                wrapperCol={ {offset: 8, span: 16 }}
-                name="message"
-                key="message"
-              >
-                <p style={{color: 'red'}}>{this.state.message}</p>
-              </Form.Item>
-
-              : null
-            }
-
-            <Form.Item
-              wrapperCol={ {offset: 8, span: 16 }}
-              name="button"
-              key="button"
-            >
-              <Button type="primary" onClick={() => this.poolMemberAdd()}>
-                Add PoolMember
-              </Button>
-            </Form.Item>
-
-          </Form>
-        }
+              <Row>
+                <Col offset={8} span={16}>
+                  <Button type="primary" shape='round' onClick={() => this.validation()} >
+                    Add Node
+                  </Button>
+                </Col>
+              </Row>
+            </React.Fragment>
+          }
         </Modal>
 
         {this.state.visible ?
           <React.Fragment>
+            { this.props.nodesError ? <Error component={'add poolMember'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
             { this.props.poolMemberAddError ? <Error component={'add poolMember'} error={[this.props.poolMemberAddError]} visible={true} type={'poolMemberAddError'} /> : null }
           </React.Fragment>
         :
@@ -241,9 +334,13 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  authorizations: state.authorizations.f5,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
+
   nodes: state.f5.nodes,
+  nodesError: state.f5.nodesError,
+  poolMembersLoading: state.f5.poolMembersLoading,
   poolMemberAddError: state.f5.poolMemberAddError
 }))(Add);
