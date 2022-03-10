@@ -443,6 +443,7 @@ class PoolDetails extends React.Component {
 
 
   render() {
+    console.log(this.props.obj)
     const columns = [
       {
         title: 'Loading',
@@ -614,11 +615,11 @@ class PoolDetails extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
         <Button type="primary" onClick={() => this.details()}>
-          Show Pool Members
+          Pool Members
         </Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>{this.props.name}</p>}
+          title={<p style={{textAlign: 'center'}}>{this.props.obj.name}</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
