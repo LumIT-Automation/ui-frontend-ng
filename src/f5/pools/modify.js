@@ -44,7 +44,6 @@ class Modify extends React.Component {
   }
 
   details = () => {
-    console.log(this.props.obj)
     this.setState({visible: true})
     let request = Object.assign({}, this.props.obj)
     this.setState({request: request})

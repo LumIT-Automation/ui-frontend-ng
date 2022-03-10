@@ -47,7 +47,6 @@ class RolesDescription extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.setState({rolesAndPrivileges: resp.data.items}, () => {this.beautifyPriv()})
         },
       error => {

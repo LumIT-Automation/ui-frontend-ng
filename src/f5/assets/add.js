@@ -79,7 +79,6 @@ class Add extends React.Component {
   }
 
   tlsverifySet = e => {
-    console.log(e)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.tlsverify = e.target.value
     this.setState({request: request})
@@ -251,8 +250,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     return (
       <React.Fragment>
 

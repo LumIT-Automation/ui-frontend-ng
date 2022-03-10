@@ -30,12 +30,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.configurationError) {
-      this.props.dispatch(configurationFetch(false))
-      if (!this.props.configuration) {
-        this.main()
-      }
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -43,54 +37,21 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.configurationFetch) {
-      this.main()
-      this.props.dispatch(configurationFetch(false))
-    }
   }
 
   componentWillUnmount() {
   }
 
 
-  main = async () => {
-    this.props.dispatch(configurationLoading(true))
-    let fetchedConfiguration = await this.configurationGet()
-    if (fetchedConfiguration.status && fetchedConfiguration.status !== 200 ) {
-      this.props.dispatch(configurationError(fetchedConfiguration))
-      this.props.dispatch(configurationLoading(false))
-      return
-    }
-    else {
-      this.props.dispatch(configuration(JSON.parse(fetchedConfiguration.data.configuration)))
-      this.props.dispatch(configurationLoading(false))
-    }
-  }
-
-  configurationGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        console.log(resp)
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR("f5/configuration/global/", this.props.token)
-    return r
-  }
-
-
   addRecord = () => {
+    let conf = JSON.parse(JSON.stringify(this.props.configuration))
     let list = []
     let n
-    if (this.props.configuration.length === 0) {
+
+    if (conf.length === 0) {
       n = 1
     }
-    this.props.configuration.forEach(r => {
+    conf.forEach(r => {
       list.push(Number(r.id))
     });
 
@@ -99,10 +60,9 @@ class Manager extends React.Component {
       n = m + 1
     }
 
-    let l = JSON.parse(JSON.stringify(this.props.configuration))
     let r = {id: n}
-    l.push(r)
-    this.props.dispatch(configuration((l)))
+    conf.push(r)
+    this.props.dispatch(configuration((conf)))
   }
 
   removeRecord = r => {
@@ -130,6 +90,8 @@ class Manager extends React.Component {
 
   modifyConfiguration = async () => {
     let conf = JSON.stringify(this.props.configuration)
+    console.log(conf)
+
     let b = {}
     b.data = {
       "configuration": conf
@@ -140,11 +102,14 @@ class Manager extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        this.main()
+        console.log(resp)
+        this.props.dispatch(configurationLoading(false))
+        this.props.dispatch(configurationFetch(true))
       },
       error => {
-        this.props.dispatch(configurationModifyError(error))
+        console.log(error)
         this.props.dispatch(configurationLoading(false))
+        this.props.dispatch(configurationModifyError(error))
       }
     )
     await rest.doXHR(`f5/configuration/global/`, this.props.token, b )

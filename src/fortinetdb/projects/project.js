@@ -200,7 +200,6 @@ class Project extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.setState({ddosses: resp.data.items})
       },
       error => {
@@ -221,7 +220,7 @@ class Project extends React.Component {
       b.data = {
         "extra_data": e.target.value
       }
-      
+
       this.setState({extraLoading: true})
 
       let rest = new Rest(

@@ -46,7 +46,6 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('assetSelector unmount')
     this.props.dispatch(environment(null))
     this.props.dispatch(asset(null))
     this.props.dispatch(partition(null))

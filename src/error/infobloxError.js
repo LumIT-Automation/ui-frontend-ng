@@ -126,7 +126,6 @@ class Error extends Component {
         	this.props.dispatch(networksError(null))
         	break;
         case 'containersError':
-          console.log('case giusto')
         	this.props.dispatch(containersError(null))
         	break;
 

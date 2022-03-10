@@ -138,7 +138,6 @@ class Add extends React.Component {
 
 
   render() {
-        console.log(this.state.request)
 
     return (
       <React.Fragment>

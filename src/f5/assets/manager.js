@@ -51,15 +51,14 @@ class Manager extends React.Component {
   main = async () => {
     this.props.dispatch(assetsLoading(true))
     let fetchedAssets = await this.assetsGet()
+    this.props.dispatch(assetsLoading(false))
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       this.props.dispatch(assetsError(fetchedAssets))
-      this.props.dispatch(assetsLoading(false))
       return
     }
     else {
       this.props.dispatch(assets( fetchedAssets ))
     }
-    this.props.dispatch(assetsLoading(false))
   }
 
   assetsGet = async () => {

@@ -63,7 +63,6 @@ class Servizio extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.setState({projects: resp.data.items})
       },
       error => {

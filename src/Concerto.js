@@ -20,8 +20,10 @@ import {
 } from './_store/store.authorizations'
 
 import {
-  configuration,
-  configurationError
+  configuration as configurationF5,
+  configurationLoading as configurationF5Loading,
+  configurationFetch as configurationF5Fetch,
+  configurationError as configurationF5Error
 } from './f5/store.f5'
 
 import CustomSider from './concerto/sider'
@@ -52,8 +54,7 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    this.authorizationsGet()
-    this.configurationGet()
+    this.main()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -61,36 +62,82 @@ class Concerto extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.configurationF5Fetch) {
+      this.props.dispatch(configurationF5Fetch(false))
+      this.main()
+    }
   }
 
   componentWillUnmount() {
   }
 
 
+  main = async () => {
+
+    this.props.dispatch(configurationF5Loading(true))
+    let confF5 = await this.configurationF5Get()
+    this.props.dispatch(configurationF5Loading(false))
+    if (confF5.status && confF5.status !== 200 ) {
+      this.props.dispatch(configurationF5Error(confF5))
+    }
+    else {
+      let configuration = JSON.parse(confF5.data.configuration)
+      if (Array.isArray(configuration)) {
+        this.props.dispatch(configurationF5( configuration ))
+      }
+      else {
+        let e = {
+          message: 'Configuration bad format',
+          reason: 'Configuration bad format',
+          status: 500,
+          type: 'basic',
+          url: 'https://10.0.111.10/backend/f5/configuration/global/'
+        }
+        this.props.dispatch(configurationF5Error(e))
+        this.props.dispatch(configurationF5( [] ))
+      }
+    }
+
+    let authorizationsFetched = await this.authorizationsGet()
+    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
+      this.props.dispatch(authorizationsError(authorizationsFetched))
+      return
+    }
+    else {
+      this.props.dispatch(authorizations( authorizationsFetched ))
+    }
+    
+  }
+
+
   authorizationsGet = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(authorizations(resp))
+        r = resp
       },
       error => {
-        this.props.dispatch(authorizationsError(error))
+        r = error
       }
     )
     await rest.doXHR(`authorizations/`, this.props.token)
+    return r
   }
 
-  configurationGet = async () => {
+  configurationF5Get = async () => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(configuration(JSON.parse(resp.data.configuration)))
+        r = resp
       },
       error => {
-        this.props.dispatch(configurationError(error))
+        r = error
       }
     )
     await rest.doXHR("f5/configuration/global/", this.props.token)
+    return r
   }
 
   resetPassword = () => {
@@ -192,6 +239,7 @@ class Concerto extends Component {
         </BrowserRouter>
 
         { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'authorizationsError'} /> : null }
+        { this.props.configurationF5Error ? <Error error={[this.props.configurationF5Error]} visible={true} type={'configurationF5Error'} /> : null }
 
       </Layout>
     )
@@ -204,9 +252,12 @@ export default connect((state) => ({
   token: state.authentication.token,
 
   authorizations: state.authorizations,
+  configurationF5Fetch: state.f5.configurationFetch,
+
   f5auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
   fortinetdbAuth: state.authorizations.fortinetdbAuth,
 
   authorizationsError: state.authorizations.authorizationsError,
+  configurationF5Error: state.f5.configurationError,
 }))(Concerto);

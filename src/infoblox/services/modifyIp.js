@@ -123,9 +123,7 @@ class ModifyIp extends React.Component {
     else {
       errors.serverNameError = true
       errors.serverNameColor = 'red'
-      console.log(errors)
       this.setState({errors: errors})
-      console.log(this.state.errors)
       return false
     }
   }
@@ -135,10 +133,6 @@ class ModifyIp extends React.Component {
     let mac = await this.validateMac()
     let name = await this.validateServerName()
 
-    console.log(mac)
-    console.log(name)
-    console.log(this.state.errors)
-
     if (mac && name) {
       this.ipModify()
     }
@@ -146,7 +140,6 @@ class ModifyIp extends React.Component {
   }
 
   ipDetails = async () => {
-    console.log('ipDetail')
     this.setState({ipDetailLoading: true})
     let rest = new Rest(
       "GET",

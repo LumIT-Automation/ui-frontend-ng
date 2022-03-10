@@ -54,17 +54,13 @@ class Modify extends React.Component {
       let newMember = {}
       newMember.id = n
       let list = member.split('/')
-      console.log(list)
       newMember.address = list[2]
       newList.push(newMember)
       n = n + 1
-      console.log(newMember)
-      console.log(newList)
 
     });
 
     request.members = newList
-    console.log(request)
 
     this.setState({request: request})
   }
@@ -205,8 +201,6 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.props.obj)
-    console.log(this.state.request)
     return (
       <Space direction='vertical'>
 

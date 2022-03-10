@@ -109,12 +109,10 @@ class PoolDetails extends React.Component {
   }
 
   poolMembersGet = async (pool) => {
-    console.log(pool)
     let r
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp.data.items)
         r = resp.data.items
       },
       error => {

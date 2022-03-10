@@ -57,7 +57,6 @@ class NetworksTree extends React.Component {
 
   onSelect = (selectedKeys, info) => {
     if (info.node.type === 'network') {
-      console.log(info.node)
       let n = info.node.title
       n = n.split('/')
       n = n[0]

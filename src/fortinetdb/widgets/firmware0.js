@@ -77,7 +77,6 @@ class Firmware extends React.Component {
   }
 
   render() {
-    console.log(typeof(this.state.field))
     return (
       <React.Fragment>
         { this.state.fieldLoading ?

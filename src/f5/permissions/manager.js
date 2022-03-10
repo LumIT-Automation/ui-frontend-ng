@@ -69,8 +69,6 @@ class Manager extends React.Component {
     }
 
     let fetchedIdentityGroups = await this.identityGroupsGet()
-    console.log('identityGroups')
-    console.log(fetchedIdentityGroups)
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
       this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
       this.props.dispatch(permissionsLoading(false))
@@ -81,8 +79,6 @@ class Manager extends React.Component {
     }
 
     let fetchedPermissions = await this.permissionsGet()
-    console.log('permissions')
-    console.log(fetchedPermissions)
     if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
       this.props.dispatch(permissionsError(fetchedPermissions))
       this.props.dispatch(permissionsLoading(false))
@@ -100,8 +96,6 @@ class Manager extends React.Component {
     }
     else {
       let permissionsWithAssets = await this.assetWithDetails(fetchedAssets, fetchedPermissions)
-      console.log('permissionsWithAssets')
-      console.log(permissionsWithAssets)
       this.props.dispatch(permissions( permissionsWithAssets ))
       this.props.dispatch(permissionsLoading(false))
     }

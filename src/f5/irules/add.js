@@ -99,8 +99,6 @@ class Add extends React.Component {
   }
 
   validation = async () => {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
@@ -149,7 +147,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request.code)
     return (
       <Space direction='vertical'>
 

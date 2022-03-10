@@ -523,8 +523,6 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     return (
       <React.Fragment>
 

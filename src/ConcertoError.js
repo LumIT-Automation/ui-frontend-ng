@@ -3,8 +3,15 @@ import { connect } from 'react-redux'
 import { Component } from "react";
 import { logout } from './_store/store.authentication'
 
-import { setError } from './_store/store.error'
-import { authorizationsError, superAdminPermissionsError } from './_store/store.authorizations'
+import {
+  setError
+} from './_store/store.error'
+import {
+  authorizationsError,
+  superAdminPermissionsError
+} from './_store/store.authorizations'
+
+import { configurationError as configurationF5Error } from './f5/store.f5'
 
 import { Modal, Table, Result } from 'antd';
 
@@ -46,6 +53,10 @@ class Error extends Component {
 
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
+          break
+
+        case 'configurationF5Error':
+          this.props.dispatch(configurationF5Error(null))
           break
 
         case 'superAdminPermissionsError':

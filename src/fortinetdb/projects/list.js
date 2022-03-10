@@ -116,9 +116,6 @@ class List extends React.Component {
 
   render() {
 
-    console.log(this.props.filteredProjects)
-
-
     const columns = [
       {
         title: "ID_PROGETTO",
