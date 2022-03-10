@@ -4,7 +4,11 @@ import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
-import { poolMembersFetch, poolMembersLoading, poolMemberAddError } from '../store.f5'
+import {
+  poolMembersFetch,
+  poolMembersLoading,
+  poolMemberAddError
+} from '../store.f5'
 
 import { Form, Input, Button, Space, Modal, Spin, Result, Select } from 'antd';
 

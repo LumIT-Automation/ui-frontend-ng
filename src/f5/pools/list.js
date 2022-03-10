@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Modify from './modify'
-import PoolMembers from '../poolMembers/list'
+import PoolMembers from '../poolMembers/manager'
 import Delete from './delete'
 
 import { Table, Input, Button, Space } from 'antd'

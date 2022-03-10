@@ -107,9 +107,6 @@ class F5 extends React.Component {
   }
 
   render() {
-    console.log('f5')
-    console.log(this.props.asset)
-    console.log(this.props.partition)
     return (
       <React.Fragment>
         <AssetSelector/>

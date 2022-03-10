@@ -5,7 +5,7 @@ import { Table, Input, Button, Space } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
 
-import PoolMembers from '../../poolMembers/list'
+import PoolMembers from '../../poolMembers/manager'
 
 
 

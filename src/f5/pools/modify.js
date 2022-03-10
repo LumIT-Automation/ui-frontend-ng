@@ -4,8 +4,6 @@ import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
-import PoolMembers from '../poolMembers/manager'
-
 import {
   poolsFetch,
   poolModifyError
