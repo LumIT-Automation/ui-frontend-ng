@@ -211,7 +211,7 @@ class Modify extends React.Component {
     b.data = {
       "address": this.state.request.address,
       "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}/mgmt/`,
+      "baseurl": `https://${this.state.request.address}/wapi/v2.10`,
       "tlsverify": this.state.request.tlsverify,
       "datacenter": this.state.request.datacenter,
       "environment": this.state.request.environment,

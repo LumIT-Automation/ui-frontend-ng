@@ -312,10 +312,6 @@ class Modify extends React.Component {
                 </Col>
               </Row>
 
-              <Divider/>
-
-              <PoolMembers obj={this.props.obj}/>
-
             </React.Fragment>
           }
 

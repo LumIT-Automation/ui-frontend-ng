@@ -49,7 +49,7 @@ class Delete extends React.Component {
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () => this.props.dispatch(poolMembersFetch(true)))
+        this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
         this.props.dispatch(poolMemberDeleteError(error))
@@ -57,6 +57,12 @@ class Delete extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.poolName}/member/${this.props.obj.name}/`, this.props.token )
+  }
+
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
+    setTimeout( () => this.props.dispatch(poolMembersFetch(true)), 2030)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
 

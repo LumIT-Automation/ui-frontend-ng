@@ -1,47 +1,46 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+import { Modal, Button, Space, Table, Spin, Divider } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
-import Rest from "../../_helpers/Rest";
-
-import { poolMembersLoading, poolMembersFetch } from '../store.f5'
-
+import Rest from '../../_helpers/Rest'
+import Error from '../error'
+import Add from './add'
 import Delete from './delete'
 
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import {
+  poolMembersError,
+
+  poolMemberEnableError,
+  poolMemberDisableError,
+  poolMemberForceOfflineError,
+  poolMemberStatsError
+
+} from '../store.f5'
+
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
-
-
-class List extends React.Component {
+class PoolDetails extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      poolMembers: null,
-      renderedMembers: null,
-      error: null
+      visible: false,
+      members: [],
     };
   }
 
   componentDidMount() {
-    if (this.props.obj && (this.state.poolMembers === null)) {
-
-      this.poolMembersGet(this.props.obj.name)
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.poolMembersFetch  === true) {
+    if (this.props.poolMembersFetch) {
       this.props.dispatch(poolMembersLoading(true))
       this.poolMembersGet(this.props.obj.name)
       this.props.dispatch(poolMembersFetch(false))
@@ -52,135 +51,217 @@ class List extends React.Component {
   }
 
 
+  details = (pool) => {
+    this.setState({visible: true})
+    this.main(pool)
+  }
 
+  main = async(pool) => {
+    let members = await this.poolMembersGet(pool)
+    if (members.status && members.status !== 200) {
+      this.props.dispatch(poolMembersError(members))
+    }
+    else {
+      const membersConn = members.map( m => {
+        let n =  Object.assign( {
+            connections: 0,
+            isMonitored: false,
+            isLoading: false,
+            intervalId: null
+          }, m);
+        return n
+      })
 
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      ),
-  });
+      const membersState = membersConn.map( m => {
+        let n
+        if (m.state === 'up' && m.session === 'monitor-enabled') {
+          n = Object.assign(m, {status: 'enabled', color: '#90ee90'})
+        }
+        else if (m.state === 'up' && m.session === 'user-disabled') {
+          n = Object.assign(m, {status: 'disabled', color: 'black'})
+        }
+        else if (m.state === 'checking' && m.session === 'user-disabled') {
+          n = Object.assign(m, {status: 'checking', color: 'blue'})
+        }
+        else if (m.state === 'down' && m.session === 'monitor-enabled') {
+          n = Object.assign(m, {status: 'checking', color: 'red'})
+        }
+        else if (m.state === 'down' && m.session === 'user-enabled') {
+          n = Object.assign(m, {status: 'rechecking', color: 'blue'})
+        }
+        else if (m.state === 'user-down' && m.session === 'user-disabled') {
+          n = Object.assign(m, {status: 'Force offline', color: 'black'})
+        }
+        else {
+          n = Object.assign(m, {status: 'other', color: 'grey' })
+        }
+        return n
+      })
 
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
+      this.setState({members: membersState})
+    }
+  }
 
-  handleReset = clearFilters => {
-    clearFilters();
-    this.setState({ searchText: '' });
-  };
-
-  poolMembersGet = async (name) => {
+  poolMembersGet = async (pool) => {
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(poolMembersLoading(false))
-        this.setState({error: false, poolMembers: resp.data.items}, () => this.setRenderedMembers())
+        r = resp.data.items
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+        r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${name}/members/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`, this.props.token)
+    return r
   }
 
 
-  setRenderedMembers = () => {
 
-    const current = Object.assign([], this.state.poolMembers);
 
-    const newCurrent = current.map( m => {
-      let n
-      if (m.state === 'up' && m.session === 'monitor-enabled') {
-        n = Object.assign(m, {status: 'enabled', color: '#90ee90'})
-      }
-      else if (m.state === 'up' && m.session === 'user-disabled') {
-        n = Object.assign(m, {status: 'disabled', color: 'black'})
-      }
-      else if (m.state === 'checking' && m.session === 'user-disabled') {
-        n = Object.assign(m, {status: 'checking', color: 'blue'})
-      }
-      else if (m.state === 'down' && m.session === 'monitor-enabled') {
-        n = Object.assign(m, {status: 'checking', color: 'red'})
-      }
-      else if (m.state === 'down' && m.session === 'user-enabled') {
-        n = Object.assign(m, {status: 'rechecking', color: 'blue'})
-      }
-      else if (m.state === 'user-down' && m.session === 'user-disabled') {
-        n = Object.assign(m, {status: 'Force offline', color: 'black'})
-      }
-      else {
-        n = Object.assign(m, {status: 'other', color: 'grey' })
-      }
-      return n
+  statusAndSession = async (member, state, session) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+
+    const index = this.state.members.findIndex(m => {
+      return m.name === member.name
     })
-    this.setState({renderedMembers: newCurrent})
+
+    members[index].state = state
+    members[index].session = session
+
+    if (state === 'up' && session === 'monitor-enabled') {
+      members[index].status = 'enabled'
+      members[index].color = '#90ee90'
+    }
+    else if (state === 'up' && session === 'user-disabled') {
+      members[index].status = 'disabled'
+      members[index].color = 'black'
+    }
+    else if (state === 'checking' && session === 'user-disabled') {
+      members[index].status = 'checking'
+      members[index].color = 'blue'
+    }
+    else if (state === 'down' && session === 'monitor-enabled') {
+      members[index].status = 'checking'
+      members[index].color = 'red'
+    }
+    else if (state === 'down' && session === 'user-enabled') {
+      members[index].status = 'rechecking'
+      members[index].color = 'blue'
+    }
+    else if (state === 'user-down' && session === 'user-disabled') {
+      members[index].status = 'force offline'
+      members[index].color = 'black'
+    }
+    else {
+      members[index].status = 'other'
+      members[index].color = 'grey'
+    }
+
+    this.setState({members: members})
+    return members
   }
 
 
-  poolMemberEnable = async (member) => {
+  poolMemberEnableHandler = async (member) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    const index = this.state.members.findIndex(m => {
+      return m.name === member.name
+    })
+
+    members[index].isLoading = true
+    this.setState({members: members})
+
+    let enable = await this.poolMemberEnable(member.name)
+    if (enable.status && enable.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberEnableError(enable))
+    }
+
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
+    }
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+
+    members = JSON.parse(JSON.stringify(this.state.members))
+    members[index].isLoading = false
+    this.setState({members: members})
+  }
+
+  poolMemberDisableHandler = async (member) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    const index = this.state.members.findIndex(m => {
+      return m.name === member.name
+    })
+
+    members[index].isLoading = true
+    this.setState({members: members})
+
+    let disable = await this.poolMemberDisable(member)
+    if (disable.status && disable.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberDisableError(disable))
+    }
+
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
+    }
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+
+    members = JSON.parse(JSON.stringify(this.state.members))
+    members[index].isLoading = false
+    this.setState({members: members})
+  }
+
+  poolMemberForceOfflineHandler = async (member) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    const index = this.state.members.findIndex(m => {
+      return m.name === member.name
+    })
+
+    members[index].isLoading = true
+    this.setState({members: members})
+
+    let forceOffline = await this.poolMemberForceOffline(member)
+    if (forceOffline.status && forceOffline.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberForceOfflineError(forceOffline))
+    }
+
+    let fetchedMember = await this.poolMemberGet(member)
+    if (fetchedMember.status && fetchedMember.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      this.setState({members: members})
+      this.props.dispatch(poolMemberEnableError(fetchedMember))
+    }
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+
+    members = JSON.parse(JSON.stringify(this.state.members))
+    members[index].isLoading = false
+    this.setState({members: members})
+  }
+
+  poolMemberEnable = async (memberName) => {
+    let r
     let b = {}
     b.data = {
       "state": "user-up",
@@ -190,34 +271,39 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
+        r = resp
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+        r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${memberName}/`, this.props.token, b)
+    return r
   }
 
   poolMemberDisable = async (member) => {
+    let r
     let b = {}
     b.data = {
       "state":"user-up",
       "session":"user-disabled"
     }
+
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
+        r = resp
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+        r = error
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
+    return r
   }
 
   poolMemberForceOffline = async (member) => {
+    let r
     let b = {}
     b.data = {
       "state":"user-down",
@@ -227,20 +313,143 @@ class List extends React.Component {
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, error: false, response: true}, () => this.poolMembersGet(this.props.obj.name) )
+        r = resp
       },
       error => {
-        this.setState({error: error}, () => this.props.dispatch(poolMembersLoading(false)))
+        r = error
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token, b )
+    return r
+  }
+
+  poolMemberGet = async member => {
+    let r
+    let rest = new Rest(
+      'GET',
+      resp => {
+        r = resp.data
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/`, this.props.token)
+    return r
   }
 
 
 
-  render() {
+  //MONITORING
+  monitoringToggle = (memb) => {
+    const index = this.state.members.findIndex(m => {
+      return m.name === memb.name
+    })
+    const members = JSON.parse(JSON.stringify(this.state.members))
+    const isMonitored = members[index].isMonitored
+    let list = []
 
+
+    if (!isMonitored) {
+      const member = members[index]
+
+      this.interval = setInterval( () => this.poolMemberStats(member), 3000)
+
+      const memberModified = Object.assign(member, {
+        isMonitored: true,
+        intervalId: this.interval
+      })
+
+      list = members.map( m => {
+        if (m.name === memberModified.name) {
+          return memberModified
+        }
+        return m
+      })
+    }
+    else {
+      const member = members[index]
+
+      clearInterval(member.intervalId)
+
+      const memberModified = Object.assign(member, {
+        isMonitored: false,
+        intervalId: null
+      })
+
+      list = members.map( m => {
+        if (m.name === memberModified.name) {
+          return memberModified
+        }
+        return m
+      })
+    }
+    this.setState({members: list})
+  }
+
+  poolMemberStats = async member => {
+    let rest = new Rest(
+      'GET',
+      resp => {
+        this.refreshStats(member, resp.data)
+      },
+      error => {
+        this.props.dispatch(poolMemberStatsError(error))
+      }
+    )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
+  }
+
+  refreshStats = (memb, data ) => {
+    const index = this.state.members.findIndex(m => {
+      return m.name === memb.name
+    })
+
+    const members =  Object.assign([], this.state.members)
+    const member = members[index]
+
+    const memberModified = Object.assign(member, {connections: data.serverside_curConns})
+
+    const list = members.map( m => {
+      if (m.name === memberModified.name) {
+        return memberModified
+      }
+      return m
+    })
+
+    this.poolMembersGet(this.props.obj, this.props.asset.id)
+    this.setState({members: list})
+  }
+
+
+  //Close and Error
+  closeModal = () => {
+    this.setState({
+      visible: false,
+      members: [],
+    })
+    this.state.members.forEach( m => {
+      clearInterval(m.intervalId)
+    })
+  }
+
+
+
+
+  render() {
+    console.log(this.props.authorizations)
     const columns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
       {
         title: 'Member',
         align: 'center',
@@ -286,9 +495,15 @@ class List extends React.Component {
         key: 'enable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.poolMemberEnable(obj)}>
+          { obj.isLoading || obj.isMonitored ?
+            <Button type="primary" disabled>
               Enable
             </Button>
+            :
+            <Button type="primary" onClick={() => this.poolMemberEnableHandler(obj)}>
+              Enable
+            </Button>
+          }
           </Space>
         ),
       },
@@ -299,9 +514,15 @@ class List extends React.Component {
         key: 'disable',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.poolMemberDisable(obj)}>
+          { obj.isLoading || obj.isMonitored ?
+            <Button type="primary" disabled>
               Disable
             </Button>
+            :
+            <Button type="primary" onClick={() => this.poolMemberDisableHandler(obj)}>
+              Disable
+            </Button>
+          }
           </Space>
         ),
       },
@@ -312,8 +533,57 @@ class List extends React.Component {
         key: 'foff',
         render: (name, obj)  => (
           <Space size="small">
-            <Button type="primary" onClick={() => this.poolMemberForceOffline(obj)}>
+          { obj.isLoading || obj.isMonitored ?
+            <Button type="primary" disabled>
               Force Offline
+            </Button>
+            :
+            <Button type="primary" onClick={() => this.poolMemberForceOfflineHandler(obj)}>
+              Force Offline
+            </Button>
+          }
+          </Space>
+        ),
+      },
+      {
+        title: 'Connections',
+        align: 'center',
+        dataIndex: 'connections',
+        key: 'connections',
+      },
+      {
+        title: '',
+        align: 'center',
+        dataIndex: 'monitoring',
+        key: 'monitoring',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isMonitored ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },/*
+      {
+        title: "Amount",
+        dataIndex: "amount",
+        width: 100,
+        render(text, record) {
+          return {
+            props: {
+              style: { background: 51 > 50 ? "red" : "green" }
+            },
+            children: <div>{text}</div>
+          };
+        }
+      },*/
+      {
+        title: 'Monitoring',
+        align: 'center',
+        dataIndex: 'monitoring',
+        key: 'monitoring',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button type="primary" onClick={() => this.monitoringToggle(obj)}>
+              { obj.isMonitored ? 'STOP' : 'START' }
             </Button>
           </Space>
         ),
@@ -326,10 +596,10 @@ class List extends React.Component {
         render: (name, obj)  => (
           <Space size="small">
             { this.props.authorizations && (this.props.authorizations.poolMember_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} poolName={this.props.obj.name} />
+              <Delete name={name} obj={obj} poolName={this.props.obj.name} />
             :
-            '-'
-          }
+              '-'
+            }
           </Space>
         ),
       }
@@ -337,18 +607,59 @@ class List extends React.Component {
 
     return (
       <Space>
+        <Button type="primary" onClick={() => this.details(this.props.obj)}>
+          Show Pool Members
+        </Button>
+        <Modal
+          title={<p style={{textAlign: 'center'}}>{this.props.obj.name}</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1500}
+        >
+
+          { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
+             this.props.authorizations && (this.props.authorizations.poolMembers_post || this.props.authorizations.any) ?
+              <React.Fragment>
+                <br/>
+                <Add obj={this.props.obj}/>
+              </React.Fragment>
+              :
+              null
+            :
+            null
+          }
+
+          <Divider/>
+
           <Table
-            dataSource={this.state.renderedMembers}
+            dataSource={this.state.members}
             columns={columns}
             pagination={false}
             rowKey="name"
             scroll={{x: 'auto'}}
-            style={{marginLeft: '200px'}}
             //rowClassName={(record, index) => (record.isMonitored ? "red" : "green")}
           />
-      </Space>
+        </Modal>
 
-    )
+        {this.state.visible ?
+          <React.Fragment>
+            { this.props.poolMembersError ? <Error component={'poolMaint pool'} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
+            { this.props.poolMemberEnableError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberEnableError]} visible={true} type={'poolMemberEnableError'} /> : null }
+            { this.props.poolMemberDisableError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberDisableError]} visible={true} type={'poolMemberDisableError'} /> : null }
+            { this.props.poolMemberForceOfflineError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberForceOfflineError]} visible={true} type={'poolMemberForceOfflineError'} /> : null }
+            { this.props.poolMemberStatsError ? <Error component={'poolMaint pool'} error={[this.props.poolMemberStatsError]} visible={true} type={'poolMemberStatsError'} /> : null }
+
+          </React.Fragment>
+        :
+          null
+        }
+
+      </Space>
+    );
   }
 }
 
@@ -359,5 +670,13 @@ export default connect((state) => ({
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-  poolMembers: state.f5.poolMembers
-}))(List);
+  poolMembers: state.f5.poolMembers,
+  poolMembersFetch: state.f5.poolMembersFetch,
+  poolMembersError: state.f5.poolMembersError,
+
+  poolMemberEnableError: state.f5.poolMemberEnableError,
+  poolMemberDisableError: state.f5.poolMemberDisableError,
+  poolMemberForceOfflineError: state.f5.poolMemberForceOfflineError,
+  poolMemberStatsError: state.f5.poolMemberStatsError,
+
+}))(PoolDetails);

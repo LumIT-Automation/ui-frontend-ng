@@ -1,19 +1,22 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Modal, Alert, Button, Divider, Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
 import Error from '../../error'
 
-import { pools, poolsError } from '../../store.f5'
+import {
+  pools,
+  poolsError
+} from '../../store.f5'
 
 import AssetSelector from '../../assetSelector'
 import Pools from './pools'
 
-import { Modal, Alert, Button, Divider, Spin } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+
 
 
 class Manager extends React.Component {

@@ -45,7 +45,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.poolMembersFetch  === true) {
+    if (this.props.poolMembersFetch) {
       this.props.dispatch(poolMembersLoading(true))
       this.poolMembersGet(this.props.obj.name)
       this.props.dispatch(poolMembersFetch(false))
@@ -57,6 +57,7 @@ class Manager extends React.Component {
 
 
   poolMembersGet = async (name) => {
+    this.props.dispatch(poolMembersLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -89,8 +90,11 @@ class Manager extends React.Component {
       }
 
       { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-        this.props.poolMembersLoading ? <Spin indicator={antIcon} style={{margin: '10% 45%'}}/> : <List obj={this.props.obj}/>
+        this.props.poolMembersLoading ?
+          <Spin indicator={antIcon} style={{margin: '10% 45%'}}/>
         :
+          <List name={name} obj={this.props.obj} />
+      :
         <Alert message="Asset and Partition not set" type="error" />
       }
 

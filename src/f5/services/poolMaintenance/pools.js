@@ -1,12 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Table, Input, Button, Space } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined } from '@ant-design/icons'
 
-import Pool from './pool'
-
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import PoolMembers from '../../poolMembers/list'
 
 
 
@@ -149,11 +148,10 @@ class Pools extends React.Component {
         key: 'details',
         render: (name, record)  => (
           <Space size="small">
-            {<Pool name={name} obj={record} />}
+            {<PoolMembers name={name} obj={record} />}
           </Space>
         ),
-      }
-
+      },
     ];
 
     return (

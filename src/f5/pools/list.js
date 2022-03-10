@@ -3,11 +3,12 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Modify from './modify'
+import PoolMembers from '../poolMembers/list'
 import Delete from './delete'
 
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { Table, Input, Button, Space } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined } from '@ant-design/icons'
 
 
 
@@ -141,17 +142,32 @@ class List extends React.Component {
        ...this.getColumnSearchProps('loadBalancingMode'),
       },
       {
-        title: 'Details and modify',
+        title: 'Modify',
         align: 'center',
         dataIndex: 'modify',
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
             { this.props.authorizations && (this.props.authorizations.pool_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
+              <Modify name={name} obj={obj} />
             :
-            '-'
-          }
+              '-'
+            }
+          </Space>
+        ),
+      },
+      {
+        title: 'Members',
+        align: 'center',
+        dataIndex: 'members',
+        key: 'members',
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.poolMembers_get || this.props.authorizations.any) ?
+              <PoolMembers name={name} obj={obj} />
+            :
+              '-'
+            }
           </Space>
         ),
       },
@@ -185,9 +201,7 @@ class List extends React.Component {
           pagination={{ pageSize: 10 }}
           style={{marginBottom: 10}}
         />
-
       </Space>
-
     )
   }
 }
