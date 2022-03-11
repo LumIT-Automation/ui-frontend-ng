@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Error from '../../error/infobloxError'
+import Error from '../error'
 import Rest from '../../_helpers/Rest'
 
 import {

@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import { Tree, Space, Row, Col } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../../error/infobloxError'
+import Error from '../error'
 
 import IpsList from './ipsList'
 

@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../../error/infobloxError'
+import Error from '../error'
 
 import {
   treeLoading,

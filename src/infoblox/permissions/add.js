@@ -5,7 +5,7 @@ import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 import Rest from "../../_helpers/Rest"
-import Error from '../../error/infobloxError'
+import Error from '../error'
 
 import {
   permissionsFetch,

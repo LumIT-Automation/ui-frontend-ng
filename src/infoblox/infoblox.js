@@ -6,7 +6,7 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-import Error from '../error/infobloxError'
+import Error from './error'
 
 import AssetSelector from './assetSelector'
 import Tree from './tree/manager'

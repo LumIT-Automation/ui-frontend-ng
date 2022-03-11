@@ -38,7 +38,7 @@ import {
 
   genericError
 
-} from '../infoblox/store.infoblox'
+} from './store.infoblox'
 
 import { Modal, Table, Result } from 'antd';
 
