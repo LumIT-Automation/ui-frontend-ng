@@ -4,7 +4,7 @@ import { Tabs, Space, Spin } from 'antd'
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
 
-import { projects, projectsLoading, projectsError, projectsFetch } from '../_store/store.fortinetdb'
+import { projects, projectsLoading, projectsError, projectsFetch } from './store.fortinetdb'
 
 import List from './projects/list'
 

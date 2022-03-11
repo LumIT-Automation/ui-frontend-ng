@@ -99,14 +99,14 @@ class CustomSider extends Component {
 
 
             <React.Fragment>
-            {/*
+            {
               <React.Fragment>
               <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECT</Link></Menu.Item>
               <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICE</Link></Menu.Item>
               <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOS</Link></Menu.Item>
               <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
               </React.Fragment>
-            */}
+            }
             </React.Fragment>
 
 

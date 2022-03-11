@@ -9,7 +9,7 @@ import Error from '../../error/fortinetdbError'
 import {
   fieldError,
   valueError
-} from '../../_store/store.fortinetdb'
+} from '../store.fortinetdb'
 
 import List from '../devices/list'
 
@@ -53,7 +53,7 @@ class Firmware extends React.Component {
         this.props.dispatch(fieldError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=FIRMWARE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=VENDOR`, this.props.token)
     this.setState({fieldLoading: false})
   }
 
@@ -68,7 +68,7 @@ class Firmware extends React.Component {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${e}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${e}`, this.props.token)
     this.setState({valueLoading: false})
   }
 
@@ -83,25 +83,25 @@ class Firmware extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
-          <Select
-            showSearch
-            defaultValue={null}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            key={null}
-            style={{ width: '200px' }}
-            onChange={e => this.fetchValue(e)}>
-            {this.state.field && this.state.field.map((n, i) => {
-              return (
-                <Select.Option key={i} value={n.FIRMWARE}>{n.FIRMWARE}</Select.Option>
-              )})
-            }
-          </Select>
+            <Select
+              showSearch
+              defaultValue={null}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              key={null}
+              style={{ width: '500px' }}
+              onChange={e => this.fetchValue(e)}>
+              {this.state.field && this.state.field.map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n.VENDOR}>{n.VENDOR}</Select.Option>
+                )})
+              }
+            </Select>
 
           { this.state.visible ?
             <React.Fragment>
@@ -127,8 +127,8 @@ class Firmware extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'FIRMWARE'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.fieldError ? <Error component={'VENDOR'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.valueError ? <Error component={'VENDOR'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null

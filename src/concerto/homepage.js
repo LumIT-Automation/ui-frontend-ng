@@ -4,13 +4,13 @@ import 'antd/dist/antd.css'
 import { Card, Row, Col, Divider } from 'antd'
 
 //import List from './list'
+import Vendor from '../fortinetdb/widgets/vendor'
 import Italia from '../fortinetdb/widgets/italia'
 
 import Servizio from '../fortinetdb/widgets/servizio'
 import Segmento from '../fortinetdb/widgets/segmento'
 
 import Firmware from '../fortinetdb/widgets/firmware'
-import Firmware0 from '../fortinetdb/widgets/firmware0'
 import Modello from '../fortinetdb/widgets/modello'
 import BackupStatus from '../fortinetdb/widgets/backupStatus'
 import EosFirmware from '../fortinetdb/widgets/eosFirmware'
@@ -47,7 +47,7 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      {/*
+      {
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>
@@ -55,14 +55,61 @@ class Homepage extends React.Component {
             <Row>
               <Col span={17}>
                 <Row>
+                  <Col offset={8}>
+
+                      <Vendor/>
+
+                  </Col>
+                </Row>
+                <Row>
                   <Col span={6}>
                     <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
                       <Firmware/>
                     </Card>
                   </Col>
                   <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE0</p>} bordered={true}>
-                      <Firmware0/>
+                    <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
+                      <Modello/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
+                      <BackupStatus/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
+                      <Attivazione/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
+                      <EosFirmware/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
+                      <EosHardware/>
+                    </Card>
+                  </Col>
+                </Row>
+              </Col>
+
+              <Col offset={0} span={7}>
+                <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
+                  <Italia />
+                </Card>
+              </Col>
+            </Row>
+          </React.Fragment>
+
+          <React.Fragment>
+            <Row>
+              <Col span={17}>
+                <Row>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
+                      <Firmware/>
                     </Card>
                   </Col>
                   <Col span={6}>
@@ -118,7 +165,7 @@ class Homepage extends React.Component {
             </Row>
           </React.Fragment>
         </React.Fragment>
-      */}
+      }
       </React.Fragment>
     )
   }

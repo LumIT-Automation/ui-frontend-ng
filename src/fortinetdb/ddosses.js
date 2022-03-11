@@ -4,7 +4,7 @@ import { Tabs, Space, Spin } from 'antd'
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
 
-import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from '../_store/store.fortinetdb'
+import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from './store.fortinetdb'
 
 import List from './ddosses/list'
 

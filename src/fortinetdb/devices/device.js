@@ -6,7 +6,7 @@ import Error from '../../error/fortinetdbError'
 
 import {
   deviceError
-} from '../../_store/store.fortinetdb'
+} from '../store.fortinetdb'
 
 import { Input, Button, Space, Modal, Table } from 'antd'
 
@@ -151,7 +151,7 @@ class Device extends React.Component {
       }
 
       this.setState({extraLoading: true})
-      
+
       let rest = new Rest(
         "PATCH",
         resp => {
@@ -190,6 +190,11 @@ class Device extends React.Component {
         dataIndex: "SERIALE",
         key: "SERIALE",
         ...this.getColumnSearchProps('SERIALE'),
+        render: (name, obj)  => (
+          <Space size="small">
+            <Device name={name} obj={obj} />
+          </Space>
+        ),
       },
       {
         title: "MODELLO",
@@ -210,7 +215,7 @@ class Device extends React.Component {
       {
         title: "DESCRIZIONE",
         align: "center",
-     		width: 150,
+     		width: 250,
         dataIndex: "DESCRIZIONE",
         key: "DESCRIZIONE",
         ...this.getColumnSearchProps('DESCRIZIONE')
@@ -272,20 +277,20 @@ class Device extends React.Component {
         ...this.getColumnSearchProps('VENDOR')
       },
       {
-        title: "EOS_FIRWMARE",
+        title: "EOL_ANNO",
         align: "center",
      		width: 200,
-        dataIndex: "EOS_FIRWMARE",
-        key: "EOS_FIRWMARE",
-        ...this.getColumnSearchProps('EOS_FIRWMARE')
+        dataIndex: "EOL_ANNO",
+        key: "EOL_ANNO",
+        ...this.getColumnSearchProps('EOL_ANNO')
       },
       {
-        title: "EOS_HARDWARE",
+        title: "EOL_MESE",
         align: "center",
         width: 200,
-        dataIndex: "EOS_HARDWARE",
-        key: "EOS_HARDWARE",
-        ...this.getColumnSearchProps('EOS_HARDWARE')
+        dataIndex: "EOL_MESE",
+        key: "EOL_MESE",
+        ...this.getColumnSearchProps('EOL_MESE')
       },
       {
         title: "COMUNE",

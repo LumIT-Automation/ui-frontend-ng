@@ -4,7 +4,7 @@ import { Tabs, Space, Spin } from 'antd'
 import Rest from '../_helpers/Rest'
 import Error from '../error/fortinetdbError'
 
-import { devices, devicesLoading, devicesError, devicesFetch } from '../_store/store.fortinetdb'
+import { devices, devicesLoading, devicesError, devicesFetch } from './store.fortinetdb'
 
 import List from './devices/list'
 

@@ -211,20 +211,20 @@ class List extends React.Component {
         ...this.getColumnSearchProps('VENDOR')
       },
       {
-        title: "EOS_FIRWMARE",
+        title: "EOL_ANNO",
         align: "center",
      		width: 200,
-        dataIndex: "EOS_FIRWMARE",
-        key: "EOS_FIRWMARE",
-        ...this.getColumnSearchProps('EOS_FIRWMARE')
+        dataIndex: "EOL_ANNO",
+        key: "EOL_ANNO",
+        ...this.getColumnSearchProps('EOL_ANNO')
       },
       {
-        title: "EOS_HARDWARE",
+        title: "EOL_MESE",
         align: "center",
         width: 200,
-        dataIndex: "EOS_HARDWARE",
-        key: "EOS_HARDWARE",
-        ...this.getColumnSearchProps('EOS_HARDWARE')
+        dataIndex: "EOL_MESE",
+        key: "EOL_MESE",
+        ...this.getColumnSearchProps('EOL_MESE')
       },
       {
         title: "COMUNE",
