@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../../error/fortinetdbError'
+import Error from '../error'
 
 import {
   fieldError,

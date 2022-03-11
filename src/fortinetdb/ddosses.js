@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
 import Rest from '../_helpers/Rest'
-import Error from '../error/fortinetdbError'
+import Error from './error'
 
 import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from './store.fortinetdb'
 

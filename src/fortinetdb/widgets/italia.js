@@ -4,7 +4,7 @@ import { VectorMap } from '@south-paw/react-vector-maps'
 import italyJSON from './italyJSON.json'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../../error/fortinetdbError'
+import Error from '../error'
 
 import {
   fieldError,

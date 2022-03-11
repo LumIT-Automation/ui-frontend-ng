@@ -56,83 +56,37 @@ class Homepage extends React.Component {
               <Col span={17}>
                 <Row>
                   <Col offset={8}>
-
-                      <Vendor/>
-
+                    <Vendor/>
                   </Col>
                 </Row>
+                <Divider/>
                 <Row>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
                       <Firmware/>
                     </Card>
                   </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
                       <Modello/>
                     </Card>
                   </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
                       <BackupStatus/>
                     </Card>
                   </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
                       <Attivazione/>
                     </Card>
                   </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
                       <EosFirmware/>
                     </Card>
                   </Col>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
-                      <EosHardware/>
-                    </Card>
-                  </Col>
-                </Row>
-              </Col>
-
-              <Col offset={0} span={7}>
-                <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
-                  <Italia />
-                </Card>
-              </Col>
-            </Row>
-          </React.Fragment>
-
-          <React.Fragment>
-            <Row>
-              <Col span={17}>
-                <Row>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
-                      <Firmware/>
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
-                      <Modello/>
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
-                      <BackupStatus/>
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
-                      <Attivazione/>
-                    </Card>
-                  </Col>
-                  <Col span={6}>
-                    <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
-                      <EosFirmware/>
-                    </Card>
-                  </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
                       <EosHardware/>
                     </Card>
