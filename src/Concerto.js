@@ -24,7 +24,7 @@ import {
   configurationLoading as configurationF5Loading,
   configurationFetch as configurationF5Fetch,
   configurationError as configurationF5Error
-} from './f5/store.f5'
+} from './f5/store'
 
 import CustomSider from './concerto/sider'
 import Homepage from './concerto/homepage'

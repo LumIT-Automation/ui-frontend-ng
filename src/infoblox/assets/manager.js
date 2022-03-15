@@ -10,7 +10,7 @@ import {
   assets,
   assetsFetch,
   assetsError
-} from '../store.infoblox'
+} from '../store'
 
 import List from './list'
 import Add from './add'

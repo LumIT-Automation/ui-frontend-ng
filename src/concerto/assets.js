@@ -8,8 +8,8 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 
-import { assetsFetch as f5AssetsFetch } from '../f5/store.f5'
-import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store.infoblox'
+import { assetsFetch as f5AssetsFetch } from '../f5/store'
+import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

@@ -9,7 +9,7 @@ import Error from '../error'
 import {
   fieldError,
   valueError
-} from '../store.fortinetdb'
+} from '../store'
 
 import List from '../devices/list'
 

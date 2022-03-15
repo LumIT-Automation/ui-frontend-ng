@@ -4,9 +4,9 @@ import authenticationReducer from './store.authentication'
 import errorReducer from './store.error'
 import authorizationsReducer from './store.authorizations'
 
-import f5Reducer from '../f5/store.f5'
-import infobloxReducer from '../infoblox/store.infoblox'
-import fortinetdbReducer from '../fortinetdb/store.fortinetdb'
+import f5Reducer from '../f5/store'
+import infobloxReducer from '../infoblox/store'
+import fortinetdbReducer from '../fortinetdb/store'
 
 
 export default configureStore({

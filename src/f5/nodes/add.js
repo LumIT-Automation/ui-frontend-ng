@@ -10,7 +10,7 @@ import {
   routeDomains,
   routeDomainsError,
   nodeAddError
-} from '../store.f5'
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 

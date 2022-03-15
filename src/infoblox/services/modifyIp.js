@@ -8,7 +8,7 @@ import Error from '../error'
 import {
   ipDetailError,
   ipModifyError,
-} from '../store.infoblox'
+} from '../store'
 
 import AssetSelector from '../assetSelector'
 

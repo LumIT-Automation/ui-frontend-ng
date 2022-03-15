@@ -6,7 +6,7 @@ import Error from '../error'
 
 import {
   ddosError
-} from '../store.fortinetdb'
+} from '../store'
 
 import { Input, Button, Space, Modal, Table } from 'antd'
 

@@ -7,7 +7,7 @@ import { Select, Row, Col } from 'antd'
 import {
   environment,
   asset
-} from '../infoblox/store.infoblox'
+} from '../infoblox/store'
 
 
 

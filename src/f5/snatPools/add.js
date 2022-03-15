@@ -8,7 +8,7 @@ import Validators from '../../_helpers/validators'
 import {
   snatPoolsFetch,
   snatPoolAddError
-} from '../store.f5'
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 

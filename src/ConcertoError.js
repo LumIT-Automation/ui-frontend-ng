@@ -11,7 +11,7 @@ import {
   superAdminPermissionsError
 } from './_store/store.authorizations'
 
-import { configurationError as configurationF5Error } from './f5/store.f5'
+import { configurationError as configurationF5Error } from './f5/store'
 
 import { Modal, Table, Result } from 'antd';
 

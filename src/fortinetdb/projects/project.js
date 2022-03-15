@@ -12,7 +12,7 @@ import {
 
   ddosses,
   ddossesError,
-} from '../store.fortinetdb'
+} from '../store'
 
 import Devices from '../devices/list'
 import Ddosses from '../ddosses/list'

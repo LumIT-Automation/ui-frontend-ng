@@ -10,7 +10,7 @@ import Error from '../../../f5/error'
 import {
   certificatesFetch,
   certificateDeleteError
-} from '../../../f5/store.f5'
+} from '../../../f5/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />

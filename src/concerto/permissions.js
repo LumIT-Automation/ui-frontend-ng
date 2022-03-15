@@ -9,8 +9,8 @@ import SuperAdmin from './superAdmin/manager'
 import F5 from '../f5/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
 
-import { permissionsFetch as f5PermissionsFetch } from '../f5/store.f5'
-import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store.infoblox'
+import { permissionsFetch as f5PermissionsFetch } from '../f5/store'
+import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

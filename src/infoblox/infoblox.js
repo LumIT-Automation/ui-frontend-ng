@@ -15,7 +15,7 @@ import {
   assets,
   assetsError,
   treeFetch
-} from '../infoblox/store.infoblox'
+} from '../infoblox/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

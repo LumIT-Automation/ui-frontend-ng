@@ -11,7 +11,7 @@ import Validators from '../../_helpers/validators'
 import {
   assetsFetch,
   assetModifyError
-} from '../store.f5'
+} from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />

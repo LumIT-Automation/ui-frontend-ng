@@ -7,7 +7,7 @@ import Error from '../error'
 import {
   monitorsFetch,
   monitorModifyError
-} from '../store.f5'
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 

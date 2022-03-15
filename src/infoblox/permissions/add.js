@@ -17,7 +17,7 @@ import {
 
   networksError,
   containersError,
-} from '../store.infoblox'
+} from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />

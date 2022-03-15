@@ -7,7 +7,7 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 import Rest from '../../../_helpers/Rest'
 import Error from '../../../f5/error'
 
-import { certificatesFetch, certificateAddError } from '../../../f5/store.f5'
+import { certificatesFetch, certificateAddError } from '../../../f5/store'
 
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

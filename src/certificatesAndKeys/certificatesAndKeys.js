@@ -17,7 +17,7 @@ import {
   assetsError,
   certificatesFetch,
   keysFetch
-} from '../f5/store.f5'
+} from '../f5/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

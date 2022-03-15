@@ -7,7 +7,7 @@ import Error from '../error'
 import {
   poolMembersFetch,
   poolMemberDeleteError
-} from '../store.f5'
+} from '../store'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'

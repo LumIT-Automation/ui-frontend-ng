@@ -10,7 +10,7 @@ import Error from '../../error'
 import {
   pools,
   poolsError
-} from '../../store.f5'
+} from '../../store'
 
 import AssetSelector from '../../assetSelector'
 import Pools from './pools'

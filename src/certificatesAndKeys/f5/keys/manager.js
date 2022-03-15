@@ -11,7 +11,7 @@ import {
   keys,
   keysFetch,
   keysError
-} from '../../../f5/store.f5'
+} from '../../../f5/store'
 
 import List from './list'
 import Add from './add'

@@ -15,7 +15,7 @@ import {
   dataGroupsError,
 
   l4ServiceCreateError,
-} from '../store.f5'
+} from '../store'
 
 import AssetSelector from '../../f5/assetSelector'
 

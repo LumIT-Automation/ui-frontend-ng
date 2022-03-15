@@ -9,7 +9,7 @@ import Error from '../error'
 
 import {
   rolesError
-} from '../store.f5'
+} from '../store'
 
 
 

@@ -7,7 +7,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import F5 from '../f5/configuration/manager'
 
-import { configurationFetch as configurationF5Fetch } from '../f5/store.f5'
+import { configurationFetch as configurationF5Fetch } from '../f5/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

@@ -11,7 +11,7 @@ import {
   virtualServers,
   virtualServersFetch,
   virtualServersError
-} from '../store.f5'
+} from '../store'
 
 import List from './list'
 

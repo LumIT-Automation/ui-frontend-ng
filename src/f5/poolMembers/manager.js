@@ -18,7 +18,7 @@ import {
   poolMemberDisableError,
   poolMemberForceOfflineError,
   poolMemberStatsError
-} from '../store.f5'
+} from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />

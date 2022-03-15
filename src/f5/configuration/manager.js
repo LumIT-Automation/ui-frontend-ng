@@ -14,7 +14,7 @@ import {
   configurationError,
 
   configurationModifyError,
-} from '../store.f5'
+} from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 

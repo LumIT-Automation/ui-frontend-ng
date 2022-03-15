@@ -11,7 +11,7 @@ import {
   networkError,
   containerError,
   nextAvailableIpError,
-} from '../store.infoblox'
+} from '../store'
 
 import AssetSelector from '../assetSelector'
 

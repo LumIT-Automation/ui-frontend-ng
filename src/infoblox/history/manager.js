@@ -10,7 +10,7 @@ import {
   historysFetch,
   historysError,
 
-} from '../store.infoblox'
+} from '../store'
 
 import List from './list'
 

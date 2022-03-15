@@ -11,7 +11,7 @@ import {
   snatPools,
   snatPoolsFetch,
   snatPoolsError
-} from '../store.f5'
+} from '../store'
 
 import List from './list'
 import Add from './add'

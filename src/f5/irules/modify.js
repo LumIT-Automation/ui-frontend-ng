@@ -7,7 +7,7 @@ import Error from '../error'
 import {
   irulesFetch,
   iruleModifyError
-} from '../store.f5'
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd'
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'

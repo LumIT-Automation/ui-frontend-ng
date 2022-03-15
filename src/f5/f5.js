@@ -28,7 +28,7 @@ import {
   profilesFetch,
   virtualServersFetch,
   resetObjects
-} from '../f5/store.f5'
+} from '../f5/store'
 
 
 const { TabPane } = Tabs;

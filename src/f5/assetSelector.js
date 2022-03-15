@@ -12,7 +12,7 @@ import {
   asset,
   partition,
   partitionsError,
-} from './store.f5'
+} from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 

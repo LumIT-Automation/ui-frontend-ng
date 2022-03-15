@@ -11,7 +11,7 @@ import {
   nodes,
   nodesFetch,
   nodesError
-} from '../store.f5'
+} from '../store'
 
 import List from './list'
 import Add from './add'

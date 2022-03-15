@@ -10,7 +10,7 @@ import {
   assets,
   assetsFetch,
   assetsError
-} from '../store.f5'
+} from '../store'
 
 import List from './list'
 import Add from './add'

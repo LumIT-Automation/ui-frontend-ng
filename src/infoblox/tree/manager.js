@@ -11,7 +11,7 @@ import {
   tree,
   treeFetch,
   treeError,
-} from '../store.infoblox'
+} from '../store'
 
 import NetworksTree from './networksTree'
 

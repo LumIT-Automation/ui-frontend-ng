@@ -19,7 +19,7 @@ import {
 
   genericError
 
-} from '../fortinetdb/store.fortinetdb'
+} from '../fortinetdb/store'
 
 import { Modal, Table, Result } from 'antd';
 
