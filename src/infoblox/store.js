@@ -85,7 +85,7 @@ const infobloxSlice = createSlice({
         state.treeLoading = action.payload
       },
       tree: (state, action) => {
-        state.tree = [action.payload.data['/']]
+        state.tree = action.payload
       },
       treeFetch: (state, action) => {
         state.treeFetch = action.payload

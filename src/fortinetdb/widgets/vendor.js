@@ -7,7 +7,11 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  fieldError,
+  vendors,
+  vendorsLoading,
+  vendor,
+  vendorsError,
+  vendorError,
   valueError
 } from '../store'
 
@@ -29,7 +33,7 @@ class Firmware extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchField()
+    this.vendorsGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -42,19 +46,19 @@ class Firmware extends React.Component {
   componentWillUnmount() {
   }
 
-  fetchField = async () => {
-    this.setState({fieldLoading: true})
+  vendorsGet = async () => {
+    this.setState({vendorsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({field: resp.data.items})
+        this.props.dispatch(vendors(resp))
       },
       error => {
-        this.props.dispatch(fieldError(error))
+        this.props.dispatch(vendorError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=VENDOR`, this.props.token)
-    this.setState({fieldLoading: false})
+    this.setState({vendorsLoading: false})
   }
 
   fetchValue = async e => {
@@ -62,7 +66,9 @@ class Firmware extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({devices: resp.data.items})
+        console.log('vendor')
+        console.log(resp)
+        //this.setState({devices: resp.data.items})
       },
       error => {
         this.props.dispatch(valueError(error))
@@ -79,7 +85,7 @@ class Firmware extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.state.fieldLoading ?
+        { this.state.vendorsLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
@@ -96,12 +102,34 @@ class Firmware extends React.Component {
               key={null}
               style={{ width: '500px' }}
               onChange={e => this.fetchValue(e)}>
-              {this.state.field && this.state.field.map((n, i) => {
+              {this.state.vendors && this.state.vendors.map((n, i) => {
                 return (
                   <Select.Option key={i} value={n.VENDOR}>{n.VENDOR}</Select.Option>
                 )})
               }
             </Select>
+
+            <React.Fragment>
+              <Select
+                showSearch
+                defaultValue={null}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                key={null}
+                style={{ width: '500px' }}
+                onChange={e => this.fetchValue(e)}>
+                {this.state.vendors && this.state.vendors.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n.VENDOR}>{n.VENDOR}</Select.Option>
+                  )})
+                }
+              </Select>
+              </React.Fragment>
 
           { this.state.visible ?
             <React.Fragment>
@@ -119,7 +147,7 @@ class Firmware extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                 :
                   <React.Fragment>
-                    { this.state.field ?
+                    { this.state.vendors ?
                       <List height={550} pagination={5} filteredDevices={this.state.devices}/>
                     :
                       null
@@ -127,7 +155,8 @@ class Firmware extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'VENDOR'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
+              { this.props.vendorsError ? <Error component={'VENDOR'} error={[this.props.vendorsError]} visible={true} type={'vendorsError'} /> : null }
+              { this.props.vendorError ? <Error component={'VENDOR'} error={[this.props.vendorError]} visible={true} type={'vendorError'} /> : null }
               { this.props.valueError ? <Error component={'VENDOR'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
@@ -146,6 +175,11 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  fieldError: state.fortinetdb.fieldError,
+  vendors: state.fortinetdb.vendors,
+  vendorsLoading: state.fortinetdb.vendorsLoading,
+  vendorsError: state.fortinetdb.vendorsError,
+
+  vendor: state.fortinetdb.vendor,
+  vendorError: state.fortinetdb.vendorError,
   valueError: state.fortinetdb.valueError,
 }))(Firmware);

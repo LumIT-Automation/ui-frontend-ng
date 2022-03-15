@@ -57,6 +57,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+    this.props.dispatch(tree(null))
   }
 
   treeGet = async () => {
@@ -64,7 +65,9 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(tree(resp))
+        let l = []
+        l.push(resp.data['/'])
+        this.props.dispatch(tree(l))
       },
       error => {
         this.props.dispatch(treeError(error))

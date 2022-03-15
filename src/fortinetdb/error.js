@@ -17,6 +17,9 @@ import {
   fieldError,
   valueError,
 
+  vendorError,
+  vendorsError,
+
   genericError
 
 } from '../fortinetdb/store'
@@ -81,6 +84,13 @@ class Error extends Component {
           break;
         case 'valueError':
           this.props.dispatch(valueError(null))
+          break;
+
+        case 'vendorError':
+          this.props.dispatch(vendorError(null))
+          break;
+        case 'vendorsError':
+          this.props.dispatch(vendorsError(null))
           break;
 
         default:

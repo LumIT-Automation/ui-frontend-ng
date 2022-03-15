@@ -194,7 +194,7 @@ class Manager extends React.Component {
             />
 
             <Button type="primary" style={{float: "right", marginTop: '15px'}} onClick={() => this.modifyConfiguration()} >
-              modifyConfiguration
+              Update configuration
             </Button>
           </React.Fragment>
         }

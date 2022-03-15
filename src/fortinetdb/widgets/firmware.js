@@ -48,16 +48,12 @@ class Firmware extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         let firmware = JSON.parse(JSON.stringify(resp.data.items))
 
         firmware.forEach((item, i) => {
           let major = item.FIRMWARE.split('.')
-          console.log(major)
           item.FIRMWARE = major[0]
         });
-
-        console.log(firmware)
         this.setState({field: firmware})
       },
       error => {

@@ -106,6 +106,22 @@ const fortinetdbSlice = createSlice({
         state.valueError = action.payload
       },
 
+      vendorsLoading: (state, action) => {
+        state.vendorsLoading = action.payload
+      },
+      vendors: (state, action) => {
+        state.vendors = action.payload.data.items
+      },
+      vendorsError: (state, action) => {
+        state.vendorsError = action.payload
+      },
+      vendor: (state, action) => {
+        state.vendor = action.payload
+      },
+      vendorError: (state, action) => {
+        state.vendorError = action.payload
+      },
+
       genericError: (state, action) => {
         state.genericError = action.payload
       },
@@ -162,6 +178,12 @@ export const {
 
   value,
   valueError,
+
+  vendors,
+  vendorsLoading,
+  vendorsError,
+  vendor,
+  vendorError,
 
   genericError,
 
