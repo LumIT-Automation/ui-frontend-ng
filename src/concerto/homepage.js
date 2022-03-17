@@ -17,7 +17,7 @@ import BackupStatus from '../fortinetdb/widgets/backupStatus'
 import EosFirmware from '../fortinetdb/widgets/eosFirmware'
 import EosHardware from '../fortinetdb/widgets/eosHardware'
 
-import Attivazione from '../fortinetdb/widgets/attivazione'
+import AttivazioneAnno from '../fortinetdb/widgets/attivazioneAnno'
 
 
 
@@ -82,17 +82,18 @@ class Homepage extends React.Component {
                       <BackupStatus/>
                     </Card>
                   </Col>
-                  <Col span={8}>
-                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
-                      <Attivazione/>
-                    </Card>
-                  </Col>
                 </Row>
               </Col>
-
               <Col offset={0} span={7}>
                 <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
                   <Italia />
+                </Card>
+              </Col>
+            </Row>
+            <Row>
+              <Col span={12}>
+                <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>
+                  <AttivazioneAnno/>
                 </Card>
               </Col>
             </Row>

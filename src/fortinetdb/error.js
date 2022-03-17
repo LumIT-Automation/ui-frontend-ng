@@ -10,24 +10,26 @@ import {
   ddossesError,
 
   projectError,
-
   deviceError,
   ddosError,
 
   fieldError,
   valueError,
 
-  vendorError,
   vendorsError,
+  vendorError,
 
-  modelError,
   modelsError,
+  modelError,
 
-  firmwareError,
   firmwaresError,
+  firmwareError,
 
-  backupStatusError,
   backupStatussError,
+  backupStatusError,
+
+  attivazioneAnnosError,
+  attivazioneAnnoError,
 
   genericError
 
@@ -121,6 +123,13 @@ class Error extends Component {
           break;
         case 'backupStatussError':
           this.props.dispatch(backupStatussError(null))
+          break;
+
+        case 'attivazioneAnnoError':
+          this.props.dispatch(attivazioneAnnoError(null))
+          break;
+        case 'attivazioneAnnosError':
+          this.props.dispatch(attivazioneAnnosError(null))
           break;
 
         default:

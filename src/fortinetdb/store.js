@@ -170,6 +170,22 @@ const fortinetdbSlice = createSlice({
         state.backupStatusError = action.payload
       },
 
+      attivazioneAnnosLoading: (state, action) => {
+        state.attivazioneAnnosLoading = action.payload
+      },
+      attivazioneAnnos: (state, action) => {
+        state.attivazioneAnnos = action.payload
+      },
+      attivazioneAnnosError: (state, action) => {
+        state.attivazioneAnnosError = action.payload
+      },
+      attivazioneAnno: (state, action) => {
+        state.attivazioneAnno = action.payload
+      },
+      attivazioneAnnoError: (state, action) => {
+        state.attivazioneAnnoError = action.payload
+      },
+
       genericError: (state, action) => {
         state.genericError = action.payload
       },
@@ -250,6 +266,12 @@ export const {
   backupStatussError,
   backupStatus,
   backupStatusError,
+
+  attivazioneAnnos,
+  attivazioneAnnosLoading,
+  attivazioneAnnosError,
+  attivazioneAnno,
+  attivazioneAnnoError,
 
   genericError,
 
