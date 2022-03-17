@@ -149,11 +149,10 @@ class Concerto extends Component {
   resetPassword = () => {
   }
 
-  deleteCookies = () => {
+  deleteCookies = async () => {
       try {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        this.props.dispatch(logout())
         return 'OK'
       }
       catch(e) {
@@ -163,7 +162,7 @@ class Concerto extends Component {
 
   logout = async () => {
     await this.deleteCookies()
-    //this.props.dispatch(logout())
+    await this.props.dispatch(logout())
     document.location.href = '/'
   }
 

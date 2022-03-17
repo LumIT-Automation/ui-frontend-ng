@@ -62,7 +62,7 @@ class App extends Component {
       return <Concerto/>
     }
     else {
-      return <Login/>;
+      return <Login/>
     }
   }
 }
