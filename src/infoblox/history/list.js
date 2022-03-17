@@ -115,19 +115,19 @@ class List extends React.Component {
   render() {
     const columns = [
       {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+      },
+      {
         title: 'Action',
         align: 'center',
         width: 500,
         dataIndex: 'action',
         key: 'action',
         ...this.getColumnSearchProps('action'),
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
       },
       {
         title: 'Address',

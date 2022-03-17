@@ -264,12 +264,6 @@ class ModifyIp extends React.Component {
         key: 'status',
       },
       {
-        title: 'Network',
-        align: 'center',
-        dataIndex: 'network',
-        key: 'network',
-      },
-      {
         title: 'Gateway',
         align: 'center',
         dataIndex: ['extattrs', 'Gateway', 'value'],

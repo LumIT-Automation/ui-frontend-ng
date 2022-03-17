@@ -9,6 +9,7 @@ import { UserOutlined } from '@ant-design/icons'
 
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
+import Authorizators from './_helpers/authorizators'
 
 import {
   logout
@@ -106,7 +107,7 @@ class Concerto extends Component {
     else {
       this.props.dispatch(authorizations( authorizationsFetched ))
     }
-    
+
   }
 
 
@@ -140,6 +141,11 @@ class Concerto extends Component {
     return r
   }
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
   resetPassword = () => {
   }
 
@@ -147,6 +153,7 @@ class Concerto extends Component {
       try {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        this.props.dispatch(logout())
         return 'OK'
       }
       catch(e) {
@@ -156,7 +163,7 @@ class Concerto extends Component {
 
   logout = async () => {
     await this.deleteCookies()
-    this.props.dispatch(logout())
+    //this.props.dispatch(logout())
     document.location.href = '/'
   }
 
@@ -205,30 +212,32 @@ class Concerto extends Component {
                   <Route exact path='/' component={Homepage}/>
                   <Route exact path='/historys/' component={Historys}/>
 
-                      <Route path='/projects/' component={Projects}/>
-                      <Route path='/devices/' component={Devices}/>
-                      <Route path='/ddosses/' component={Ddosses}/>
+                  <Route path='/projects/' component={Projects}/>
+                  <Route path='/devices/' component={Devices}/>
+                  <Route path='/ddosses/' component={Ddosses}/>
 
-
-
-                  { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
+                  { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
                     <Route path='/infoblox/' component={Infoblox}/>
-                    : null
+                  :
+                    null
                   }
 
-                  { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
                     <Route path='/f5/' component={F5}/>
-                    : null
+                  :
+                    null
                   }
-                  { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
                     <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
-                    : null
+                  :
+                    null
                   }
                   <Route path='/services/' component={Service}/>
                   <Route path='/assets/' component={Assets}/>
-                  { this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any) ?
+                  { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>
-                    : null
+                  :
+                    null
                   }
                   <Route path='/configurations/' component={Configurations}/>
 
@@ -254,9 +263,9 @@ export default connect((state) => ({
   authorizations: state.authorizations,
   configurationF5Fetch: state.f5.configurationFetch,
 
-  f5auth: state.authorizations.f5,
-  infobloxAuth: state.authorizations.infoblox,
-  fortinetdbAuth: state.authorizations.fortinetdbAuth,
+  authorizationsF5: state.authorizations.f5,
+  authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsFortinetDb: state.authorizations.authorizationsFortinetDb,
 
   authorizationsError: state.authorizations.authorizationsError,
   configurationF5Error: state.f5.configurationError,

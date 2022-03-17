@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd';
 
+import Authorizators from '../_helpers/authorizators'
 import F5 from '../f5/history/manager'
 import Infoblox from '../infoblox/history/manager'
 
@@ -37,13 +38,18 @@ class Historys extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
 
   render() {
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
-
+            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
                 {this.props.f5Loading ?
                   <TabPane key="F5" tab="F5">
@@ -55,8 +61,11 @@ class Historys extends React.Component {
                   </TabPane>
                 }
               </React.Fragment>
+            :
+              null
+            }
 
-
+            { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
                   <TabPane key="Infoblox" tab="Infoblox">
@@ -68,6 +77,9 @@ class Historys extends React.Component {
                   </TabPane>
                 }
               </React.Fragment>
+            :
+              null
+            }
           </Tabs>
         </Space>
 
@@ -78,6 +90,8 @@ class Historys extends React.Component {
 
 
 export default connect((state) => ({
+  authorizationsF5: state.authorizations.f5,
+  authorizationsInfoblox: state.authorizations.infoblox,
 
   infobloxLoading: state.infoblox.historysLoading,
   f5Loading: state.f5.historysLoading

@@ -2,6 +2,7 @@ import React from 'react'
 import { Component, } from "react";
 import { Link } from 'react-router-dom'
 import {connect} from "react-redux";
+import Authorizators from '../_helpers/authorizators'
 
 import '../sider.css';
 import { Menu } from 'antd';
@@ -77,6 +78,11 @@ class CustomSider extends Component {
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
   render(){
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
@@ -110,7 +116,7 @@ class CustomSider extends Component {
             </React.Fragment>
 
 
-          { this.props.infobloxAuth && (this.props.infobloxAuth || this.props.infobloxAuth.any) ?
+          { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
             <React.Fragment>
               <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
               <Menu.Divider/>
@@ -118,7 +124,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { this.props.f5auth && (this.props.authorizations.cisco || this.props.f5auth.any) ?
+          { this.props.authorizationsCisco && this.authorizators(this.props.authorizationsCisco) ?
             <React.Fragment>
               <Menu.Item key="switch" icon={<ApartmentOutlined style={{fontSize:'20px'}}/>}><Link to="/switch/">SWITCH</Link></Menu.Item>
               <Menu.Divider/>
@@ -126,7 +132,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { this.props.f5auth && (this.props.authorizations.fortinet || this.props.f5auth.any) ?
+          { this.props.authorizationsFortinet && this.authorizators(this.props.authorizationsFortinet) ?
             <React.Fragment>
               <Menu.Item key="firewall" icon={this.firewallIcon()}><Link to="/firewall/">FIREWALL</Link></Menu.Item>
               <Menu.Divider/>
@@ -134,7 +140,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { this.props.f5auth && (this.props.f5auth || this.props.f5auth.any) ?
+          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
             <React.Fragment>
               <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
               <Menu.Divider/>
@@ -142,7 +148,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { this.props.f5auth && (this.props.f5auth.certificates_get || this.props.f5auth.any) ?
+          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
             <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
             :
             null
@@ -153,8 +159,8 @@ class CustomSider extends Component {
           <Menu.Divider/>
 
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { (this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any)) ||
-            (this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any)) ?
+          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ||
+            this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
@@ -166,8 +172,8 @@ class CustomSider extends Component {
 
 
 
-          { (this.props.f5auth && (this.props.f5auth.permission_identityGroups_get || this.props.f5auth.any)) ||
-            (this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any)) ?
+          { (this.props.authorizationsF5 && (this.props.authorizationsF5.permission_identityGroups_get || this.props.authorizationsF5.any)) ||
+            (this.props.authorizationsInfoblox && (this.props.authorizationsInfoblox.permission_identityGroups_get || this.props.authorizationsInfoblox.any)) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
@@ -176,7 +182,15 @@ class CustomSider extends Component {
              null
           }
 
-          <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
+          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ||
+            this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
+            <React.Fragment>
+              <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            :
+            null
+          }
         </Menu>
       </Sider>
     )
@@ -186,7 +200,7 @@ class CustomSider extends Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations,
-  f5auth: state.authorizations.f5,
-  infobloxAuth: state.authorizations.infoblox,
-  fortinetdbAuth: state.authorizations.fortinetdb,
+  authorizationsF5: state.authorizations.f5,
+  authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsFortinetDb: state.authorizations.fortinetdb,
 }))(CustomSider);

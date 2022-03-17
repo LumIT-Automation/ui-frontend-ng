@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
+import Authorizators from '../_helpers/authorizators'
 import F5 from '../f5/configuration/manager'
 
 import { configurationFetch as configurationF5Fetch } from '../f5/store'
@@ -35,13 +36,18 @@ class Configuration extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
 
   render() {
-    console.log(this.props.configurationF5Loading)
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
+            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
                 {this.props.configurationF5Loading ?
                   <TabPane key="F5" tab="F5">
@@ -53,6 +59,9 @@ class Configuration extends React.Component {
                   </TabPane>
                 }
               </React.Fragment>
+            :
+              null
+            }
           </Tabs>
         </Space>
 
@@ -63,5 +72,6 @@ class Configuration extends React.Component {
 
 
 export default connect((state) => ({
+  authorizationsF5: state.authorizations.f5,
   configurationF5Loading: state.f5.configurationLoading
 }))(Configuration);

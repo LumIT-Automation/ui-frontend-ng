@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
+import Authorizators from '../_helpers/authorizators'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
 
@@ -33,12 +34,17 @@ class Service extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
 
   render() {
     return (
       <React.Fragment>
 
-        { (this.props.infobloxAuthorizations && (this.props.infobloxAuthorizations.assets_get || this.props.infobloxAuthorizations.any ) ) ?
+        { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
           <React.Fragment>
             <Divider orientation="left" plain >
               IPAM
@@ -52,7 +58,7 @@ class Service extends React.Component {
           null
         }
 
-        { (this.props.f5Authorizations && (this.props.f5Authorizations.assets_get || this.props.f5Authorizations.any ) ) ?
+        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
           <React.Fragment>
             <Divider orientation="left" plain>
               LOAD BALANCER
@@ -74,7 +80,7 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
-  infobloxAuthorizations: state.authorizations.infoblox,
-  f5Authorizations: state.authorizations.f5,
+  authorizationsF5: state.authorizations.f5,
+  authorizationsInfoblox: state.authorizations.infoblox,
 
 }))(Service);

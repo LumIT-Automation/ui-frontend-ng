@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
+import Authorizators from '../_helpers/authorizators'
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 
@@ -37,13 +38,18 @@ class Assets extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizators = a => {
+    let author = new Authorizators()
+    return author.isObjectEmpty(a)
+  }
+
 
   render() {
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
-            { this.props.f5auth && (this.props.f5auth.assets_get || this.props.f5auth.any) ?
+            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
                 {this.props.f5Loading ?
                   <TabPane key="F5" tab="F5">
@@ -59,7 +65,7 @@ class Assets extends React.Component {
               null
             }
 
-            { this.props.infobloxAuth && (this.props.infobloxAuth.assets_get || this.props.infobloxAuth.any) ?
+            { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
                   <TabPane key="Infoblox" tab="Infoblox">
@@ -85,8 +91,8 @@ class Assets extends React.Component {
 
 
 export default connect((state) => ({
-  f5auth: state.authorizations.f5,
-  infobloxAuth: state.authorizations.infoblox,
+  authorizationsF5: state.authorizations.f5,
+  authorizationsInfoblox: state.authorizations.infoblox,
 
   f5Loading: state.f5.assetsLoading,
   infobloxLoading: state.infoblox.assetsLoading,

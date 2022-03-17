@@ -115,6 +115,21 @@ class List extends React.Component {
   render() {
     const columns = [
       {
+        title: 'Config Object Type',
+        align: 'center',
+        width: 300,
+        dataIndex: 'config_object_type',
+        key: 'config_object_type',
+        ...this.getColumnSearchProps('config_object_type'),
+      },
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        ...this.getColumnSearchProps('status'),
+      },
+      {
         title: 'Action',
         align: 'center',
         width: 500,
@@ -139,19 +154,12 @@ class List extends React.Component {
         ...this.getColumnSearchProps('date'),
       },
       {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        ...this.getColumnSearchProps('status'),
-      },
-      {
         title: 'Username',
         align: 'center',
         dataIndex: 'username',
         key: 'username',
         ...this.getColumnSearchProps('username'),
-      },
+      }
     ];
 
     let randomKey = () => {
