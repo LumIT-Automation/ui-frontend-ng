@@ -8,15 +8,20 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  fieldError,
+  backupStatuss,
+  backupStatussLoading,
+  backupStatussError,
+  backupStatus,
+  backupStatusError,
   valueError
 } from '../store'
 
 import List from '../devices/list'
 
-import { Modal, Spin } from 'antd'
+import { Modal, Spin, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+
 
 
 class BackupStatus extends React.Component {
@@ -29,7 +34,6 @@ class BackupStatus extends React.Component {
   }
 
   componentDidMount() {
-    this.fetchField()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -37,24 +41,31 @@ class BackupStatus extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (!this.props.vendorError || !this.props.modelError) {
+      if ( (this.props.vendor && prevProps.vendor !== this.props.vendor) || (this.props.model && prevProps.model !== this.props.model) ) {
+        if (this.props.vendor && this.props.model) {
+          this.backupStatussGet()
+        }
+      }
+    }
   }
 
   componentWillUnmount() {
   }
 
-  fetchField = async () => {
-    this.setState({fieldLoading: true})
+  backupStatussGet = async () => {
+    this.props.dispatch(backupStatussLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({field: resp.data.items})
+        this.props.dispatch(backupStatuss(resp.data.items))
       },
       error => {
-        this.props.dispatch(fieldError(error))
+        this.props.dispatch(backupStatussError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=BACKUP_STATUS`, this.props.token)
-    this.setState({fieldLoading: false})
+    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${this.props.vendor}&fby=MODELLO&fval=${this.props.model}&fieldValues=BACKUP_STATUS`, this.props.token)
+    this.props.dispatch(backupStatussLoading(false))
   }
 
   fetchValue = async () => {
@@ -77,76 +88,83 @@ class BackupStatus extends React.Component {
   }
 
   render() {
+
     return (
       <React.Fragment>
-        { this.state.fieldLoading ?
+        { this.props.backupStatussLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
-          <svg viewBox="0 0 300 300">
-            <VictoryPie
-              colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
-              events={[{
-                target: "data",
-                eventHandlers: {
-                  onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.BACKUP_STATUS}, () => this.fetchValue())
-                  },
-                  onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.BACKUP_STATUS, color: n.style.fill})
-                  },
-                  onMouseLeave: (e, n) => {
-                    this.setState({name: '', color: ''})
-                  }
-                }
-              }]}
-              standalone={false}
-              width={300} height={300}
-              data={this.state.field}
-              x="BACKUP_STATUS"
-              y="COUNT"
-              innerRadius={0} radius={80}
-              labels={({ datum }) => datum.COUNT}
-            />
-            <VictoryLabel
-              textAnchor="start"
-              x={80}
-              y={280}
-              text={this.state.name}
-              style={{ fill: this.state.color }}
-            />
-          </svg>
-
-          { this.state.visible ?
-            <React.Fragment>
-              <Modal
-                title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
-                centered
-                destroyOnClose={true}
-                visible={this.state.visible}
-                footer={''}
-                //onOk={() => this.setState({visible: true})}
-                onCancel={this.hide}
-                width={1500}
-              >
-                { this.state.valueLoading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
-                :
-                  <React.Fragment>
-                    { this.state.field ?
-                      <List height={550} pagination={5} filteredDevices={this.state.devices}/>
-                    :
-                      null
+            <Row>
+              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Backup Status: {this.state.name}</p>
+            </Row>
+            <Row>
+              <svg viewBox="0 0 300 300">
+                <VictoryPie
+                  colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
+                  events={[{
+                    target: "data",
+                    eventHandlers: {
+                      onClick: (e, n) => {
+                        this.setState({visible: true, value: n.datum.BACKUP_STATUS}, () => this.fetchValue())
+                      },
+                      onMouseOver: (e, n) => {
+                        this.setState({name: n.datum.BACKUP_STATUS, color: n.style.fill})
+                      },
+                      onMouseLeave: (e, n) => {
+                        this.setState({name: '', color: ''})
+                      }
                     }
-                  </React.Fragment>
-                }
-              </Modal>
-              { this.props.fieldError ? <Error component={'BACKUP_STATUS'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'BACKUP_STATUS'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
-            </React.Fragment>
-          :
-            null
-          }
+                  }]}
+                  standalone={false}
+                  width={300} height={300}
+                  data={this.props.backupStatuss}
+                  x="backupStatus"
+                  y="COUNT"
+                  innerRadius={0} radius={80}
+                  labels={({ datum }) => datum.COUNT}
+                />
+                <VictoryLabel
+                  textAnchor="start"
+                  x={80}
+                  y={280}
+                  style={{ fill: this.state.color }}
+                />
+              </svg>
+            </Row>
+
+            { this.state.visible ?
+              <React.Fragment>
+                <Modal
+                  title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                  centered
+                  destroyOnClose={true}
+                  visible={this.state.visible}
+                  footer={''}
+                  //onOk={() => this.setState({visible: true})}
+                  onCancel={this.hide}
+                  width={1500}
+                >
+                  { this.state.valueLoading ?
+                    <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+                  :
+                    <React.Fragment>
+                      { this.props.backupStatuss ?
+                        <List height={550} pagination={5} filteredDevices={this.state.devices}/>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
+                </Modal>
+
+                { this.props.backupStatussError ? <Error component={'backupStatus'} error={[this.props.backupStatussError]} visible={true} type={'backupStatussError'} /> : null }
+                { this.props.valueError ? <Error component={'backupStatus'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+
+              </React.Fragment>
+            :
+              null
+            }
 
           </React.Fragment>
         }
@@ -160,6 +178,15 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  fieldError: state.fortinetdb.fieldError,
+  vendor: state.fortinetdb.vendor,
+  model: state.fortinetdb.model,
+
+  backupStatuss: state.fortinetdb.backupStatuss,
+  backupStatussLoading: state.fortinetdb.backupStatussLoading,
+  backupStatussError: state.fortinetdb.backupStatussError,
+
+  backupStatus: state.fortinetdb.backupStatus,
+  backupStatusError: state.fortinetdb.backupStatusError,
+
   valueError: state.fortinetdb.valueError,
 }))(BackupStatus);

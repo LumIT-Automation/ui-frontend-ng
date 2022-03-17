@@ -4,7 +4,8 @@ import 'antd/dist/antd.css'
 import { Card, Row, Col, Divider } from 'antd'
 
 //import List from './list'
-import Vendor from '../fortinetdb/widgets/vendor'
+import VendorSelector from '../fortinetdb/widgets/vendorSelector'
+import ModelSelector from '../fortinetdb/widgets/modelSelector'
 import Italia from '../fortinetdb/widgets/italia'
 
 import Servizio from '../fortinetdb/widgets/servizio'
@@ -47,7 +48,7 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      {/*
+      {
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>
@@ -56,7 +57,12 @@ class Homepage extends React.Component {
               <Col span={17}>
                 <Row>
                   <Col offset={8}>
-                    <Vendor/>
+                    <VendorSelector/>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col offset={8}>
+                    <ModelSelector/>
                   </Col>
                 </Row>
                 <Divider/>
@@ -79,16 +85,6 @@ class Homepage extends React.Component {
                   <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE</p>} bordered={true}>
                       <Attivazione/>
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card title={<p style={{textAlign: 'center'}}>EOS FIRMWARE</p>} bordered={true}>
-                      <EosFirmware/>
-                    </Card>
-                  </Col>
-                  <Col span={8}>
-                    <Card title={<p style={{textAlign: 'center'}}>EOS HARDWARE</p>} bordered={true}>
-                      <EosHardware/>
                     </Card>
                   </Col>
                 </Row>
@@ -119,7 +115,7 @@ class Homepage extends React.Component {
             </Row>
           </React.Fragment>
         </React.Fragment>
-      */}
+      }
       </React.Fragment>
     )
   }

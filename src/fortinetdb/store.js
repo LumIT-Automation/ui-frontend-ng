@@ -122,6 +122,54 @@ const fortinetdbSlice = createSlice({
         state.vendorError = action.payload
       },
 
+      modelsLoading: (state, action) => {
+        state.modelsLoading = action.payload
+      },
+      models: (state, action) => {
+        state.models = action.payload
+      },
+      modelsError: (state, action) => {
+        state.modelsError = action.payload
+      },
+      model: (state, action) => {
+        state.model = action.payload
+      },
+      modelError: (state, action) => {
+        state.modelError = action.payload
+      },
+
+      firmwaresLoading: (state, action) => {
+        state.firmwaresLoading = action.payload
+      },
+      firmwares: (state, action) => {
+        state.firmwares = action.payload
+      },
+      firmwaresError: (state, action) => {
+        state.firmwaresError = action.payload
+      },
+      firmware: (state, action) => {
+        state.firmware = action.payload
+      },
+      firmwareError: (state, action) => {
+        state.firmwareError = action.payload
+      },
+
+      backupStatussLoading: (state, action) => {
+        state.backupStatussLoading = action.payload
+      },
+      backupStatuss: (state, action) => {
+        state.backupStatuss = action.payload
+      },
+      backupStatussError: (state, action) => {
+        state.backupStatussError = action.payload
+      },
+      backupStatus: (state, action) => {
+        state.backupStatus = action.payload
+      },
+      backupStatusError: (state, action) => {
+        state.backupStatusError = action.payload
+      },
+
       genericError: (state, action) => {
         state.genericError = action.payload
       },
@@ -184,6 +232,24 @@ export const {
   vendorsError,
   vendor,
   vendorError,
+
+  models,
+  modelsLoading,
+  modelsError,
+  model,
+  modelError,
+
+  firmwares,
+  firmwaresLoading,
+  firmwaresError,
+  firmware,
+  firmwareError,
+
+  backupStatuss,
+  backupStatussLoading,
+  backupStatussError,
+  backupStatus,
+  backupStatusError,
 
   genericError,
 

@@ -20,6 +20,15 @@ import {
   vendorError,
   vendorsError,
 
+  modelError,
+  modelsError,
+
+  firmwareError,
+  firmwaresError,
+
+  backupStatusError,
+  backupStatussError,
+
   genericError
 
 } from '../fortinetdb/store'
@@ -91,6 +100,27 @@ class Error extends Component {
           break;
         case 'vendorsError':
           this.props.dispatch(vendorsError(null))
+          break;
+
+        case 'modelError':
+          this.props.dispatch(modelError(null))
+          break;
+        case 'modelsError':
+          this.props.dispatch(modelsError(null))
+          break;
+
+        case 'firmwareError':
+          this.props.dispatch(firmwareError(null))
+          break;
+        case 'firmwaresError':
+          this.props.dispatch(firmwaresError(null))
+          break;
+
+        case 'backupStatusError':
+          this.props.dispatch(backupStatusError(null))
+          break;
+        case 'backupStatussError':
+          this.props.dispatch(backupStatussError(null))
           break;
 
         default:

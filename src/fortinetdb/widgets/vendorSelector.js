@@ -12,14 +12,13 @@ import {
   vendor,
   vendorsError,
   vendorError,
-  valueError
 } from '../store'
 
 import List from '../devices/list'
 
-import { Modal, Spin, Select } from 'antd'
+import { Modal, Spin, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
@@ -47,7 +46,7 @@ class Firmware extends React.Component {
   }
 
   vendorsGet = async () => {
-    this.setState({vendorsLoading: true})
+    this.props.dispatch(vendorsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -58,24 +57,7 @@ class Firmware extends React.Component {
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=VENDOR`, this.props.token)
-    this.setState({vendorsLoading: false})
-  }
-
-  fetchValue = async e => {
-    this.setState({valueLoading: true, visible: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        console.log('vendor')
-        console.log(resp)
-        //this.setState({devices: resp.data.items})
-      },
-      error => {
-        this.props.dispatch(valueError(error))
-      }
-    )
-    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${e}`, this.props.token)
-    this.setState({valueLoading: false})
+    this.props.dispatch(vendorsLoading(false))
   }
 
   hide = () => {
@@ -83,15 +65,19 @@ class Firmware extends React.Component {
   }
 
   render() {
+    console.log(this.props.vendor)
     return (
-      <React.Fragment>
-        { this.state.vendorsLoading ?
-          <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
-        :
-          <React.Fragment>
+      <Row>
+        <Col offset={2} span={6}>
+          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vendor:</p>
+        </Col>
+        <Col span={16}>
+          { this.state.vendorsLoading ?
+            <Spin indicator={spinIcon} />
+          :
             <Select
               showSearch
-              defaultValue={null}
+              value={this.props.vendor}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -100,38 +86,18 @@ class Firmware extends React.Component {
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
               key={null}
-              style={{ width: '500px' }}
-              onChange={e => this.fetchValue(e)}>
-              {this.state.vendors && this.state.vendors.map((n, i) => {
+              style={{ width: '300px' }}
+              onChange={e => this.props.dispatch(vendor(e))}>
+              {this.props.vendors && this.props.vendors.map((n, i) => {
                 return (
                   <Select.Option key={i} value={n.VENDOR}>{n.VENDOR}</Select.Option>
                 )})
               }
             </Select>
+          }
+        </Col>
 
-            <React.Fragment>
-              <Select
-                showSearch
-                defaultValue={null}
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                key={null}
-                style={{ width: '500px' }}
-                onChange={e => this.fetchValue(e)}>
-                {this.state.vendors && this.state.vendors.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.VENDOR}>{n.VENDOR}</Select.Option>
-                  )})
-                }
-              </Select>
-              </React.Fragment>
-
-          { this.state.visible ?
+        { this.state.visible ?
             <React.Fragment>
               <Modal
                 title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
@@ -157,15 +123,12 @@ class Firmware extends React.Component {
               </Modal>
               { this.props.vendorsError ? <Error component={'VENDOR'} error={[this.props.vendorsError]} visible={true} type={'vendorsError'} /> : null }
               { this.props.vendorError ? <Error component={'VENDOR'} error={[this.props.vendorError]} visible={true} type={'vendorError'} /> : null }
-              { this.props.valueError ? <Error component={'VENDOR'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
             </React.Fragment>
           :
             null
           }
 
-          </React.Fragment>
-        }
-      </React.Fragment>
+      </Row>
     );
 
   }
@@ -181,5 +144,4 @@ export default connect((state) => ({
 
   vendor: state.fortinetdb.vendor,
   vendorError: state.fortinetdb.vendorError,
-  valueError: state.fortinetdb.valueError,
 }))(Firmware);
