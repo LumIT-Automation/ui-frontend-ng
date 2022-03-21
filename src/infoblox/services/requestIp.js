@@ -477,6 +477,7 @@ class RequestIp extends React.Component {
   }
 
   updateResponse = async (resp, id) => {
+    console.log(resp)
 
     if (resp.data && resp.data.length > 0) {
       let ips = []
@@ -488,8 +489,10 @@ class RequestIp extends React.Component {
         let s = st[1]
         let ip = s.split('/')
         ip = ip[0]
+        let gateway = result.gateway
+        let subnetMask = result.mask
 
-        ips.push({ip: ip})
+        ips.push({ip: ip, gateway: gateway, subnetMask: subnetMask})
 
       })
 
@@ -778,16 +781,52 @@ class RequestIp extends React.Component {
         key: 'network',
       },
       {
-        title: 'subnet Mask',
+        title: 'Subnet Mask',
         align: 'center',
         dataIndex: 'subnetMask',
         key: 'subnetMask',
+        render: (name, obj)  => (
+          <React.Fragment>
+          { (obj.ips.length > 1) ?
+            obj.ips.map((ip, i) => {
+            return (
+              <React.Fragment>
+                {ip.subnetMask}
+                <br/>
+              </React.Fragment>
+            )
+            })
+            :
+            <React.Fragment>
+              {obj.ips[0].subnetMask}
+            </React.Fragment>
+          }
+          </React.Fragment>
+        ),
       },
       {
         title: 'Gateway',
         align: 'center',
         dataIndex: 'gateway',
         key: 'gateway',
+        render: (name, obj)  => (
+          <React.Fragment>
+          { (obj.ips.length > 1) ?
+            obj.ips.map((ip, i) => {
+            return (
+              <React.Fragment>
+                {ip.gateway}
+                <br/>
+              </React.Fragment>
+            )
+            })
+            :
+            <React.Fragment>
+              {obj.ips[0].gateway}
+            </React.Fragment>
+          }
+          </React.Fragment>
+        ),
       },
       {
         title: 'Server Name',
