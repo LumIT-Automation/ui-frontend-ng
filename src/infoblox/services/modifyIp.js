@@ -25,8 +25,8 @@ class ModifyIp extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      fetchedDetails: [],
       request: {},
+      details: false,
       errors: {},
       isModified: null
     };
@@ -48,13 +48,52 @@ class ModifyIp extends React.Component {
   details = () => {
     this.setState({visible: true})
     //let request = JSON.parse(JSON.stringify(this.props.obj))
-    console.log(this.state.fetchedDetails)
     //this.setState({request: request})
   }
 
   setIp = e => {
-    let ip = e.target.value
-    this.setState({ip: ip})
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.ip = e.target.value
+    this.setState({request: request})
+  }
+
+  validateIp = async () => {
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    let validators = new Validators()
+
+    if (validators.ipv4(this.state.request.ip)) {
+      delete errors.ipError
+      delete errors.ipColor
+      this.setState({errors: errors}, () => this.ipGet())
+    }
+    else {
+      errors.ipError = 'Please input a valid ip'
+      errors.ipColor = 'red'
+      this.setState({errors: errors})
+    }
+  }
+
+  ipGet = async () => {
+    this.setState({requestLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log(resp.data)
+        let request = JSON.parse(JSON.stringify(resp.data))
+        request.ip = this.state.request.ip
+        if (request.extattrs && request.extattrs.['Name Server']) {
+          request.serverName = request.extattrs.['Name Server'].value
+        }
+        request.macAddress = request.mac_address
+        this.setState({request: request, details: true})
+      },
+      error => {
+        this.props.dispatch(ipDetailError(error))
+      }
+    )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
+    this.setState({requestLoading: false})
   }
 
   setMacAddress = (m, id) => {
@@ -69,100 +108,52 @@ class ModifyIp extends React.Component {
     this.setState({request: request})
   }
 
-  validateIp = async () => {
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-
-    let validators = new Validators()
-
-    if (validators.ipv4(this.state.ip)) {
-      delete errors.ipError
-      delete errors.ipColor
-      this.setState({errors: errors}, () => this.ipDetails())
-    }
-    else {
-      errors.ipError = 'Please input a valid ip'
-      errors.ipColor = 'red'
-      this.setState({errors: errors})
-    }
-  }
-
-  validateMac = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
-
-    if (validators.macAddress(request.macAddress)) {
-      delete errors.macError
-      delete errors.macColor
-      this.setState({errors: errors})
-      return true
-    }
-    else if (request.macAddress === '' || request.macAddress === undefined) {
+  validationCheck = async () => {
+    let request = {}
+    if (this.state.request.macAddress === '' || this.state.request.macAddress === undefined) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.macAddress = '00:00:00:00:00:00'
-      delete errors.macError
-      delete errors.macColor
-      this.setState({request: request, errors: errors})
-      return true
+      await this.setState({request: request})
     }
-    else {
-      errors.macError = 'Please input a valid mac address'
-      errors.macColor = 'red'
-      this.setState({errors: errors})
-      return false
-    }
-  }
 
-  validateServerName = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+    request = JSON.parse(JSON.stringify(this.state.request))
+
     let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let validators = new Validators()
 
-    if (request.serverName) {
-      delete errors.serverNameError
-      delete errors.serverNameColor
-      this.setState({errors: errors})
-      return true
-    }
-    else {
+    if (!request.serverName) {
       errors.serverNameError = true
       errors.serverNameColor = 'red'
       this.setState({errors: errors})
-      return false
+    }
+    else {
+      delete errors.serverNameError
+      delete errors.serverNameColor
+      this.setState({errors: errors})
+    }
+
+    if (!validators.macAddress(request.macAddress)) {
+      errors.macAddressError = true
+      errors.macAddressColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.macAddressError
+      delete errors.macAddressColor
+      this.setState({errors: errors})
     }
   }
 
-  validationCheck = async () => {
+  validation = async () => {
+    await this.validationCheck()
 
-    let mac = await this.validateMac()
-    let name = await this.validateServerName()
-
-    if (mac && name) {
+    if (Object.keys(this.state.errors).length === 0) {
       this.ipModify()
     }
 
   }
 
-  ipDetails = async () => {
-    this.setState({ipDetailLoading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        let fetchedDetails = []
-        fetchedDetails.push(resp.data)
-        let ipDetail = fetchedDetails[0]
 
-        ipDetail.macAddress = fetchedDetails[0].mac_address
-        if (fetchedDetails[0].extattrs && fetchedDetails[0].extattrs['Name Server']) {
-          ipDetail.serverName = fetchedDetails[0].extattrs['Name Server'].value
-        }
-        this.setState({fetchedDetails: fetchedDetails, ipModifiedDetails: {}, errors: {}})
-      },
-      error => {
-        this.props.dispatch(ipDetailError(error))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token)
-    this.setState({ipDetailLoading: false})
-  }
 
   ipModify = async () => {
     let b = {}
@@ -181,14 +172,14 @@ class ModifyIp extends React.Component {
       "PATCH",
       resp => {
         this.setState({ipModifyLoading: false})
-        this.ipDetails()
+        this.ipGet()
       },
       error => {
         this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
 
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.ip}/`, this.props.token, b )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token, b )
   }
 
 
@@ -197,14 +188,15 @@ class ModifyIp extends React.Component {
     this.setState({
       visible: false,
       ip: null,
-      fetchedDetails: [],
+      request: {},
       errors: {}
     })
   }
 
 
   render() {
-    console.log(this.state.fetchedDetails)
+    console.log(this.state.request)
+    console.log(this.state.errors)
     const columns = [
       {
         title: 'Loading',
@@ -233,9 +225,18 @@ class ModifyIp extends React.Component {
             {obj.extattrs && obj.extattrs['Name Server'] ?
               <React.Fragment>
                 {this.state.errors.serverNameError ?
-                  <Input id='nameServer' style={{borderColor: this.state.errors.serverNameColor}} value={obj.extattrs['Name Server'].value} onChange={e => this.serverNameSet(e)} />
+                  <Input
+                    id='nameServer'
+                    style={{borderColor: this.state.errors.serverNameColor}}
+                    defaultValue={obj.extattrs['Name Server'].value}
+                    onChange={e => this.serverNameSet(e)}
+                  />
                 :
-                  <Input id='nameServer' value={obj.extattrs['Name Server'].value} onChange={e => this.serverNameSet(e)} />
+                  <Input
+                    id='nameServer'
+                    defaultValue={obj.extattrs['Name Server'].value}
+                    onChange={e => this.serverNameSet(e)}
+                  />
                 }
               </React.Fragment>
             :
@@ -251,10 +252,19 @@ class ModifyIp extends React.Component {
         key: 'mac_address',
         render: (name, obj)  => (
           <React.Fragment>
-            {this.state.errors.macError ?
-              <Input id='macAddress' style={{borderColor: this.state.errors.macColor}} onChange={e => this.setMacAddress(e)} />
+            {this.state.errors.macAddressError ?
+              <Input
+                id='macAddress'
+                style={{borderColor: this.state.errors.macAddressColor}}
+                defaultValue={obj.mac_address}
+                onChange={e => this.setMacAddress(e)}
+              />
             :
-              <Input id='macAddress' defaultValue={obj.mac_address} onChange={e => this.setMacAddress(e)} />
+              <Input
+                id='macAddress'
+                defaultValue={obj.mac_address}
+                onChange={e => this.setMacAddress(e)}
+              />
             }
           </React.Fragment>
         ),
@@ -314,14 +324,14 @@ class ModifyIp extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
                   </Col>
                   <Col span={16}>
-                  { this.state.ipDetailLoading ?
+                  { this.state.requestLoading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
                   :
                     <React.Fragment>
                       {this.state.errors.ipError ?
-                        <Input value={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input value={this.state.request.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       :
-                        <Input value={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input value={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       }
                     </React.Fragment>
                   }
@@ -338,25 +348,25 @@ class ModifyIp extends React.Component {
 
               <Divider/>
 
-            { this.state.fetchedDetails.length < 1 ?
+            { !this.state.details ?
               null
-              :
+            :
               <React.Fragment>
-                {this.state.ipDetailLoading ?
+                {this.state.requestLoading ?
                   null
                 :
                   <React.Fragment>
                     <Table
                       columns={columns}
-                      dataSource={this.state.fetchedDetails}
+                      dataSource={[this.state.request]}
                       bordered
                       rowKey="ip"
                       scroll={{x: 'auto'}}
                       pagination={false}
                       style={{marginBottom: 10}}
                     />
-                    { ( this.state.fetchedDetails[0].status === 'USED' ) ?
-                      <Button type="primary" onClick={() => this.validationCheck()}>
+                    { ( this.state.request.status === 'USED' ) ?
+                      <Button type="primary" onClick={() => this.validation()}>
                         Modify Ip
                       </Button>
                     :
