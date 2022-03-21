@@ -406,7 +406,7 @@ class CreateF5Service extends React.Component {
       delete errors.monitorReceiveStringColor
       this.setState({errors: errors})
     }
-
+/*
     if (!request.certificate) {
       errors.certificateError = true
       errors.certificateColor = 'red'
@@ -428,7 +428,7 @@ class CreateF5Service extends React.Component {
       delete errors.keyColor
       this.setState({errors: errors})
     }
-
+*/
     if (nodes.length > 0) {
       nodes.forEach((node, i) => {
         errors[node.id] = {}
@@ -514,16 +514,6 @@ class CreateF5Service extends React.Component {
           "name": `http_${serviceName}`,
           "type": "http",
           "defaultsFrom": "/Common/http"
-        },
-        {
-          "name": `client-ssl_${serviceName}`,
-          "type": "client-ssl",
-          "certName": `${serviceName}`,
-          "cert": btoa(this.state.request.certificate),
-          "keyName": `${serviceName}`,
-          "key": btoa(this.state.request.key),
-          "chain": "",
-          "context": "clientside"
         }
       ],
       "pool": {
@@ -561,6 +551,22 @@ class CreateF5Service extends React.Component {
         ]
       }
     }
+
+    if (this.state.request.certificate && this.state.request.key) {
+      b.data.profiles.push(
+        {
+          "name": `client-ssl_${serviceName}`,
+          "type": "client-ssl",
+          "certName": `${serviceName}`,
+          "cert": btoa(this.state.request.certificate),
+          "keyName": `${serviceName}`,
+          "key": btoa(this.state.request.key),
+          "chain": "",
+          "context": "clientside"
+        }
+      )
+    }
+
 
 
     this.setState({loading: true})

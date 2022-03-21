@@ -49,7 +49,7 @@ class Historys extends React.Component {
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
-            { this.authorizators(this.props.authorizationsF5dddd) ?
+            { this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
                 {this.props.f5Loading ?
                   <TabPane key="F5" tab="F5">
