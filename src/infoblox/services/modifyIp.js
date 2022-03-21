@@ -33,7 +33,6 @@ class ModifyIp extends React.Component {
   }
 
   componentDidMount() {
-
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -48,6 +47,9 @@ class ModifyIp extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    //let request = JSON.parse(JSON.stringify(this.props.obj))
+    console.log(this.state.fetchedDetails)
+    //this.setState({request: request})
   }
 
   setIp = e => {
@@ -61,7 +63,7 @@ class ModifyIp extends React.Component {
     this.setState({request: request})
   }
 
-  setServerName = (e, id) => {
+  serverNameSet = (e, id) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.serverName = e.target.value
     this.setState({request: request})
@@ -202,7 +204,7 @@ class ModifyIp extends React.Component {
 
 
   render() {
-
+    console.log(this.state.fetchedDetails)
     const columns = [
       {
         title: 'Loading',
@@ -231,9 +233,9 @@ class ModifyIp extends React.Component {
             {obj.extattrs && obj.extattrs['Name Server'] ?
               <React.Fragment>
                 {this.state.errors.serverNameError ?
-                  <Input id='nameServer' style={{borderColor: this.state.errors.serverNameColor}} defaultValue={obj.extattrs['Name Server'].value} onChange={e => this.setServerName(e)} />
+                  <Input id='nameServer' style={{borderColor: this.state.errors.serverNameColor}} value={obj.extattrs['Name Server'].value} onChange={e => this.serverNameSet(e)} />
                 :
-                  <Input id='nameServer' defaultValue={obj.extattrs['Name Server'].value} onChange={e => this.setServerName(e)} />
+                  <Input id='nameServer' value={obj.extattrs['Name Server'].value} onChange={e => this.serverNameSet(e)} />
                 }
               </React.Fragment>
             :
@@ -317,11 +319,9 @@ class ModifyIp extends React.Component {
                   :
                     <React.Fragment>
                       {this.state.errors.ipError ?
-                        <React.Fragment>
-                          <Input defaultValue={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
-                        </React.Fragment>
+                        <Input value={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       :
-                        <Input defaultValue={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input value={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
                       }
                     </React.Fragment>
                   }

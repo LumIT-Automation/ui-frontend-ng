@@ -161,7 +161,9 @@ class ReleaseIp extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      errors: []
+      errors: [],
+      request: {},
+      requests: []
     })
   }
 

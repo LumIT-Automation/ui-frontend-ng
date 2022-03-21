@@ -3,6 +3,7 @@
 class Authorizators {
 
   isObjectEmpty = a => {
+    console.log(a)
     if (a) {
       if ('any' in a ) {
         return true
