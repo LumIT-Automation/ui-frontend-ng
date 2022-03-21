@@ -39,11 +39,6 @@ class AttivazioneAnno extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.attivazioneAnnosError) {
-      if (!this.props.attivazioneAnnos || prevProps.attivazioneAnnos !== this.props.attivazioneAnnos)   {
-        this.attivazioneAnnosGet()
-      }
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -51,6 +46,11 @@ class AttivazioneAnno extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (!this.props.attivazioneAnnosError) {
+      if (!this.props.attivazioneAnnos || prevProps.attivazioneAnnos !== this.props.attivazioneAnnos)   {
+        this.attivazioneAnnosGet()
+      }
+    }
   }
 
   componentWillUnmount() {

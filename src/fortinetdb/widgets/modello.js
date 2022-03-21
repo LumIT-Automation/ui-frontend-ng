@@ -8,6 +8,10 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
+  model,
+  models,
+  modelsLoading,
+  modelsError,
   vendor,
   vendorError,
   valueError

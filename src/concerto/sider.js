@@ -159,8 +159,8 @@ class CustomSider extends Component {
           <Menu.Divider/>
 
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ||
-            this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
+          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
+            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
@@ -182,8 +182,8 @@ class CustomSider extends Component {
              null
           }
 
-          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ||
-            this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
+          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
+            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ?
             <React.Fragment>
               <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
               <Menu.Divider/>
