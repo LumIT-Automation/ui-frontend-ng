@@ -146,9 +146,6 @@ class Concerto extends Component {
     return author.isObjectEmpty(a)
   }
 
-  resetPassword = () => {
-  }
-
   deleteCookies = async () => {
       try {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
@@ -170,11 +167,6 @@ class Concerto extends Component {
   render() {
     const menu = (
       <Menu>
-        {this.props.username === 'admin@automation.local' ?
-          <Menu.Item key="resetPassword" onClick={() => this.resetPassword()}>Reset Password</Menu.Item>
-          : null
-        }
-        <Menu.Divider />
         <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
       </Menu>
     )
