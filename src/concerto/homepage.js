@@ -18,6 +18,10 @@ import EosFirmware from '../fortinetdb/widgets/eosFirmware'
 import EosHardware from '../fortinetdb/widgets/eosHardware'
 
 import AttivazioneAnno from '../fortinetdb/widgets/attivazioneAnno'
+import AttivazioneMese from '../fortinetdb/widgets/attivazioneMese'
+
+import EolAnno from '../fortinetdb/widgets/eolAnno'
+import EolMese from '../fortinetdb/widgets/eolMese'
 
 
 
@@ -89,6 +93,23 @@ class Homepage extends React.Component {
                       <AttivazioneAnno/>
                     </Card>
                   </Col>
+                  <Col span={12}>
+                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE MESE</p>} bordered={true}>
+                      <AttivazioneMese/>
+                    </Card>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col span={12}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOL ANNO</p>} bordered={true}>
+                      <EolAnno/>
+                    </Card>
+                  </Col>
+                  <Col span={12}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOL MESE</p>} bordered={true}>
+                      <EolMese/>
+                    </Card>
+                  </Col>
                 </Row>
               </Col>
               <Col offset={0} span={8}>
@@ -104,12 +125,12 @@ class Homepage extends React.Component {
           <Divider orientation="left">Projects</Divider>
           <React.Fragment>
             <Row>
-              <Col span={6}>
+              <Col span={8}>
                 <Card title={<p style={{textAlign: 'center'}}>SERVIZIO</p>} bordered={true}>
                   <Servizio/>
                 </Card>
               </Col>
-              <Col span={6}>
+              <Col span={8}>
                 <Card title={<p style={{textAlign: 'center'}}>SEGMENTO</p>} bordered={true}>
                   <Segmento/>
                 </Card>

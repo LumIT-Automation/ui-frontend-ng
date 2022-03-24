@@ -8,14 +8,14 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  attivazioneAnnos,
-  attivazioneAnnosLoading,
-  attivazioneAnnosError,
-  attivazioneAnno,
+  eolAnnos,
+  eolAnnosLoading,
+  eolAnnosError,
+  eolAnno,
 
-  attivazioneMeses,
-  attivazioneMesesLoading,
-  attivazioneMesesError,
+  eolMeses,
+  eolMesesLoading,
+  eolMesesError,
 
 } from '../store'
 
@@ -34,14 +34,14 @@ class AttivazioneAnno extends React.Component {
     this.state = {
       clicked: false,
       style: {
-        data: { fill: "blue" }
+        data: { fill: "tomato" }
       }
     };
   }
 
   componentDidMount() {
 
-    this.attivazioneAnnosGet()
+    this.eolAnnosGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -55,38 +55,38 @@ class AttivazioneAnno extends React.Component {
   componentWillUnmount() {
   }
 
-  attivazioneAnnosGet = async () => {
-    this.props.dispatch(attivazioneAnnosLoading(true))
+  eolAnnosGet = async () => {
+    this.props.dispatch(eolAnnosLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
         delete resp.data.items[0]
         resp.data.items.forEach((item, i) => {
-          item.ATTIVAZIONE_ANNO = item.ATTIVAZIONE_ANNO.toString()
+          item.EOL_ANNO = item.EOL_ANNO.toString()
         });
-        this.props.dispatch(attivazioneAnnos(resp.data.items ))
+        this.props.dispatch(eolAnnos(resp.data.items ))
       },
       error => {
-        this.props.dispatch(attivazioneAnnosError(error))
+        this.props.dispatch(eolAnnosError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fieldValues=ATTIVAZIONE_ANNO`, this.props.token)
-    this.props.dispatch(attivazioneAnnosLoading(false))
+    await rest.doXHR(`fortinetdb/devices/?fieldValues=EOL_ANNO`, this.props.token)
+    this.props.dispatch(eolAnnosLoading(false))
   }
 
-  attivazioneMesesGet = async anno => {
-    this.props.dispatch(attivazioneMesesLoading(true))
+  eolMesesGet = async anno => {
+    this.props.dispatch(eolMesesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(attivazioneMeses(resp.data.items))
+        this.props.dispatch(eolMeses(resp.data.items))
       },
       error => {
-        this.props.dispatch(attivazioneMesesError(error ))
+        this.props.dispatch(eolMesesError(error ))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=ATTIVAZIONE_ANNO&fval=${anno}&fieldValues=ATTIVAZIONE_MESE`, this.props.token)
-    this.props.dispatch(attivazioneMesesLoading(false))
+    await rest.doXHR(`fortinetdb/devices/?fby=EOL_ANNO&fval=${anno}&fieldValues=EOL_MESE`, this.props.token)
+    this.props.dispatch(eolMesesLoading(false))
   }
 
   hide = () => {
@@ -96,19 +96,19 @@ class AttivazioneAnno extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.props.attivazioneAnnosLoading ?
+        { this.props.eolAnnosLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.attivazioneAnno}</p>
+              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.eolAnno}</p>
             </Row>
             <Row>
               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
             </Row>
             <Row>
               <VictoryChart
-
+                scale={{ x: "EOL_ANNO" }}
               >
                 <VictoryBar
                   style={this.state.style}
@@ -116,30 +116,30 @@ class AttivazioneAnno extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (event, data) => {
-                        this.props.dispatch(attivazioneAnno(this.state.attivazioneAnno)),
-                        this.attivazioneMesesGet(data.datum.ATTIVAZIONE_ANNO)
+                        this.props.dispatch(eolAnno(this.state.eolAnno)),
+                        this.eolMesesGet(data.datum.EOL_ANNO)
                       },
                       onMouseOver: (event, data) => {
                         this.setState({
-                          attivazioneAnno: data.datum.ATTIVAZIONE_ANNO,
+                          eolAnno: data.datum.EOL_ANNO,
                           count: data.datum.COUNT });
                       },
                       onMouseLeave: (event, data) => {
                         this.setState({
-                          attivazioneAnno: null,
+                          eolAnno: null,
                           count: null });
                       }
                     }
                   }]}
-                  data={this.props.attivazioneAnnos}
-                  x={'ATTIVAZIONE_ANNO'}
+                  data={this.props.eolAnnos}
+                  x={'EOL_ANNO'}
                   y={'COUNT'}
                 />
               </VictoryChart>
             </Row>
 
-            { this.props.attivazioneAnnosError ? <Error component={'ATTIVAZIONE_ANNO'} error={[this.props.attivazioneAnnosError]} visible={true} type={'attivazioneAnnosError'} /> : null }
-            { this.props.attivazioneMesesError ? <Error component={'ATTIVAZIONE_MESE'} error={[this.props.attivazioneMesesError]} visible={true} type={'attivazioneMesesError'} /> : null }
+            { this.props.eolAnnosError ? <Error component={'EOL_ANNO'} error={[this.props.eolAnnosError]} visible={true} type={'eolAnnosError'} /> : null }
+            { this.props.eolMesesError ? <Error component={'EOL_MESE'} error={[this.props.eolMesesError]} visible={true} type={'eolMesesError'} /> : null }
 
           </React.Fragment>
         }
@@ -153,12 +153,12 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  attivazioneAnnos: state.fortinetdb.attivazioneAnnos,
-  attivazioneAnnosLoading: state.fortinetdb.attivazioneAnnosLoading,
-  attivazioneAnnosError: state.fortinetdb.attivazioneAnnosError,
+  eolAnnos: state.fortinetdb.eolAnnos,
+  eolAnnosLoading: state.fortinetdb.eolAnnosLoading,
+  eolAnnosError: state.fortinetdb.eolAnnosError,
 
-  attivazioneMeses: state.fortinetdb.attivazioneMeses,
-  attivazioneMesesLoading: state.fortinetdb.attivazioneMesesLoading,
-  attivazioneMesesError: state.fortinetdb.attivazioneMesesError,
+  eolMeses: state.fortinetdb.eolMeses,
+  eolMesesLoading: state.fortinetdb.eolMesesLoading,
+  eolMesesError: state.fortinetdb.eolMesesError,
 
 }))(AttivazioneAnno);

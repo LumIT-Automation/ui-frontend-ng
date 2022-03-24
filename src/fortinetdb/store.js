@@ -182,8 +182,39 @@ const fortinetdbSlice = createSlice({
       attivazioneAnno: (state, action) => {
         state.attivazioneAnno = action.payload
       },
-      attivazioneAnnoError: (state, action) => {
-        state.attivazioneAnnoError = action.payload
+
+      attivazioneMesesLoading: (state, action) => {
+        state.attivazioneMesesLoading = action.payload
+      },
+      attivazioneMeses: (state, action) => {
+        state.attivazioneMeses = action.payload
+      },
+      attivazioneMesesError: (state, action) => {
+        state.attivazioneMesesError = action.payload
+      },
+
+
+      eolAnnosLoading: (state, action) => {
+        state.eolAnnosLoading = action.payload
+      },
+      eolAnnos: (state, action) => {
+        state.eolAnnos = action.payload
+      },
+      eolAnnosError: (state, action) => {
+        state.eolAnnosError = action.payload
+      },
+      eolAnno: (state, action) => {
+        state.eolAnno = action.payload
+      },
+
+      eolMesesLoading: (state, action) => {
+        state.eolMesesLoading = action.payload
+      },
+      eolMeses: (state, action) => {
+        state.eolMeses = action.payload
+      },
+      eolMesesError: (state, action) => {
+        state.eolMesesError = action.payload
       },
 
       genericError: (state, action) => {
@@ -270,8 +301,22 @@ export const {
   attivazioneAnnos,
   attivazioneAnnosLoading,
   attivazioneAnnosError,
+
   attivazioneAnno,
-  attivazioneAnnoError,
+
+  attivazioneMeses,
+  attivazioneMesesLoading,
+  attivazioneMesesError,
+
+  eolAnnos,
+  eolAnnosLoading,
+  eolAnnosError,
+
+  eolAnno,
+
+  eolMeses,
+  eolMesesLoading,
+  eolMesesError,
 
   genericError,
 

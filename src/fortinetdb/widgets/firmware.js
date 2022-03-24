@@ -79,7 +79,7 @@ class Firmware extends React.Component {
         this.props.dispatch(valueError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=ATTIVAZIONE_ANNO&fval=2020&fieldValues=ATTIVAZIONE_MESE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
     this.setState({valueLoading: false})
   }
 

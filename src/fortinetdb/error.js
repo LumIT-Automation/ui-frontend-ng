@@ -29,7 +29,10 @@ import {
   backupStatusError,
 
   attivazioneAnnosError,
-  attivazioneAnnoError,
+  attivazioneMesesError,
+
+  eolAnnosError,
+  eolMesesError,
 
   genericError
 
@@ -125,11 +128,18 @@ class Error extends Component {
           this.props.dispatch(backupStatussError(null))
           break;
 
-        case 'attivazioneAnnoError':
-          this.props.dispatch(attivazioneAnnoError(null))
-          break;
         case 'attivazioneAnnosError':
           this.props.dispatch(attivazioneAnnosError(null))
+          break;
+        case 'attivazioneMesesError':
+          this.props.dispatch(attivazioneMesesError(null))
+          break;
+
+        case 'eolAnnosError':
+          this.props.dispatch(eolAnnosError(null))
+          break;
+        case 'eolMesesError':
+          this.props.dispatch(eolMesesError(null))
           break;
 
         default:
