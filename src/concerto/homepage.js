@@ -48,13 +48,13 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      {/*
+      {
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>
           <React.Fragment>
             <Row>
-              <Col span={17}>
+              <Col span={16}>
                 <Row>
                   <Col offset={8}>
                     <VendorSelector/>
@@ -83,20 +83,21 @@ class Homepage extends React.Component {
                     </Card>
                   </Col>
                 </Row>
+                <Row>
+                  <Col span={12}>
+                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>
+                      <AttivazioneAnno/>
+                    </Card>
+                  </Col>
+                </Row>
               </Col>
-              <Col offset={0} span={7}>
+              <Col offset={0} span={8}>
                 <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
                   <Italia />
                 </Card>
               </Col>
             </Row>
-            <Row>
-              <Col span={12}>
-                <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>
-                  <AttivazioneAnno/>
-                </Card>
-              </Col>
-            </Row>
+
           </React.Fragment>
 
           <br/>
@@ -116,7 +117,7 @@ class Homepage extends React.Component {
             </Row>
           </React.Fragment>
         </React.Fragment>
-      */}
+      }
       </React.Fragment>
     )
   }

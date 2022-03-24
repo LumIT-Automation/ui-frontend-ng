@@ -39,6 +39,8 @@ class AttivazioneAnno extends React.Component {
   }
 
   componentDidMount() {
+
+    this.attivazioneAnnosGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,11 +48,7 @@ class AttivazioneAnno extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.attivazioneAnnosError) {
-      if (!this.props.attivazioneAnnos || prevProps.attivazioneAnnos !== this.props.attivazioneAnnos)   {
-        this.attivazioneAnnosGet()
-      }
-    }
+
   }
 
   componentWillUnmount() {
@@ -104,8 +102,11 @@ class AttivazioneAnno extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        //this.props.dispatch(attivazioneAnnos(resp.data.items))
-        this.props.dispatch(attivazioneAnnos(this.fake))
+        delete resp.data.items[0]
+        resp.data.items.forEach((item, i) => {
+          item.ATTIVAZIONE_ANNO = item.ATTIVAZIONE_ANNO.toString()
+        });
+        this.props.dispatch(attivazioneAnnos(resp.data.items ))
       },
       error => {
         this.props.dispatch(attivazioneAnnosError(error))
@@ -135,33 +136,8 @@ class AttivazioneAnno extends React.Component {
   }
 
   render() {
-    const handleOnClick = (e, d, c) => {
-      console.log(e)
-      console.log(d)
-      console.log(c)
-      //this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
-    };
-
-    const handleMouseOver = () => {
-      const fillColor = this.state.clicked ? "blue" : "tomato";
-      const clicked = !this.state.clicked;
-      this.setState({
-        style: {
-          data: { fill: fillColor }
-        }
-      });
-    };
-
-    const handleMouseLeave = () => {
-      const fillColor = this.state.clicked ? "blue" : "tomato";
-      const clicked = !this.state.clicked;
-      this.setState({
-        clicked,
-        style: {
-          data: { fill: fillColor }
-        }
-      });
-    };
+    console.log(this.props.attivazioneAnnos)
+    console.log(this.state.attivazioneAnno)
 
     return (
       <React.Fragment>
@@ -170,24 +146,38 @@ class AttivazioneAnno extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.name}</p>
+              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.attivazioneAnno}</p>
+            </Row>
+            <Row>
+              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
             </Row>
             <Row>
               <VictoryChart
-                scale={{ x: "time" }}
+                scale={{ x: "ATTIVAZIONE_ANNO" }}
               >
                 <VictoryBar
-                  dataComponent={
-                    <Bar events={{
-                      onMouseOver: handleMouseOver,
-                      onMouseLeave: handleMouseLeave,
-                      onClick: handleOnClick,
-                    }}/>
-                  }
                   style={this.state.style}
+                  events={[{
+                    target: "data",
+                    eventHandlers: {
+                      onClick: (event, data) => {
+                        this.setState({attivazioneAnno: data.datum.ATTIVAZIONE_ANNO});
+                      },
+                      onMouseOver: (event, data) => {
+                        this.setState({
+                          attivazioneAnno: data.datum.ATTIVAZIONE_ANNO,
+                          count: data.datum.COUNT });
+                      },
+                      onMouseLeave: (event, data) => {
+                        this.setState({
+                          attivazioneAnno: null,
+                          count: null });
+                      }
+                    }
+                  }]}
                   data={this.props.attivazioneAnnos}
-                  x="ATTIVAZIONE_ANNO"
-                  y="COUNT"
+                  x={'ATTIVAZIONE_ANNO'}
+                  y={'COUNT'}
                 />
               </VictoryChart>
             </Row>
