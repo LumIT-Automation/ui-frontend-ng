@@ -108,7 +108,7 @@ class AttivazioneAnno extends React.Component {
             </Row>
             <Row>
               <VictoryChart
-
+                domainPadding={20}
               >
                 <VictoryBar
                   style={this.state.style}

@@ -108,6 +108,7 @@ class AttivazioneAnno extends React.Component {
             </Row>
             <Row>
               <VictoryChart
+                domainPadding={20}
                 scale={{ x: "EOL_ANNO" }}
               >
                 <VictoryBar

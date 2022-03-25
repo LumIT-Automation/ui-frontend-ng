@@ -90,6 +90,7 @@ class AttivazioneMese extends React.Component {
             </Row>
             <Row>
               <VictoryChart
+                domainPadding={20}
               >
                 {this.props.attivazioneMeses ?
                   <VictoryBar

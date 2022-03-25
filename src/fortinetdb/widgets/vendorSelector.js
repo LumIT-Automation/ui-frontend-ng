@@ -65,7 +65,6 @@ class Firmware extends React.Component {
   }
 
   render() {
-    console.log(this.props.vendor)
     return (
       <Row>
         <Col offset={2} span={6}>
