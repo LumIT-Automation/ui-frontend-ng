@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import { Card, Row, Col, Divider } from 'antd'
 
 //import List from './list'
-import VendorSelector from '../fortinetdb/widgets/vendorSelector'
+import Selector from '../fortinetdb/widgets/selector'
 import ModelSelector from '../fortinetdb/widgets/modelSelector'
 import Italia from '../fortinetdb/widgets/italia'
 
@@ -58,35 +58,31 @@ class Homepage extends React.Component {
           <Divider orientation="left">Devices</Divider>
           <React.Fragment>
             <Row>
-              <Col span={16}>
+              <Selector/>
+            </Row>
+            <Row>
+            <Divider/>
+              <Col offset={0} span={16}>
                 <Row>
-                  <Col offset={8}>
-                    <VendorSelector/>
-                  </Col>
-                </Row>
-                <Row>
-                  <Col offset={8}>
-                    <ModelSelector/>
-                  </Col>
-                </Row>
-                <Divider/>
-                <Row>
-                  <Col span={8}>
-                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
-                      <Firmware/>
-                    </Card>
-                  </Col>
                   <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
                       <Modello/>
                     </Card>
                   </Col>
+
+                  <Col span={8}>
+                    <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
+                      <Firmware/>
+                    </Card>
+                  </Col>
+
                   <Col span={8}>
                     <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
                       <BackupStatus/>
                     </Card>
                   </Col>
                 </Row>
+                
                 <Row>
                   <Col span={12}>
                     <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>

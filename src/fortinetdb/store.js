@@ -106,6 +106,22 @@ const fortinetdbSlice = createSlice({
         state.valueError = action.payload
       },
 
+      categoriasLoading: (state, action) => {
+        state.categoriasLoading = action.payload
+      },
+      categorias: (state, action) => {
+        state.categorias = action.payload.data.items
+      },
+      categoriasError: (state, action) => {
+        state.categoriasError = action.payload
+      },
+      categoria: (state, action) => {
+        state.categoria = action.payload
+      },
+      categoriaError: (state, action) => {
+        state.categoriaError = action.payload
+      },
+
       vendorsLoading: (state, action) => {
         state.vendorsLoading = action.payload
       },
@@ -273,6 +289,12 @@ export const {
 
   value,
   valueError,
+
+  categorias,
+  categoriasLoading,
+  categoriasError,
+  categoria,
+  categoriaError,
 
   vendors,
   vendorsLoading,

@@ -16,6 +16,9 @@ import {
   fieldError,
   valueError,
 
+  categoriasError,
+  categoriaError,
+
   vendorsError,
   vendorError,
 
@@ -98,6 +101,13 @@ class Error extends Component {
           break;
         case 'valueError':
           this.props.dispatch(valueError(null))
+          break;
+
+        case 'categoriasError':
+          this.props.dispatch(categoriasError(null))
+          break;
+        case 'categoriaError':
+          this.props.dispatch(categoriaError(null))
           break;
 
         case 'vendorError':
