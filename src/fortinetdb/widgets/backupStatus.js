@@ -13,7 +13,6 @@ import {
   backupStatussError,
   backupStatus,
   backupStatusError,
-  valueError
 } from '../store'
 
 import List from '../devices/list'
@@ -41,9 +40,15 @@ class BackupStatus extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.vendorError || !this.props.modelError) {
-      if ( (this.props.vendor && prevProps.vendor !== this.props.vendor) || (this.props.model && prevProps.model !== this.props.model) ) {
-        if (this.props.vendor && this.props.model) {
+    if (this.props.categoria !== prevProps.categoria) {
+      this.props.dispatch(backupStatuss(null))
+    }
+    if (this.props.vendor !== prevProps.vendor) {
+      this.props.dispatch(backupStatuss(null))
+    }
+    if (!this.props.modelloError) {
+      if (this.props.modello && prevProps.modello !== this.props.modello) {
+        if (this.props.modello) {
           this.backupStatussGet()
         }
       }
@@ -64,23 +69,23 @@ class BackupStatus extends React.Component {
         this.props.dispatch(backupStatussError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${this.props.vendor}&fby=MODELLO&fval=${this.props.model}&fieldValues=BACKUP_STATUS`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.props.modello}&fieldValues=BACKUP_STATUS`, this.props.token)
     this.props.dispatch(backupStatussLoading(false))
   }
 
-  fetchValue = async () => {
-    this.setState({valueLoading: true})
+  backupStatusGet = async () => {
+    this.setState({backupStatusLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(valueError(error))
+        this.props.dispatch(backupStatusError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.value}`, this.props.token)
-    this.setState({valueLoading: false})
+    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.backupStatus}`, this.props.token)
+    this.setState({backupStatusLoading: false})
   }
 
   hide = () => {
@@ -98,6 +103,7 @@ class BackupStatus extends React.Component {
             <Row>
               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Backup Status: {this.state.name}</p>
             </Row>
+
             <Row>
               <svg viewBox="0 0 300 300">
                 <VictoryPie
@@ -106,7 +112,7 @@ class BackupStatus extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (e, n) => {
-                        this.setState({visible: true, value: n.datum.BACKUP_STATUS}, () => this.fetchValue())
+                        this.setState({visible: true, backupStatus: n.datum.BACKUP_STATUS}, () => this.backupStatusGet())
                       },
                       onMouseOver: (e, n) => {
                         this.setState({name: n.datum.BACKUP_STATUS, color: n.style.fill})
@@ -119,7 +125,7 @@ class BackupStatus extends React.Component {
                   standalone={false}
                   width={300} height={300}
                   data={this.props.backupStatuss}
-                  x="backupStatus"
+                  x="BACKUP_STATUS"
                   y="COUNT"
                   innerRadius={0} radius={80}
                   labels={({ datum }) => datum.COUNT}
@@ -136,7 +142,7 @@ class BackupStatus extends React.Component {
             { this.state.visible ?
               <React.Fragment>
                 <Modal
-                  title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                  title={<p style={{textAlign: 'center'}}>{this.state.backupStatus}</p>}
                   centered
                   destroyOnClose={true}
                   visible={this.state.visible}
@@ -145,7 +151,7 @@ class BackupStatus extends React.Component {
                   onCancel={this.hide}
                   width={1500}
                 >
-                  { this.state.valueLoading ?
+                  { this.state.backupStatusLoading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                   :
                     <React.Fragment>
@@ -158,8 +164,8 @@ class BackupStatus extends React.Component {
                   }
                 </Modal>
 
-                { this.props.backupStatussError ? <Error component={'backupStatus'} error={[this.props.backupStatussError]} visible={true} type={'backupStatussError'} /> : null }
-                { this.props.valueError ? <Error component={'backupStatus'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+                { this.props.backupStatussError ? <Error component={'BACKUP_STATUS'} error={[this.props.backupStatussError]} visible={true} type={'backupStatussError'} /> : null }
+                { this.props.backupStatusError ? <Error component={'BACKUP_STATUS'} error={[this.props.backupStatusError]} visible={true} type={'backupStatusError'} /> : null }
 
               </React.Fragment>
             :
@@ -178,8 +184,9 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
+  categoria: state.fortinetdb.categoria,
   vendor: state.fortinetdb.vendor,
-  model: state.fortinetdb.model,
+  modello: state.fortinetdb.modello,
 
   backupStatuss: state.fortinetdb.backupStatuss,
   backupStatussLoading: state.fortinetdb.backupStatussLoading,
@@ -187,6 +194,4 @@ export default connect((state) => ({
 
   backupStatus: state.fortinetdb.backupStatus,
   backupStatusError: state.fortinetdb.backupStatusError,
-
-  valueError: state.fortinetdb.valueError,
 }))(BackupStatus);

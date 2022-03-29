@@ -8,10 +8,10 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  model,
-  models,
-  modelsLoading,
-  modelsError,
+  modello,
+  modellos,
+  modellosLoading,
+  modellosError,
   vendor,
   vendorError,
   valueError
@@ -42,11 +42,14 @@ class Modello extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.categoria !== prevProps.categoria) {
+      this.props.dispatch(modellos(null))
+    }
     if (!this.props.vendorError) {
       if (this.props.vendor && prevProps.vendor !== this.props.vendor) {
-        this.props.dispatch(models([]))
-        this.props.dispatch(model())
-        this.modelsGet()
+        this.props.dispatch(modellos([]))
+        this.props.dispatch(modello())
+        this.modellosGet()
       }
     }
   }
@@ -54,19 +57,19 @@ class Modello extends React.Component {
   componentWillUnmount() {
   }
 
-  modelsGet = async () => {
-    this.props.dispatch(modelsLoading(true))
+  modellosGet = async () => {
+    this.props.dispatch(modellosLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(models(resp.data.items))
+        this.props.dispatch(modellos(resp.data.items))
       },
       error => {
-        this.props.dispatch(modelsError(error))
+        this.props.dispatch(modellosError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${this.props.vendor}&fieldValues=MODELLO`, this.props.token)
-    this.props.dispatch(modelsLoading(false))
+    this.props.dispatch(modellosLoading(false))
   }
 
   fetchValue = async () => {
@@ -91,7 +94,7 @@ class Modello extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.props.modelsLoading ?
+        { this.props.modellosLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
@@ -118,7 +121,7 @@ class Modello extends React.Component {
                   }]}
                   standalone={false}
                   width={300} height={300}
-                  data={this.props.models}
+                  data={this.props.modellos}
                   x="MODELLO"
                   y="COUNT"
                   innerRadius={0} radius={80}
@@ -149,7 +152,7 @@ class Modello extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                 :
                   <React.Fragment>
-                    { this.props.models ?
+                    { this.props.modellos ?
                       <List height={550} pagination={5} filteredDevices={this.state.devices}/>
                     :
                       null
@@ -158,7 +161,7 @@ class Modello extends React.Component {
                 }
               </Modal>
 
-              { this.props.modelsError ? <Error component={'model'} error={[this.props.modelsError]} visible={true} type={'modelsError'} /> : null }
+              { this.props.modellosError ? <Error component={'modello'} error={[this.props.modellosError]} visible={true} type={'modellosError'} /> : null }
               { this.props.valueError ? <Error component={'MODELLO'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
 
             </React.Fragment>
@@ -178,8 +181,8 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  models: state.fortinetdb.models,
-  modelsLoading: state.fortinetdb.modelsLoading,
-  modelsError: state.fortinetdb.modelsError,
+  modellos: state.fortinetdb.modellos,
+  modellosLoading: state.fortinetdb.modellosLoading,
+  modellosError: state.fortinetdb.modellosError,
   valueError: state.fortinetdb.valueError,
 }))(Modello);

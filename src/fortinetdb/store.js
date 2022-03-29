@@ -156,7 +156,6 @@ const fortinetdbSlice = createSlice({
         state.modelloError = action.payload
       },
 
-
       firmwaresLoading: (state, action) => {
         state.firmwaresLoading = action.payload
       },

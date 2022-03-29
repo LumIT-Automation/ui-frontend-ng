@@ -13,7 +13,6 @@ import {
   firmwaresError,
   firmware,
   firmwareError,
-  valueError
 } from '../store'
 
 import List from '../devices/list'
@@ -41,9 +40,15 @@ class Firmware extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (!this.props.vendorError || !this.props.modelError) {
-      if ( (this.props.vendor && prevProps.vendor !== this.props.vendor) || (this.props.model && prevProps.model !== this.props.model) ) {
-        if (this.props.vendor && this.props.model) {
+    if (this.props.categoria !== prevProps.categoria) {
+      this.props.dispatch(firmwares(null))
+    }
+    if (this.props.vendor !== prevProps.vendor) {
+      this.props.dispatch(firmwares(null))
+    }
+    if (!this.props.modelloError) {
+      if (this.props.modello && prevProps.modello !== this.props.modello) {
+        if (this.props.modello) {
           this.firmwaresGet()
         }
       }
@@ -64,23 +69,23 @@ class Firmware extends React.Component {
         this.props.dispatch(firmwaresError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${this.props.vendor}&fby=MODELLO&fval=${this.props.model}&fieldValues=FIRMWARE`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.props.modello}&fieldValues=FIRMWARE`, this.props.token)
     this.props.dispatch(firmwaresLoading(false))
   }
 
-  fetchValue = async () => {
-    this.setState({valueLoading: true})
+  firmwareGet = async () => {
+    this.setState({firmwareLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(valueError(error))
+        this.props.dispatch(firmwareError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.value}`, this.props.token)
-    this.setState({valueLoading: false})
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.firmware}`, this.props.token)
+    this.setState({firmwareLoading: false})
   }
 
   hide = () => {
@@ -98,6 +103,7 @@ class Firmware extends React.Component {
             <Row>
               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Firmware: {this.state.name}</p>
             </Row>
+
             <Row>
               <svg viewBox="0 0 300 300">
                 <VictoryPie
@@ -106,7 +112,7 @@ class Firmware extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (e, n) => {
-                        this.setState({visible: true, value: n.datum.FIRMWARE}, () => this.fetchValue())
+                        this.setState({visible: true, firmware: n.datum.FIRMWARE}, () => this.firmwareGet())
                       },
                       onMouseOver: (e, n) => {
                         this.setState({name: n.datum.FIRMWARE, color: n.style.fill})
@@ -136,7 +142,7 @@ class Firmware extends React.Component {
             { this.state.visible ?
               <React.Fragment>
                 <Modal
-                  title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                  title={<p style={{textAlign: 'center'}}>{this.state.firmware}</p>}
                   centered
                   destroyOnClose={true}
                   visible={this.state.visible}
@@ -145,7 +151,7 @@ class Firmware extends React.Component {
                   onCancel={this.hide}
                   width={1500}
                 >
-                  { this.state.valueLoading ?
+                  { this.state.firmwareLoading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                   :
                     <React.Fragment>
@@ -159,7 +165,7 @@ class Firmware extends React.Component {
                 </Modal>
 
                 { this.props.firmwaresError ? <Error component={'FIRMWARE'} error={[this.props.firmwaresError]} visible={true} type={'firmwaresError'} /> : null }
-                { this.props.valueError ? <Error component={'FIRMWARE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+                { this.props.firmwareError ? <Error component={'FIRMWARE'} error={[this.props.firmwareError]} visible={true} type={'firmwareError'} /> : null }
 
               </React.Fragment>
             :
@@ -178,8 +184,9 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
+  categoria: state.fortinetdb.categoria,
   vendor: state.fortinetdb.vendor,
-  model: state.fortinetdb.model,
+  modello: state.fortinetdb.modello,
 
   firmwares: state.fortinetdb.firmwares,
   firmwaresLoading: state.fortinetdb.firmwaresLoading,
@@ -187,6 +194,4 @@ export default connect((state) => ({
 
   firmware: state.fortinetdb.firmware,
   firmwareError: state.fortinetdb.firmwareError,
-
-  valueError: state.fortinetdb.valueError,
 }))(Firmware);
