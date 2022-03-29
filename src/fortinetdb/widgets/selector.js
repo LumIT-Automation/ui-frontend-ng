@@ -18,6 +18,12 @@ import {
   vendor,
   vendorsError,
   vendorError,
+
+  modellos,
+  modellosLoading,
+  modello,
+  modellosError,
+  modelloError,
 } from '../store'
 
 import List from '../devices/list'
@@ -49,6 +55,9 @@ class Selector extends React.Component {
     if (this.props.categoria && prevProps.categoria !== this.props.categoria) {
       this.vendorsGet()
     }
+    if (this.props.vendor && prevProps.vendor !== this.props.vendor) {
+      this.modellosGet()
+    }
   }
 
   componentWillUnmount() {
@@ -59,7 +68,7 @@ class Selector extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(categorias(resp))
+        this.props.dispatch(categorias(resp.data.items))
       },
       error => {
         this.props.dispatch(categoriasError(error))
@@ -70,11 +79,13 @@ class Selector extends React.Component {
   }
 
   vendorsGet = async () => {
+    this.props.dispatch(vendors(null))
+    this.props.dispatch(vendor(null))
     this.props.dispatch(vendorsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(vendors(resp))
+        this.props.dispatch(vendors(resp.data.items))
       },
       error => {
         this.props.dispatch(vendorError(error))
@@ -84,41 +95,62 @@ class Selector extends React.Component {
     this.props.dispatch(vendorsLoading(false))
   }
 
+  modellosGet = async () => {
+    this.props.dispatch(modellos(null))
+    this.props.dispatch(modello(null))
+    this.props.dispatch(modellosLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        this.props.dispatch(modellos(resp.data.items))
+      },
+      error => {
+        this.props.dispatch(modelloError(error))
+      }
+    )
+    await rest.doXHR(`fortinetdb/devices/?fby=CATEGORIA&fval=${this.props.categoria}&fby=VENDOR&fval=${this.props.vendor}&fieldValues=MODELLO`, this.props.token)
+    this.props.dispatch(modellosLoading(false))
+  }
+
   hide = () => {
     this.setState({visible: false})
   }
 
   render() {
+    console.log(this.props.modello)
     return (
-      <Row style={{paddingLeft: '100px'}}>
-        <Col>
-          Categoria:
+      <Row>
+        <Col offset={1} span={7}>
           { this.props.categoriasLoading ?
-            <Spin indicator={spinIcon} />
+            <React.Fragment>
+              Categoria: <Spin indicator={spinIcon} style={{margin: '0 50px', display: 'inline'}}/>
+            </React.Fragment>
           :
-            <Select
-              showSearch
-              value={this.props.categoria}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              key={null}
-              style={{ width: 300, marginLeft: '10px' }}
-              onChange={e => this.props.dispatch(categoria(e))}>
-              {this.props.categorias && this.props.categorias.map((n, i) => {
-                return (
-                  <Select.Option key={i} value={n.CATEGORIA}>{n.CATEGORIA}</Select.Option>
-                )})
-              }
-            </Select>
+            <React.Fragment>
+              Categoria:
+              <Select
+                style={{ width: 300, marginLeft: '10px'}}
+                showSearch
+                value={this.props.categoria}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={e => this.props.dispatch(categoria(e))}>
+                {this.props.categorias && this.props.categorias.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n.CATEGORIA}>{n.CATEGORIA}</Select.Option>
+                  )})
+                }
+              </Select>
+            </React.Fragment>
           }
         </Col>
 
-        <Col offset={1}>
+        <Col offset={1} span={7}>
           { this.props.vendorsLoading ?
             <React.Fragment>
               Vendor:  <Spin indicator={spinIcon} style={{margin: '0 50px', display: 'inline'}}/>
@@ -128,7 +160,9 @@ class Selector extends React.Component {
             Vendor:
             {this.props.categoria ?
               <Select
+                style={{ width: 300, marginLeft: '10px', display: 'inline-block'}}
                 showSearch
+                value={this.props.vendor}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -137,7 +171,6 @@ class Selector extends React.Component {
                   optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                 }
                 onChange={e => this.props.dispatch(vendor(e))}
-                style={{ width: 200, marginLeft: '10px' }}
               >
                  {this.props.vendors &&  this.props.vendors.map((p, i) => {
                 return (
@@ -146,75 +179,48 @@ class Selector extends React.Component {
               })}
               </Select>
               :
-              <Select disabled value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>
+              <Select disabled value={null} onChange={null} style={{ width: 300, marginLeft: '10px', display: 'inline-block'}}>
               </Select>
             }
             </React.Fragment>
           }
         </Col>
 
-        <Col>
-          Modelllo:
-          { this.props.categoriasLoading ?
-            <Spin indicator={spinIcon} />
-          :
-            <Select
-              showSearch
-              value={this.props.categoria}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              key={null}
-              style={{ width: 300, marginLeft: '10px' }}
-              onChange={e => this.props.dispatch(categoria(e))}>
-              {this.props.categorias && this.props.categorias.map((n, i) => {
+        <Col offset={1} span={7}>
+          { this.props.modellosLoading ?
+            <React.Fragment>
+              Modello:  <Spin indicator={spinIcon} style={{margin: '0 50px', display: 'inline'}}/>
+            </React.Fragment>
+            :
+            <React.Fragment>
+            Modello:
+            {this.props.vendor ?
+              <Select
+                style={{ width: 300, marginLeft: '10px', display: 'inline-block'}}
+                showSearch
+                value={this.props.modello}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onChange={e => this.props.dispatch(modello(e))}
+              >
+                 {this.props.modellos &&  this.props.modellos.map((p, i) => {
                 return (
-                  <Select.Option key={i} value={n.CATEGORIA}>{n.CATEGORIA}</Select.Option>
-                )})
-              }
-            </Select>
+                  <Select.Option key={i} value={p.MODELLO}>{p.MODELLO}</Select.Option>
+                )
+              })}
+              </Select>
+              :
+              <Select disabled value={null} onChange={null} style={{ width: 300, marginLeft: '10px', display: 'inline-block'}}>
+              </Select>
+            }
+            </React.Fragment>
           }
         </Col>
-
-
-        { this.state.visible ?
-            <React.Fragment>
-              <Modal
-                title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
-                centered
-                destroyOnClose={true}
-                visible={this.state.visible}
-                footer={''}
-                //onOk={() => this.setState({visible: true})}
-                onCancel={this.hide}
-                width={1500}
-              >
-                { this.state.valueLoading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
-                :
-                  <React.Fragment>
-                    { this.state.vendors ?
-                      <List height={550} pagination={5} filteredDevices={this.state.devices}/>
-                    :
-                      null
-                    }
-                  </React.Fragment>
-                }
-              </Modal>
-
-              { this.props.categoriasError ? <Error component={'CATEGORIA'} error={[this.props.categoriasError]} visible={true} type={'categoriasError'} /> : null }
-              { this.props.vendorsError ? <Error component={'VENDOR'} error={[this.props.vendorsError]} visible={true} type={'vendorsError'} /> : null }
-              { this.props.vendorError ? <Error component={'VENDOR'} error={[this.props.vendorError]} visible={true} type={'vendorError'} /> : null }
-
-            </React.Fragment>
-          :
-            null
-          }
-
       </Row>
     );
 
@@ -238,4 +244,11 @@ export default connect((state) => ({
 
   vendor: state.fortinetdb.vendor,
   vendorError: state.fortinetdb.vendorError,
+
+  modellos: state.fortinetdb.modellos,
+  modellosLoading: state.fortinetdb.modellosLoading,
+  modellosError: state.fortinetdb.modellosError,
+
+  modello: state.fortinetdb.modello,
+  modelloError: state.fortinetdb.modelloError,
 }))(Selector);

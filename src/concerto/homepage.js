@@ -58,7 +58,9 @@ class Homepage extends React.Component {
           <Divider orientation="left">Devices</Divider>
           <React.Fragment>
             <Row>
-              <Selector/>
+              <Col span={24}>
+                <Selector/>
+              </Col>
             </Row>
             <Row>
             <Divider/>
@@ -82,7 +84,7 @@ class Homepage extends React.Component {
                     </Card>
                   </Col>
                 </Row>
-                
+
                 <Row>
                   <Col span={12}>
                     <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>

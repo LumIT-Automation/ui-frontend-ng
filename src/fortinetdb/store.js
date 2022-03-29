@@ -106,11 +106,13 @@ const fortinetdbSlice = createSlice({
         state.valueError = action.payload
       },
 
+
+
       categoriasLoading: (state, action) => {
         state.categoriasLoading = action.payload
       },
       categorias: (state, action) => {
-        state.categorias = action.payload.data.items
+        state.categorias = action.payload
       },
       categoriasError: (state, action) => {
         state.categoriasError = action.payload
@@ -126,7 +128,7 @@ const fortinetdbSlice = createSlice({
         state.vendorsLoading = action.payload
       },
       vendors: (state, action) => {
-        state.vendors = action.payload.data.items
+        state.vendors = action.payload
       },
       vendorsError: (state, action) => {
         state.vendorsError = action.payload
@@ -135,24 +137,25 @@ const fortinetdbSlice = createSlice({
         state.vendor = action.payload
       },
       vendorError: (state, action) => {
-        state.vendorError = action.payload
+        state.modelloError = action.payload
       },
 
-      modelsLoading: (state, action) => {
-        state.modelsLoading = action.payload
+      modellosLoading: (state, action) => {
+        state.modellosLoading = action.payload
       },
-      models: (state, action) => {
-        state.models = action.payload
+      modellos: (state, action) => {
+        state.modellos = action.payload
       },
-      modelsError: (state, action) => {
-        state.modelsError = action.payload
+      modellosError: (state, action) => {
+        state.modellosError = action.payload
       },
-      model: (state, action) => {
-        state.model = action.payload
+      modello: (state, action) => {
+        state.modello = action.payload
       },
-      modelError: (state, action) => {
-        state.modelError = action.payload
+      modelloError: (state, action) => {
+        state.modelloError = action.payload
       },
+
 
       firmwaresLoading: (state, action) => {
         state.firmwaresLoading = action.payload
@@ -302,11 +305,11 @@ export const {
   vendor,
   vendorError,
 
-  models,
-  modelsLoading,
-  modelsError,
-  model,
-  modelError,
+  modellos,
+  modellosLoading,
+  modellosError,
+  modello,
+  modelloError,
 
   firmwares,
   firmwaresLoading,
