@@ -9,12 +9,12 @@ import Error from '../error'
 
 import {
   modello,
-  modellos,
-  modellosLoading,
-  modellosError,
+  modellos20,
+  modellos20Loading,
+  modellos20Error,
   vendor,
   vendorError,
-  valueError
+  modelloError
 } from '../store'
 
 import List from '../devices/list'
@@ -43,12 +43,13 @@ class Modello extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.props.categoria !== prevProps.categoria) {
-      this.props.dispatch(modellos(null))
+      this.props.dispatch(modellos20(null))
+    }
+    if (this.props.vendor !== prevProps.vendor) {
+      this.props.dispatch(modellos20(null))
     }
     if (!this.props.vendorError) {
       if (this.props.vendor && prevProps.vendor !== this.props.vendor) {
-        this.props.dispatch(modellos([]))
-        this.props.dispatch(modello())
         this.modellosGet()
       }
     }
@@ -57,34 +58,50 @@ class Modello extends React.Component {
   componentWillUnmount() {
   }
 
+  split20 = async mod => {
+    mod.sort(function(a, b) {
+      return b.COUNT - a.COUNT;
+    });
+    let first20 = mod.slice(0,20)
+    let others = mod.slice(21)
+
+    let c = 0
+    others.forEach((item, i) => {
+      c = c + item.COUNT
+    });
+
+    first20.push({'MODELLO': 'others', 'COUNT': c})
+    this.props.dispatch(modellos20(first20))
+  }
+
   modellosGet = async () => {
-    this.props.dispatch(modellosLoading(true))
+    this.props.dispatch(modellos20Loading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(modellos(resp.data.items))
+        this.split20(resp.data.items)
       },
       error => {
-        this.props.dispatch(modellosError(error))
+        this.props.dispatch(modellos20Error(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=VENDOR&fval=${this.props.vendor}&fieldValues=MODELLO`, this.props.token)
-    this.props.dispatch(modellosLoading(false))
+    await rest.doXHR(`fortinetdb/devices/?fby=CATEGORIA&fval=${this.props.categoria}&fby=VENDOR&fval=${this.props.vendor}&fieldValues=MODELLO`, this.props.token)
+    this.props.dispatch(modellos20Loading(false))
   }
 
-  fetchValue = async () => {
-    this.setState({valueLoading: true})
+  modelloGet = async () => {
+    this.setState({modelloLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(valueError(error))
+        this.props.dispatch(modelloError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.state.value}`, this.props.token)
-    this.setState({valueLoading: false})
+    await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.state.modello}`, this.props.token)
+    this.setState({modelloLoading: false})
   }
 
   hide = () => {
@@ -94,7 +111,7 @@ class Modello extends React.Component {
   render() {
     return (
       <React.Fragment>
-        { this.props.modellosLoading ?
+        { this.props.modellos20Loading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
@@ -104,12 +121,12 @@ class Modello extends React.Component {
             <Row>
               <svg viewBox="0 0 300 300">
                 <VictoryPie
-                  colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
+                  colorScale={["tomato", "orange", "gold", "cyan", "navy", "violet" ]}
                   events={[{
                     target: "data",
                     eventHandlers: {
                       onClick: (e, n) => {
-                        this.setState({visible: true, value: n.datum.MODELLO}, () => this.fetchValue())
+                        this.setState({visible: true, modello: n.datum.MODELLO}, () => this.modelloGet())
                       },
                       onMouseOver: (e, n) => {
                         this.setState({name: n.datum.MODELLO, color: n.style.fill})
@@ -121,7 +138,7 @@ class Modello extends React.Component {
                   }]}
                   standalone={false}
                   width={300} height={300}
-                  data={this.props.modellos}
+                  data={this.props.modellos20}
                   x="MODELLO"
                   y="COUNT"
                   innerRadius={0} radius={80}
@@ -139,7 +156,7 @@ class Modello extends React.Component {
           { this.state.visible ?
             <React.Fragment>
               <Modal
-                title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                title={<p style={{textAlign: 'center'}}>{this.state.modello}</p>}
                 centered
                 destroyOnClose={true}
                 visible={this.state.visible}
@@ -148,11 +165,11 @@ class Modello extends React.Component {
                 onCancel={this.hide}
                 width={1500}
               >
-                { this.state.valueLoading ?
+                { this.state.modelloLoading ?
                   <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                 :
                   <React.Fragment>
-                    { this.props.modellos ?
+                    { this.props.modellos20 ?
                       <List height={550} pagination={5} filteredDevices={this.state.devices}/>
                     :
                       null
@@ -161,8 +178,8 @@ class Modello extends React.Component {
                 }
               </Modal>
 
-              { this.props.modellosError ? <Error component={'modello'} error={[this.props.modellosError]} visible={true} type={'modellosError'} /> : null }
-              { this.props.valueError ? <Error component={'MODELLO'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.modellos20Error ? <Error component={'modello'} error={[this.props.modellos20Error]} visible={true} type={'modellos20Error'} /> : null }
+              { this.props.modelloError ? <Error component={'MODELLO'} error={[this.props.modelloError]} visible={true} type={'modelloError'} /> : null }
 
             </React.Fragment>
           :
@@ -181,8 +198,13 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  modellos: state.fortinetdb.modellos,
-  modellosLoading: state.fortinetdb.modellosLoading,
-  modellosError: state.fortinetdb.modellosError,
-  valueError: state.fortinetdb.valueError,
+  categoria: state.fortinetdb.categoria,
+  vendor: state.fortinetdb.vendor,
+
+  modellos20: state.fortinetdb.modellos20,
+  modellos20Loading: state.fortinetdb.modellos20Loading,
+  modellos20Error: state.fortinetdb.modellos20Error,
+
+  modello: state.fortinetdb.modello,
+  modelloError: state.fortinetdb.modelloError,
 }))(Modello);

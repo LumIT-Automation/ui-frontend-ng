@@ -149,6 +149,15 @@ const fortinetdbSlice = createSlice({
       modellosError: (state, action) => {
         state.modellosError = action.payload
       },
+      modellos20Loading: (state, action) => {
+        state.modellos20Loading = action.payload
+      },
+      modellos20: (state, action) => {
+        state.modellos20 = action.payload
+      },
+      modellos20Error: (state, action) => {
+        state.modellos20Error = action.payload
+      },
       modello: (state, action) => {
         state.modello = action.payload
       },
@@ -307,6 +316,9 @@ export const {
   modellos,
   modellosLoading,
   modellosError,
+  modellos20,
+  modellos20Loading,
+  modellos20Error,
   modello,
   modelloError,
 

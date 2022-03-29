@@ -48,9 +48,7 @@ class Firmware extends React.Component {
     }
     if (!this.props.modelloError) {
       if (this.props.modello && prevProps.modello !== this.props.modello) {
-        if (this.props.modello) {
-          this.firmwaresGet()
-        }
+        this.firmwaresGet()
       }
     }
   }

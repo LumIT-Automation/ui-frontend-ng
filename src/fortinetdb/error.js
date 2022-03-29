@@ -23,6 +23,7 @@ import {
   vendorError,
 
   modellosError,
+  modellos20Error,
   modelloError,
 
   firmwaresError,
@@ -119,6 +120,9 @@ class Error extends Component {
 
         case 'modellosError':
           this.props.dispatch(modellosError(null))
+          break;
+        case 'modellos20Error':
+          this.props.dispatch(modellos20Error(null))
           break;
         case 'modelloError':
           this.props.dispatch(modelloError(null))
