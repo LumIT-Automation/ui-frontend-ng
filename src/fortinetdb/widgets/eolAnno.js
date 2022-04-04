@@ -27,7 +27,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class AttivazioneAnno extends React.Component {
+class EolAnno extends React.Component {
 
   constructor(props) {
     super(props);
@@ -101,7 +101,7 @@ class AttivazioneAnno extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.eolAnno}</p>
+              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Eol Anno: {this.state.eolAnno}</p>
             </Row>
             <Row>
               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
@@ -162,4 +162,4 @@ export default connect((state) => ({
   eolMesesLoading: state.fortinetdb.eolMesesLoading,
   eolMesesError: state.fortinetdb.eolMesesError,
 
-}))(AttivazioneAnno);
+}))(EolAnno);

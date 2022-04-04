@@ -829,7 +829,7 @@ class CreateF5Service extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Certificate (optional):</p>
                   </Col>
                   <Col span={16}>
                     {this.state.errors.certificateError ?
@@ -859,7 +859,7 @@ class CreateF5Service extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key (optional):</p>
                   </Col>
                   <Col span={16}>
                     {this.state.errors.keyError ?

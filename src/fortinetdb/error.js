@@ -38,6 +38,9 @@ import {
   eolAnnosError,
   eolMesesError,
 
+  serviziosError,
+  servizioError,
+
   genericError
 
 } from '../fortinetdb/store'
@@ -154,6 +157,13 @@ class Error extends Component {
           break;
         case 'eolMesesError':
           this.props.dispatch(eolMesesError(null))
+          break;
+
+        case 'servizioError':
+          this.props.dispatch(servizioError(null))
+          break;
+        case 'serviziosError':
+          this.props.dispatch(serviziosError(null))
           break;
 
         default:

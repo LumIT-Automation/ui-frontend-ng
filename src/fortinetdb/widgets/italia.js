@@ -13,7 +13,7 @@ import {
 
 import List from '../devices/list'
 
-import { Modal, Spin } from 'antd'
+import { Modal, Spin, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -117,10 +117,15 @@ const Map = props => {
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <div style={style}>
-            <p>Region: {hovered && <code>{hovered}</code>}</p>
-            <p>Devices: {count && <code>{count}</code>}</p>
-            <hr />
-            <VectorMap {...italyJSON} layerProps={events} />
+          <Row>
+            <Col span={12}>
+              <p>Region: {hovered && <code>{hovered}</code>}</p>
+            </Col>
+            <Col span={12}>
+              <p>Devices: {count && <code>{count}</code>}</p>
+            </Col>
+          </Row>
+          <VectorMap {...italyJSON} layerProps={events} />
           </div>
       }
 

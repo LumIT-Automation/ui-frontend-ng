@@ -244,6 +244,25 @@ const fortinetdbSlice = createSlice({
         state.eolMesesError = action.payload
       },
 
+      serviziosLoading: (state, action) => {
+        state.serviziosLoading = action.payload
+      },
+      servizios: (state, action) => {
+        state.servizios = action.payload
+      },
+      serviziosError: (state, action) => {
+        state.serviziosError = action.payload
+      },
+      servizio: (state, action) => {
+        state.servizio = action.payload
+      },
+      servizioLoading: (state, action) => {
+        state.servizioLoading = action.payload
+      },
+      servizioError: (state, action) => {
+        state.servizioError = action.payload
+      },
+
       genericError: (state, action) => {
         state.genericError = action.payload
       },
@@ -353,6 +372,13 @@ export const {
   eolMeses,
   eolMesesLoading,
   eolMesesError,
+
+  servizios,
+  serviziosLoading,
+  serviziosError,
+  servizio,
+  servizioLoading,
+  servizioError,
 
   genericError,
 

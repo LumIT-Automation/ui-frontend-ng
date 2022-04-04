@@ -8,14 +8,19 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  fieldError,
-  valueError
+  servizios,
+  serviziosLoading,
+  serviziosError,
+  servizio,
+  servizioLoading,
+  servizioError,
 } from '../store'
 
-import List from '../devices/list'
+import List from '../projects/list'
 
-import { Modal, Spin } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import { Modal, Spin, Table, Input, Button, Space } from 'antd';
+import Highlighter from 'react-highlight-words'
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
@@ -25,12 +30,13 @@ class Servizio extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-
     };
   }
 
   componentDidMount() {
-    this.fetchField()
+    if (!this.props.servizios) {
+      this.serviziosGet()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,39 +44,124 @@ class Servizio extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
   }
 
   componentWillUnmount() {
   }
 
-  fetchField = async () => {
-    this.setState({fieldLoading: true})
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({ closeDropdown: false });
+              this.setState({
+                searchText: selectedKeys[0],
+                searchedColumn: dataIndex,
+              });
+            }}
+          >
+            Filter
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) =>
+      record[dataIndex]
+        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        : '',
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
+    },
+    render: text =>
+      this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
+
+  handleReset = clearFilters => {
+    clearFilters();
+    this.setState({ searchText: '' });
+  };
+
+  handleServizioGet = async name => {
+    await this.props.dispatch(servizio(name.target.innerText))
+    await this.setState({visible: true})
+    await this.servizioGet()
+  }
+
+  serviziosGet = async () => {
+    this.props.dispatch(serviziosLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({field: resp.data.items})
+        this.props.dispatch(servizios(resp.data.items))
       },
       error => {
-        this.props.dispatch(fieldError(error))
+        this.props.dispatch(serviziosError(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fieldValues=SERVIZIO`, this.props.token)
-    this.setState({fieldLoading: false})
+    this.props.dispatch(serviziosLoading(false))
   }
 
-  fetchValue = async () => {
-    this.setState({valueLoading: true})
+  servizioGet = async () => {
+    this.props.dispatch(servizioLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({projects: resp.data.items})
       },
       error => {
-        this.props.dispatch(valueError(error))
+        this.props.dispatch(servizioError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/?fby=SERVIZIO&fval=${this.state.value}`, this.props.token)
-    this.setState({valueLoading: false})
+    await rest.doXHR(`fortinetdb/projects/?fby=SERVIZIO&fval=${this.props.servizio}`, this.props.token)
+    this.props.dispatch(servizioLoading(false))
   }
 
   hide = () => {
@@ -78,50 +169,55 @@ class Servizio extends React.Component {
   }
 
   render() {
+
+    const columns = [
+      {
+        title: "SERVIZIO",
+        align: "center",
+        width: 200,
+        dataIndex: "SERVIZIO",
+        key: "SERVIZIO",
+        render: (name, obj) => <p
+          style={{color: 'blue'}}
+          onClick={name => this.handleServizioGet(name)}
+          >
+            {name}
+          </p>,
+      },
+      {
+        title: "COUNT",
+        align: "center",
+        width: 200,
+        dataIndex: "COUNT",
+        key: "COUNT",
+        ...this.getColumnSearchProps("COUNT")
+      }
+    ]
+
+    let randomKey = () => {
+      return Math.random().toString()
+    }
+
     return (
       <React.Fragment>
-        { this.state.fieldLoading ?
+        { this.props.serviziosLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
-          <svg viewBox="0 0 300 300">
-            <VictoryPie
-              colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
-              events={[{
-                target: "data",
-                eventHandlers: {
-                  onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.SERVIZIO}, () => this.fetchValue())
-                  },
-                  onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.SERVIZIO, color: n.style.fill})
-                  },
-                  onMouseLeave: (e, n) => {
-                    this.setState({name: '', color: ''})
-                  }
-                }
-              }]}
-              standalone={false}
-              width={300} height={300}
-              data={this.state.field}
-              x="Servizio"
-              y="COUNT"
-              innerRadius={0} radius={80}
-              labels={({ datum }) => datum.COUNT}
+            <Table
+              columns={columns}
+              dataSource={this.props.servizios}
+              scroll={{ x: 'auto', y: 'auto'}}
+              bordered
+              rowKey={randomKey}
+              pagination={{ pageSize: 10 }}
+              style={{marginBottom: 10}}
             />
-            <VictoryLabel
-              textAnchor="start"
-              x={80}
-              y={280}
-              text={this.state.name}
-              style={{ fill: this.state.color }}
-            />
-          </svg>
 
           { this.state.visible ?
             <React.Fragment>
               <Modal
-                title={<p style={{textAlign: 'center'}}>{this.state.value}</p>}
+                title={<p style={{textAlign: 'center'}}>{this.props.servizio}</p>}
                 centered
                 destroyOnClose={true}
                 visible={this.state.visible}
@@ -130,11 +226,11 @@ class Servizio extends React.Component {
                 onCancel={this.hide}
                 width={1500}
               >
-                { this.state.valueLoading ?
+                { this.props.servizioLoading ?
                   <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                 :
                   <React.Fragment>
-                    { this.state.field ?
+                    { this.props.servizio ?
                       <List height={550} pagination={5} filteredProjects={this.state.projects}/>
                     :
                       null
@@ -142,8 +238,8 @@ class Servizio extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'Servizio'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'Servizio'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              { this.props.serviziosError ? <Error component={'SERVIZIO'} error={[this.props.serviziosError]} visible={true} type={'serviziosError'} /> : null }
+              { this.props.servizioError ? <Error component={'SERVIZIO'} error={[this.props.servizioError]} visible={true} type={'servizioError'} /> : null }
             </React.Fragment>
           :
             null
@@ -161,6 +257,12 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  fieldError: state.fortinetdb.fieldError,
-  valueError: state.fortinetdb.valueError,
+  servizios: state.fortinetdb.servizios,
+  serviziosLoading: state.fortinetdb.serviziosLoading,
+  serviziosError: state.fortinetdb.serviziosError,
+
+  servizio: state.fortinetdb.servizio,
+  servizioLoading: state.fortinetdb.servizioLoading,
+  servizioError: state.fortinetdb.servizioError,
+
 }))(Servizio);
