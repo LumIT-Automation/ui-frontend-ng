@@ -83,10 +83,15 @@ class AttivazioneMese extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Mese: {this.state.attivazioneMese}</p>
-            </Row>
-            <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
+              <Col span={8}>
+                <p>Anno: {this.props.attivazioneAnno}</p>
+              </Col>
+              <Col span={8}>
+                <p>Mese: {this.state.attivazioneMese}</p>
+              </Col>
+              <Col span={8}>
+                <p>Count: {this.state.count}</p>
+              </Col>
             </Row>
             <Row>
               <VictoryChart

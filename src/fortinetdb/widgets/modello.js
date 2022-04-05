@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
+import ColorScale from '../../_helpers/colorScale'
 import Error from '../error'
 
 import {
@@ -116,12 +117,17 @@ class Modello extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Model: {this.state.name}</p>
+              <Col span={19}>
+                <p>Model: {this.state.name}</p>
+              </Col>
+              <Col span={5}>
+                <p>Count: {this.state.count}</p>
+              </Col>
             </Row>
             <Row>
               <svg viewBox="0 0 300 300">
                 <VictoryPie
-                  colorScale={["tomato", "orange", "gold", "cyan", "navy", "violet" ]}
+                  colorScale={ColorScale}
                   events={[{
                     target: "data",
                     eventHandlers: {
@@ -129,10 +135,10 @@ class Modello extends React.Component {
                         this.setState({visible: true, modello: n.datum.MODELLO}, () => this.modelloGet())
                       },
                       onMouseOver: (e, n) => {
-                        this.setState({name: n.datum.MODELLO, color: n.style.fill})
+                        this.setState({name: n.datum.MODELLO, color: n.style.fill, count: n.datum.COUNT})
                       },
                       onMouseLeave: (e, n) => {
-                        this.setState({name: '', color: ''})
+                        this.setState({name: '', color: '', count: ''})
                       }
                     }
                   }]}
@@ -142,7 +148,7 @@ class Modello extends React.Component {
                   x="MODELLO"
                   y="COUNT"
                   innerRadius={0} radius={80}
-                  labels={({ datum }) => datum.COUNT}
+                  labels={({ datum }) => null}
                 />
                 <VictoryLabel
                   textAnchor="start"

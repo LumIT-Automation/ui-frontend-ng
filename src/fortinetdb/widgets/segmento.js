@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
+import ColorScale from '../../_helpers/colorScale'
 import Error from '../error'
 
 import {
@@ -12,9 +13,9 @@ import {
   valueError
 } from '../store'
 
-import List from '../devices/list'
+import List from '../projects/list'
 
-import { Modal, Spin } from 'antd'
+import { Modal, Spin, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -84,39 +85,49 @@ class Segmento extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
           <React.Fragment>
-          <svg viewBox="0 0 300 300">
-            <VictoryPie
-              colorScale={["tomato", "orange", "gold", "cyan", "navy" ]}
-              events={[{
-                target: "data",
-                eventHandlers: {
-                  onClick: (e, n) => {
-                    this.setState({visible: true, value: n.datum.SEGMENTO}, () => this.fetchValue())
-                  },
-                  onMouseOver: (e, n) => {
-                    this.setState({name: n.datum.SEGMENTO, color: n.style.fill})
-                  },
-                  onMouseLeave: (e, n) => {
-                    this.setState({name: '', color: ''})
-                  }
-                }
-              }]}
-              standalone={false}
-              width={300} height={300}
-              data={this.state.field}
-              x="Segmento"
-              y="COUNT"
-              innerRadius={0} radius={80}
-              labels={({ datum }) => datum.COUNT}
-            />
-            <VictoryLabel
-              textAnchor="start"
-              x={80}
-              y={280}
-              text={this.state.name}
-              style={{ fill: this.state.color }}
-            />
-          </svg>
+            <Row>
+              <Col span={19}>
+                <p>Segmento: {this.state.name}</p>
+              </Col>
+              <Col span={5}>
+                <p>Count: {this.state.count}</p>
+              </Col>
+            </Row>
+            <Row>
+              <svg viewBox="0 0 300 300">
+                <VictoryPie
+                  colorScale={ColorScale}
+                  events={[{
+                    target: "data",
+                    eventHandlers: {
+                      onClick: (e, n) => {
+                        this.setState({visible: true, value: n.datum.SEGMENTO}, () => this.fetchValue())
+                      },
+                      onMouseOver: (e, n) => {
+                        this.setState({name: n.datum.SEGMENTO, color: n.style.fill, count: n.datum.COUNT})
+                      },
+                      onMouseLeave: (e, n) => {
+                        this.setState({name: '', color: '', count: ''})
+                      }
+                    }
+                  }]}
+                  standalone={false}
+                  width={300} height={300}
+                  data={this.state.field}
+                  x="Segmento"
+                  y="COUNT"
+                  innerRadius={0} radius={80}
+                  labels={({ datum }) => null}
+                />
+                <VictoryLabel
+                  textAnchor="start"
+                  x={80}
+                  y={280}
+                  text={this.state.name}
+                  style={{ fill: this.state.color }}
+                />
+              </svg>
+            </Row>
 
           { this.state.visible ?
             <React.Fragment>

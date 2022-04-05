@@ -101,10 +101,12 @@ class AttivazioneAnno extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Attivazione Anno: {this.state.attivazioneAnno}</p>
-            </Row>
-            <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
+              <Col span={12}>
+                <p>Anno: {this.state.attivazioneAnno}</p>
+              </Col>
+              <Col span={12}>
+                <p>Count: {this.state.count}</p>
+              </Col>
             </Row>
             <Row>
               <VictoryChart

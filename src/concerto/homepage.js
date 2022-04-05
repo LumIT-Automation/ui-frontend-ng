@@ -5,23 +5,16 @@ import { Card, Row, Col, Divider } from 'antd'
 
 //import List from './list'
 import Selector from '../fortinetdb/widgets/selector'
-import ModelSelector from '../fortinetdb/widgets/modelSelector'
-import Italia from '../fortinetdb/widgets/italia'
-
-import Servizio from '../fortinetdb/widgets/servizio'
-import Segmento from '../fortinetdb/widgets/segmento'
-
-import Firmware from '../fortinetdb/widgets/firmware'
 import Modello from '../fortinetdb/widgets/modello'
+import Firmware from '../fortinetdb/widgets/firmware'
 import BackupStatus from '../fortinetdb/widgets/backupStatus'
-import EosFirmware from '../fortinetdb/widgets/eosFirmware'
-import EosHardware from '../fortinetdb/widgets/eosHardware'
-
+import Italia from '../fortinetdb/widgets/italia'
 import AttivazioneAnno from '../fortinetdb/widgets/attivazioneAnno'
 import AttivazioneMese from '../fortinetdb/widgets/attivazioneMese'
-
 import EolAnno from '../fortinetdb/widgets/eolAnno'
 import EolMese from '../fortinetdb/widgets/eolMese'
+import Servizio from '../fortinetdb/widgets/servizio'
+import Segmento from '../fortinetdb/widgets/segmento'
 
 
 
@@ -30,9 +23,7 @@ class Homepage extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      searchText: '',
-      searchedColumn: '',
-      error: null,
+
     };
   }
 

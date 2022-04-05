@@ -101,10 +101,12 @@ class EolAnno extends React.Component {
         :
           <React.Fragment>
             <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Eol Anno: {this.state.eolAnno}</p>
-            </Row>
-            <Row>
-              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Count: {this.state.count}</p>
+              <Col span={12}>
+                <p>Anno: {this.state.eolAnno}</p>
+              </Col>
+              <Col span={12}>
+                <p>Count: {this.state.count}</p>
+              </Col>
             </Row>
             <Row>
               <VictoryChart
