@@ -32,6 +32,9 @@ import {
   backupStatussError,
   backupStatusError,
 
+  regionesError,
+  regioneError,
+
   attivazioneAnnosError,
   attivazioneMesesError,
 
@@ -138,11 +141,18 @@ class Error extends Component {
           this.props.dispatch(firmwaresError(null))
           break;
 
+        case 'backupStatussError':
+          this.props.dispatch(backupStatussError(null))
+          break;
         case 'backupStatusError':
           this.props.dispatch(backupStatusError(null))
           break;
-        case 'backupStatussError':
-          this.props.dispatch(backupStatussError(null))
+
+        case 'regionesError':
+          this.props.dispatch(regionesError(null))
+          break;
+        case 'regioneError':
+          this.props.dispatch(regioneError(null))
           break;
 
         case 'attivazioneAnnosError':

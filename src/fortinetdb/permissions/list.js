@@ -1,14 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import { Table, Input, Button, Space } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined } from '@ant-design/icons'
 
 import RolesDescription from './rolesDescription'
-import Modify from './modify'
-import Delete from './delete'
-
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
 
 
 
@@ -62,7 +59,19 @@ class List extends React.Component {
           <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
-
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              confirm({ closeDropdown: false });
+              this.setState({
+                searchText: selectedKeys[0],
+                searchedColumn: dataIndex,
+              });
+            }}
+          >
+            Filter
+          </Button>
         </Space>
       </div>
     ),
@@ -91,7 +100,6 @@ class List extends React.Component {
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
-    console.log(confirm())
     this.setState({
       searchText: selectedKeys[0],
       searchedColumn: dataIndex,
@@ -104,10 +112,8 @@ class List extends React.Component {
   };
 
 
-
   render() {
     console.log(this.props.permissions)
-    //console.log(this.state.searchText)
     const columns = [
       {
         title: 'AD group name',
@@ -124,63 +130,12 @@ class List extends React.Component {
         ...this.getColumnSearchProps('identity_group_identifier'),
       },
       {
-        title: 'Asset',
-        align: 'center',
-        dataIndex: ['asset', 'fqdn' ],
-        key: 'fqdn',
-        ...this.getColumnSearchProps(['asset', 'fqdn' ]),
-      },
-      {
-        title: 'Address',
-        align: 'center',
-        dataIndex: ['asset', 'address' ],
-        key: 'address',
-        ...this.getColumnSearchProps(['asset', 'address' ]),
-      },
-      {
-        title: 'Network',
-        align: 'center',
-        dataIndex: ['network', 'name' ],
-        key: 'network',
-        ...this.getColumnSearchProps(['network', 'name' ]),
-      },
-      {
         title: <RolesDescription/>,
         align: 'center',
         dataIndex: 'role',
         key: 'role',
         ...this.getColumnSearchProps('role'),
 
-      },
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
       }
     ];
 
@@ -189,20 +144,20 @@ class List extends React.Component {
     }
 
     return (
-        <Table
-          columns={columns}
-          dataSource={this.props.permissions}
-          bordered
-          rowKey={randomKey}
-          scroll={{x: 'auto'}}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
+      <Table
+        columns={columns}
+        dataSource={this.props.permissions}
+        bordered
+        rowKey={randomKey}
+        scroll={{x: 'auto'}}
+        pagination={{ pageSize: 10 }}
+        style={{marginBottom: 10}}
+      />
     )
   }
 }
 
 export default connect((state) => ({
-  permissions: state.infoblox.permissions,
-  authorizations: state.authorizations.infoblox
+  authorizations: state.authorizations.fortinetdb,
+  permissions: state.fortinetdb.permissions
 }))(List);

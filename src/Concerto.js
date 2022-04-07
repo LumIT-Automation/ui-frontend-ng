@@ -165,6 +165,7 @@ class Concerto extends Component {
 
 
   render() {
+    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
@@ -256,7 +257,7 @@ export default connect((state) => ({
 
   authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsFortinetDb: state.authorizations.authorizationsFortinetDb,
+  authorizationsFortinetdb: state.authorizations.fortinetdb,
 
   authorizationsError: state.authorizations.authorizationsError,
   configurationF5Error: state.f5.configurationError,

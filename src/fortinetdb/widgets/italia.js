@@ -7,8 +7,8 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  fieldError,
-  valueError
+  regionesError,
+  regioneError
 } from '../store'
 
 import List from '../devices/list'
@@ -21,7 +21,6 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const Map = props => {
 
   const style = {
-    margin: '1rem auto',
     fill: '#a82b2b',
     outline: 'none',
   }
@@ -29,35 +28,35 @@ const Map = props => {
   const [hovered, setHovered] = useState('None')
   const [count, setCount] = useState(0)
   const [visible, setVisible] = useState(false)
-  const [fieldLoading, setFieldLoading] = useState(false)
-  const [valueLoading, setValueLoading] = useState(false)
-  const [value, setValue] = useState('None')
-  const [field, setField] = useState([])
+  const [regionesLoading, setRegionesLoading] = useState(false)
+  const [regioneLoading, setRegioneLoading] = useState(false)
+  const [regione, setRegione] = useState('None')
+  const [regiones, setRegiones] = useState([])
   const [values, setValues] = useState()
 
 
-  const fetchField = async () => {
-    setFieldLoading(true)
+  const regionesGet = async () => {
+    setRegionesLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        setField(resp.data.items)
+        setRegiones(resp.data.items)
       },
       error => {
-        props.dispatch(fieldError(error))
+        props.dispatch(regionesError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=regione`, props.token)
-    setFieldLoading(false)
+    setRegionesLoading(false)
   }
 
   useEffect(() => {
-    fetchField()
+    regionesGet(), setColors()
   }, [])
 
   const setRegionCount = region => {
     setCount(0)
-    field.forEach( r => {
+    regiones.forEach( r => {
       if (r.regione === region) {
         if (r.COUNT) {
           setCount(r.COUNT)
@@ -69,26 +68,29 @@ const Map = props => {
     })
   }
 
-  //fetchField()
+  //regionesGet()
 
-  const fetchValues = async value => {
-    setValueLoading(true)
+  const fetchValues = async regione => {
+    setRegioneLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        setValues(resp.data.items)
+        setRegiones(resp.data.items)
       },
       error => {
-        props.dispatch(valueError(error))
+        props.dispatch(regioneError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${value}`, props.token)
-    setValueLoading(false)
+    await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${regione}`, props.token)
+    setRegioneLoading(false)
+  }
+
+  const setColors = () => {
   }
 
   const hide = () => {
     setVisible(false)
-    setValue()
+    setRegione()
     setValues([])
   }
 
@@ -105,7 +107,7 @@ const Map = props => {
     },
     onClick: ({ target }) => {
       setVisible(true)
-      setValue(target.attributes.name.value)
+      setRegione(target.attributes.name.value)
       fetchValues(target.attributes.name.value)
     }
   };
@@ -113,15 +115,15 @@ const Map = props => {
 
   return (
     <div style={style}>
-      { fieldLoading ?
+      { regionesLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
-          <div style={style}>
+          <div>
           <Row>
-            <Col span={12}>
+            <Col span={17}>
               <p>Region: {hovered && <code>{hovered}</code>}</p>
             </Col>
-            <Col span={12}>
+            <Col span={7}>
               <p>Devices: {count && <code>{count}</code>}</p>
             </Col>
           </Row>
@@ -130,7 +132,7 @@ const Map = props => {
       }
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>{value}</p>}
+          title={<p style={{textAlign: 'center'}}>{regione}</p>}
           centered
           destroyOnClose={true}
           visible={visible}
@@ -139,7 +141,7 @@ const Map = props => {
           onCancel={hide}
           width={1500}
         >
-          { valueLoading ?
+          { regioneLoading ?
              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
           :
             <React.Fragment>
@@ -153,8 +155,8 @@ const Map = props => {
         </Modal>
 
 
-      { props.fieldError ? <Error component={'homepage'} error={[props.fieldError]} visible={true} type={'fieldError'} /> : null }
-      { props.valueError ? <Error component={'homepage'} error={[props.valueError]} visible={true} type={'valueError'} /> : null }
+      { props.regionesError ? <Error component={'Italia'} error={[props.regionesError]} visible={true} type={'regionesError'} /> : null }
+      { props.regioneError ? <Error component={'Italia'} error={[props.regioneError]} visible={true} type={'regioneError'} /> : null }
 
     </div>
   );
@@ -165,6 +167,6 @@ const Map = props => {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  fieldError: state.fortinetdb.fieldError,
-  valueError: state.fortinetdb.valueError,
+  regionesError: state.fortinetdb.regionesError,
+  regioneError: state.fortinetdb.regioneError,
 }))(Map);

@@ -8,9 +8,11 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import SuperAdmin from './superAdmin/manager'
 import F5 from '../f5/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
+import Fortinetdb from '../fortinetdb/permissions/manager'
 
 import { permissionsFetch as f5PermissionsFetch } from '../f5/store'
 import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store'
+import { permissionsFetch as fortinetdbPermissionsFetch } from '../fortinetdb/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -77,6 +79,20 @@ class Permissions extends React.Component {
               :
               null
             }
+
+
+              <React.Fragment>
+                {this.props.fortinetdbLoading ?
+                  <TabPane key="Fortinetdb" tab="Fortinetdb">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="Fortinetdb" tab=<span>Fortinetdb <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(fortinetdbPermissionsFetch(true))}/></span>>
+                    <Fortinetdb/>
+                  </TabPane>
+                }
+              </React.Fragment>
+
           </Tabs>
         </Space>
 
@@ -89,7 +105,9 @@ class Permissions extends React.Component {
 export default connect((state) => ({
   f5Auth: state.authorizations.f5,
   infobloxAuth: state.authorizations.infoblox,
+  fortinetdbAuth: state.authorizations.fortinetdb,
 
   infobloxLoading: state.infoblox.permissionsLoading,
+  fortinetdbLoading: state.fortinetdb.permissionsLoading,
   f5Loading: state.f5.permissionsLoading
 }))(Permissions);

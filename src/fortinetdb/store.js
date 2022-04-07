@@ -9,7 +9,7 @@ const fortinetdbSlice = createSlice({
         state.permissionsLoading = action.payload
       },
       permissions: (state, action) => {
-        state.permissions = action.payload
+        state.permissions = action.payload.data.items
       },
       permissionsFetch: (state, action) => {
         state.permissionsFetch = action.payload
@@ -197,6 +197,22 @@ const fortinetdbSlice = createSlice({
         state.backupStatusError = action.payload
       },
 
+      regionesLoading: (state, action) => {
+        state.regionesLoading = action.payload
+      },
+      regiones: (state, action) => {
+        state.regiones = action.payload
+      },
+      regionesError: (state, action) => {
+        state.regionesError = action.payload
+      },
+      regione: (state, action) => {
+        state.regione = action.payload
+      },
+      regioneError: (state, action) => {
+        state.regioneError = action.payload
+      },
+
       attivazioneAnnosLoading: (state, action) => {
         state.attivazioneAnnosLoading = action.payload
       },
@@ -352,6 +368,12 @@ export const {
   backupStatussError,
   backupStatus,
   backupStatusError,
+
+  regiones,
+  regionesLoading,
+  regionesError,
+  regione,
+  regioneError,
 
   attivazioneAnnos,
   attivazioneAnnosLoading,

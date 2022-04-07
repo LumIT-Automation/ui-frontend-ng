@@ -119,13 +119,6 @@ class Segmento extends React.Component {
                   innerRadius={0} radius={80}
                   labels={({ datum }) => null}
                 />
-                <VictoryLabel
-                  textAnchor="start"
-                  x={80}
-                  y={280}
-                  text={this.state.name}
-                  style={{ fill: this.state.color }}
-                />
               </svg>
             </Row>
 
