@@ -42,6 +42,8 @@ class Permissions extends React.Component {
 
 
   render() {
+    console.log(this.props.f5Auth)
+    console.log(this.props.fortinetdbAuth)
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -80,7 +82,7 @@ class Permissions extends React.Component {
               null
             }
 
-
+            { this.props.fortinetdbAuth && (this.props.fortinetdbAuth.permission_identityGroups_get || this.props.fortinetdbAuth[0] === 'any') ?
               <React.Fragment>
                 {this.props.fortinetdbLoading ?
                   <TabPane key="Fortinetdb" tab="Fortinetdb">
@@ -92,7 +94,9 @@ class Permissions extends React.Component {
                   </TabPane>
                 }
               </React.Fragment>
-
+              :
+              null
+            }
           </Tabs>
         </Space>
 

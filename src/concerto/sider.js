@@ -84,6 +84,7 @@ class CustomSider extends Component {
   }
 
   render(){
+    console.log(this.props.authorizationsFortinetdb)
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
@@ -105,13 +106,15 @@ class CustomSider extends Component {
 
 
             <React.Fragment>
-            {
+            { (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb[0] === 'any') ?
               <React.Fragment>
               <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECT</Link></Menu.Item>
               <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICE</Link></Menu.Item>
               <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOS</Link></Menu.Item>
               <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
               </React.Fragment>
+            :
+              null
             }
             </React.Fragment>
 
@@ -202,5 +205,5 @@ export default connect((state) => ({
   authorizations: state.authorizations,
   authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsFortinetDb: state.authorizations.fortinetdb,
+  authorizationsFortinetdb: state.authorizations.fortinetdb,
 }))(CustomSider);
