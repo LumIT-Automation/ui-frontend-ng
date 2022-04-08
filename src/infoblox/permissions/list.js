@@ -91,7 +91,6 @@ class List extends React.Component {
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
-    console.log(confirm())
     this.setState({
       searchText: selectedKeys[0],
       searchedColumn: dataIndex,

@@ -78,17 +78,26 @@ class List extends React.Component {
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
+    onFilter: (value, record) => {
+      if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+        return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else if ( Array.isArray(dataIndex) ) {
+        let r = record[dataIndex[0]]
+        return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else {
+        return ''
+      }
+
+    },
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
         setTimeout(() => this.searchInput.select(), 100);
       }
     },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[this.state.searchText]}
@@ -97,7 +106,8 @@ class List extends React.Component {
         />
       ) : (
         text
-      ),
+      )
+    }
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {

@@ -18,6 +18,13 @@ const fortinetdbSlice = createSlice({
         state.permissionsError = action.payload
       },
 
+      rolesError: ( state, action) => {
+        state.rolesError = action.payload
+      },
+      newIdentityGroupAddError: ( state, action) => {
+        state.newIdentityGroupAddError = action.payload
+      },
+
       identityGroupsLoading: (state, action) => {
         state.identityGroupsLoading = action.payload
       },
@@ -299,6 +306,9 @@ export const {
   permissions,
   permissionsFetch,
   permissionsError,
+
+  rolesError,
+  newIdentityGroupAddError,
 
   identityGroupsLoading,
   identityGroups,

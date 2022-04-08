@@ -1,9 +1,29 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Component } from "react";
-import { logout } from '../_store/store.authentication'
+import { Component } from 'react'
+
+import { Modal, Table, Result } from 'antd'
 
 import {
+  logout
+} from '../_store/store.authentication'
+
+import {
+  authorizationsError
+} from '../_store/store.authorizations'
+
+import {
+  permissionsError,
+
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
+
+  rolesError,
+
+  newIdentityGroupAddError,
+
+  identityGroupsError,
 
   projectsError,
   devicesError,
@@ -82,6 +102,32 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
+        case 'authorizationsError':
+          this.props.dispatch(authorizationsError(null))
+          break;
+
+        case 'permissionsError':
+          this.props.dispatch(permissionsError(null))
+          break;
+        case 'permissionAddError':
+          this.props.dispatch(permissionAddError(null))
+          break;
+        case 'permissionModifyError':
+          this.props.dispatch(permissionModifyError(null))
+          break;
+        case 'permissionDeleteError':
+          this.props.dispatch(permissionDeleteError(null))
+          break;
+        case 'newIdentityGroupAddError':
+          this.props.dispatch(newIdentityGroupAddError(null))
+          break;
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
+          break;
+        case 'identityGroupsError':
+          this.props.dispatch(identityGroupsError(null))
+          break;
+
         case 'projectsError':
           this.props.dispatch(projectsError(null))
           break;
@@ -91,8 +137,6 @@ class Error extends Component {
         case 'ddossesError':
           this.props.dispatch(ddossesError(null))
           break;
-
-
         case 'projectError':
           this.props.dispatch(projectError(null))
           break;
@@ -102,28 +146,24 @@ class Error extends Component {
         case 'ddosError':
           this.props.dispatch(ddosError(null))
           break;
-
         case 'fieldError':
           this.props.dispatch(fieldError(null))
           break;
         case 'valueError':
           this.props.dispatch(valueError(null))
           break;
-
         case 'categoriasError':
           this.props.dispatch(categoriasError(null))
           break;
         case 'categoriaError':
           this.props.dispatch(categoriaError(null))
           break;
-
         case 'vendorError':
           this.props.dispatch(vendorError(null))
           break;
         case 'vendorsError':
           this.props.dispatch(vendorsError(null))
           break;
-
         case 'modellosError':
           this.props.dispatch(modellosError(null))
           break;
@@ -133,42 +173,36 @@ class Error extends Component {
         case 'modelloError':
           this.props.dispatch(modelloError(null))
           break;
-
         case 'firmwareError':
           this.props.dispatch(firmwareError(null))
           break;
         case 'firmwaresError':
           this.props.dispatch(firmwaresError(null))
           break;
-
         case 'backupStatussError':
           this.props.dispatch(backupStatussError(null))
           break;
         case 'backupStatusError':
           this.props.dispatch(backupStatusError(null))
           break;
-
         case 'regionesError':
           this.props.dispatch(regionesError(null))
           break;
         case 'regioneError':
           this.props.dispatch(regioneError(null))
           break;
-
         case 'attivazioneAnnosError':
           this.props.dispatch(attivazioneAnnosError(null))
           break;
         case 'attivazioneMesesError':
           this.props.dispatch(attivazioneMesesError(null))
           break;
-
         case 'eolAnnosError':
           this.props.dispatch(eolAnnosError(null))
           break;
         case 'eolMesesError':
           this.props.dispatch(eolMesesError(null))
           break;
-
         case 'servizioError':
           this.props.dispatch(servizioError(null))
           break;
