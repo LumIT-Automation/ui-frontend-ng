@@ -83,7 +83,7 @@ class BackupStatus extends React.Component {
         this.props.dispatch(backupStatusError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.backupStatus}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.backupStatus}&fby=MODELLO&fval=${this.props.modello}`, this.props.token)
     this.setState({backupStatusLoading: false})
   }
 

@@ -83,7 +83,7 @@ class Firmware extends React.Component {
         this.props.dispatch(firmwareError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.firmware}`, this.props.token)
+    await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.firmware}&fby=MODELLO&fval=${this.props.modello}`, this.props.token)
     this.setState({firmwareLoading: false})
   }
 
@@ -92,7 +92,7 @@ class Firmware extends React.Component {
   }
 
   render() {
-
+    console.log(this.props.firmwares)
     return (
       <React.Fragment>
         { this.props.firmwaresLoading ?
