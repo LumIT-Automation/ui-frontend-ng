@@ -82,7 +82,7 @@ class Permissions extends React.Component {
               null
             }
 
-            { this.props.fortinetdbAuth && (this.props.fortinetdbAuth.permission_identityGroups_get || this.props.fortinetdbAuth[0] === 'any') ?
+            { this.props.fortinetdbAuth && (this.props.fortinetdbAuth.permission_identityGroups_get || this.props.fortinetdbAuth.any) ?
               <React.Fragment>
                 {this.props.fortinetdbLoading ?
                   <TabPane key="Fortinetdb" tab="Fortinetdb">
