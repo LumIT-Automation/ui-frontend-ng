@@ -119,7 +119,7 @@ class EolAnno extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (event, data) => {
-                        this.props.dispatch(eolAnno(this.state.eolAnno)),
+                        this.props.dispatch(eolAnno(this.state.eolAnno))
                         this.eolMesesGet(data.datum.EOL_ANNO)
                       },
                       onMouseOver: (event, data) => {

@@ -51,7 +51,8 @@ const Map = props => {
   }
 
   useEffect(() => {
-    regionesGet(), setColors()
+    regionesGet()
+    setColors()
   }, [])
 
   const setRegionCount = region => {

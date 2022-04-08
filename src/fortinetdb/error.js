@@ -68,8 +68,6 @@ import {
 
 } from '../fortinetdb/store'
 
-import { Modal, Table, Result } from 'antd';
-
 //import notFound from './404.gif'
 //import tooMany from './429.gif'
 

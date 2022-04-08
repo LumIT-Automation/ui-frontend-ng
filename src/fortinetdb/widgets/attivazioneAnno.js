@@ -118,7 +118,7 @@ class AttivazioneAnno extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (event, data) => {
-                        this.props.dispatch(attivazioneAnno(this.state.attivazioneAnno)),
+                        this.props.dispatch(attivazioneAnno(this.state.attivazioneAnno))
                         this.attivazioneMesesGet(data.datum.ATTIVAZIONE_ANNO)
                       },
                       onMouseOver: (event, data) => {
