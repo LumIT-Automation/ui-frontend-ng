@@ -74,28 +74,29 @@ class Concerto extends Component {
 
 
   main = async () => {
-
-    this.props.dispatch(configurationF5Loading(true))
-    let confF5 = await this.configurationF5Get()
-    this.props.dispatch(configurationF5Loading(false))
-    if (confF5.status && confF5.status !== 200 ) {
-      this.props.dispatch(configurationF5Error(confF5))
-    }
-    else {
-      let configuration = JSON.parse(confF5.data.configuration)
-      if (Array.isArray(configuration)) {
-        this.props.dispatch(configurationF5( configuration ))
+    if (this.props.authorizationsF5) {
+      this.props.dispatch(configurationF5Loading(true))
+      let confF5 = await this.configurationF5Get()
+      this.props.dispatch(configurationF5Loading(false))
+      if (confF5.status && confF5.status !== 200 ) {
+        this.props.dispatch(configurationF5Error(confF5))
       }
       else {
-        let e = {
-          message: 'Configuration bad format',
-          reason: 'Configuration bad format',
-          status: 500,
-          type: 'basic',
-          url: 'https://10.0.111.10/backend/f5/configuration/global/'
+        let configuration = JSON.parse(confF5.data.configuration)
+        if (Array.isArray(configuration)) {
+          this.props.dispatch(configurationF5( configuration ))
         }
-        this.props.dispatch(configurationF5Error(e))
-        this.props.dispatch(configurationF5( [] ))
+        else {
+          let e = {
+            message: 'Configuration bad format',
+            reason: 'Configuration bad format',
+            status: 500,
+            type: 'basic',
+            url: 'https://10.0.111.10/backend/f5/configuration/global/'
+          }
+          this.props.dispatch(configurationF5Error(e))
+          this.props.dispatch(configurationF5( [] ))
+        }
       }
     }
 
