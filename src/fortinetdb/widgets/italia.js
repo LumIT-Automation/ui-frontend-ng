@@ -76,7 +76,7 @@ const Map = props => {
     let rest = new Rest(
       "GET",
       resp => {
-        setRegiones(resp.data.items)
+        setValues(resp.data.items)
       },
       error => {
         props.dispatch(regioneError(error))

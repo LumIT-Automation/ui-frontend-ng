@@ -105,18 +105,12 @@ class CustomSider extends Component {
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
           <React.Fragment>
-            { (this.props.authorizationsFortinetdb && (this.props.authorizationsFortinetdb.projects_get || this.props.authorizationsFortinetdb.any)) ?
+            { (this.props.authorizationsFortinetdb && (this.props.authorizationsFortinetdb.interface_tables_view || this.props.authorizationsFortinetdb.any)) ?
+              <React.Fragment>
                 <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECT</Link></Menu.Item>
-              :
-                null
-            }
-            { (this.props.authorizationsFortinetdb && (this.props.authorizationsFortinetdb.devices_get || this.props.authorizationsFortinetdb.any)) ?
                 <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICE</Link></Menu.Item>
-              :
-                null
-            }
-            { (this.props.authorizationsFortinetdb && (this.props.authorizationsFortinetdb.ddosses_get || this.props.authorizationsFortinetdb.any)) ?
                 <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOS</Link></Menu.Item>
+              </React.Fragment>
               :
                 null
             }
