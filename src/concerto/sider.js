@@ -175,8 +175,9 @@ class CustomSider extends Component {
 
 
 
-          { (this.props.authorizationsF5 && (this.props.authorizationsF5.permission_identityGroups_get || this.props.authorizationsF5.any)) ||
-            (this.props.authorizationsInfoblox && (this.props.authorizationsInfoblox.permission_identityGroups_get || this.props.authorizationsInfoblox.any)) ?
+          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
+            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+            (this.props.authorizationsFortinetdb && this.authorizators(this.props.authorizationsFortinetdb)) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
