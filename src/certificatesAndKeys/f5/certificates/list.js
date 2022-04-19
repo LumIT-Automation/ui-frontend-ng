@@ -63,27 +63,22 @@ class List extends React.Component {
           <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
         </Space>
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
+    onFilter: (value, record) => {
+      if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+        return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else if ( Array.isArray(dataIndex) ) {
+        let r = record[dataIndex[0]]
+        return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else {
+        return ''
+      }
+    },
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
         setTimeout(() => this.searchInput.select(), 100);
@@ -131,14 +126,14 @@ class List extends React.Component {
         align: 'center',
         dataIndex: ['apiRawValues','issuer'],
         key: 'issuer',
-        ...this.getColumnSearchProps('issuer'),
+        ...this.getColumnSearchProps(['apiRawValues','issuer']),
       },
       {
         title: 'EXPIRATION',
         align: 'center',
         dataIndex: ['apiRawValues','expiration'],
-        key: ['apiRawValues','expiration'],
-       ...this.getColumnSearchProps('expiration'),
+        key: 'expiration',
+       ...this.getColumnSearchProps(['apiRawValues','expiration']),
       },
       {
         title: 'Delete',
