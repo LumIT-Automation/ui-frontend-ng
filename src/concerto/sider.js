@@ -84,7 +84,7 @@ class CustomSider extends Component {
   }
 
   render(){
-    console.log(this.props.authorizationsFortinetdb)
+    //console.log(this.props.authorizationsFortinetdb)
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>

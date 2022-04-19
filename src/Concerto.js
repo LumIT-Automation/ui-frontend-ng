@@ -166,7 +166,6 @@ class Concerto extends Component {
 
 
   render() {
-    console.log(this.props.authorizations)
     const menu = (
       <Menu>
         <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>

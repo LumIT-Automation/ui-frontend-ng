@@ -16,6 +16,8 @@ import EolMese from '../fortinetdb/widgets/eolMese'
 import Servizio from '../fortinetdb/widgets/servizio'
 import Segmento from '../fortinetdb/widgets/segmento'
 
+import SearchRagioneSociale from '../fortinetdb/widgets/searchRagioneSociale'
+
 
 
 class Homepage extends React.Component {
@@ -43,7 +45,11 @@ class Homepage extends React.Component {
   render() {
     return (
       <React.Fragment>
-      {
+      { (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.interface_search_view ) ?                    
+        <React.Fragment>
+          <SearchRagioneSociale/>
+        </React.Fragment>
+      :
         <React.Fragment>
           <br/>
           <Divider orientation="left">Devices</Divider>

@@ -141,6 +141,8 @@ const fortinetdbSlice = createSlice({
         state.categoriaError = action.payload
       },
 
+
+
       vendorsLoading: (state, action) => {
         state.vendorsLoading = action.payload
       },
@@ -296,6 +298,22 @@ const fortinetdbSlice = createSlice({
         state.servizioError = action.payload
       },
 
+      ragioneSocialesLoading: (state, action) => {
+        state.ragioneSocialesLoading = action.payload
+      },
+      ragioneSociales: (state, action) => {
+        state.ragioneSociales = action.payload
+      },
+      ragioneSocialesError: (state, action) => {
+        state.ragioneSocialesError = action.payload
+      },
+      ragioneSociale: (state, action) => {
+        state.ragioneSociale = action.payload
+      },
+      ragioneSocialeError: (state, action) => {
+        state.ragioneSocialeError = action.payload
+      },
+
       genericError: (state, action) => {
         state.genericError = action.payload
       },
@@ -425,6 +443,12 @@ export const {
   servizio,
   servizioLoading,
   servizioError,
+
+  ragioneSociales,
+  ragioneSocialesLoading,
+  ragioneSocialesError,
+  ragioneSociale,
+  ragioneSocialeError,
 
   genericError,
 

@@ -64,6 +64,9 @@ import {
   serviziosError,
   servizioError,
 
+  ragioneSocialesError,
+  ragioneSocialeError,
+
   genericError
 
 } from '../fortinetdb/store'
@@ -206,6 +209,13 @@ class Error extends Component {
           break;
         case 'serviziosError':
           this.props.dispatch(serviziosError(null))
+          break;
+
+        case 'ragioneSocialesError':
+          this.props.dispatch(ragioneSocialesError(null))
+          break;
+        case 'ragioneSocialeError':
+          this.props.dispatch(ragioneSocialeError(null))
           break;
 
         default:
