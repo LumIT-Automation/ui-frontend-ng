@@ -10,6 +10,9 @@ if [ "$1" == "configure" ]; then
     # Build container image.
     buildah bud -t ui .
 
+    # Grab the host timezone.
+    timeZone=$(timedatectl show| awk -F'=' '/Timezone/ {print $2}')
+
     # First container run: associate name, bind ports, define init process, ...
     podman run --name ui -dt localhost/ui /sbin/init
 
@@ -18,6 +21,9 @@ if [ "$1" == "configure" ]; then
 
     systemctl start automation-interface-ui-container # (upon installation, container is already run, so this line is actually redundant).
     systemctl enable automation-interface-ui-container
+
+    printf "\n Set the timezone of the container to be the same as the host timezone...\n"
+    podman exec ui bash -c "timedatectl set-timezone $timeZone"
 
     # syslog-ng seems going into a catatonic state while updating a package: restarting the whole thing.
     if dpkg -l | grep automation-interface-log | grep -q ^ii; then
