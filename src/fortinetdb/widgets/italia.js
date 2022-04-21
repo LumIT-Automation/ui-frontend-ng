@@ -87,7 +87,7 @@ const Map = props => {
           regioni.push(regione)
         }
         else if (c > 500) {
-          regione.color = '#F1F1F1'
+          regione.color = '#3A0A0A'
           regioni.push(regione)
         }
     });
