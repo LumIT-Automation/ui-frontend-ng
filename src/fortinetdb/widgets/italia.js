@@ -22,7 +22,7 @@ const Map = props => {
 
   const style = {
     fill: '#a82b2b',
-    outline: 'none',
+    stroke: 'black',
   }
 
   const [hovered, setHovered] = useState('None')
@@ -87,7 +87,7 @@ const Map = props => {
           regioni.push(regione)
         }
         else if (c > 500) {
-          regione.color = '#3A0A0A'
+          regione.color = '#821212'
           regioni.push(regione)
         }
     });
@@ -165,7 +165,7 @@ const Map = props => {
 
 
   return (
-    <div >
+    <div style={style}>
       { regionesLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
