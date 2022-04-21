@@ -30,30 +30,83 @@ const Map = props => {
   const [visible, setVisible] = useState(false)
   const [regionesLoading, setRegionesLoading] = useState(false)
   const [regioneLoading, setRegioneLoading] = useState(false)
-  const [regione, setRegione] = useState('None')
   const [regiones, setRegiones] = useState([])
-  const [values, setValues] = useState()
+  const [regione, setRegione] = useState('None')
+  const [devices, setDevices] = useState()
+
+  useEffect(async() => {
+    console.log('effect 1')
+    setRegionesLoading(true)
+    let rs = await regionesGet()
+    if (rs.status && rs.status !== 200) {
+      props.dispatch(regionesError(rs))
+      setRegionesLoading(false)
+    }
+    else {
+      setColors(rs)
+    }
+  }, [])
+
 
 
   const regionesGet = async () => {
-    setRegionesLoading(true)
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        setRegiones(resp.data.items)
+        r = resp
+        //setRegiones(resp.data.items)
       },
       error => {
-        props.dispatch(regionesError(error))
+        r = error //props.dispatch(regionesError(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=regione`, props.token)
-    setRegionesLoading(false)
+    return r
   }
 
-  useEffect(() => {
-    regionesGet()
-    setColors()
-  }, [])
+  const setColors = (rs) => {
+    let regioni = []
+    rs.data.items.forEach((regione, i) => {
+      let r = regione.regione
+      let c = regione.COUNT
+        if (c <= 50) {
+          regione.color = '#FFCE03'
+          regioni.push(regione)
+        }
+        else if (c > 50 && c <= 100) {
+          regione.color = '#FD9A01'
+          regioni.push(regione)
+        }
+        else if (c > 100 && c <= 200) {
+          regione.color = '#FD6104'
+          regioni.push(regione)
+        }
+        else if (c > 200 && c <= 500) {
+          regione.color = '#F00505'
+          regioni.push(regione)
+        }
+        else if (c > 500) {
+          regione.color = '#F1F1F1'
+          regioni.push(regione)
+        }
+    });
+    console.log(regioni)
+    console.log(rs.data.items)
+    italyJSON.layers.forEach((item, i) => {
+      let l = regioni.find(element => {
+        return element.regione === item.name
+      });
+
+      if (l && l.color) {
+        item.fill = l.color
+      }
+
+    });
+    setRegiones(regioni)
+    setRegionesLoading(false)
+
+  }
 
   const setRegionCount = region => {
     setCount(0)
@@ -76,7 +129,7 @@ const Map = props => {
     let rest = new Rest(
       "GET",
       resp => {
-        setValues(resp.data.items)
+        setDevices(resp.data.items)
       },
       error => {
         props.dispatch(regioneError(error))
@@ -86,25 +139,22 @@ const Map = props => {
     setRegioneLoading(false)
   }
 
-  const setColors = () => {
-  }
-
   const hide = () => {
     setVisible(false)
     setRegione()
-    setValues([])
+    setDevices([])
   }
 
   const events = {
     onMouseEnter: ({ target }) => {
       setRegionCount(target.attributes.name.value)
       setHovered(target.attributes.name.value)
-      target.attributes.fill.value = 'yellow'
+      target.setAttribute('outline', 'yellow')
     },
     onMouseLeave: ({ target }) => {
       setRegionCount(target.attributes.name.value)
       setHovered(target.attributes.name.value)
-      target.attributes.fill.value = '#a82b2b'
+      //target.setAttribute('fill', '#a82b2b')
     },
     onClick: ({ target }) => {
       setVisible(true)
@@ -115,7 +165,7 @@ const Map = props => {
 
 
   return (
-    <div style={style}>
+    <div >
       { regionesLoading ?
           <Spin indicator={spinIcon} style={{margin: '45% 42%'}}/>
         :
@@ -146,8 +196,8 @@ const Map = props => {
              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
           :
             <React.Fragment>
-              { values ?
-                <List height={550} pagination={5} filteredDevices={values}/>
+              { devices ?
+                <List height={550} pagination={5} filteredDevices={devices}/>
               :
                 null
               }

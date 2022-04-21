@@ -92,7 +92,6 @@ class Firmware extends React.Component {
   }
 
   render() {
-    console.log(this.props.firmwares)
     return (
       <React.Fragment>
         { this.props.firmwaresLoading ?

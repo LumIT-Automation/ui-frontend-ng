@@ -117,7 +117,6 @@ class Selector extends React.Component {
   }
 
   render() {
-    console.log(this.props.modello)
     return (
       <Row>
         <Col offset={1} span={7}>
