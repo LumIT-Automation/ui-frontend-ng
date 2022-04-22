@@ -28,6 +28,8 @@ class Device extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
+
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -35,9 +37,13 @@ class Device extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update')
+    console.log(this.props.obj)
+    console.log(this.state.device)
   }
 
   componentWillUnmount() {
+    console.log('unmount')
   }
 
   details = () => {
@@ -182,6 +188,7 @@ class Device extends React.Component {
 
   render() {
 
+
     const columns = [
       {
         title: "SERIALE",
@@ -190,11 +197,6 @@ class Device extends React.Component {
         dataIndex: "SERIALE",
         key: "SERIALE",
         ...this.getColumnSearchProps('SERIALE'),
-        render: (name, obj)  => (
-          <Space size="small">
-            <Device name={name} obj={obj} />
-          </Space>
-        ),
       },
       {
         title: "MODELLO",
