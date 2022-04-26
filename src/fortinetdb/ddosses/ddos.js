@@ -125,7 +125,7 @@ class Ddos extends React.Component {
       "GET",
       resp => {
         let ddos = [resp.data]
-        this.setState({loading: false, ddos: ddos, extraData: resp.data.EXTRA_DATA})
+        this.setState({loading: false, ddos: ddos, extraData: resp.data.MO_EXTRA_DATA})
       },
       error => {
         this.props.dispatch(ddosError(error))
@@ -143,7 +143,7 @@ class Ddos extends React.Component {
     let b = {}
     if (this.state.extraData) {
       b.data = {
-        "EXTRA_DATA": this.state.extraData
+        "MO_EXTRA_DATA": this.state.extraData
       }
 
       this.setState({extraLoading: true})
@@ -167,6 +167,7 @@ class Ddos extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      extraData: null
     })
   }
 
@@ -241,8 +242,8 @@ class Ddos extends React.Component {
         title: "Extra Data",
         align: "center",
      		width: 300,
-        dataIndex: "EXTRA_DATA",
-        key: "EXTRA_DATA",
+        dataIndex: "MO_EXTRA_DATA",
+        key: "MO_EXTRA_DATA",
         render: (name, obj)  => (
           <React.Fragment>
           {this.state.extraLoading ?

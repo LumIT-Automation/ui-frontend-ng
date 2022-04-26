@@ -361,7 +361,8 @@ class Project extends React.Component {
             { this.props.projectError ? <Error component={'fortinetdb project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
             { this.props.devicesError ? <Error component={'fortinetdb project'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
             { this.props.ddossesError ? <Error component={'fortinetdb project'} error={[this.props.ddossesError]} visible={true} type={'ddossesError'} /> : null }
-
+            { this.props.deviceError ? <Error component={'fortinetdb device'} error={[this.props.deviceError]} visible={true} type={'deviceError'} /> : null }
+            { this.props.ddosError ? <Error component={'fortinetdb ddos'} error={[this.props.ddosError]} visible={true} type={'ddosError'} /> : null }
           </React.Fragment>
         :
           null
@@ -383,4 +384,7 @@ export default connect((state) => ({
   projectError: state.fortinetdb.projectError,
   devicesError: state.fortinetdb.devicesError,
   ddossesError: state.fortinetdb.ddossesError,
+
+  deviceError: state.fortinetdb.deviceError,
+  ddosError: state.fortinetdb.ddosError
 }))(Project);

@@ -168,6 +168,7 @@ class Device extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
+      extraData: null
     })
   }
 

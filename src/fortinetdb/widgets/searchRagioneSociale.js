@@ -94,6 +94,7 @@ class SearchRagioneSociale extends React.Component {
               <Select
                 style={{ width: 300, marginLeft: '10px'}}
                 showSearch
+                //allowClear
                 value={this.state.project}
                 onSearch={a => this.setState({input: a})}
                 optionFilterProp="children"
@@ -107,7 +108,14 @@ class SearchRagioneSociale extends React.Component {
                     return optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                   }
                 }
-
+                //onClick={e => this.setState({visible: true, project: e}, () => this.filteredProjectsGet())}
+                onSelect={
+                  e => {
+                    if (e === this.state.project) {
+                      this.setState({visible: true, project: e}, () => this.filteredProjectsGet())
+                    }
+                  }
+                }
                 onChange={e => this.setState({visible: true, project: e}, () => this.filteredProjectsGet())}>
                 {(this.state.input && this.state.input.length) > 4 ?
                   <React.Fragment>
