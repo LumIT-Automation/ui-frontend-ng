@@ -8,10 +8,11 @@ import {
   ddosError
 } from '../store'
 
-import { Input, Button, Space, Modal, Table } from 'antd'
+import { Input, Button, Space, Modal, Table, Spin } from 'antd'
 
 import Highlighter from 'react-highlight-words'
-import { SearchOutlined } from '@ant-design/icons'
+import { SearchOutlined, LoadingOutlined } from '@ant-design/icons'
+const responseIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 class Ddos extends React.Component {
@@ -70,27 +71,23 @@ class Ddos extends React.Component {
           <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
-          </Button>
         </Space>
       </div>
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) =>
-      record[dataIndex]
-        ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        : '',
+    onFilter: (value, record) => {
+      if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+        return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else if ( Array.isArray(dataIndex) ) {
+        let r = record[dataIndex[0]]
+        return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+      }
+      else {
+        return ''
+      }
+
+    },
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
         setTimeout(() => this.searchInput.select(), 100);
@@ -128,25 +125,25 @@ class Ddos extends React.Component {
       "GET",
       resp => {
         let ddos = [resp.data]
-        this.setState({loading: false, ddos: ddos, extraData: resp.data.extra_data})
+        this.setState({loading: false, ddos: ddos, extraData: resp.data.EXTRA_DATA})
       },
       error => {
         this.props.dispatch(ddosError(error))
-        this.setState({loading: false, response: false})
+        this.setState({loading: false})
       }
     )
     await rest.doXHR(`fortinetdb/ddos/${this.props.obj.MANAGED_OBJECT}/`, this.props.token)
   }
 
   setExtraData = e => {
-    this.setState({extraData: e})
+    this.setState({extraData: e.target.value})
   }
 
   modifyExtraData = async e => {
     let b = {}
-    if (e.target && e.target.value) {
+    if (this.state.extraData) {
       b.data = {
-        "extra_data": e.target.value
+        "EXTRA_DATA": this.state.extraData
       }
 
       this.setState({extraLoading: true})
@@ -158,16 +155,12 @@ class Ddos extends React.Component {
           this.fetchDdos()
         },
         error => {
-          this.setState({extraLoading: false, response: false, error: error})
+          this.props.dispatch(ddosError(error))
+          this.setState({extraLoading: false})
         }
       )
-      await rest.doXHR(`/fortinetdb/ddos/${this.props.obj.MANAGED_OBJECT}/`, this.props.token, b )
+      await rest.doXHR(`fortinetdb/ddos/${this.props.obj.MANAGED_OBJECT}/`, this.props.token, b )
     }
-  }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
@@ -244,6 +237,22 @@ class Ddos extends React.Component {
         key: "MO_STATUS",
         ...this.getColumnSearchProps('MO_STATUS')
       },
+      {
+        title: "Extra Data",
+        align: "center",
+     		width: 300,
+        dataIndex: "EXTRA_DATA",
+        key: "EXTRA_DATA",
+        render: (name, obj)  => (
+          <React.Fragment>
+          {this.state.extraLoading ?
+            <Spin indicator={responseIcon} style={{margin: '10% 45%'}}/>
+          :
+            <Input.TextArea defaultValue={this.state.extraData} onChange={e => this.setExtraData(e)} onBlur={() => this.modifyExtraData()} />
+          }
+          </React.Fragment>
+        )
+      }
     ]
 
     return (
