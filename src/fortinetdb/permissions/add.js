@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
+import { LoadingOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -135,10 +135,18 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
-    if (this.state.identityGroupIds.includes(identityGroupId)) {
-      errors.newIdentityGroup = true
+    if (identityGroupId === '' || identityGroupId === undefined) {
+      delete errors.IdentityGroupExistsError
+      delete errors.newIdentityGroupError
+      delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
-      this.identityGroupIdSet(identityGroupId)
+      return
+    }
+
+    else if (this.state.identityGroupIds.includes(identityGroupId)) {
+      errors.IdentityGroupExistsError = true
+      await this.setState({errors: errors})
+      return
     }
     else {
       request.identityGroupId = ''
@@ -155,16 +163,15 @@ class Add extends React.Component {
           cns.push(cn[1])
         }
       })
-      delete errors.newIdentityGroup
+      delete errors.IdentityGroupExistsError
       this.setState({newIdentityGroup: identityGroupId, newCn: cns[0], errors: errors})
     }
   }
 
-  newIdentityGroupHandle = async () => {
+  newIdentityGroupHandle = async e => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (this.state.newIdentityGroup && this.state.newCn) {
-
       delete errors.newIdentityGroupError
       delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
@@ -174,6 +181,9 @@ class Add extends React.Component {
 
       if (awaitIdentityGroup.status && awaitIdentityGroup.status !== 201) {
         this.props.dispatch(newIdentityGroupAddError(awaitIdentityGroup))
+        errors.newIdentityGroupError = true
+        errors.newIdentityGroupColor = 'red'
+        await this.setState({errors: errors})
         return
       }
 
@@ -301,6 +311,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state)
     return (
       <React.Fragment>
 
@@ -394,21 +405,46 @@ class Add extends React.Component {
                   <p style={{marginRight: 25, float: 'right'}}>New IdentityGroup (optional):</p>
                   {this.state.errors.newIdentityGroup ? <p style={{color: 'red', marginRight: 25, float: 'right'}}>Error: new DN not set.</p> : null }
                 </Col>
-                <Col span={16}>
+                <Col span={12}>
                 { this.state.identityGroupAddLoading ?
                   <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                 :
                   <React.Fragment>
-                    <Input
-                      name="newIdentityGroup"
-                      id='newIdentityGroup'
-                      style={{width: 350}}
-                      placeholder="cn= ,cn= ,dc= ,dc= "
-                      onBlur={e => this.newIdentityGroupSet(e)}
-                    />
-                    <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newIdentityGroupHandle()} />
+                    {this.state.errors.newIdentityGroupError ?
+                      <React.Fragment>
+                        <Input
+                          defaultValue={this.state.newIdentityGroup}
+                          style={{width: 350, borderColor: this.state.errors.newIdentityGroupColor}}
+                          placeholder="cn= ,cn= ,dc= ,dc= "
+                          suffix={
+                            <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
+                          }
+                          onChange={e => this.newIdentityGroupSet(e)}
+                        />
+                        <p style={{color: 'red'}}>Error: new DN not set.</p>
+                      </React.Fragment>
+                    :
+                      <Input
+                        style={{width: 350}}
+                        defaultValue={this.state.newIdentityGroup}
+                        placeholder="cn= ,cn= ,dc= ,dc= "
+                        suffix={
+                          <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
+                        }
+                        onChange={e => this.newIdentityGroupSet(e)}
+                      />
+                    }
                   </React.Fragment>
                 }
+                {this.state.errors.IdentityGroupExistsError ? <p style={{color: 'red'}}>Error: Group already exists.</p> : null }
+                </Col>
+                <Col span={4}>
+                  {this.state.errors.IdentityGroupExistsError ?
+                    <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} disabled />
+                  :
+                    <Button icon={addIcon} type='primary' shape='round' style={{marginLeft: 20}} onClick={() => this.newIdentityGroupHandle()} />
+                  }
+
                 </Col>
               </Row>
               <br/>
