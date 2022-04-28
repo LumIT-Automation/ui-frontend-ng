@@ -15,8 +15,6 @@ import {
   identityGroups,
   identityGroupsError,
 
-  networksError,
-  containersError,
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -43,9 +41,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.request.assetId !== this.state.request.assetId) {
-      this.networksGet()
-    }
   }
 
   componentWillUnmount() {
@@ -104,7 +99,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR("infoblox/identity-groups/", this.props.token)
+    await rest.doXHR("fortinetdb/identity-groups/", this.props.token)
     return r
   }
 
@@ -119,61 +114,9 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/roles/?related=privileges`, this.props.token)
+    await rest.doXHR(`fortinetdb/roles/?related=privileges`, this.props.token)
     return r
   }
-
-  networksGet = async () => {
-    this.setState({networksLoading: true})
-
-    let nets = await this.netsGet()
-    if (nets.status && nets.status !== 200) {
-      this.props.dispatch(networksError( nets ))
-      await this.setState({networks: null, networksLoading: false})
-      return
-    }
-
-    let containers = await this.containersGet()
-    if (containers.status && containers.status !== 200) {
-      this.props.dispatch(containersError( containers ))
-      await this.setState({networks: null, networksLoading: false})
-      return
-    }
-
-    let networks = nets.concat(containers)
-    this.setState({networks: networks, networksLoading: false})
-  }
-
-  netsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`infoblox/${this.state.request.assetId}/networks/`, this.props.token)
-    return r
-  }
-
-  containersGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`infoblox/${this.state.request.assetId}/network-containers/`, this.props.token)
-    return r
-  }
-
 
   //SET
   identityGroupIdSet = async identityGroupId => {
@@ -193,7 +136,7 @@ class Add extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (this.state.identityGroupIds.includes(identityGroupId)) {
-      errors.newIdentityGroup =
+      errors.newIdentityGroup = true
       await this.setState({errors: errors})
       this.identityGroupIdSet(identityGroupId)
     }
@@ -258,20 +201,6 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  assetSet = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.assetId = id
-    this.setState({request: request})
-  }
-
-  networkSet = networkName => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.network = {}
-    request.network.name = networkName
-    this.setState({request: request})
-  }
-
-
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -288,17 +217,6 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.assetId) {
-      errors.assetError = true
-      errors.assetColor = 'red'
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.assetError
-      delete errors.assetColor
-      this.setState({errors: errors})
-    }
-
     if (!request.role) {
       errors.roleError = true
       errors.roleColor = 'red'
@@ -307,17 +225,6 @@ class Add extends React.Component {
     else {
       delete errors.roleError
       delete errors.roleColor
-      this.setState({errors: errors})
-    }
-
-    if (!request.network) {
-      errors.networkError = true
-      errors.networkColor = 'red'
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.networkError
-      delete errors.networkColor
       this.setState({errors: errors})
     }
 
@@ -352,7 +259,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/identity-groups/`, this.props.token, b )
+    await rest.doXHR(`fortinetdb/identity-groups/`, this.props.token, b )
     return r
   }
 
@@ -363,10 +270,6 @@ class Add extends React.Component {
       "identity_group_name": this.state.request.cn,
       "identity_group_identifier": this.state.request.identityGroupId,
       "role": this.state.request.role,
-      "network": {
-        "name": this.state.request.network.name,
-        "id_asset": this.state.request.assetId
-      }
     }
 
     let rest = new Rest(
@@ -379,7 +282,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`infoblox/permissions/`, this.props.token, b )
+    await rest.doXHR(`fortinetdb/permissions/`, this.props.token, b )
   }
 
   response = () => {
@@ -393,7 +296,6 @@ class Add extends React.Component {
     this.setState({
       visible: false,
       request: {},
-      networks: []
     })
   }
 
@@ -580,153 +482,6 @@ class Add extends React.Component {
               <br/>
 
               <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
-                </Col>
-                <Col span={16}>
-                  { this.props.assetsLoading ?
-                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                :
-                  <React.Fragment>
-                    { this.props.assets && this.props.assets.length > 0 ?
-                      <React.Fragment>
-                        {this.state.errors.assetError ?
-                          <Select
-                            value={this.state.request.assetId}
-                            showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.assetSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.props.assets.map((a, i) => {
-                                return (
-                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        :
-                          <Select
-                            value={this.state.request.assetId}
-                            showSearch
-                            style={{width: 350}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.assetSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.props.assets.map((a, i) => {
-                                return (
-                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        }
-                      </React.Fragment>
-                    :
-                      null
-                    }
-                  </React.Fragment>
-                }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Network:</p>
-                </Col>
-                <Col span={16}>
-                  { this.state.networksLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-                  :
-                    <React.Fragment>
-                      { (this.state.networks && this.state.networks.length > 0) ?
-                        <React.Fragment>
-                          {this.state.errors.networkError ?
-                            <Select
-                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
-                              showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.networkColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onChange={n => this.networkSet(n)}
-                            >
-                              {this.state.request.role === 'admin' ?
-                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                              :
-                                <React.Fragment>
-                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  {this.state.networks.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              }
-                            </Select>
-                          :
-                            <Select
-                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
-                              showSearch
-                              style={{width: 350}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onChange={n => this.networkSet(n)}
-                            >
-                              {this.state.request.role === 'admin' ?
-                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                              :
-                                <React.Fragment>
-                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  {this.state.networks.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              }
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        <Select style={{width: 350}} disabled value={null} onChange={null}>
-                        </Select>
-                      }
-                    </React.Fragment>
-                  }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" onClick={() => this.validation()}>
                     Add Permission
@@ -740,11 +495,10 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.identityGroupsError ? <Error component={'permissionAdd infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
-            { this.props.rolesError ? <Error component={'permissionAdd infoblox'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-            { this.props.networksError ? <Error component={'permissionAdd infoblox'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
-            { this.props.newIdentityGroupAddError ? <Error component={'permissionAdd infoblox'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
-            { this.props.permissionAddError ? <Error component={'permissionAdd infoblox'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
+            { this.props.identityGroupsError ? <Error component={'permissionAdd fortinetdb'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+            { this.props.rolesError ? <Error component={'permissionAdd fortinetdb'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            { this.props.newIdentityGroupAddError ? <Error component={'permissionAdd fortinetdb'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
+            { this.props.permissionAddError ? <Error component={'permissionAdd fortinetdb'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -757,14 +511,12 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  assets: state.infoblox.assets,
 
-  identityGroups: state.infoblox.identityGroups,
-  permissions: state.infoblox.permissions,
+  identityGroups: state.fortinetdb.identityGroups,
+  permissions: state.fortinetdb.permissions,
 
-  rolesError: state.infoblox.rolesError,
-  identityGroupsError: state.infoblox.identityGroupsError,
-  newIdentityGroupAddError: state.infoblox.newIdentityGroupAddError,
-  networksError: state.infoblox.networksError,
-  permissionAddError: state.infoblox.permissionAddError,
+  rolesError: state.fortinetdb.rolesError,
+  identityGroupsError: state.fortinetdb.identityGroupsError,
+  newIdentityGroupAddError: state.fortinetdb.newIdentityGroupAddError,
+  permissionAddError: state.fortinetdb.permissionAddError,
 }))(Add);

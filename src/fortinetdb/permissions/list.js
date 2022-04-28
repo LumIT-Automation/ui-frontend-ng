@@ -1,11 +1,14 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import { Table, Input, Button, Space } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
 
 import RolesDescription from './rolesDescription'
+import Modify from './modify'
+import Delete from './delete'
 
 
 
@@ -109,7 +112,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.permissions)
     const columns = [
       {
         title: 'AD group name',
@@ -132,6 +134,36 @@ class List extends React.Component {
         key: 'role',
         ...this.getColumnSearchProps('role'),
 
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Space size="small">
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_patch || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
+            <Delete name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
       }
     ];
 

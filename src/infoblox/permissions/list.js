@@ -2,13 +2,13 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
+import { Table, Input, Button, Space } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined } from '@ant-design/icons'
+
 import RolesDescription from './rolesDescription'
 import Modify from './modify'
 import Delete from './delete'
-
-import { Table, Input, Button, Space } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
 
 
 
@@ -113,8 +113,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.permissions)
-    //console.log(this.state.searchText)
     const columns = [
       {
         title: 'AD group name',

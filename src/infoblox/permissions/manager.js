@@ -202,13 +202,13 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
 
-  assetsError: state.infoblox.assetsError,
-  identityGroupsError: state.infoblox.identityGroupsError,
-  permissionsError: state.infoblox.permissionsError,
-
   assets: state.infoblox.assets,
   identityGroups: state.infoblox.identityGroups,
   permissions: state.infoblox.permissions,
 
   permissionsFetch: state.infoblox.permissionsFetch,
+  
+  assetsError: state.infoblox.assetsError,
+  identityGroupsError: state.infoblox.identityGroupsError,
+  permissionsError: state.infoblox.permissionsError,
 }))(Manager);
