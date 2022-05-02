@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import Authorizators from '../_helpers/authorizators'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
+import VmwareManager from '../vmware/services/manager'
 
 import { Divider } from 'antd'
 
@@ -51,6 +52,20 @@ class Service extends React.Component {
             </Divider>
             <br/>
             <InfobloxManager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              VIRTUAL MACHINE
+            </Divider>
+            <br/>
+            <VmwareManager/>
             <br/>
             <br/>
           </React.Fragment>

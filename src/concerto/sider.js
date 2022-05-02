@@ -23,22 +23,11 @@ import NetworkSVG from '../svg/layer-3-switch.svg'
 import LoadbalancerSVG from '../svg/loadbalancer.svg'
 import CertSVG from '../svg/certificates.svg'
 import ItemsSVG from '../svg/items.svg'
+import VmSVG from '../svg/vm.svg'
 
 const { Sider } = Layout;
 
-/*
-The app is currently divided by appliance categories.
-The categories are for example:
-  Ipam,
-  Switch,
-  Loadbalancer,
-  Firewall,
-  Hypervisor
-In the sider each category is a Link that will indicate to the App which component to render.
 
-The Link component of the Router differs from the <a> tag because it does not make the call to the backend (preventDefault ())
-In this way the route is intercepted by the Router
-*/
 
 class CustomSider extends Component {
 
@@ -73,6 +62,9 @@ class CustomSider extends Component {
   );
   itemsIcon = () => (
       <img src={ItemsSVG} alt="certificatesSVG" width="20" height="20" />
+  );
+  vmIcon = () => (
+      <img src={VmSVG} alt="VmSVG" width="20" height="20" />
   );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
@@ -145,6 +137,14 @@ class CustomSider extends Component {
           { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
             <React.Fragment>
               <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
+
+          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+            <React.Fragment>
+              <Menu.Item key="vmware" icon={this.vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             : null

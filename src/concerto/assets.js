@@ -6,11 +6,14 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Authorizators from '../_helpers/authorizators'
+import Vmware from '../vmware/assets/manager'
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 
-import { assetsFetch as f5AssetsFetch } from '../f5/store'
+import { assetsFetch as vmwareAssetsFetch } from '../vmware/store'
 import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store'
+import { assetsFetch as f5AssetsFetch } from '../f5/store'
+
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -49,15 +52,16 @@ class Assets extends React.Component {
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
+
             { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
-                {this.props.f5Loading ?
-                  <TabPane key="F5" tab="F5">
+                {this.props.vmwareLoading ?
+                  <TabPane key="Vmware" tab="Vmware">
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                   :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsFetch(true))}/></span>>
-                    <F5/>
+                  <TabPane key="vmware" tab=<span>Vmware <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(vmwareAssetsFetch(true))}/></span>>
+                    <Vmware/>
                   </TabPane>
                 }
               </React.Fragment>
@@ -81,6 +85,22 @@ class Assets extends React.Component {
               null
             }
 
+            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+              <React.Fragment>
+                {this.props.f5Loading ?
+                  <TabPane key="F5" tab="F5">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsFetch(true))}/></span>>
+                    <F5/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+
           </Tabs>
 
         </Space>
@@ -91,9 +111,10 @@ class Assets extends React.Component {
 
 
 export default connect((state) => ({
-  authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsF5: state.authorizations.f5,
 
-  f5Loading: state.f5.assetsLoading,
   infobloxLoading: state.infoblox.assetsLoading,
+  vmwareLoading: state.vmware.assetsLoading,
+  f5Loading: state.f5.assetsLoading,
 }))(Assets);
