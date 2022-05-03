@@ -85,6 +85,12 @@ const vmwareSlice = createSlice({
         datacentersError: (state, action) => {
           state.datacentersError = action.payload
         },
+        clustersError: (state, action) => {
+          state.clustersError = action.payload
+        },
+        templatesError: (state, action) => {
+          state.templatesError = action.payload
+        },
 
         genericError: ( state, action) => {
           state.genericError = action.payload
@@ -137,6 +143,8 @@ export const {
   assetDeleteError,
 
   datacentersError,
+  clustersError,
+  templatesError,
 
   genericError,
 

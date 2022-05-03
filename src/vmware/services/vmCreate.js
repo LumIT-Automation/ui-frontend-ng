@@ -9,7 +9,9 @@ import Validators from '../../_helpers/validators'
 import Error from '../error'
 
 import {
-  datacentersError
+  datacentersError,
+  clustersError,
+  templatesError
 } from '../store'
 
 import AssetSelector from '../../vmware/assetSelector'
@@ -38,10 +40,15 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
+      }
+      if (this.state.request.datacenterMoId && (prevState.request.datacenterMoId !== this.state.request.datacenterMoId)) {
+        this.clustersFetch()
+      }
+      if (this.state.request.clusterMoId && (prevState.request.clusterMoId !== this.state.request.clusterMoId)) {
+        this.clusterFetch()
       }
     }
   }
@@ -85,6 +92,98 @@ class CreateVmService extends React.Component {
     return r
   }
 
+  clustersGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/datacenter/${this.state.request.datacenterMoId}/`, this.props.token)
+    return r
+  }
+
+  clusterGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/cluster/${this.state.request.clusterMoId}/`, this.props.token)
+    return r
+  }
+
+  templatesGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/templates/?quick`, this.props.token)
+    return r
+  }
+
+  clustersFetch = async () => {
+    await this.setState({clustersLoading: true})
+    let clustersFetched = await this.clustersGet()
+    await this.setState({clustersLoading: false})
+    if (clustersFetched.status && clustersFetched.status !== 200 ) {
+      this.props.dispatch(clustersError(clustersFetched))
+      return
+    }
+    else {
+      this.setState({clusters: clustersFetched.data.clusters})
+    }
+  }
+
+  clusterFetch = async () => {
+    let clusterFetched = await this.clusterGet()
+    if (clusterFetched.status && clusterFetched.status !== 200 ) {
+      this.props.dispatch(clusterError(clusterFetched))
+      return
+    }
+    else {
+      let datastores = []
+      clusterFetched.data.datastores.forEach(d => {
+        if (d.multipleHostAccess === true) {
+          datastores.push(d)
+        }
+      })
+      this.setState({cluster: clusterFetched, datastores: datastores, networks: clusterFetched.data.networks})
+    }
+  }
+
+  templatesFetch = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    delete request.template
+    delete request.templateMoId
+    await this.setState({request: request, templates: null, templatesLoading: true})
+    
+    let templatesFetched = await this.templatesGet()
+    await this.setState({templatesLoading: false})
+    if (templatesFetched.status && templatesFetched.status !== 200 ) {
+      this.props.dispatch(templatesError(templatesFetched))
+      return
+    }
+    else {
+      this.setState({templates: templatesFetched.data.items})
+    }
+  }
+
   //SETTERS
   //Input
   serviceNameSet = e => {
@@ -98,6 +197,20 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.datacenter = datacenter[0]
     request.datacenterMoId = datacenter[1]
+    this.setState({request: request})
+  }
+
+  clusterSet = cluster => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.cluster = cluster[0]
+    request.clusterMoId = cluster[1]
+    this.setState({request: request})
+  }
+
+  templateSet = template => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.template = template[0]
+    request.templateMoId = template[1]
     this.setState({request: request})
   }
 
@@ -136,6 +249,17 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (!request.cluster) {
+      errors.clusterError = true
+      errors.clusterColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.clusterError
+      delete errors.clusterColor
+      this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -145,79 +269,25 @@ class CreateVmService extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      let ips = []
-      ips.push(this.state.request.destination)
-      this.state.request.nodes.forEach((node, i) => {
-        ips.push(node.address)
-      })
-
-      if (request.snat === 'snat') {
-        this.state.networkDataGroups.forEach((dg, i) => {
-          dg.records.forEach((record, i) => {
-            if (record.name) {
-              if (validators.ipInSubnet(record.name, ips)) {
-                let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
-                request.code = irule
-                this.setState({request: request})
-              }
-            }
-          });
-        })
-      }
-      this.l4ServiceCreate()
+      this.vmCreate()
     }
   }
 
 
   //DISPOSAL ACTION
-  l4ServiceCreate = async () => {
+  vmCreate = async () => {
     let serviceName = this.state.request.serviceName
 
     let b = {}
     b.data = {
-      "virtualServer": {
-        "name": `vs_${serviceName}`,
-        "type": 'VM',
-        "snat": this.state.request.snat,
-        "routeDomainId": this.state.request.routeDomain,
-        "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
-        "mask": '255.255.255.255',
-        "source": '0.0.0.0/0'
-      },
-      "profiles": [
-        {
-          "name": `fastl4_${serviceName}`,
-          "type": "fastl4",
-          "idleTimeout": 300
-        }
-      ],
-      "pool": {
-        "name": `pool_${serviceName}`,
-        "loadBalancingMode": this.state.request.datacenter,
-        "nodes": this.state.request.nodes
-      },
-      "monitor": {
-        "name": `mon_${serviceName}`,
-        "type": this.state.request.monitorType
-      }
+
     }
 
-    if (this.state.request.snat === 'snat') {
+    if (this.state.request.foo === 'snat') {
       b.data.snatPool = {
         "name": `snatpool_${serviceName}`,
         "members": [
           this.state.request.snatPoolAddress
-        ]
-      }
-    }
-
-    if (this.state.request.code) {
-      if ( (this.state.request.code !== '') || (this.state.request.code !== undefined) ) {
-        b.data.irules = [
-          {
-            "name": `irule_${serviceName}`,
-            "code": this.state.request.code
-          }
         ]
       }
     }
@@ -231,7 +301,7 @@ class CreateVmService extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(l4ServiceCreateError(error))
+        this.props.dispatch(vmCreateError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -255,7 +325,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
+    console.log(this.state)
     return (
       <React.Fragment>
 
@@ -373,6 +443,151 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Clusters:</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.clustersLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.state.clusters && this.state.clusters.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.clusterError ?
+                            <Select
+                              defaultValue={this.state.request.cluster}
+                              value={this.state.request.cluster}
+                              showSearch
+                              style={{width: 450, border: `1px solid ${this.state.errors.clusterColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.clusterSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.clusters.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.cluster}
+                              value={this.state.request.cluster}
+                              showSearch
+                              style={{width: 450}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.clusterSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.clusters.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Templates:</p>
+                  </Col>
+                  <Col span={9}>
+                    { this.state.templatesLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.state.templates && this.state.templates.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.templateError ?
+                            <Select
+                              defaultValue={this.state.request.template}
+                              value={this.state.request.template}
+                              showSearch
+                              style={{width: 450, border: `1px solid ${this.state.errors.templateColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.templateSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.templates.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.template}
+                              value={this.state.request.template}
+                              showSearch
+                              style={{width: 450}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.templateSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.templates.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+                  <Col span={4}>
+                    <Button type="primary" shape='round' onClick={() => this.templatesFetch()} >
+                      Refresh
+                    </Button>
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
                   <Col offset={8} span={16}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
                       Create Load Balancer
@@ -392,6 +607,8 @@ class CreateVmService extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.datacentersError ? <Error component={'create vm'} error={[this.props.datacentersError]} visible={true} type={'datacentersError'} /> : null }
+            { this.props.clustersError ? <Error component={'create vm'} error={[this.props.clustersError]} visible={true} type={'clustersError'} /> : null }
+            { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
           </React.Fragment>
         :
           null
@@ -409,4 +626,6 @@ export default connect((state) => ({
 
   asset: state.vmware.asset,
   datacentersError: state.vmware.datacentersError,
+  clustersError: state.vmware.clustersError,
+  templatesError: state.vmware.templatesError,
 }))(CreateVmService);

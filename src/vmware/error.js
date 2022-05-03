@@ -34,6 +34,8 @@ import {
   assetDeleteError,
 
   datacentersError,
+  clustersError,
+  templatesError,
 
   genericError
 
@@ -123,6 +125,12 @@ class Error extends Component {
 
         case 'datacentersError':
           this.props.dispatch(datacentersError(null))
+          break;
+        case 'clustersError':
+          this.props.dispatch(clustersError(null))
+          break;
+        case 'templatesError':
+          this.props.dispatch(templatesError(null))
           break;
 
         default:
