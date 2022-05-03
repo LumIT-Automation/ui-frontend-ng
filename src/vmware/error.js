@@ -33,6 +33,8 @@ import {
   assetModifyError,
   assetDeleteError,
 
+  datacentersError,
+
   genericError
 
 } from './store'
@@ -119,7 +121,10 @@ class Error extends Component {
           this.props.dispatch(assetDeleteError(null))
           break;
 
-        
+        case 'datacentersError':
+          this.props.dispatch(datacentersError(null))
+          break;
+
         default:
           this.props.dispatch(genericError(null))
       }
