@@ -11,7 +11,9 @@ import Error from '../error'
 import {
   datacentersError,
   clustersError,
-  templatesError
+  clusterError,
+  templatesError,
+  templateError
 } from '../store'
 
 import AssetSelector from '../../vmware/assetSelector'
@@ -49,6 +51,9 @@ class CreateVmService extends React.Component {
       }
       if (this.state.request.clusterMoId && (prevState.request.clusterMoId !== this.state.request.clusterMoId)) {
         this.clusterFetch()
+      }
+      if (this.state.request.templateMoId && (prevState.request.templateMoId !== this.state.request.templateMoId)) {
+        this.templateFetch()
       }
     }
   }
@@ -137,6 +142,21 @@ class CreateVmService extends React.Component {
     return r
   }
 
+  templateGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token)
+    return r
+  }
+
   clustersFetch = async () => {
     await this.setState({clustersLoading: true})
     let clustersFetched = await this.clustersGet()
@@ -172,7 +192,7 @@ class CreateVmService extends React.Component {
     delete request.template
     delete request.templateMoId
     await this.setState({request: request, templates: null, templatesLoading: true})
-    
+
     let templatesFetched = await this.templatesGet()
     await this.setState({templatesLoading: false})
     if (templatesFetched.status && templatesFetched.status !== 200 ) {
@@ -184,11 +204,42 @@ class CreateVmService extends React.Component {
     }
   }
 
+  templateFetch = async () => {
+    let templateFetched = await this.templateGet()
+    if (templateFetched.status && templateFetched.status !== 200 ) {
+      this.props.dispatch(templateError(templateFetched))
+      return
+    }
+    else {
+      let networkDevices = []
+      let diskDevices = []
+
+      if (templateFetched.data.networkDevices && templateFetched.data.networkDevices.existent) {
+        templateFetched.data.networkDevices.existent.forEach(d => {
+          networkDevices.push(d)
+        })
+      }
+      if (templateFetched.data.diskDevices && templateFetched.data.diskDevices.existent) {
+        templateFetched.data.diskDevices.existent.forEach(d => {
+          diskDevices.push(d)
+        })
+      }
+
+      this.setState({template: templateFetched, networkDevices: networkDevices, diskDevices: diskDevices})
+    }
+  }
+
+
+
+
+
+
+
   //SETTERS
   //Input
-  serviceNameSet = e => {
+  vmNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.serviceName = e.target.value
+    request.vmName = e.target.value
     this.setState({request: request})
   }
 
@@ -214,12 +265,14 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  //select
-  snatSet = e => {
+  mainDatastoreSet = mainDatastore => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.snat = e
+    request.mainDatastore = mainDatastore[0]
+    request.mainDatastoreMoId = mainDatastore[1]
     this.setState({request: request})
   }
+
+  //select
 
   //VALIDATION
   validationCheck = async () => {
@@ -227,14 +280,14 @@ class CreateVmService extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.serviceName) {
-      errors.serviceNameError = true
-      errors.serviceNameColor = 'red'
+    if (!request.vmName) {
+      errors.vmNameError = true
+      errors.vmNameColor = 'red'
       this.setState({errors: errors})
     }
     else {
-      delete errors.serviceNameError
-      delete errors.serviceNameColor
+      delete errors.vmNameError
+      delete errors.vmNameColor
       this.setState({errors: errors})
     }
 
@@ -260,6 +313,17 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (!request.mainDatastore) {
+      errors.mainDatastoreError = true
+      errors.mainDatastoreColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.mainDatastoreError
+      delete errors.mainDatastoreColor
+      this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -276,7 +340,7 @@ class CreateVmService extends React.Component {
 
   //DISPOSAL ACTION
   vmCreate = async () => {
-    let serviceName = this.state.request.serviceName
+    let vmName = this.state.request.vmName
 
     let b = {}
     b.data = {
@@ -285,7 +349,7 @@ class CreateVmService extends React.Component {
 
     if (this.state.request.foo === 'snat') {
       b.data.snatPool = {
-        "name": `snatpool_${serviceName}`,
+        "name": `snatpool_${vmName}`,
         "members": [
           this.state.request.snatPoolAddress
         ]
@@ -360,13 +424,13 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Service Name:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
                   </Col>
                   <Col span={16}>
-                    {this.state.errors.serviceNameError ?
-                      <Input style={{width: 450, borderColor: this.state.errors.serviceNameColor}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
+                    {this.state.errors.vmNameError ?
+                      <Input style={{width: 450, borderColor: this.state.errors.vmNameColor}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     :
-                      <Input defaultValue={this.state.request.serviceName} style={{width: 450}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
+                      <Input defaultValue={this.state.request.vmName} style={{width: 450}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     }
                   </Col>
                 </Row>
@@ -446,69 +510,78 @@ class CreateVmService extends React.Component {
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Clusters:</p>
                   </Col>
-                  <Col span={16}>
-                    { this.state.clustersLoading ?
+                  { this.state.clustersLoading ?
+                    <Col span={16}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                    <React.Fragment>
-                      { this.state.clusters && this.state.clusters.length > 0 ?
+                    </Col>
+                  :
+                    <Col span={16}>
+                      { this.state.clusters ?
                         <React.Fragment>
-                          {this.state.errors.clusterError ?
-                            <Select
-                              defaultValue={this.state.request.cluster}
-                              value={this.state.request.cluster}
-                              showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.clusterColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          { this.state.clusters && this.state.clusters.length > 0 ?
+                            <React.Fragment>
+                              {this.state.errors.clusterError ?
+                                <Select
+                                  defaultValue={this.state.request.cluster}
+                                  value={this.state.request.cluster}
+                                  showSearch
+                                  style={{width: 450, border: `1px solid ${this.state.errors.clusterColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.clusterSet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.clusters.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                                <Select
+                                  defaultValue={this.state.request.cluster}
+                                  value={this.state.request.cluster}
+                                  showSearch
+                                  style={{width: 450}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.clusterSet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.clusters.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
                               }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.clusterSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.clusters.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            </React.Fragment>
                           :
-                            <Select
-                              defaultValue={this.state.request.cluster}
-                              value={this.state.request.cluster}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.clusterSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.clusters.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            null
                           }
                         </React.Fragment>
                       :
-                        null
+                        <Select
+                          style={{width: 450}}
+                          disabled
+                        />
                       }
-                    </React.Fragment>
-                    }
-                  </Col>
+                    </Col>
+                  }
                 </Row>
                 <br/>
 
@@ -516,69 +589,82 @@ class CreateVmService extends React.Component {
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Templates:</p>
                   </Col>
-                  <Col span={9}>
-                    { this.state.templatesLoading ?
+                  { this.state.templatesLoading ?
+                    <Col span={9}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                    <React.Fragment>
-                      { this.state.templates && this.state.templates.length > 0 ?
+                    </Col>
+                  :
+                    <Col span={9}>
+                      { this.state.templates ?
                         <React.Fragment>
-                          {this.state.errors.templateError ?
-                            <Select
-                              defaultValue={this.state.request.template}
-                              value={this.state.request.template}
-                              showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.templateColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          { this.state.templates && this.state.templates.length > 0 ?
+                            <React.Fragment>
+                              {this.state.errors.templateError ?
+                                <Select
+                                  defaultValue={this.state.request.template}
+                                  value={this.state.request.template}
+                                  showSearch
+                                  style={{width: 450, border: `1px solid ${this.state.errors.templateColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.templateSet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.templates.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                                <Select
+                                  defaultValue={this.state.request.template}
+                                  value={this.state.request.template}
+                                  showSearch
+                                  style={{width: 450}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.templateSet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.templates.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
                               }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.templateSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.templates.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            </React.Fragment>
                           :
-                            <Select
-                              defaultValue={this.state.request.template}
-                              value={this.state.request.template}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.templateSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.templates.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
+                            null
                           }
                         </React.Fragment>
                       :
-                        null
+                        <Select
+                          defaultValue={this.state.request.template}
+                          value={this.state.request.template}
+                          showSearch
+                          style={{width: 450}}
+                          optionFilterProp="children"
+                          disabled
+                        />
                       }
-                    </React.Fragment>
-                    }
-                  </Col>
+                    </Col>
+                  }
                   <Col span={4}>
                     <Button type="primary" shape='round' onClick={() => this.templatesFetch()} >
                       Refresh
@@ -588,9 +674,75 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
+                  </Col>
+                  <Col span={16}>
+                    { this.state.datastores && this.state.datastores.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.mainDatastoreError ?
+                          <Select
+                            defaultValue={this.state.request.mainDatastore}
+                            value={this.state.request.mainDatastore}
+                            showSearch
+                            style={{width: 450, border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.mainDatastoreSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.datastores.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            defaultValue={this.state.request.mainDatastore}
+                            value={this.state.request.mainDatastore}
+                            showSearch
+                            style={{width: 450}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.mainDatastoreSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.datastores.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
+                    :
+                      <Select
+                        style={{width: 450}}
+                        disabled
+                      />
+                    }
+                  </Col>
+                </Row>
+
+                <Row>
                   <Col offset={8} span={16}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
-                      Create Load Balancer
+                      Create Virtual machine
                     </Button>
                   </Col>
                 </Row>
@@ -608,7 +760,9 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             { this.props.datacentersError ? <Error component={'create vm'} error={[this.props.datacentersError]} visible={true} type={'datacentersError'} /> : null }
             { this.props.clustersError ? <Error component={'create vm'} error={[this.props.clustersError]} visible={true} type={'clustersError'} /> : null }
+            { this.props.clusterError ? <Error component={'create vm'} error={[this.props.clusterError]} visible={true} type={'clusterError'} /> : null }
             { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
+            { this.props.templateError ? <Error component={'create vm'} error={[this.props.templateError]} visible={true} type={'templateError'} /> : null }
           </React.Fragment>
         :
           null
@@ -627,5 +781,7 @@ export default connect((state) => ({
   asset: state.vmware.asset,
   datacentersError: state.vmware.datacentersError,
   clustersError: state.vmware.clustersError,
+  clusterError: state.vmware.clusterError,
   templatesError: state.vmware.templatesError,
+  templateError: state.vmware.templateError,
 }))(CreateVmService);
