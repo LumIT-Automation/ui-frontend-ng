@@ -29,6 +29,8 @@ class CreateVmService extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      numCpus: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+      numCoresPerSockets: [1,2],
       errors: {},
       request: {}
     };
@@ -272,6 +274,30 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
+  numCpuSet = numCpu => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.numCpu = numCpu
+    this.setState({request: request})
+  }
+
+  numCoresPerSocketSet = numCoresPerSocket => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.numCoresPerSocket = numCoresPerSocket
+    this.setState({request: request})
+  }
+
+  memoryMBSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.memoryMB = e.target.value
+    this.setState({request: request})
+  }
+
+  notesSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.notes = e.target.value
+    this.setState({request: request})
+  }
+
   //select
 
   //VALIDATION
@@ -324,6 +350,50 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (!request.numCpu) {
+      errors.numCpuError = true
+      errors.numCpuColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.numCpuError
+      delete errors.numCpuColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.numCoresPerSocket) {
+      errors.numCoresPerSocketError = true
+      errors.numCoresPerSocketColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.numCoresPerSocketError
+      delete errors.numCoresPerSocketColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.memoryMB || isNaN(request.memoryMB)) {
+      errors.memoryMBError = true
+      errors.memoryMBColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.memoryMBError
+      delete errors.memoryMBColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.notes) {
+      errors.notesError = true
+      errors.notesColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.notesError
+      delete errors.notesColor
+      this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -340,20 +410,72 @@ class CreateVmService extends React.Component {
 
   //DISPOSAL ACTION
   vmCreate = async () => {
-    let vmName = this.state.request.vmName
-
     let b = {}
     b.data = {
-
-    }
-
-    if (this.state.request.foo === 'snat') {
-      b.data.snatPool = {
-        "name": `snatpool_${vmName}`,
-        "members": [
-          this.state.request.snatPoolAddress
+        "vmName": this.state.request.vmName,
+        "datacenterMoId": this.state.request.datacenterMoId,
+        "clusterMoId": this.state.request.clusterMoId,
+        "vmFolderMoId": this.state.request.vmFolderMoId,
+        "mainDatastoreMoId": this.state.request.mainDatastoreMoId,
+        "powerOn": true,
+        "numCpu": this.state.request.numCpu,
+        "numCoresPerSocket": this.state.request.numCoresPerSocket,
+        "memoryMB": parseInt(this.state.request.memoryMB),
+        "notes": this.state.request.notes,
+        "networkDevices": {
+            "existent": [
+                {
+                    "networkMoId": "network-1213",
+                    "label": "Network adapter 1",
+                    "deviceType": "vmxnet3"
+                }
+            ],
+            "new": [
+                {
+                    "networkMoId": "dvportgroup-83",
+                    "label": "",
+                    "deviceType": "e1000"
+                }
+            ]
+        },
+        "diskDevices": {
+            "existent": [
+                {
+                    "datastoreMoId": "datastore-2341",
+                    "label": "Hard disk 1",
+                    "sizeMB": 21504,
+                    "deviceType": "thin"
+                }
+            ],
+            "new": [
+                {
+                    "label": "",
+                    "datastoreMoId": "datastore-2341",
+                    "sizeMB": 512,
+                    "deviceType": "thick lazy zeroed"
+                }
+            ]
+        },
+        "guestSpec": "centos-test",
+        "deleteGuestSpecAfterDeploy": false,
+        "bootstrapKeyId": 1,
+        "finalPubKeyIds": [
+            1
+        ],
+        "postDeployCommands": [
+            {
+                "command": "echo",
+                "user_args": {
+                    "__echo": "Hello World!"
+                }
+            },
+            {
+                "command": "ls",
+                "user_args": {
+                    "__path": "/"
+                }
+            }
         ]
-      }
     }
 
     this.setState({loading: true})
@@ -369,7 +491,7 @@ class CreateVmService extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`vmware/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
+    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.template.moId}/`, this.props.token, b )
   }
 
   response = () => {
@@ -438,7 +560,7 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenters:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
                   <Col span={16}>
                     { this.state.datacentersLoading ?
@@ -508,7 +630,7 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Clusters:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
                     <Col span={16}>
@@ -587,7 +709,7 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Templates:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
                     <Col span={9}>
@@ -675,6 +797,118 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
+                  </Col>
+                  <Col span={16}>
+                    {this.state.errors.numCpuError ?
+                    <Select
+                      defaultValue={this.state.request.numCpu}
+                      value={this.state.request.numCpu}
+                      style={{width: 450, border: `1px solid ${this.state.errors.numCpuColor}`}}
+                      onSelect={n => this.numCpuSet(n)}
+                    >
+                      <React.Fragment>
+                        {this.state.numCpus.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        }
+                      </React.Fragment>
+                    </Select>
+                  :
+                    <Select
+                      defaultValue={this.state.request.numCpu}
+                      value={this.state.request.numCpu}
+                      style={{width: 450}}
+                      onSelect={n => this.numCpuSet(n)}
+                    >
+                      <React.Fragment>
+                        {this.state.numCpus.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        }
+                      </React.Fragment>
+                    </Select>
+                  }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cores per Socket:</p>
+                  </Col>
+                  <Col span={16}>
+                    {this.state.errors.numCoresPerSocketError ?
+                    <Select
+                      defaultValue={this.state.request.numCoresPerSocket}
+                      value={this.state.request.numCoresPerSocket}
+                      style={{width: 450, border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
+                      onSelect={n => this.numCoresPerSocketSet(n)}
+                    >
+                      <React.Fragment>
+                        {this.state.numCoresPerSockets.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        }
+                      </React.Fragment>
+                    </Select>
+                  :
+                    <Select
+                      defaultValue={this.state.request.numCoresPerSocket}
+                      value={this.state.request.numCoresPerSocket}
+                      style={{width: 450}}
+                      onSelect={n => this.numCoresPerSocketSet(n)}
+                    >
+                      <React.Fragment>
+                        {this.state.numCoresPerSockets.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                        }
+                      </React.Fragment>
+                    </Select>
+                  }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (MB):</p>
+                  </Col>
+                  <Col span={16}>
+                    {this.state.errors.memoryMBError ?
+                      <Input style={{width: 450, borderColor: this.state.errors.memoryMBColor}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                    :
+                      <Input defaultValue={this.state.request.memoryMB} style={{width: 450}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                    }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
+                  </Col>
+                  <Col span={16}>
+                    {this.state.errors.notesError ?
+                      <Input.TextArea style={{width: 450, borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                    :
+                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: 450}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                    }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
                   <Col span={16}>
@@ -738,6 +972,7 @@ class CreateVmService extends React.Component {
                     }
                   </Col>
                 </Row>
+                <br/>
 
                 <Row>
                   <Col offset={8} span={16}>
