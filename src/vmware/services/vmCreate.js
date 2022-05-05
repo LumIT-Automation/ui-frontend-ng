@@ -31,6 +31,7 @@ class CreateVmService extends React.Component {
       visible: false,
       numCpus: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
       numCoresPerSockets: [1,2],
+      deviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
       errors: {},
       request: {}
     };
@@ -248,7 +249,7 @@ class CreateVmService extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n}
+    let r = {id: n, existent: false, networkMoId: null, deviceType: null, label:''}
     let list = JSON.parse(JSON.stringify(this.state.networkDevices))
     list.push(r)
     this.setState({networkDevices: list})
@@ -319,6 +320,13 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.memoryMB = e.target.value
     this.setState({request: request})
+  }
+
+  deviceTypeSet = (deviceType , event, nicId) => {
+    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let networkDevice = networkDevices.find( r => r.id === nicId )
+    networkDevice.deviceType = deviceType
+    this.setState({networkDevices: networkDevices})
   }
 
   notesSet = e => {
@@ -543,8 +551,19 @@ class CreateVmService extends React.Component {
 
   render() {
     console.log(this.state.networkDevices)
+    console.log(this.state.networks)
 
-    const netCol = [
+    let corrispondence = obj => {
+      if (this.state.networks) {
+        let n = this.state.networks.find(e => e.moId === obj.networkMoId)
+        if (n && n.name) {
+          return(n.name)
+        }
+      }
+    }
+
+
+    const nicCol = [
       {
         title: 'Label',
         align: 'center',
@@ -559,7 +578,23 @@ class CreateVmService extends React.Component {
         dataIndex: 'networkMoId',
         key: 'network',
         name: 'network',
-        description: '',
+        render: (name, obj)  => (
+          <Select
+            defaultValue={() => corrispondence(obj)}
+            key={obj.id}
+            style={{ width: '100%' }}
+            onChange={(value, event) => console.log(value, event, obj.id)}>
+            { this.state.networks?
+              this.state.networks.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                )
+              })
+            :
+              null
+            }
+          </Select>
+        )
       },
       {
         title: 'Device Type',
@@ -567,7 +602,20 @@ class CreateVmService extends React.Component {
         dataIndex: 'deviceType',
         key: 'deviceType',
         name: 'deviceType',
-        description: '',
+        render: (name, obj)  => (
+          <Select
+            defaultValue={obj.deviceType}
+            key={obj.id}
+            style={{ width: '100%' }}
+            onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
+            { this.state.deviceTypes.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        )
       },
       {
         title: 'Remove nic',
@@ -988,7 +1036,7 @@ class CreateVmService extends React.Component {
                           <br/>
                           <br/>
                           <Table
-                            columns={netCol}
+                            columns={nicCol}
                             dataSource={this.state.networkDevices}
                             bordered
                             rowKey={randomKey}
