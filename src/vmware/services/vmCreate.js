@@ -552,6 +552,7 @@ class CreateVmService extends React.Component {
   render() {
     console.log(this.state.networkDevices)
     console.log(this.state.networks)
+    console.log(this.state.request)
 
     let corrispondence = obj => {
       if (this.state.networks) {
@@ -667,18 +668,15 @@ class CreateVmService extends React.Component {
                 <React.Fragment>
 
                 <Row>
-                  <Col offset={1} span={5}>
-                    <p style={{backgroundColor: 'yellow', marginRight: 10, marginTop: 5}}>Vm Name:</p>
+                  <Col offset={4} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={4}>
                     {this.state.errors.vmNameError ?
                       <Input style={{width: '100%', borderColor: this.state.errors.vmNameColor}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     :
                       <Input style={{width: '100%'}} defaultValue={this.state.request.vmName} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     }
-                  </Col>
-                  <Col span={8}>
-                    <p style={{backgroundColor: 'yellow', marginRight: 10, marginTop: 5}}>fill</p>
                   </Col>
                 </Row>
                 <br/>
@@ -687,7 +685,7 @@ class CreateVmService extends React.Component {
                   <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={4}>
                     { this.state.datacentersLoading ?
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     :
@@ -750,19 +748,15 @@ class CreateVmService extends React.Component {
                     </React.Fragment>
                     }
                   </Col>
-                </Row>
-                <br/>
-
-                <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={2} span={1}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
-                    <Col span={11}>
+                    <Col span={4}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={11}>
+                    <Col span={4}>
                       { this.state.clusters ?
                         <React.Fragment>
                           { this.state.clusters && this.state.clusters.length > 0 ?
@@ -833,7 +827,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
@@ -921,10 +915,10 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={2}>
                     {this.state.errors.numCpuError ?
                     <Select
                       defaultValue={this.state.request.numCpu}
@@ -959,14 +953,10 @@ class CreateVmService extends React.Component {
                     </Select>
                   }
                   </Col>
-                </Row>
-                <br/>
-
-                <Row>
-                  <Col offset={1} span={5}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cores per Socket:</p>
+                  <Col offset={1} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cores/Socket:</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={2}>
                     {this.state.errors.numCoresPerSocketError ?
                     <Select
                       defaultValue={this.state.request.numCoresPerSocket}
@@ -1001,18 +991,14 @@ class CreateVmService extends React.Component {
                     </Select>
                   }
                   </Col>
-                </Row>
-                <br/>
-
-                <Row>
-                  <Col offset={1} span={5}>
+                  <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (MB):</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={2}>
                     {this.state.errors.memoryMBError ?
                       <Input style={{width: '100%', borderColor: this.state.errors.memoryMBColor}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
                     :
-                      <Input defaultValue={this.state.request.memoryMB} style={{width: '100%'}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                      <Input value={this.state.request.memoryMB} defaultValue={this.state.request.memoryMB} style={{width: '100%'}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
                     }
                   </Col>
                 </Row>
@@ -1136,7 +1122,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={8} span={16}>
+                  <Col offset={10} span={2}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
                       Create Virtual machine
                     </Button>
