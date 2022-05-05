@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -207,18 +207,24 @@ class CreateVmService extends React.Component {
   }
 
   templateFetch = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    await this.setState({networkDevicesLoading: true})
     let templateFetched = await this.templateGet()
     if (templateFetched.status && templateFetched.status !== 200 ) {
       this.props.dispatch(templateError(templateFetched))
       return
     }
     else {
+      let i = 1
       let networkDevices = []
       let diskDevices = []
 
       if (templateFetched.data.networkDevices && templateFetched.data.networkDevices.existent) {
-        templateFetched.data.networkDevices.existent.forEach(d => {
-          networkDevices.push(d)
+        templateFetched.data.networkDevices.existent.forEach(n => {
+          n.id = i
+          n.existent = true
+          networkDevices.push(n)
+          ++i
         })
       }
       if (templateFetched.data.diskDevices && templateFetched.data.diskDevices.existent) {
@@ -227,11 +233,34 @@ class CreateVmService extends React.Component {
         })
       }
 
-      this.setState({template: templateFetched, networkDevices: networkDevices, diskDevices: diskDevices})
+      this.setState({networkDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
     }
   }
 
+  nicAdd = () => {
+    //let n = this.state.counter + 1
+    let id = 0
+    let n = 0
+    this.state.networkDevices.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
 
+    let r = {id: n}
+    let list = JSON.parse(JSON.stringify(this.state.networkDevices))
+    list.push(r)
+    this.setState({networkDevices: list})
+  }
+
+  nicRemove = r => {
+    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let newList = networkDevices.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({networkDevices: newList})
+  }
 
 
 
@@ -297,6 +326,8 @@ class CreateVmService extends React.Component {
     request.notes = e.target.value
     this.setState({request: request})
   }
+
+
 
   //select
 
@@ -511,7 +542,50 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state)
+    console.log(this.state.networkDevices)
+
+    const netCol = [
+      {
+        title: 'Label',
+        align: 'center',
+        dataIndex: 'label',
+        key: 'label',
+        name: 'label',
+        description: '',
+      },
+      {
+        title: 'Network Port Group',
+        align: 'center',
+        dataIndex: 'networkMoId',
+        key: 'network',
+        name: 'network',
+        description: '',
+      },
+      {
+        title: 'Device Type',
+        align: 'center',
+        dataIndex: 'deviceType',
+        key: 'deviceType',
+        name: 'deviceType',
+        description: '',
+      },
+      {
+        title: 'Remove nic',
+        align: 'center',
+        dataIndex: 'nicRemove',
+        key: 'nicRemove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.nicRemove(obj)}>
+            -
+          </Button>
+        ),
+      },
+    ]
+
+    let randomKey = () => {
+      return Math.random().toString()
+    }
+
     return (
       <React.Fragment>
 
@@ -545,24 +619,27 @@ class CreateVmService extends React.Component {
                 <React.Fragment>
 
                 <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
+                  <Col offset={1} span={5}>
+                    <p style={{backgroundColor: 'yellow', marginRight: 10, marginTop: 5}}>Vm Name:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     {this.state.errors.vmNameError ?
-                      <Input style={{width: 450, borderColor: this.state.errors.vmNameColor}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
+                      <Input style={{width: '100%', borderColor: this.state.errors.vmNameColor}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     :
-                      <Input defaultValue={this.state.request.vmName} style={{width: 450}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
+                      <Input style={{width: '100%'}} defaultValue={this.state.request.vmName} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
                     }
+                  </Col>
+                  <Col span={8}>
+                    <p style={{backgroundColor: 'yellow', marginRight: 10, marginTop: 5}}>fill</p>
                   </Col>
                 </Row>
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     { this.state.datacentersLoading ?
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     :
@@ -574,7 +651,7 @@ class CreateVmService extends React.Component {
                               defaultValue={this.state.request.datacenter}
                               value={this.state.request.datacenter}
                               showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.datacenterColor}`}}
+                              style={{width: '100%', border: `1px solid ${this.state.errors.datacenterColor}`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -598,7 +675,7 @@ class CreateVmService extends React.Component {
                               defaultValue={this.state.request.datacenter}
                               value={this.state.request.datacenter}
                               showSearch
-                              style={{width: 450}}
+                              style={{width: '100%'}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -629,15 +706,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
-                    <Col span={16}>
+                    <Col span={11}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={16}>
+                    <Col span={11}>
                       { this.state.clusters ?
                         <React.Fragment>
                           { this.state.clusters && this.state.clusters.length > 0 ?
@@ -647,7 +724,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.cluster}
                                   value={this.state.request.cluster}
                                   showSearch
-                                  style={{width: 450, border: `1px solid ${this.state.errors.clusterColor}`}}
+                                  style={{width: '100%', border: `1px solid ${this.state.errors.clusterColor}`}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -671,7 +748,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.cluster}
                                   value={this.state.request.cluster}
                                   showSearch
-                                  style={{width: 450}}
+                                  style={{width: '100%'}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -698,7 +775,7 @@ class CreateVmService extends React.Component {
                         </React.Fragment>
                       :
                         <Select
-                          style={{width: 450}}
+                          style={{width: '100%'}}
                           disabled
                         />
                       }
@@ -708,15 +785,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
-                    <Col span={9}>
+                    <Col span={11}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={9}>
+                    <Col span={11}>
                       { this.state.templates ?
                         <React.Fragment>
                           { this.state.templates && this.state.templates.length > 0 ?
@@ -726,7 +803,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.template}
                                   value={this.state.request.template}
                                   showSearch
-                                  style={{width: 450, border: `1px solid ${this.state.errors.templateColor}`}}
+                                  style={{width: '100%', border: `1px solid ${this.state.errors.templateColor}`}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -750,7 +827,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.template}
                                   value={this.state.request.template}
                                   showSearch
-                                  style={{width: 450}}
+                                  style={{width: '100%'}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -780,14 +857,14 @@ class CreateVmService extends React.Component {
                           defaultValue={this.state.request.template}
                           value={this.state.request.template}
                           showSearch
-                          style={{width: 450}}
+                          style={{width: '100%'}}
                           optionFilterProp="children"
                           disabled
                         />
                       }
                     </Col>
                   }
-                  <Col span={4}>
+                  <Col offset={1} span={4}>
                     <Button type="primary" shape='round' onClick={() => this.templatesFetch()} >
                       Refresh
                     </Button>
@@ -796,15 +873,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     {this.state.errors.numCpuError ?
                     <Select
                       defaultValue={this.state.request.numCpu}
                       value={this.state.request.numCpu}
-                      style={{width: 450, border: `1px solid ${this.state.errors.numCpuColor}`}}
+                      style={{width: '100%', border: `1px solid ${this.state.errors.numCpuColor}`}}
                       onSelect={n => this.numCpuSet(n)}
                     >
                       <React.Fragment>
@@ -820,7 +897,7 @@ class CreateVmService extends React.Component {
                     <Select
                       defaultValue={this.state.request.numCpu}
                       value={this.state.request.numCpu}
-                      style={{width: 450}}
+                      style={{width: '100%'}}
                       onSelect={n => this.numCpuSet(n)}
                     >
                       <React.Fragment>
@@ -838,15 +915,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cores per Socket:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     {this.state.errors.numCoresPerSocketError ?
                     <Select
                       defaultValue={this.state.request.numCoresPerSocket}
                       value={this.state.request.numCoresPerSocket}
-                      style={{width: 450, border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
+                      style={{width: '100%', border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
                     >
                       <React.Fragment>
@@ -862,7 +939,7 @@ class CreateVmService extends React.Component {
                     <Select
                       defaultValue={this.state.request.numCoresPerSocket}
                       value={this.state.request.numCoresPerSocket}
-                      style={{width: 450}}
+                      style={{width: '100%'}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
                     >
                       <React.Fragment>
@@ -880,38 +957,74 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (MB):</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     {this.state.errors.memoryMBError ?
-                      <Input style={{width: 450, borderColor: this.state.errors.memoryMBColor}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                      <Input style={{width: '100%', borderColor: this.state.errors.memoryMBColor}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
                     :
-                      <Input defaultValue={this.state.request.memoryMB} style={{width: 450}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                      <Input defaultValue={this.state.request.memoryMB} style={{width: '100%'}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
                     }
                   </Col>
                 </Row>
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Network Devices:</p>
+                  </Col>
+                  {this.state.networkDevicesLoading ?
+                    <Col span={11}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={11}>
+                      {this.state.networkDevices ?
+                        <React.Fragment>
+                          <Button type="primary" onClick={() => this.nicAdd()}>
+                            +
+                          </Button>
+                          <br/>
+                          <br/>
+                          <Table
+                            columns={netCol}
+                            dataSource={this.state.networkDevices}
+                            bordered
+                            rowKey={randomKey}
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </Col>
+                  }
+
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     {this.state.errors.notesError ?
-                      <Input.TextArea style={{width: 450, borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                      <Input.TextArea style={{width: '100%', borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
                     :
-                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: 450}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: '100%'}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
                     }
                   </Col>
                 </Row>
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={6}>
+                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
-                  <Col span={16}>
+                  <Col span={11}>
                     { this.state.datastores && this.state.datastores.length > 0 ?
                       <React.Fragment>
                         {this.state.errors.mainDatastoreError ?
@@ -919,7 +1032,7 @@ class CreateVmService extends React.Component {
                             defaultValue={this.state.request.mainDatastore}
                             value={this.state.request.mainDatastore}
                             showSearch
-                            style={{width: 450, border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
+                            style={{width: '100%', border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -943,7 +1056,7 @@ class CreateVmService extends React.Component {
                             defaultValue={this.state.request.mainDatastore}
                             value={this.state.request.mainDatastore}
                             showSearch
-                            style={{width: 450}}
+                            style={{width: '100%'}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -966,7 +1079,7 @@ class CreateVmService extends React.Component {
                       </React.Fragment>
                     :
                       <Select
-                        style={{width: 450}}
+                        style={{width: '100%'}}
                         disabled
                       />
                     }
