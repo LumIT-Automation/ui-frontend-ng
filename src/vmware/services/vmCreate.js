@@ -329,6 +329,13 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: networkDevices})
   }
 
+  networkSet = (networkMoId , event, nicId) => {
+    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let networkDevice = networkDevices.find( r => r.id === nicId )
+    networkDevice.networkMoId = networkMoId
+    this.setState({networkDevices: networkDevices})
+  }
+
   notesSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.notes = e.target.value
@@ -343,7 +350,9 @@ class CreateVmService extends React.Component {
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let validators = new Validators()
+
 
     if (!request.vmName) {
       errors.vmNameError = true
@@ -431,6 +440,47 @@ class CreateVmService extends React.Component {
       delete errors.notesError
       delete errors.notesColor
       this.setState({errors: errors})
+    }
+
+    if (networkDevices.length > 0) {
+      networkDevices.forEach((networkDevice, i) => {
+        errors[networkDevice.id] = {}
+
+        if (networkDevice.deviceType) {
+          delete networkDevice.deviceTypeError
+          delete networkDevice.deviceTypeColor
+          delete errors[networkDevice.id].deviceTypeError
+          delete errors[networkDevice.id].deviceTypeColor
+          this.setState({errors: errors, networkDevices: networkDevices})
+        }
+        else {
+          networkDevice.deviceTypeError = true
+          networkDevice.deviceTypeColor = 'red'
+          errors[networkDevice.id].deviceTypeError = true
+          errors[networkDevice.id].deviceTypeColor = 'red'
+          this.setState({errors: errors, networkDevices: networkDevices})
+        }
+
+        if (networkDevice.networkMoId) {
+          delete networkDevice.networkMoIdError
+          delete networkDevice.networkMoIdColor
+          delete errors[networkDevice.id].networkMoIdError
+          delete errors[networkDevice.id].networkMoIdColor
+          this.setState({errors: errors, networkDevices: networkDevices})
+        }
+        else {
+          networkDevice.networkMoIdError = true
+          networkDevice.networkMoIdColor = 'red'
+          errors[networkDevice.id].networkMoIdError = true
+          errors[networkDevice.id].networkMoIdColor = 'red'
+          this.setState({errors: errors, networkDevices: networkDevices})
+        }
+
+        if (Object.keys(errors[networkDevice.id]).length === 0) {
+          delete errors[networkDevice.id]
+          this.setState({errors: errors})
+        }
+      })
     }
 
     return errors
@@ -551,7 +601,6 @@ class CreateVmService extends React.Component {
 
   render() {
     console.log(this.state.networkDevices)
-    console.log(this.state.networks)
     console.log(this.state.request)
 
     let corrispondence = obj => {
@@ -580,21 +629,41 @@ class CreateVmService extends React.Component {
         key: 'network',
         name: 'network',
         render: (name, obj)  => (
-          <Select
-            defaultValue={() => corrispondence(obj)}
-            key={obj.id}
-            style={{ width: '100%' }}
-            onChange={(value, event) => console.log(value, event, obj.id)}>
-            { this.state.networks?
-              this.state.networks.map((n, i) => {
-              return (
-                <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
-                )
-              })
+          <React.Fragment>
+            {obj.networkMoIdError ?
+              <Select
+                defaultValue={() => corrispondence(obj)}
+                key={obj.id}
+                style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
+                onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                { this.state.networks?
+                  this.state.networks.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                    )
+                  })
+                :
+                  null
+                }
+              </Select>
             :
-              null
+              <Select
+                defaultValue={() => corrispondence(obj)}
+                key={obj.id}
+                style={{ width: '100%' }}
+                onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                { this.state.networks?
+                  this.state.networks.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                    )
+                  })
+                :
+                  null
+                }
+              </Select>
             }
-          </Select>
+          </React.Fragment>
         )
       },
       {
@@ -604,18 +673,35 @@ class CreateVmService extends React.Component {
         key: 'deviceType',
         name: 'deviceType',
         render: (name, obj)  => (
-          <Select
-            defaultValue={obj.deviceType}
-            key={obj.id}
-            style={{ width: '100%' }}
-            onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
-            { this.state.deviceTypes.map((n, i) => {
-              return (
-                <Select.Option key={i} value={n}>{n}</Select.Option>
-                )
-              })
+          <React.Fragment>
+            {obj.deviceTypeError ?
+              <Select
+                defaultValue={obj.deviceType}
+                key={obj.id}
+                style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
+                onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
+                { this.state.deviceTypes.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                }
+              </Select>
+            :
+              <Select
+                defaultValue={obj.deviceType}
+                key={obj.id}
+                style={{ width: '100%' }}
+                onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
+                { this.state.deviceTypes.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                }
+              </Select>
             }
-          </Select>
+          </React.Fragment>
         )
       },
       {
@@ -1134,7 +1220,7 @@ class CreateVmService extends React.Component {
 
             </React.Fragment>
             :
-            <Alert message="Asset and Partition not set" type="error" />
+            <Alert message="vCenter not set" type="error" />
           }
         </Modal>
 
