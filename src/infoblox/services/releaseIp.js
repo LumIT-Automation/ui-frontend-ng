@@ -214,11 +214,19 @@ class ReleaseIp extends React.Component {
           <React.Fragment>
             {obj.ipError ?
               <React.Fragment>
-                <Input id='ip' defaultValue={obj.ip} onChange={e => this.setIp(e, obj.id)} />
+                <Input
+                  id='ip'
+                  defaultValue={obj.ip}
+                  onChange={e => this.setIp(e, obj.id)}
+                />
                 <p style={{color: 'red'}}>{obj.ipError}</p>
               </React.Fragment>
             :
-              <Input id='ip' defaultValue={obj.ip} onChange={e => this.setIp(e, obj.id)} />
+              <Input
+                id='ip'
+                defaultValue={obj.ip}
+                onChange={e => this.setIp(e, obj.id)}
+              />
             }
           </React.Fragment>
         ),

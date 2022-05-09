@@ -31,10 +31,12 @@ class CreateVmService extends React.Component {
       visible: false,
       numCpus: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
       numCoresPerSockets: [1,2],
-      deviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
+      networkDeviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
+      diskDeviceTypes: ['thin', 'thick eager zeroed', 'thick lazy zerod'],
       errors: {},
       request: {}
     };
+    this.baseState = this.state
   }
 
   componentDidMount() {
@@ -174,8 +176,10 @@ class CreateVmService extends React.Component {
   }
 
   clusterFetch = async () => {
+    await this.setState({networksLoading: true, datastoresLoading: true})
     let clusterFetched = await this.clusterGet()
     if (clusterFetched.status && clusterFetched.status !== 200 ) {
+      this.setState({networksLoading: false, datastoresLoading: false})
       this.props.dispatch(clusterError(clusterFetched))
       return
     }
@@ -186,7 +190,7 @@ class CreateVmService extends React.Component {
           datastores.push(d)
         }
       })
-      this.setState({cluster: clusterFetched, datastores: datastores, networks: clusterFetched.data.networks})
+      this.setState({cluster: clusterFetched, datastores: datastores, networks: clusterFetched.data.networks, networksLoading: false, datastoresLoading: false})
     }
   }
 
@@ -209,18 +213,20 @@ class CreateVmService extends React.Component {
 
   templateFetch = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    await this.setState({networkDevicesLoading: true})
+    await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
     let templateFetched = await this.templateGet()
+    console.log(templateFetched)
     if (templateFetched.status && templateFetched.status !== 200 ) {
+      await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
       this.props.dispatch(templateError(templateFetched))
       return
     }
     else {
-      let i = 1
       let networkDevices = []
       let diskDevices = []
 
       if (templateFetched.data.networkDevices && templateFetched.data.networkDevices.existent) {
+        let i = 1
         templateFetched.data.networkDevices.existent.forEach(n => {
           n.id = i
           n.existent = true
@@ -229,16 +235,20 @@ class CreateVmService extends React.Component {
         })
       }
       if (templateFetched.data.diskDevices && templateFetched.data.diskDevices.existent) {
-        templateFetched.data.diskDevices.existent.forEach(d => {
-          diskDevices.push(d)
+        let i = 1
+        templateFetched.data.diskDevices.existent.forEach(n => {
+          n.id = i
+          n.existent = true
+          diskDevices.push(n)
+          ++i
         })
       }
 
-      this.setState({networkDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
+      this.setState({networkDevicesLoading: false, diskDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
     }
   }
 
-  nicAdd = () => {
+  networkDeviceAdd = () => {
     //let n = this.state.counter + 1
     let id = 0
     let n = 0
@@ -255,7 +265,7 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: list})
   }
 
-  nicRemove = r => {
+  networkDeviceRemove = r => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let newList = networkDevices.filter(n => {
       return r.id !== n.id
@@ -263,6 +273,30 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: newList})
   }
 
+  diskDeviceAdd = () => {
+    //let n = this.state.counter + 1
+    let id = 0
+    let n = 0
+    this.state.diskDevices.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let r = {id: n, existent: false, datastoreMoId: null, deviceType: null, label:''}
+    let list = JSON.parse(JSON.stringify(this.state.diskDevices))
+    list.push(r)
+    this.setState({diskDevices: list})
+  }
+
+  diskDeviceRemove = r => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let newList = diskDevices.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({diskDevices: newList})
+  }
 
 
 
@@ -322,18 +356,39 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  deviceTypeSet = (deviceType , event, nicId) => {
+  networkDeviceTypeSet = (deviceType , event, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
-    let networkDevice = networkDevices.find( r => r.id === nicId )
+    let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
     networkDevice.deviceType = deviceType
     this.setState({networkDevices: networkDevices})
   }
 
-  networkSet = (networkMoId , event, nicId) => {
+  networkSet = (networkMoId , event, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
-    let networkDevice = networkDevices.find( r => r.id === nicId )
+    let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
     networkDevice.networkMoId = networkMoId
     this.setState({networkDevices: networkDevices})
+  }
+
+  diskDeviceTypeSet = (deviceType , event, diskDeviceId) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
+    diskDevice.deviceType = deviceType
+    this.setState({diskDevices: diskDevices})
+  }
+
+  datastoreSet = (datastoreMoId , event, diskDeviceId) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
+    diskDevice.datastoreMoId = datastoreMoId
+    this.setState({diskDevices: diskDevices})
+  }
+
+  sizeMBSet = (size, diskDeviceId) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
+    diskDevice.sizeMB = size.target.value
+    this.setState({diskDevices: diskDevices})
   }
 
   notesSet = e => {
@@ -351,6 +406,7 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let validators = new Validators()
 
 
@@ -384,17 +440,6 @@ class CreateVmService extends React.Component {
     else {
       delete errors.clusterError
       delete errors.clusterColor
-      this.setState({errors: errors})
-    }
-
-    if (!request.mainDatastore) {
-      errors.mainDatastoreError = true
-      errors.mainDatastoreColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.mainDatastoreError
-      delete errors.mainDatastoreColor
       this.setState({errors: errors})
     }
 
@@ -483,6 +528,73 @@ class CreateVmService extends React.Component {
       })
     }
 
+    if (diskDevices.length > 0) {
+      diskDevices.forEach((diskDevice, i) => {
+        errors[diskDevice.id] = {}
+
+        if (diskDevice.deviceType) {
+          delete diskDevice.deviceTypeError
+          delete diskDevice.deviceTypeColor
+          delete errors[diskDevice.id].deviceTypeError
+          delete errors[diskDevice.id].deviceTypeColor
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+        else {
+          diskDevice.deviceTypeError = true
+          diskDevice.deviceTypeColor = 'red'
+          errors[diskDevice.id].deviceTypeError = true
+          errors[diskDevice.id].deviceTypeColor = 'red'
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+
+        if (diskDevice.datastoreMoId) {
+          delete diskDevice.datastoreMoIdError
+          delete diskDevice.datastoreMoIdColor
+          delete errors[diskDevice.id].datastoreMoIdError
+          delete errors[diskDevice.id].datastoreMoIdColor
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+        else {
+          diskDevice.datastoreMoIdError = true
+          diskDevice.datastoreMoIdColor = 'red'
+          errors[diskDevice.id].datastoreMoIdError = true
+          errors[diskDevice.id].datastoreMoIdColor = 'red'
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+
+        if (!diskDevice.sizeMB || isNaN(diskDevice.sizeMB)) {
+          diskDevice.sizeMBError = true
+          diskDevice.sizeMBColor = 'red'
+          errors[diskDevice.id].sizeMBError = true
+          errors[diskDevice.id].sizeMBColor = 'red'
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+        else {
+          delete diskDevice.sizeMBError
+          delete diskDevice.sizeMBColor
+          delete errors[diskDevice.id].sizeMBError
+          delete errors[diskDevice.id].sizeMBColor
+          this.setState({errors: errors, diskDevices: diskDevices})
+        }
+
+        if (Object.keys(errors[diskDevice.id]).length === 0) {
+          delete errors[diskDevice.id]
+          this.setState({errors: errors})
+        }
+      })
+    }
+
+    if (!request.mainDatastore) {
+      errors.mainDatastoreError = true
+      errors.mainDatastoreColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.mainDatastoreError
+      delete errors.mainDatastoreColor
+      this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -499,6 +611,37 @@ class CreateVmService extends React.Component {
 
   //DISPOSAL ACTION
   vmCreate = async () => {
+
+    let networkDevices = {existent: [], new: []}
+    let diskDevices = {existent: [], new: []}
+
+    this.state.networkDevices.forEach((nic, i) => {
+      if (nic.existent) {
+        delete nic.existent
+        delete nic.id
+        networkDevices.existent.push(nic)
+      }
+      else {
+        delete nic.existent
+        delete nic.id
+        networkDevices.new.push(nic)
+      }
+    })
+
+    this.state.diskDevices.forEach((disk, i) => {
+      if (disk.existent) {
+        delete disk.existent
+        delete disk.id
+        diskDevices.existent.push(disk)
+      }
+      else {
+        delete disk.existent
+        delete disk.id
+        diskDevices.new.push(disk)
+      }
+    })
+
+
     let b = {}
     b.data = {
         "vmName": this.state.request.vmName,
@@ -511,40 +654,8 @@ class CreateVmService extends React.Component {
         "numCoresPerSocket": this.state.request.numCoresPerSocket,
         "memoryMB": parseInt(this.state.request.memoryMB),
         "notes": this.state.request.notes,
-        "networkDevices": {
-            "existent": [
-                {
-                    "networkMoId": "network-1213",
-                    "label": "Network adapter 1",
-                    "deviceType": "vmxnet3"
-                }
-            ],
-            "new": [
-                {
-                    "networkMoId": "dvportgroup-83",
-                    "label": "",
-                    "deviceType": "e1000"
-                }
-            ]
-        },
-        "diskDevices": {
-            "existent": [
-                {
-                    "datastoreMoId": "datastore-2341",
-                    "label": "Hard disk 1",
-                    "sizeMB": 21504,
-                    "deviceType": "thin"
-                }
-            ],
-            "new": [
-                {
-                    "label": "",
-                    "datastoreMoId": "datastore-2341",
-                    "sizeMB": 512,
-                    "deviceType": "thick lazy zeroed"
-                }
-            ]
-        },
+        "networkDevices": networkDevices,
+        "diskDevices": networkDevices,
         "guestSpec": "centos-test",
         "deleteGuestSpecAfterDeploy": false,
         "bootstrapKeyId": 1,
@@ -567,6 +678,7 @@ class CreateVmService extends React.Component {
         ]
     }
 
+    console.log(b)
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -590,6 +702,7 @@ class CreateVmService extends React.Component {
 
   //Close and Error
   closeModal = () => {
+
     this.setState({
       visible: false,
       response: false,
@@ -600,10 +713,9 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state.networkDevices)
-    console.log(this.state.request)
+    console.log(this.state)
 
-    let corrispondence = obj => {
+    let networkNameMoid = obj => {
       if (this.state.networks) {
         let n = this.state.networks.find(e => e.moId === obj.networkMoId)
         if (n && n.name) {
@@ -612,8 +724,17 @@ class CreateVmService extends React.Component {
       }
     }
 
+    let datastoreNameMoid = obj => {
+      if (this.state.datastores) {
+        let n = this.state.datastores.find(e => e.moId === obj.datastoreMoId)
+        if (n && n.name) {
+          return(n.name)
+        }
+      }
+    }
 
-    const nicCol = [
+
+    const networkDeviceCol = [
       {
         title: 'Label',
         align: 'center',
@@ -630,38 +751,47 @@ class CreateVmService extends React.Component {
         name: 'network',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.networkMoIdError ?
-              <Select
-                defaultValue={() => corrispondence(obj)}
-                key={obj.id}
-                style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
-                onChange={(value, event) => this.networkSet(value, event, obj.id)}>
-                { this.state.networks?
-                  this.state.networks.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
-                    )
-                  })
-                :
-                  null
-                }
-              </Select>
+            {this.state.networksLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
             :
-              <Select
-                defaultValue={() => corrispondence(obj)}
-                key={obj.id}
-                style={{ width: '100%' }}
-                onChange={(value, event) => this.networkSet(value, event, obj.id)}>
-                { this.state.networks?
-                  this.state.networks.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
-                    )
-                  })
+              <React.Fragment>
+                {obj.networkMoIdError ?
+                  <Select
+                    defaultValue={() => networkNameMoid(obj)}
+                    key={obj.id}
+                    style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
+                    onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                    { this.state.networks?
+                      this.state.networks.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                        )
+                      })
+                    :
+                      null
+                    }
+                  </Select>
                 :
-                  null
+                  <React.Fragment>
+                  { this.state.networks ?
+                    <Select
+                      defaultValue={() => networkNameMoid(obj)}
+                      key={obj.id}
+                      style={{ width: '100%' }}
+                      onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                      {this.state.networks.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                          )
+                        })
+                      }
+                    </Select>
+                  :
+                    <Select disabled style={{ width: '100%'}}></Select>
+                  }
+                  </React.Fragment>
                 }
-              </Select>
+              </React.Fragment>
             }
           </React.Fragment>
         )
@@ -679,8 +809,8 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
-                onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
-                { this.state.deviceTypes.map((n, i) => {
+                onChange={(value, event) => this.networkDeviceTypeSet(value, event, obj.id)}>
+                { this.state.networkDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
@@ -692,8 +822,8 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%' }}
-                onChange={(value, event) => this.deviceTypeSet(value, event, obj.id)}>
-                { this.state.deviceTypes.map((n, i) => {
+                onChange={(value, event) => this.networkDeviceTypeSet(value, event, obj.id)}>
+                { this.state.networkDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
@@ -705,12 +835,150 @@ class CreateVmService extends React.Component {
         )
       },
       {
-        title: 'Remove nic',
+        title: 'Remove',
         align: 'center',
-        dataIndex: 'nicRemove',
-        key: 'nicRemove',
+        dataIndex: 'networkDeviceRemove',
+        key: 'networkDeviceRemove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.nicRemove(obj)}>
+          <Button type="danger" onClick={() => this.networkDeviceRemove(obj)}>
+            -
+          </Button>
+        ),
+      },
+    ]
+
+    const diskDeviceCol = [
+      {
+        title: 'Label',
+        align: 'center',
+        dataIndex: 'label',
+        key: 'label',
+        name: 'label',
+        description: '',
+      },
+      {
+        title: 'Datastore',
+        align: 'center',
+        dataIndex: 'datastoreMoId',
+        key: 'datastore',
+        name: 'datastore',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {this.state.datastoresLoading ?
+              <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+            :
+              <React.Fragment>
+                {obj.datastoreMoIdError ?
+                  <Select
+                    defaultValue={() => datastoreNameMoid(obj)}
+                    key={obj.id}
+                    style={{ width: '100%' , border: `1px solid ${obj.datastoreMoIdColor}` }}
+                    onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
+                    { this.state.datastores?
+                      this.state.datastores.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                        )
+                      })
+                    :
+                      null
+                    }
+                  </Select>
+                :
+                  <React.Fragment>
+                  { this.state.datastores ?
+                    <Select
+                      defaultValue={() => datastoreNameMoid(obj)}
+                      key={obj.id}
+                      style={{ width: '100%' }}
+                      onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
+                      {this.state.datastores.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                          )
+                        })
+                      }
+                    </Select>
+                  :
+                    <Select disabled style={{ width: '100%'}}></Select>
+                  }
+                  </React.Fragment>
+                }
+              </React.Fragment>
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Device Type',
+        align: 'center',
+        dataIndex: 'deviceType',
+        key: 'deviceType',
+        name: 'deviceType',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.deviceTypeError ?
+              <Select
+                defaultValue={obj.deviceType}
+                key={obj.id}
+                style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
+                onChange={(value, event) => this.diskDeviceTypeSet(value, event, obj.id)}>
+                { this.state.diskDeviceTypes.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                }
+              </Select>
+            :
+              <Select
+                defaultValue={obj.deviceType}
+                key={obj.id}
+                style={{ width: '100%' }}
+                onChange={(value, event) => this.diskDeviceTypeSet(value, event, obj.id)}>
+                { this.state.diskDeviceTypes.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                }
+              </Select>
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Size (MB)',
+        align: 'center',
+        dataIndex: 'sizeMB',
+        width: 100,
+        key: 'sizeMB',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeMBError ?
+              <Input
+                defaultValue={obj.sizeMB}
+                style={{borderColor: obj.sizeMBColor}}
+                id='sizeMB'
+                onBlur={e => this.sizeMBSet(e, obj.id)}
+              />
+            :
+              <Input
+                id='sizeMB'
+                defaultValue={obj.sizeMB}
+                onBlur={e => this.sizeMBSet(e, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Remove',
+        align: 'center',
+        dataIndex: 'datastoreDeviceRemove',
+        key: 'datastoreDeviceRemove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.datastoreDeviceRemove(obj)}>
             -
           </Button>
         ),
@@ -1102,14 +1370,50 @@ class CreateVmService extends React.Component {
                     <Col span={11}>
                       {this.state.networkDevices ?
                         <React.Fragment>
-                          <Button type="primary" onClick={() => this.nicAdd()}>
+                          <Button type="primary" onClick={() => this.networkDeviceAdd()}>
                             +
                           </Button>
                           <br/>
                           <br/>
                           <Table
-                            columns={nicCol}
+                            columns={networkDeviceCol}
                             dataSource={this.state.networkDevices}
+                            bordered
+                            rowKey={randomKey}
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </Col>
+                  }
+
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={1} span={5}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
+                  </Col>
+                  {this.state.diskDevicesLoading ?
+                    <Col span={11}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={11}>
+                      {this.state.diskDevices ?
+                        <React.Fragment>
+                          <Button type="primary" onClick={() => this.diskDeviceAdd()}>
+                            +
+                          </Button>
+                          <br/>
+                          <br/>
+                          <Table
+                            columns={diskDeviceCol}
+                            dataSource={this.state.diskDevices}
                             bordered
                             rowKey={randomKey}
                             scroll={{x: 'auto'}}
@@ -1144,66 +1448,73 @@ class CreateVmService extends React.Component {
                   <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
-                  <Col span={11}>
-                    { this.state.datastores && this.state.datastores.length > 0 ?
-                      <React.Fragment>
-                        {this.state.errors.mainDatastoreError ?
-                          <Select
-                            defaultValue={this.state.request.mainDatastore}
-                            value={this.state.request.mainDatastore}
-                            showSearch
-                            style={{width: '100%', border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.mainDatastoreSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.state.datastores.map((n, i) => {
-                                return (
-                                  <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        :
-                          <Select
-                            defaultValue={this.state.request.mainDatastore}
-                            value={this.state.request.mainDatastore}
-                            showSearch
-                            style={{width: '100%'}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.mainDatastoreSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.state.datastores.map((n, i) => {
-                                return (
-                                  <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        }
-                      </React.Fragment>
+                  {this.state.datastoresLoading ?
+                    <Col span={11}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
                     :
-                      <Select
-                        style={{width: '100%'}}
-                        disabled
-                      />
-                    }
-                  </Col>
+                    <Col span={11}>
+                      { this.state.datastores && this.state.datastores.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.mainDatastoreError ?
+                            <Select
+                              defaultValue={this.state.request.mainDatastore}
+                              value={this.state.request.mainDatastore}
+                              showSearch
+                              style={{width: '100%', border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.mainDatastoreSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.datastores.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.mainDatastore}
+                              value={this.state.request.mainDatastore}
+                              showSearch
+                              style={{width: '100%'}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.mainDatastoreSet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.datastores.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                        <Select
+                          style={{width: '100%'}}
+                          disabled
+                        />
+                      }
+                    </Col>
+                  }
+
                 </Row>
                 <br/>
 
