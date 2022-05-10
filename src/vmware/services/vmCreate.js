@@ -34,6 +34,8 @@ class CreateVmService extends React.Component {
       numCoresPerSockets: [1,2],
       networkDeviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
       diskDeviceTypes: ['thin', 'thick eager zeroed', 'thick lazy zerod'],
+      networkDevices: [],
+      diskDevices: [],
       errors: {},
       request: {}
     };
@@ -782,7 +784,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state)
+    console.log(this.state.request)
 
     let networkNameMoid = obj => {
       if (this.state.networks) {
@@ -943,12 +945,19 @@ class CreateVmService extends React.Component {
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid ${obj.datastoreMoIdColor}` }}
                     onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
-                    { this.state.datastores?
-                      this.state.datastores.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
-                        )
-                      })
+                    { this.state.datastores ?
+                      <React.Fragment>
+                        { this.state.request.mainDatastore ?
+                          <Select.Option key={'main'} value={this.state.request.mainDatastoreMoId}>* {this.state.request.mainDatastore}</Select.Option>
+                        :
+                          null
+                        }
+                        {this.state.datastores.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                            )
+                          })}
+                      </React.Fragment>
                     :
                       null
                     }
@@ -961,11 +970,21 @@ class CreateVmService extends React.Component {
                       key={obj.id}
                       style={{ width: '100%' }}
                       onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
-                      {this.state.datastores.map((n, i) => {
-                        return (
-                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
-                          )
-                        })
+                      { this.state.datastores ?
+                        <React.Fragment>
+                          { this.state.request.mainDatastore ?
+                            <Select.Option key={'main'} value={this.state.request.mainDatastoreMoId}>* {this.state.request.mainDatastore}</Select.Option>
+                          :
+                            null
+                          }
+                          {this.state.datastores.map((n, i) => {
+                            return (
+                              <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                              )
+                            })}
+                        </React.Fragment>
+                      :
+                        null
                       }
                     </Select>
                   :
@@ -1072,6 +1091,7 @@ class CreateVmService extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          bodyStyle={{height: '80vh', overflowY: 'scroll'}}
         >
 
           <AssetSelector />
@@ -1474,7 +1494,7 @@ class CreateVmService extends React.Component {
                     </Col>
                   :
                     <Col span={11}>
-                      {this.state.networkDevices ?
+                      {(this.state.networkDevices  && this.state.networkDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.networkDeviceAdd()}>
                             +
@@ -1584,7 +1604,7 @@ class CreateVmService extends React.Component {
                     </Col>
                   :
                     <Col span={11}>
-                      {this.state.diskDevices ?
+                      {(this.state.diskDevices  && this.state.diskDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.diskDeviceAdd()}>
                             +
