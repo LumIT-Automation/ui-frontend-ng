@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -12,6 +12,7 @@ import {
   datacentersError,
   clustersError,
   clusterError,
+  foldersError,
   templatesError,
   templateError
 } from '../store'
@@ -80,11 +81,47 @@ class CreateVmService extends React.Component {
       return
     }
     else {
-      console.log(datacentersFetched.data.items)
       this.setState({datacenters: datacentersFetched.data.items})
     }
+
+    await this.setState({foldersLoading: true})
+    let foldersFetched = await this.foldersGet()
+    await this.setState({foldersLoading: false})
+    if (foldersFetched.status && foldersFetched.status !== 200 ) {
+      this.props.dispatch(foldersError(foldersFetched))
+      return
+    }
+    else {
+      console.log(foldersFetched)
+      /*
+      let string = JSON.stringify(foldersFetched.data.items[0].folders)
+
+      let changed = await this.changeFold(string)
+      console.log(changed)
+      let changed2 = await this.changeTit(changed)
+      console.log(changed2)
+      let changed3 = await this.changeK(changed2)
+      console.log(changed3)
+*/
+      this.setState({folders: foldersFetched.data.items[0].children})
+    }
+  }
+/*
+  changeFold = async string => {
+    let ne = string.replaceAll("folders", "children")
+    return ne
   }
 
+  changeTit = async string => {
+    let ne = string.replaceAll("name", "title")
+    return ne
+  }
+
+  changeK = async string => {
+    let ne = string.replaceAll("moId", "key")
+    return ne
+  }
+*/
 
   //FETCH
   datacentersGet = async () => {
@@ -99,6 +136,21 @@ class CreateVmService extends React.Component {
       }
     )
     await rest.doXHR(`vmware/${this.props.asset.id}/datacenters/?quick`, this.props.token)
+    return r
+  }
+
+  foldersGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/vmFolders/tree/`, this.props.token)
     return r
   }
 
@@ -324,6 +376,12 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
+  folderSet = (selectedKeys, info) => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.vmFolderMoId = info.node.moId
+    this.setState({ request: request})
+  }
+
   templateSet = template => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.template = template[0]
@@ -440,6 +498,17 @@ class CreateVmService extends React.Component {
     else {
       delete errors.clusterError
       delete errors.clusterColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.vmFolderMoId) {
+      errors.vmFolderMoIdError = true
+      errors.vmFolderMoIdColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.vmFolderMoIdError
+      delete errors.vmFolderMoIdColor
       this.setState({errors: errors})
     }
 
@@ -657,7 +726,7 @@ class CreateVmService extends React.Component {
         "networkDevices": networkDevices,
         "diskDevices": networkDevices,
         "guestSpec": "centos-test",
-        "deleteGuestSpecAfterDeploy": false,
+        "deleteGuestSpecAfterDeploy": true,
         "bootstrapKeyId": 1,
         "finalPubKeyIds": [
             1
@@ -975,10 +1044,10 @@ class CreateVmService extends React.Component {
       {
         title: 'Remove',
         align: 'center',
-        dataIndex: 'datastoreDeviceRemove',
-        key: 'datastoreDeviceRemove',
+        dataIndex: 'diskDeviceRemove',
+        key: 'diskDeviceRemove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.datastoreDeviceRemove(obj)}>
+          <Button type="danger" onClick={() => this.diskDeviceRemove(obj)}>
             -
           </Button>
         ),
@@ -1174,6 +1243,43 @@ class CreateVmService extends React.Component {
                           style={{width: '100%'}}
                           disabled
                         />
+                      }
+                    </Col>
+                  }
+                </Row>
+                <br/>
+
+
+
+                <Row>
+                  <Col offset={4} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Folder:</p>
+                  </Col>
+                  { this.state.foldersLoading ?
+                    <Col span={11}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={11}>
+                      { this.state.folders ?
+                        <React.Fragment>
+                          {this.state.errors.vmFolderMoIdError ?
+                            <Tree
+                              showLine
+                              style={{color: this.state.errors.vmFolderMoIdColor}}
+                              onSelect={this.folderSet}
+                              treeData={this.state.folders}
+                            />
+                          :
+                            <Tree
+                              showLine
+                              onSelect={this.folderSet}
+                              treeData={this.state.folders}
+                            />
+                          }
+                        </React.Fragment>
+                      :
+                        null
                       }
                     </Col>
                   }
@@ -1396,56 +1502,6 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={1} span={5}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
-                  </Col>
-                  {this.state.diskDevicesLoading ?
-                    <Col span={11}>
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    </Col>
-                  :
-                    <Col span={11}>
-                      {this.state.diskDevices ?
-                        <React.Fragment>
-                          <Button type="primary" onClick={() => this.diskDeviceAdd()}>
-                            +
-                          </Button>
-                          <br/>
-                          <br/>
-                          <Table
-                            columns={diskDeviceCol}
-                            dataSource={this.state.diskDevices}
-                            bordered
-                            rowKey={randomKey}
-                            scroll={{x: 'auto'}}
-                            pagination={false}
-                            style={{marginBottom: 10}}
-                          />
-                        </React.Fragment>
-                      :
-                        null
-                      }
-                    </Col>
-                  }
-
-                </Row>
-                <br/>
-
-                <Row>
-                  <Col offset={1} span={5}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
-                  </Col>
-                  <Col span={11}>
-                    {this.state.errors.notesError ?
-                      <Input.TextArea style={{width: '100%', borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
-                    :
-                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: '100%'}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
-                    }
-                  </Col>
-                </Row>
-                <br/>
-
-                <Row>
-                  <Col offset={1} span={5}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
                   {this.state.datastoresLoading ?
@@ -1519,6 +1575,58 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
+                  <Col offset={1} span={5}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
+                  </Col>
+                  {this.state.diskDevicesLoading ?
+                    <Col span={11}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={11}>
+                      {this.state.diskDevices ?
+                        <React.Fragment>
+                          <Button type="primary" onClick={() => this.diskDeviceAdd()}>
+                            +
+                          </Button>
+                          <br/>
+                          <br/>
+                          <Table
+                            columns={diskDeviceCol}
+                            dataSource={this.state.diskDevices}
+                            bordered
+                            rowKey={randomKey}
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        </React.Fragment>
+                      :
+                        null
+                      }
+                    </Col>
+                  }
+
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={1} span={5}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
+                  </Col>
+                  <Col span={11}>
+                    {this.state.errors.notesError ?
+                      <Input.TextArea style={{width: '100%', borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                    :
+                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: '100%'}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                    }
+                  </Col>
+                </Row>
+                <br/>
+
+
+
+                <Row>
                   <Col offset={10} span={2}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
                       Create Virtual machine
@@ -1540,6 +1648,7 @@ class CreateVmService extends React.Component {
             { this.props.datacentersError ? <Error component={'create vm'} error={[this.props.datacentersError]} visible={true} type={'datacentersError'} /> : null }
             { this.props.clustersError ? <Error component={'create vm'} error={[this.props.clustersError]} visible={true} type={'clustersError'} /> : null }
             { this.props.clusterError ? <Error component={'create vm'} error={[this.props.clusterError]} visible={true} type={'clusterError'} /> : null }
+            { this.props.foldersError ? <Error component={'create vm'} error={[this.props.foldersError]} visible={true} type={'foldersError'} /> : null }
             { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
             { this.props.templateError ? <Error component={'create vm'} error={[this.props.templateError]} visible={true} type={'templateError'} /> : null }
           </React.Fragment>
@@ -1561,6 +1670,7 @@ export default connect((state) => ({
   datacentersError: state.vmware.datacentersError,
   clustersError: state.vmware.clustersError,
   clusterError: state.vmware.clusterError,
+  foldersError: state.vmware.foldersError,
   templatesError: state.vmware.templatesError,
   templateError: state.vmware.templateError,
 }))(CreateVmService);

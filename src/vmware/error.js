@@ -36,6 +36,7 @@ import {
   datacentersError,
   clustersError,
   clusterError,
+  foldersError,
   templatesError,
   templateError,
 
@@ -133,6 +134,9 @@ class Error extends Component {
           break;
         case 'clusterError':
           this.props.dispatch(clusterError(null))
+          break;
+        case 'foldersError':
+          this.props.dispatch(foldersError(null))
           break;
         case 'templatesError':
           this.props.dispatch(templatesError(null))
