@@ -86,13 +86,14 @@ class SearchRagioneSociale extends React.Component {
         <Col offset={8} span={8}>
           { this.props.projectsLoading ?
             <React.Fragment>
-              Ragione sociale: <Spin indicator={spinIcon} style={{margin: '0 50px', display: 'inline'}}/>
+              <p style={{margin: '5vh 0', fontSize: '3vh'}}>Ragione sociale: </p>
+              <Spin indicator={spinIcon} style={{margin: '0 5vw', display: 'inline'}}/>
             </React.Fragment>
           :
             <React.Fragment>
-              Ragione sociale:
+              <p style={{margin: '5vh 1vw 1vh 2vw', fontSize: '3vh'}}>Ragione sociale: </p>
               <Select
-                style={{ width: 300, marginLeft: '10px'}}
+                style={{width: '20vw'}}
                 showSearch
                 //allowClear
                 value={this.state.project}

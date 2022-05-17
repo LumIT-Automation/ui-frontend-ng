@@ -94,36 +94,21 @@ class CreateVmService extends React.Component {
       return
     }
     else {
-      console.log(foldersFetched)
-      /*
-      let string = JSON.stringify(foldersFetched.data.items[0].folders)
-
-      let changed = await this.changeFold(string)
-      console.log(changed)
-      let changed2 = await this.changeTit(changed)
-      console.log(changed2)
-      let changed3 = await this.changeK(changed2)
-      console.log(changed3)
-*/
       this.setState({folders: foldersFetched.data.items[0].children})
     }
-  }
-/*
-  changeFold = async string => {
-    let ne = string.replaceAll("folders", "children")
-    return ne
+
+    await this.setState({customSpecsLoading: true})
+    let customSpecsFetched = await this.customSpecsGet()
+    await this.setState({customSpecsLoading: false})
+    if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
+      this.props.dispatch(customSpecsError(customSpecsFetched))
+      return
+    }
+    else {
+      this.setState({customSpecs: customSpecsFetched.data.items})
+    }
   }
 
-  changeTit = async string => {
-    let ne = string.replaceAll("name", "title")
-    return ne
-  }
-
-  changeK = async string => {
-    let ne = string.replaceAll("moId", "key")
-    return ne
-  }
-*/
 
   //FETCH
   datacentersGet = async () => {
@@ -138,6 +123,21 @@ class CreateVmService extends React.Component {
       }
     )
     await rest.doXHR(`vmware/${this.props.asset.id}/datacenters/?quick`, this.props.token)
+    return r
+  }
+
+  clustersGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/datacenter/${this.state.request.datacenterMoId}/`, this.props.token)
     return r
   }
 
@@ -156,7 +156,7 @@ class CreateVmService extends React.Component {
     return r
   }
 
-  clustersGet = async () => {
+  customSpecsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -167,7 +167,7 @@ class CreateVmService extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`vmware/${this.props.asset.id}/datacenter/${this.state.request.datacenterMoId}/`, this.props.token)
+    await rest.doXHR(`vmware/${this.props.asset.id}/customSpecs/`, this.props.token)
     return r
   }
 
@@ -430,6 +430,12 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: networkDevices})
   }
 
+  customSpecSet = c => {
+    let customSpecs = JSON.parse(JSON.stringify(this.state.customSpecs))
+    let customSpec = customSpecs.find( r => r.name === c )
+    this.setState({customSpec: customSpec})
+  }
+
   diskDeviceTypeSet = (deviceType , event, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
@@ -599,6 +605,17 @@ class CreateVmService extends React.Component {
       })
     }
 
+    if (!request.datacenter) {
+      errors.datacenterError = true
+      errors.datacenterColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.datacenterError
+      delete errors.datacenterColor
+      this.setState({errors: errors})
+    }
+
     if (diskDevices.length > 0) {
       diskDevices.forEach((diskDevice, i) => {
         errors[diskDevice.id] = {}
@@ -727,7 +744,7 @@ class CreateVmService extends React.Component {
         "notes": this.state.request.notes,
         "networkDevices": networkDevices,
         "diskDevices": networkDevices,
-        "guestSpec": "centos-test",
+        "customSpec": "centos-test",
         "deleteGuestSpecAfterDeploy": true,
         "bootstrapKeyId": 1,
         "finalPubKeyIds": [
@@ -784,7 +801,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
+    console.log(this.state)
 
     let networkNameMoid = obj => {
       if (this.state.networks) {
@@ -1111,7 +1128,7 @@ class CreateVmService extends React.Component {
                 <React.Fragment>
 
                 <Row>
-                  <Col offset={4} span={2}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
                   </Col>
                   <Col span={4}>
@@ -1125,7 +1142,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
                   <Col span={4}>
@@ -1191,7 +1208,7 @@ class CreateVmService extends React.Component {
                     </React.Fragment>
                     }
                   </Col>
-                  <Col offset={2} span={1}>
+                  <Col offset={2} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
@@ -1269,18 +1286,16 @@ class CreateVmService extends React.Component {
                 </Row>
                 <br/>
 
-
-
                 <Row>
-                  <Col offset={4} span={2}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Folder:</p>
                   </Col>
                   { this.state.foldersLoading ?
-                    <Col span={11}>
+                    <Col span={12}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={11}>
+                    <Col span={12}>
                       { this.state.folders ?
                         <React.Fragment>
                           {this.state.errors.vmFolderMoIdError ?
@@ -1307,15 +1322,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={4} span={2}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
-                    <Col span={11}>
+                    <Col span={12}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={11}>
+                    <Col span={12}>
                       { this.state.templates ?
                         <React.Fragment>
                           { this.state.templates && this.state.templates.length > 0 ?
@@ -1395,7 +1410,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={4} span={2}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
                   </Col>
                   <Col span={2}>
@@ -1439,7 +1454,7 @@ class CreateVmService extends React.Component {
                   <Col span={2}>
                     {this.state.errors.numCoresPerSocketError ?
                     <Select
-                      defaultValue={this.state.request.numCoresPerSocket}
+                      defaultValue={1}
                       value={this.state.request.numCoresPerSocket}
                       style={{width: '100%', border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
@@ -1455,7 +1470,7 @@ class CreateVmService extends React.Component {
                     </Select>
                   :
                     <Select
-                      defaultValue={this.state.request.numCoresPerSocket}
+                      defaultValue={1}
                       value={this.state.request.numCoresPerSocket}
                       style={{width: '100%'}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
@@ -1471,7 +1486,7 @@ class CreateVmService extends React.Component {
                     </Select>
                   }
                   </Col>
-                  <Col span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (MB):</p>
                   </Col>
                   <Col span={2}>
@@ -1485,15 +1500,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Network Devices:</p>
                   </Col>
                   {this.state.networkDevicesLoading ?
-                    <Col span={11}>
+                    <Col span={12}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={11}>
+                    <Col span={12}>
                       {(this.state.networkDevices  && this.state.networkDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.networkDeviceAdd()}>
@@ -1521,15 +1536,158 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={3} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>GuestSpec:</p>
+                  </Col>
+                  {this.state.customSpecsLoading ?
+                    <Col span={12}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                  <Col span={12}>
+                    { this.state.customSpecs && this.state.customSpecs.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.customSpecError ?
+                          <Select
+                            value={this.state.customSpec ? this.state.customSpec.name : null }
+                            showSearch
+                            style={{width: '100%', border: `1px solid ${this.state.errors.customSpecColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.customSpecSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.customSpecs.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.customSpec ? this.state.customSpec.name : null }
+                            showSearch
+                            style={{width: '100%'}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.customSpecSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.customSpecs.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
+                    :
+                      <Select
+                        style={{width: '100%'}}
+                        disabled
+                      />
+                    }
+                  </Col>
+                  }
+
+                </Row>
+                <br/>
+
+                { this.state.customSpec ?
+                  <React.Fragment>
+                  <Row>
+                    <Col offset={4} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.csNameError ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.csNameColor}} name="csName" id='csName' onChange={e => this.csNameSet(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.csName} name="csName" id='csName' onChange={e => this.csNameSet(e)} />
+                      }
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={4} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DNS 1:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.dns1Error ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.dns1Color}} name="dns1" id='dns1' onChange={e => this.dns1Set(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.dns1} name="dns1" id='dns1' onChange={e => this.dns1Set(e)} />
+                      }
+                    </Col>
+
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DNS 2:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.dns2Error ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.dns2Color}} name="dns2" id='dns2' onChange={e => this.dns2Set(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.dns2} name="dns2" id='dns2' onChange={e => this.dns2Set(e)} />
+                      }
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={4} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Hostname:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.csHostnameError ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.csHostnameColor}} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.csHostname} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
+                      }
+                    </Col>
+
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain Name:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.csDomainError ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.csDomainColor}} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.csDomain} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                      }
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  </React.Fragment>
+                :
+                  null
+                }
+
+                <Row>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
                   {this.state.datastoresLoading ?
-                    <Col span={11}>
+                    <Col span={12}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                     :
-                    <Col span={11}>
+                    <Col span={12}>
                       { this.state.datastores && this.state.datastores.length > 0 ?
                         <React.Fragment>
                           {this.state.errors.mainDatastoreError ?
@@ -1595,15 +1753,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
                   </Col>
                   {this.state.diskDevicesLoading ?
-                    <Col span={11}>
+                    <Col span={12}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={11}>
+                    <Col span={12}>
                       {(this.state.diskDevices  && this.state.diskDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.diskDeviceAdd()}>
@@ -1631,10 +1789,10 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={5}>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
                   </Col>
-                  <Col span={11}>
+                  <Col span={12}>
                     {this.state.errors.notesError ?
                       <Input.TextArea style={{width: '100%', borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
                     :
@@ -1647,7 +1805,7 @@ class CreateVmService extends React.Component {
 
 
                 <Row>
-                  <Col offset={10} span={2}>
+                  <Col offset={9} span={2}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
                       Create Virtual machine
                     </Button>
