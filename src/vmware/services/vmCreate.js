@@ -37,6 +37,7 @@ class CreateVmService extends React.Component {
       networkDevices: [],
       diskDevices: [],
       errors: {},
+      cs: {},
       request: {}
     };
     this.baseState = this.state
@@ -436,6 +437,36 @@ class CreateVmService extends React.Component {
     this.setState({customSpec: customSpec})
   }
 
+  csNameSet = e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.csName = e.target.value
+    this.setState({cs: cs})
+  }
+
+  dns1Set = e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.dns1 = e.target.value
+    this.setState({cs: cs})
+  }
+
+  dns2Set = e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.dns2 = e.target.value
+    this.setState({cs: cs})
+  }
+
+  csHostnameSet = e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.csHostname = e.target.value
+    this.setState({cs: cs})
+  }
+
+  csDomainSet = e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.csDomain = e.target.value
+    this.setState({cs: cs})
+  }
+
   diskDeviceTypeSet = (deviceType , event, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
@@ -470,6 +501,7 @@ class CreateVmService extends React.Component {
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
@@ -561,6 +593,61 @@ class CreateVmService extends React.Component {
     else {
       delete errors.notesError
       delete errors.notesColor
+      this.setState({errors: errors})
+    }
+
+    if (!cs.csName) {
+      errors.csNameError = true
+      errors.csNameColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.csNameError
+      delete errors.csNameColor
+      this.setState({errors: errors})
+    }
+
+    if (!cs.dns1 || !validators.ipv4(cs.dns1)) {
+      errors.dns1Error = true
+      errors.dns1Color = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.dns1Error
+      delete errors.dns1Color
+      this.setState({errors: errors})
+    }
+
+    if (!cs.dns2 || !validators.ipv4(cs.dns1)) {
+      errors.dns2Error = true
+      errors.dns2Color = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.dns2Error
+      delete errors.dns2Color
+      this.setState({errors: errors})
+    }
+
+    if (!cs.csHostname) {
+      errors.csHostnameError = true
+      errors.csHostnameColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.csHostnameError
+      delete errors.csHostnameColor
+      this.setState({errors: errors})
+    }
+
+    if (!cs.csDomain || !validators.fqdn(cs.csDomain)) {
+      errors.csDomainError = true
+      errors.csDomainColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.csDomainError
+      delete errors.csDomainColor
       this.setState({errors: errors})
     }
 
