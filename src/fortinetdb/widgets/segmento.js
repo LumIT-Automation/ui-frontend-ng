@@ -116,7 +116,7 @@ class Segmento extends React.Component {
                   data={this.state.field}
                   x="Segmento"
                   y="COUNT"
-                  innerRadius={0} radius={80}
+                  innerRadius={50} radius={80}
                   labels={({ datum }) => null}
                 />
               </svg>

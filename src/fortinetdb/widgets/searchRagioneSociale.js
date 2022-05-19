@@ -91,9 +91,9 @@ class SearchRagioneSociale extends React.Component {
             </React.Fragment>
           :
             <React.Fragment>
-              <p style={{margin: '5vh 1vw 1vh 2vw', fontSize: '3vh'}}>Ragione sociale: </p>
+              <p style={{margin: '5vh 0 0 0', fontSize: '3vh'}}>Ragione sociale: </p>
               <Select
-                style={{width: '20vw'}}
+                style={{width: '50vw'}}
                 showSearch
                 //allowClear
                 value={this.state.project}

@@ -38,6 +38,7 @@ class CreateVmService extends React.Component {
       diskDevices: [],
       errors: {},
       cs: {},
+      addresses: [],
       request: {}
     };
     this.baseState = this.state
@@ -434,7 +435,7 @@ class CreateVmService extends React.Component {
   customSpecSet = c => {
     let customSpecs = JSON.parse(JSON.stringify(this.state.customSpecs))
     let customSpec = customSpecs.find( r => r.name === c )
-    this.setState({customSpec: customSpec})
+    this.setState({customSpec: customSpec, addresses: customSpec.network})
   }
 
   csNameSet = e => {
@@ -1177,6 +1178,101 @@ class CreateVmService extends React.Component {
       },
     ]
 
+    const addressCol = [
+      {
+        title: 'Ip',
+        align: 'center',
+        dataIndex: 'ip',
+        key: 'ip',
+        name: 'ip',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.ipError ?
+              <React.Fragment>
+                <Input
+                  id='ip'
+                  defaultValue={obj.ip}
+                  onChange={e => this.ipSet(e, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.ipError}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='ip'
+                defaultValue={obj.ip}
+                onChange={e => this.ipSet(e, obj.id)}
+              />
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Subnet Mask',
+        align: 'center',
+        dataIndex: 'netMask',
+        key: 'netMask',
+        name: 'netMask',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.netMaskError ?
+              <React.Fragment>
+                <Input
+                  id='netMask'
+                  defaultValue={obj.netMask}
+                  onChange={e => this.netMaskSet(e, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.netMaskError}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='netMask'
+                defaultValue={obj.netMask}
+                onChange={e => this.netMaskSet(e, obj.id)}
+              />
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Gateway',
+        align: 'center',
+        dataIndex: 'gw',
+        key: 'gw',
+        name: 'gw',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.gwError ?
+              <React.Fragment>
+                <Input
+                  id='gw'
+                  defaultValue={obj.gw[0]}
+                  onChange={e => this.netMaskSet(e, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.gwError}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='gw'
+                defaultValue={obj.gw}
+                onChange={e => this.netMaskSet(e, obj.id)}
+              />
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Remove',
+        align: 'center',
+        dataIndex: 'addressRemove',
+        key: 'addressRemove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.addressRemove(obj)}>
+            -
+          </Button>
+        ),
+      },
+    ]
+
     let randomKey = () => {
       return Math.random().toString()
     }
@@ -1755,6 +1851,35 @@ class CreateVmService extends React.Component {
                         <Input style={{width: '100%', borderColor: this.state.errors.csDomainColor}} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
                       :
                         <Input style={{width: '100%'}} defaultValue={this.state.request.csDomain} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                      }
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={4} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Addresses:</p>
+                    </Col>
+                    <Col span={11}>
+                      {(this.state.addresses  && this.state.addresses.length > 0) ?
+                        <React.Fragment>
+                          <Button type="primary" onClick={() => this.addressAdd()}>
+                            +
+                          </Button>
+                          <br/>
+                          <br/>
+                          <Table
+                            columns={addressCol}
+                            dataSource={this.state.addresses}
+                            bordered
+                            rowKey={randomKey}
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        </React.Fragment>
+                      :
+                        null
                       }
                     </Col>
                   </Row>

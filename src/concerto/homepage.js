@@ -54,71 +54,7 @@ class Homepage extends React.Component {
             :
               <React.Fragment>
                 <br/>
-                <Divider orientation="left">Devices</Divider>
-                <React.Fragment>
-                  <Row>
-                    <Col span={24}>
-                      <Selector/>
-                    </Col>
-                  </Row>
-                  <Divider/>
-                  <Row>
-                    <Col span={24}>
-                      <Row>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
-                            <Modello/>
-                          </Card>
-                        </Col>
-
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
-                            <Firmware/>
-                          </Card>
-                        </Col>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
-                            <BackupStatus/>
-                          </Card>
-                        </Col>
-
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>REGION</p>} bordered={true}>
-                            <Italia/>
-                          </Card>
-                        </Col>
-                      </Row>
-
-                      <Divider/>
-
-                      <Row>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>
-                            <AttivazioneAnno/>
-                          </Card>
-                        </Col>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE MESE</p>} bordered={true}>
-                            <AttivazioneMese/>
-                          </Card>
-                        </Col>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>EOL ANNO</p>} bordered={true}>
-                            <EolAnno/>
-                          </Card>
-                        </Col>
-                        <Col span={6}>
-                          <Card title={<p style={{textAlign: 'center'}}>EOL MESE</p>} bordered={true}>
-                            <EolMese/>
-                          </Card>
-                        </Col>
-                      </Row>
-                    </Col>
-                  </Row>
-                </React.Fragment>
-
-                <br/>
-                <Divider orientation="left">Projects</Divider>
+                <Divider orientation="left" style={{fontWeight: 'bold'}}>Projects</Divider>
                 <React.Fragment>
                   <Row>
                     <Col span={8}>
@@ -131,8 +67,78 @@ class Homepage extends React.Component {
                         <Segmento/>
                       </Card>
                     </Col>
+                    <Col span={8}>
+                      <Card title={<p style={{textAlign: 'center'}}>DISTRIBUZIONE APPARATI</p>} bordered={true}>
+                        <Italia/>
+                      </Card>
+                    </Col>
                   </Row>
                 </React.Fragment>
+
+                <br/>
+                <Divider orientation="left" style={{fontWeight: 'bold'}}>Devices</Divider>
+                <Row>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE ANNO</p>} bordered={true}>
+                      <AttivazioneAnno/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>ATTIVAZIONE MESE</p>} bordered={true}>
+                      <AttivazioneMese/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOL ANNO</p>} bordered={true}>
+                      <EolAnno/>
+                    </Card>
+                  </Col>
+                  <Col span={6}>
+                    <Card title={<p style={{textAlign: 'center'}}>EOL MESE</p>} bordered={true}>
+                      <EolMese/>
+                    </Card>
+                  </Col>
+                </Row>
+
+                <br/>
+                <Divider/>
+                <br/>
+
+                <React.Fragment>
+                  <Row>
+                    <Col span={24}>
+                      <Selector/>
+                    </Col>
+                  </Row>
+                  <Divider/>
+                  <Row>
+                    <Col span={24}>
+                      <Row>
+                        <Col span={8}>
+                          <Card title={<p style={{textAlign: 'center'}}>MODELLO</p>} bordered={true}>
+                            <Modello/>
+                          </Card>
+                        </Col>
+
+                        <Col span={8}>
+                          <Card title={<p style={{textAlign: 'center'}}>FIRMWARE</p>} bordered={true}>
+                            <Firmware/>
+                          </Card>
+                        </Col>
+                        <Col span={8}>
+                          <Card title={<p style={{textAlign: 'center'}}>BACKUP STATUS</p>} bordered={true}>
+                            <BackupStatus/>
+                          </Card>
+                        </Col>
+                      </Row>
+
+                      <Divider/>
+
+                    </Col>
+                  </Row>
+                </React.Fragment>
+
+
               </React.Fragment>
             }
           </React.Fragment>
