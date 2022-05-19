@@ -306,14 +306,6 @@ class Device extends React.Component {
         ...this.getColumnSearchProps('regione')
       },
       {
-        title: "detail",
-        align: "center",
-     		width: 150,
-        dataIndex: "detail",
-        key: "detail",
-        ...this.getColumnSearchProps('detail')
-      },
-      {
         title: "Extra Data",
         align: "center",
      		width: 300,

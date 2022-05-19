@@ -62,7 +62,11 @@ class BackupStatus extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(backupStatuss(resp.data.items))
+        let f = resp.data.items
+        f.sort(function(a, b) {
+          return b.COUNT - a.COUNT;
+        });
+        this.props.dispatch(backupStatuss(f))
       },
       error => {
         this.props.dispatch(backupStatussError(error))

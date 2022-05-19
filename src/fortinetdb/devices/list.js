@@ -245,14 +245,6 @@ class List extends React.Component {
         dataIndex: "regione",
         key: "regione",
         ...this.getColumnSearchProps('regione')
-      },
-      {
-        title: "detail",
-        align: "center",
-     		width: 150,
-        dataIndex: "detail",
-        key: "detail",
-        ...this.getColumnSearchProps('detail')
       }
     ]
 

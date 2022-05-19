@@ -339,14 +339,20 @@ class Project extends React.Component {
                     <Devices height={350} pagination={5} filteredDevices={this.state.devices}/>
                   </TabPane>
                 }
-                {this.state.ddossesLoading ?
-                  <TabPane key="ddosses" tab="Ddosses">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
+                {this.state.ddosses && this.state.ddosses.length > 0 ?
+                  <React.Fragment>
+                  {this.state.ddossesLoading ?
+                    <TabPane key="ddosses" tab="Ddosses">
+                      <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                    </TabPane>
+                  :
+                    <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDdosses()}/></span>>
+                      <Ddosses height={350} pagination={5} filteredDdosses={this.state.ddosses}/>
+                    </TabPane>
+                  }
+                  </React.Fragment>
                 :
-                  <TabPane key="ddosses" tab=<span>Ddosses<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.fetchDdosses()}/></span>>
-                    <Ddosses height={350} pagination={5} filteredDdosses={this.state.ddosses}/>
-                  </TabPane>
+                  null
                 }
               </Tabs>
 

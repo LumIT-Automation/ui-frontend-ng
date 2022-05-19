@@ -62,7 +62,11 @@ class Firmware extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(firmwares(resp.data.items))
+        let f = resp.data.items
+        f.sort(function(a, b) {
+          return b.COUNT - a.COUNT;
+        });
+        this.props.dispatch(firmwares(f))
       },
       error => {
         this.props.dispatch(firmwaresError(error))
