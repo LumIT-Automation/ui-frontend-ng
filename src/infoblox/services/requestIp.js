@@ -532,6 +532,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
+    console.log(this.state.requests)
     const requests = [
       {
         title: 'Loading',

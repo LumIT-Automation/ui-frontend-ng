@@ -321,12 +321,16 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: list})
   }
 
-  networkDeviceRemove = r => {
+  networkDeviceRemove = async r => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let newList = networkDevices.filter(n => {
       return r.id !== n.id
     })
-    this.setState({networkDevices: newList})
+    await this.setState({networkDevices: newList})
+    if (this.state.networkDevices.length < 1 ) {
+      newList.push({id: 0, existent: false, networkMoId: null, deviceType: null, label:''})
+      await this.setState({networkDevices: newList})
+    }
   }
 
   diskDeviceAdd = () => {
@@ -346,15 +350,46 @@ class CreateVmService extends React.Component {
     this.setState({diskDevices: list})
   }
 
-  diskDeviceRemove = r => {
+  diskDeviceRemove = async r => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let newList = diskDevices.filter(n => {
       return r.id !== n.id
     })
-    this.setState({diskDevices: newList})
+    await this.setState({diskDevices: newList})
+    if (this.state.diskDevices.length < 1 ) {
+      newList.push({id: 0, existent: false, datastoreMoId: null, deviceType: null, label:''})
+      await this.setState({diskDevices: newList})
+    }
   }
 
+  addressAdd = () => {
+    //let n = this.state.counter + 1
+    let id = 0
+    let n = 0
+    this.state.addresses.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
 
+    let r = {id: n, ip: '', netMask: '', gw: []}
+    let list = JSON.parse(JSON.stringify(this.state.addresses))
+    list.push(r)
+    this.setState({addresses: list})
+  }
+
+  addressRemove = async r => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
+    let newList = addresses.filter(n => {
+      return r.id !== n.id
+    })
+    await this.setState({addresses: newList})
+    if (this.state.addresses.length < 1 ) {
+      newList.push({id: 0, ip: '', netMask: '', gw: []})
+      await this.setState({addresses: newList})
+    }
+  }
 
 
   //SETTERS
@@ -435,7 +470,14 @@ class CreateVmService extends React.Component {
   customSpecSet = c => {
     let customSpecs = JSON.parse(JSON.stringify(this.state.customSpecs))
     let customSpec = customSpecs.find( r => r.name === c )
-    this.setState({customSpec: customSpec, addresses: customSpec.network})
+    let list = []
+    customSpec.network.forEach((item, i) => {
+      console.log(item)
+      item.id = i
+      list.push(item)
+    });
+
+    this.setState({customSpec: customSpec, addresses: list})
   }
 
   csNameSet = e => {
@@ -466,6 +508,27 @@ class CreateVmService extends React.Component {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     cs.csDomain = e.target.value
     this.setState({cs: cs})
+  }
+
+  ipSet = (ip, id) => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
+    let address = addresses.find( r => r.id === id )
+    address.ip = ip.target.value
+    this.setState({addresses: addresses})
+  }
+
+  netMaskSet = (netMask, id) => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
+    let address = addresses.find( r => r.id === id )
+    address.netMask = netMask.target.value
+    this.setState({addresses: addresses})
+  }
+
+  gwSet = (gw, id) => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
+    let address = addresses.find( r => r.id === id )
+    address.gw[0] = gw.target.value
+    this.setState({addresses: addresses})
   }
 
   diskDeviceTypeSet = (deviceType , event, diskDeviceId) => {
@@ -506,6 +569,7 @@ class CreateVmService extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let validators = new Validators()
 
 
@@ -650,6 +714,62 @@ class CreateVmService extends React.Component {
       delete errors.csDomainError
       delete errors.csDomainColor
       this.setState({errors: errors})
+    }
+
+    if (addresses.length > 0) {
+      addresses.forEach((address, i) => {
+        errors[address.id] = {}
+
+        if (!address.ip || !validators.ipv4(address.ip)) {
+          address.ipError = true
+          address.ipColor = 'red'
+          errors[address.id].ipError = true
+          errors[address.id].ipColor = 'red'
+          this.setState({errors: errors, addresses: addresses})
+        }
+        else {
+          delete address.ipError
+          delete address.ipColor
+          delete errors[address.id].ipError
+          delete errors[address.id].ipColor
+          this.setState({errors: errors, addresses: addresses})
+        }
+
+        if (!address.netMask || !validators.ipv4(address.netMask)) {
+          address.netMaskError = true
+          address.netMaskColor = 'red'
+          errors[address.id].netMaskError = true
+          errors[address.id].netMaskColor = 'red'
+          this.setState({errors: errors, addresses: addresses})
+        }
+        else {
+          delete address.netMaskError
+          delete address.netMaskColor
+          delete errors[address.id].netMaskError
+          delete errors[address.id].netMaskColor
+          this.setState({errors: errors, addresses: addresses})
+        }
+
+        if (!address.gw || !validators.ipv4(address.gw)) {
+          address.gwError = true
+          address.gwColor = 'red'
+          errors[address.id].gwError = true
+          errors[address.id].gwColor = 'red'
+          this.setState({errors: errors, addresses: addresses})
+        }
+        else {
+          delete address.gwError
+          delete address.gwColor
+          delete errors[address.id].gwError
+          delete errors[address.id].gwColor
+          this.setState({errors: errors, addresses: addresses})
+        }
+
+        if (Object.keys(errors[address.id]).length === 0) {
+          delete errors[address.id]
+          this.setState({errors: errors})
+        }
+      })
     }
 
     if (networkDevices.length > 0) {
@@ -1153,13 +1273,13 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.sizeMB}
                 style={{borderColor: obj.sizeMBColor}}
                 id='sizeMB'
-                onBlur={e => this.sizeMBSet(e, obj.id)}
+                onChange={e => this.sizeMBSet(e, obj.id)}
               />
             :
               <Input
                 id='sizeMB'
                 defaultValue={obj.sizeMB}
-                onBlur={e => this.sizeMBSet(e, obj.id)}
+                onChange={e => this.sizeMBSet(e, obj.id)}
               />
             }
           </React.Fragment>
@@ -1180,25 +1300,20 @@ class CreateVmService extends React.Component {
 
     const addressCol = [
       {
-        title: 'Ip',
+        title: 'IP',
         align: 'center',
         dataIndex: 'ip',
         key: 'ip',
-        name: 'ip',
         render: (name, obj)  => (
           <React.Fragment>
             {obj.ipError ?
-              <React.Fragment>
-                <Input
-                  id='ip'
-                  defaultValue={obj.ip}
-                  onChange={e => this.ipSet(e, obj.id)}
-                />
-                <p style={{color: 'red'}}>{obj.ipError}</p>
-              </React.Fragment>
+              <Input
+                defaultValue={obj.ip}
+                style={{borderColor: obj.ipColor}}
+                onChange={e => this.ipSet(e, obj.id)}
+              />
             :
               <Input
-                id='ip'
                 defaultValue={obj.ip}
                 onChange={e => this.ipSet(e, obj.id)}
               />
@@ -1217,15 +1332,15 @@ class CreateVmService extends React.Component {
             {obj.netMaskError ?
               <React.Fragment>
                 <Input
-                  id='netMask'
                   defaultValue={obj.netMask}
+                  style={{borderColor: obj.netMaskColor}}
                   onChange={e => this.netMaskSet(e, obj.id)}
                 />
-                <p style={{color: 'red'}}>{obj.netMaskError}</p>
               </React.Fragment>
             :
               <Input
                 id='netMask'
+                key={obj.id}
                 defaultValue={obj.netMask}
                 onChange={e => this.netMaskSet(e, obj.id)}
               />
@@ -1244,17 +1359,15 @@ class CreateVmService extends React.Component {
             {obj.gwError ?
               <React.Fragment>
                 <Input
-                  id='gw'
                   defaultValue={obj.gw[0]}
-                  onChange={e => this.netMaskSet(e, obj.id)}
+                  style={{borderColor: obj.gwColor}}
+                  onChange={e => this.gwSet(e, obj.id)}
                 />
-                <p style={{color: 'red'}}>{obj.gwError}</p>
               </React.Fragment>
             :
               <Input
-                id='gw'
                 defaultValue={obj.gw}
-                onChange={e => this.netMaskSet(e, obj.id)}
+                onChange={e => this.gwSet(e, obj.id)}
               />
             }
           </React.Fragment>
@@ -1703,7 +1816,7 @@ class CreateVmService extends React.Component {
                             columns={networkDeviceCol}
                             dataSource={this.state.networkDevices}
                             bordered
-                            rowKey={randomKey}
+                            rowKey='id'
                             scroll={{x: 'auto'}}
                             pagination={false}
                             style={{marginBottom: 10}}
@@ -1872,7 +1985,7 @@ class CreateVmService extends React.Component {
                             columns={addressCol}
                             dataSource={this.state.addresses}
                             bordered
-                            rowKey={randomKey}
+                            rowKey='id'
                             scroll={{x: 'auto'}}
                             pagination={false}
                             style={{marginBottom: 10}}
@@ -1985,7 +2098,7 @@ class CreateVmService extends React.Component {
                             columns={diskDeviceCol}
                             dataSource={this.state.diskDevices}
                             bordered
-                            rowKey={randomKey}
+                            rowKey='id'
                             scroll={{x: 'auto'}}
                             pagination={false}
                             style={{marginBottom: 10}}
