@@ -53,15 +53,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('this.state.request.mainDatastore')
-    console.log(this.state.request.mainDatastore)
-
-    console.log('this.state.datastores')
-    console.log(this.state.datastores)
-
-    console.log('this.state.datastoresPlus')
-    console.log(this.state.datastoresPlus)
-
     console.log('this.state.diskDevices')
     console.log(this.state.diskDevices)
 
@@ -284,7 +275,7 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
     let templateFetched = await this.templateGet()
-    console.log(templateFetched)
+
     if (templateFetched.status && templateFetched.status !== 200 ) {
       await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
       this.props.dispatch(templateError(templateFetched))
@@ -308,6 +299,7 @@ class CreateVmService extends React.Component {
         templateFetched.data.diskDevices.existent.forEach(n => {
           n.id = i
           n.existent = true
+          n.originalSizeMB = n.sizeMB
           diskDevices.push(n)
           ++i
         })
@@ -466,7 +458,6 @@ class CreateVmService extends React.Component {
       newDiskDevices.push(item)
     });
 
-
     this.setState({request: request, datastoresPlus: newList, diskDevices: newDiskDevices})
   }
 
@@ -507,7 +498,6 @@ class CreateVmService extends React.Component {
     let customSpec = customSpecs.find( r => r.name === c )
     let list = []
     customSpec.network.forEach((item, i) => {
-      console.log(item)
       item.id = i
       list.push(item)
     });
@@ -593,7 +583,30 @@ class CreateVmService extends React.Component {
   sizeMBSet = (size, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
-    diskDevice.sizeMB = size.target.value
+
+    if (diskDevice.existent) {
+      if (size.target.value < diskDevice.originalSizeMB || isNaN(size.target.value)) {
+        diskDevice.sizeMBError = true
+        diskDevice.sizeMBColor = 'red'
+      }
+      else {
+        delete diskDevice.sizeMBError
+        delete diskDevice.sizeMBColor
+        diskDevice.sizeMB = parseInt(size.target.value)
+      }
+    }
+    else {
+      if (isNaN(size.target.value)) {
+        diskDevice.sizeMBError = true
+        diskDevice.sizeMBColor = 'red'
+      }
+      else {
+        delete diskDevice.sizeMBError
+        delete diskDevice.sizeMBColor
+        diskDevice.sizeMB = parseInt(size.target.value)
+      }
+    }
+
     this.setState({diskDevices: diskDevices})
   }
 
@@ -1320,12 +1333,10 @@ class CreateVmService extends React.Component {
               <Input
                 defaultValue={obj.sizeMB}
                 style={{borderColor: obj.sizeMBColor}}
-                id='sizeMB'
                 onChange={e => this.sizeMBSet(e, obj.id)}
               />
             :
               <Input
-                id='sizeMB'
                 defaultValue={obj.sizeMB}
                 onChange={e => this.sizeMBSet(e, obj.id)}
               />
