@@ -36,6 +36,7 @@ class CreateVmService extends React.Component {
       diskDeviceTypes: ['thin', 'thick eager zeroed', 'thick lazy zerod'],
       networkDevices: [],
       diskDevices: [],
+      datastorePlus: [],
       errors: {},
       cs: {},
       addresses: [],
@@ -52,6 +53,18 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('this.state.request.mainDatastore')
+    console.log(this.state.request.mainDatastore)
+
+    console.log('this.state.datastores')
+    console.log(this.state.datastores)
+
+    console.log('this.state.datastoresPlus')
+    console.log(this.state.datastoresPlus)
+
+    console.log('this.state.diskDevices')
+    console.log(this.state.diskDevices)
+
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -432,7 +445,29 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.mainDatastore = mainDatastore[0]
     request.mainDatastoreMoId = mainDatastore[1]
-    this.setState({request: request})
+
+    let datastores = JSON.parse(JSON.stringify(this.state.datastores))
+    let datastore = datastores.find( r => r.moId === mainDatastore[1] )
+    let main = JSON.parse(JSON.stringify(datastore))
+    main.name = 'MainDatastore'
+
+    let newList = datastores.filter(n => {
+      return n.name !== 'MainDatastore'
+    })
+    newList.push(main)
+
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let newDiskDevices = []
+
+    diskDevices.forEach((item, i) => {
+      if (item.name === 'MainDatastore') {
+        item.datastoreMoId = mainDatastore[1]
+      }
+      newDiskDevices.push(item)
+    });
+
+
+    this.setState({request: request, datastoresPlus: newList, diskDevices: newDiskDevices})
   }
 
   numCpuSet = numCpu => {
@@ -453,14 +488,14 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  networkDeviceTypeSet = (deviceType , event, networkDeviceId) => {
+  networkDeviceTypeSet = (deviceType, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
     networkDevice.deviceType = deviceType
     this.setState({networkDevices: networkDevices})
   }
 
-  networkSet = (networkMoId , event, networkDeviceId) => {
+  networkSet = (networkMoId, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
     networkDevice.networkMoId = networkMoId
@@ -531,17 +566,27 @@ class CreateVmService extends React.Component {
     this.setState({addresses: addresses})
   }
 
-  diskDeviceTypeSet = (deviceType , event, diskDeviceId) => {
+  diskDeviceTypeSet = (deviceType, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
     diskDevice.deviceType = deviceType
     this.setState({diskDevices: diskDevices})
   }
 
-  datastoreSet = (datastoreMoId , event, diskDeviceId) => {
+  datastoreSet = (datastoreMoId, event, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
-    diskDevice.datastoreMoId = datastoreMoId
+
+    if (event.children === 'MainDatastore') {
+      let datastores = JSON.parse(JSON.stringify(this.state.datastores))
+      let datastore = datastores.find( r => r.name === this.state.request.mainDatastore )
+      diskDevice.datastoreMoId = datastore.moId
+      diskDevice.name = event.children
+    }
+    else {
+      diskDevice.datastoreMoId = datastoreMoId
+      diskDevice.name = event.children
+    }
     this.setState({diskDevices: diskDevices})
   }
 
@@ -951,7 +996,7 @@ class CreateVmService extends React.Component {
         "memoryMB": parseInt(this.state.request.memoryMB),
         "notes": this.state.request.notes,
         "networkDevices": networkDevices,
-        "diskDevices": networkDevices,
+        "diskDevices": diskDevices,
         "customSpec": "centos-test",
         "deleteGuestSpecAfterDeploy": true,
         "bootstrapKeyId": 1,
@@ -1009,7 +1054,6 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state)
 
     let networkNameMoid = obj => {
       if (this.state.networks) {
@@ -1021,7 +1065,13 @@ class CreateVmService extends React.Component {
     }
 
     let datastoreNameMoid = obj => {
-      if (this.state.datastores) {
+      if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {
+        let n = this.state.datastoresPlus.find(e => e.moId === obj.datastoreMoId)
+        if (n && n.name) {
+          return(n.name)
+        }
+      }
+      else {
         let n = this.state.datastores.find(e => e.moId === obj.datastoreMoId)
         if (n && n.name) {
           return(n.name)
@@ -1056,7 +1106,7 @@ class CreateVmService extends React.Component {
                     defaultValue={() => networkNameMoid(obj)}
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
-                    onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                    onChange={e => this.networkSet(e, obj.id)}>
                     { this.state.networks?
                       this.state.networks.map((n, i) => {
                       return (
@@ -1074,7 +1124,7 @@ class CreateVmService extends React.Component {
                       defaultValue={() => networkNameMoid(obj)}
                       key={obj.id}
                       style={{ width: '100%' }}
-                      onChange={(value, event) => this.networkSet(value, event, obj.id)}>
+                      onChange={e => this.networkSet(e, obj.id)}>
                       {this.state.networks.map((n, i) => {
                         return (
                           <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
@@ -1105,7 +1155,7 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
-                onChange={(value, event) => this.networkDeviceTypeSet(value, event, obj.id)}>
+                onChange={e => this.networkDeviceTypeSet(e, obj.id)}>
                 { this.state.networkDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
@@ -1118,7 +1168,7 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%' }}
-                onChange={(value, event) => this.networkDeviceTypeSet(value, event, obj.id)}>
+                onChange={e => this.networkDeviceTypeSet(e, obj.id)}>
                 { this.state.networkDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
@@ -1166,14 +1216,13 @@ class CreateVmService extends React.Component {
               <React.Fragment>
                 {obj.datastoreMoIdError ?
                   <Select
-                    defaultValue={() => datastoreNameMoid(obj)}
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid ${obj.datastoreMoIdColor}` }}
-                    onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
+                    onChange={(id, event) => this.datastoreSet(id, event, obj.id)}>
                     { this.state.datastores ?
                       <React.Fragment>
                         { this.state.request.mainDatastore ?
-                          <Select.Option key={'main'} value={this.state.request.mainDatastoreMoId}>* {this.state.request.mainDatastore}</Select.Option>
+                          <Select.Option value={'MainDatastore'}>MainDatastore</Select.Option>
                         :
                           null
                         }
@@ -1191,14 +1240,13 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                   { this.state.datastores ?
                     <Select
-                      defaultValue={() => datastoreNameMoid(obj)}
                       key={obj.id}
                       style={{ width: '100%' }}
-                      onChange={(value, event) => this.datastoreSet(value, event, obj.id)}>
+                      onChange={(id, event) => this.datastoreSet(id, event, obj.id)}>
                       { this.state.datastores ?
                         <React.Fragment>
                           { this.state.request.mainDatastore ?
-                            <Select.Option key={'main'} value={this.state.request.mainDatastoreMoId}>* {this.state.request.mainDatastore}</Select.Option>
+                            <Select.Option value={'MainDatastore'}>MainDatastore</Select.Option>
                           :
                             null
                           }
@@ -1206,7 +1254,7 @@ class CreateVmService extends React.Component {
                             return (
                               <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
                               )
-                            })}
+                          })}
                         </React.Fragment>
                       :
                         null
@@ -1235,7 +1283,7 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
-                onChange={(value, event) => this.diskDeviceTypeSet(value, event, obj.id)}>
+                onChange={e => this.diskDeviceTypeSet(e, obj.id)}>
                 { this.state.diskDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
@@ -1248,7 +1296,7 @@ class CreateVmService extends React.Component {
                 defaultValue={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%' }}
-                onChange={(value, event) => this.diskDeviceTypeSet(value, event, obj.id)}>
+                onChange={e => this.diskDeviceTypeSet(e, obj.id)}>
                 { this.state.diskDeviceTypes.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
