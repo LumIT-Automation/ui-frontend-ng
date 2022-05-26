@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -40,7 +40,9 @@ class CreateVmService extends React.Component {
       errors: {},
       cs: {},
       addresses: [],
-      request: {}
+      request: {
+        numCoresPerSocket: 1
+      }
     };
     this.baseState = this.state
   }
@@ -53,8 +55,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('this.state.diskDevices')
-    console.log(this.state.diskDevices)
 
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
@@ -505,12 +505,6 @@ class CreateVmService extends React.Component {
     this.setState({customSpec: customSpec, addresses: list})
   }
 
-  csNameSet = e => {
-    let cs = JSON.parse(JSON.stringify(this.state.cs))
-    cs.csName = e.target.value
-    this.setState({cs: cs})
-  }
-
   dns1Set = e => {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     cs.dns1 = e.target.value
@@ -533,6 +527,13 @@ class CreateVmService extends React.Component {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     cs.csDomain = e.target.value
     this.setState({cs: cs})
+  }
+
+  dhcpSet = (dhcp, id) => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
+    let address = addresses.find( r => r.id === id )
+    address.dhcp = dhcp.target.checked
+    this.setState({addresses: addresses})
   }
 
   ipSet = (ip, id) => {
@@ -585,7 +586,7 @@ class CreateVmService extends React.Component {
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
 
     if (diskDevice.existent) {
-      if (size.target.value < diskDevice.originalSizeMB || isNaN(size.target.value)) {
+      if (size.target.value < diskDevice.originalSizeMB || isNaN(size.target.value || parseInt(size.target.value) < 1)) {
         diskDevice.sizeMBError = true
         diskDevice.sizeMBColor = 'red'
       }
@@ -596,7 +597,7 @@ class CreateVmService extends React.Component {
       }
     }
     else {
-      if (isNaN(size.target.value)) {
+      if (isNaN(size.target.value) || parseInt(size.target.value) < 1) {
         diskDevice.sizeMBError = true
         diskDevice.sizeMBColor = 'red'
       }
@@ -719,14 +720,25 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!cs.csName) {
-      errors.csNameError = true
-      errors.csNameColor = 'red'
+    if (!cs.csHostname) {
+      errors.csHostnameError = true
+      errors.csHostnameColor = 'red'
       this.setState({errors: errors})
     }
     else {
-      delete errors.csNameError
-      delete errors.csNameColor
+      delete errors.csHostnameError
+      delete errors.csHostnameColor
+      this.setState({errors: errors})
+    }
+
+    if (!cs.csDomain || !validators.fqdn(cs.csDomain)) {
+      errors.csDomainError = true
+      errors.csDomainColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.csDomainError
+      delete errors.csDomainColor
       this.setState({errors: errors})
     }
 
@@ -752,76 +764,75 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!cs.csHostname) {
-      errors.csHostnameError = true
-      errors.csHostnameColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.csHostnameError
-      delete errors.csHostnameColor
-      this.setState({errors: errors})
-    }
 
-    if (!cs.csDomain || !validators.fqdn(cs.csDomain)) {
-      errors.csDomainError = true
-      errors.csDomainColor = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.csDomainError
-      delete errors.csDomainColor
-      this.setState({errors: errors})
-    }
 
     if (addresses.length > 0) {
       addresses.forEach((address, i) => {
         errors[address.id] = {}
 
-        if (!address.ip || !validators.ipv4(address.ip)) {
-          address.ipError = true
-          address.ipColor = 'red'
-          errors[address.id].ipError = true
-          errors[address.id].ipColor = 'red'
-          this.setState({errors: errors, addresses: addresses})
-        }
-        else {
+        if (address.dhcp) {
           delete address.ipError
           delete address.ipColor
           delete errors[address.id].ipError
           delete errors[address.id].ipColor
-          this.setState({errors: errors, addresses: addresses})
-        }
-
-        if (!address.netMask || !validators.ipv4(address.netMask)) {
-          address.netMaskError = true
-          address.netMaskColor = 'red'
-          errors[address.id].netMaskError = true
-          errors[address.id].netMaskColor = 'red'
-          this.setState({errors: errors, addresses: addresses})
-        }
-        else {
           delete address.netMaskError
           delete address.netMaskColor
           delete errors[address.id].netMaskError
           delete errors[address.id].netMaskColor
-          this.setState({errors: errors, addresses: addresses})
-        }
-
-        if (!address.gw || !validators.ipv4(address.gw)) {
-          address.gwError = true
-          address.gwColor = 'red'
-          errors[address.id].gwError = true
-          errors[address.id].gwColor = 'red'
-          this.setState({errors: errors, addresses: addresses})
-        }
-        else {
           delete address.gwError
           delete address.gwColor
           delete errors[address.id].gwError
           delete errors[address.id].gwColor
           this.setState({errors: errors, addresses: addresses})
         }
+        else {
+          if (!address.ip || !validators.ipv4(address.ip)) {
+            address.ipError = true
+            address.ipColor = 'red'
+            errors[address.id].ipError = true
+            errors[address.id].ipColor = 'red'
+            this.setState({errors: errors, addresses: addresses})
+          }
+          else {
+            delete address.ipError
+            delete address.ipColor
+            delete errors[address.id].ipError
+            delete errors[address.id].ipColor
+            this.setState({errors: errors, addresses: addresses})
+          }
+
+          if (!address.netMask || !validators.ipv4(address.netMask)) {
+            address.netMaskError = true
+            address.netMaskColor = 'red'
+            errors[address.id].netMaskError = true
+            errors[address.id].netMaskColor = 'red'
+            this.setState({errors: errors, addresses: addresses})
+          }
+          else {
+            delete address.netMaskError
+            delete address.netMaskColor
+            delete errors[address.id].netMaskError
+            delete errors[address.id].netMaskColor
+            this.setState({errors: errors, addresses: addresses})
+          }
+
+          if (!address.gw || !validators.ipv4(address.gw)) {
+            address.gwError = true
+            address.gwColor = 'red'
+            errors[address.id].gwError = true
+            errors[address.id].gwColor = 'red'
+            this.setState({errors: errors, addresses: addresses})
+          }
+          else {
+            delete address.gwError
+            delete address.gwColor
+            delete errors[address.id].gwError
+            delete errors[address.id].gwColor
+            this.setState({errors: errors, addresses: addresses})
+          }
+        }
+
+
 
         if (Object.keys(errors[address.id]).length === 0) {
           delete errors[address.id]
@@ -869,6 +880,17 @@ class CreateVmService extends React.Component {
           this.setState({errors: errors})
         }
       })
+    }
+
+    if (addresses.length !== networkDevices.length) {
+      errors.addressesLengthError = true
+      errors.addressesLengthColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.addressesLengthError
+      delete errors.addressesLengthColor
+      this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
@@ -1067,6 +1089,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
+    console.log(this.state)
 
     let networkNameMoid = obj => {
       if (this.state.networks) {
@@ -1359,23 +1382,41 @@ class CreateVmService extends React.Component {
 
     const addressCol = [
       {
+        title: 'DHCP',
+        align: 'center',
+        dataIndex: 'dhcp',
+        key: 'dhcp',
+        render: (name, obj)  => (
+          <Checkbox
+            checked={obj.dhcp}
+            onChange={e => this.dhcpSet(e, obj.id)}
+          />
+        )
+      },
+      {
         title: 'IP',
         align: 'center',
         dataIndex: 'ip',
         key: 'ip',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.ipError ?
-              <Input
-                defaultValue={obj.ip}
-                style={{borderColor: obj.ipColor}}
-                onChange={e => this.ipSet(e, obj.id)}
-              />
+            { obj.dhcp ?
+              <Input disabled />
             :
-              <Input
-                defaultValue={obj.ip}
-                onChange={e => this.ipSet(e, obj.id)}
-              />
+              <React.Fragment>
+                {obj.ipError ?
+                  <Input
+                    defaultValue={obj.ip}
+                    style={{borderColor: obj.ipColor}}
+                    onChange={e => this.ipSet(e, obj.id)}
+                  />
+                :
+                  <Input
+                    defaultValue={obj.ip}
+                    onChange={e => this.ipSet(e, obj.id)}
+                  />
+                }
+              </React.Fragment>
             }
           </React.Fragment>
         )
@@ -1388,21 +1429,27 @@ class CreateVmService extends React.Component {
         name: 'netMask',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.netMaskError ?
-              <React.Fragment>
-                <Input
-                  defaultValue={obj.netMask}
-                  style={{borderColor: obj.netMaskColor}}
-                  onChange={e => this.netMaskSet(e, obj.id)}
-                />
-              </React.Fragment>
+            { obj.dhcp ?
+              <Input disabled />
             :
-              <Input
-                id='netMask'
-                key={obj.id}
-                defaultValue={obj.netMask}
-                onChange={e => this.netMaskSet(e, obj.id)}
-              />
+              <React.Fragment>
+                {obj.netMaskError ?
+                  <React.Fragment>
+                    <Input
+                      defaultValue={obj.netMask}
+                      style={{borderColor: obj.netMaskColor}}
+                      onChange={e => this.netMaskSet(e, obj.id)}
+                    />
+                  </React.Fragment>
+                :
+                  <Input
+                    id='netMask'
+                    key={obj.id}
+                    defaultValue={obj.netMask}
+                    onChange={e => this.netMaskSet(e, obj.id)}
+                  />
+                }
+              </React.Fragment>
             }
           </React.Fragment>
         )
@@ -1415,19 +1462,25 @@ class CreateVmService extends React.Component {
         name: 'gw',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.gwError ?
-              <React.Fragment>
-                <Input
-                  defaultValue={obj.gw[0]}
-                  style={{borderColor: obj.gwColor}}
-                  onChange={e => this.gwSet(e, obj.id)}
-                />
-              </React.Fragment>
+            { obj.dhcp ?
+              <Input disabled />
             :
-              <Input
-                defaultValue={obj.gw}
-                onChange={e => this.gwSet(e, obj.id)}
-              />
+              <React.Fragment>
+                {obj.gwError ?
+                  <React.Fragment>
+                    <Input
+                      defaultValue={obj.gw[0]}
+                      style={{borderColor: obj.gwColor}}
+                      onChange={e => this.gwSet(e, obj.id)}
+                    />
+                  </React.Fragment>
+                :
+                  <Input
+                    defaultValue={obj.gw}
+                    onChange={e => this.gwSet(e, obj.id)}
+                  />
+                }
+              </React.Fragment>
             }
           </React.Fragment>
         )
@@ -1809,7 +1862,6 @@ class CreateVmService extends React.Component {
                   <Col span={2}>
                     {this.state.errors.numCoresPerSocketError ?
                     <Select
-                      defaultValue={1}
                       value={this.state.request.numCoresPerSocket}
                       style={{width: '100%', border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
@@ -1825,7 +1877,6 @@ class CreateVmService extends React.Component {
                     </Select>
                   :
                     <Select
-                      defaultValue={1}
                       value={this.state.request.numCoresPerSocket}
                       style={{width: '100%'}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
@@ -1966,13 +2017,24 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                   <Row>
                     <Col offset={4} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Hostname:</p>
                     </Col>
                     <Col span={4}>
-                      {this.state.errors.csNameError ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.csNameColor}} name="csName" id='csName' onChange={e => this.csNameSet(e)} />
+                      {this.state.errors.csHostnameError ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.csHostnameColor}} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
                       :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.csName} name="csName" id='csName' onChange={e => this.csNameSet(e)} />
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.csHostname} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
+                      }
+                    </Col>
+
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain Name:</p>
+                    </Col>
+                    <Col span={4}>
+                      {this.state.errors.csDomainError ?
+                        <Input style={{width: '100%', borderColor: this.state.errors.csDomainColor}} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                      :
+                        <Input style={{width: '100%'}} defaultValue={this.state.request.csDomain} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
                       }
                     </Col>
                   </Row>
@@ -2003,34 +2065,11 @@ class CreateVmService extends React.Component {
                   </Row>
                   <br/>
 
-                  <Row>
-                    <Col offset={4} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Hostname:</p>
-                    </Col>
-                    <Col span={4}>
-                      {this.state.errors.csHostnameError ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.csHostnameColor}} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
-                      :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.csHostname} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
-                      }
-                    </Col>
 
-                    <Col offset={1} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain Name:</p>
-                    </Col>
-                    <Col span={4}>
-                      {this.state.errors.csDomainError ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.csDomainColor}} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
-                      :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.csDomain} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
-                      }
-                    </Col>
-                  </Row>
-                  <br/>
 
                   <Row>
                     <Col offset={4} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Addresses:</p>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'left'}}>Addresses:</p>
                     </Col>
                     <Col span={11}>
                       {(this.state.addresses  && this.state.addresses.length > 0) ?
@@ -2038,6 +2077,13 @@ class CreateVmService extends React.Component {
                           <Button type="primary" onClick={() => this.addressAdd()}>
                             +
                           </Button>
+                          { this.state.errors.addressesLengthError ?
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right', color: this.state.errors.addressesLengthColor}}>
+                              Addresses' lenght is different from network devices' lenght:
+                            </p>
+                          :
+                            null
+                          }
                           <br/>
                           <br/>
                           <Table
