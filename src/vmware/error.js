@@ -40,8 +40,10 @@ import {
   templatesError,
   templateError,
   customSpecsError,
+  customSpecError,
   bootstrapkeysError,
   finalpubkeysError,
+  vmCreateError,
 
   genericError
 
@@ -150,12 +152,18 @@ class Error extends Component {
         case 'customSpecsError':
           this.props.dispatch(customSpecsError(null))
           break;
+        case 'customSpecError':
+          this.props.dispatch(customSpecError(null))
+          break;
 
         case 'bootstrapkeysError':
           this.props.dispatch(bootstrapkeysError(null))
           break;
         case 'finalpubkeysError':
           this.props.dispatch(finalpubkeysError(null))
+          break;
+        case 'vmCreateError':
+          this.props.dispatch(vmCreateError(null))
           break;
 
         default:

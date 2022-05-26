@@ -16,8 +16,10 @@ import {
   templatesError,
   templateError,
   customSpecsError,
+  customSpecError,
   bootstrapkeysError,
   finalpubkeysError,
+  vmCreateError
 } from '../store'
 
 import AssetSelector from '../../vmware/assetSelector'
@@ -201,6 +203,12 @@ class CreateVmService extends React.Component {
     await rest.doXHR(`vmware/${this.props.asset.id}/customSpecs/`, this.props.token)
     return r
   }
+
+  ///
+
+
+
+  ///
 
   clusterGet = async () => {
     let r
@@ -1074,8 +1082,45 @@ class CreateVmService extends React.Component {
   }
 
 
+  customSpecAdd = async () => {
+
+    let r
+    let b = {}
+    b.data = {
+      "network": this.state.addresses,
+      "dns1": `${this.state.cs.dns1}`,
+      "dns2": `${this.state.cs.dns2}`,
+      "hostName": `${this.state.cs.csHostname}`,
+      "domainName": `${this.state.cs.csDomain}`,
+    }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/customSpec/${this.state.customSpec.name}/`, this.props.token, b)
+    return r
+  }
+
   //DISPOSAL ACTION
   vmCreate = async () => {
+    let csNew
+
+    await this.setState({customSpecLoading: true})
+    let csAdd = await this.customSpecAdd()
+    await this.setState({customSpecLoading: false})
+    if (csAdd.status && csAdd.status !== 201 ) {
+      this.props.dispatch(customSpecError(csAdd))
+      return
+    }
+    else {
+      csNew = csAdd.data.newSpecName
+    }
 
     let networkDevices = {existent: [], new: []}
     let diskDevices = {existent: [], new: []}
@@ -1107,6 +1152,7 @@ class CreateVmService extends React.Component {
     })
 
 
+
     let b = {}
     b.data = {
         "vmName": this.state.request.vmName,
@@ -1121,24 +1167,53 @@ class CreateVmService extends React.Component {
         "notes": this.state.request.notes,
         "networkDevices": networkDevices,
         "diskDevices": diskDevices,
-        "customSpec": "centos-test",
+        "customSpec": csNew,
         "deleteGuestSpecAfterDeploy": true,
         "bootstrapKeyId": this.state.request.bootstrapkey,
-        "finalPubKeyIds": [
-            this.state.request.finalpubkey
-        ],
         "postDeployCommands": [
             {
-                "command": "echo",
+                "command": "waitPowerOn",
+                "user_args": {}
+            },
+            {
+                "command": "resizeLastPartition",
                 "user_args": {
-                    "__echo": "Hello World!"
+                    "__diskDevice": "sda"
                 }
             },
             {
-                "command": "ls",
+                "command": "renameVg",
                 "user_args": {
-                    "__path": "/"
+                    "__vgName": `vg_${this.state.request.csHostname}`
                 }
+            },
+            {
+                "command": "reboot",
+                "user_args": {}
+            },
+            {
+                "command": "addMountPoint",
+                "user_args": {
+                    "__vgName": `vg_${this.state.request.csHostname}`,
+                    "__lvName": "var",
+                    "__lvSize": 2,
+                    "__filesystem": "ext4",
+                    "__mountFolder": "/var"
+                }
+            },
+            {
+                "command": "reboot",
+                "user_args": {}
+            },
+            {
+                "command": "addPubKey",
+                "user_args": {
+                    "__pubKeyId": this.state.request.finalpubkey
+                }
+            },
+                        {
+                "command": "removeBootstrapKey",
+                "user_args": {}
             }
         ]
     }
@@ -1153,11 +1228,11 @@ class CreateVmService extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(vmCreateError(error))
         this.setState({loading: false, response: false})
+        this.props.dispatch(vmCreateError(error))
       }
     )
-    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.template.moId}/`, this.props.token, b )
+    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token, b )
   }
 
   response = () => {
@@ -2338,7 +2413,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.bootstrapkeys.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                    <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
                                   )
                                 })
                                 }
@@ -2362,7 +2437,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.bootstrapkeys.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                    <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
                                   )
                                 })
                                 }
@@ -2411,7 +2486,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.finalpubkeys.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                        <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
                                       )
                                     })
                                     }
@@ -2435,7 +2510,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.finalpubkeys.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                        <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
                                       )
                                     })
                                     }
@@ -2500,8 +2575,10 @@ class CreateVmService extends React.Component {
             { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
             { this.props.templateError ? <Error component={'create vm'} error={[this.props.templateError]} visible={true} type={'templateError'} /> : null }
             { this.props.customSpecsError ? <Error component={'create vm'} error={[this.props.customSpecsError]} visible={true} type={'customSpecsError'} /> : null }
+            { this.props.customSpecError ? <Error component={'create vm'} error={[this.props.customSpecError]} visible={true} type={'customSpecError'} /> : null }
             { this.props.bootstrapkeysError ? <Error component={'create vm'} error={[this.props.bootstrapkeysError]} visible={true} type={'bootstrapkeysError'} /> : null }
             { this.props.finalpubkeysError ? <Error component={'create vm'} error={[this.props.finalpubkeysError]} visible={true} type={'finalpubkeysError'} /> : null }
+            { this.props.vmCreateError ? <Error component={'create vm'} error={[this.props.vmCreateError]} visible={true} type={'vmCreateError'} /> : null }
           </React.Fragment>
         :
           null
@@ -2525,6 +2602,8 @@ export default connect((state) => ({
   templatesError: state.vmware.templatesError,
   templateError: state.vmware.templateError,
   customSpecsError: state.vmware.customSpecsError,
+  customSpecError: state.vmware.customSpecError,
   bootstrapkeysError: state.vmware.bootstrapkeysError,
   finalpubkeysError: state.vmware.finalpubkeysError,
+  vmCreateError: state.vmware.vmCreateError,
 }))(CreateVmService);

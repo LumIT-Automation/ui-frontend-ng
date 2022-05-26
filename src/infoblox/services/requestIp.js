@@ -477,7 +477,6 @@ class RequestIp extends React.Component {
   }
 
   updateResponse = async (resp, id) => {
-    console.log(resp)
 
     if (resp.data && resp.data.length > 0) {
       let ips = []
