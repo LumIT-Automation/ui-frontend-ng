@@ -100,6 +100,15 @@ const vmwareSlice = createSlice({
         templateError: (state, action) => {
           state.templateError = action.payload
         },
+        customSpecsError: (state, action) => {
+          state.customSpecsError = action.payload
+        },
+        bootstrapkeysError: (state, action) => {
+          state.bootstrapkeysError = action.payload
+        },
+        finalpubkeysError: (state, action) => {
+          state.finalpubkeysError = action.payload
+        },
 
         genericError: ( state, action) => {
           state.genericError = action.payload
@@ -157,6 +166,9 @@ export const {
   foldersError,
   templatesError,
   templateError,
+  customSpecsError,
+  bootstrapkeysError,
+  finalpubkeysError,
 
   genericError,
 

@@ -39,6 +39,9 @@ import {
   foldersError,
   templatesError,
   templateError,
+  customSpecsError,
+  bootstrapkeysError,
+  finalpubkeysError,
 
   genericError
 
@@ -143,6 +146,16 @@ class Error extends Component {
           break;
         case 'templateError':
           this.props.dispatch(templateError(null))
+          break;
+        case 'customSpecsError':
+          this.props.dispatch(customSpecsError(null))
+          break;
+
+        case 'bootstrapkeysError':
+          this.props.dispatch(bootstrapkeysError(null))
+          break;
+        case 'finalpubkeysError':
+          this.props.dispatch(finalpubkeysError(null))
           break;
 
         default:

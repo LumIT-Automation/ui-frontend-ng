@@ -14,7 +14,10 @@ import {
   clusterError,
   foldersError,
   templatesError,
-  templateError
+  templateError,
+  customSpecsError,
+  bootstrapkeysError,
+  finalpubkeysError,
 } from '../store'
 
 import AssetSelector from '../../vmware/assetSelector'
@@ -112,6 +115,28 @@ class CreateVmService extends React.Component {
     }
     else {
       this.setState({customSpecs: customSpecsFetched.data.items})
+    }
+
+    await this.setState({bootstrapkeysLoading: true})
+    let bootstrapkeysFetched = await this.bootstrapkeysGet()
+    await this.setState({bootstrapkeysLoading: false})
+    if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
+      this.props.dispatch(bootstrapkeysError(bootstrapkeysFetched))
+      return
+    }
+    else {
+      this.setState({bootstrapkeys: bootstrapkeysFetched.data.items})
+    }
+
+    await this.setState({finalpubkeysLoading: true})
+    let finalpubkeysFetched = await this.finalpubkeysGet()
+    await this.setState({finalpubkeysLoading: false})
+    if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
+      this.props.dispatch(finalpubkeysError(finalpubkeysFetched))
+      return
+    }
+    else {
+      this.setState({finalpubkeys: finalpubkeysFetched.data.items})
     }
   }
 
@@ -219,6 +244,36 @@ class CreateVmService extends React.Component {
       }
     )
     await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token)
+    return r
+  }
+
+  bootstrapkeysGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/stage2/bootstrapkeys/`, this.props.token)
+    return r
+  }
+
+  finalpubkeysGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/stage2/finalpubkeys/`, this.props.token)
     return r
   }
 
@@ -406,6 +461,18 @@ class CreateVmService extends React.Component {
   }
 
   //select number
+  bootstrapkeySet = bootstrapkey => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.bootstrapkey = bootstrapkey
+    this.setState({request: request})
+  }
+
+  finalpubkeySet = finalpubkey => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.finalpubkey = finalpubkey
+    this.setState({request: request})
+  }
+
   datacenterSet = datacenter => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.datacenter = datacenter[0]
@@ -651,6 +718,28 @@ class CreateVmService extends React.Component {
     else {
       delete errors.datacenterError
       delete errors.datacenterColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.bootstrapkey) {
+      errors.bootstrapkeyError = true
+      errors.bootstrapkeyColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.bootstrapkeyError
+      delete errors.bootstrapkeyColor
+      this.setState({errors: errors})
+    }
+
+    if (!request.finalpubkey) {
+      errors.finalpubkeyError = true
+      errors.finalpubkeyColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.finalpubkeyError
+      delete errors.finalpubkeyColor
       this.setState({errors: errors})
     }
 
@@ -1034,9 +1123,9 @@ class CreateVmService extends React.Component {
         "diskDevices": diskDevices,
         "customSpec": "centos-test",
         "deleteGuestSpecAfterDeploy": true,
-        "bootstrapKeyId": 1,
+        "bootstrapKeyId": this.state.request.bootstrapkey,
         "finalPubKeyIds": [
-            1
+            this.state.request.finalpubkey
         ],
         "postDeployCommands": [
             {
@@ -1534,6 +1623,8 @@ class CreateVmService extends React.Component {
               }
               { !this.state.loading && !this.state.response &&
                 <React.Fragment>
+
+
 
                 <Row>
                   <Col offset={3} span={2}>
@@ -2220,6 +2311,155 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={3} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Bootstrap Keys:</p>
+                  </Col>
+                  <Col span={4}>
+                    { this.state.bootstrapkeysLoading ?
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    :
+                    <React.Fragment>
+                      { this.state.bootstrapkeys && this.state.bootstrapkeys.length > 0 ?
+                        <React.Fragment>
+                          {this.state.errors.bootstrapkeyError ?
+                            <Select
+                              defaultValue={this.state.request.bootstrapkey}
+                              value={this.state.request.bootstrapkey}
+                              showSearch
+                              style={{width: '100%', border: `1px solid ${this.state.errors.bootstrapkeyColor}`}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.bootstrapkeySet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.bootstrapkeys.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          :
+                            <Select
+                              defaultValue={this.state.request.bootstrapkey}
+                              value={this.state.request.bootstrapkey}
+                              showSearch
+                              style={{width: '100%'}}
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={n => this.bootstrapkeySet(n)}
+                            >
+                              <React.Fragment>
+                                {this.state.bootstrapkeys.map((n, i) => {
+                                  return (
+                                    <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                  )
+                                })
+                                }
+                              </React.Fragment>
+                            </Select>
+                          }
+                        </React.Fragment>
+                      :
+                      <Select
+                        style={{width: '100%'}}
+                        disabled
+                      />
+                      }
+                    </React.Fragment>
+                    }
+                  </Col>
+
+                  <Col offset={2} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Final Pub Keys:</p>
+                  </Col>
+                  { this.state.finalpubkeysLoading ?
+                    <Col span={4}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={4}>
+                      { this.state.finalpubkeys ?
+                        <React.Fragment>
+                          { this.state.finalpubkeys && this.state.finalpubkeys.length > 0 ?
+                            <React.Fragment>
+                              {this.state.errors.finalpubkeyError ?
+                                <Select
+                                  defaultValue={this.state.request.finalpubkey}
+                                  value={this.state.request.finalpubkey}
+                                  showSearch
+                                  style={{width: '100%', border: `1px solid ${this.state.errors.finalpubkeyColor}`}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.finalpubkeySet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.finalpubkeys.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              :
+                                <Select
+                                  defaultValue={this.state.request.finalpubkey}
+                                  value={this.state.request.finalpubkey}
+                                  showSearch
+                                  style={{width: '100%'}}
+                                  optionFilterProp="children"
+                                  filterOption={(input, option) =>
+                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                  }
+                                  filterSort={(optionA, optionB) =>
+                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                  }
+                                  onSelect={n => this.finalpubkeySet(n)}
+                                >
+                                  <React.Fragment>
+                                    {this.state.finalpubkeys.map((n, i) => {
+                                      return (
+                                        <Select.Option key={i} value={n.id}>{n.id}</Select.Option>
+                                      )
+                                    })
+                                    }
+                                  </React.Fragment>
+                                </Select>
+                              }
+                            </React.Fragment>
+                          :
+                            null
+                          }
+                        </React.Fragment>
+                      :
+                        <Select
+                          style={{width: '100%'}}
+                          disabled
+                        />
+                      }
+                    </Col>
+                  }
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
                   </Col>
                   <Col span={12}>
@@ -2259,6 +2499,9 @@ class CreateVmService extends React.Component {
             { this.props.foldersError ? <Error component={'create vm'} error={[this.props.foldersError]} visible={true} type={'foldersError'} /> : null }
             { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
             { this.props.templateError ? <Error component={'create vm'} error={[this.props.templateError]} visible={true} type={'templateError'} /> : null }
+            { this.props.customSpecsError ? <Error component={'create vm'} error={[this.props.customSpecsError]} visible={true} type={'customSpecsError'} /> : null }
+            { this.props.bootstrapkeysError ? <Error component={'create vm'} error={[this.props.bootstrapkeysError]} visible={true} type={'bootstrapkeysError'} /> : null }
+            { this.props.finalpubkeysError ? <Error component={'create vm'} error={[this.props.finalpubkeysError]} visible={true} type={'finalpubkeysError'} /> : null }
           </React.Fragment>
         :
           null
@@ -2281,4 +2524,7 @@ export default connect((state) => ({
   foldersError: state.vmware.foldersError,
   templatesError: state.vmware.templatesError,
   templateError: state.vmware.templateError,
+  customSpecsError: state.vmware.customSpecsError,
+  bootstrapkeysError: state.vmware.bootstrapkeysError,
+  finalpubkeysError: state.vmware.finalpubkeysError,
 }))(CreateVmService);
