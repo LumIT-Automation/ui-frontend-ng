@@ -5,9 +5,11 @@ import { Tabs, Space, Spin } from 'antd';
 import Authorizators from '../_helpers/authorizators'
 import F5 from '../f5/history/manager'
 import Infoblox from '../infoblox/history/manager'
+import Vmware from '../vmware/history/manager'
 
 import { historysFetch as f5HistorysFetch } from '../f5/store'
 import { historysFetch as infobloxHistorysFetch } from '../infoblox/store'
+import { historysFetch as vmwareHistorysFetch } from '../vmware/store'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -80,6 +82,22 @@ class Historys extends React.Component {
             :
               null
             }
+
+            { this.authorizators(this.props.authorizationsVmware) ?
+              <React.Fragment>
+                {this.props.vmwareLoading ?
+                  <TabPane key="Vmware" tab="Vmware">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="vmware" tab=<span>Vmware <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(vmwareHistorysFetch(true))}/></span>>
+                    <Vmware/>
+                  </TabPane>
+                }
+              </React.Fragment>
+            :
+              null
+            }
           </Tabs>
         </Space>
 
@@ -92,7 +110,10 @@ class Historys extends React.Component {
 export default connect((state) => ({
   authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsVmware: state.authorizations.vmware,
 
+  f5Loading: state.f5.historysLoading,
   infobloxLoading: state.infoblox.historysLoading,
-  f5Loading: state.f5.historysLoading
+  vmwareLoading: state.vmware.historysLoading,
+
 }))(Historys);

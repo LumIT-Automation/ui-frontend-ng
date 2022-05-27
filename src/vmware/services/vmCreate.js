@@ -795,7 +795,7 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.memoryMB || isNaN(request.memoryMB)) {
+    if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 != 0)) {
       errors.memoryMBError = true
       errors.memoryMBColor = 'red'
       this.setState({errors: errors})
@@ -838,30 +838,6 @@ class CreateVmService extends React.Component {
       delete errors.csDomainColor
       this.setState({errors: errors})
     }
-
-    if (!cs.dns1 || !validators.ipv4(cs.dns1)) {
-      errors.dns1Error = true
-      errors.dns1Color = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.dns1Error
-      delete errors.dns1Color
-      this.setState({errors: errors})
-    }
-
-    if (!cs.dns2 || !validators.ipv4(cs.dns1)) {
-      errors.dns2Error = true
-      errors.dns2Color = 'red'
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.dns2Error
-      delete errors.dns2Color
-      this.setState({errors: errors})
-    }
-
-
 
     if (addresses.length > 0) {
       addresses.forEach((address, i) => {
@@ -1077,22 +1053,53 @@ class CreateVmService extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.vmCreate()
+      this.vmCreateHandler()
     }
   }
 
 
   customSpecAdd = async () => {
 
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let validators = new Validators()
+
     let r
     let b = {}
     b.data = {
       "network": this.state.addresses,
-      "dns1": `${this.state.cs.dns1}`,
-      "dns2": `${this.state.cs.dns2}`,
       "hostName": `${this.state.cs.csHostname}`,
       "domainName": `${this.state.cs.csDomain}`,
     }
+
+    if (cs.dns1) {
+      if (!validators.ipv4(cs.dns1)) {
+        errors.dns1Error = true
+        errors.dns1Color = 'red'
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.dns1Error
+        delete errors.dns1Color
+        this.setState({errors: errors})
+        b.data.dns1 = `${this.state.cs.dns1}`
+      }
+    }
+
+    if (cs.dns2) {
+      if (!validators.ipv4(cs.dns2)) {
+        errors.dns2Error = true
+        errors.dns2Color = 'red'
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.dns2Error
+        delete errors.dns2Color
+        this.setState({errors: errors})
+        b.data.dns2 = `${this.state.cs.dns2}`
+      }
+    }
+
 
     let rest = new Rest(
       "POST",
@@ -1107,14 +1114,30 @@ class CreateVmService extends React.Component {
     return r
   }
 
+  VmCreate = async b => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token, b )
+    return r
+  }
+
   //DISPOSAL ACTION
-  vmCreate = async () => {
+  vmCreateHandler = async () => {
     let csNew
 
-    await this.setState({customSpecLoading: true})
+    this.setState({customSpecLoading: true})
     let csAdd = await this.customSpecAdd()
-    await this.setState({customSpecLoading: false})
+    this.setState({customSpecLoading: false})
     if (csAdd.status && csAdd.status !== 201 ) {
+      this.setState({loading: false})
       this.props.dispatch(customSpecError(csAdd))
       return
     }
@@ -1167,7 +1190,7 @@ class CreateVmService extends React.Component {
         "notes": this.state.request.notes,
         "networkDevices": networkDevices,
         "diskDevices": diskDevices,
-        "customSpec": csNew,
+        "guestSpec": csNew,
         "deleteGuestSpecAfterDeploy": true,
         "bootstrapKeyId": this.state.request.bootstrapkey,
         "postDeployCommands": [
@@ -1218,21 +1241,18 @@ class CreateVmService extends React.Component {
         ]
     }
 
-    console.log(b)
     this.setState({loading: true})
+    let vmC = await this.VmCreate(b)
+    this.setState({loading: false})
+    if (vmC.status && vmC.status !== 202 ) {
+      this.setState({loading: false, response: false})
+      this.props.dispatch(vmCreateError(error))
+    }
+    else {
+      this.setState({loading: false, response: true})
+      this.response()
+    }
 
-    let rest = new Rest(
-      "POST",
-      resp => {
-        this.setState({loading: false, response: true})
-        this.response()
-      },
-      error => {
-        this.setState({loading: false, response: false})
-        this.props.dispatch(vmCreateError(error))
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token, b )
   }
 
   response = () => {
@@ -1253,7 +1273,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state)
+    //console.log(this.state)
 
     let networkNameMoid = obj => {
       if (this.state.networks) {
@@ -1689,7 +1709,7 @@ class CreateVmService extends React.Component {
 
           { (this.props.asset && this.props.asset.id) ?
             <React.Fragment>
-              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+              { (this.state.loading || this.state.customSpecLoading) && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
               { !this.state.loading && this.state.response &&
                 <Result
                    status="success"

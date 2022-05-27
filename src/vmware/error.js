@@ -45,6 +45,8 @@ import {
   finalpubkeysError,
   vmCreateError,
 
+  historysError,
+
   genericError
 
 } from './store'
@@ -166,6 +168,10 @@ class Error extends Component {
           this.props.dispatch(vmCreateError(null))
           break;
 
+        case 'historysError':
+          this.props.dispatch(historysError(null))
+          break;
+
         default:
           this.props.dispatch(genericError(null))
       }
@@ -278,7 +284,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>F5 ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>VMWARE ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}

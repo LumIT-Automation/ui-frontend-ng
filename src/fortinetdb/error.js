@@ -330,7 +330,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>Fortinetdb ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>FORTINETDB ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}
