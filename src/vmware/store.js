@@ -120,7 +120,7 @@ const vmwareSlice = createSlice({
           state.historysLoading = action.payload
         },
         historys: ( state, action) => {
-          state.historys = action.payload.data.items
+          state.historys = action.payload
         },
         historysFetch: ( state, action) => {
           state.historysFetch = action.payload

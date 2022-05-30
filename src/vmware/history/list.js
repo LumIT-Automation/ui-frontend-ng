@@ -130,7 +130,6 @@ class List extends React.Component {
         title: 'Error',
         align: 'center',
         width: '100%',
-        height: '20vh',
         dataIndex: 'stderr',
         key: 'stderr',
         ...this.getColumnSearchProps('stderr'),
@@ -149,11 +148,10 @@ class List extends React.Component {
       {
         title: 'Start time',
         align: 'center',
-        width: 200,
         dataIndex: 'task_startTime',
         key: 'task_startTime',
         defaultSortOrder: 'descend',
-        sorter: (a, b) => new Date(a.date) - new Date(b.date),
+        sorter: (a, b) => new Date(a.task_startTime) - new Date(b.task_startTime),
         ...this.getColumnSearchProps('task_startTime'),
       },
       {

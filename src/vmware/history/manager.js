@@ -29,6 +29,10 @@ class Manager extends React.Component {
       if (!this.props.historys) {
         this.main()
       }
+      this.interval = setInterval( () => this.main(), 15000)
+    }
+    else {
+      clearInterval(this.interval)
     }
   }
 
@@ -37,18 +41,21 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update')
     if (this.props.historysFetch) {
+      clearInterval(this.interval)
       this.main()
       this.props.dispatch(historysFetch(false))
     }
   }
 
   componentWillUnmount() {
+    clearInterval(this.interval)
   }
-
 
   main = async () => {
     this.props.dispatch(historysLoading(true))
+    let list = []
 
     let fetchedHistorys = await this.historyGet()
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
@@ -58,8 +65,16 @@ class Manager extends React.Component {
     }
     else {
       this.props.dispatch(historysLoading(false))
-      this.props.dispatch(historys(fetchedHistorys))
+      fetchedHistorys.data.items.forEach((item, i) => {
+        let ts = item.task_startTime.split('.');
+        item.task_startTime = ts[0]
+        list.push(item)
+      });
+
+      this.props.dispatch(historys(list))
+      this.setState({monitor: true})
     }
+    clearInterval(this.interval)
   }
 
 
