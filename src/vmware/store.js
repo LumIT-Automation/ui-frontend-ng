@@ -128,8 +128,11 @@ const vmwareSlice = createSlice({
         historysError: ( state, action) => {
           state.historysError = action.payload
         },
-        columnLoading: ( state, action) => {
-          state.columnLoading = action.payload
+        taskProgressLoading: ( state, action) => {
+          state.taskProgressLoading = action.payload
+        },
+        secondStageProgressLoading: ( state, action) => {
+          state.secondStageProgressLoading = action.payload
         },
 
 
@@ -199,7 +202,8 @@ export const {
   historys,
   historysFetch,
   historysError,
-  columnLoading,
+  taskProgressLoading,
+  secondStageProgressLoading,
 
   genericError,
 

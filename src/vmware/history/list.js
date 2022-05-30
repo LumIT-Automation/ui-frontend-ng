@@ -149,7 +149,7 @@ class List extends React.Component {
       {
         title: 'Start time',
         align: 'center',
-        width: '100%',
+        width: 250,
         dataIndex: 'task_startTime',
         key: 'task_startTime',
         defaultSortOrder: 'descend',
@@ -174,8 +174,8 @@ class List extends React.Component {
           <React.Fragment>
             { obj.task_progress ?
               <React.Fragment>
-                {this.props.columnLoading ?
-                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                {this.props.taskProgressLoading ?
+                  <Spin indicator={spinIcon} style={{margin: '10% 40%'}}/>
                 :
                   <Progress percent={obj.task_progress} />
                 }
@@ -195,9 +195,18 @@ class List extends React.Component {
       {
         title: 'Task message',
         align: 'center',
-        width: '100%',
+        width: 250,
         dataIndex: 'task_message',
         key: 'task_message',
+        ...this.getColumnSearchProps('task_message'),
+      },
+      {
+        title: 'Second stage',
+        align: 'center',
+        width: 250,
+        dataIndex: 'second_stage_state',
+        key: 'second_stage_state',
+        ...this.getColumnSearchProps('second_stage_state'),
       },
       {
         title: 'Commands Executions',
@@ -207,15 +216,33 @@ class List extends React.Component {
         key: 'commandsExecutions',
         render: (name, obj)  => (
           <React.Fragment>
-            <Table
-              columns={execCommands}
-              dataSource={obj.commandsExecutions}
-              bordered
-              rowKey={randomKey}
-              scroll={{x: 'auto', y: '30vh'}}
-              pagination={false}
-              style={{marginBottom: 10}}
-            />
+            { obj.second_stage_state !== 'running' ?
+              <Table
+                columns={execCommands}
+                dataSource={obj.commandsExecutions}
+                bordered
+                rowKey={randomKey}
+                scroll={{x: 'auto', y: '30vh'}}
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
+            :
+              <React.Fragment>
+              { this.props.secondStageProgressLoading ?
+                <Spin indicator={spinIcon} style={{margin: '10% 40%'}}/>
+              :
+                <Table
+                  columns={execCommands}
+                  dataSource={obj.commandsExecutions}
+                  bordered
+                  rowKey={randomKey}
+                  scroll={{x: 'auto', y: '30vh'}}
+                  pagination={false}
+                  style={{marginBottom: 10}}
+                />
+              }
+              </React.Fragment>
+            }
           </React.Fragment>
         )
       },
@@ -241,5 +268,6 @@ class List extends React.Component {
 
 export default connect((state) => ({
   historys: state.vmware.historys,
-  columnLoading: state.vmware.columnLoading
+  taskProgressLoading: state.vmware.taskProgressLoading,
+  secondStageProgressLoading: state.vmware.secondStageProgressLoading,
 }))(List);

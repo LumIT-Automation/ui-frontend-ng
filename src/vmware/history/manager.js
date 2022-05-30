@@ -9,7 +9,8 @@ import {
   historys,
   historysFetch,
   historysError,
-  columnLoading
+  taskProgressLoading,
+  secondStageProgressLoading,
 } from '../store'
 
 import List from './list'
@@ -31,7 +32,7 @@ class Manager extends React.Component {
       if (!this.props.historys) {
         this.main()
       }
-      this.interval = setInterval( () => this.refresh(), 10000)
+      this.interval = setInterval( () => this.refresh(), 15000)
     }
     else {
       clearInterval(this.interval)
@@ -43,6 +44,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.props.historys)
     console.log('update')
     if (this.props.historysFetch) {
       clearInterval(this.interval)
@@ -79,17 +81,40 @@ class Manager extends React.Component {
   }
 
   refresh = async () => {
-    this.props.dispatch(columnLoading(true))
+
+    let taskProgress = false
+    let secondStage = false
+
+    this.props.historys.forEach((item, i) => {
+      if (item.second_stage_state === 'running') {
+        secondStage = true
+      }
+      if (item.task_state === 'running') {
+        taskProgress = true
+      }
+    });
+
+
+    //second_stage_state === 'running'
+
+    if (taskProgress) {
+      this.props.dispatch(taskProgressLoading(true))
+    }
+    if (secondStage) {
+      this.props.dispatch(secondStageProgressLoading(true))
+    }
+
     let list = []
 
     let fetchedHistorys = await this.historyGet()
+    this.props.dispatch(taskProgressLoading(false))
+    this.props.dispatch(secondStageProgressLoading(false))
+    
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
       this.props.dispatch(historysError(fetchedHistorys))
-      this.props.dispatch(columnLoading(false))
       return
     }
     else {
-      this.props.dispatch(columnLoading(false))
       fetchedHistorys.data.items.forEach((item, i) => {
         let ts = item.task_startTime.split('.');
         item.task_startTime = ts[0]

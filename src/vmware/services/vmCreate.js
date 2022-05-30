@@ -60,6 +60,7 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
 
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
@@ -299,10 +300,10 @@ class CreateVmService extends React.Component {
   }
 
   clusterFetch = async () => {
-    await this.setState({networksLoading: true, datastoresLoading: true})
+    await this.setState({networksLoading: true, datastoresLoading: true, hostsLoading: true})
     let clusterFetched = await this.clusterGet()
     if (clusterFetched.status && clusterFetched.status !== 200 ) {
-      this.setState({networksLoading: false, datastoresLoading: false})
+      this.setState({networksLoading: false, datastoresLoading: false, hostsLoading: false})
       this.props.dispatch(clusterError(clusterFetched))
       return
     }
@@ -313,7 +314,7 @@ class CreateVmService extends React.Component {
           datastores.push(d)
         }
       })
-      this.setState({cluster: clusterFetched, datastores: datastores, networks: clusterFetched.data.networks, networksLoading: false, datastoresLoading: false})
+      this.setState({cluster: clusterFetched, hosts: clusterFetched.data.hosts, datastores: datastores, networks: clusterFetched.data.networks, networksLoading: false, datastoresLoading: false, hostsLoading: false})
     }
   }
 
@@ -492,6 +493,13 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.cluster = cluster[0]
     request.clusterMoId = cluster[1]
+    this.setState({request: request})
+  }
+
+  hostSet = host => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.host = host[0]
+    request.hostMoId = host[1]
     this.setState({request: request})
   }
 
@@ -1241,12 +1249,16 @@ class CreateVmService extends React.Component {
         ]
     }
 
+    if (this.state.request.host) {
+      b.hostMoId = this.state.request.hostMoId
+    }
+
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)
     this.setState({loading: false})
     if (vmC.status && vmC.status !== 202 ) {
       this.setState({loading: false, response: false})
-      this.props.dispatch(vmCreateError(error))
+      this.props.dispatch(vmCreateError(vmC))
     }
     else {
       this.setState({loading: false, response: true})
@@ -1739,7 +1751,7 @@ class CreateVmService extends React.Component {
                   <Col offset={3} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
-                  <Col span={4}>
+                  <Col span={2}>
                     { this.state.datacentersLoading ?
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     :
@@ -1802,15 +1814,15 @@ class CreateVmService extends React.Component {
                     </React.Fragment>
                     }
                   </Col>
-                  <Col offset={2} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
-                    <Col span={4}>
+                    <Col span={2}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={4}>
+                    <Col span={2}>
                       { this.state.clusters ?
                         <React.Fragment>
                           { this.state.clusters && this.state.clusters.length > 0 ?
@@ -1869,6 +1881,47 @@ class CreateVmService extends React.Component {
                             null
                           }
                         </React.Fragment>
+                      :
+                        <Select
+                          style={{width: '100%'}}
+                          disabled
+                        />
+                      }
+                    </Col>
+                  }
+                  <Col offset={1} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Host:</p>
+                  </Col>
+                  { this.state.hostsLoading ?
+                    <Col span={2}>
+                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                    </Col>
+                  :
+                    <Col span={2}>
+                      { this.state.hosts && this.state.hosts.length > 0 ?
+                        <Select
+                          defaultValue={this.state.request.host}
+                          value={this.state.request.host}
+                          showSearch
+                          style={{width: '100%'}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.hostSet(n)}
+                        >
+                          <React.Fragment>
+                            {this.state.hosts.map((n, i) => {
+                              return (
+                                <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                              )
+                            })
+                            }
+                          </React.Fragment>
+                        </Select>
                       :
                         <Select
                           style={{width: '100%'}}
