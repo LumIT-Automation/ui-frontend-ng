@@ -9,6 +9,7 @@ import {
   historys,
   historysFetch,
   historysError,
+  columnLoading
 } from '../store'
 
 import List from './list'
@@ -24,12 +25,13 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
     if (!this.props.historysError) {
       this.props.dispatch(historysFetch(false))
       if (!this.props.historys) {
         this.main()
       }
-      this.interval = setInterval( () => this.main(), 15000)
+      this.interval = setInterval( () => this.refresh(), 10000)
     }
     else {
       clearInterval(this.interval)
@@ -50,6 +52,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('unmount')
     clearInterval(this.interval)
   }
 
@@ -72,9 +75,28 @@ class Manager extends React.Component {
       });
 
       this.props.dispatch(historys(list))
-      this.setState({monitor: true})
     }
-    clearInterval(this.interval)
+  }
+
+  refresh = async () => {
+    this.props.dispatch(columnLoading(true))
+    let list = []
+
+    let fetchedHistorys = await this.historyGet()
+    if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
+      this.props.dispatch(historysError(fetchedHistorys))
+      this.props.dispatch(columnLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(columnLoading(false))
+      fetchedHistorys.data.items.forEach((item, i) => {
+        let ts = item.task_startTime.split('.');
+        item.task_startTime = ts[0]
+        list.push(item)
+      });
+      this.props.dispatch(historys(list))
+    }
   }
 
 

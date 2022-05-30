@@ -2,9 +2,10 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import { Table, Input, Button, Space, Progress } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined } from '@ant-design/icons';
+import { Table, Input, Button, Space, Progress, Spin } from 'antd'
+import Highlighter from 'react-highlight-words'
+import { SearchOutlined, LoadingOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -148,6 +149,7 @@ class List extends React.Component {
       {
         title: 'Start time',
         align: 'center',
+        width: '100%',
         dataIndex: 'task_startTime',
         key: 'task_startTime',
         defaultSortOrder: 'descend',
@@ -171,7 +173,13 @@ class List extends React.Component {
         render: (name, obj)  => (
           <React.Fragment>
             { obj.task_progress ?
-              <Progress percent={obj.task_progress} />
+              <React.Fragment>
+                {this.props.columnLoading ?
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                :
+                  <Progress percent={obj.task_progress} />
+                }
+              </React.Fragment>
             :
               <React.Fragment>
               { obj.task_state === 'success' ?
@@ -181,7 +189,6 @@ class List extends React.Component {
               }
               </React.Fragment>
             }
-
           </React.Fragment>
         )
       },
@@ -234,4 +241,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   historys: state.vmware.historys,
+  columnLoading: state.vmware.columnLoading
 }))(List);
