@@ -49,47 +49,48 @@ class CreateVmService extends React.Component {
       request: {
         numCoresPerSocket: 1
       },
-      json: `{
-        "name": "",
-        "notes": "",
-        "datacenter": "",
-        "cluster": "",
-        "main_datastore": "",
-        "folder": "",
-        "template": "",
-        "network_devices": [
+      json: {
+        name: "",
+        notes: "",
+        datacenter: "",
+        cluster: "",
+        host: "",
+        main_datastore: "",
+        folder: "",
+        template: "",
+        network_devices: [
             {
-            "portgroup": "",
-            "device_type": "vmxnet3"
+            portgroup: "",
+            device_type: "vmxnet3"
             }
         ],
-        "disk_devices": [
+        disk_devices: [
             {
-                "datastore": "MAIN_DATASTORE",
-                "device_type": "thin",
-                "size_gib": ""
+              datastore: "MAIN_DATASTORE",
+                device_type: "thin",
+                size_gib: ""
             }
         ],
-        "ram_mb": "",
-        "cpu": "",
-        "guestspec": "",
-        "hostname": "",
-        "domainName": "",
-        "network": [
+        ram_mb: "",
+        cpu: "",
+        guestspec: "",
+        hostname: "",
+        domainName: "",
+        network: [
           {
-            "dhcp": false,
-            "ip": "192.168.18.206",
-            "netMask": "255.255.255.0",
-            "gw": "192.168.18.1"
+            dhcp: false,
+            ip: "192.168.18.206",
+            netMask: "255.255.255.0",
+            gw: "192.168.18.1"
           }
         ],
-        "dns1": "",
-        "dns2": "",
-        "__vm_FARMBIL":"0",
-        "__vm_FARMNOBIL":"1",
-        "__tivoli_backup":"no",
-        "__monitoring":"no"
-      }`
+        dns1: "",
+        dns2: "",
+        __vm_FARMBIL:"0",
+        __vm_FARMNOBIL:"1",
+        __tivoli_backup:"no",
+        __monitoring:"no"
+      }
     };
     this.baseState = this.state
   }
@@ -112,6 +113,7 @@ class CreateVmService extends React.Component {
         this.clustersFetch()
       }
       if (this.state.request.clusterMoId && (prevState.request.clusterMoId !== this.state.request.clusterMoId)) {
+        console.log('clustmoidchanged ')
         this.clusterFetch()
       }
       if (this.state.request.templateMoId && (prevState.request.templateMoId !== this.state.request.templateMoId)) {
@@ -183,6 +185,8 @@ class CreateVmService extends React.Component {
     else {
       this.setState({finalpubkeys: finalpubkeysFetched.data.items})
     }
+
+    this.setState({jsonEnabled: true })
   }
 
 
@@ -507,27 +511,44 @@ class CreateVmService extends React.Component {
   //Input
 
   jsonSet = async e => {
-    let json
-    await this.setState({json: json})
-
+    let json, beauty
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     try {
-      JSON.parse(e.target.value)
+
       json = JSON.parse(e.target.value)
+      beauty = JSON.stringify(json, null, 2)
+      json = JSON.parse(beauty)
       delete errors.jsonError
       delete errors.jsonColor
-      await this.setState({errors: errors})
+      await this.setState({json: json, errors: errors})
 
       if (json.name) {
         request.vmName = json.name
-        await this.setState({request: request})
       }
       if (json.notes) {
         request.notes = json.notes
-        await this.setState({request: request})
       }
+      if (json.datacenter) {
+        let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
+        let datacenter = datacenters.find( r => r.moId === json.datacenter )
+        request.datacenterMoId = datacenter.moId
+        request.datacenter = datacenter.name
+      }
+      await this.setState({request: request})
+
+      if (json.cluster) {
+        await this.jsonClusterSet(json.cluster)
+      }
+
+      if (json.host) {
+        let hosts = JSON.parse(JSON.stringify(this.state.hosts))
+        let host = hosts.find( r => r.moId === json.host )
+        request.host = host.name
+        request.hostMoId = host.moId
+      }
+      await this.setState({request: request})
 
     } catch (error) {
       errors.jsonError = error.message
@@ -535,6 +556,17 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
   }
+
+  jsonClusterSet = async c => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let clusters = JSON.parse(JSON.stringify(this.state.clusters))
+    let cluster = clusters.find( r => r.moId === c )
+    request.cluster = cluster.name
+    request.clusterMoId = cluster.moId
+    await this.setState({request: request})
+    return true
+  }
+
 
   vmNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -1771,6 +1803,10 @@ class CreateVmService extends React.Component {
       return Math.random().toString()
     }
 
+    let jsonPretty = () => {
+      return JSON.stringify(this.state.json, null, 2)
+    }
+
     return (
       <React.Fragment>
 
@@ -1807,32 +1843,41 @@ class CreateVmService extends React.Component {
 
                 <Row>
                   <Col offset={5} span={12}>
-                  { this.state.errors.jsonError ?
-                    <Collapse>
-                      <Panel header="Paste your JSON here (optional)" key="1">
-                        <React.Fragment>
-                          <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
+                  { !this.state.jsonEnabled ?
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                  :
+                    <React.Fragment>
+                    { this.state.errors.jsonError ?
+                      <Collapse>
+                        <Panel header="Paste your JSON here (optional)" key="1">
+                          <React.Fragment>
+                            <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
+                            <Input.TextArea
+                              defaultValue={jsonPretty()}
+
+                              style={{width: '100%'}}
+                              rows={50}
+                              onBlur={e => this.jsonSet(e)}
+                            />
+                          </React.Fragment>
+                        </Panel>
+                      </Collapse>
+                    :
+                      <Collapse disabled>
+                        <Panel header="Paste your JSON here (optional)" key="1">
                           <Input.TextArea
-                            defaultValue={this.state.json}
+                            defaultValue={jsonPretty()}
+
                             style={{width: '100%'}}
                             rows={50}
                             onBlur={e => this.jsonSet(e)}
                           />
-                        </React.Fragment>
-                      </Panel>
-                    </Collapse>
-                  :
-                    <Collapse>
-                      <Panel header="Paste your JSON here (optional)" key="1">
-                        <Input.TextArea
-                          defaultValue={this.state.json}
-                          style={{width: '100%'}}
-                          rows={50}
-                          onBlur={e => this.jsonSet(e)}
-                        />
-                      </Panel>
-                    </Collapse>
+                        </Panel>
+                      </Collapse>
+                    }
+                    </React.Fragment>
                   }
+
                   </Col>
                 </Row>
                 <br/>
