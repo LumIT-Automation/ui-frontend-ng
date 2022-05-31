@@ -32,7 +32,7 @@ class Manager extends React.Component {
       if (!this.props.historys) {
         this.main()
       }
-      this.interval = setInterval( () => this.refresh(), 15000)
+      //this.interval = setInterval( () => this.refresh(), 15000)
     }
     else {
       clearInterval(this.interval)
@@ -109,7 +109,7 @@ class Manager extends React.Component {
     let fetchedHistorys = await this.historyGet()
     this.props.dispatch(taskProgressLoading(false))
     this.props.dispatch(secondStageProgressLoading(false))
-    
+
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
       this.props.dispatch(historysError(fetchedHistorys))
       return

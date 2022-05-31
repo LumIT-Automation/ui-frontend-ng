@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree, Checkbox } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree, Checkbox, Collapse } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -25,6 +25,7 @@ import {
 import AssetSelector from '../../vmware/assetSelector'
 
 const { TextArea } = Input;
+const { Panel } = Collapse;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
@@ -47,7 +48,48 @@ class CreateVmService extends React.Component {
       addresses: [],
       request: {
         numCoresPerSocket: 1
-      }
+      },
+      json: `{
+        "name": "",
+        "notes": "",
+        "datacenter": "",
+        "cluster": "",
+        "main_datastore": "",
+        "folder": "",
+        "template": "",
+        "network_devices": [
+            {
+            "portgroup": "",
+            "device_type": "vmxnet3"
+            }
+        ],
+        "disk_devices": [
+            {
+                "datastore": "MAIN_DATASTORE",
+                "device_type": "thin",
+                "size_gib": ""
+            }
+        ],
+        "ram_mb": "",
+        "cpu": "",
+        "guestspec": "",
+        "hostname": "",
+        "domainName": "",
+        "network": [
+          {
+            "dhcp": false,
+            "ip": "192.168.18.206",
+            "netMask": "255.255.255.0",
+            "gw": "192.168.18.1"
+          }
+        ],
+        "dns1": "",
+        "dns2": "",
+        "__vm_FARMBIL":"0",
+        "__vm_FARMNOBIL":"1",
+        "__tivoli_backup":"no",
+        "__monitoring":"no"
+      }`
     };
     this.baseState = this.state
   }
@@ -463,6 +505,37 @@ class CreateVmService extends React.Component {
 
   //SETTERS
   //Input
+
+  jsonSet = async e => {
+    let json
+    await this.setState({json: json})
+
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    try {
+      JSON.parse(e.target.value)
+      json = JSON.parse(e.target.value)
+      delete errors.jsonError
+      delete errors.jsonColor
+      await this.setState({errors: errors})
+
+      if (json.name) {
+        request.vmName = json.name
+        await this.setState({request: request})
+      }
+      if (json.notes) {
+        request.notes = json.notes
+        await this.setState({request: request})
+      }
+
+    } catch (error) {
+      errors.jsonError = error.message
+      errors.jsonColor = 'red'
+      await this.setState({errors: errors})
+    }
+  }
+
   vmNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.vmName = e.target.value
@@ -1732,6 +1805,37 @@ class CreateVmService extends React.Component {
                 <React.Fragment>
 
 
+                <Row>
+                  <Col offset={5} span={12}>
+                  { this.state.errors.jsonError ?
+                    <Collapse>
+                      <Panel header="Paste your JSON here (optional)" key="1">
+                        <React.Fragment>
+                          <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
+                          <Input.TextArea
+                            defaultValue={this.state.json}
+                            style={{width: '100%'}}
+                            rows={50}
+                            onBlur={e => this.jsonSet(e)}
+                          />
+                        </React.Fragment>
+                      </Panel>
+                    </Collapse>
+                  :
+                    <Collapse>
+                      <Panel header="Paste your JSON here (optional)" key="1">
+                        <Input.TextArea
+                          defaultValue={this.state.json}
+                          style={{width: '100%'}}
+                          rows={50}
+                          onBlur={e => this.jsonSet(e)}
+                        />
+                      </Panel>
+                    </Collapse>
+                  }
+                  </Col>
+                </Row>
+                <br/>
 
                 <Row>
                   <Col offset={3} span={2}>
@@ -1739,9 +1843,18 @@ class CreateVmService extends React.Component {
                   </Col>
                   <Col span={4}>
                     {this.state.errors.vmNameError ?
-                      <Input style={{width: '100%', borderColor: this.state.errors.vmNameColor}} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
+                      <Input
+                        style={{width: '100%', borderColor: this.state.errors.vmNameColor}}
+                        value={this.state.request.vmName}
+                        onChange={e => this.vmNameSet(e)}
+                      />
                     :
-                      <Input style={{width: '100%'}} defaultValue={this.state.request.vmName} name="vmName" id='vmName' onChange={e => this.vmNameSet(e)} />
+                      <Input
+                        style={{width: '100%'}}
+                        defaultValue={this.state.request.vmName}
+                        value={this.state.request.vmName}
+                        onChange={e => this.vmNameSet(e)}
+                      />
                     }
                   </Col>
                 </Row>
@@ -2612,9 +2725,18 @@ class CreateVmService extends React.Component {
                   </Col>
                   <Col span={12}>
                     {this.state.errors.notesError ?
-                      <Input.TextArea style={{width: '100%', borderColor: this.state.errors.notesColor}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                      <Input.TextArea
+                        value={this.state.request.notes}
+                        style={{width: '100%', borderColor: this.state.errors.notesColor}}
+                        onChange={e => this.notesSet(e)}
+                      />
                     :
-                      <Input.TextArea defaultValue={this.state.request.notes} style={{width: '100%'}} name="notes" id='notes' onChange={e => this.notesSet(e)} />
+                      <Input.TextArea
+                        defaultValue={this.state.request.notes}
+                        value={this.state.request.notes}
+                        style={{width: '100%'}}
+                        onChange={e => this.notesSet(e)}
+                      />
                     }
                   </Col>
                 </Row>

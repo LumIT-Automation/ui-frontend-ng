@@ -173,13 +173,7 @@ class List extends React.Component {
         render: (name, obj)  => (
           <React.Fragment>
             { obj.task_progress ?
-              <React.Fragment>
-                {this.props.taskProgressLoading ?
-                  <Spin indicator={spinIcon} style={{margin: '10% 40%'}}/>
-                :
-                  <Progress percent={obj.task_progress} />
-                }
-              </React.Fragment>
+              <Progress percent={obj.task_progress} />
             :
               <React.Fragment>
               { obj.task_state === 'success' ?
@@ -222,9 +216,9 @@ class List extends React.Component {
                 dataSource={obj.commandsExecutions}
                 bordered
                 rowKey={randomKey}
-                scroll={{x: 'auto', y: '30vh'}}
+                scroll={{x: '40vw', y: '30vh'}}
                 pagination={false}
-                style={{marginBottom: 10}}
+                style={{marginLeft: '-50px', padding: 0}}
               />
             :
               <React.Fragment>
@@ -236,9 +230,9 @@ class List extends React.Component {
                   dataSource={obj.commandsExecutions}
                   bordered
                   rowKey={randomKey}
-                  scroll={{x: 'auto', y: '30vh'}}
+                  scroll={{x: '40vw', y: '30vh'}}
                   pagination={false}
-                  style={{marginBottom: 10}}
+                  style={{marginLeft: '-50px'}}
                 />
               }
               </React.Fragment>
