@@ -59,17 +59,17 @@ class CreateVmService extends React.Component {
         folder: "",
         template: "",
         network_devices: [
-            {
+          {
             portgroup: "",
             device_type: "vmxnet3"
-            }
+          }
         ],
         disk_devices: [
-            {
-              datastore: "MAIN_DATASTORE",
-                device_type: "thin",
-                size_gib: ""
-            }
+          {
+            datastore: "MAIN_DATASTORE",
+            device_type: "thin",
+            size_gib: ""
+          }
         ],
         ram_mb: "",
         cpu: "",
@@ -510,19 +510,29 @@ class CreateVmService extends React.Component {
   //SETTERS
   //Input
 
+  update = async (request, errors) => {
+    this.setState({request: request})
+    return true
+  }
+
+  update2 = async (json, errors) => {
+    this.setState({json: json, errors: errors})
+    return true
+  }
+
   jsonSet = async e => {
     let json, beauty
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let clus
 
     try {
-
       json = JSON.parse(e.target.value)
       beauty = JSON.stringify(json, null, 2)
       json = JSON.parse(beauty)
       delete errors.jsonError
       delete errors.jsonColor
-      await this.setState({json: json, errors: errors})
+      await this.update2(json, errors)
 
       if (json.name) {
         request.vmName = json.name
@@ -536,19 +546,21 @@ class CreateVmService extends React.Component {
         request.datacenterMoId = datacenter.moId
         request.datacenter = datacenter.name
       }
-      await this.setState({request: request})
+      await this.update(request)
 
       if (json.cluster) {
         await this.jsonClusterSet(json.cluster)
       }
+
 
       if (json.host) {
         let hosts = JSON.parse(JSON.stringify(this.state.hosts))
         let host = hosts.find( r => r.moId === json.host )
         request.host = host.name
         request.hostMoId = host.moId
+        await this.update(request)
       }
-      await this.setState({request: request})
+
 
     } catch (error) {
       errors.jsonError = error.message
@@ -563,8 +575,8 @@ class CreateVmService extends React.Component {
     let cluster = clusters.find( r => r.moId === c )
     request.cluster = cluster.name
     request.clusterMoId = cluster.moId
-    await this.setState({request: request})
-    return true
+    await this.update(request)
+    return cluster
   }
 
 
