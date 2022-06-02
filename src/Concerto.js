@@ -4,8 +4,9 @@ import { Component, } from "react"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import './App.css'
 import 'antd/dist/antd.css'
-import { Layout, Avatar, Menu, Dropdown  } from 'antd'
+import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
+import LogoFW from './svg/logo-fw.png'
 
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
@@ -176,18 +177,31 @@ class Concerto extends Component {
 
       <Layout style={{overflow: 'initial'}}>
         <Header className="header">
-          <p style={{float: "left", marginRight: '15px', color: 'white'}}>Concerto</p>
-          <div>
-            <Dropdown overlay={menu} trigger={['click']}>
-              <Avatar
-              style={{float: "right", marginTop: '15px'}}
-              icon={<UserOutlined/>}
-              //onClick={() => this.logout()}
-              >
-              </Avatar>
-            </Dropdown>
-            <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
-          </div>
+          <Row>
+            <Col span={2}>
+              <p style={{float: "left", marginRight: '15px', color: 'white'}}>Concerto</p>
+            </Col>
+
+            
+            <Col span={9}>
+             <Image src={LogoFW} height={50} width={'100%'} style={{marginTop: '7px'}}/>
+            </Col>
+
+            <Col offset={9} span={4}>
+              <div>
+                <Dropdown overlay={menu} trigger={['click']}>
+                  <Avatar
+                  style={{float: "right", marginTop: '15px'}}
+                  icon={<UserOutlined/>}
+                  //onClick={() => this.logout()}
+                  >
+                  </Avatar>
+                </Dropdown>
+                <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
+              </div>
+            </Col>
+          </Row>
+
         </Header>
         <BrowserRouter>
           <Layout>
