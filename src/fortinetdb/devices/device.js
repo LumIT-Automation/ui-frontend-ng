@@ -136,7 +136,7 @@ class Device extends React.Component {
     await rest.doXHR(`fortinetdb/device/${this.props.obj.SERIALE}/`, this.props.token)
   }
 
-  setExtraData = e => {
+  extraDataSet = e => {
     this.setState({extraData: e.target.value})
   }
 
@@ -316,7 +316,7 @@ class Device extends React.Component {
           {this.state.extraLoading ?
             <Spin indicator={responseIcon} style={{margin: '10% 45%'}}/>
           :
-            <Input.TextArea value={this.state.extraData} onChange={e => this.setExtraData(e)} onBlur={() => this.modifyExtraData()} />
+            <Input.TextArea value={this.state.extraData} onChange={e => this.extraDataSet(e)} onBlur={() => this.modifyExtraData()} />
           }
           </React.Fragment>
         )
