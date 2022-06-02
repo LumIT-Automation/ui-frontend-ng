@@ -174,7 +174,7 @@ class Device extends React.Component {
 
 
   render() {
-
+    console.log(this.state.extraData)
     const columns = [
       {
         title: "SERIALE",
@@ -316,7 +316,7 @@ class Device extends React.Component {
           {this.state.extraLoading ?
             <Spin indicator={responseIcon} style={{margin: '10% 45%'}}/>
           :
-            <Input.TextArea defaultValue={this.state.extraData} onChange={e => this.setExtraData(e)} onBlur={() => this.modifyExtraData()} />
+            <Input.TextArea value={this.state.extraData} onChange={e => this.setExtraData(e)} onBlur={() => this.modifyExtraData()} />
           }
           </React.Fragment>
         )

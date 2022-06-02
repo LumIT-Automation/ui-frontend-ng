@@ -135,7 +135,7 @@ class Ddos extends React.Component {
     await rest.doXHR(`fortinetdb/ddos/${this.props.obj.MANAGED_OBJECT}/`, this.props.token)
   }
 
-  setExtraData = e => {
+  extraDataSet = e => {
     this.setState({extraData: e.target.value})
   }
 
@@ -249,7 +249,7 @@ class Ddos extends React.Component {
           {this.state.extraLoading ?
             <Spin indicator={responseIcon} style={{margin: '10% 45%'}}/>
           :
-            <Input.TextArea defaultValue={this.state.extraData} onChange={e => this.setExtraData(e)} onBlur={() => this.modifyExtraData()} />
+            <Input.TextArea value={this.state.extraData} onChange={e => this.extraDataSet(e)} onBlur={() => this.modifyExtraData()} />
           }
           </React.Fragment>
         )
