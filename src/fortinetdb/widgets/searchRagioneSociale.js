@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import '../../App.css'
+import LogoFW from '../../svg/logo-compatto.png'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -17,7 +18,7 @@ import {
 
 import List from '../projects/list'
 
-import { Modal, Spin, Row, Col, Select, Divider } from 'antd'
+import { Modal, Spin, Row, Col, Select, Divider, Image } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -82,16 +83,27 @@ class SearchRagioneSociale extends React.Component {
 
   render() {
     return (
+      <React.Fragment>
       <Row>
         <Col offset={8} span={8}>
-          { this.props.projectsLoading ?
+          <Image src={LogoFW} width={'100%'} style={{marginTop: '7px'}}/>
+        </Col>
+      </Row>
+
+      <Row>
+        <Col offset={10} span={8}>
+          <p style={{margin: '5vh 0', fontSize: '3vh'}}>Ragione sociale: </p>
+        </Col>
+      </Row>
+
+      <Row>
+        { this.props.projectsLoading ?
+          <Col offset={11} span={1}>
+            <Spin indicator={spinIcon} style={{display: 'inline'}}/>
+          </Col>
+        :
+          <Col offset={5} span={8}>
             <React.Fragment>
-              <p style={{margin: '5vh 0', fontSize: '3vh'}}>Ragione sociale: </p>
-              <Spin indicator={spinIcon} style={{margin: '0 5vw', display: 'inline'}}/>
-            </React.Fragment>
-          :
-            <React.Fragment>
-              <p style={{margin: '5vh 0 0 0', fontSize: '3vh'}}>Ragione sociale: </p>
               <Select
                 style={{width: '50vw'}}
                 showSearch
@@ -133,38 +145,40 @@ class SearchRagioneSociale extends React.Component {
                 }
               </Select>
             </React.Fragment>
-          }
-          { this.state.visible ?
-            <React.Fragment>
-              <Modal
-                title={<p style={{textAlign: 'center'}}>{this.state.project}</p>}
-                centered
-                destroyOnClose={true}
-                visible={this.state.visible}
-                footer={''}
-                //onOk={() => this.setState({visible: true})}
-                onCancel={this.hide}
-                width={1500}
-              >
-                { this.state.projectLoading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
-                :
-                  <React.Fragment>
-                    { this.state.projects ?
-                      <List height={550} pagination={5} filteredProjects={this.state.projects}/>
-                    :
-                      null
-                    }
-                  </React.Fragment>
-                }
-              </Modal>
-              { this.props.projectError ? <Error component={'Project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
-            </React.Fragment>
-          :
-            null
-          }
-        </Col>
+          </Col>
+        }
       </Row>
+
+        { this.state.visible ?
+          <React.Fragment>
+            <Modal
+              title={<p style={{textAlign: 'center'}}>{this.state.project}</p>}
+              centered
+              destroyOnClose={true}
+              visible={this.state.visible}
+              footer={''}
+              //onOk={() => this.setState({visible: true})}
+              onCancel={this.hide}
+              width={1500}
+            >
+              { this.state.projectLoading ?
+                <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+              :
+                <React.Fragment>
+                  { this.state.projects ?
+                    <List height={550} pagination={5} filteredProjects={this.state.projects}/>
+                  :
+                    null
+                  }
+                </React.Fragment>
+              }
+            </Modal>
+            { this.props.projectError ? <Error component={'Project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
+          </React.Fragment>
+        :
+          null
+        }
+      </React.Fragment>
     );
 
   }
