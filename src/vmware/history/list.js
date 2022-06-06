@@ -114,7 +114,7 @@ class List extends React.Component {
       {
         title: 'Command',
         align: 'center',
-        width: '100%',
+        width: 100,
         dataIndex: 'command',
         key: 'command',
         ...this.getColumnSearchProps('command'),
@@ -122,7 +122,7 @@ class List extends React.Component {
       {
         title: 'Status',
         align: 'center',
-        width: '100%',
+        width: 100,
         dataIndex: 'exit_status',
         key: 'exit_status',
         ...this.getColumnSearchProps('exit_status'),
@@ -130,7 +130,7 @@ class List extends React.Component {
       {
         title: 'Error',
         align: 'center',
-        width: '100%',
+        width: 200,
         dataIndex: 'stderr',
         key: 'stderr',
         ...this.getColumnSearchProps('stderr'),
@@ -167,7 +167,7 @@ class List extends React.Component {
       {
         title: 'Task progress',
         align: 'center',
-        width: 300,
+        width: 280,
         dataIndex: 'task_progress',
         key: 'task_progress',
         render: (name, obj)  => (
@@ -189,7 +189,7 @@ class List extends React.Component {
       {
         title: 'Task message',
         align: 'center',
-        width: 250,
+        width: 200,
         dataIndex: 'task_message',
         key: 'task_message',
         ...this.getColumnSearchProps('task_message'),
@@ -197,7 +197,7 @@ class List extends React.Component {
       {
         title: 'Second stage',
         align: 'center',
-        width: 250,
+        width: 200,
         dataIndex: 'second_stage_state',
         key: 'second_stage_state',
         ...this.getColumnSearchProps('second_stage_state'),
@@ -205,7 +205,7 @@ class List extends React.Component {
       {
         title: 'Commands Executions',
         align: 'center',
-        width: '100%',
+        width: 400,
         dataIndex: 'commandsExecutions',
         key: 'commandsExecutions',
         render: (name, obj)  => (
@@ -216,9 +216,9 @@ class List extends React.Component {
                 dataSource={obj.commandsExecutions}
                 bordered
                 rowKey={randomKey}
-                scroll={{x: '40vw', y: '30vh'}}
+                scroll={{y: '30vh'}}
                 pagination={false}
-                style={{marginLeft: '-50px', padding: 0}}
+                style={{marginLeft: '-50px', marginRight: 0, padding: 0 }}
               />
             :
               <React.Fragment>
@@ -230,9 +230,9 @@ class List extends React.Component {
                   dataSource={obj.commandsExecutions}
                   bordered
                   rowKey={randomKey}
-                  scroll={{x: '40vw', y: '30vh'}}
+                  scroll={{y: '30vh'}}
                   pagination={false}
-                  style={{marginLeft: '-50px'}}
+                  style={{marginLeft: '-50px', marginRight: 0, padding: 0}}
                 />
               }
               </React.Fragment>
