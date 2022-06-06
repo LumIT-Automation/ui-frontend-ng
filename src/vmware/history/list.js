@@ -114,7 +114,7 @@ class List extends React.Component {
       {
         title: 'Command',
         align: 'center',
-        width: 100,
+        width: 200,
         dataIndex: 'command',
         key: 'command',
         ...this.getColumnSearchProps('command'),
@@ -130,7 +130,7 @@ class List extends React.Component {
       {
         title: 'Error',
         align: 'center',
-        width: 200,
+        width: 300,
         dataIndex: 'stderr',
         key: 'stderr',
         ...this.getColumnSearchProps('stderr'),
@@ -218,7 +218,7 @@ class List extends React.Component {
                 rowKey={randomKey}
                 scroll={{y: '30vh'}}
                 pagination={false}
-                style={{marginLeft: '-50px', marginRight: 0, padding: 0 }}
+                style={{maxWidth: 'none', marginLeft: '-50px'}}
               />
             :
               <React.Fragment>
@@ -232,7 +232,7 @@ class List extends React.Component {
                   rowKey={randomKey}
                   scroll={{y: '30vh'}}
                   pagination={false}
-                  style={{marginLeft: '-50px', marginRight: 0, padding: 0}}
+                  style={{maxWidth: 'none', marginLeft: '-50px'}}
                 />
               }
               </React.Fragment>

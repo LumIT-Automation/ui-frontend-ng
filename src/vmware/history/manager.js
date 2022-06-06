@@ -32,7 +32,7 @@ class Manager extends React.Component {
       if (!this.props.historys) {
         this.main()
       }
-      this.interval = setInterval( () => this.refresh(), 15000)
+      //this.interval = setInterval( () => this.refresh(), 15000)
     }
     else {
       clearInterval(this.interval)
