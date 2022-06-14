@@ -78,7 +78,7 @@ class SearchRagioneSociale extends React.Component {
   }
 
   hide = () => {
-    this.setState({visible: false})
+    this.setState({visible: false, input: ''})
   }
 
   render() {

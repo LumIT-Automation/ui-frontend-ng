@@ -182,9 +182,14 @@ class Concerto extends Component {
               <p style={{float: "left", marginRight: '15px', color: 'white'}}>Concerto</p>
             </Col>
 
-            <Col span={9}>
-             <Image src={LogoFW} height={50} width={'100%'} style={{marginTop: '7px'}}/>
-            </Col>
+            { this.props.authorizationsFortinetdb ?
+              <Col span={9}>
+               <Image src={LogoFW} height={50} width={'100%'} style={{marginTop: '7px'}}/>
+              </Col>
+            :
+              <Col span={9}>
+              </Col>
+            }
 
             <Col offset={9} span={4}>
               <div>
