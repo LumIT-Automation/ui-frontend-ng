@@ -109,14 +109,7 @@ class CreateVmService extends React.Component {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
-      /*
-      if (this.state.request.datacenterMoId && (prevState.request.datacenterMoId !== this.state.request.datacenterMoId)) {
-        this.clustersFetch()
-      }*/
-      if (this.state.request.clusterMoId && (prevState.request.clusterMoId !== this.state.request.clusterMoId)) {
-        console.log('clustmoidchanged ')
-        this.clusterFetch()
-      }
+
       if (this.state.request.templateMoId && (prevState.request.templateMoId !== this.state.request.templateMoId)) {
         this.templateFetch()
       }
@@ -518,6 +511,7 @@ class CreateVmService extends React.Component {
     request.cluster = cluster.name
     request.clusterMoId = cluster.moId
     await this.setState({request: request})
+    await this.clusterFetch()
     return cluster
   }
 
@@ -570,13 +564,35 @@ class CreateVmService extends React.Component {
       let host = hosts.find( r => r.moId === json.host )
       request.host = host.name
       request.hostMoId = host.moId
-      await this.update(request)
+      await this.setState({request: request})
+    }
+
+    if (json.main_datastore) {
+      let datastores = JSON.parse(JSON.stringify(this.state.datastores))
+      let datastore = datastores.find( r => r.moId === json.main_datastore )
+      let l = [datastore.name, datastore.moId]
+      await this.mainDatastoreSet(l)
     }
 
     if (json.folder) {
       request.vmFolderMoId = json.folder
-      await this.update(request)
+      await this.setState({request: request})
     }
+
+    if (json.cpu) {
+      request.numCpu = json.cpu
+      await this.setState({request: request})
+    }
+
+    if (json.ram_mb) {
+      request.memoryMB = json.ram_mb
+      await this.setState({request: request})
+    }
+
+    if (json.template) {
+      await this.templatesFetch()
+    }
+
   }
 
 
@@ -609,11 +625,12 @@ class CreateVmService extends React.Component {
     this.clustersFetch()
   }
 
-  clusterSet = cluster => {
+  clusterSet = async cluster => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.cluster = cluster[0]
     request.clusterMoId = cluster[1]
-    this.setState({request: request})
+    await this.setState({request: request})
+    this.clusterFetch()
   }
 
   hostSet = host => {
@@ -638,7 +655,7 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  mainDatastoreSet = mainDatastore => {
+  mainDatastoreSet = async mainDatastore => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.mainDatastore = mainDatastore[0]
     request.mainDatastoreMoId = mainDatastore[1]
@@ -663,7 +680,7 @@ class CreateVmService extends React.Component {
       newDiskDevices.push(item)
     });
 
-    this.setState({request: request, datastoresPlus: newList, diskDevices: newDiskDevices})
+    await this.setState({request: request, datastoresPlus: newList, diskDevices: newDiskDevices})
   }
 
   numCpuSet = numCpu => {
@@ -678,10 +695,10 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  memoryMBSet = e => {
+  memoryMBSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.memoryMB = e.target.value
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   networkDeviceTypeSet = (deviceType, networkDeviceId) => {
