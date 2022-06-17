@@ -103,15 +103,13 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state)
+    if ( (this.state.request && this.state.request.mainDatastore) && (this.state.request.mainDatastore !== prevState.request.mainDatastore) ){
+      console.log(this.state)
+    }
 
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
-      }
-
-      if (this.state.request.templateMoId && (prevState.request.templateMoId !== this.state.request.templateMoId)) {
-        this.templateFetch()
       }
     }
   }
@@ -506,13 +504,20 @@ class CreateVmService extends React.Component {
 
   jsonClusterSet = async c => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let clusters = JSON.parse(JSON.stringify(this.state.clusters))
-    let cluster = clusters.find( r => r.moId === c )
-    request.cluster = cluster.name
-    request.clusterMoId = cluster.moId
-    await this.setState({request: request})
-    await this.clusterFetch()
-    return cluster
+
+    try {
+      let cluster = clusters.find( r => r.moId === c )
+      request.cluster = cluster.name
+      request.clusterMoId = cluster.moId
+      await this.setState({request: request})
+      await this.clusterFetch()
+    } catch (error) {
+      errors.jsonError = `cluster: ${error.message}`
+      errors.jsonColor = 'red'
+      await this.setState({errors: errors})
+    }
   }
 
   jsonValidate = async e => {
@@ -537,62 +542,109 @@ class CreateVmService extends React.Component {
 
   jsonSet = async () => {
     let json = JSON.parse(JSON.stringify(this.state.json))
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let request, errors
 
     if (json.name) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.vmName = json.name
+      await this.setState({request: request})
     }
     if (json.notes) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.notes = json.notes
+      await this.setState({request: request})
     }
     if (json.datacenter) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
-      let datacenter = datacenters.find( r => r.moId === json.datacenter )
-      request.datacenterMoId = datacenter.moId
-      request.datacenter = datacenter.name
+
+      try {
+        let datacenter = datacenters.find( r => r.moId === json.datacenter )
+        request.datacenterMoId = datacenter.moId
+        request.datacenter = datacenter.name
+        await this.setState({request: request})
+        await this.clustersFetch()
+      } catch(error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `datacenter: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+
     }
-    await this.setState({request: request})
-    await this.clustersFetch()
 
     if (json.cluster) {
       await this.jsonClusterSet(json.cluster)
     }
 
     if (json.host) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       let hosts = JSON.parse(JSON.stringify(this.state.hosts))
-      let host = hosts.find( r => r.moId === json.host )
-      request.host = host.name
-      request.hostMoId = host.moId
-      await this.setState({request: request})
+
+      try {
+        let host = hosts.find( r => r.moId === json.host )
+        request.host = host.name
+        request.hostMoId = host.moId
+        await this.setState({request: request})
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `host: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+
     }
 
     if (json.main_datastore) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       let datastores = JSON.parse(JSON.stringify(this.state.datastores))
-      let datastore = datastores.find( r => r.moId === json.main_datastore )
-      let l = [datastore.name, datastore.moId]
-      await this.mainDatastoreSet(l)
+
+      try {
+        let datastore = datastores.find( r => r.moId === json.main_datastore )
+        let l = [datastore.name, datastore.moId]
+        await this.mainDatastoreSet(l)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `datastore: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
     }
 
     if (json.folder) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.vmFolderMoId = json.folder
       await this.setState({request: request})
     }
 
     if (json.cpu) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.numCpu = json.cpu
       await this.setState({request: request})
     }
 
     if (json.ram_mb) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       request.memoryMB = json.ram_mb
       await this.setState({request: request})
     }
 
     if (json.template) {
+      request = JSON.parse(JSON.stringify(this.state.request))
       await this.templatesFetch()
-    }
+      let templates = JSON.parse(JSON.stringify(this.state.templates))
 
+      try {
+        let template = templates.find( r => r.name === json.template )
+        let l = [template.name, template.moId]
+        await this.templateSet(l)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `template: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
   }
 
 
@@ -641,18 +693,17 @@ class CreateVmService extends React.Component {
   }
 
   folderSet = (selectedKeys, info) => {
-    console.log(selectedKeys)
-    console.log(info)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.vmFolderMoId = info.node.moId
     this.setState({ request: request})
   }
 
-  templateSet = template => {
+  templateSet = async template => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.template = template[0]
     request.templateMoId = template[1]
-    this.setState({request: request})
+    await this.setState({request: request})
+    this.templateFetch()
   }
 
   mainDatastoreSet = async mainDatastore => {
@@ -681,6 +732,7 @@ class CreateVmService extends React.Component {
     });
 
     await this.setState({request: request, datastoresPlus: newList, diskDevices: newDiskDevices})
+    return request
   }
 
   numCpuSet = numCpu => {
@@ -2553,7 +2605,6 @@ class CreateVmService extends React.Component {
                         <React.Fragment>
                           {this.state.errors.mainDatastoreError ?
                             <Select
-                              defaultValue={this.state.request.mainDatastore}
                               value={this.state.request.mainDatastore}
                               showSearch
                               style={{width: '100%', border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
@@ -2577,7 +2628,6 @@ class CreateVmService extends React.Component {
                             </Select>
                           :
                             <Select
-                              defaultValue={this.state.request.mainDatastore}
                               value={this.state.request.mainDatastore}
                               showSearch
                               style={{width: '100%'}}
