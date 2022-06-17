@@ -103,10 +103,7 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.state.request && this.state.request.mainDatastore) && (this.state.request.mainDatastore !== prevState.request.mainDatastore) ){
-      console.log(this.state)
-    }
-
+    console.log(this.state.networkDevices)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -407,7 +404,7 @@ class CreateVmService extends React.Component {
         })
       }
 
-      this.setState({networkDevicesLoading: false, diskDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
+      await this.setState({networkDevicesLoading: false, diskDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
     }
   }
 
@@ -630,7 +627,6 @@ class CreateVmService extends React.Component {
     }
 
     if (json.template) {
-      request = JSON.parse(JSON.stringify(this.state.request))
       await this.templatesFetch()
       let templates = JSON.parse(JSON.stringify(this.state.templates))
 
@@ -641,6 +637,23 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `template: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.network_devices) {
+      request = JSON.parse(JSON.stringify(this.state.request))
+      let portgroup = json.network_devices[0].portgroup
+      let device_type = json.network_devices[0].device_type
+
+      try {
+        let networkDevice = this.state.networkDevices[0]
+        let l = [portgroup, networkDevice.id]
+        await this.networkSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `portgroup: ${error.message}`
         errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
@@ -703,7 +716,7 @@ class CreateVmService extends React.Component {
     request.template = template[0]
     request.templateMoId = template[1]
     await this.setState({request: request})
-    this.templateFetch()
+    await this.templateFetch()
   }
 
   mainDatastoreSet = async mainDatastore => {
@@ -760,11 +773,11 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: networkDevices})
   }
 
-  networkSet = (networkMoId, networkDeviceId) => {
+  networkSet = async (networkMoId, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
     networkDevice.networkMoId = networkMoId
-    this.setState({networkDevices: networkDevices})
+    await this.setState({networkDevices: networkDevices})
   }
 
   customSpecSet = c => {
@@ -1476,16 +1489,8 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    //console.log(this.state)
 
-    let networkNameMoid = obj => {
-      if (this.state.networks) {
-        let n = this.state.networks.find(e => e.moId === obj.networkMoId)
-        if (n && n.name) {
-          return(n.name)
-        }
-      }
-    }
+    console.log(this.state.networks)
 
     let datastoreNameMoid = obj => {
       if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {
@@ -1518,7 +1523,7 @@ class CreateVmService extends React.Component {
         dataIndex: 'networkMoId',
         key: 'network',
         name: 'network',
-        render: (name, obj)  => (
+        render: (name, obj) => (
           <React.Fragment>
             {this.state.networksLoading ?
               <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
@@ -1526,14 +1531,14 @@ class CreateVmService extends React.Component {
               <React.Fragment>
                 {obj.networkMoIdError ?
                   <Select
-                    defaultValue={() => networkNameMoid(obj)}
+                    value={obj.networkMoId}
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
                     onChange={e => this.networkSet(e, obj.id)}>
                     { this.state.networks?
                       this.state.networks.map((n, i) => {
                       return (
-                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                        <Select.Option key={i} value={n.moId}>{n.moId}</Select.Option>
                         )
                       })
                     :
@@ -1544,13 +1549,13 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                   { this.state.networks ?
                     <Select
-                      defaultValue={() => networkNameMoid(obj)}
+                      value={obj.networkMoId}
                       key={obj.id}
                       style={{ width: '100%' }}
                       onChange={e => this.networkSet(e, obj.id)}>
                       {this.state.networks.map((n, i) => {
                         return (
-                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                          <Select.Option key={i} value={n.moId}>{n.moId}</Select.Option>
                           )
                         })
                       }
