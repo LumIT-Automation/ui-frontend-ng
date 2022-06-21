@@ -103,6 +103,7 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.networks)
     console.log(this.state.networkDevices)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
@@ -389,6 +390,7 @@ class CreateVmService extends React.Component {
         templateFetched.data.networkDevices.existent.forEach(n => {
           n.id = i
           n.existent = true
+          n.networkName = null
           networkDevices.push(n)
           ++i
         })
@@ -419,7 +421,7 @@ class CreateVmService extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n, existent: false, networkMoId: null, deviceType: null, label:''}
+    let r = {id: n, existent: false, networkName: null, networkMoId: null, deviceType: null, label:''}
     let list = JSON.parse(JSON.stringify(this.state.networkDevices))
     list.push(r)
     this.setState({networkDevices: list})
@@ -432,7 +434,7 @@ class CreateVmService extends React.Component {
     })
     await this.setState({networkDevices: newList})
     if (this.state.networkDevices.length < 1 ) {
-      newList.push({id: 0, existent: false, networkMoId: null, deviceType: null, label:''})
+      newList.push({id: 0, existent: false, networkName: null, networkMoId: null, deviceType: null, label:''})
       await this.setState({networkDevices: newList})
     }
   }
@@ -650,7 +652,7 @@ class CreateVmService extends React.Component {
       try {
         let networkDevice = this.state.networkDevices[0]
         let l = [portgroup, networkDevice.id]
-        await this.networkSet(l[0], l[1])
+        await this.networkDeviceNetworkSet(l[0], l[1])
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `portgroup: ${error.message}`
@@ -773,10 +775,13 @@ class CreateVmService extends React.Component {
     this.setState({networkDevices: networkDevices})
   }
 
-  networkSet = async (networkMoId, networkDeviceId) => {
+  networkDeviceNetworkSet = async (networkMoId, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let networks = JSON.parse(JSON.stringify(this.state.networks))
     let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
+    let network = networks.find( r => r.moId === networkMoId )
     networkDevice.networkMoId = networkMoId
+    networkDevice.networkName = network.name
     await this.setState({networkDevices: networkDevices})
   }
 
@@ -1490,8 +1495,6 @@ class CreateVmService extends React.Component {
 
   render() {
 
-    console.log(this.state.networks)
-
     let datastoreNameMoid = obj => {
       if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {
         let n = this.state.datastoresPlus.find(e => e.moId === obj.datastoreMoId)
@@ -1524,6 +1527,7 @@ class CreateVmService extends React.Component {
         key: 'network',
         name: 'network',
         render: (name, obj) => (
+          console.log(obj),
           <React.Fragment>
             {this.state.networksLoading ?
               <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
@@ -1531,14 +1535,14 @@ class CreateVmService extends React.Component {
               <React.Fragment>
                 {obj.networkMoIdError ?
                   <Select
-                    value={obj.networkMoId}
+                    value={obj.networkName}
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
-                    onChange={e => this.networkSet(e, obj.id)}>
+                    onChange={e => this.networkDeviceNetworkSet(e, obj.id)}>
                     { this.state.networks?
                       this.state.networks.map((n, i) => {
                       return (
-                        <Select.Option key={i} value={n.moId}>{n.moId}</Select.Option>
+                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
                         )
                       })
                     :
@@ -1549,13 +1553,13 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                   { this.state.networks ?
                     <Select
-                      value={obj.networkMoId}
+                      value={obj.networkName}
                       key={obj.id}
                       style={{ width: '100%' }}
-                      onChange={e => this.networkSet(e, obj.id)}>
+                      onChange={e => this.networkDeviceNetworkSet(e, obj.id)}>
                       {this.state.networks.map((n, i) => {
                         return (
-                          <Select.Option key={i} value={n.moId}>{n.moId}</Select.Option>
+                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
                           )
                         })
                       }
