@@ -103,8 +103,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.datastores)
-    console.log(this.state.diskDevices)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -677,6 +675,7 @@ class CreateVmService extends React.Component {
       request = JSON.parse(JSON.stringify(this.state.request))
       let datastoreMoId = json.disk_devices[0].datastoreMoId
       let device_type = json.disk_devices[0].device_type
+
       let diskDevice = this.state.diskDevices[0]
       let l = []
 
@@ -701,6 +700,7 @@ class CreateVmService extends React.Component {
       }
 
       try {
+        let size_gib = {target: {value: json.disk_devices[0].size_gib}}
         l = [size_gib, diskDevice.id]
         await this.diskSizeMBSet(l[0], l[1])
       } catch (error) {
@@ -1583,7 +1583,6 @@ class CreateVmService extends React.Component {
         key: 'network',
         name: 'network',
         render: (name, obj) => (
-          console.log(obj),
           <React.Fragment>
             {this.state.networksLoading ?
               <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
@@ -1681,8 +1680,6 @@ class CreateVmService extends React.Component {
       },
     ]
 
-    console.log(this.state.datastores)
-    console.log(this.state.networks)
     const diskDeviceCol = [
       {
         title: 'Label',
