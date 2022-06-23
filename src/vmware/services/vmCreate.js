@@ -653,7 +653,6 @@ class CreateVmService extends React.Component {
       let l = []
 
       try {
-        console.log(networkDevice)
         l = [portgroup, networkDevice.id]
         await this.networkDeviceNetworkSet(l[0], l[1])
       } catch (error) {
@@ -664,12 +663,49 @@ class CreateVmService extends React.Component {
       }
 
       try {
-        console.log(networkDevice)
         l = [device_type, networkDevice.id]
         await this.networkDeviceTypeSet(l[0], l[1])
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `network device_type: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.disk_devices) {
+      request = JSON.parse(JSON.stringify(this.state.request))
+      let datastoreMoId = json.disk_devices[0].datastoreMoId
+      let device_type = json.disk_devices[0].device_type
+      let diskDevice = this.state.diskDevices[0]
+      let l = []
+
+      try {
+        l = [datastoreMoId, diskDevice.id]
+        await this.diskDeviceDatastoreSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `diskDevice datastore: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+
+      try {
+        l = [device_type, diskDevice.id]
+        await this.diskDeviceTypeSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `diskDevice device_type: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+
+      try {
+        l = [size_gib, diskDevice.id]
+        await this.diskSizeMBSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `diskDevice size_gib: ${error.message}`
         errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
@@ -820,14 +856,14 @@ class CreateVmService extends React.Component {
     await this.setState({diskDevices: diskDevices})
   }
 
-  diskDeviceTypeSet = (deviceType, diskDeviceId) => {
+  diskDeviceTypeSet = async (deviceType, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
     diskDevice.deviceType = deviceType
-    this.setState({diskDevices: diskDevices})
+    await this.setState({diskDevices: diskDevices})
   }
 
-  diskSizeMBSet = (size, diskDeviceId) => {
+  diskSizeMBSet = async (size, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
 
@@ -854,7 +890,7 @@ class CreateVmService extends React.Component {
       }
     }
 
-    this.setState({diskDevices: diskDevices})
+    await this.setState({diskDevices: diskDevices})
   }
 
   customSpecSet = c => {
@@ -1736,7 +1772,7 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.deviceTypeError ?
               <Select
-                defaultValue={obj.deviceType}
+                value={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
                 onChange={e => this.diskDeviceTypeSet(e, obj.id)}>
@@ -1749,7 +1785,7 @@ class CreateVmService extends React.Component {
               </Select>
             :
               <Select
-                defaultValue={obj.deviceType}
+                value={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%' }}
                 onChange={e => this.diskDeviceTypeSet(e, obj.id)}>
@@ -1774,13 +1810,13 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeMBError ?
               <Input
-                defaultValue={obj.sizeMB}
+                value={obj.sizeMB}
                 style={{borderColor: obj.sizeMBColor}}
                 onChange={e => this.diskSizeMBSet(e, obj.id)}
               />
             :
               <Input
-                defaultValue={obj.sizeMB}
+                value={obj.sizeMB}
                 onChange={e => this.diskSizeMBSet(e, obj.id)}
               />
             }
