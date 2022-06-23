@@ -729,6 +729,7 @@ class CreateVmService extends React.Component {
       try {
         let hostname = {target: {value: json.hostname}}
         await this.csHostnameSet(hostname)
+        
       }
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
