@@ -103,6 +103,8 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request)
+    console.log(this.state.cs)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -552,6 +554,7 @@ class CreateVmService extends React.Component {
       request.notes = json.notes
       await this.setState({request: request})
     }
+
     if (json.datacenterMoId) {
       request = JSON.parse(JSON.stringify(this.state.request))
       let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
@@ -568,7 +571,6 @@ class CreateVmService extends React.Component {
         errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
-
     }
 
     if (json.clusterMoId) {
@@ -706,6 +708,31 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice size_gib: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.guestspec) {
+      try {
+        await this.customSpecSet(json.guestspec)
+      }
+      catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = error.message
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.hostname) {
+      try {
+        let hostname = {target: {value: json.hostname}}
+        await this.csHostnameSet(hostname)
+      }
+      catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `hostname ${error.message}`
         errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
@@ -893,16 +920,28 @@ class CreateVmService extends React.Component {
     await this.setState({diskDevices: diskDevices})
   }
 
-  customSpecSet = c => {
+  customSpecSet = async c => {
     let customSpecs = JSON.parse(JSON.stringify(this.state.customSpecs))
-    let customSpec = customSpecs.find( r => r.name === c )
-    let list = []
-    customSpec.network.forEach((item, i) => {
-      item.id = i
-      list.push(item)
-    });
+    try {
+      let customSpec = customSpecs.find( r => r.name === c )
+      let list = []
+      customSpec.network.forEach((item, i) => {
+        item.id = i
+        list.push(item)
+      });
+      await this.setState({customSpec: customSpec, addresses: list})
+    } catch (error) {
+      let errors = JSON.parse(JSON.stringify(this.state.errors))
+      errors.jsonError = `Something wrong in Custom Spec : ${error.message}`
+      errors.jsonColor = 'red'
+      await this.setState({errors: errors})
+    }
+  }
 
-    this.setState({customSpec: customSpec, addresses: list})
+  csHostnameSet = async e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.csHostname = e.target.value
+    await this.setState({cs: cs})
   }
 
   dns1Set = e => {
@@ -914,12 +953,6 @@ class CreateVmService extends React.Component {
   dns2Set = e => {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     cs.dns2 = e.target.value
-    this.setState({cs: cs})
-  }
-
-  csHostnameSet = e => {
-    let cs = JSON.parse(JSON.stringify(this.state.cs))
-    cs.csHostname = e.target.value
     this.setState({cs: cs})
   }
 
@@ -1480,7 +1513,7 @@ class CreateVmService extends React.Component {
             {
                 "command": "renameVg",
                 "user_args": {
-                    "__vgName": `vg_${this.state.request.csHostname}`
+                    "__vgName": `vg_${this.state.cs.csHostname}`
                 }
             },
             {
@@ -1490,7 +1523,7 @@ class CreateVmService extends React.Component {
             {
                 "command": "addMountPoint",
                 "user_args": {
-                    "__vgName": `vg_${this.state.request.csHostname}`,
+                    "__vgName": `vg_${this.state.cs.csHostname}`,
                     "__lvName": "var",
                     "__lvSize": 2,
                     "__filesystem": "ext4",
@@ -2570,9 +2603,15 @@ class CreateVmService extends React.Component {
                     </Col>
                     <Col span={4}>
                       {this.state.errors.csHostnameError ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.csHostnameColor}} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
+                        <Input
+                          value={this.state.cs.csHostname}
+                          style={{width: '100%', borderColor: this.state.errors.csHostnameColor}}
+                          onChange={e => this.csHostnameSet(e)} />
                       :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.csHostname} name="csHostname" id='csHostname' onChange={e => this.csHostnameSet(e)} />
+                        <Input
+                          value={this.state.cs.csHostname}
+                          style={{width: '100%'}}
+                          onChange={e => this.csHostnameSet(e)} />
                       }
                     </Col>
 
