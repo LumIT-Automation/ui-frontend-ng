@@ -534,7 +534,7 @@ class CreateVmService extends React.Component {
       await this.setState({json: json, errors: errors})
       this.jsonSet()
     } catch (error) {
-      errors.jsonError = error.message
+      errors.jsonError = `json validation: ${error.message }`
       errors.jsonColor = 'red'
       await this.setState({errors: errors})
     }
@@ -649,10 +649,12 @@ class CreateVmService extends React.Component {
       request = JSON.parse(JSON.stringify(this.state.request))
       let portgroup = json.network_devices[0].portgroupMoId
       let device_type = json.network_devices[0].device_type
+      let networkDevice = this.state.networkDevices[0]
+      let l = []
 
       try {
-        let networkDevice = this.state.networkDevices[0]
-        let l = [portgroup, networkDevice.id]
+        console.log(networkDevice)
+        l = [portgroup, networkDevice.id]
         await this.networkDeviceNetworkSet(l[0], l[1])
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -660,7 +662,20 @@ class CreateVmService extends React.Component {
         errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
+
+      try {
+        console.log(networkDevice)
+        l = [device_type, networkDevice.id]
+        await this.networkDeviceTypeSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `network device_type: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
     }
+
+
   }
 
 
@@ -769,13 +784,6 @@ class CreateVmService extends React.Component {
     await this.setState({request: request})
   }
 
-  networkDeviceTypeSet = (deviceType, networkDeviceId) => {
-    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
-    let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
-    networkDevice.deviceType = deviceType
-    this.setState({networkDevices: networkDevices})
-  }
-
   networkDeviceNetworkSet = async (networkMoId, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let networks = JSON.parse(JSON.stringify(this.state.networks))
@@ -786,11 +794,11 @@ class CreateVmService extends React.Component {
     await this.setState({networkDevices: networkDevices})
   }
 
-  diskDeviceTypeSet = (deviceType, diskDeviceId) => {
-    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
-    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
-    diskDevice.deviceType = deviceType
-    this.setState({diskDevices: diskDevices})
+  networkDeviceTypeSet = async (deviceType, networkDeviceId) => {
+    let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
+    let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
+    networkDevice.deviceType = deviceType
+    await this.setState({networkDevices: networkDevices})
   }
 
   diskDeviceDatastoreSet = async (datastoreMoId, diskDeviceId) => {
@@ -812,7 +820,14 @@ class CreateVmService extends React.Component {
     await this.setState({diskDevices: diskDevices})
   }
 
-  sizeMBSet = (size, diskDeviceId) => {
+  diskDeviceTypeSet = (deviceType, diskDeviceId) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
+    diskDevice.deviceType = deviceType
+    this.setState({diskDevices: diskDevices})
+  }
+
+  diskSizeMBSet = (size, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
 
@@ -1589,7 +1604,7 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.deviceTypeError ?
               <Select
-                defaultValue={obj.deviceType}
+                value={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
                 onChange={e => this.networkDeviceTypeSet(e, obj.id)}>
@@ -1602,7 +1617,7 @@ class CreateVmService extends React.Component {
               </Select>
             :
               <Select
-                defaultValue={obj.deviceType}
+                value={obj.deviceType}
                 key={obj.id}
                 style={{ width: '100%' }}
                 onChange={e => this.networkDeviceTypeSet(e, obj.id)}>
@@ -1761,12 +1776,12 @@ class CreateVmService extends React.Component {
               <Input
                 defaultValue={obj.sizeMB}
                 style={{borderColor: obj.sizeMBColor}}
-                onChange={e => this.sizeMBSet(e, obj.id)}
+                onChange={e => this.diskSizeMBSet(e, obj.id)}
               />
             :
               <Input
                 defaultValue={obj.sizeMB}
-                onChange={e => this.sizeMBSet(e, obj.id)}
+                onChange={e => this.diskSizeMBSet(e, obj.id)}
               />
             }
           </React.Fragment>
