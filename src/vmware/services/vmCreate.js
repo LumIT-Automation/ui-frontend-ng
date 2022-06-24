@@ -103,8 +103,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.request)
-    console.log(this.state.cs)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -240,12 +238,6 @@ class CreateVmService extends React.Component {
     await rest.doXHR(`vmware/${this.props.asset.id}/customSpecs/`, this.props.token)
     return r
   }
-
-  ///
-
-
-
-  ///
 
   clusterGet = async () => {
     let r
@@ -500,8 +492,6 @@ class CreateVmService extends React.Component {
 
 
   //SETTERS
-  //Input
-
   jsonClusterSet = async c => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -729,7 +719,6 @@ class CreateVmService extends React.Component {
       try {
         let hostname = {target: {value: json.hostname}}
         await this.csHostnameSet(hostname)
-        
       }
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -739,6 +728,104 @@ class CreateVmService extends React.Component {
       }
     }
 
+    if (json.domainName) {
+      try {
+        let domainName = {target: {value: json.domainName}}
+        await this.csDomainSet(domainName)
+      }
+      catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `domainName ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.dns1) {
+      try {
+        let dns1 = {target: {value: json.dns1}}
+        await this.csDns1Set(dns1)
+      }
+      catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `dns1 ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.dns2) {
+      try {
+        let dns2 = {target: {value: json.dns2}}
+        await this.csDns2Set(dns2)
+      }
+      catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `dns2 ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.network) {
+      request = JSON.parse(JSON.stringify(this.state.request))
+      let dhcp = json.network[0].dhcp
+      let ip = json.network[0].ip
+      let netMask = json.network[0].netMask
+      let gw = json.network[0].gw
+
+      let address = this.state.addresses[0]
+      let l = []
+
+      try {
+        dhcp = {target: {checked: dhcp}}
+        l = [dhcp, address.id]
+        await this.dhcpSet(l[0], l[1])
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `Dhcp : ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+
+      if (!json.network.dhcp) {
+        try {
+          ip = {target: {value: ip}}
+          l = [ip, address.id]
+          await this.ipSet(l[0], l[1])
+        }
+        catch (error) {
+          errors = JSON.parse(JSON.stringify(this.state.errors))
+          errors.jsonError = `ip address ${error.message}`
+          errors.jsonColor = 'red'
+          await this.setState({errors: errors})
+        }
+
+        try {
+          netMask = {target: {value: netMask}}
+          l = [netMask, address.id]
+          await this.netMaskSet(l[0], l[1])
+        }
+        catch (error) {
+          errors = JSON.parse(JSON.stringify(this.state.errors))
+          errors.jsonError = `netMask address ${error.message}`
+          errors.jsonColor = 'red'
+          await this.setState({errors: errors})
+        }
+
+        try {
+          gw = {target: {value: gw}}
+          l = [gw, address.id]
+          await this.gwSet(l[0], l[1])
+        }
+        catch (error) {
+          errors = JSON.parse(JSON.stringify(this.state.errors))
+          errors.jsonError = `gw address ${error.message}`
+          errors.jsonColor = 'red'
+          await this.setState({errors: errors})
+        }
+      }
+    }
 
   }
 
@@ -748,19 +835,6 @@ class CreateVmService extends React.Component {
   vmNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.vmName = e.target.value
-    this.setState({request: request})
-  }
-
-  //select number
-  bootstrapkeySet = bootstrapkey => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.bootstrapkey = bootstrapkey
-    this.setState({request: request})
-  }
-
-  finalpubkeySet = finalpubkey => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.finalpubkey = finalpubkey
     this.setState({request: request})
   }
 
@@ -945,53 +1019,64 @@ class CreateVmService extends React.Component {
     await this.setState({cs: cs})
   }
 
-  dns1Set = e => {
-    let cs = JSON.parse(JSON.stringify(this.state.cs))
-    cs.dns1 = e.target.value
-    this.setState({cs: cs})
-  }
-
-  dns2Set = e => {
-    let cs = JSON.parse(JSON.stringify(this.state.cs))
-    cs.dns2 = e.target.value
-    this.setState({cs: cs})
-  }
-
-  csDomainSet = e => {
+  csDomainSet = async e => {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     cs.csDomain = e.target.value
-    this.setState({cs: cs})
+    await this.setState({cs: cs})
   }
 
-  dhcpSet = (dhcp, id) => {
+  csDns1Set = async e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.dns1 = e.target.value
+    await this.setState({cs: cs})
+  }
+
+  csDns2Set = async e => {
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
+    cs.dns2 = e.target.value
+    await this.setState({cs: cs})
+  }
+
+  dhcpSet = async (dhcp, id) => {
+    console.log(dhcp)
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let address = addresses.find( r => r.id === id )
     address.dhcp = dhcp.target.checked
-    this.setState({addresses: addresses})
+    await this.setState({addresses: addresses})
   }
 
-  ipSet = (ip, id) => {
+  ipSet = async (ip, id) => {
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let address = addresses.find( r => r.id === id )
     address.ip = ip.target.value
-    this.setState({addresses: addresses})
+    await this.setState({addresses: addresses})
   }
 
-  netMaskSet = (netMask, id) => {
+  netMaskSet = async (netMask, id) => {
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let address = addresses.find( r => r.id === id )
     address.netMask = netMask.target.value
-    this.setState({addresses: addresses})
+    await this.setState({addresses: addresses})
   }
 
-  gwSet = (gw, id) => {
+  gwSet = async (gw, id) => {
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let address = addresses.find( r => r.id === id )
     address.gw[0] = gw.target.value
-    this.setState({addresses: addresses})
+    await this.setState({addresses: addresses})
   }
 
+  bootstrapkeySet = bootstrapkey => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.bootstrapkey = bootstrapkey
+    this.setState({request: request})
+  }
 
+  finalpubkeySet = finalpubkey => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.finalpubkey = finalpubkey
+    this.setState({request: request})
+  }
 
   notesSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -1893,13 +1978,13 @@ class CreateVmService extends React.Component {
               <React.Fragment>
                 {obj.ipError ?
                   <Input
-                    defaultValue={obj.ip}
+                    value={obj.ip}
                     style={{borderColor: obj.ipColor}}
                     onChange={e => this.ipSet(e, obj.id)}
                   />
                 :
                   <Input
-                    defaultValue={obj.ip}
+                    value={obj.ip}
                     onChange={e => this.ipSet(e, obj.id)}
                   />
                 }
@@ -1923,16 +2008,14 @@ class CreateVmService extends React.Component {
                 {obj.netMaskError ?
                   <React.Fragment>
                     <Input
-                      defaultValue={obj.netMask}
+                      value={obj.netMask}
                       style={{borderColor: obj.netMaskColor}}
                       onChange={e => this.netMaskSet(e, obj.id)}
                     />
                   </React.Fragment>
                 :
                   <Input
-                    id='netMask'
-                    key={obj.id}
-                    defaultValue={obj.netMask}
+                    value={obj.netMask}
                     onChange={e => this.netMaskSet(e, obj.id)}
                   />
                 }
@@ -1956,14 +2039,14 @@ class CreateVmService extends React.Component {
                 {obj.gwError ?
                   <React.Fragment>
                     <Input
-                      defaultValue={obj.gw[0]}
+                      value={obj.gw[0]}
                       style={{borderColor: obj.gwColor}}
                       onChange={e => this.gwSet(e, obj.id)}
                     />
                   </React.Fragment>
                 :
                   <Input
-                    defaultValue={obj.gw}
+                    value={obj.gw}
                     onChange={e => this.gwSet(e, obj.id)}
                   />
                 }
@@ -2621,9 +2704,15 @@ class CreateVmService extends React.Component {
                     </Col>
                     <Col span={4}>
                       {this.state.errors.csDomainError ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.csDomainColor}} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                        <Input
+                          value={this.state.cs.csDomain}
+                          style={{width: '100%', borderColor: this.state.errors.csDomainColor}}
+                          onChange={e => this.csDomainSet(e)} />
                       :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.csDomain} name="csDomain" id='csDomain' onChange={e => this.csDomainSet(e)} />
+                        <Input
+                          value={this.state.cs.csDomain}
+                          style={{width: '100%'}}
+                          onChange={e => this.csDomainSet(e)} />
                       }
                     </Col>
                   </Row>
@@ -2635,9 +2724,15 @@ class CreateVmService extends React.Component {
                     </Col>
                     <Col span={4}>
                       {this.state.errors.dns1Error ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.dns1Color}} name="dns1" id='dns1' onChange={e => this.dns1Set(e)} />
+                        <Input
+                          value={this.state.cs.dns1}
+                          style={{width: '100%', borderColor: this.state.errors.dns1Color}}
+                          onChange={e => this.csDns1Set(e)} />
                       :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.dns1} name="dns1" id='dns1' onChange={e => this.dns1Set(e)} />
+                        <Input
+                          value={this.state.cs.dns1}
+                          style={{width: '100%'}}
+                          onChange={e => this.csDns1Set(e)} />
                       }
                     </Col>
 
@@ -2646,9 +2741,15 @@ class CreateVmService extends React.Component {
                     </Col>
                     <Col span={4}>
                       {this.state.errors.dns2Error ?
-                        <Input style={{width: '100%', borderColor: this.state.errors.dns2Color}} name="dns2" id='dns2' onChange={e => this.dns2Set(e)} />
+                        <Input
+                          value={this.state.cs.dns2}
+                          style={{width: '100%', borderColor: this.state.errors.dns2Color}}
+                          onChange={e => this.csDns2Set(e)} />
                       :
-                        <Input style={{width: '100%'}} defaultValue={this.state.request.dns2} name="dns2" id='dns2' onChange={e => this.dns2Set(e)} />
+                        <Input
+                          value={this.state.cs.dns2}
+                          style={{width: '100%'}}
+                          onChange={e => this.csDns2Set(e)} />
                       }
                     </Col>
                   </Row>
