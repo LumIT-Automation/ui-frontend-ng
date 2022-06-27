@@ -210,33 +210,15 @@ class List extends React.Component {
         key: 'commandsExecutions',
         render: (name, obj)  => (
           <React.Fragment>
-            { obj.second_stage_state !== 'running' ?
-              <Table
-                columns={execCommands}
-                dataSource={obj.commandsExecutions}
-                bordered
-                rowKey={randomKey}
-                scroll={{y: '30vh'}}
-                pagination={false}
-                style={{maxWidth: 'none', marginLeft: '-50px'}}
-              />
-            :
-              <React.Fragment>
-              { this.props.secondStageProgressLoading ?
-                <Spin indicator={spinIcon} style={{margin: '10% 40%'}}/>
-              :
-                <Table
-                  columns={execCommands}
-                  dataSource={obj.commandsExecutions}
-                  bordered
-                  rowKey={randomKey}
-                  scroll={{y: '30vh'}}
-                  pagination={false}
-                  style={{maxWidth: 'none', marginLeft: '-50px'}}
-                />
-              }
-              </React.Fragment>
-            }
+            <Table
+              columns={execCommands}
+              dataSource={obj.commandsExecutions}
+              bordered
+              rowKey={randomKey}
+              scroll={{y: '30vh'}}
+              pagination={false}
+              style={{maxWidth: 'none', marginLeft: '-50px'}}
+            />
           </React.Fragment>
         )
       },
