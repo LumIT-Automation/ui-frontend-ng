@@ -42,7 +42,7 @@ class CreateVmService extends React.Component {
       diskDeviceTypes: ['thin', 'thick eager zeroed', 'thick lazy zerod'],
       networkDevices: [],
       diskDevices: [],
-      datastorePlus: [],
+      datastoresPlus: [],
       errors: {},
       cs: {},
       addresses: [],
@@ -997,6 +997,7 @@ class CreateVmService extends React.Component {
 
   customSpecSet = async c => {
     let customSpecs = JSON.parse(JSON.stringify(this.state.customSpecs))
+    let cs = JSON.parse(JSON.stringify(this.state.cs))
     try {
       let customSpec = customSpecs.find( r => r.name === c )
       let list = []
@@ -1005,6 +1006,10 @@ class CreateVmService extends React.Component {
         list.push(item)
       });
       await this.setState({customSpec: customSpec, addresses: list})
+      cs.csDomain = customSpec.domainName
+      cs.dns1 = customSpec.dns1
+      cs.dns2 = customSpec.dns2
+      await this.setState({cs: cs})
     } catch (error) {
       let errors = JSON.parse(JSON.stringify(this.state.errors))
       errors.jsonError = `Something wrong in Custom Spec : ${error.message}`
@@ -1038,7 +1043,6 @@ class CreateVmService extends React.Component {
   }
 
   dhcpSet = async (dhcp, id) => {
-    console.log(dhcp)
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let address = addresses.find( r => r.id === id )
     address.dhcp = dhcp.target.checked
@@ -1663,12 +1667,33 @@ class CreateVmService extends React.Component {
       visible: false,
       response: false,
       request: {},
+      datacenters: [],
+      datacenter: {},
+      folders: [],
+      clusters: [],
+      cluster: {},
+      hosts: [],
+      templates: [],
+      templateNetworkDevices: [],
+      template: {},
+      networks: [],
+      networkDevices: [],
+      datastores: [],
+      datastoresPlus: [],
+      diskDevices: [],
+      customSpecs: [],
+      cs: {},
+      customSpec: {},
+      addresses: [],
+      bootstrapkeys: [],
+      finalpubkeys: [],
       errors: {}
     })
   }
 
 
   render() {
+    console.log(this.state)
 
     let datastoreNameMoid = obj => {
       if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {
@@ -2103,7 +2128,7 @@ class CreateVmService extends React.Component {
               { !this.state.loading && this.state.response &&
                 <Result
                    status="success"
-                   title="Service Created"
+                   title="Service Accepted"
                  />
               }
               { !this.state.loading && !this.state.response &&
