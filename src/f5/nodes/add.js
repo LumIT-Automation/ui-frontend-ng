@@ -92,7 +92,7 @@ class Add extends React.Component {
     request.address = e.target.value
     this.setState({request: request})
   }
-  routeDomain = id => {
+  routeDomainSet = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.routeDomain = id.toString()
     this.setState({request: request})
@@ -287,7 +287,7 @@ class Add extends React.Component {
                           filterSort={(optionA, optionB) =>
                             optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                           }
-                          onSelect={n => this.routeDomain(n)}
+                          onSelect={n => this.routeDomainSet(n)}
                         >
                           <React.Fragment>
                             {this.props.routeDomains.map((n, i) => {
@@ -349,7 +349,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
+            { this.props.routeDomainsError ? <Error component={'add node'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
             { this.props.nodeAddError ? <Error component={'add node'} error={[this.props.nodeAddError]} visible={true} type={'nodeAddError'} /> : null }
           </React.Fragment>
         :

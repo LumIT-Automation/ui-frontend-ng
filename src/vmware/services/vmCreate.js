@@ -2610,7 +2610,7 @@ class CreateVmService extends React.Component {
                     </Col>
                   :
                     <Col span={12}>
-                      {(this.state.networkDevices  && this.state.networkDevices.length > 0) ?
+                      {(this.state.networkDevices && this.state.networkDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.networkDeviceAdd()}>
                             +
