@@ -41,7 +41,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.members)
     if (this.state.visible){
       if (this.state.members && this.state.members.length === 0) {
         let members = JSON.parse(JSON.stringify(this.state.members))
@@ -140,12 +139,6 @@ class Add extends React.Component {
     this.setState({members: members})
   }
 
-  routeDomain = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.routeDomain = id.toString()
-    this.setState({request: request})
-  }
-
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -234,9 +227,7 @@ class Add extends React.Component {
   snatPoolAdd = async () => {
 
     await this.addRd()
-    console.log(this.state.members)
     await this.addPart()
-    console.log(this.state.members)
 
     let b = {}
     b.data = {
@@ -271,7 +262,8 @@ class Add extends React.Component {
     this.setState({
       visible: false,
       errors: {},
-      request: {}
+      request: {},
+      members: []
     })
   }
 

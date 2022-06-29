@@ -7,15 +7,17 @@ import Validators from '../../_helpers/validators'
 
 import {
   snatPoolsFetch,
-  snatPoolModifyError
+  routeDomains,
+  routeDomainsError,
+  snatPoolAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Table, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-
 
 
 class Modify extends React.Component {
@@ -25,9 +27,8 @@ class Modify extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {
-        members: []
-      },
+      request: {},
+      members: []
     };
   }
 
@@ -46,23 +47,59 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    let request = JSON.parse(JSON.stringify(this.props.obj))
+    this.main()
+    let members = JSON.parse(JSON.stringify(this.props.obj.members))
     let n = 1
     let newList = []
-    request.members.forEach(member => {
 
-      let newMember = {}
-      newMember.id = n
+
+    members.forEach(member => {
+      let m = {}
+      m.id = n
       let list = member.split('/')
-      newMember.address = list[2]
-      newList.push(newMember)
-      n = n + 1
+      let rd = list[2].split('%')
+      m.ip = rd[0]
+      m.rd = rd[1]
+      newList.push(m)
 
+      n = n + 1
     });
 
-    request.members = newList
+    this.setState({members: newList})
+  }
 
-    this.setState({request: request})
+  main = async () => {
+    try {
+      await this.setState({routeDomainsLoading: true})
+      let fetchedRouteDomains = await this.routeDomainsGet()
+      await this.setState({routeDomainsLoading: false})
+      if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
+        this.props.dispatch(routeDomainsError(fetchedRouteDomains))
+        return
+      }
+      else {
+        this.props.dispatch(routeDomains( fetchedRouteDomains ))
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
+  //FETCH
+  routeDomainsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
+    return r
   }
 
 
@@ -71,52 +108,51 @@ class Modify extends React.Component {
 
   //SETTERS
   memberAdd = () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let members = JSON.parse(JSON.stringify(this.state.request.members))
     let id = 0
     let n = 0
 
-    this.state.request.members.forEach(r => {
+    this.state.members.forEach(r => {
       if (r.id > id) {
         id = r.id
       }
     });
     n = id + 1
 
-    let member = {id: n}
-    members.push(member)
-    request.members = members
-
-    this.setState({request: request})
+    let m = {id: n}
+    let list = JSON.parse(JSON.stringify(this.state.members))
+    list.push(m)
+    this.setState({members: list})
   }
 
-  memberRemove = r => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let members = JSON.parse(JSON.stringify(this.state.request.members))
-
+  memberRemove = async r => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
     let list = members.filter(n => {
       return r !== n.id
     })
-
-    request.members = list
-
-    this.setState({request: request})
+    await this.setState({members: list})
+    if (this.state.members.length < 1 ) {
+      list.push({id: 0})
+      await this.setState({members: newList})
+    }
   }
 
-  setAddress = (memberId, e) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let members = JSON.parse(JSON.stringify(this.state.request.members))
+  ipSet = (ip, id) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    let member = members.find( r => r.id === id )
+    member.ip = ip.target.value
+    this.setState({members: members})
+  }
 
-    let index = members.findIndex((obj => obj.id === memberId))
-    members[index].address = e.target.value
-
-    request.members = members
-    this.setState({request: request})
+  rdSet = (rd, id) => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    let member = members.find( r => r.id === id )
+    member.rd = rd.toString()
+    this.setState({members: members})
   }
 
   //VALIDATION
   validationCheck = async () => {
-    let members = JSON.parse(JSON.stringify(this.state.request.members))
+    let members = JSON.parse(JSON.stringify(this.state.members))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
@@ -124,15 +160,19 @@ class Modify extends React.Component {
       members.forEach((member, i) => {
         errors[member.id] = {}
 
-        if (member.address && validators.ipv4(member.address)) {
-          delete errors[member.id].addressError
-          delete errors[member.id].addressColor
-          this.setState({errors: errors})
+        if (!member.ip || !validators.ipv4(member.ip)) {
+          member.ipError = true
+          member.ipColor = 'red'
+          errors[member.id].ipError = true
+          errors[member.id].ipColor = 'red'
+          this.setState({errors: errors, members: members})
         }
         else {
-          errors[member.id].addressError = true
-          errors[member.id].addressColor = 'red'
-          this.setState({errors: errors})
+          delete member.ipError
+          delete member.ipColor
+          delete errors[member.id].ipError
+          delete errors[member.id].ipColor
+          this.setState({errors: errors, members: members})
         }
 
         if (Object.keys(errors[member.id]).length === 0) {
@@ -148,25 +188,46 @@ class Modify extends React.Component {
   validation = async () => {
     await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.addPart()
+      this.snatPoolModify()
     }
   }
 
-  addPart = () => {
+  addRd = async () => {
+    let members = JSON.parse(JSON.stringify(this.state.members))
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let list = []
+    members.forEach((member, i) => {
+      if (member.rd) {
+        list.push(`${member.ip}%${member.rd}`)
+      } else {
+        list.push(member.ip)
+      }
+
+    })
+    request.members = list
+    await this.setState({request: request})
+  }
+
+  addPart = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let members = JSON.parse(JSON.stringify(this.state.request.members))
     let list = []
     members.forEach((member, i) => {
-      list.push(`/${this.props.partition}/${member.address}`)
+      list.push(`/${this.props.partition}/${member}`)
     })
-    this.setState({list: list}, () => this.snatPoolModify() )
+    request.members = list
+    await this.setState({request: request})
   }
 
 
   //DISPOSAL ACTION
   snatPoolModify = async () => {
+    await this.addRd()
+    await this.addPart()
+
     let b = {}
     b.data = {
-      "members": this.state.list
+      "members": this.state.request.members
     }
 
     this.setState({loading: true})
@@ -182,6 +243,7 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpool/${this.props.obj.name}/`, this.props.token, b)
+
   }
 
   response = () => {
@@ -195,12 +257,92 @@ class Modify extends React.Component {
     this.setState({
       visible: false,
       errors: {},
-      request: {}
+      request: {},
+      members: []
     })
   }
 
 
   render() {
+
+    const membersCol = [
+      {
+        title: 'IP',
+        align: 'center',
+        dataIndex: 'ip',
+        key: 'ip',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.ipError ?
+              <Input
+                value={obj.ip}
+                style={{borderColor: obj.ipColor}}
+                onChange={e => this.ipSet(e, obj.id)}
+              />
+            :
+              <Input
+                value={obj.ip}
+                onChange={e => this.ipSet(e, obj.id)}
+              />
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Route Domain (optional)',
+        align: 'center',
+        dataIndex: 'rd',
+        key: 'rd',
+        render: (name, obj)  => (
+          <React.Fragment>
+            { this.state.routeDomainsLoading ?
+              <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
+            :
+              <React.Fragment>
+                { this.props.routeDomains && this.props.routeDomains.length > 0 ?
+                  <Select
+                    value={obj.rd}
+                    showSearch
+                    style={{width: 150}}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={n => this.rdSet(n, obj.id)}
+                  >
+                    <React.Fragment>
+                      {this.props.routeDomains.map((n, i) => {
+                        return (
+                          <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
+                        )
+                      })
+                      }
+                    </React.Fragment>
+                  </Select>
+                :
+                  null
+                }
+              </React.Fragment>
+            }
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Remove',
+        align: 'center',
+        dataIndex: 'memberRemove',
+        key: 'memberRemove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.memberRemove(obj.id)}>
+            -
+          </Button>
+        ),
+      },
+    ]
+
     return (
       <Space direction='vertical'>
 
@@ -226,71 +368,43 @@ class Modify extends React.Component {
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
               <Row>
-                <Col offset={2} span={6}>
+                <Col offset={3} span={2}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={16}>
-                  <Input disabled value={this.state.request.name} style={{width: 250}} name="name" id='name' />
+                  <Input disabled value={this.props.obj.name} style={{width: 250}} />
                 </Col>
               </Row>
               <br/>
 
               <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a member:</p>
+                <Col offset={3} span={2}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Members:</p>
                 </Col>
                 <Col span={16}>
-                  <Button type="primary" shape='round' onClick={() => this.memberAdd()}>
-                    +
-                  </Button>
+                  {(this.state.members && this.state.members.length > 0) ?
+                    <React.Fragment>
+                      <Button type="primary" onClick={() => this.memberAdd()}>
+                        +
+                      </Button>
+                      <br/>
+                      <br/>
+                      <Table
+                        columns={membersCol}
+                        dataSource={this.state.members}
+                        bordered
+                        rowKey='id'
+                        scroll={{x: 'auto'}}
+                        pagination={false}
+                        style={{marginBottom: 10}}
+                      />
+                    </React.Fragment>
+                  :
+                    null
+                  }
                 </Col>
               </Row>
               <br/>
-
-              { this.state.request.members ?
-                this.state.request.members.map((n, i) => {
-                let address = 'address' + n.id
-
-                return (
-                  <React.Fragment>
-                    <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                      </Col>
-                      <Col span={7}>
-                        { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                          <Input
-                            key={address}
-                            defaultValue={n.address}
-                            value={n.address}
-                            style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}}
-                            onChange={e => this.setAddress(n.id, e)}
-                          />
-                        :
-                          <Input
-                            key={address}
-                            defaultValue={n.address}
-                            value={n.address}
-                            style={{display: 'block', width: 250}}
-                            onChange={e => this.setAddress(n.id, e)}
-                          />
-                        }
-                      </Col>
-                      <Col span={1}>
-                        <Button type="danger" shape='round' onClick={() => this.memberRemove(n.id)}>
-                          -
-                        </Button>
-                      </Col>
-                    </Row>
-
-                    <br/>
-
-                  </React.Fragment>
-                )
-                })
-                :
-                null
-              }
 
               <Row>
                 <Col offset={8} span={16}>
@@ -305,6 +419,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
+            { this.props.routeDomainsError ? <Error component={'modify SnatPool'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
             { this.props.snatPoolModifyError ? <Error component={'modify snatPool'} error={[this.props.snatPoolModifyError]} visible={true} type={'snatPoolModifyError'} /> : null }
           </React.Fragment>
         :
@@ -322,6 +437,7 @@ export default connect((state) => ({
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-
+  routeDomains: state.f5.routeDomains,
+  routeDomainsError: state.f5.routeDomainsError,
   snatPoolModifyError: state.f5.snatPoolModifyError
 }))(Modify);
