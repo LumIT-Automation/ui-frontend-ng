@@ -82,7 +82,7 @@ class Add extends React.Component {
 
 
   //SETTERS
-  setName = e => {
+  nameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
     this.setState({request: request})
@@ -244,9 +244,9 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   }
                 </Col>
               </Row>

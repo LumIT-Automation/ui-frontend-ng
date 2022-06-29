@@ -119,62 +119,67 @@ class CreateVmService extends React.Component {
 
   main = async () => {
 
-    await this.setState({datacentersLoading: true})
-    let datacentersFetched = await this.datacentersGet()
-    await this.setState({datacentersLoading: false})
-    if (datacentersFetched.status && datacentersFetched.status !== 200 ) {
-      this.props.dispatch(datacentersError(datacentersFetched))
-      return
-    }
-    else {
-      this.setState({datacenters: datacentersFetched.data.items})
+    try {
+      await this.setState({datacentersLoading: true})
+      let datacentersFetched = await this.datacentersGet()
+      await this.setState({datacentersLoading: false})
+      if (datacentersFetched.status && datacentersFetched.status !== 200 ) {
+        this.props.dispatch(datacentersError(datacentersFetched))
+        return
+      }
+      else {
+        this.setState({datacenters: datacentersFetched.data.items})
+      }
+
+      await this.setState({foldersLoading: true})
+      let foldersFetched = await this.foldersGet()
+      await this.setState({foldersLoading: false})
+      if (foldersFetched.status && foldersFetched.status !== 200 ) {
+        this.props.dispatch(foldersError(foldersFetched))
+        return
+      }
+      else {
+        this.setState({folders: foldersFetched.data.items[0].children})
+      }
+
+      await this.setState({customSpecsLoading: true})
+      let customSpecsFetched = await this.customSpecsGet()
+      await this.setState({customSpecsLoading: false})
+      if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
+        this.props.dispatch(customSpecsError(customSpecsFetched))
+        return
+      }
+      else {
+        this.setState({customSpecs: customSpecsFetched.data.items})
+      }
+
+      await this.setState({bootstrapkeysLoading: true})
+      let bootstrapkeysFetched = await this.bootstrapkeysGet()
+      await this.setState({bootstrapkeysLoading: false})
+      if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
+        this.props.dispatch(bootstrapkeysError(bootstrapkeysFetched))
+        return
+      }
+      else {
+        this.setState({bootstrapkeys: bootstrapkeysFetched.data.items})
+      }
+
+      await this.setState({finalpubkeysLoading: true})
+      let finalpubkeysFetched = await this.finalpubkeysGet()
+      await this.setState({finalpubkeysLoading: false})
+      if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
+        this.props.dispatch(finalpubkeysError(finalpubkeysFetched))
+        return
+      }
+      else {
+        this.setState({finalpubkeys: finalpubkeysFetched.data.items})
+      }
+
+      this.setState({jsonEnabled: true })
+    } catch (error) {
+      console.log(error)
     }
 
-    await this.setState({foldersLoading: true})
-    let foldersFetched = await this.foldersGet()
-    await this.setState({foldersLoading: false})
-    if (foldersFetched.status && foldersFetched.status !== 200 ) {
-      this.props.dispatch(foldersError(foldersFetched))
-      return
-    }
-    else {
-      this.setState({folders: foldersFetched.data.items[0].children})
-    }
-
-    await this.setState({customSpecsLoading: true})
-    let customSpecsFetched = await this.customSpecsGet()
-    await this.setState({customSpecsLoading: false})
-    if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
-      this.props.dispatch(customSpecsError(customSpecsFetched))
-      return
-    }
-    else {
-      this.setState({customSpecs: customSpecsFetched.data.items})
-    }
-
-    await this.setState({bootstrapkeysLoading: true})
-    let bootstrapkeysFetched = await this.bootstrapkeysGet()
-    await this.setState({bootstrapkeysLoading: false})
-    if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
-      this.props.dispatch(bootstrapkeysError(bootstrapkeysFetched))
-      return
-    }
-    else {
-      this.setState({bootstrapkeys: bootstrapkeysFetched.data.items})
-    }
-
-    await this.setState({finalpubkeysLoading: true})
-    let finalpubkeysFetched = await this.finalpubkeysGet()
-    await this.setState({finalpubkeysLoading: false})
-    if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
-      this.props.dispatch(finalpubkeysError(finalpubkeysFetched))
-      return
-    }
-    else {
-      this.setState({finalpubkeys: finalpubkeysFetched.data.items})
-    }
-
-    this.setState({jsonEnabled: true })
   }
 
 
@@ -1693,7 +1698,6 @@ class CreateVmService extends React.Component {
 
 
   render() {
-    console.log(this.state)
 
     let datastoreNameMoid = obj => {
       if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {

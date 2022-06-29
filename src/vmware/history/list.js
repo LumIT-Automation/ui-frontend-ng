@@ -217,7 +217,7 @@ class List extends React.Component {
               rowKey={randomKey}
               scroll={{y: '30vh'}}
               pagination={false}
-              style={{maxWidth: 'none', marginLeft: '-50px'}}
+              style={{maxWidth: 'none', marginLeft: '-50px', minHeight: '30vh'}}
             />
           </React.Fragment>
         )

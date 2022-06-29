@@ -7,6 +7,8 @@ import Validators from '../../_helpers/validators'
 
 import {
   snatPoolsFetch,
+  routeDomains,
+  routeDomainsError,
   snatPoolAddError
 } from '../store'
 
@@ -14,6 +16,7 @@ import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
@@ -56,10 +59,38 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    this.main()
+  }
+
+  main = async () => {
+    await this.setState({routeDomainsLoading: true})
+    let fetchedRouteDomains = await this.routeDomainsGet()
+    await this.setState({routeDomainsLoading: false})
+    if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
+      this.props.dispatch(routeDomainsError(fetchedRouteDomains))
+      return
+    }
+    else {
+      this.props.dispatch(routeDomains( fetchedRouteDomains ))
+    }
   }
 
 
   //FETCH
+  routeDomainsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
+    return r
+  }
 
 
   //SETTERS
@@ -96,20 +127,30 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  setName = (e, id) => {
+  nameSet = (e, id) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
     this.setState({request: request})
   }
 
-  setAddress = (memberId, e) => {
+  addressSet = (memberId, e) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let members = JSON.parse(JSON.stringify(this.state.request.members))
 
     let index = members.findIndex((obj => obj.id === memberId))
-    members[index].address = e.target.value
+    if(request.routeDomain) {
+      members[index].address = `${e.target.value}%${request.routeDomain}`
+    } else {
+      members[index].address = e.target.value
+    }
 
     request.members = members
+    this.setState({request: request})
+  }
+
+  routeDomain = id => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.routeDomain = id.toString()
     this.setState({request: request})
   }
 
@@ -243,9 +284,9 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   }
                 </Col>
               </Row>
@@ -280,7 +321,7 @@ class Add extends React.Component {
                             defaultValue={n.address}
                             value={n.address}
                             style={{display: 'block', width: 250, borderColor: this.state.errors[n.id].addressColor}}
-                            onChange={e => this.setAddress(n.id, e)}
+                            onChange={e => this.addressSet(n.id, e)}
                           />
                         :
                           <Input
@@ -288,7 +329,7 @@ class Add extends React.Component {
                             defaultValue={n.address}
                             value={n.address}
                             style={{display: 'block', width: 250}}
-                            onChange={e => this.setAddress(n.id, e)}
+                            onChange={e => this.addressSet(n.id, e)}
                           />
                         }
                       </Col>
