@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree, Checkbox, Collapse } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Table, Tree, Checkbox, Collapse, Radio } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -36,6 +36,7 @@ class CreateVmService extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      errors: {},
       numCpus: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
       numCoresPerSockets: [1,2],
       networkDeviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
@@ -43,7 +44,7 @@ class CreateVmService extends React.Component {
       networkDevices: [],
       diskDevices: [],
       datastoresPlus: [],
-      errors: {},
+      partitions: [],
       cs: {},
       addresses: [],
       request: {
@@ -998,6 +999,41 @@ class CreateVmService extends React.Component {
     }
 
     await this.setState({diskDevices: diskDevices})
+  }
+
+  partitioningType = async type => {
+    await this.setState({partitioningType: type})
+    this.diskPartitioning()
+  }
+
+  diskPartitioning = async t => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let swap
+
+    if (this.state.request.memoryMB > 16000) {
+      swap = 16000
+    } else {
+      swap = 1.5 * this.state.request.memoryMB
+    }
+
+    let l = [
+      {
+        name: 'Ram',
+        value: this.state.request.memoryMB
+      },
+      {
+        name: 'Disk Size',
+        value: diskDevices[0].sizeMB
+      },
+      {
+        name: 'Swap',
+        value: swap},
+      {
+        name: 'Root',
+        value: diskDevices[0].sizeMB - swap
+      }
+    ]
+    await this.setState({partitions: l})
   }
 
   customSpecSet = async c => {
@@ -1981,6 +2017,27 @@ class CreateVmService extends React.Component {
       },
     ]
 
+    const partitionsCol = [
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'label',
+        key: 'name',
+        render: (name, obj)  => (
+          obj.name
+        )
+      },
+      {
+        title: 'Value',
+        align: 'center',
+        dataIndex: 'label',
+        key: 'value',
+        render: (name, obj)  => (
+          <p>{obj.value}</p>
+        )
+      },
+    ]
+
     const addressCol = [
       {
         title: 'DHCP',
@@ -2934,6 +2991,47 @@ class CreateVmService extends React.Component {
 
                 </Row>
                 <br/>
+
+                <Row>
+                  <Col offset={3} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Partitioning:</p>
+                  </Col>
+                  <Col span={12}>
+                    <Radio.Group
+                      style={{marginLeft: 5, marginTop: 5}}
+                      onChange={e => this.partitioningType(e.target.value)}
+                      value={this.state.partitioningType}>
+                      <Radio value={'default'}>Default</Radio>
+                      <Radio value={'custom'}>Custom</Radio>
+                    </Radio.Group>
+                  </Col>
+                </Row>
+                <br/>
+
+                { !this.state.partitioningType ?
+                  null
+                :
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={5} span={12}>
+                        { this.state.partitioningType === 'default' ?
+                          <Table
+                            columns={partitionsCol}
+                            dataSource={this.state.partitions}
+                            bordered
+                            rowKey='id'
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        :
+                          'ccccc'
+                        }
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                }
 
                 <Row>
                   <Col offset={3} span={2}>
