@@ -464,8 +464,8 @@ class CreateVmService extends React.Component {
     if (this.state.diskDevices.length < 1 ) {
       newList.push({id: 0, existent: false, datastoreName: null, datastoreMoId: null, deviceType: null, label:''})
       await this.setState({diskDevices: newList})
-      this.diskPartitioning()
     }
+    this.diskPartitioning()
   }
 
   addressAdd = () => {
@@ -3007,8 +3007,8 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Partitioning:</p>
+                  <Col offset={2} span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
                   </Col>
                   <Col span={12}>
                     <Radio.Group
