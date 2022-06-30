@@ -464,6 +464,7 @@ class CreateVmService extends React.Component {
     if (this.state.diskDevices.length < 1 ) {
       newList.push({id: 0, existent: false, datastoreName: null, datastoreMoId: null, deviceType: null, label:''})
       await this.setState({diskDevices: newList})
+      this.diskPartitioning()
     }
   }
 
@@ -620,9 +621,7 @@ class CreateVmService extends React.Component {
     }
 
     if (json.ram_mb) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      request.memoryMB = json.ram_mb
-      await this.setState({request: request})
+      await this.memoryMBSet(json.ram_mb)
     }
 
     if (json.template) {
@@ -922,10 +921,11 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-  memoryMBSet = async e => {
+  memoryMBSet = async mem => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.memoryMB = e.target.value
+    request.memoryMB = mem
     await this.setState({request: request})
+    this.diskPartitioning()
   }
 
   networkDeviceNetworkSet = async (networkMoId, networkDeviceId) => {
@@ -997,8 +997,11 @@ class CreateVmService extends React.Component {
         diskDevice.sizeMB = parseInt(size.target.value)
       }
     }
-
     await this.setState({diskDevices: diskDevices})
+
+    if (diskDevice === diskDevices[0]) {
+      this.diskPartitioning()
+    }
   }
 
   partitioningType = async type => {
@@ -1006,33 +1009,39 @@ class CreateVmService extends React.Component {
     this.diskPartitioning()
   }
 
-  diskPartitioning = async t => {
+  diskPartitioning = async () => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let swap
+    let l = []
+    let o = {}
 
-    if (this.state.request.memoryMB > 16000) {
-      swap = 16000
-    } else {
-      swap = 1.5 * this.state.request.memoryMB
+    if (diskDevices[0] && diskDevices[0].sizeMB) {
+      o = {
+        name: 'Disk size',
+        value: diskDevices[0].sizeMB
+      }
+      l.push(o)
+
     }
 
-    let l = [
-      {
+    if (this.state.request.memoryMB) {
+      if (this.state.request.memoryMB > 16000) {
+        swap = 16000
+      } else {
+        swap = 1.5 * this.state.request.memoryMB
+      }
+
+      o = {
         name: 'Ram',
         value: this.state.request.memoryMB
-      },
-      {
-        name: 'Disk Size',
-        value: diskDevices[0].sizeMB
-      },
-      {
-        name: 'Swap',
-        value: swap},
-      {
-        name: 'Root',
-        value: diskDevices[0].sizeMB - swap
       }
-    ]
+      l.push(o)
+    }
+
+    if ((diskDevices[0] && diskDevices[0].sizeMB) && swap) {
+      l.push({name: '/swap', value: swap}, {name: '/', value: diskDevices[0].sizeMB - swap})
+    }
+
     await this.setState({partitions: l})
   }
 
@@ -2033,7 +2042,7 @@ class CreateVmService extends React.Component {
         dataIndex: 'label',
         key: 'value',
         render: (name, obj)  => (
-          <p>{obj.value}</p>
+          obj.value
         )
       },
     ]
@@ -2649,9 +2658,14 @@ class CreateVmService extends React.Component {
                   </Col>
                   <Col span={2}>
                     {this.state.errors.memoryMBError ?
-                      <Input style={{width: '100%', borderColor: this.state.errors.memoryMBColor}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                      <Input
+                        style={{width: '100%', borderColor: this.state.errors.memoryMBColor}}
+                        onChange={e => this.memoryMBSet(e.target.value)} />
                     :
-                      <Input value={this.state.request.memoryMB} defaultValue={this.state.request.memoryMB} style={{width: '100%'}} name="memoryMB" id='memoryMB' onChange={e => this.memoryMBSet(e)} />
+                      <Input
+                        value={this.state.request.memoryMB}
+                        style={{width: '100%'}}
+                        onChange={e => this.memoryMBSet(e.target.value)} />
                     }
                   </Col>
                 </Row>
@@ -2845,7 +2859,7 @@ class CreateVmService extends React.Component {
 
                   <Row>
                     <Col offset={4} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'left'}}>Addresses:</p>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Addresses:</p>
                     </Col>
                     <Col span={11}>
                       {(this.state.addresses  && this.state.addresses.length > 0) ?
@@ -3019,7 +3033,7 @@ class CreateVmService extends React.Component {
                             columns={partitionsCol}
                             dataSource={this.state.partitions}
                             bordered
-                            rowKey='id'
+                            rowKey='name'
                             scroll={{x: 'auto'}}
                             pagination={false}
                             style={{marginBottom: 10}}
