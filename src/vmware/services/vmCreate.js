@@ -1490,6 +1490,16 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
+    if (!this.state.partitioningType) {
+      errors.partitioningTypeError = true
+      errors.partitioningTypeColor = 'red'
+      this.setState({errors: errors})
+    } else {
+      delete errors.partitioningTypeError
+      delete errors.partitioningTypeColor
+      this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -1638,58 +1648,76 @@ class CreateVmService extends React.Component {
         "diskDevices": diskDevices,
         "guestSpec": csNew,
         "deleteGuestSpecAfterDeploy": true,
-        "bootstrapKeyId": this.state.request.bootstrapkey,
-        "postDeployCommands": [
-            {
-                "command": "waitPowerOn",
-                "user_args": {}
-            },
-            {
-                "command": "resizeLastPartition",
-                "user_args": {
-                    "__diskDevice": "sda"
-                }
-            },
-            {
-                "command": "renameVg",
-                "user_args": {
-                    "__vgName": `vg_${this.state.cs.csHostname}`
-                }
-            },
-            {
-                "command": "reboot",
-                "user_args": {}
-            },
-            {
-                "command": "addMountPoint",
-                "user_args": {
-                    "__vgName": `vg_${this.state.cs.csHostname}`,
-                    "__lvName": "var",
-                    "__lvSize": 2,
-                    "__filesystem": "ext4",
-                    "__mountFolder": "/var"
-                }
-            },
-            {
-                "command": "reboot",
-                "user_args": {}
-            },
-            {
-                "command": "addPubKey",
-                "user_args": {
-                    "__pubKeyId": this.state.request.finalpubkey
-                }
-            },
-                        {
-                "command": "removeBootstrapKey",
-                "user_args": {}
+        "bootstrapKeyId": this.state.request.bootstrapkey
+    }
+
+    if (this.state.partitioningType === 'default') {
+      let p = this.state.partitions.find(e => e.name === '/swap')
+      console.log(p)
+      b.postDeployCommands = [
+        {
+            "command": "waitPowerOn",
+            "user_args": {}
+        },
+        {
+            "command": "resizeLastPartition",
+            "user_args": {
+                "__diskDevice": "sda"
             }
-        ]
+        },
+        {
+            "command": "renameVg",
+            "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`
+            }
+        },
+        {
+            "command": "reboot",
+            "user_args": {}
+        },
+        {
+          "command": "lvGrow",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "swap",
+            "__growSize": 0,
+            "__grow_100": false,
+            "__totSize": p.value
+          }
+        },
+        {
+          "command": "lvGrow",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "root",
+            "__growSize": 0,
+            "__grow_100": true,
+            "__totSize": 0
+          }
+        },
+        {
+          "command": "addPubKey",
+          "user_args": {
+            "__pubKeyId": this.state.request.finalpubkey
+          }
+        },
+        {
+          "command": "removeBootstrapKey",
+          "user_args": {}
+        }
+      ]
+
+    } else if (this.state.partitioningType === 'custom') {
+
     }
 
     if (this.state.request.host) {
       b.hostMoId = this.state.request.hostMoId
     }
+
+
+    console.log(b)
+
 
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)
@@ -1702,6 +1730,8 @@ class CreateVmService extends React.Component {
       this.setState({loading: false, response: true})
       this.response()
     }
+
+
 
   }
 
@@ -3011,13 +3041,23 @@ class CreateVmService extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
                   </Col>
                   <Col span={12}>
-                    <Radio.Group
-                      style={{marginLeft: 5, marginTop: 5}}
-                      onChange={e => this.partitioningType(e.target.value)}
-                      value={this.state.partitioningType}>
-                      <Radio value={'default'}>Default</Radio>
-                      <Radio value={'custom'}>Custom</Radio>
-                    </Radio.Group>
+                    { this.state.errors.partitioningTypeError ?
+                      <Radio.Group
+                        style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
+                        onChange={e => this.partitioningType(e.target.value)}
+                        value={this.state.partitioningType}>
+                        <Radio value={'default'}>Default</Radio>
+                        <Radio value={'custom'}>Custom</Radio>
+                      </Radio.Group>
+                    :
+                      <Radio.Group
+                        style={{marginLeft: 5, marginTop: 5}}
+                        onChange={e => this.partitioningType(e.target.value)}
+                        value={this.state.partitioningType}>
+                        <Radio value={'default'}>Default</Radio>
+                        <Radio value={'custom'}>Custom</Radio>
+                      </Radio.Group>
+                    }
                   </Col>
                 </Row>
                 <br/>
