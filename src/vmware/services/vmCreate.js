@@ -1028,7 +1028,7 @@ class CreateVmService extends React.Component {
       if (this.state.request.memoryMB > 16000) {
         swap = 16000
       } else {
-        swap = 1.5 * this.state.request.memoryMB
+        swap = (1.5 * this.state.request.memoryMB)
       }
 
       o = {
@@ -1039,7 +1039,7 @@ class CreateVmService extends React.Component {
     }
 
     if ((diskDevices[0] && diskDevices[0].sizeMB) && swap) {
-      l.push({name: '/swap', value: swap}, {name: '/', value: diskDevices[0].sizeMB - swap})
+      l.push({name: 'swap', value: swap}, {name: '/', value: diskDevices[0].sizeMB - swap})
     }
 
     await this.setState({partitions: l})
@@ -1652,9 +1652,9 @@ class CreateVmService extends React.Component {
     }
 
     if (this.state.partitioningType === 'default') {
-      let p = this.state.partitions.find(e => e.name === '/swap')
+      let p = this.state.partitions.find(e => e.name === 'swap')
       console.log(p)
-      b.postDeployCommands = [
+      b.data.postDeployCommands = [
         {
             "command": "waitPowerOn",
             "user_args": {}
@@ -1682,7 +1682,7 @@ class CreateVmService extends React.Component {
             "__lvName": "swap",
             "__growSize": 0,
             "__grow_100": false,
-            "__totSize": p.value
+            "__totSize": p.value/1024
           }
         },
         {
@@ -1712,7 +1712,7 @@ class CreateVmService extends React.Component {
     }
 
     if (this.state.request.host) {
-      b.hostMoId = this.state.request.hostMoId
+      b.data.hostMoId = this.state.request.hostMoId
     }
 
 
