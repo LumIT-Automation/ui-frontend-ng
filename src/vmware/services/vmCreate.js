@@ -398,7 +398,10 @@ class CreateVmService extends React.Component {
         templateFetched.data.diskDevices.existent.forEach(n => {
           n.id = i
           n.existent = true
+          //n.originalSizeMB = n.sizeMB
           n.originalSizeMB = n.sizeMB
+          n.originalSizeGiB = n.sizeMB / 1024
+          n.sizeGiB = n.originalSizeGiB
           n.datastoreName = null
           diskDevices.push(n)
           ++i
@@ -699,7 +702,7 @@ class CreateVmService extends React.Component {
       try {
         let size_gib = {target: {value: json.disk_devices[0].size_gib}}
         l = [size_gib, diskDevice.id]
-        await this.diskSizeMBSet(l[0], l[1])
+        await this.diskSizeGiBSet(l[0], l[1])
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice size_gib: ${error.message}`
@@ -971,30 +974,30 @@ class CreateVmService extends React.Component {
     await this.setState({diskDevices: diskDevices})
   }
 
-  diskSizeMBSet = async (size, diskDeviceId) => {
+  diskSizeGiBSet = async (size, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
 
     if (diskDevice.existent) {
-      if (size.target.value < diskDevice.originalSizeMB || isNaN(size.target.value || parseInt(size.target.value) < 1)) {
-        diskDevice.sizeMBError = true
-        diskDevice.sizeMBColor = 'red'
+      if (size.target.value < diskDevice.originalSizeGiB || isNaN(size.target.value || parseInt(size.target.value) < 1)) {
+        diskDevice.sizeGiBError = true
+        diskDevice.sizeGiBColor = 'red'
       }
       else {
-        delete diskDevice.sizeMBError
-        delete diskDevice.sizeMBColor
-        diskDevice.sizeMB = parseInt(size.target.value)
+        delete diskDevice.sizeGiBError
+        delete diskDevice.sizeGiBColor
+        diskDevice.sizeGiB = parseInt(size.target.value)
       }
     }
     else {
       if (isNaN(size.target.value) || parseInt(size.target.value) < 1) {
-        diskDevice.sizeMBError = true
-        diskDevice.sizeMBColor = 'red'
+        diskDevice.sizeGiBError = true
+        diskDevice.sizeGiBColor = 'red'
       }
       else {
-        delete diskDevice.sizeMBError
-        delete diskDevice.sizeMBColor
-        diskDevice.sizeMB = parseInt(size.target.value)
+        delete diskDevice.sizeGiBError
+        delete diskDevice.sizeGiBColor
+        diskDevice.sizeGiB = parseInt(size.target.value)
       }
     }
     await this.setState({diskDevices: diskDevices})
@@ -1015,10 +1018,10 @@ class CreateVmService extends React.Component {
     let l = []
     let o = {}
 
-    if (diskDevices[0] && diskDevices[0].sizeMB) {
+    if (diskDevices[0] && diskDevices[0].sizeGiB) {
       o = {
         name: 'Disk size',
-        value: diskDevices[0].sizeMB
+        value: diskDevices[0].sizeGiB
       }
       l.push(o)
 
@@ -1026,20 +1029,23 @@ class CreateVmService extends React.Component {
 
     if (this.state.request.memoryMB) {
       if (this.state.request.memoryMB > 16000) {
-        swap = 16000
+        swap = 16
       } else {
-        swap = (1.5 * this.state.request.memoryMB)
+        swap = (1.5 * Math.round(this.state.request.memoryMB /1024))
       }
 
+      /*
       o = {
         name: 'Ram',
         value: this.state.request.memoryMB
       }
+
       l.push(o)
+      */
     }
 
-    if ((diskDevices[0] && diskDevices[0].sizeMB) && swap) {
-      l.push({name: 'swap', value: swap}, {name: '/', value: diskDevices[0].sizeMB - swap})
+    if ((diskDevices[0] && diskDevices[0].sizeGiB) && swap) {
+      l.push({name: 'swap', value: swap}, {name: '/', value: diskDevices[0].sizeGiB - swap})
     }
 
     await this.setState({partitions: l})
@@ -1144,6 +1150,8 @@ class CreateVmService extends React.Component {
 
   //VALIDATION
   validationCheck = async () => {
+    console.log('validationCheck')
+    console.log(this.state.diskDevices)
     let request = JSON.parse(JSON.stringify(this.state.request))
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -1156,133 +1164,133 @@ class CreateVmService extends React.Component {
     if (!request.vmName) {
       errors.vmNameError = true
       errors.vmNameColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.vmNameError
       delete errors.vmNameColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
       errors.datacenterError = true
       errors.datacenterColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.datacenterError
       delete errors.datacenterColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.bootstrapkey) {
       errors.bootstrapkeyError = true
       errors.bootstrapkeyColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.bootstrapkeyError
       delete errors.bootstrapkeyColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.finalpubkey) {
       errors.finalpubkeyError = true
       errors.finalpubkeyColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.finalpubkeyError
       delete errors.finalpubkeyColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.cluster) {
       errors.clusterError = true
       errors.clusterColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.clusterError
       delete errors.clusterColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.vmFolderMoId) {
       errors.vmFolderMoIdError = true
       errors.vmFolderMoIdColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.vmFolderMoIdError
       delete errors.vmFolderMoIdColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.numCpu) {
       errors.numCpuError = true
       errors.numCpuColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.numCpuError
       delete errors.numCpuColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.numCoresPerSocket) {
       errors.numCoresPerSocketError = true
       errors.numCoresPerSocketColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.numCoresPerSocketError
       delete errors.numCoresPerSocketColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 !== 0)) {
       errors.memoryMBError = true
       errors.memoryMBColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.memoryMBError
       delete errors.memoryMBColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.notes) {
       errors.notesError = true
       errors.notesColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.notesError
       delete errors.notesColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!cs.csHostname) {
       errors.csHostnameError = true
       errors.csHostnameColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.csHostnameError
       delete errors.csHostnameColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!cs.csDomain || !validators.fqdn(cs.csDomain)) {
       errors.csDomainError = true
       errors.csDomainColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.csDomainError
       delete errors.csDomainColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (addresses.length > 0) {
@@ -1351,8 +1359,6 @@ class CreateVmService extends React.Component {
           }
         }
 
-
-
         if (Object.keys(errors[address.id]).length === 0) {
           delete errors[address.id]
           this.setState({errors: errors})
@@ -1404,27 +1410,33 @@ class CreateVmService extends React.Component {
     if (addresses.length !== networkDevices.length) {
       errors.addressesLengthError = true
       errors.addressesLengthColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.addressesLengthError
       delete errors.addressesLengthColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
       errors.datacenterError = true
       errors.datacenterColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.datacenterError
       delete errors.datacenterColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (diskDevices.length > 0) {
-      diskDevices.forEach((diskDevice, i) => {
+      for (const diskDevice of diskDevices) {
+      //diskDevices.forEach((diskDevice, i) => {
+        console.log('--------------------------------------------')
+        console.log(diskDevices)
+        console.log(diskDevice)
+        console.log('--------------------------------------------')
+
         errors[diskDevice.id] = {}
 
         if (diskDevice.deviceType) {
@@ -1432,7 +1444,7 @@ class CreateVmService extends React.Component {
           delete diskDevice.deviceTypeColor
           delete errors[diskDevice.id].deviceTypeError
           delete errors[diskDevice.id].deviceTypeColor
-          this.setState({errors: errors, diskDevices: diskDevices})
+          await this.setState({errors: errors, diskDevices: diskDevices})
         }
         else {
           diskDevice.deviceTypeError = true
@@ -1447,66 +1459,72 @@ class CreateVmService extends React.Component {
           delete diskDevice.datastoreMoIdColor
           delete errors[diskDevice.id].datastoreMoIdError
           delete errors[diskDevice.id].datastoreMoIdColor
-          this.setState({errors: errors, diskDevices: diskDevices})
+          await this.setState({errors: errors, diskDevices: diskDevices})
         }
         else {
           diskDevice.datastoreMoIdError = true
           diskDevice.datastoreMoIdColor = 'red'
           errors[diskDevice.id].datastoreMoIdError = true
           errors[diskDevice.id].datastoreMoIdColor = 'red'
-          this.setState({errors: errors, diskDevices: diskDevices})
+          await this.setState({errors: errors, diskDevices: diskDevices})
         }
 
-        if (!diskDevice.sizeMB || isNaN(diskDevice.sizeMB)) {
-          diskDevice.sizeMBError = true
-          diskDevice.sizeMBColor = 'red'
-          errors[diskDevice.id].sizeMBError = true
-          errors[diskDevice.id].sizeMBColor = 'red'
-          this.setState({errors: errors, diskDevices: diskDevices})
+        if (!diskDevice.sizeGiB || isNaN(diskDevice.sizeGiB)) {
+          console.log('errore')
+          diskDevice.sizeGiBError = true
+          diskDevice.sizeGiBColor = 'red'
+          errors[diskDevice.id].sizeGiBError = true
+          errors[diskDevice.id].sizeGiBColor = 'red'
+          await this.setState({errors: errors, diskDevices: diskDevices})
         }
         else {
-          delete diskDevice.sizeMBError
-          delete diskDevice.sizeMBColor
-          delete errors[diskDevice.id].sizeMBError
-          delete errors[diskDevice.id].sizeMBColor
-          this.setState({errors: errors, diskDevices: diskDevices})
+          console.log('no errore')
+          delete diskDevice.sizeGiBError
+          delete diskDevice.sizeGiBColor
+          delete errors[diskDevice.id].sizeGiBError
+          delete errors[diskDevice.id].sizeGiBColor
+          await this.setState({errors: errors, diskDevices: diskDevices})
         }
 
         if (Object.keys(errors[diskDevice.id]).length === 0) {
           delete errors[diskDevice.id]
-          this.setState({errors: errors})
+          await this.setState({errors: errors})
         }
-      })
+      //})
+      }
     }
 
     if (!request.mainDatastore) {
       errors.mainDatastoreError = true
       errors.mainDatastoreColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.mainDatastoreError
       delete errors.mainDatastoreColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!this.state.partitioningType) {
       errors.partitioningTypeError = true
       errors.partitioningTypeColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     } else {
       delete errors.partitioningTypeError
       delete errors.partitioningTypeColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     return errors
   }
 
   validation = async () => {
+    console.log('validation')
+    console.log(this.state.diskDevices)
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
     await this.validationCheck()
+    console.log(this.state.diskDevices)
 
     if (Object.keys(this.state.errors).length === 0) {
       this.vmCreateHandler()
@@ -1616,14 +1634,18 @@ class CreateVmService extends React.Component {
         networkDevices.new.push(nic)
       }
     })
+    console.log(this.state.diskDevices)
 
     this.state.diskDevices.forEach((disk, i) => {
+      console.log(disk)
       if (disk.existent) {
+        disk.sizeMB = disk.sizeGiB * 1024
         delete disk.existent
         delete disk.id
         diskDevices.existent.push(disk)
       }
       else {
+        disk.sizeMB = disk.sizeGiB * 1024
         delete disk.existent
         delete disk.id
         diskDevices.new.push(disk)
@@ -1682,7 +1704,7 @@ class CreateVmService extends React.Component {
             "__lvName": "swap",
             "__growSize": 0,
             "__grow_100": false,
-            "__totSize": 6144
+            "__totSize": p.value * 1024//6144
           }
         },
         {
@@ -1715,9 +1737,7 @@ class CreateVmService extends React.Component {
       b.data.hostMoId = this.state.request.hostMoId
     }
 
-
     console.log(b)
-
 
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)
@@ -1730,8 +1750,6 @@ class CreateVmService extends React.Component {
       this.setState({loading: false, response: true})
       this.response()
     }
-
-
 
   }
 
@@ -2021,23 +2039,34 @@ class CreateVmService extends React.Component {
         )
       },
       {
-        title: 'Size (MB)',
+        title: 'Original Size (GiB)',
         align: 'center',
-        dataIndex: 'sizeMB',
-        width: 100,
-        key: 'sizeMB',
+        dataIndex: 'originalSizeGiB',
+        key: 'originalSizeGiB',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.sizeMBError ?
+            {obj.originalSizeGiB}
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'Size (GiB) >= originalSizeGiB',
+        align: 'center',
+        dataIndex: 'sizeGiB',
+        width: 100,
+        key: 'sizeGiB',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
               <Input
-                value={obj.sizeMB}
-                style={{borderColor: obj.sizeMBColor}}
-                onChange={e => this.diskSizeMBSet(e, obj.id)}
+                value={obj.sizeGiB}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.diskSizeGiBSet(e, obj.id)}
               />
             :
               <Input
-                value={obj.sizeMB}
-                onChange={e => this.diskSizeMBSet(e, obj.id)}
+                value={obj.sizeGiB}
+                onChange={e => this.diskSizeGiBSet(e, obj.id)}
               />
             }
           </React.Fragment>
