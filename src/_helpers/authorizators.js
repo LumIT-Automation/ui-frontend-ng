@@ -3,16 +3,19 @@
 class Authorizators {
 
   isObjectEmpty = a => {
-    if (a) {
-      if ('any' in a ) {
-        return true
+    try {
+      if (a) {
+        if ('any' in a && a.any === 'any') {
+          return true
+        }
+        else if (Object.keys(a).length > 0) {
+          return true
+        }
       }
-      if (Object.keys(a).length === 0) {
-        return false
-      }
-      else {
-        return true
-      }
+      return false
+    }
+    catch (error) {
+      return false
     }
   }
 

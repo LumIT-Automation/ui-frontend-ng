@@ -86,7 +86,12 @@ class SearchRagioneSociale extends React.Component {
       <React.Fragment>
       <Row>
         <Col offset={8} span={8}>
-          <Image src={LogoFW} width={'100%'} style={{marginTop: '7px'}}/>
+          <Image
+            preview={false}
+            src={LogoFW}
+            width={'100%'}
+            style={{marginTop: '7px'}}
+          />
         </Col>
       </Row>
 

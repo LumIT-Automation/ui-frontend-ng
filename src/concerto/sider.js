@@ -75,7 +75,8 @@ class CustomSider extends Component {
   }
 
   render(){
-    //console.log(this.props.authorizationsFortinetdb)
+    console.log(this.props.authorizationsF5)
+    console.log(this.props.authorizationsFortinetdb)
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
@@ -176,7 +177,7 @@ class CustomSider extends Component {
           { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
             (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ||
-            (this.props.authorizationsFortinetdb && this.authorizators(this.props.authorizationsFortinetdb.any)) ?
+            (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.any && this.authorizators(this.props.authorizationsFortinetdb)) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>

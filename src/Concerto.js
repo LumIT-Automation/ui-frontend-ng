@@ -185,15 +185,21 @@ class Concerto extends Component {
             { /*this.props.authorizationsFortinetdb ?*/ }
             { /*1===0 ?*/ }
             { this.props.authorizationsFortinetdb ?
-              <Col span={9}>
-               <Image src={LogoFW} height={50} width={'100%'} style={{marginTop: '7px'}}/>
+              <Col span={4}>
+               <Image
+                preview={false}
+                src={LogoFW}
+                height={50}
+                width={'100%'}
+                style={{marginTop: '7px'}}
+                />
               </Col>
             :
-              <Col span={9}>
+              <Col span={4}>
               </Col>
             }
 
-            <Col offset={9} span={4}>
+            <Col offset={14} span={4}>
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Avatar
