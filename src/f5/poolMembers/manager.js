@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Modal, Button, Space, Table, Spin, Divider} from 'antd'
+import { Modal, Button, Space, Table, Spin} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'

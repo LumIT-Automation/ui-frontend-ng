@@ -42,6 +42,7 @@ class Add extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible){
+      console.log(this.state.members)
       if (this.state.members && this.state.members.length === 0) {
         let members = JSON.parse(JSON.stringify(this.state.members))
         members.push({id:1})
@@ -113,10 +114,7 @@ class Add extends React.Component {
       return r !== n.id
     })
     await this.setState({members: list})
-    if (this.state.members.length < 1 ) {
-      list.push({id: 0})
-      await this.setState({members: newList})
-    }
+    console.log(this.state.members)
   }
 
   nameSet = (e, id) => {

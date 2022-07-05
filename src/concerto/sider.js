@@ -13,7 +13,6 @@ import {
   SettingOutlined,
   MenuUnfoldOutlined,
   MenuFoldOutlined,
-  ApartmentOutlined,
   FastForwardOutlined
  } from '@ant-design/icons';
 

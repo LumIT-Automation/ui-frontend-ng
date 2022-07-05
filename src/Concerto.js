@@ -183,7 +183,8 @@ class Concerto extends Component {
             </Col>
 
             { /*this.props.authorizationsFortinetdb ?*/ }
-            { 1===0 ?
+            { /*1===0 ?*/ }
+            { this.props.authorizationsFortinetdb ?
               <Col span={9}>
                <Image src={LogoFW} height={50} width={'100%'} style={{marginTop: '7px'}}/>
               </Col>

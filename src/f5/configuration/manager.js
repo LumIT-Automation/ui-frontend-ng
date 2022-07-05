@@ -11,7 +11,6 @@ import {
   configurationLoading,
   configuration,
   configurationFetch,
-  configurationError,
 
   configurationModifyError,
 } from '../store'

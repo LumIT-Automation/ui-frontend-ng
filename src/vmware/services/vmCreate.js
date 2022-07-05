@@ -1241,7 +1241,7 @@ class CreateVmService extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 != 0)) {
+    if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 !== 0)) {
       errors.memoryMBError = true
       errors.memoryMBColor = 'red'
       this.setState({errors: errors})
@@ -1682,7 +1682,7 @@ class CreateVmService extends React.Component {
             "__lvName": "swap",
             "__growSize": 0,
             "__grow_100": false,
-            "__totSize": p.value/1024
+            "__totSize": 6144
           }
         },
         {
@@ -2689,6 +2689,7 @@ class CreateVmService extends React.Component {
                   <Col span={2}>
                     {this.state.errors.memoryMBError ?
                       <Input
+                        value={this.state.request.memoryMB}
                         style={{width: '100%', borderColor: this.state.errors.memoryMBColor}}
                         onChange={e => this.memoryMBSet(e.target.value)} />
                     :

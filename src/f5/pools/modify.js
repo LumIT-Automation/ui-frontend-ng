@@ -9,7 +9,7 @@ import {
   poolModifyError
 } from '../store'
 
-import { Button, Space, Modal, Spin, Result, Select, Divider, Row, Col } from 'antd';
+import { Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

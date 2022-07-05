@@ -9,7 +9,7 @@ import {
   snatPoolsFetch,
   routeDomains,
   routeDomainsError,
-  snatPoolAddError
+  snatPoolModifyError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Table, Row, Col } from 'antd';
@@ -125,14 +125,16 @@ class Modify extends React.Component {
   }
 
   memberRemove = async r => {
+    console.log(this.state.members)
     let members = JSON.parse(JSON.stringify(this.state.members))
     let list = members.filter(n => {
       return r !== n.id
     })
     await this.setState({members: list})
     if (this.state.members.length < 1 ) {
+      list = []
       list.push({id: 0})
-      await this.setState({members: newList})
+      await this.setState({members: list})
     }
   }
 

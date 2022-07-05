@@ -19,9 +19,7 @@ import {
 
 } from '../store'
 
-import List from '../devices/list'
-
-import { Modal, Spin, Row, Col } from 'antd'
+import { Spin, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 

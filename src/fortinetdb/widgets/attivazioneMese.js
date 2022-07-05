@@ -8,13 +8,6 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  attivazioneMeses,
-  attivazioneMesesLoading,
-  attivazioneMesesError,
-
-  attivazioneMese,
-  attivazioneMeseError,
-
   valueError
 } from '../store'
 
