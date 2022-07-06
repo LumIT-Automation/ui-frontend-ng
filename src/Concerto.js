@@ -184,7 +184,7 @@ class Concerto extends Component {
 
             { /*this.props.authorizationsFortinetdb ?*/ }
             { /*1===0 ?*/ }
-            { this.props.authorizationsFortinetdb ?
+            { 1===0 ?
               <Col span={4}>
                <Image
                 preview={false}
