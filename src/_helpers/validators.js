@@ -45,6 +45,8 @@ class Validators {
   }
 
   ipInSubnet = (subnet, ips) => {
+    console.log(subnet)
+    console.log(ips)
     let block = new Netmask(subnet)
     let ok = 0
 

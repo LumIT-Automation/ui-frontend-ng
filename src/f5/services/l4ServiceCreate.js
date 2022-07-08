@@ -94,27 +94,34 @@ class CreateF5Service extends React.Component {
     }
 
     await this.setState({dataGroupsLoading: true})
-    let dataGroupsFetched = await this.dataGroupsFetch()
+    let dataGroupsCommon = await this.dataGroupsFetch('Common')
     await this.setState({dataGroupsLoading: false})
-    if (dataGroupsFetched.status && dataGroupsFetched.status !== 200 ) {
-      this.props.dispatch(dataGroupsError(dataGroupsFetched))
+    if (dataGroupsCommon.status && dataGroupsCommon.status !== 200 ) {
+      this.props.dispatch(dataGroupsError(dataGroupsCommon))
       return
     }
     else {
-      let list = []
-      dataGroupsFetched.data.items.forEach((dg, i) => {
-        if (dg.type === 'ip') {
-          if (dg.records) {
-            dg.records.forEach((record, i) => {
-              if (record.name) {
-                list.push(dg)
-              }
-            });
-          }
-        }
-      })
-      this.setState({networkDataGroups: list})
-      //this.props.dispatch(dataGroups( dataGroupsFetched ))
+      let list = dataGroupsCommon.data.items.filter(d => d.type === 'ip')
+      await this.setState({dataGroupsTypeIp: list})
+    }
+
+
+    if (this.props.partition !== 'Common') {
+      await this.setState({dataGroupsLoading: true})
+      let dataGroupsPartition = await this.dataGroupsFetch(this.props.partition)
+      await this.setState({dataGroupsLoading: false})
+      if (dataGroupsPartition.status && dataGroupsPartition.status !== 200 ) {
+        this.props.dispatch(dataGroupsError(dataGroupsPartition))
+        return
+      }
+      else {
+        let list = dataGroupsPartition.data.items.filter(d => d.type === 'ip')
+        let dgCommon = JSON.parse(JSON.stringify(this.state.dataGroupsTypeIp))
+        list.forEach((item, i) => {
+          dgCommon.push(item)
+        });
+        await this.setState({dataGroupsTypeIp: dgCommon})
+      }
     }
   }
 
@@ -135,7 +142,7 @@ class CreateF5Service extends React.Component {
     return r
   }
 
-  dataGroupsFetch = async () => {
+  dataGroupsFetch = async partition => {
     let r
     let rest = new Rest(
       "GET",
@@ -146,13 +153,14 @@ class CreateF5Service extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/datagroups/internal/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${partition}/datagroups/internal/`, this.props.token)
     return r
   }
 
 
   //SETTERS
   serviceNameSet = e => {
+    console.log(this.state.dataGroupsTypeIp)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.serviceName = e.target.value
     this.setState({request: request})
@@ -420,7 +428,8 @@ class CreateF5Service extends React.Component {
       })
 
       if (request.snat === 'snat') {
-        this.state.networkDataGroups.forEach((dg, i) => {
+        this.state.dataGroupsTypeIp.forEach((dg, i) => {
+          console.log(dg)
           dg.records.forEach((record, i) => {
             if (record.name) {
               if (validators.ipInSubnet(record.name, ips)) {
