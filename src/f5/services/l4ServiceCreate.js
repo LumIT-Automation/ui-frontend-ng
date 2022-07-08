@@ -160,7 +160,6 @@ class CreateF5Service extends React.Component {
 
   //SETTERS
   serviceNameSet = e => {
-    console.log(this.state.dataGroupsTypeIp)
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.serviceName = e.target.value
     this.setState({request: request})
@@ -196,10 +195,10 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  destinationSet = e => {
+  destinationSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.destination = e.target.value
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   destinationPortSet = e => {
