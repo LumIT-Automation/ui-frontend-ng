@@ -87,6 +87,8 @@ class CreateVmService extends React.Component {
         ],
         dns1: "",
         dns2: "",
+        bootstrapkeyId: "",
+        finalpubkeyId: "",
         __vm_FARMBIL:"0",
         __vm_FARMNOBIL:"1",
         __tivoli_backup:"no",
@@ -105,6 +107,7 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
+      console.log(this.state.request)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -835,6 +838,34 @@ class CreateVmService extends React.Component {
       }
     }
 
+    if (json.bootstrapkeyId) {
+      let bootstrapkeys = JSON.parse(JSON.stringify(this.state.bootstrapkeys))
+
+      try {
+        let bootstrapkey = bootstrapkeys.find( bk => bk.id === parseInt(json.bootstrapkeyId) )
+        await this.bootstrapkeySet(bootstrapkey.id)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `bootstrapkey: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
+    if (json.finalpubkeyId) {
+      let finalpubkeys = JSON.parse(JSON.stringify(this.state.finalpubkeys))
+
+      try {
+        let finalpubkey = finalpubkeys.find( fk => fk.id === parseInt(json.finalpubkeyId) )
+        await this.finalpubkeySet(finalpubkey.id)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `finalpubkey: ${error.message}`
+        errors.jsonColor = 'red'
+        await this.setState({errors: errors})
+      }
+    }
+
   }
 
 
@@ -1126,16 +1157,16 @@ class CreateVmService extends React.Component {
     await this.setState({addresses: addresses})
   }
 
-  bootstrapkeySet = bootstrapkey => {
+  bootstrapkeySet = async bootstrapkey => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.bootstrapkey = bootstrapkey
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
-  finalpubkeySet = finalpubkey => {
+  finalpubkeySet = async finalpubkey => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.finalpubkey = finalpubkey
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   notesSet = e => {
@@ -2274,7 +2305,6 @@ class CreateVmService extends React.Component {
                       <Collapse>
                         <Panel header="Paste your JSON here (optional)" key="1">
                           <React.Fragment>
-                            <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
                             <Input.TextArea
                               defaultValue={jsonPretty()}
 
@@ -2282,6 +2312,7 @@ class CreateVmService extends React.Component {
                               rows={50}
                               onBlur={e => this.jsonValidate(e)}
                             />
+                            <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
                           </React.Fragment>
                         </Panel>
                       </Collapse>
