@@ -59,7 +59,9 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+        { this.props.authorizationsVmware &&
+          (this.props.authorizationsVmware.any ||
+          (this.props.authorizationsVmware.template_post && this.authorizators(this.props.authorizationsVmware.template_post)) ) ?
           <React.Fragment>
             <Divider orientation="left" plain>
               VIRTUAL MACHINE
@@ -97,5 +99,6 @@ export default connect((state) => ({
 
   authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsVmware: state.authorizations.vmware
 
 }))(Service);

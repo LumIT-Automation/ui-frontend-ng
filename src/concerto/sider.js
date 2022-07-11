@@ -75,8 +75,7 @@ class CustomSider extends Component {
   }
 
   render(){
-    console.log(this.props.authorizationsF5)
-    console.log(this.props.authorizationsFortinetdb)
+    console.log(this.props.authorizationsVmware)
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
@@ -133,7 +132,9 @@ class CustomSider extends Component {
             : null
           }
 
-          { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+          { this.props.authorizationsVmware &&
+            (this.props.authorizationsVmware.any ||
+            (this.props.authorizationsVmware.template_post && this.authorizators(this.props.authorizationsVmware.template_post)) ) ?
             <React.Fragment>
               <Menu.Item key="vmware" icon={this.vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
               <Menu.Divider/>

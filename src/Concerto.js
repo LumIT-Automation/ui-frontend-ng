@@ -207,6 +207,7 @@ class Concerto extends Component {
                   icon={<UserOutlined/>}
                   //onClick={() => this.logout()}
                   >
+
                   </Avatar>
                 </Dropdown>
                 <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
