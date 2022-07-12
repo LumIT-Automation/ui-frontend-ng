@@ -53,7 +53,7 @@ class Assets extends React.Component {
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
 
-            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+            { this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware) ?
               <React.Fragment>
                 {this.props.vmwareLoading ?
                   <TabPane key="Vmware" tab="Vmware">
@@ -113,6 +113,7 @@ class Assets extends React.Component {
 export default connect((state) => ({
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsF5: state.authorizations.f5,
+  authorizationsVmware: state.authorizations.vmware,
 
   infobloxLoading: state.infoblox.assetsLoading,
   vmwareLoading: state.vmware.assetsLoading,
