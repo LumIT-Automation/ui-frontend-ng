@@ -54,6 +54,7 @@ class CreateF5Service extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
+      console.log(this.state.request.code)
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
@@ -171,10 +172,16 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  snatSet = e => {
+  snatSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.snat = e
-    this.setState({request: request})
+    await this.setState({request: request})
+    if (e != 'snat') {
+      request = JSON.parse(JSON.stringify(this.state.request))
+      delete request.code
+      delete request.snatPoolAddress
+      await this.setState({dgChoices: [], dgName: null, request: request})
+    }
   }
 
   snatPoolAddressSet = e => {
@@ -183,10 +190,23 @@ class CreateF5Service extends React.Component {
     this.setState({request: request})
   }
 
-  codeSet = e => {
+  dgNameSet = async e => {
+    await this.setState({dgName: e})
+    let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${this.state.dgName}] eq "" } {\n\tsnat none\n}\n}`
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.code = e.target.value
-    this.setState({request: request})
+    request.code = irule
+    await this.setState({request: request})
+  }
+
+  codeSet = async e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    if (e.target.value === '') {
+      delete request.code
+    }
+    else {
+      request.code = e.target.value
+    }
+    await this.setState({request: request})
   }
 
   lbMethodSet = e => {
@@ -322,7 +342,57 @@ class CreateF5Service extends React.Component {
         delete errors.snatPoolAddressColor
         this.setState({errors: errors})
       }
+
+      try {
+        let ips = []
+        let list = []
+
+        ips.push(this.state.request.destination)
+        this.state.request.nodes.forEach((node, i) => {
+          ips.push(node.address)
+        })
+
+        this.state.dataGroupsTypeIp.forEach((dg, i) => {
+          dg.records.forEach((record, i) => {
+            if (record.name) {
+              if (validators.ipInSubnet(record.name, ips)) {
+                list.push(dg.name)
+              }
+            }
+          });
+        })
+        await this.setState({dgChoices: list})
+      }
+      catch (error) {
+        console.log(error)
+      }
+
+      console.log(this.state.dgChoices)
+      if (this.state.dgChoices && this.state.dgChoices.length > 0) {
+        if (!this.state.dgName) {
+          errors.dgNameError = true
+          errors.dgNameColor = 'red'
+          this.setState({errors: errors})
+        }
+        else {
+          delete errors.dgNameError
+          delete errors.dgNameColor
+          this.setState({errors: errors})
+        }
+
+        if (!this.state.request.code){
+          errors.codeError = true
+          errors.codeColor = 'red'
+          this.setState({errors: errors})
+        }
+        else {
+          delete errors.codeError
+          delete errors.codeColor
+          this.setState({errors: errors})
+        }
+      }
     }
+
 
     if (!request.destination || !validators.ipv4(request.destination)) {
       errors.destinationError = true
@@ -420,27 +490,8 @@ class CreateF5Service extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      let ips = []
-      ips.push(this.state.request.destination)
-      this.state.request.nodes.forEach((node, i) => {
-        ips.push(node.address)
-      })
-
-      if (request.snat === 'snat') {
-        this.state.dataGroupsTypeIp.forEach((dg, i) => {
-          console.log(dg)
-          dg.records.forEach((record, i) => {
-            if (record.name) {
-              if (validators.ipInSubnet(record.name, ips)) {
-                let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${dg.name}] eq "" } {\n\tsnat none\n}\n}`
-                request.code = irule
-                this.setState({request: request})
-              }
-            }
-          });
-        })
-      }
       this.l4ServiceCreate()
+      //console.log('lo creo')
     }
   }
 
@@ -480,7 +531,7 @@ class CreateF5Service extends React.Component {
 
     if (this.state.request.snat === 'snat') {
       b.data.snatPool = {
-        "name": `snatpool_${serviceName}`,
+        "name": `snat_${serviceName}`,
         "members": [
           this.state.request.snatPoolAddress
         ]
@@ -525,6 +576,8 @@ class CreateF5Service extends React.Component {
       visible: false,
       response: false,
       request: {},
+      dgChoices: null,
+      dgName: null,
       errors: {}
     })
   }
@@ -619,113 +672,215 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                {1 !== 0 ?
+
+              <React.Fragment>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
+                  </Col>
+                  <Col span={16}>
+                    <React.Fragment>
+                      {this.state.errors.snatError ?
+                        <Select
+                          defaultValue={this.state.request.snat}
+                          value={this.state.request.snat}
+                          showSearch
+                          style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.snatSet(n)}
+                        >
+                          <React.Fragment>
+                            <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                            <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                            <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
+                          </React.Fragment>
+                        </Select>
+                      :
+                        <Select
+                          defaultValue={this.state.request.snat}
+                          value={this.state.request.snat}
+                          showSearch
+                          style={{width: 450}}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                          }
+                          filterSort={(optionA, optionB) =>
+                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                          }
+                          onSelect={n => this.snatSet(n)}
+                        >
+                          <React.Fragment>
+                            <Select.Option key={'none'} value={'none'}>none</Select.Option>
+                            <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
+                            <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
+                          </React.Fragment>
+                        </Select>
+                      }
+                    </React.Fragment>
+                  </Col>
+                </Row>
+                <br/>
+
+                { this.state.request.snat === 'snat' ?
                   <React.Fragment>
                     <Row>
-                      <Col offset={2} span={6}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat:</p>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool address:</p>
                       </Col>
-                      <Col span={16}>
+                      <Col span={7}>
                         <React.Fragment>
-                          {this.state.errors.snatError ?
-                            <Select
-                              defaultValue={this.state.request.snat}
-                              value={this.state.request.snat}
-                              showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.snatSet(n)}
-                            >
-                              <React.Fragment>
-                                <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                                <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
-                              </React.Fragment>
-                            </Select>
+                          {this.state.errors.snatPoolAddressError ?
+                            <Input
+                              style={{width: '100%', borderColor: this.state.errors.snatPoolAddressColor}}
+                              value={this.state.request.snatPoolAddress}
+                              onChange={e => this.snatPoolAddressSet(e)}
+                            />
                           :
-                            <Select
-                              defaultValue={this.state.request.snat}
-                              value={this.state.request.snat}
-                              showSearch
-                              style={{width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.snatSet(n)}
-                            >
-                              <React.Fragment>
-                                <Select.Option key={'none'} value={'none'}>none</Select.Option>
-                                <Select.Option key={'automap'} value={'automap'}>automap</Select.Option>
-                                <Select.Option key={'snat'} value={'snat'}>snat</Select.Option>
-                              </React.Fragment>
-                            </Select>
+                            <Input
+                              style={{width: '100%'}}
+                              value={this.state.request.snatPoolAddress}
+                              onChange={e => this.snatPoolAddressSet(e)}
+                            />
                           }
+                          <br/>
                         </React.Fragment>
                       </Col>
                     </Row>
                     <br/>
-
-                    { this.state.request.snat === 'snat' ?
-                      <React.Fragment>
-                        <Row>
-                          <Col offset={2} span={6}>
-                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool address:</p>
-                          </Col>
-                          <Col span={16}>
-                            <React.Fragment>
-                              {this.state.errors.snatPoolAddressError ?
-                                <Input style={{width: 450, borderColor: this.state.errors.snatPoolAddressColor}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
-                              :
-                                <Input defaultValue={this.state.request.snatPoolAddress} style={{width: 450}} name="snatPoolAddress" id='snatPoolAddress' onChange={e => this.snatPoolAddressSet(e)} />
-                              }
-                              <br/>
-                            </React.Fragment>
-                          </Col>
-                        </Row>
-                        <br/>
-                      </React.Fragment>
-                    :
-                      null
-                    }
-
-                    { this.props.configuration && this.props.configuration[0] && this.props.configuration[0].key === 'iruleHide' && this.props.configuration[0].value ?
-                      null
-                    :
-                      <React.Fragment>
-                        <Row>
-                          <Col offset={2} span={6}>
-                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
-                          </Col>
-                          <Col span={16}>
-                            <TextArea
-                              rows={5}
-                              defaultValue={this.state.request.code}
-                              value={this.state.request.code}
-                              style={{width: 450}}
-                              name="code"
-                              id='code'
-                              onChange={e => this.codeSet(e)}
-                            />
-                          </Col>
-                        </Row>
-                        <br/>
-                      </React.Fragment>
-                    }
-
                   </React.Fragment>
                 :
                   null
                 }
+
+                { (this.state.request.snat === 'snat' && this.state.dgChoices && this.state.dgChoices.length > 0) ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool Datagroup:</p>
+                      </Col>
+
+                      <Col span={7}>
+                      { this.state.errors.dgNameError ?
+                        <React.Fragment>
+                          <Select
+                            value={this.state.dgName}
+                            showSearch
+                            style={{width: '100%', border: `1px solid ${this.state.errors.dgNameColor}`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.dgNameSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.dgChoices.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                          <br/>
+                        </React.Fragment>
+                      :
+                        <React.Fragment>
+                          <Select
+                            value={this.state.dgName}
+                            showSearch
+                            style={{width: '100%'}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.dgNameSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.dgChoices.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                          <br/>
+                        </React.Fragment>
+                      }
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat irule:</p>
+                      </Col>
+                      <Col span={7}>
+                        { this.state.errors.codeError ?
+                          <TextArea
+                            rows={5}
+                            value={this.state.request.code}
+                            style={{width: '100%', border: `1px solid ${this.state.errors.codeColor}`}}
+                            name="code"
+                            id='code'
+                            onChange={e => this.codeSet(e)}
+                          />
+                        :
+                          <TextArea
+                            rows={5}
+                            value={this.state.request.code}
+                            style={{width: '100%'}}
+                            name="code"
+                            id='code'
+                            onChange={e => this.codeSet(e)}
+                          />
+                        }
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
+
+                { /*this.props.configuration && this.props.configuration[0] && this.props.configuration[0].key === 'iruleHide' && this.props.configuration[0].value ?
+                  null
+                :
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
+                      </Col>
+                      <Col span={16}>
+                        <TextArea
+                          rows={5}
+                          defaultValue={this.state.request.code}
+                          value={this.state.request.code}
+                          style={{width: 450}}
+                          name="code"
+                          id='code'
+                          onChange={e => this.codeSet(e)}
+                        />
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                */}
+
+              </React.Fragment>
 
                 <Row>
                   <Col offset={2} span={6}>
@@ -747,9 +902,17 @@ class CreateF5Service extends React.Component {
                   </Col>
                   <Col span={16}>
                   {this.state.errors.destinationPortError ?
-                    <Input style={{width: 450, borderColor: 'red'}} name="destinationPort" id='destinationPort' onChange={e => this.destinationPortSet(e)} />
+                    <Input
+                      style={{width: 450, borderColor: 'red'}}
+                      value={this.state.request.destinationPort}
+                      onChange={e => this.destinationPortSet(e)}
+                    />
                   :
-                    <Input defaultValue={this.state.request.destinationPort} style={{width: 450}} name="destinationPort" id='destinationPort' onChange={e => this.destinationPortSet(e)} />
+                    <Input
+                      style={{width: 450}}
+                      value={this.state.request.destinationPort}
+                      onChange={e => this.destinationPortSet(e)}
+                    />
                   }
                   </Col>
                 </Row>

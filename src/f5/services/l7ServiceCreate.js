@@ -534,7 +534,7 @@ class CreateF5Service extends React.Component {
 
     if (this.state.request.snat === 'snat') {
       b.data.snatPool = {
-        "name": `snatpool_${serviceName}`,
+        "name": `snat_${serviceName}`,
         "members": [
           this.state.request.snatPoolAddress
         ]
