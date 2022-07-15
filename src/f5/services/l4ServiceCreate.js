@@ -54,7 +54,6 @@ class CreateF5Service extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
-      console.log(this.state.request.code)
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
@@ -367,7 +366,6 @@ class CreateF5Service extends React.Component {
         console.log(error)
       }
 
-      console.log(this.state.dgChoices)
       if (this.state.dgChoices && this.state.dgChoices.length > 0) {
         if (!this.state.dgName) {
           errors.dgNameError = true
@@ -491,7 +489,6 @@ class CreateF5Service extends React.Component {
 
     if (Object.keys(this.state.errors).length === 0) {
       this.l4ServiceCreate()
-      //console.log('lo creo')
     }
   }
 
