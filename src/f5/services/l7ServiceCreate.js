@@ -829,7 +829,7 @@ class CreateF5Service extends React.Component {
                           <Col offset={3} span={6}>
                             <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool address:</p>
                           </Col>
-                          <Col span={7}>
+                          <Col span={6}>
                             <React.Fragment>
                               {this.state.errors.snatPoolAddressError ?
                                 <Input
@@ -861,7 +861,7 @@ class CreateF5Service extends React.Component {
                             <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool Datagroup:</p>
                           </Col>
 
-                          <Col span={7}>
+                          <Col span={6}>
                           { this.state.errors.dgNameError ?
                             <React.Fragment>
                               <Select
@@ -923,7 +923,7 @@ class CreateF5Service extends React.Component {
                           <Col offset={3} span={6}>
                             <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat irule:</p>
                           </Col>
-                          <Col span={7}>
+                          <Col span={6}>
                             { this.state.errors.codeError ?
                               <TextArea
                                 rows={5}
