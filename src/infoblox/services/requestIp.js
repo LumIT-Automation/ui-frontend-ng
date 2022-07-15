@@ -188,7 +188,7 @@ class RequestIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        r = resp.data[0]
+        r = resp.data
       },
       error => {
         this.props.dispatch(networkError(error))
@@ -197,24 +197,6 @@ class RequestIp extends React.Component {
     await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/`, this.props.token)
     return r
   }
-
-  conatinerGet = async container => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-
-        r = resp.data[0]
-      },
-      error => {
-        this.props.dispatch(containerError(error))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/network-container/${container}/networks/`, this.props.token)
-    return r
-  }
-
-
 
 
   setNetworkManager = async (network, e, id) => {
@@ -244,6 +226,7 @@ class RequestIp extends React.Component {
     let subnetMask
     let gateway
 
+    //children networks contained in the in the container
     const result = this.state.real.find( real => real.network === network )
     if (result.isContainer) {
       this.state.networks.forEach((item, i) => {
@@ -254,15 +237,14 @@ class RequestIp extends React.Component {
         }
       })
       let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
-      //this.setState({objectTypes: unique})
       request.objectTypes = unique
       request.objectTypesLoading = false
     }
     else {
-      //this.setState({objectTypes: null})
       delete request.objectTypes
       request.objectTypesLoading = false
     }
+
     let info = await this.networkGet(prefix)
 
     if (info && info.extattrs) {
@@ -531,7 +513,6 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.requests)
     const requests = [
       {
         title: 'Loading',
