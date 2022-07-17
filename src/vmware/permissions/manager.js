@@ -105,13 +105,14 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('assets', resp)
         r = resp
       },
       error => {
         r = error
       }
     )
-    await rest.doXHR("infoblox/assets/", this.props.token)
+    await rest.doXHR("vmware/assets/", this.props.token)
     return r
   }
 
@@ -121,13 +122,14 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('identity groups', resp)
         r = resp
       },
       error => {
         r = error
       }
     )
-    await rest.doXHR("infoblox/identity-groups/", this.props.token)
+    await rest.doXHR("vmware/identity-groups/", this.props.token)
     return r
   }
 
@@ -136,20 +138,22 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('permissions', resp)
         r = resp
       },
       error => {
         r = error
       }
     )
-    await rest.doXHR("infoblox/permissions/", this.props.token)
+    await rest.doXHR("vmware/permissions/", this.props.token)
     return r
   }
 
 
   assetAddDetails = async (assets, permissions) => {
-    console.log('assets', assets)
-    console.log('permissions', permissions)
+    console.log(assets)
+    console.log(permissions)
+
     //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
@@ -161,7 +165,7 @@ class Manager extends React.Component {
     }
 
     for (const [key, value] of Object.entries(newPermissions)) {
-      const asset = list.find(a => a.id === value.network.asset_id)
+      const asset = list.find(a => a.id === value.object.id_asset)
       value.asset = asset
     }
 
@@ -190,9 +194,9 @@ class Manager extends React.Component {
 
         <List/>
 
-        { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
-        { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
-        { this.props.permissionsError ? <Error component={'manager infoblox'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
+        { this.props.assetsError ? <Error component={'manager vmware'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { this.props.identityGroupsError ? <Error component={'manager vmware'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+        { this.props.permissionsError ? <Error component={'manager vmware'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
 
       </React.Fragment>
     )
@@ -201,15 +205,15 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.infoblox,
+  authorizations: state.authorizations.vmware,
 
-  assets: state.infoblox.assets,
-  identityGroups: state.infoblox.identityGroups,
-  permissions: state.infoblox.permissions,
+  assets: state.vmware.assets,
+  identityGroups: state.vmware.identityGroups,
+  permissions: state.vmware.permissions,
 
-  permissionsFetch: state.infoblox.permissionsFetch,
+  permissionsFetch: state.vmware.permissionsFetch,
 
-  assetsError: state.infoblox.assetsError,
-  identityGroupsError: state.infoblox.identityGroupsError,
-  permissionsError: state.infoblox.permissionsError,
+  assetsError: state.vmware.assetsError,
+  identityGroupsError: state.vmware.identityGroupsError,
+  permissionsError: state.vmware.permissionsError,
 }))(Manager);
