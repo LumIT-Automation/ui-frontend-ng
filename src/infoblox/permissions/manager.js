@@ -148,8 +148,6 @@ class Manager extends React.Component {
 
 
   assetAddDetails = async (assets, permissions) => {
-    console.log('assets', assets)
-    console.log('permissions', permissions)
     //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))

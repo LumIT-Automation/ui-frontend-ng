@@ -7,7 +7,6 @@ import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
 
 import RolesDescription from './rolesDescription'
-import Modify from './modify'
 import Delete from './delete'
 
 
@@ -156,21 +155,6 @@ class List extends React.Component {
         key: 'role',
         ...this.getColumnSearchProps('role'),
 
-      },
-      {
-        title: 'Modify',
-        align: 'center',
-        dataIndex: 'modify',
-        key: 'modify',
-        render: (name, obj)  => (
-          <Space size="small">
-           { this.props.authorizations && (this.props.authorizations.permission_identityGroup_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
       },
       {
         title: 'Delete',
