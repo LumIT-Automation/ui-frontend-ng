@@ -44,7 +44,6 @@ class CreateVmService extends React.Component {
       networkDevices: [],
       diskDevices: [],
       datastoresPlus: [],
-      partitions: [],
       cs: {},
       addresses: [],
       request: {
@@ -107,7 +106,6 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      console.log(this.state.request)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -471,7 +469,7 @@ class CreateVmService extends React.Component {
       newList.push({id: 0, existent: false, datastoreName: null, datastoreMoId: null, deviceType: null, label:''})
       await this.setState({diskDevices: newList})
     }
-    this.diskPartitioning()
+    this.firstDiskPartitioning()
   }
 
   addressAdd = () => {
@@ -959,7 +957,7 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.memoryMB = mem
     await this.setState({request: request})
-    this.diskPartitioning()
+    this.firstDiskPartitioning()
   }
 
   networkDeviceNetworkSet = async (networkMoId, networkDeviceId) => {
@@ -1034,29 +1032,20 @@ class CreateVmService extends React.Component {
     await this.setState({diskDevices: diskDevices})
 
     if (diskDevice === diskDevices[0]) {
-      this.diskPartitioning()
+      this.firstDiskPartitioning()
     }
   }
 
   partitioningType = async type => {
     await this.setState({partitioningType: type})
-    this.diskPartitioning()
+    this.firstDiskPartitioning()
   }
 
-  diskPartitioning = async () => {
+  firstDiskPartitioning = async (part, val) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = Object.assign({}, diskDevices[0]);
+    //let diskDevice = diskDevices[0]
     let swap
-    let l = []
-    let o = {}
-
-    if (diskDevices[0] && diskDevices[0].sizeGiB) {
-      o = {
-        name: 'Disk size',
-        value: diskDevices[0].sizeGiB
-      }
-      l.push(o)
-
-    }
 
     if (this.state.request.memoryMB) {
       if (this.state.request.memoryMB > 16000) {
@@ -1065,21 +1054,47 @@ class CreateVmService extends React.Component {
         swap = (1.5 * Math.round(this.state.request.memoryMB /1024))
       }
 
-      /*
-      o = {
-        name: 'Ram',
-        value: this.state.request.memoryMB
+      if (this.state.partitioningType === 'default') {
+        //Object.assign(diskDevice, {root: diskDevice.sizeGiB - swap});
+        diskDevice.root = diskDevice.sizeGiB - swap
+        diskDevice.swap = swap
+        diskDevices[0] = diskDevice
+        await this.setState({diskDevices: diskDevices})
+
+      } else if (this.state.partitioningType === 'custom') {
+        diskDevice.root = diskDevice.sizeGiB - swap
+        diskDevice.swap = swap
+        if (part && part === 'home') {
+          diskDevice.home = parseInt(val)
+        }
+        if (part && part.var) {
+          diskDevice.var = part.var
+        }
+        if (part && part.tmp) {
+          diskDevice.tmp = part.tmp
+        }
+        if (part && part.var_log) {
+          diskDevice.var_log = part.var_log
+        }
+        if (part && part.var_log_audit) {
+          diskDevice.var_log_audit = part.var_log_audit
+        }
+        if (part && part.u01) {
+          diskDevice.u01 = part.u01
+        }
+        if (part && part.u02) {
+          diskDevice.u02 = part.u02
+        }
+        if (part && part.u03) {
+          diskDevice.u03 = part.u03
+        }
+
+
+        diskDevices[0] = diskDevice
+        await this.setState({diskDevices: diskDevices})
       }
-
-      l.push(o)
-      */
     }
-
-    if ((diskDevices[0] && diskDevices[0].sizeGiB) && swap) {
-      l.push({name: 'swap', value: swap}, {name: '/', value: diskDevices[0].sizeGiB - swap})
-    }
-
-    await this.setState({partitions: l})
+    console.log(this.state.diskDevices)
   }
 
   customSpecSet = async c => {
@@ -1181,8 +1196,6 @@ class CreateVmService extends React.Component {
 
   //VALIDATION
   validationCheck = async () => {
-    console.log('validationCheck')
-    console.log(this.state.diskDevices)
     let request = JSON.parse(JSON.stringify(this.state.request))
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -1463,11 +1476,6 @@ class CreateVmService extends React.Component {
     if (diskDevices.length > 0) {
       for (const diskDevice of diskDevices) {
       //diskDevices.forEach((diskDevice, i) => {
-        console.log('--------------------------------------------')
-        console.log(diskDevices)
-        console.log(diskDevice)
-        console.log('--------------------------------------------')
-
         errors[diskDevice.id] = {}
 
         if (diskDevice.deviceType) {
@@ -1501,7 +1509,6 @@ class CreateVmService extends React.Component {
         }
 
         if (!diskDevice.sizeGiB || isNaN(diskDevice.sizeGiB)) {
-          console.log('errore')
           diskDevice.sizeGiBError = true
           diskDevice.sizeGiBColor = 'red'
           errors[diskDevice.id].sizeGiBError = true
@@ -1509,7 +1516,6 @@ class CreateVmService extends React.Component {
           await this.setState({errors: errors, diskDevices: diskDevices})
         }
         else {
-          console.log('no errore')
           delete diskDevice.sizeGiBError
           delete diskDevice.sizeGiBColor
           delete errors[diskDevice.id].sizeGiBError
@@ -1550,12 +1556,9 @@ class CreateVmService extends React.Component {
   }
 
   validation = async () => {
-    console.log('validation')
-    console.log(this.state.diskDevices)
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
     await this.validationCheck()
-    console.log(this.state.diskDevices)
 
     if (Object.keys(this.state.errors).length === 0) {
       this.vmCreateHandler()
@@ -1665,18 +1668,15 @@ class CreateVmService extends React.Component {
         networkDevices.new.push(nic)
       }
     })
-    console.log(this.state.diskDevices)
 
     this.state.diskDevices.forEach((disk, i) => {
-      console.log(disk)
+      disk.sizeMB = disk.sizeGiB * 1024
       if (disk.existent) {
-        disk.sizeMB = disk.sizeGiB * 1024
         delete disk.existent
         delete disk.id
         diskDevices.existent.push(disk)
       }
       else {
-        disk.sizeMB = disk.sizeGiB * 1024
         delete disk.existent
         delete disk.id
         diskDevices.new.push(disk)
@@ -1705,8 +1705,7 @@ class CreateVmService extends React.Component {
     }
 
     if (this.state.partitioningType === 'default') {
-      let p = this.state.partitions.find(e => e.name === 'swap')
-      console.log(p)
+      let swap = this.state.diskDevices[0].swap
       b.data.postDeployCommands = [
         {
             "command": "waitPowerOn",
@@ -1735,7 +1734,7 @@ class CreateVmService extends React.Component {
             "__lvName": "swap",
             "__growSize": 0,
             "__grow_100": false,
-            "__totSize": p.value * 1024//6144
+            "__totSize": swap * 1024//6144
           }
         },
         {
@@ -1761,7 +1760,163 @@ class CreateVmService extends React.Component {
       ]
 
     } else if (this.state.partitioningType === 'custom') {
+      let root = this.state.diskDevices[0].root
+      let swap = this.state.diskDevices[0].swap
+      let home = this.state.diskDevices[0].home
+      let varo = this.state.diskDevices[0].var
+      let tmp = this.state.diskDevices[0].tmp
+      let var_log = this.state.diskDevices[0].var_log
+      let var_log_audit = this.state.diskDevices[0].var_log_audit
+      let u01 = this.state.diskDevices[0].u01
+      let u02 = this.state.diskDevices[0].u02
+      let u03 = this.state.diskDevices[0].u03
 
+      b.data.postDeployCommands = [
+        {
+            "command": "waitPowerOn",
+            "user_args": {}
+        },
+        {
+            "command": "resizeLastPartition",
+            "user_args": {
+                "__diskDevice": "sda"
+            }
+        },
+        {
+            "command": "renameVg",
+            "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`
+            }
+        },
+        {
+            "command": "reboot",
+            "user_args": {}
+        },
+        {
+          "command": "lvGrow",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "swap",
+            "__growSize": 0,
+            "__grow_100": false,
+            "__totSize": swap * 1024//6144
+          }
+        },
+        {
+          "command": "lvGrow",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "root",
+            "__growSize": 0,
+            "__grow_100": true,
+            "__totSize": 0
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "home",
+            "__lvSize": home,
+            "__filesystem": "ext4",
+            "__mountFolder": "/home"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "var",
+            "__lvSize": varo,
+            "__filesystem": "ext4",
+            "__mountFolder": "/var"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "tmp",
+            "__lvSize": tmp,
+            "__filesystem": "ext4",
+            "__mountFolder": "/tmp"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "var_log",
+            "__lvSize": var_log,
+            "__filesystem": "ext4",
+            "__mountFolder": "/var/log"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "var_log_audit",
+            "__lvSize": var_log_audit,
+            "__filesystem": "ext4",
+            "__mountFolder": "/var/log/audit"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "u01",
+            "__lvSize": u01,
+            "__filesystem": "ext4",
+            "__mountFolder": "/u01"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "u02",
+            "__lvSize": u02,
+            "__filesystem": "ext4",
+            "__mountFolder": "/u02"
+          }
+        },
+        {
+          "command": "addMountPoint",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "u03",
+            "__lvSize": u03,
+            "__filesystem": "ext4",
+            "__mountFolder": "/u03"
+          }
+        },
+        {
+          "command": "lvGrow",
+          "user_args": {
+            "__vgName": `vg_${this.state.cs.csHostname}`,
+            "__lvName": "u01",
+            "__growSize": 0,
+            "__grow_100": true,
+            "__totSize": 0
+          }
+        },
+        {
+            "command": "reboot",
+            "user_args": {}
+        },
+        {
+          "command": "addPubKey",
+          "user_args": {
+            "__pubKeyId": this.state.request.finalpubkey
+          }
+        },
+        {
+          "command": "removeBootstrapKey",
+          "user_args": {}
+        }
+      ]
     }
 
     if (this.state.request.host) {
@@ -2116,25 +2271,331 @@ class CreateVmService extends React.Component {
       },
     ]
 
-    const partitionsCol = [
+    const defaultPartitionsCol = [
       {
-        title: 'Name',
+        title: 'Size (GiB)',
         align: 'center',
-        dataIndex: 'label',
-        key: 'name',
+        dataIndex: 'sizeGiB',
+        width: 100,
+        key: 'sizeGiB',
         render: (name, obj)  => (
-          obj.name
-        )
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.sizeGiB}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.sizeGiB}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
       },
       {
-        title: 'Value',
+        title: 'root',
         align: 'center',
-        dataIndex: 'label',
-        key: 'value',
+        dataIndex: 'root',
+        width: 100,
+        key: 'root',
         render: (name, obj)  => (
-          obj.value
-        )
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.root}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.root}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
       },
+      {
+        title: 'swap',
+        align: 'center',
+        dataIndex: 'swap',
+        width: 100,
+        key: 'swap',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.swap}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.swap}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+    ]
+
+    const customPartitionsCol = [
+      {
+        title: 'Size (GiB)',
+        align: 'center',
+        dataIndex: 'sizeGiB',
+        width: 100,
+        key: 'sizeGiB',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.sizeGiB}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.sizeGiB}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'root',
+        align: 'center',
+        dataIndex: 'root',
+        width: 100,
+        key: 'root',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.root}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.root}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'swap',
+        align: 'center',
+        dataIndex: 'swap',
+        width: 100,
+        key: 'swap',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.swap}
+                style={{borderColor: obj.sizeGiBColor}}
+                disabled
+              />
+            :
+              <Input
+                value={obj.swap}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'home',
+        align: 'center',
+        dataIndex: 'home',
+        width: 100,
+        key: 'home',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.home}
+                style={{borderColor: obj.sizeGiBColor}}
+                onBlur={e => this.firstDiskPartitioning('home', e.target.value)}
+              />
+            :
+              <Input
+                value={obj.home}
+                onBlur={e => this.firstDiskPartitioning('home', e.target.value)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'tmp',
+        align: 'center',
+        dataIndex: 'tmp',
+        width: 100,
+        key: 'tmp',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.tmp}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.firstDiskPartitioning({tmp: e})}
+              />
+            :
+              <Input
+                value={obj.tmp}
+                onChange={e => this.firstDiskPartitioning({tmp: e})}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'var',
+        align: 'center',
+        dataIndex: 'var',
+        width: 100,
+        key: 'var',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.var}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.firstDiskPartitioning({var: e})}
+              />
+            :
+              <Input
+                value={obj.var}
+                onChange={e => this.firstDiskPartitioning({var: e})}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'var_log',
+        align: 'center',
+        dataIndex: 'var_log',
+        width: 100,
+        key: 'var_log',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.var_log}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.firstDiskPartitioning({var_log: e})}
+              />
+            :
+              <Input
+                value={obj.var_log}
+                onChange={e => this.firstDiskPartitioning({var_log: e})}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'var_log_audit',
+        align: 'center',
+        dataIndex: 'var_log_audit',
+        width: 100,
+        key: 'var_log_audit',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.var_log_audit}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.firstDiskPartitioning({var_log_audit: e})}
+              />
+            :
+              <Input
+                value={obj.var_log_audit}
+                onChange={e => this.firstDiskPartitioning({var_log_audit: e})}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'u01',
+        align: 'center',
+        dataIndex: 'u01',
+        width: 100,
+        key: 'u01',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={obj.u01}
+                style={{borderColor: obj.sizeGiBColor}}
+                onChange={e => this.firstDiskPartitioning({u01: e})}
+              />
+            :
+              <Input
+                value={obj.u01}
+                onChange={e => this.firstDiskPartitioning({u01: e})}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'u02',
+        align: 'center',
+        dataIndex: 'u02',
+        width: 100,
+        key: 'u02',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={0}
+                disabled
+              />
+            :
+              <Input
+                value={0}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'u03',
+        align: 'center',
+        dataIndex: 'u03',
+        width: 100,
+        key: 'u03',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.sizeGiBError ?
+              <Input
+                value={0}
+                disabled
+              />
+            :
+              <Input
+                value={0}
+                disabled
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+
     ]
 
     const addressCol = [
@@ -2296,7 +2757,7 @@ class CreateVmService extends React.Component {
 
 
                 <Row>
-                  <Col offset={5} span={12}>
+                  <Col offset={3} span={15}>
                   { !this.state.jsonEnabled ?
                     <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
@@ -2337,7 +2798,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
                   </Col>
                   <Col span={4}>
@@ -2360,7 +2821,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
                   <Col span={2}>
@@ -2546,15 +3007,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Folder:</p>
                   </Col>
                   { this.state.foldersLoading ?
-                    <Col span={12}>
+                    <Col span={18}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={12}>
+                    <Col span={18}>
                       { this.state.folders ?
                         <React.Fragment>
                           {this.state.errors.vmFolderMoIdError ?
@@ -2581,15 +3042,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
-                    <Col span={12}>
+                    <Col span={15}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={12}>
+                    <Col span={15}>
                       { this.state.templates ?
                         <React.Fragment>
                           { this.state.templates && this.state.templates.length > 0 ?
@@ -2669,7 +3130,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
                   </Col>
                   <Col span={2}>
@@ -2763,15 +3224,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Network Devices:</p>
                   </Col>
                   {this.state.networkDevicesLoading ?
-                    <Col span={12}>
+                    <Col span={15}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={12}>
+                    <Col span={15}>
                       {(this.state.networkDevices && this.state.networkDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.networkDeviceAdd()}>
@@ -2799,15 +3260,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>GuestSpec:</p>
                   </Col>
                   {this.state.customSpecsLoading ?
-                    <Col span={12}>
+                    <Col span={15}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                  <Col span={12}>
+                  <Col span={15}>
                     { this.state.customSpecs && this.state.customSpecs.length > 0 ?
                       <React.Fragment>
                         {this.state.errors.customSpecError ?
@@ -2873,7 +3334,7 @@ class CreateVmService extends React.Component {
                 { this.state.customSpec ?
                   <React.Fragment>
                   <Row>
-                    <Col offset={4} span={2}>
+                    <Col offset={2} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Hostname:</p>
                     </Col>
                     <Col span={4}>
@@ -2890,7 +3351,7 @@ class CreateVmService extends React.Component {
                       }
                     </Col>
 
-                    <Col offset={1} span={2}>
+                    <Col offset={2} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain Name:</p>
                     </Col>
                     <Col span={4}>
@@ -2910,7 +3371,7 @@ class CreateVmService extends React.Component {
                   <br/>
 
                   <Row>
-                    <Col offset={4} span={2}>
+                    <Col offset={2} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DNS 1:</p>
                     </Col>
                     <Col span={4}>
@@ -2927,7 +3388,7 @@ class CreateVmService extends React.Component {
                       }
                     </Col>
 
-                    <Col offset={1} span={2}>
+                    <Col offset={2} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DNS 2:</p>
                     </Col>
                     <Col span={4}>
@@ -2949,10 +3410,10 @@ class CreateVmService extends React.Component {
 
 
                   <Row>
-                    <Col offset={4} span={2}>
+                    <Col offset={2} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Addresses:</p>
                     </Col>
-                    <Col span={11}>
+                    <Col span={14}>
                       {(this.state.addresses  && this.state.addresses.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.addressAdd()}>
@@ -2990,15 +3451,15 @@ class CreateVmService extends React.Component {
                 }
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
                   {this.state.datastoresLoading ?
-                    <Col span={12}>
+                    <Col span={15}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                     :
-                    <Col span={12}>
+                    <Col span={15}>
                       { this.state.datastores && this.state.datastores.length > 0 ?
                         <React.Fragment>
                           {this.state.errors.mainDatastoreError ?
@@ -3062,15 +3523,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
                   </Col>
                   {this.state.diskDevicesLoading ?
-                    <Col span={12}>
+                    <Col span={15}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={12}>
+                    <Col span={15}>
                       {(this.state.diskDevices  && this.state.diskDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.diskDeviceAdd()}>
@@ -3098,10 +3559,10 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={2} span={3}>
+                  <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
                   </Col>
-                  <Col span={12}>
+                  <Col span={15}>
                     { this.state.errors.partitioningTypeError ?
                       <Radio.Group
                         style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
@@ -3128,28 +3589,38 @@ class CreateVmService extends React.Component {
                 :
                   <React.Fragment>
                     <Row>
-                      <Col offset={5} span={12}>
-                        { this.state.partitioningType === 'default' ?
+                      { this.state.partitioningType === 'default' ?
+                        <Col offset={3} span={15}>
                           <Table
-                            columns={partitionsCol}
-                            dataSource={this.state.partitions}
+                            columns={defaultPartitionsCol}
+                            dataSource={this.state.diskDevices}
                             bordered
-                            rowKey='name'
+                            rowKey = {randomKey}
                             scroll={{x: 'auto'}}
                             pagination={false}
                             style={{marginBottom: 10}}
                           />
-                        :
-                          'ccccc'
-                        }
-                      </Col>
+                        </Col>
+                      :
+                        <Col offset={3} span={19}>
+                          <Table
+                            columns={customPartitionsCol}
+                            dataSource={this.state.diskDevices}
+                            bordered
+                            rowKey = {randomKey}
+                            scroll={{x: 'auto'}}
+                            pagination={false}
+                            style={{marginBottom: 10}}
+                          />
+                        </Col>
+                      }
                     </Row>
                     <br/>
                   </React.Fragment>
                 }
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Bootstrap Keys:</p>
                   </Col>
                   <Col span={4}>
@@ -3219,7 +3690,7 @@ class CreateVmService extends React.Component {
                     }
                   </Col>
 
-                  <Col offset={2} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Final Pub Keys:</p>
                   </Col>
                   { this.state.finalpubkeysLoading ?
@@ -3298,10 +3769,10 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={3} span={2}>
+                  <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
                   </Col>
-                  <Col span={12}>
+                  <Col span={15}>
                     {this.state.errors.notesError ?
                       <Input.TextArea
                         value={this.state.request.notes}
@@ -3323,7 +3794,7 @@ class CreateVmService extends React.Component {
 
 
                 <Row>
-                  <Col offset={9} span={2}>
+                  <Col offset={7} span={2}>
                     <Button type="primary" shape='round' onClick={() => this.validation()} >
                       Create Virtual machine
                     </Button>
