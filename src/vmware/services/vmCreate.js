@@ -1058,43 +1058,107 @@ class CreateVmService extends React.Component {
         //Object.assign(diskDevice, {root: diskDevice.sizeGiB - swap});
         diskDevice.root = diskDevice.sizeGiB - swap
         diskDevice.swap = swap
+
         diskDevices[0] = diskDevice
         await this.setState({diskDevices: diskDevices})
 
       } else if (this.state.partitioningType === 'custom') {
-        diskDevice.root = diskDevice.sizeGiB - swap
+        diskDevice.root = 50
         diskDevice.swap = swap
-        if (part && part === 'home') {
-          diskDevice.home = parseInt(val)
-        }
-        if (part && part.var) {
-          diskDevice.var = part.var
-        }
-        if (part && part.tmp) {
-          diskDevice.tmp = part.tmp
-        }
-        if (part && part.var_log) {
-          diskDevice.var_log = part.var_log
-        }
-        if (part && part.var_log_audit) {
-          diskDevice.var_log_audit = part.var_log_audit
-        }
-        if (part && part.u01) {
-          diskDevice.u01 = part.u01
-        }
-        if (part && part.u02) {
-          diskDevice.u02 = part.u02
-        }
-        if (part && part.u03) {
-          diskDevice.u03 = part.u03
-        }
+        diskDevice.home = 40
+        diskDevice.tmp = 10
+        diskDevice.var = 10
+        diskDevice.var_log = 10
+        diskDevice.var_log_audit = 5
+        diskDevice.u02 = 1
+        diskDevice.u03 = 1
 
+        diskDevice.u01 = diskDevice.sizeGiB - swap - diskDevice.root - diskDevice.home - diskDevice.tmp - diskDevice.var - diskDevice.var_log -diskDevice.var_log_audit - diskDevice.u02 - diskDevice.u03
 
         diskDevices[0] = diskDevice
         await this.setState({diskDevices: diskDevices})
       }
     }
     console.log(this.state.diskDevices)
+  }
+
+  rootSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.root
+    diskDevice.root = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.root
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  homeSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.home
+    diskDevice.home = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.home
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  tmpSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.tmp
+    diskDevice.tmp = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.tmp
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  varSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.var
+    diskDevice.var = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.var
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  var_logSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.var_log
+    diskDevice.var_log = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.var_log
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  var_log_auditSize = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.var_log_audit
+    diskDevice.var_log_audit = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.var_log_audit
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  u01Size = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = parseInt(val)
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  u02Size = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.u02
+    diskDevice.u02 = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.u02
+    await this.setState({diskDevices: diskDevices})
+  }
+
+  u03Size = async (val) => {
+    let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
+    let diskDevice = diskDevices[0]
+    diskDevice.u01 = diskDevice.u01 + diskDevice.u03
+    diskDevice.u03 = parseInt(val)
+    diskDevice.u01 = diskDevice.u01 - diskDevice.u03
+    await this.setState({diskDevices: diskDevices})
   }
 
   customSpecSet = async c => {
@@ -1529,6 +1593,40 @@ class CreateVmService extends React.Component {
         }
       //})
       }
+      if (this.state.partitioningType === 'custom') {
+        let diskDevice = diskDevices[0]
+        errors[diskDevice.id] = {}
+
+        if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
+          diskDevice.u01Error = true
+          diskDevice.u01Color = 'red'
+          errors[diskDevice.id].u01Error = true
+          errors[diskDevice.id].u01Color = 'red'
+          await this.setState({errors: errors, diskDevices: diskDevices})
+        }
+        else {
+          delete diskDevice.u01Error
+          delete diskDevice.u01Color
+          delete errors[diskDevice.id].u01Error
+          delete errors[diskDevice.id].u01Color
+          await this.setState({errors: errors, diskDevices: diskDevices})
+        }
+
+        if (Object.keys(errors[diskDevice.id]).length === 0) {
+          delete errors[diskDevice.id]
+          await this.setState({errors: errors})
+        }
+      } else {
+        delete diskDevice.u01Error
+        delete diskDevice.u01Color
+        delete errors[diskDevice.id].u01Error
+        delete errors[diskDevice.id].u01Color
+        await this.setState({errors: errors, diskDevices: diskDevices})
+      }
+
+
+      console.log(this.state.errors)
+      console.log(this.state.diskDevices)
     }
 
     if (!request.mainDatastore) {
@@ -1808,8 +1906,8 @@ class CreateVmService extends React.Component {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "root",
             "__growSize": 0,
-            "__grow_100": true,
-            "__totSize": 0
+            "__grow_100": false,
+            "__totSize": root * 1024
           }
         },
         {
@@ -1817,7 +1915,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "home",
-            "__lvSize": home,
+            "__lvSize": home * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/home"
           }
@@ -1827,7 +1925,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "var",
-            "__lvSize": varo,
+            "__lvSize": varo * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/var"
           }
@@ -1837,7 +1935,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "tmp",
-            "__lvSize": tmp,
+            "__lvSize": tmp * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/tmp"
           }
@@ -1847,7 +1945,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "var_log",
-            "__lvSize": var_log,
+            "__lvSize": var_log * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/var/log"
           }
@@ -1857,7 +1955,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "var_log_audit",
-            "__lvSize": var_log_audit,
+            "__lvSize": var_log_audit * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/var/log/audit"
           }
@@ -1867,7 +1965,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "u01",
-            "__lvSize": u01,
+            "__lvSize": u01 * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/u01"
           }
@@ -1877,7 +1975,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "u02",
-            "__lvSize": u02,
+            "__lvSize": u02 * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/u02"
           }
@@ -1887,7 +1985,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "u03",
-            "__lvSize": u03,
+            "__lvSize": u03 * 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/u03"
           }
@@ -1924,6 +2022,7 @@ class CreateVmService extends React.Component {
     }
 
     console.log(b)
+
 
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)
@@ -2296,7 +2395,7 @@ class CreateVmService extends React.Component {
         ),
       },
       {
-        title: 'root',
+        title: '/',
         align: 'center',
         dataIndex: 'root',
         width: 100,
@@ -2368,7 +2467,7 @@ class CreateVmService extends React.Component {
         ),
       },
       {
-        title: 'root',
+        title: '/',
         align: 'center',
         dataIndex: 'root',
         width: 100,
@@ -2377,14 +2476,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.root}
+                defaultValue={obj.root}
                 style={{borderColor: obj.sizeGiBColor}}
-                disabled
+                onBlur={e => this.rootSize(e.target.value)}
               />
             :
               <Input
-                value={obj.root}
-                disabled
+                defaultValue={obj.root}
+                onBlur={e => this.rootSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2423,14 +2522,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.home}
+                defaultValue={obj.home}
                 style={{borderColor: obj.sizeGiBColor}}
-                onBlur={e => this.firstDiskPartitioning('home', e.target.value)}
+                onBlur={e => this.homeSize(e.target.value)}
               />
             :
               <Input
-                value={obj.home}
-                onBlur={e => this.firstDiskPartitioning('home', e.target.value)}
+                defaultValue={obj.home}
+                onBlur={e => this.homeSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2446,14 +2545,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.tmp}
+                defaultValue={obj.tmp}
                 style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.firstDiskPartitioning({tmp: e})}
+                onBlur={e => this.tmpSize(e.target.value)}
               />
             :
               <Input
-                value={obj.tmp}
-                onChange={e => this.firstDiskPartitioning({tmp: e})}
+                defaultValue={obj.tmp}
+                onBlur={e => this.tmpSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2469,14 +2568,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.var}
+                defaultValue={obj.var}
                 style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.firstDiskPartitioning({var: e})}
+                onBlur={e => this.varSize(e.target.value)}
               />
             :
               <Input
-                value={obj.var}
-                onChange={e => this.firstDiskPartitioning({var: e})}
+                defaultValue={obj.var}
+                onBlur={e => this.varSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2492,14 +2591,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.var_log}
+                defaultValue={obj.var_log}
                 style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.firstDiskPartitioning({var_log: e})}
+                onBlur={e => this.var_logSize(e.target.value)}
               />
             :
               <Input
-                value={obj.var_log}
-                onChange={e => this.firstDiskPartitioning({var_log: e})}
+                defaultValue={obj.var_log}
+                onBlur={e => this.var_logSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2515,14 +2614,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={obj.var_log_audit}
+                defaultValue={obj.var_log_audit}
                 style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.firstDiskPartitioning({var_log_audit: e})}
+                onBlur={e => this.var_log_auditSize(e.target.value)}
               />
             :
               <Input
-                value={obj.var_log_audit}
-                onChange={e => this.firstDiskPartitioning({var_log_audit: e})}
+                defaultValue={obj.var_log_audit}
+                onBlur={e => this.var_log_auditSize(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2536,16 +2635,16 @@ class CreateVmService extends React.Component {
         key: 'u01',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.sizeGiBError ?
+            {obj.u01Error ?
               <Input
-                value={obj.u01}
-                style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.firstDiskPartitioning({u01: e})}
+                defaultValue={obj.u01}
+                style={{borderColor: obj.u01Color}}
+                disabled
               />
             :
               <Input
-                value={obj.u01}
-                onChange={e => this.firstDiskPartitioning({u01: e})}
+                defaultValue={obj.u01}
+                disabled
               />
             }
           </React.Fragment>
@@ -2561,13 +2660,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={0}
-                disabled
+                defaultValue={obj.u02}
+                style={{borderColor: obj.sizeGiBColor}}
+                onBlur={e => this.u02Size(e.target.value)}
               />
             :
               <Input
-                value={0}
-                disabled
+                defaultValue={obj.u02}
+                onBlur={e => this.u02Size(e.target.value)}
               />
             }
           </React.Fragment>
@@ -2583,13 +2683,14 @@ class CreateVmService extends React.Component {
           <React.Fragment>
             {obj.sizeGiBError ?
               <Input
-                value={0}
-                disabled
+                defaultValue={obj.u03}
+                style={{borderColor: obj.sizeGiBColor}}
+                onBlur={e => this.u03Size(e.target.value)}
               />
             :
               <Input
-                value={0}
-                disabled
+                defaultValue={obj.u03}
+                onBlur={e => this.u03Size(e.target.value)}
               />
             }
           </React.Fragment>
