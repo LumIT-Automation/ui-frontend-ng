@@ -39,6 +39,9 @@ class CreateVmService extends React.Component {
       errors: {},
       numCpus: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
       numCoresPerSockets: [1,2],
+      templates: [],
+      finalpubkeys: [],
+      bootstrapkeys: [],
       networkDeviceTypes: ['vmxnet', 'vmxnet2', 'vmxnet3', 'e1000', 'e1000e', 'pcnet32', 'vmrma', 'sr-iov'],
       diskDeviceTypes: ['thin', 'thick eager zeroed', 'thick lazy zerod'],
       networkDevices: [],
@@ -93,8 +96,7 @@ class CreateVmService extends React.Component {
         __tivoli_backup:"no",
         __monitoring:"no"
       }
-    };
-    this.baseState = this.state
+    }
   }
 
   componentDidMount() {
@@ -1965,7 +1967,7 @@ class CreateVmService extends React.Component {
           "user_args": {
             "__vgName": `vg_${this.state.cs.csHostname}`,
             "__lvName": "u01",
-            "__lvSize": u01 * 1024,
+            "__lvSize": 1024,
             "__filesystem": "ext4",
             "__mountFolder": "/u01"
           }
@@ -3207,16 +3209,15 @@ class CreateVmService extends React.Component {
                               }
                             </React.Fragment>
                           :
-                            null
+                            <Select
+                              style={{width: '100%'}}
+                              disabled
+                            />
                           }
                         </React.Fragment>
                       :
                         <Select
-                          defaultValue={this.state.request.template}
-                          value={this.state.request.template}
-                          showSearch
                           style={{width: '100%'}}
-                          optionFilterProp="children"
                           disabled
                         />
                       }
@@ -3782,10 +3783,10 @@ class CreateVmService extends React.Component {
                           }
                         </React.Fragment>
                       :
-                      <Select
-                        style={{width: '100%'}}
-                        disabled
-                      />
+                        <Select
+                          style={{width: '100%'}}
+                          disabled
+                        />
                       }
                     </React.Fragment>
                     }
@@ -3855,7 +3856,10 @@ class CreateVmService extends React.Component {
                               }
                             </React.Fragment>
                           :
-                            null
+                            <Select
+                              style={{width: '100%'}}
+                              disabled
+                            />
                           }
                         </React.Fragment>
                       :
