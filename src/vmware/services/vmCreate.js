@@ -703,9 +703,10 @@ class CreateVmService extends React.Component {
       }
 
       try {
-        let size_gib = {target: {value: json.disk_devices[0].size_gib}}
-        l = [size_gib, diskDevice.id]
-        await this.diskSizeGiBSet(l[0], l[1])
+        //let size_gib = {target: {value: json.disk_devices[0].size_gib}}
+        let size_gib = parseInt(json.disk_devices[0].size_gib)
+        //l = [size_gib, diskDevice.id]
+        await this.diskSizeGiBSet(size_gib, diskDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice size_gib: ${error.message}`
@@ -1008,29 +1009,7 @@ class CreateVmService extends React.Component {
   diskSizeGiBSet = async (size, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
-
-    if (diskDevice.existent) {
-      if (size.target.value < diskDevice.originalSizeGiB || isNaN(size.target.value || parseInt(size.target.value) < 1)) {
-        diskDevice.sizeGiBError = true
-        diskDevice.sizeGiBColor = 'red'
-      }
-      else {
-        delete diskDevice.sizeGiBError
-        delete diskDevice.sizeGiBColor
-        diskDevice.sizeGiB = parseInt(size.target.value)
-      }
-    }
-    else {
-      if (isNaN(size.target.value) || parseInt(size.target.value) < 1) {
-        diskDevice.sizeGiBError = true
-        diskDevice.sizeGiBColor = 'red'
-      }
-      else {
-        delete diskDevice.sizeGiBError
-        delete diskDevice.sizeGiBColor
-        diskDevice.sizeGiB = parseInt(size.target.value)
-      }
-    }
+    diskDevice.sizeGiB = parseInt(size)
     await this.setState({diskDevices: diskDevices})
 
     if (diskDevice === diskDevices[0]) {
@@ -1081,7 +1060,6 @@ class CreateVmService extends React.Component {
         await this.setState({diskDevices: diskDevices})
       }
     }
-    console.log(this.state.diskDevices)
   }
 
   rootSize = async (val) => {
@@ -1290,28 +1268,6 @@ class CreateVmService extends React.Component {
     else {
       delete errors.datacenterError
       delete errors.datacenterColor
-      await this.setState({errors: errors})
-    }
-
-    if (!request.bootstrapkey) {
-      errors.bootstrapkeyError = true
-      errors.bootstrapkeyColor = 'red'
-      await this.setState({errors: errors})
-    }
-    else {
-      delete errors.bootstrapkeyError
-      delete errors.bootstrapkeyColor
-      await this.setState({errors: errors})
-    }
-
-    if (!request.finalpubkey) {
-      errors.finalpubkeyError = true
-      errors.finalpubkeyColor = 'red'
-      await this.setState({errors: errors})
-    }
-    else {
-      delete errors.finalpubkeyError
-      delete errors.finalpubkeyColor
       await this.setState({errors: errors})
     }
 
@@ -1540,95 +1496,86 @@ class CreateVmService extends React.Component {
     }
 
     if (diskDevices.length > 0) {
-      for (const diskDevice of diskDevices) {
-      //diskDevices.forEach((diskDevice, i) => {
+      diskDevices.forEach(async diskDevice => {
         errors[diskDevice.id] = {}
 
-        if (diskDevice.deviceType) {
-          delete diskDevice.deviceTypeError
-          delete diskDevice.deviceTypeColor
-          delete errors[diskDevice.id].deviceTypeError
-          delete errors[diskDevice.id].deviceTypeColor
-          await this.setState({errors: errors, diskDevices: diskDevices})
-        }
-        else {
-          diskDevice.deviceTypeError = true
-          diskDevice.deviceTypeColor = 'red'
-          errors[diskDevice.id].deviceTypeError = true
-          errors[diskDevice.id].deviceTypeColor = 'red'
-          this.setState({errors: errors, diskDevices: diskDevices})
-        }
-
-        if (diskDevice.datastoreMoId) {
-          delete diskDevice.datastoreMoIdError
-          delete diskDevice.datastoreMoIdColor
-          delete errors[diskDevice.id].datastoreMoIdError
-          delete errors[diskDevice.id].datastoreMoIdColor
-          await this.setState({errors: errors, diskDevices: diskDevices})
-        }
-        else {
-          diskDevice.datastoreMoIdError = true
-          diskDevice.datastoreMoIdColor = 'red'
-          errors[diskDevice.id].datastoreMoIdError = true
-          errors[diskDevice.id].datastoreMoIdColor = 'red'
-          await this.setState({errors: errors, diskDevices: diskDevices})
-        }
-
-        if (!diskDevice.sizeGiB || isNaN(diskDevice.sizeGiB)) {
-          diskDevice.sizeGiBError = true
-          diskDevice.sizeGiBColor = 'red'
-          errors[diskDevice.id].sizeGiBError = true
-          errors[diskDevice.id].sizeGiBColor = 'red'
-          await this.setState({errors: errors, diskDevices: diskDevices})
-        }
-        else {
+        if (diskDevice.sizeGiB && !isNaN(diskDevice.sizeGiB)) {
           delete diskDevice.sizeGiBError
-          delete diskDevice.sizeGiBColor
           delete errors[diskDevice.id].sizeGiBError
-          delete errors[diskDevice.id].sizeGiBColor
-          await this.setState({errors: errors, diskDevices: diskDevices})
-        }
-
-        if (Object.keys(errors[diskDevice.id]).length === 0) {
-          delete errors[diskDevice.id]
-          await this.setState({errors: errors})
-        }
-      //})
-      }
-      if (this.state.partitioningType === 'custom') {
-        let diskDevice = diskDevices[0]
-        errors[diskDevice.id] = {}
-
-        if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
-          diskDevice.u01Error = true
-          diskDevice.u01Color = 'red'
-          errors[diskDevice.id].u01Error = true
-          errors[diskDevice.id].u01Color = 'red'
           await this.setState({errors: errors, diskDevices: diskDevices})
         }
         else {
-          delete diskDevice.u01Error
-          delete diskDevice.u01Color
-          delete errors[diskDevice.id].u01Error
-          delete errors[diskDevice.id].u01Color
+          diskDevice.sizeGiBError = true
+          errors[diskDevice.id]
+          errors[diskDevice.id].sizeGiBError = true
           await this.setState({errors: errors, diskDevices: diskDevices})
         }
 
-        if (Object.keys(errors[diskDevice.id]).length === 0) {
+        if (diskDevice.existent) {
+          if (diskDevice.sizeGiB < diskDevice.originalSizeGiB) {
+            diskDevice.sizeTooSmallError = true
+            errors[diskDevice.id]
+            errors[diskDevice.id].sizeTooSmallError = true
+            await this.setState({errors: errors, diskDevices: diskDevices})
+          }
+          else {
+            delete diskDevice.sizeTooSmallError
+            delete errors[diskDevice.id].sizeTooSmallError
+            await this.setState({errors: errors, diskDevices: diskDevices})
+          }
+        }
+
+        if (errors[diskDevice.id] && Object.keys(errors[diskDevice.id]).length === 0) {
           delete errors[diskDevice.id]
           await this.setState({errors: errors})
         }
-      } else {
-        delete diskDevice.u01Error
-        delete diskDevice.u01Color
-        delete errors[diskDevice.id].u01Error
-        delete errors[diskDevice.id].u01Color
-        await this.setState({errors: errors, diskDevices: diskDevices})
+      })
+
+      if (!addresses[0].dhcp) {
+        if (this.state.partitioningType === 'custom') {
+          let diskDevice = diskDevices[0]
+          errors[diskDevice.id] = {}
+
+          if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
+            diskDevice.u01Error = true
+            diskDevice.u01Color = 'red'
+            errors[diskDevice.id].u01Error = true
+            errors[diskDevice.id].u01Color = 'red'
+            await this.setState({errors: errors, diskDevices: diskDevices})
+          }
+          else {
+            delete diskDevice.u01Error
+            delete diskDevice.u01Color
+            delete errors[diskDevice.id].u01Error
+            delete errors[diskDevice.id].u01Color
+            await this.setState({errors: errors, diskDevices: diskDevices})
+          }
+
+          if (Object.keys(errors[diskDevice.id]).length === 0) {
+            delete errors[diskDevice.id]
+            await this.setState({errors: errors})
+          }
+        } else {
+          let diskDevice = diskDevices[0]
+
+          try {
+            delete diskDevice.u01Error
+            delete diskDevice.u01Color
+            delete errors[diskDevice.id].u01Error
+            delete errors[diskDevice.id].u01Color
+            await this.setState({errors: errors, diskDevices: diskDevices})
+          } catch (error) {
+            console.log(error)
+          }
+
+
+          if (Object.keys(errors[diskDevice.id]).length === 0) {
+            delete errors[diskDevice.id]
+            await this.setState({errors: errors})
+          }
+        }
       }
 
-
-      console.log(this.state.errors)
-      console.log(this.state.diskDevices)
     }
 
     if (!request.mainDatastore) {
@@ -1642,13 +1589,45 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!this.state.partitioningType) {
-      errors.partitioningTypeError = true
-      errors.partitioningTypeColor = 'red'
-      await this.setState({errors: errors})
+    if (!addresses[0].dhcp) {
+      if (!this.state.partitioningType) {
+        errors.partitioningTypeError = true
+        errors.partitioningTypeColor = 'red'
+        await this.setState({errors: errors})
+      } else {
+        delete errors.partitioningTypeError
+        delete errors.partitioningTypeColor
+        await this.setState({errors: errors})
+      }
+
+      if (!request.bootstrapkey) {
+        errors.bootstrapkeyError = true
+        errors.bootstrapkeyColor = 'red'
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors.bootstrapkeyError
+        delete errors.bootstrapkeyColor
+        await this.setState({errors: errors})
+      }
+
+      if (!request.finalpubkey) {
+        errors.finalpubkeyError = true
+        errors.finalpubkeyColor = 'red'
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors.finalpubkeyError
+        delete errors.finalpubkeyColor
+        await this.setState({errors: errors})
+      }
     } else {
       delete errors.partitioningTypeError
       delete errors.partitioningTypeColor
+      delete errors.bootstrapkeyError
+      delete errors.bootstrapkeyColor
+      delete errors.finalpubkeyError
+      delete errors.finalpubkeyColor
       await this.setState({errors: errors})
     }
 
@@ -1739,6 +1718,7 @@ class CreateVmService extends React.Component {
 
   //DISPOSAL ACTION
   vmCreateHandler = async () => {
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let csNew
 
     this.setState({customSpecLoading: true})
@@ -1758,27 +1738,20 @@ class CreateVmService extends React.Component {
 
     this.state.networkDevices.forEach((nic, i) => {
       if (nic.existent) {
-        delete nic.existent
-        delete nic.id
         networkDevices.existent.push(nic)
       }
       else {
-        delete nic.existent
-        delete nic.id
         networkDevices.new.push(nic)
       }
     })
 
     this.state.diskDevices.forEach((disk, i) => {
       disk.sizeMB = disk.sizeGiB * 1024
+
       if (disk.existent) {
-        delete disk.existent
-        delete disk.id
         diskDevices.existent.push(disk)
       }
       else {
-        delete disk.existent
-        delete disk.id
         diskDevices.new.push(disk)
       }
     })
@@ -1801,222 +1774,225 @@ class CreateVmService extends React.Component {
         "diskDevices": diskDevices,
         "guestSpec": csNew,
         "deleteGuestSpecAfterDeploy": true,
-        "bootstrapKeyId": this.state.request.bootstrapkey
     }
 
-    if (this.state.partitioningType === 'default') {
-      let swap = this.state.diskDevices[0].swap
-      b.data.postDeployCommands = [
-        {
-            "command": "waitPowerOn",
-            "user_args": {}
-        },
-        {
-            "command": "resizeLastPartition",
-            "user_args": {
-                "__diskDevice": "sda"
-            }
-        },
-        {
-            "command": "renameVg",
-            "user_args": {
-                "__vgName": `vg_${this.state.cs.csHostname}`
-            }
-        },
-        {
-            "command": "reboot",
-            "user_args": {}
-        },
-        {
-          "command": "lvGrow",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "swap",
-            "__growSize": 0,
-            "__grow_100": false,
-            "__totSize": swap * 1024//6144
-          }
-        },
-        {
-          "command": "lvGrow",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "root",
-            "__growSize": 0,
-            "__grow_100": true,
-            "__totSize": 0
-          }
-        },
-        {
-          "command": "addPubKey",
-          "user_args": {
-            "__pubKeyId": this.state.request.finalpubkey
-          }
-        },
-        {
-          "command": "removeBootstrapKey",
-          "user_args": {}
-        }
-      ]
+    if (addresses && addresses.existent && !addresses.existent[0].dhcp) {
+      b.data.bootstrapKeyId = this.state.request.bootstrapkey
 
-    } else if (this.state.partitioningType === 'custom') {
-      let root = this.state.diskDevices[0].root
-      let swap = this.state.diskDevices[0].swap
-      let home = this.state.diskDevices[0].home
-      let varo = this.state.diskDevices[0].var
-      let tmp = this.state.diskDevices[0].tmp
-      let var_log = this.state.diskDevices[0].var_log
-      let var_log_audit = this.state.diskDevices[0].var_log_audit
-      let u01 = this.state.diskDevices[0].u01
-      let u02 = this.state.diskDevices[0].u02
-      let u03 = this.state.diskDevices[0].u03
+      if (this.state.partitioningType === 'default') {
+        let swap = this.state.diskDevices[0].swap
+        b.data.postDeployCommands = [
+          {
+              "command": "waitPowerOn",
+              "user_args": {}
+          },
+          {
+              "command": "resizeLastPartition",
+              "user_args": {
+                  "__diskDevice": "sda"
+              }
+          },
+          {
+              "command": "renameVg",
+              "user_args": {
+                  "__vgName": `vg_${this.state.cs.csHostname}`
+              }
+          },
+          {
+              "command": "reboot",
+              "user_args": {}
+          },
+          {
+            "command": "lvGrow",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "swap",
+              "__growSize": 0,
+              "__grow_100": false,
+              "__totSize": swap * 1024//6144
+            }
+          },
+          {
+            "command": "lvGrow",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "root",
+              "__growSize": 0,
+              "__grow_100": true,
+              "__totSize": 0
+            }
+          },
+          {
+            "command": "addPubKey",
+            "user_args": {
+              "__pubKeyId": this.state.request.finalpubkey
+            }
+          },
+          {
+            "command": "removeBootstrapKey",
+            "user_args": {}
+          }
+        ]
 
-      b.data.postDeployCommands = [
-        {
-            "command": "waitPowerOn",
-            "user_args": {}
-        },
-        {
-            "command": "resizeLastPartition",
+      } else if (this.state.partitioningType === 'custom') {
+        let root = this.state.diskDevices[0].root
+        let swap = this.state.diskDevices[0].swap
+        let home = this.state.diskDevices[0].home
+        let varo = this.state.diskDevices[0].var
+        let tmp = this.state.diskDevices[0].tmp
+        let var_log = this.state.diskDevices[0].var_log
+        let var_log_audit = this.state.diskDevices[0].var_log_audit
+        let u01 = this.state.diskDevices[0].u01
+        let u02 = this.state.diskDevices[0].u02
+        let u03 = this.state.diskDevices[0].u03
+
+        b.data.postDeployCommands = [
+          {
+              "command": "waitPowerOn",
+              "user_args": {}
+          },
+          {
+              "command": "resizeLastPartition",
+              "user_args": {
+                  "__diskDevice": "sda"
+              }
+          },
+          {
+              "command": "renameVg",
+              "user_args": {
+                  "__vgName": `vg_${this.state.cs.csHostname}`
+              }
+          },
+          {
+              "command": "reboot",
+              "user_args": {}
+          },
+          {
+            "command": "lvGrow",
             "user_args": {
-                "__diskDevice": "sda"
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "swap",
+              "__growSize": 0,
+              "__grow_100": false,
+              "__totSize": swap * 1024//6144
             }
-        },
-        {
-            "command": "renameVg",
+          },
+          {
+            "command": "lvGrow",
             "user_args": {
-                "__vgName": `vg_${this.state.cs.csHostname}`
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "root",
+              "__growSize": 0,
+              "__grow_100": false,
+              "__totSize": root * 1024
             }
-        },
-        {
-            "command": "reboot",
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "home",
+              "__lvSize": home * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/home"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "var",
+              "__lvSize": varo * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/var"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "tmp",
+              "__lvSize": tmp * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/tmp"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "var_log",
+              "__lvSize": var_log * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/var/log"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "var_log_audit",
+              "__lvSize": var_log_audit * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/var/log/audit"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "u01",
+              "__lvSize": 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/u01"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "u02",
+              "__lvSize": u02 * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/u02"
+            }
+          },
+          {
+            "command": "addMountPoint",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "u03",
+              "__lvSize": u03 * 1024,
+              "__filesystem": "ext4",
+              "__mountFolder": "/u03"
+            }
+          },
+          {
+            "command": "lvGrow",
+            "user_args": {
+              "__vgName": `vg_${this.state.cs.csHostname}`,
+              "__lvName": "u01",
+              "__growSize": 0,
+              "__grow_100": true,
+              "__totSize": 0
+            }
+          },
+          {
+              "command": "reboot",
+              "user_args": {}
+          },
+          {
+            "command": "addPubKey",
+            "user_args": {
+              "__pubKeyId": this.state.request.finalpubkey
+            }
+          },
+          {
+            "command": "removeBootstrapKey",
             "user_args": {}
-        },
-        {
-          "command": "lvGrow",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "swap",
-            "__growSize": 0,
-            "__grow_100": false,
-            "__totSize": swap * 1024//6144
           }
-        },
-        {
-          "command": "lvGrow",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "root",
-            "__growSize": 0,
-            "__grow_100": false,
-            "__totSize": root * 1024
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "home",
-            "__lvSize": home * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/home"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "var",
-            "__lvSize": varo * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/var"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "tmp",
-            "__lvSize": tmp * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/tmp"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "var_log",
-            "__lvSize": var_log * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/var/log"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "var_log_audit",
-            "__lvSize": var_log_audit * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/var/log/audit"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "u01",
-            "__lvSize": 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/u01"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "u02",
-            "__lvSize": u02 * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/u02"
-          }
-        },
-        {
-          "command": "addMountPoint",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "u03",
-            "__lvSize": u03 * 1024,
-            "__filesystem": "ext4",
-            "__mountFolder": "/u03"
-          }
-        },
-        {
-          "command": "lvGrow",
-          "user_args": {
-            "__vgName": `vg_${this.state.cs.csHostname}`,
-            "__lvName": "u01",
-            "__growSize": 0,
-            "__grow_100": true,
-            "__totSize": 0
-          }
-        },
-        {
-            "command": "reboot",
-            "user_args": {}
-        },
-        {
-          "command": "addPubKey",
-          "user_args": {
-            "__pubKeyId": this.state.request.finalpubkey
-          }
-        },
-        {
-          "command": "removeBootstrapKey",
-          "user_args": {}
-        }
-      ]
+        ]
+      }
     }
 
     if (this.state.request.host) {
@@ -2233,7 +2209,7 @@ class CreateVmService extends React.Component {
                   <Select
                     value={obj.datastoreName}
                     key={obj.id}
-                    style={{ width: '100%' , border: `1px solid ${obj.datastoreMoIdColor}` }}
+                    style={{ width: '100%' , border: `1px solid red` }}
                     onChange={(id, event) => this.diskDeviceDatastoreSet(id, obj.id)}>
                     { this.state.datastores ?
                       <React.Fragment>
@@ -2299,7 +2275,7 @@ class CreateVmService extends React.Component {
               <Select
                 value={obj.deviceType}
                 key={obj.id}
-                style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
+                style={{ width: '100%', border: `1px solid red` }}
                 onChange={e => this.diskDeviceTypeSet(e, obj.id)}>
                 { this.state.diskDeviceTypes.map((n, i) => {
                   return (
@@ -2344,16 +2320,16 @@ class CreateVmService extends React.Component {
         key: 'sizeGiB',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.sizeGiBError ?
+            {(obj.sizeGiBError || obj.sizeTooSmallError) ?
               <Input
                 value={obj.sizeGiB}
-                style={{borderColor: obj.sizeGiBColor}}
-                onChange={e => this.diskSizeGiBSet(e, obj.id)}
+                style={{borderColor: 'red'}}
+                onChange={e => this.diskSizeGiBSet(e.target.value, obj.id)}
               />
             :
               <Input
                 value={obj.sizeGiB}
-                onChange={e => this.diskSizeGiBSet(e, obj.id)}
+                onChange={e => this.diskSizeGiBSet(e.target.value, obj.id)}
               />
             }
           </React.Fragment>
@@ -2381,10 +2357,10 @@ class CreateVmService extends React.Component {
         key: 'sizeGiB',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.sizeGiBError ?
+            {obj.sizeGiBError || obj.sizeTooSmallError ?
               <Input
                 value={obj.sizeGiB}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2407,7 +2383,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 value={obj.root}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2430,7 +2406,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 value={obj.swap}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2449,14 +2425,14 @@ class CreateVmService extends React.Component {
         title: 'Size (GiB)',
         align: 'center',
         dataIndex: 'sizeGiB',
-        width: 100,
+        width: 200,
         key: 'sizeGiB',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.sizeGiBError ?
+            {obj.sizeGiBError || obj.sizeTooSmallError ?
               <Input
                 value={obj.sizeGiB}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2479,7 +2455,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.root}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.rootSize(e.target.value)}
               />
             :
@@ -2502,7 +2478,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 value={obj.swap}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2525,7 +2501,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.home}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.homeSize(e.target.value)}
               />
             :
@@ -2548,7 +2524,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.tmp}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.tmpSize(e.target.value)}
               />
             :
@@ -2571,7 +2547,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.var}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.varSize(e.target.value)}
               />
             :
@@ -2594,7 +2570,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.var_log}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.var_logSize(e.target.value)}
               />
             :
@@ -2617,7 +2593,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.var_log_audit}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.var_log_auditSize(e.target.value)}
               />
             :
@@ -2663,7 +2639,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.u02}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.u02Size(e.target.value)}
               />
             :
@@ -2686,7 +2662,7 @@ class CreateVmService extends React.Component {
             {obj.sizeGiBError ?
               <Input
                 defaultValue={obj.u03}
-                style={{borderColor: obj.sizeGiBColor}}
+                style={{borderColor: 'red'}}
                 onBlur={e => this.u03Size(e.target.value)}
               />
             :
@@ -3660,218 +3636,224 @@ class CreateVmService extends React.Component {
                 </Row>
                 <br/>
 
-                <Row>
-                  <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
-                  </Col>
-                  <Col span={15}>
-                    { this.state.errors.partitioningTypeError ?
-                      <Radio.Group
-                        style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
-                        onChange={e => this.partitioningType(e.target.value)}
-                        value={this.state.partitioningType}>
-                        <Radio value={'default'}>Default</Radio>
-                        <Radio value={'custom'}>Custom</Radio>
-                      </Radio.Group>
-                    :
-                      <Radio.Group
-                        style={{marginLeft: 5, marginTop: 5}}
-                        onChange={e => this.partitioningType(e.target.value)}
-                        value={this.state.partitioningType}>
-                        <Radio value={'default'}>Default</Radio>
-                        <Radio value={'custom'}>Custom</Radio>
-                      </Radio.Group>
-                    }
-                  </Col>
-                </Row>
-                <br/>
-
-                { !this.state.partitioningType ?
-                  null
-                :
+                { this.state.addresses && this.state.addresses[0] && !this.state.addresses[0].dhcp ?
                   <React.Fragment>
-                    <Row>
-                      { this.state.partitioningType === 'default' ?
-                        <Col offset={3} span={15}>
-                          <Table
-                            columns={defaultPartitionsCol}
-                            dataSource={this.state.diskDevices}
-                            bordered
-                            rowKey = {randomKey}
-                            scroll={{x: 'auto'}}
-                            pagination={false}
-                            style={{marginBottom: 10}}
-                          />
-                        </Col>
-                      :
-                        <Col offset={3} span={19}>
-                          <Table
-                            columns={customPartitionsCol}
-                            dataSource={this.state.diskDevices}
-                            bordered
-                            rowKey = {randomKey}
-                            scroll={{x: 'auto'}}
-                            pagination={false}
-                            style={{marginBottom: 10}}
-                          />
-                        </Col>
-                      }
-                    </Row>
-                    <br/>
-                  </React.Fragment>
-                }
-
-                <Row>
-                  <Col offset={1} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Bootstrap Keys:</p>
-                  </Col>
-                  <Col span={4}>
-                    { this.state.bootstrapkeysLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                    <React.Fragment>
-                      { this.state.bootstrapkeys && this.state.bootstrapkeys.length > 0 ?
-                        <React.Fragment>
-                          {this.state.errors.bootstrapkeyError ?
-                            <Select
-                              defaultValue={this.state.request.bootstrapkey}
-                              value={this.state.request.bootstrapkey}
-                              showSearch
-                              style={{width: '100%', border: `1px solid ${this.state.errors.bootstrapkeyColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.bootstrapkeySet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.bootstrapkeys.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          :
-                            <Select
-                              defaultValue={this.state.request.bootstrapkey}
-                              value={this.state.request.bootstrapkey}
-                              showSearch
-                              style={{width: '100%'}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.bootstrapkeySet(n)}
-                            >
-                              <React.Fragment>
-                                {this.state.bootstrapkeys.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        <Select
-                          style={{width: '100%'}}
-                          disabled
-                        />
-                      }
-                    </React.Fragment>
-                    }
-                  </Col>
-
-                  <Col offset={1} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Final Pub Keys:</p>
-                  </Col>
-                  { this.state.finalpubkeysLoading ?
-                    <Col span={4}>
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                  <Row>
+                    <Col span={3}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
                     </Col>
+                    <Col span={15}>
+                      { this.state.errors.partitioningTypeError ?
+                        <Radio.Group
+                          style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
+                          onChange={e => this.partitioningType(e.target.value)}
+                          value={this.state.partitioningType}>
+                          <Radio value={'default'}>Default</Radio>
+                          <Radio value={'custom'}>Custom</Radio>
+                        </Radio.Group>
+                      :
+                        <Radio.Group
+                          style={{marginLeft: 5, marginTop: 5}}
+                          onChange={e => this.partitioningType(e.target.value)}
+                          value={this.state.partitioningType}>
+                          <Radio value={'default'}>Default</Radio>
+                          <Radio value={'custom'}>Custom</Radio>
+                        </Radio.Group>
+                      }
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  { !this.state.partitioningType ?
+                    null
                   :
-                    <Col span={4}>
-                      { this.state.finalpubkeys ?
-                        <React.Fragment>
-                          { this.state.finalpubkeys && this.state.finalpubkeys.length > 0 ?
-                            <React.Fragment>
-                              {this.state.errors.finalpubkeyError ?
-                                <Select
-                                  defaultValue={this.state.request.finalpubkey}
-                                  value={this.state.request.finalpubkey}
-                                  showSearch
-                                  style={{width: '100%', border: `1px solid ${this.state.errors.finalpubkeyColor}`}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                  }
-                                  onSelect={n => this.finalpubkeySet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.finalpubkeys.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              :
-                                <Select
-                                  defaultValue={this.state.request.finalpubkey}
-                                  value={this.state.request.finalpubkey}
-                                  showSearch
-                                  style={{width: '100%'}}
-                                  optionFilterProp="children"
-                                  filterOption={(input, option) =>
-                                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                                  }
-                                  filterSort={(optionA, optionB) =>
-                                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                                  }
-                                  onSelect={n => this.finalpubkeySet(n)}
-                                >
-                                  <React.Fragment>
-                                    {this.state.finalpubkeys.map((n, i) => {
-                                      return (
-                                        <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
-                                      )
-                                    })
-                                    }
-                                  </React.Fragment>
-                                </Select>
-                              }
-                            </React.Fragment>
-                          :
-                            <Select
-                              style={{width: '100%'}}
-                              disabled
+                    <React.Fragment>
+                      <Row>
+                        { this.state.partitioningType === 'default' ?
+                          <Col offset={3} span={15}>
+                            <Table
+                              columns={defaultPartitionsCol}
+                              dataSource={this.state.diskDevices}
+                              bordered
+                              rowKey = {randomKey}
+                              scroll={{x: 'auto'}}
+                              pagination={false}
+                              style={{marginBottom: 10}}
                             />
-                          }
-                        </React.Fragment>
+                          </Col>
+                        :
+                          <Col offset={3} span={19}>
+                            <Table
+                              columns={customPartitionsCol}
+                              dataSource={this.state.diskDevices}
+                              bordered
+                              rowKey = {randomKey}
+                              scroll={{x: 'auto'}}
+                              pagination={false}
+                              style={{marginBottom: 10}}
+                            />
+                          </Col>
+                        }
+                      </Row>
+                      <br/>
+                    </React.Fragment>
+                  }
+
+                  <Row>
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Bootstrap Keys:</p>
+                    </Col>
+                    <Col span={4}>
+                      { this.state.bootstrapkeysLoading ?
+                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                       :
-                        <Select
-                          style={{width: '100%'}}
-                          disabled
-                        />
+                      <React.Fragment>
+                        { this.state.bootstrapkeys && this.state.bootstrapkeys.length > 0 ?
+                          <React.Fragment>
+                            {this.state.errors.bootstrapkeyError ?
+                              <Select
+                                defaultValue={this.state.request.bootstrapkey}
+                                value={this.state.request.bootstrapkey}
+                                showSearch
+                                style={{width: '100%', border: `1px solid ${this.state.errors.bootstrapkeyColor}`}}
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={n => this.bootstrapkeySet(n)}
+                              >
+                                <React.Fragment>
+                                  {this.state.bootstrapkeys.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              </Select>
+                            :
+                              <Select
+                                defaultValue={this.state.request.bootstrapkey}
+                                value={this.state.request.bootstrapkey}
+                                showSearch
+                                style={{width: '100%'}}
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={n => this.bootstrapkeySet(n)}
+                              >
+                                <React.Fragment>
+                                  {this.state.bootstrapkeys.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
+                                    )
+                                  })
+                                  }
+                                </React.Fragment>
+                              </Select>
+                            }
+                          </React.Fragment>
+                        :
+                          <Select
+                            style={{width: '100%'}}
+                            disabled
+                          />
+                        }
+                      </React.Fragment>
                       }
                     </Col>
-                  }
-                </Row>
-                <br/>
+
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Final Pub Keys:</p>
+                    </Col>
+                    { this.state.finalpubkeysLoading ?
+                      <Col span={4}>
+                        <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                      </Col>
+                    :
+                      <Col span={4}>
+                        { this.state.finalpubkeys ?
+                          <React.Fragment>
+                            { this.state.finalpubkeys && this.state.finalpubkeys.length > 0 ?
+                              <React.Fragment>
+                                {this.state.errors.finalpubkeyError ?
+                                  <Select
+                                    defaultValue={this.state.request.finalpubkey}
+                                    value={this.state.request.finalpubkey}
+                                    showSearch
+                                    style={{width: '100%', border: `1px solid ${this.state.errors.finalpubkeyColor}`}}
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                    filterSort={(optionA, optionB) =>
+                                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                    }
+                                    onSelect={n => this.finalpubkeySet(n)}
+                                  >
+                                    <React.Fragment>
+                                      {this.state.finalpubkeys.map((n, i) => {
+                                        return (
+                                          <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
+                                        )
+                                      })
+                                      }
+                                    </React.Fragment>
+                                  </Select>
+                                :
+                                  <Select
+                                    defaultValue={this.state.request.finalpubkey}
+                                    value={this.state.request.finalpubkey}
+                                    showSearch
+                                    style={{width: '100%'}}
+                                    optionFilterProp="children"
+                                    filterOption={(input, option) =>
+                                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                    }
+                                    filterSort={(optionA, optionB) =>
+                                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                    }
+                                    onSelect={n => this.finalpubkeySet(n)}
+                                  >
+                                    <React.Fragment>
+                                      {this.state.finalpubkeys.map((n, i) => {
+                                        return (
+                                          <Select.Option key={i} value={n.id}>{n.comment}</Select.Option>
+                                        )
+                                      })
+                                      }
+                                    </React.Fragment>
+                                  </Select>
+                                }
+                              </React.Fragment>
+                            :
+                              <Select
+                                style={{width: '100%'}}
+                                disabled
+                              />
+                            }
+                          </React.Fragment>
+                        :
+                          <Select
+                            style={{width: '100%'}}
+                            disabled
+                          />
+                        }
+                      </Col>
+                    }
+                  </Row>
+                  <br/>
+                  </React.Fragment>
+                :
+                  <br/>
+                }
 
                 <Row>
                   <Col offset={1} span={2}>
