@@ -1506,7 +1506,6 @@ class CreateVmService extends React.Component {
         }
         else {
           diskDevice.sizeGiBError = true
-          errors[diskDevice.id]
           errors[diskDevice.id].sizeGiBError = true
           await this.setState({errors: errors, diskDevices: diskDevices})
         }
@@ -1514,7 +1513,6 @@ class CreateVmService extends React.Component {
         if (diskDevice.existent) {
           if (diskDevice.sizeGiB < diskDevice.originalSizeGiB) {
             diskDevice.sizeTooSmallError = true
-            errors[diskDevice.id]
             errors[diskDevice.id].sizeTooSmallError = true
             await this.setState({errors: errors, diskDevices: diskDevices})
           }
@@ -1776,7 +1774,7 @@ class CreateVmService extends React.Component {
         "deleteGuestSpecAfterDeploy": true,
     }
 
-    if (addresses && addresses.existent && !addresses.existent[0].dhcp) {
+    if (addresses && addresses[0] && !addresses[0].dhcp) {
       b.data.bootstrapKeyId = this.state.request.bootstrapkey
 
       if (this.state.partitioningType === 'default') {
