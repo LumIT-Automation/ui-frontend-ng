@@ -90,11 +90,7 @@ class CreateVmService extends React.Component {
         dns1: "",
         dns2: "",
         bootstrapkeyId: "",
-        finalpubkeyId: "",
-        __vm_FARMBIL:"0",
-        __vm_FARMNOBIL:"1",
-        __tivoli_backup:"no",
-        __monitoring:"no"
+        finalpubkeyId: ""
       }
     }
   }
@@ -108,6 +104,7 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
+      console.log(this.state.folders)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -143,7 +140,8 @@ class CreateVmService extends React.Component {
         return
       }
       else {
-        this.setState({folders: foldersFetched.data.items[0].children})
+        console.log(foldersFetched.data.items)
+        this.setState({folders: foldersFetched.data.items})
       }
 
       await this.setState({customSpecsLoading: true})
