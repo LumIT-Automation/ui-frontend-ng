@@ -104,7 +104,7 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      console.log(this.state.folders)
+      console.log(this.state.request)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -140,8 +140,7 @@ class CreateVmService extends React.Component {
         return
       }
       else {
-        console.log(foldersFetched.data.items)
-        this.setState({folders: foldersFetched.data.items})
+        this.setState({allFolders: foldersFetched.data.items})
       }
 
       await this.setState({customSpecsLoading: true})
@@ -163,7 +162,10 @@ class CreateVmService extends React.Component {
         return
       }
       else {
-        this.setState({bootstrapkeys: bootstrapkeysFetched.data.items})
+        await this.setState({bootstrapkeys: bootstrapkeysFetched.data.items})
+        if (this.state.bootstrapkeys.length === 1) {
+          await this.bootstrapkeySet(this.state.bootstrapkeys[0].id)
+        }
       }
 
       await this.setState({finalpubkeysLoading: true})
@@ -174,7 +176,10 @@ class CreateVmService extends React.Component {
         return
       }
       else {
-        this.setState({finalpubkeys: finalpubkeysFetched.data.items})
+        await this.setState({finalpubkeys: finalpubkeysFetched.data.items})
+        if (this.state.finalpubkeys.length === 1) {
+          await this.finalpubkeySet(this.state.finalpubkeys[0].id)
+        }
       }
 
       this.setState({jsonEnabled: true })
@@ -546,9 +551,12 @@ class CreateVmService extends React.Component {
     let request, errors
 
     if (json.name) {
+      await this.vmNameSet(json.name)
+      /*
       request = JSON.parse(JSON.stringify(this.state.request))
       request.vmName = json.name
       await this.setState({request: request})
+      */
     }
     if (json.notes) {
       request = JSON.parse(JSON.stringify(this.state.request))
@@ -557,15 +565,22 @@ class CreateVmService extends React.Component {
     }
 
     if (json.datacenterMoId) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
+      //request = JSON.parse(JSON.stringify(this.state.request))
+      //let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
 
       try {
+        await this.datacenterSet(json.datacenterMoId)
+        /*
         let datacenter = datacenters.find( r => r.moId === json.datacenterMoId )
+        let allFolders = JSON.parse(JSON.stringify(this.state.allFolders))
+        let folders = allFolders.find( f => f.datacenterName === datacenter[0] )
+        let list = []
+        list.push(folders)
         request.datacenterMoId = datacenter.moId
         request.datacenter = datacenter.name
-        await this.setState({request: request})
+        await this.setState({folders: list, request: request})
         await this.clustersFetch()
+        */
       } catch(error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `datacenter: ${error.message}`
@@ -727,8 +742,7 @@ class CreateVmService extends React.Component {
 
     if (json.hostname) {
       try {
-        let hostname = {target: {value: json.hostname}}
-        await this.csHostnameSet(hostname)
+        await this.csHostnameSet(json.hostname)
       }
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -870,18 +884,24 @@ class CreateVmService extends React.Component {
 
 
 
-  vmNameSet = e => {
+  vmNameSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.vmName = e.target.value
-    this.setState({request: request})
+    request.vmName = e
+    await this.setState({request: request})
   }
 
-  datacenterSet = async datacenter => {
+  datacenterSet = async dcMoid => {
+    let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
+    let datacenter = datacenters.find( d => d.moId === dcMoid )
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.datacenter = datacenter[0]
-    request.datacenterMoId = datacenter[1]
-    await this.setState({request: request})
-    this.clustersFetch()
+    let allFolders = JSON.parse(JSON.stringify(this.state.allFolders))
+    let folders = allFolders.find( f => f.datacenterName === datacenter.name )
+    let list = []
+    list.push(folders)
+    request.datacenter = datacenter.name
+    request.datacenterMoId = datacenter.moId
+    await this.setState({folders: list, request: request})
+    await this.clustersFetch()
   }
 
   clusterSet = async cluster => {
@@ -1164,7 +1184,7 @@ class CreateVmService extends React.Component {
 
   csHostnameSet = async e => {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
-    cs.csHostname = e.target.value
+    cs.csHostname = e
     await this.setState({cs: cs})
   }
 
@@ -1214,15 +1234,15 @@ class CreateVmService extends React.Component {
     await this.setState({addresses: addresses})
   }
 
-  bootstrapkeySet = async bootstrapkey => {
+  bootstrapkeySet = async bootstrapkeyId => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.bootstrapkey = bootstrapkey
+    request.bootstrapkey = bootstrapkeyId
     await this.setState({request: request})
   }
 
-  finalpubkeySet = async finalpubkey => {
+  finalpubkeySet = async finalpubkeyId => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.finalpubkey = finalpubkey
+    request.finalpubkey = finalpubkeyId
     await this.setState({request: request})
   }
 
@@ -1607,16 +1627,6 @@ class CreateVmService extends React.Component {
         await this.setState({errors: errors})
       }
 
-      if (!request.finalpubkey) {
-        errors.finalpubkeyError = true
-        errors.finalpubkeyColor = 'red'
-        await this.setState({errors: errors})
-      }
-      else {
-        delete errors.finalpubkeyError
-        delete errors.finalpubkeyColor
-        await this.setState({errors: errors})
-      }
     } else {
       delete errors.partitioningTypeError
       delete errors.partitioningTypeColor
@@ -2881,14 +2891,14 @@ class CreateVmService extends React.Component {
                       <Input
                         style={{width: '100%', borderColor: this.state.errors.vmNameColor}}
                         value={this.state.request.vmName}
-                        onChange={e => this.vmNameSet(e)}
+                        onChange={e => this.vmNameSet(e.target.value)}
                       />
                     :
                       <Input
                         style={{width: '100%'}}
                         defaultValue={this.state.request.vmName}
                         value={this.state.request.vmName}
-                        onChange={e => this.vmNameSet(e)}
+                        onChange={e => this.vmNameSet(e.target.value)}
                       />
                     }
                   </Col>
@@ -2924,7 +2934,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datacenters.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
@@ -2948,7 +2958,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datacenters.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
@@ -3416,12 +3426,12 @@ class CreateVmService extends React.Component {
                         <Input
                           value={this.state.cs.csHostname}
                           style={{width: '100%', borderColor: this.state.errors.csHostnameColor}}
-                          onChange={e => this.csHostnameSet(e)} />
+                          onChange={e => this.csHostnameSet(e.target.value)} />
                       :
                         <Input
                           value={this.state.cs.csHostname}
                           style={{width: '100%'}}
-                          onChange={e => this.csHostnameSet(e)} />
+                          onChange={e => this.csHostnameSet(e.target.value)} />
                       }
                     </Col>
 
