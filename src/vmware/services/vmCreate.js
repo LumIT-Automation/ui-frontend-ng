@@ -1812,7 +1812,7 @@ class CreateVmService extends React.Component {
             "command": "lvGrow",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "swap",
+              "__lvName": "lv_swap",
               "__growSize": 0,
               "__grow_100": false,
               "__totSize": swap * 1024//6144
@@ -1822,7 +1822,7 @@ class CreateVmService extends React.Component {
             "command": "lvGrow",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "root",
+              "__lvName": "lv_root",
               "__growSize": 0,
               "__grow_100": true,
               "__totSize": 0
@@ -1877,7 +1877,7 @@ class CreateVmService extends React.Component {
             "command": "lvGrow",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "swap",
+              "__lvName": "lv_swap",
               "__growSize": 0,
               "__grow_100": false,
               "__totSize": swap * 1024//6144
@@ -1887,7 +1887,7 @@ class CreateVmService extends React.Component {
             "command": "lvGrow",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "root",
+              "__lvName": "lv_root",
               "__growSize": 0,
               "__grow_100": false,
               "__totSize": root * 1024
@@ -1897,7 +1897,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "home",
+              "__lvName": "lv_home",
               "__lvSize": home * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/home"
@@ -1907,7 +1907,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "var",
+              "__lvName": "lv_var",
               "__lvSize": varo * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/var"
@@ -1917,7 +1917,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "tmp",
+              "__lvName": "lv_tmp",
               "__lvSize": tmp * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/tmp"
@@ -1927,7 +1927,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "var_log",
+              "__lvName": "lv_varlog",
               "__lvSize": var_log * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/var/log"
@@ -1937,7 +1937,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "var_log_audit",
+              "__lvName": "lv_varlogaudit",
               "__lvSize": var_log_audit * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/var/log/audit"
@@ -1947,7 +1947,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "u01",
+              "__lvName": "lv_u01",
               "__lvSize": 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/u01"
@@ -1957,7 +1957,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "u02",
+              "__lvName": "lv_u02",
               "__lvSize": u02 * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/u02"
@@ -1967,7 +1967,7 @@ class CreateVmService extends React.Component {
             "command": "addMountPoint",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "u03",
+              "__lvName": "lv_u03",
               "__lvSize": u03 * 1024,
               "__filesystem": "ext4",
               "__mountFolder": "/u03"
@@ -1977,7 +1977,7 @@ class CreateVmService extends React.Component {
             "command": "lvGrow",
             "user_args": {
               "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "u01",
+              "__lvName": "lv_u01",
               "__growSize": 0,
               "__grow_100": true,
               "__totSize": 0
