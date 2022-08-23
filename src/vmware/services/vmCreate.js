@@ -104,7 +104,6 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      console.log(this.state.request)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -380,12 +379,23 @@ class CreateVmService extends React.Component {
     await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
     let templateFetched = await this.templateGet()
 
+    console.log(templateFetched)
+
+
+
     if (templateFetched.status && templateFetched.status !== 200 ) {
       await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
       this.props.dispatch(templateError(templateFetched))
       return
     }
     else {
+      let isMSWindows = false
+
+      //&& templateFetched.data.guestName.includes("Microsoft Windows")
+      if (templateFetched.data && templateFetched.data.guestName && templateFetched.data.guestName.includes("Microsoft Windows")) {
+        isMSWindows = true
+      }
+
       let networkDevices = []
       let diskDevices = []
 
@@ -414,7 +424,7 @@ class CreateVmService extends React.Component {
         })
       }
 
-      await this.setState({networkDevicesLoading: false, diskDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
+      await this.setState({isMSWindows: isMSWindows, networkDevicesLoading: false, diskDevicesLoading: false, template: templateFetched, templateNetworkDevices: networkDevices, networkDevices: networkDevices, diskDevices: diskDevices})
     }
   }
 
@@ -1547,51 +1557,67 @@ class CreateVmService extends React.Component {
         }
       })
 
-      if (!addresses[0].dhcp) {
-        if (this.state.partitioningType === 'custom') {
-          let diskDevice = diskDevices[0]
-          errors[diskDevice.id] = {}
+      if (!this.state.isMSWindows) {
+        if (!addresses[0].dhcp) {
+          if (this.state.partitioningType === 'custom') {
+            let diskDevice = diskDevices[0]
+            errors[diskDevice.id] = {}
 
-          if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
-            diskDevice.u01Error = true
-            diskDevice.u01Color = 'red'
-            errors[diskDevice.id].u01Error = true
-            errors[diskDevice.id].u01Color = 'red'
-            await this.setState({errors: errors, diskDevices: diskDevices})
-          }
-          else {
-            delete diskDevice.u01Error
-            delete diskDevice.u01Color
-            delete errors[diskDevice.id].u01Error
-            delete errors[diskDevice.id].u01Color
-            await this.setState({errors: errors, diskDevices: diskDevices})
-          }
+            if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
+              diskDevice.u01Error = true
+              diskDevice.u01Color = 'red'
+              errors[diskDevice.id].u01Error = true
+              errors[diskDevice.id].u01Color = 'red'
+              await this.setState({errors: errors, diskDevices: diskDevices})
+            }
+            else {
+              delete diskDevice.u01Error
+              delete diskDevice.u01Color
+              delete errors[diskDevice.id].u01Error
+              delete errors[diskDevice.id].u01Color
+              await this.setState({errors: errors, diskDevices: diskDevices})
+            }
 
-          if (Object.keys(errors[diskDevice.id]).length === 0) {
-            delete errors[diskDevice.id]
-            await this.setState({errors: errors})
-          }
-        } else {
-          let diskDevice = diskDevices[0]
+            if (Object.keys(errors[diskDevice.id]).length === 0) {
+              delete errors[diskDevice.id]
+              await this.setState({errors: errors})
+            }
+          } else {
+            let diskDevice = diskDevices[0]
 
-          try {
-            delete diskDevice.u01Error
-            delete diskDevice.u01Color
-            delete errors[diskDevice.id].u01Error
-            delete errors[diskDevice.id].u01Color
-            await this.setState({errors: errors, diskDevices: diskDevices})
-          } catch (error) {
-            console.log(error)
-          }
+            try {
+              delete diskDevice.u01Error
+              delete diskDevice.u01Color
+              delete errors[diskDevice.id].u01Error
+              delete errors[diskDevice.id].u01Color
+              await this.setState({errors: errors, diskDevices: diskDevices})
+            } catch (error) {
+              console.log(error)
+            }
 
 
-          if (Object.keys(errors[diskDevice.id]).length === 0) {
-            delete errors[diskDevice.id]
-            await this.setState({errors: errors})
+            if (Object.keys(errors[diskDevice.id]).length === 0) {
+              delete errors[diskDevice.id]
+              await this.setState({errors: errors})
+            }
           }
         }
       }
+      else {
+        let diskDevice = diskDevices[0]
+        errors[diskDevice.id] = {}
 
+        delete diskDevice.u01Error
+        delete diskDevice.u01Color
+        delete errors[diskDevice.id].u01Error
+        delete errors[diskDevice.id].u01Color
+        await this.setState({errors: errors, diskDevices: diskDevices})
+
+        if (Object.keys(errors[diskDevice.id]).length === 0) {
+          delete errors[diskDevice.id]
+          await this.setState({errors: errors})
+        }
+      }
     }
 
     if (!request.mainDatastore) {
@@ -1605,7 +1631,7 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!addresses[0].dhcp) {
+    if (!addresses[0].dhcp && !this.state.isMSWindows) {
       if (!this.state.partitioningType) {
         errors.partitioningTypeError = true
         errors.partitioningTypeColor = 'red'
@@ -1644,7 +1670,7 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
     await this.validationCheck()
-
+    console.log(this.state.errors)
     if (Object.keys(this.state.errors).length === 0) {
       this.vmCreateHandler()
     }
@@ -1782,224 +1808,227 @@ class CreateVmService extends React.Component {
         "deleteGuestSpecAfterDeploy": true,
     }
 
-    if (addresses && addresses[0] && !addresses[0].dhcp) {
-      b.data.bootstrapKeyId = this.state.request.bootstrapkey
+    if (!this.state.isMSWindows) {
+      if (addresses && addresses[0] && !addresses[0].dhcp) {
+        b.data.bootstrapKeyId = this.state.request.bootstrapkey
 
-      if (this.state.partitioningType === 'default') {
-        let swap = this.state.diskDevices[0].swap
-        b.data.postDeployCommands = [
-          {
-              "command": "waitPowerOn",
-              "user_args": {}
-          },
-          {
-              "command": "resizeLastPartition",
+        if (this.state.partitioningType === 'default') {
+          let swap = this.state.diskDevices[0].swap
+          b.data.postDeployCommands = [
+            {
+                "command": "waitPowerOn",
+                "user_args": {}
+            },
+            {
+                "command": "resizeLastPartition",
+                "user_args": {
+                    "__diskDevice": "sda"
+                }
+            },
+            {
+                "command": "renameVg",
+                "user_args": {
+                    "__vgName": `vg_${this.state.cs.csHostname}`
+                }
+            },
+            {
+                "command": "reboot",
+                "user_args": {}
+            },
+            {
+              "command": "lvGrow",
               "user_args": {
-                  "__diskDevice": "sda"
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_swap",
+                "__growSize": 0,
+                "__grow_100": false,
+                "__totSize": swap * 1024//6144
               }
-          },
-          {
-              "command": "renameVg",
+            },
+            {
+              "command": "lvGrow",
               "user_args": {
-                  "__vgName": `vg_${this.state.cs.csHostname}`
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_root",
+                "__growSize": 0,
+                "__grow_100": true,
+                "__totSize": 0
               }
-          },
-          {
-              "command": "reboot",
+            },
+            {
+              "command": "addPubKey",
+              "user_args": {
+                "__pubKeyId": this.state.request.finalpubkey
+              }
+            },
+            {
+              "command": "removeBootstrapKey",
               "user_args": {}
-          },
-          {
-            "command": "lvGrow",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_swap",
-              "__growSize": 0,
-              "__grow_100": false,
-              "__totSize": swap * 1024//6144
             }
-          },
-          {
-            "command": "lvGrow",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_root",
-              "__growSize": 0,
-              "__grow_100": true,
-              "__totSize": 0
-            }
-          },
-          {
-            "command": "addPubKey",
-            "user_args": {
-              "__pubKeyId": this.state.request.finalpubkey
-            }
-          },
-          {
-            "command": "removeBootstrapKey",
-            "user_args": {}
-          }
-        ]
+          ]
 
-      } else if (this.state.partitioningType === 'custom') {
-        let root = this.state.diskDevices[0].root
-        let swap = this.state.diskDevices[0].swap
-        let home = this.state.diskDevices[0].home
-        let varo = this.state.diskDevices[0].var
-        let tmp = this.state.diskDevices[0].tmp
-        let var_log = this.state.diskDevices[0].var_log
-        let var_log_audit = this.state.diskDevices[0].var_log_audit
-        let u01 = this.state.diskDevices[0].u01
-        let u02 = this.state.diskDevices[0].u02
-        let u03 = this.state.diskDevices[0].u03
+        } else if (this.state.partitioningType === 'custom') {
+          let root = this.state.diskDevices[0].root
+          let swap = this.state.diskDevices[0].swap
+          let home = this.state.diskDevices[0].home
+          let varo = this.state.diskDevices[0].var
+          let tmp = this.state.diskDevices[0].tmp
+          let var_log = this.state.diskDevices[0].var_log
+          let var_log_audit = this.state.diskDevices[0].var_log_audit
+          let u01 = this.state.diskDevices[0].u01
+          let u02 = this.state.diskDevices[0].u02
+          let u03 = this.state.diskDevices[0].u03
 
-        b.data.postDeployCommands = [
-          {
-              "command": "waitPowerOn",
-              "user_args": {}
-          },
-          {
-              "command": "resizeLastPartition",
+          b.data.postDeployCommands = [
+            {
+                "command": "waitPowerOn",
+                "user_args": {}
+            },
+            {
+                "command": "resizeLastPartition",
+                "user_args": {
+                    "__diskDevice": "sda"
+                }
+            },
+            {
+                "command": "renameVg",
+                "user_args": {
+                    "__vgName": `vg_${this.state.cs.csHostname}`
+                }
+            },
+            {
+                "command": "reboot",
+                "user_args": {}
+            },
+            {
+              "command": "lvGrow",
               "user_args": {
-                  "__diskDevice": "sda"
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_swap",
+                "__growSize": 0,
+                "__grow_100": false,
+                "__totSize": swap * 1024//6144
               }
-          },
-          {
-              "command": "renameVg",
+            },
+            {
+              "command": "lvGrow",
               "user_args": {
-                  "__vgName": `vg_${this.state.cs.csHostname}`
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_root",
+                "__growSize": 0,
+                "__grow_100": false,
+                "__totSize": root * 1024
               }
-          },
-          {
-              "command": "reboot",
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_home",
+                "__lvSize": home * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/home"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_var",
+                "__lvSize": varo * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/var"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_tmp",
+                "__lvSize": tmp * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/tmp"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_varlog",
+                "__lvSize": var_log * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/var/log"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_varlogaudit",
+                "__lvSize": var_log_audit * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/var/log/audit"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_u01",
+                "__lvSize": 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/u01"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_u02",
+                "__lvSize": u02 * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/u02"
+              }
+            },
+            {
+              "command": "addMountPoint",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_u03",
+                "__lvSize": u03 * 1024,
+                "__filesystem": "ext4",
+                "__mountFolder": "/u03"
+              }
+            },
+            {
+              "command": "lvGrow",
+              "user_args": {
+                "__vgName": `vg_${this.state.cs.csHostname}`,
+                "__lvName": "lv_u01",
+                "__growSize": 0,
+                "__grow_100": true,
+                "__totSize": 0
+              }
+            },
+            {
+                "command": "reboot",
+                "user_args": {}
+            },
+            {
+              "command": "addPubKey",
+              "user_args": {
+                "__pubKeyId": this.state.request.finalpubkey
+              }
+            },
+            {
+              "command": "removeBootstrapKey",
               "user_args": {}
-          },
-          {
-            "command": "lvGrow",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_swap",
-              "__growSize": 0,
-              "__grow_100": false,
-              "__totSize": swap * 1024//6144
             }
-          },
-          {
-            "command": "lvGrow",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_root",
-              "__growSize": 0,
-              "__grow_100": false,
-              "__totSize": root * 1024
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_home",
-              "__lvSize": home * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/home"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_var",
-              "__lvSize": varo * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/var"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_tmp",
-              "__lvSize": tmp * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/tmp"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_varlog",
-              "__lvSize": var_log * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/var/log"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_varlogaudit",
-              "__lvSize": var_log_audit * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/var/log/audit"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_u01",
-              "__lvSize": 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/u01"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_u02",
-              "__lvSize": u02 * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/u02"
-            }
-          },
-          {
-            "command": "addMountPoint",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_u03",
-              "__lvSize": u03 * 1024,
-              "__filesystem": "ext4",
-              "__mountFolder": "/u03"
-            }
-          },
-          {
-            "command": "lvGrow",
-            "user_args": {
-              "__vgName": `vg_${this.state.cs.csHostname}`,
-              "__lvName": "lv_u01",
-              "__growSize": 0,
-              "__grow_100": true,
-              "__totSize": 0
-            }
-          },
-          {
-              "command": "reboot",
-              "user_args": {}
-          },
-          {
-            "command": "addPubKey",
-            "user_args": {
-              "__pubKeyId": this.state.request.finalpubkey
-            }
-          },
-          {
-            "command": "removeBootstrapKey",
-            "user_args": {}
-          }
-        ]
+          ]
+        }
       }
     }
+
 
     if (this.state.request.host) {
       b.data.hostMoId = this.state.request.hostMoId
@@ -3642,7 +3671,7 @@ class CreateVmService extends React.Component {
                 </Row>
                 <br/>
 
-                { this.state.addresses && this.state.addresses[0] && !this.state.addresses[0].dhcp ?
+                { !this.state.isMSWindows && this.state.addresses && this.state.addresses[0] && !this.state.addresses[0].dhcp ?
                   <React.Fragment>
                   <Row>
                     <Col span={3}>
