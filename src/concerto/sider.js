@@ -74,8 +74,14 @@ class CustomSider extends Component {
     return author.isObjectEmpty(a)
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+
   render(){
-    console.log(this.props.authorizationsVmware)
+    console.log(this.props.authorizations)
+    console.log(this.props.authorizationsF5)
 
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
@@ -175,10 +181,11 @@ class CustomSider extends Component {
             null
           }
 
-          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
-            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ||
-            (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.any && this.authorizators(this.props.authorizationsFortinetdb)) ?
+          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ||
+            (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
+            (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
+            (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
+            (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
