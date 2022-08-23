@@ -43,6 +43,7 @@ class Homepage extends React.Component {
   }
 
   render() {
+    console.log(this.props.authorizationsFortinetdb)
     return (
       <React.Fragment>
         { this.props.authorizationsFortinetdb ?
@@ -52,6 +53,8 @@ class Homepage extends React.Component {
                 <SearchRagioneSociale/>
               </React.Fragment>
             :
+              null
+            }
               <React.Fragment>
                 <br/>
                 <Divider orientation="left" style={{fontWeight: 'bold'}}>Projects</Divider>
@@ -140,7 +143,6 @@ class Homepage extends React.Component {
 
 
               </React.Fragment>
-            }
           </React.Fragment>
         :
           null
