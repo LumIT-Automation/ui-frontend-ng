@@ -195,13 +195,26 @@ class Rest {
                 }
               }
               catch (error) {
+                //console.error(error)
+                console.log(error.message)
                 console.log(response)
-                this.onSuccess({
-                  status: response.status,
-                  message: response.statusText,
-                  type: response.type,
-                  url: response.url
-                });
+                if (error instanceof SyntaxError && error.message.toLowerCase().includes('json')) {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
+                else {
+                  this.onError({
+                      status: response.status,
+                      message: response.statusText,
+                      type: response.type,
+                      url: response.url
+                    })
+                }
+
               }
 
             }
