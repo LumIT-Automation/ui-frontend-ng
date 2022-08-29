@@ -114,11 +114,18 @@ class Rest {
       else {
         if (this.method === "GET") {
           try {
-            const response = await fetch(CONFIG.BACKEND_URL + resource, {
-              method: 'GET',
-              headers: {
+
+            let headers = {}
+
+            if (token) {
+              headers = {
                 'Authorization': 'Bearer ' + token
               }
+            }
+
+            const response = await fetch(CONFIG.BACKEND_URL + resource, {
+              method: 'GET',
+              headers: headers
             })
 
             if (response.ok) {

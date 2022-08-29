@@ -6,6 +6,7 @@ import { Layout, Form, Input, Button, Row, Col, Card } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 
 import Rest from "./_helpers/Rest";
+import HeaderCustom from './header'
 
 import { login } from './_store/store.authentication'
 
@@ -78,9 +79,7 @@ class Login extends Component {
       if (!this.state.error) {
         return (
           <Layout>
-            <Header className="header">
-              <div className="logo" />
-            </Header>
+            <HeaderCustom/>
             <Row type="flex" justify="center" align="middle" style={{minHeight: '80vh', overflow: "hidden"}}>
               <Col span={4}>
                 <Card>

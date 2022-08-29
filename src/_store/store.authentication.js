@@ -21,6 +21,9 @@ const authenticationSlice = createSlice({
           state.username = action.payload.username
           state.token = action.payload.token
         },
+        uiconf: (state, action) => {
+          state.logoWhite = action.payload.application.logo.white
+        },
         logout: (state, action) => {
           for (const l in state) {
             state[l] = null
@@ -31,5 +34,9 @@ const authenticationSlice = createSlice({
 
 const { actions, reducer } = authenticationSlice;
 
-export const { login, logout } = actions
+export const {
+  login,
+  uiconf,
+  logout
+} = actions
 export default reducer
