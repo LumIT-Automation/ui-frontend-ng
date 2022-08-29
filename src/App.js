@@ -22,18 +22,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    document.title = "dfsdfsdfsd"
-
-    var link = document.querySelector("link[rel~='icon']");
-    if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    //link.href = "/fava.ico"
-    link.href = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQBAMAAADt3eJSAAAAMFBMVEU0OkArMjhobHEoPUPFEBIuO0L+AAC2FBZ2JyuNICOfGx7xAwTjCAlCNTvVDA1aLzQ3COjMAAAAVUlEQVQI12NgwAaCDSA0888GCItjn0szWGBJTVoGSCjWs8TleQCQYV95evdxkFT8Kpe0PLDi5WfKd4LUsN5zS1sKFolt8bwAZrCaGqNYJAgFDEpQAAAzmxafI4vZWwAAAABJRU5ErkJggg=="
     this.main()
-
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -52,10 +41,21 @@ class App extends Component {
     let conf = await this.uiConfGet()
     if (conf.status && conf.status !== 200 ) {
       //this.props.dispatch(authorizationsError(authorizationsFetched))
-      return
     }
     else {
       this.props.dispatch(uiconf( conf.data.configuration ))
+
+      document.title = conf.data.configuration.page.title
+
+      let favicon = document.querySelector("link[rel~='icon']");
+      if (!favicon) {
+          favicon = document.createElement('link');
+          favicon.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(favicon);
+      }
+
+      favicon.href = conf.data.configuration.page.favicon
+
     }
   }
 

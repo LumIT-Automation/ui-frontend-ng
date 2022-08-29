@@ -64,15 +64,20 @@ class List extends React.Component {
     ),
     filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
     onFilter: (value, record) => {
-      if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-        return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
       }
-      else if ( Array.isArray(dataIndex) ) {
-        let r = record[dataIndex[0]]
-        return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-      }
-      else {
-        return ''
+      catch (error){
+
       }
     },
     onFilterDropdownVisibleChange: visible => {
