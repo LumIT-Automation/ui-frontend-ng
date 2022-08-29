@@ -84,6 +84,7 @@ class SearchRagioneSociale extends React.Component {
   render() {
     return (
       <React.Fragment>
+      {/*
       <Row>
         <Col offset={8} span={8}>
           <Image
@@ -94,10 +95,10 @@ class SearchRagioneSociale extends React.Component {
           />
         </Col>
       </Row>
-
+      */}
       <Row>
         <Col offset={10} span={8}>
-          <p style={{margin: '5vh 0', fontSize: '3vh'}}>Ragione sociale: </p>
+          <p style={{margin: '5vh 0 1vh 0 ', fontSize: '3vh'}}>Ragione sociale: </p>
         </Col>
       </Row>
 
@@ -110,6 +111,7 @@ class SearchRagioneSociale extends React.Component {
           <Col offset={5} span={8}>
             <React.Fragment>
               <Select
+                placeholder="Inseriti i primi cinque caratteri della ragione sociale e selezionato il cliente desiderato verrà visualizzato un elenco navigabile dei servizi erogati"
                 style={{width: '50vw'}}
                 showSearch
                 //allowClear

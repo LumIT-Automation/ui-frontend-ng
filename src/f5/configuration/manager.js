@@ -43,7 +43,10 @@ class Manager extends React.Component {
 
 
   addRecord = () => {
-    let conf = JSON.parse(JSON.stringify(this.props.configuration))
+    let conf = []
+    if (this.props.configuration) {
+      conf = JSON.parse(JSON.stringify(this.props.configuration))
+    }
     let list = []
     let n
 
