@@ -9,7 +9,6 @@ import { UserOutlined } from '@ant-design/icons'
 import LogoFW from './svg/logo-fw.png'
 
 import {
-  uiconf,
   logout
 } from './_store/store.authentication'
 
@@ -70,6 +69,14 @@ class HeaderCustom extends Component {
         width={'64px'}
         />
       }
+    const Banner = ({ data }) => {
+      return <img
+        src={`data:${data}`}
+        height={50}
+        width={'100%'}
+        style={{marginTop: '7px'}}
+        />
+      }
 
     return (
       <Header className="header" style={{padding: '0 10px'}}>
@@ -79,11 +86,23 @@ class HeaderCustom extends Component {
               <Logo data={this.props.logoWhite}/>
             </Col>
           :
-            null
+            <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
+            </Col>
           }
 
+          { this.props.banner ?
+            <Col offset={1} span={4} style={{display: 'flex', justifyContent: 'center'}}>
+              <Banner data={this.props.banner}/>
+            </Col>
+          :
+            <Col offset={1} span={4} style={{display: 'flex', justifyContent: 'center'}}>
+            </Col>
+          }
+          <Col span={14} style={{display: 'flex', justifyContent: 'center'}}>
+          </Col>
+
           { this.props.authenticated ?
-            <Col offset={19} span={4}>
+            <Col span={4}>
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Avatar
@@ -111,5 +130,6 @@ export default connect((state) => ({
   username: state.authentication.username,
   //token: state.authentication.token,
   logoWhite: state.authentication.logoWhite,
+  banner: state.authentication.banner
 
 }))(HeaderCustom);

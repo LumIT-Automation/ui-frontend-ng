@@ -22,7 +22,8 @@ const authenticationSlice = createSlice({
           state.token = action.payload.token
         },
         uiconf: (state, action) => {
-          state.logoWhite = action.payload.application.logo.white
+          state.logoWhite = action.payload.application.logo.white,
+          state.banner = action.payload.page.banner
         },
         logout: (state, action) => {
           for (const l in state) {

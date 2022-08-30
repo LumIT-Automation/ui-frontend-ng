@@ -43,6 +43,7 @@ class App extends Component {
       //this.props.dispatch(authorizationsError(authorizationsFetched))
     }
     else {
+      console.log(conf.data.configuration)
       this.props.dispatch(uiconf( conf.data.configuration ))
 
       document.title = conf.data.configuration.page.title
