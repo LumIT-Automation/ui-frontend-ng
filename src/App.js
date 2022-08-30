@@ -44,6 +44,8 @@ class App extends Component {
     }
     else {
       try {
+        this.props.dispatch(uiconf( conf.data.configuration ))
+
         document.title = conf.data.configuration.page.title
 
         let favicon = document.querySelector("link[rel~='icon']");
