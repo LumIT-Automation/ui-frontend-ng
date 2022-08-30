@@ -102,7 +102,7 @@ class HeaderCustom extends Component {
           </Col>
 
           { this.props.authenticated ?
-            <Col span={4}>
+            <Col span={4} style={{paddingRight: '10px'}}>
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Avatar
