@@ -43,20 +43,20 @@ class App extends Component {
       //this.props.dispatch(authorizationsError(authorizationsFetched))
     }
     else {
-      console.log(conf.data.configuration)
-      this.props.dispatch(uiconf( conf.data.configuration ))
+      try {
+        document.title = conf.data.configuration.page.title
 
-      document.title = conf.data.configuration.page.title
+        let favicon = document.querySelector("link[rel~='icon']");
+        if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(favicon);
+        }
 
-      let favicon = document.querySelector("link[rel~='icon']");
-      if (!favicon) {
-          favicon = document.createElement('link');
-          favicon.rel = 'icon';
-          document.getElementsByTagName('head')[0].appendChild(favicon);
+        favicon.href = conf.data.configuration.page.favicon
       }
-
-      favicon.href = conf.data.configuration.page.favicon
-
+      catch (error) {
+      }
     }
   }
 
