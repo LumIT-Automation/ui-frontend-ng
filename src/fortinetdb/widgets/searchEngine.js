@@ -30,7 +30,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
-class SearchRagioneSociale extends React.Component {
+class SearchEngine extends React.Component {
 
   constructor(props) {
     super(props);
@@ -119,7 +119,7 @@ class SearchRagioneSociale extends React.Component {
         this.props.dispatch(projectsError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projectsd/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
+    await rest.doXHR(`fortinetdb/projects/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
     this.setState({projectsLoading: false})
 
   }
@@ -267,4 +267,4 @@ export default connect((state) => ({
   account: state.fortinetdb.account,
   accountError: state.fortinetdb.accountError,
 
-}))(SearchRagioneSociale);
+}))(SearchEngine);
