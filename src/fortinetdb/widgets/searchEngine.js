@@ -84,8 +84,6 @@ class SearchEngine extends React.Component {
 
   fiteredBy = async fby => {
     let accounts = JSON.parse(JSON.stringify(this.props.accounts))
-    console.log('fby', fby)
-    console.log(accounts)
     await this.setState({fby: fby})
     let o = {}
     accounts.forEach((item, i) => {
@@ -105,9 +103,6 @@ class SearchEngine extends React.Component {
     let vals
     vals = Object.entries(o)
     vals = vals[0]
-    console.log(vals)
-    console.log(vals[0])
-    console.log(vals[1])
 
     this.setState({projectsLoading: true})
     let rest = new Rest(
@@ -132,33 +127,21 @@ class SearchEngine extends React.Component {
     console.log(this.state.account)
     return (
       <React.Fragment>
-      {/*
       <Row>
         <Col offset={8} span={8}>
-          <Image
-            preview={false}
-            src={LogoFW}
-            width={'100%'}
-            style={{marginTop: '7px'}}
-          />
-        </Col>
-      </Row>
-      */}
-      <Row>
-        <Col offset={10} span={8}>
-          <p style={{margin: '5vh 0 1vh 0 ', fontSize: '3vh'}}>Ricerca:</p>
+          <p style={{margin: '3vh 0 2vh 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
         </Col>
       </Row>
 
       <Row>
-        <Col offset={5} >
-          <p style={{margin: '1vh 0 0 0', fontSize: '2vh', textAlign: 'center'}}>
+        <Col offset={7} span={10}>
+          <p style={{margin: '1vh 0 0 0', textAlign: 'center'}}>
             Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
           </p>
-          <p style={{margin: '0 0 0 0', fontSize: '2vh', textAlign: 'center'}}>
+          <p style={{margin: '0 0 0 0', textAlign: 'center'}}>
             Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
           </p>
-          <p style={{margin: '0 0 4vh 0', fontSize: '2vh', textAlign: 'center'}}>
+          <p style={{margin: '0 0 4vh 0', textAlign: 'center'}}>
             l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
           </p>
         </Col>
@@ -167,11 +150,11 @@ class SearchEngine extends React.Component {
 
       <Row>
         { this.props.accountsLoading ?
-          <Col offset={10} span={1}>
+          <Col offset={11} span={1}>
             <Spin indicator={spinIcon} style={{display: 'inline'}}/>
           </Col>
         :
-          <Col offset={8} span={6}>
+          <Col offset={8} span={8}>
             <React.Fragment>
               <Select
                 placeholder=""
