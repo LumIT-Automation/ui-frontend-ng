@@ -62,6 +62,19 @@ const fortinetdbSlice = createSlice({
         state.projectsError = action.payload
       },
 
+      accountsLoading: (state, action) => {
+        state.accountsLoading = action.payload
+      },
+      accounts: (state, action) => {
+        state.accounts = action.payload.data.items
+      },
+      accountsFetch: (state, action) => {
+        state.accountsFetch = action.payload
+      },
+      accountsError: (state, action) => {
+        state.accountsError = action.payload
+      },
+
       devicesLoading: (state, action) => {
         state.devicesLoading = action.payload
       },
@@ -94,6 +107,13 @@ const fortinetdbSlice = createSlice({
       },
       projectError: (state, action) => {
         state.projectError = action.payload
+      },
+
+      account: (state, action) => {
+        state.account = action.payload
+      },
+      accountError: (state, action) => {
+        state.accountError = action.payload
       },
 
       device: (state, action) => {
@@ -352,6 +372,11 @@ export const {
   projectsFetch,
   projectsError,
 
+  accountsLoading,
+  accounts,
+  accountsFetch,
+  accountsError,
+
   devicesLoading,
   devices,
   devicesFetch,
@@ -365,6 +390,9 @@ export const {
 
   project,
   projectError,
+
+  account,
+  accountError,
 
   device,
   deviceError,

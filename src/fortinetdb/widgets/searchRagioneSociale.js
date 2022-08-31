@@ -14,6 +14,12 @@ import {
   project,
   projectError,
 
+  accounts,
+  accountsLoading,
+  accountsError,
+  account,
+  accountError,
+
 } from '../store'
 
 import List from '../projects/list'
@@ -34,7 +40,7 @@ class SearchRagioneSociale extends React.Component {
   }
 
   componentDidMount() {
-    this.projectsGet()
+    this.accountsGet()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -47,34 +53,72 @@ class SearchRagioneSociale extends React.Component {
   componentWillUnmount() {
   }
 
-  projectsGet = async () => {
-    this.props.dispatch(projectsLoading(true))
+  accountsGet = async () => {
+    this.props.dispatch(accountsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(projects(resp))
+        this.props.dispatch(accounts(resp))
+        this.searchingListSet(resp.data.items)
       },
       error => {
-        this.props.dispatch(projectsError(error))
+        this.props.dispatch(accountsError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/`, this.props.token)
-    this.props.dispatch(projectsLoading(false))
+    await rest.doXHR(`fortinetdb/accounts/`, this.props.token)
+    this.props.dispatch(accountsLoading(false))
   }
 
-  filteredProjectsGet = async () => {
+  searchingListSet = async list => {
+    let newList = []
+    list.forEach((item, i) => {
+      if (item.ACCOUNT) {
+        newList.push(item.ACCOUNT)
+      }
+      if (item.RAGIONE_SOCIALE){
+        newList.push(item.RAGIONE_SOCIALE)
+      }
+    });
+    await this.setState({searchingList: newList})
+  }
+
+  fiteredBy = async fby => {
+    let accounts = JSON.parse(JSON.stringify(this.props.accounts))
+    console.log('fby', fby)
+    console.log(accounts)
+    let o = {}
+    accounts.forEach((item, i) => {
+      if (item.ACCOUNT === fby) {
+        o.ACCOUNT = fby
+      }
+      if (item.RAGIONE_SOCIALE === fby) {
+        o.RAGIONE_SOCIALE = fby
+      }
+    });
+    this.filteredProjectsGet(o)
+  }
+
+  filteredProjectsGet = async o => {
+    let vals
+    vals = Object.entries(o)
+    vals = vals[0]
+    console.log(vals)
+    console.log(vals[0])
+    console.log(vals[1])
+
     this.setState({projectLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({projects: resp.data.items})
+        this.setState({projects: resp.data.items, visible: true})
       },
       error => {
         this.props.dispatch(projectError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/?fby=RAGIONE_SOCIALE&fval=${this.state.project}`, this.props.token)
+    await rest.doXHR(`fortinetdb/projects/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
     this.setState({projectLoading: false})
+
   }
 
   hide = () => {
@@ -103,7 +147,7 @@ class SearchRagioneSociale extends React.Component {
       </Row>
 
       <Row>
-        { this.props.projectsLoading ?
+        { this.props.accountsLoading ?
           <Col offset={11} span={1}>
             <Spin indicator={spinIcon} style={{display: 'inline'}}/>
           </Col>
@@ -119,7 +163,7 @@ class SearchRagioneSociale extends React.Component {
                 onSearch={a => this.setState({input: a})}
                 optionFilterProp="children"
                 filterOption={(input, option) => {
-                  if (option.value !== null && input.length > 4) {
+                  if (option.value !== null && input.length > 2) {
                     return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                   }
                 }
@@ -128,20 +172,13 @@ class SearchRagioneSociale extends React.Component {
                     return optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                   }
                 }
-                //onClick={e => this.setState({visible: true, project: e}, () => this.filteredProjectsGet())}
-                onSelect={
-                  e => {
-                    if (e === this.state.project) {
-                      this.setState({visible: true, project: e}, () => this.filteredProjectsGet())
-                    }
-                  }
-                }
-                onChange={e => this.setState({visible: true, project: e}, () => this.filteredProjectsGet())}>
-                {(this.state.input && this.state.input.length) > 4 ?
+                onSelect={e => this.fiteredBy(e)}>
+                //onChange={e => this.fiteredBy(e)}>
+                {(this.state.input && this.state.input.length) > 2 ?
                   <React.Fragment>
-                    {this.props.projects && this.props.projects.map((n, i) => {
+                    {this.state.searchingList && this.state.searchingList.map((n, i) => {
                         return (
-                          <Select.Option key={i} value={n.RAGIONE_SOCIALE}>{n.RAGIONE_SOCIALE}</Select.Option>
+                          <Select.Option key={i} value={n}>{n}</Select.Option>
                         )
 
                       })
@@ -201,5 +238,12 @@ export default connect((state) => ({
 
   project: state.fortinetdb.project,
   projectError: state.fortinetdb.projectError,
+
+  accounts: state.fortinetdb.accounts,
+  accountsLoading: state.fortinetdb.accountsLoading,
+  accountsError: state.fortinetdb.accountsError,
+
+  account: state.fortinetdb.account,
+  accountError: state.fortinetdb.accountError,
 
 }))(SearchRagioneSociale);

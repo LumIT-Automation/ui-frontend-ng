@@ -26,10 +26,12 @@ import {
   identityGroupsError,
 
   projectsError,
+  accountsError,
   devicesError,
   ddossesError,
 
   projectError,
+  accountError,
   deviceError,
   ddosError,
 
@@ -132,6 +134,9 @@ class Error extends Component {
         case 'projectsError':
           this.props.dispatch(projectsError(null))
           break;
+        case 'accountsError':
+          this.props.dispatch(accountsError(null))
+          break;
         case 'devicesError':
           this.props.dispatch(devicesError(null))
           break;
@@ -140,6 +145,9 @@ class Error extends Component {
           break;
         case 'projectError':
           this.props.dispatch(projectError(null))
+          break;
+        case 'accountError':
+          this.props.dispatch(accountError(null))
           break;
         case 'deviceError':
           this.props.dispatch(deviceError(null))
