@@ -86,13 +86,16 @@ class SearchRagioneSociale extends React.Component {
     let accounts = JSON.parse(JSON.stringify(this.props.accounts))
     console.log('fby', fby)
     console.log(accounts)
+    await this.setState({fby: fby})
     let o = {}
     accounts.forEach((item, i) => {
       if (item.ACCOUNT === fby) {
         o.ACCOUNT = fby
+        this.setState({account: item})
       }
       if (item.RAGIONE_SOCIALE === fby) {
         o.RAGIONE_SOCIALE = fby
+        this.setState({account: item})
       }
     });
     this.filteredProjectsGet(o)
@@ -106,26 +109,27 @@ class SearchRagioneSociale extends React.Component {
     console.log(vals[0])
     console.log(vals[1])
 
-    this.setState({projectLoading: true})
+    this.setState({projectsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
         this.setState({projects: resp.data.items, visible: true})
       },
       error => {
-        this.props.dispatch(projectError(error))
+        this.props.dispatch(projectsError(error))
       }
     )
-    await rest.doXHR(`fortinetdb/projects/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
-    this.setState({projectLoading: false})
+    await rest.doXHR(`fortinetdb/projectsd/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
+    this.setState({projectsLoading: false})
 
   }
 
   hide = () => {
-    this.setState({visible: false, input: ''})
+    this.setState({visible: false, input: '', fby: '', account: {}})
   }
 
   render() {
+    console.log(this.state.account)
     return (
       <React.Fragment>
       {/*
@@ -142,24 +146,39 @@ class SearchRagioneSociale extends React.Component {
       */}
       <Row>
         <Col offset={10} span={8}>
-          <p style={{margin: '5vh 0 1vh 0 ', fontSize: '3vh'}}>Ragione sociale: </p>
+          <p style={{margin: '5vh 0 1vh 0 ', fontSize: '3vh'}}>Ricerca:</p>
         </Col>
       </Row>
 
       <Row>
+        <Col offset={5} >
+          <p style={{margin: '1vh 0 0 0', fontSize: '2vh', textAlign: 'center'}}>
+            Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
+          </p>
+          <p style={{margin: '0 0 0 0', fontSize: '2vh', textAlign: 'center'}}>
+            Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
+          </p>
+          <p style={{margin: '0 0 4vh 0', fontSize: '2vh', textAlign: 'center'}}>
+            l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
+          </p>
+        </Col>
+      </Row>
+
+
+      <Row>
         { this.props.accountsLoading ?
-          <Col offset={11} span={1}>
+          <Col offset={10} span={1}>
             <Spin indicator={spinIcon} style={{display: 'inline'}}/>
           </Col>
         :
-          <Col offset={5} span={8}>
+          <Col offset={8} span={6}>
             <React.Fragment>
               <Select
-                placeholder="Inseriti i primi cinque caratteri della ragione sociale e selezionato il cliente desiderato verrà visualizzato un elenco navigabile dei servizi erogati"
-                style={{width: '50vw'}}
+                placeholder=""
+                style={{width: '100%'}}
                 showSearch
                 //allowClear
-                value={this.state.project}
+                value={this.state.fby}
                 onSearch={a => this.setState({input: a})}
                 optionFilterProp="children"
                 filterOption={(input, option) => {
@@ -196,7 +215,7 @@ class SearchRagioneSociale extends React.Component {
         { this.state.visible ?
           <React.Fragment>
             <Modal
-              title={<p style={{textAlign: 'center'}}>{this.state.project}</p>}
+              title={<p style={{textAlign: 'center'}}>{this.state.account ? this.state.account.RAGIONE_SOCIALE : null}</p>}
               centered
               destroyOnClose={true}
               visible={this.state.visible}
@@ -205,7 +224,7 @@ class SearchRagioneSociale extends React.Component {
               onCancel={this.hide}
               width={1500}
             >
-              { this.state.projectLoading ?
+              { this.state.projectsLoading ?
                 <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
               :
                 <React.Fragment>
@@ -217,11 +236,13 @@ class SearchRagioneSociale extends React.Component {
                 </React.Fragment>
               }
             </Modal>
-            { this.props.projectError ? <Error component={'Project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
+
           </React.Fragment>
         :
           null
         }
+        { this.props.accountsError ? <Error component={'SearchEngine'} error={[this.props.accountsError]} visible={true} type={'accountsError'} /> : null }
+        { this.props.projectsError ? <Error component={'Project'} error={[this.props.projectsError]} visible={true} type={'projectsError'} /> : null }
       </React.Fragment>
     );
 
