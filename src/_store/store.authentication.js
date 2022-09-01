@@ -23,7 +23,7 @@ const authenticationSlice = createSlice({
         },
         uiconf: (state, action) => {
           if (action.payload.application.logo.white) {
-            state.logoWhite = action.payload.application.logo.white,
+            state.logoWhite = action.payload.application.logo.white
           }
           if (action.payload.page.banner) {
             state.banner = action.payload.page.banner
