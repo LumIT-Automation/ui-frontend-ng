@@ -55,9 +55,9 @@ class CreateVmService extends React.Component {
       json: {
         name: "",
         notes: "",
-        datacenterMoId: "",
-        clusterMoId: "",
-        hostMoId: "",
+        datacenterName: "",
+        clusterName: "",
+        hostName: "",
         main_datastoreMoId: "",
         folderMoId: "",
         template: "",
@@ -128,6 +128,7 @@ class CreateVmService extends React.Component {
         return
       }
       else {
+        console.log(datacentersFetched.data.items)
         this.setState({datacenters: datacentersFetched.data.items})
       }
 
@@ -334,6 +335,7 @@ class CreateVmService extends React.Component {
       return
     }
     else {
+      console.log(clustersFetched.data.clusters)
       this.setState({clusters: clustersFetched.data.clusters})
     }
   }
@@ -378,10 +380,6 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
     let templateFetched = await this.templateGet()
-
-    console.log(templateFetched)
-
-
 
     if (templateFetched.status && templateFetched.status !== 200 ) {
       await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
@@ -518,23 +516,6 @@ class CreateVmService extends React.Component {
 
 
   //SETTERS
-  jsonClusterSet = async c => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let clusters = JSON.parse(JSON.stringify(this.state.clusters))
-
-    try {
-      let cluster = clusters.find( r => r.moId === c )
-      request.cluster = cluster.name
-      request.clusterMoId = cluster.moId
-      await this.setState({request: request})
-      await this.clusterFetch()
-    } catch (error) {
-      errors.jsonError = `cluster: ${error.message}`
-      errors.jsonColor = 'red'
-      await this.setState({errors: errors})
-    }
-  }
 
   jsonValidate = async e => {
     let json, beauty
@@ -547,11 +528,10 @@ class CreateVmService extends React.Component {
       json = JSON.parse(beauty)
       delete errors.jsonError
       delete errors.jsonColor
-      await this.setState({json: json, errors: errors})
+      await this.setState({json: json, request: {}, errors: errors})
       this.jsonSet()
     } catch (error) {
       errors.jsonError = `json validation: ${error.message }`
-      errors.jsonColor = 'red'
       await this.setState({errors: errors})
     }
   }
@@ -562,11 +542,6 @@ class CreateVmService extends React.Component {
 
     if (json.name) {
       await this.vmNameSet(json.name)
-      /*
-      request = JSON.parse(JSON.stringify(this.state.request))
-      request.vmName = json.name
-      await this.setState({request: request})
-      */
     }
     if (json.notes) {
       request = JSON.parse(JSON.stringify(this.state.request))
@@ -574,49 +549,37 @@ class CreateVmService extends React.Component {
       await this.setState({request: request})
     }
 
-    if (json.datacenterMoId) {
-      //request = JSON.parse(JSON.stringify(this.state.request))
-      //let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
-
+    if (json.datacenterName) {
       try {
-        await this.datacenterSet(json.datacenterMoId)
-        /*
-        let datacenter = datacenters.find( r => r.moId === json.datacenterMoId )
-        let allFolders = JSON.parse(JSON.stringify(this.state.allFolders))
-        let folders = allFolders.find( f => f.datacenterName === datacenter[0] )
-        let list = []
-        list.push(folders)
-        request.datacenterMoId = datacenter.moId
-        request.datacenter = datacenter.name
-        await this.setState({folders: list, request: request})
-        await this.clustersFetch()
-        */
+        await this.datacenterSet(json.datacenterName)
       } catch(error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `datacenter: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
+        return
       }
     }
 
-    if (json.clusterMoId) {
-      await this.jsonClusterSet(json.clusterMoId)
+    if (json.clusterName) {
+      try {
+        await this.clusterSet(json.clusterName)
+      } catch(error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `cluster: ${error.message}`
+        await this.setState({errors: errors})
+        return
+      }
+
     }
 
-    if (json.hostMoId) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      let hosts = JSON.parse(JSON.stringify(this.state.hosts))
-
+    if (json.hostName) {
       try {
-        let host = hosts.find( r => r.moId === json.hostMoId )
-        request.host = host.name
-        request.hostMoId = host.moId
-        await this.setState({request: request})
+        await this.hostSet(json.hostName)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `host: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
+        return
       }
 
     }
@@ -632,8 +595,8 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `datastore: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
+        return
       }
     }
 
@@ -900,9 +863,9 @@ class CreateVmService extends React.Component {
     await this.setState({request: request})
   }
 
-  datacenterSet = async dcMoid => {
+  datacenterSet = async datacenterName => {
     let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
-    let datacenter = datacenters.find( d => d.moId === dcMoid )
+    let datacenter = datacenters.find( d => d.name === datacenterName )
     let request = JSON.parse(JSON.stringify(this.state.request))
     let allFolders = JSON.parse(JSON.stringify(this.state.allFolders))
     let folders = allFolders.find( f => f.datacenterName === datacenter.name )
@@ -914,19 +877,23 @@ class CreateVmService extends React.Component {
     await this.clustersFetch()
   }
 
-  clusterSet = async cluster => {
+  clusterSet = async clusterName => {
+    let clusters = JSON.parse(JSON.stringify(this.state.clusters))
+    let cluster = clusters.find( d => d.name === clusterName )
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.cluster = cluster[0]
-    request.clusterMoId = cluster[1]
+    request.cluster = cluster.name
+    request.clusterMoId = cluster.moId
     await this.setState({request: request})
-    this.clusterFetch()
+    await this.clusterFetch()
   }
 
-  hostSet = host => {
+  hostSet = async hostName => {
+    let hosts = JSON.parse(JSON.stringify(this.state.hosts))
+    let host = hosts.find( d => d.name === hostName )
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.host = host[0]
-    request.hostMoId = host[1]
-    this.setState({request: request})
+    request.host = host.name
+    request.hostMoId = host.moId
+    await this.setState({request: request})
   }
 
   folderSet = (selectedKeys, info) => {
@@ -2938,7 +2905,7 @@ class CreateVmService extends React.Component {
                   <Col offset={1} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
-                  <Col span={2}>
+                  <Col span={3}>
                     { this.state.datacentersLoading ?
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     :
@@ -2963,7 +2930,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datacenters.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
@@ -2987,7 +2954,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datacenters.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
@@ -2996,7 +2963,10 @@ class CreateVmService extends React.Component {
                           }
                         </React.Fragment>
                       :
-                        null
+                        <Select
+                          style={{width: '100%'}}
+                          disabled
+                        />
                       }
                     </React.Fragment>
                     }
@@ -3009,7 +2979,7 @@ class CreateVmService extends React.Component {
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={2}>
+                    <Col span={3}>
                       { this.state.clusters ?
                         <React.Fragment>
                           { this.state.clusters && this.state.clusters.length > 0 ?
@@ -3032,7 +3002,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.clusters.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                       )
                                     })
                                     }
@@ -3056,7 +3026,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.clusters.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                       )
                                     })
                                     }
@@ -3065,7 +3035,10 @@ class CreateVmService extends React.Component {
                               }
                             </React.Fragment>
                           :
-                            null
+                            <Select
+                              style={{width: '100%'}}
+                              disabled
+                            />
                           }
                         </React.Fragment>
                       :
@@ -3084,7 +3057,7 @@ class CreateVmService extends React.Component {
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={2}>
+                    <Col span={3}>
                       { this.state.hosts && this.state.hosts.length > 0 ?
                         <Select
                           defaultValue={this.state.request.host}
@@ -3103,7 +3076,7 @@ class CreateVmService extends React.Component {
                           <React.Fragment>
                             {this.state.hosts.map((n, i) => {
                               return (
-                                <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                               )
                             })
                             }
