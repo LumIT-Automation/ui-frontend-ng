@@ -117,23 +117,24 @@ class CreateVmService extends React.Component {
     this.setState({visible: true})
   }
 
+  //main gets datacenters, folders, customspecs and keys
   main = async () => {
-
     try {
       await this.setState({datacentersLoading: true})
-      let datacentersFetched = await this.datacentersGet()
+      //let datacentersFetched = await this.datacentersGet()
+      let datacentersFetched = await this.getData('datacenters/?quick')
       await this.setState({datacentersLoading: false})
       if (datacentersFetched.status && datacentersFetched.status !== 200 ) {
         this.props.dispatch(datacentersError(datacentersFetched))
         return
       }
       else {
-        console.log(datacentersFetched.data.items)
         this.setState({datacenters: datacentersFetched.data.items})
       }
 
       await this.setState({foldersLoading: true})
-      let foldersFetched = await this.foldersGet()
+      //let foldersFetched = await this.foldersGet()
+      let foldersFetched = await this.getData('vmFolders/tree/')
       await this.setState({foldersLoading: false})
       if (foldersFetched.status && foldersFetched.status !== 200 ) {
         this.props.dispatch(foldersError(foldersFetched))
@@ -144,7 +145,8 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({customSpecsLoading: true})
-      let customSpecsFetched = await this.customSpecsGet()
+      //let customSpecsFetched = await this.customSpecsGet()
+      let customSpecsFetched = await this.getData('customSpecs/')
       await this.setState({customSpecsLoading: false})
       if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
         this.props.dispatch(customSpecsError(customSpecsFetched))
@@ -190,8 +192,8 @@ class CreateVmService extends React.Component {
   }
 
 
-  //FETCH
-  datacentersGet = async () => {
+  //In this part
+  getData = async data => {
     let r
     let rest = new Rest(
       "GET",
@@ -202,7 +204,37 @@ class CreateVmService extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`vmware/${this.props.asset.id}/datacenters/?quick`, this.props.token)
+    await rest.doXHR(`vmware/${this.props.asset.id}/${data}`, this.props.token)
+    return r
+  }
+
+  bootstrapkeysGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/stage2/bootstrapkeys/`, this.props.token)
+    return r
+  }
+
+  finalpubkeysGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`vmware/stage2/finalpubkeys/`, this.props.token)
     return r
   }
 
@@ -218,36 +250,6 @@ class CreateVmService extends React.Component {
       }
     )
     await rest.doXHR(`vmware/${this.props.asset.id}/datacenter/${this.state.request.datacenterMoId}/`, this.props.token)
-    return r
-  }
-
-  foldersGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/vmFolders/tree/`, this.props.token)
-    return r
-  }
-
-  customSpecsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/customSpecs/`, this.props.token)
     return r
   }
 
@@ -296,35 +298,7 @@ class CreateVmService extends React.Component {
     return r
   }
 
-  bootstrapkeysGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/stage2/bootstrapkeys/`, this.props.token)
-    return r
-  }
 
-  finalpubkeysGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/stage2/finalpubkeys/`, this.props.token)
-    return r
-  }
 
   clustersFetch = async () => {
     await this.setState({clustersLoading: true})
@@ -426,6 +400,8 @@ class CreateVmService extends React.Component {
     }
   }
 
+
+  //Add/Remove for network, disk, address
   networkDeviceAdd = () => {
     //let n = this.state.counter + 1
     let id = 0
@@ -515,8 +491,7 @@ class CreateVmService extends React.Component {
   }
 
 
-  //SETTERS
-
+  //JSON Input
   jsonValidate = async e => {
     let json, beauty
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -536,6 +511,8 @@ class CreateVmService extends React.Component {
     }
   }
 
+
+  //SETTERS
   jsonSet = async () => {
     let json = JSON.parse(JSON.stringify(this.state.json))
     let request, errors
@@ -853,9 +830,6 @@ class CreateVmService extends React.Component {
     }
 
   }
-
-
-
 
   vmNameSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -1229,9 +1203,6 @@ class CreateVmService extends React.Component {
     this.setState({request: request})
   }
 
-
-
-  //select
 
   //VALIDATION
   validationCheck = async () => {
@@ -1643,9 +1614,7 @@ class CreateVmService extends React.Component {
     }
   }
 
-
   customSpecAdd = async () => {
-
     let cs = JSON.parse(JSON.stringify(this.state.cs))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
@@ -1715,7 +1684,7 @@ class CreateVmService extends React.Component {
     return r
   }
 
-  //DISPOSAL ACTION
+  //Creation
   vmCreateHandler = async () => {
     let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let csNew
@@ -2023,7 +1992,7 @@ class CreateVmService extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  //Close and Error
+  //Cleaning State and closing Modal
   closeModal = () => {
 
     this.setState({
