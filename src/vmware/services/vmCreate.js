@@ -60,7 +60,7 @@ class CreateVmService extends React.Component {
         hostName: "",
         main_datastoreMoId: "",
         folderMoId: "",
-        template: "",
+        templateName: "",
         network_devices: [
           {
             portgroupMoId: "",
@@ -105,8 +105,7 @@ class CreateVmService extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
       console.log(this.state.request)
-      console.log('hosts', this.state.hosts)
-      console.log('clusters', this.state.clusters)
+      console.log('templates', this.state.templates)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -124,7 +123,6 @@ class CreateVmService extends React.Component {
   main = async () => {
     try {
       await this.setState({datacentersLoading: true})
-      //let datacentersFetched = await this.datacentersGet()
       let datacentersFetched = await this.getData('datacenters/?quick')
       await this.setState({datacentersLoading: false})
       if (datacentersFetched.status && datacentersFetched.status !== 200 ) {
@@ -136,7 +134,6 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({foldersLoading: true})
-      //let foldersFetched = await this.foldersGet()
       let foldersFetched = await this.getData('vmFolders/tree/')
       await this.setState({foldersLoading: false})
       if (foldersFetched.status && foldersFetched.status !== 200 ) {
@@ -148,7 +145,6 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({customSpecsLoading: true})
-      //let customSpecsFetched = await this.customSpecsGet()
       let customSpecsFetched = await this.getData('customSpecs/')
       await this.setState({customSpecsLoading: false})
       if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
@@ -160,7 +156,6 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({bootstrapkeysLoading: true})
-      //let bootstrapkeysFetched = await this.bootstrapkeysGet()
       let bootstrapkeysFetched = await this.getStage2Data('bootstrapkeys/')
       await this.setState({bootstrapkeysLoading: false})
       if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
@@ -175,7 +170,6 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({finalpubkeysLoading: true})
-      //let finalpubkeysFetched = await this.finalpubkeysGet()
       let finalpubkeysFetched = await this.getStage2Data('finalpubkeys/')
       await this.setState({finalpubkeysLoading: false})
       if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
@@ -228,38 +222,8 @@ class CreateVmService extends React.Component {
     return r
   }
 
-  templatesGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/templates/?quick`, this.props.token)
-    return r
-  }
 
-  templateGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/template/${this.state.request.templateMoId}/`, this.props.token)
-    return r
-  }
-
-
-
+  //Handler for cluster[s], and template[s]
   clustersFetch = async (datacenterMoId) => {
     await this.setState({clustersLoading: true})
     let clustersFetched = await this.getData(`datacenter/${datacenterMoId}/`)
@@ -297,9 +261,11 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     delete request.template
     delete request.templateMoId
-    await this.setState({request: request, templates: null, templatesLoading: true})
+    await this.setState({request: request, templates: [], templatesLoading: true})
 
-    let templatesFetched = await this.templatesGet()
+    //let templatesFetched = await this.templatesGet()
+    let templatesFetched = await this.getData('templates/?quick')
+
     await this.setState({templatesLoading: false})
     if (templatesFetched.status && templatesFetched.status !== 200 ) {
       this.props.dispatch(templatesError(templatesFetched))
@@ -310,10 +276,10 @@ class CreateVmService extends React.Component {
     }
   }
 
-  templateFetch = async () => {
+  templateFetch = async (templateMoid) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
-    let templateFetched = await this.templateGet()
+    let templateFetched = await this.getData(`template/${templateMoid}/`)
 
     if (templateFetched.status && templateFetched.status !== 200 ) {
       await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
@@ -323,7 +289,6 @@ class CreateVmService extends React.Component {
     else {
       let isMSWindows = false
 
-      //&& templateFetched.data.guestName.includes("Microsoft Windows")
       if (templateFetched.data && templateFetched.data.guestName && templateFetched.data.guestName.includes("Microsoft Windows")) {
         isMSWindows = true
       }
@@ -454,7 +419,7 @@ class CreateVmService extends React.Component {
   //JSON Input
   jsonValidate = async e => {
     let json, beauty
-    let request = JSON.parse(JSON.stringify(this.state.request))
+    //let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     try {
@@ -462,8 +427,15 @@ class CreateVmService extends React.Component {
       beauty = JSON.stringify(json, null, 2)
       json = JSON.parse(beauty)
       delete errors.jsonError
-      delete errors.jsonColor
-      await this.setState({json: json, request: {}, errors: errors})
+      await this.setState({
+        json: json,
+        request: {numCoresPerSocket: 1},
+        networkDevices: [],
+        diskDevices: [],
+        datastoresPlus: [],
+        cs: {},
+        addresses: [],
+        errors: errors})
       this.jsonSet()
     } catch (error) {
       errors.jsonError = `json validation: ${error.message }`
@@ -553,18 +525,14 @@ class CreateVmService extends React.Component {
       await this.memoryMBSet(json.ram_mb)
     }
 
-    if (json.template) {
+    if (json.templateName) {
       await this.templatesFetch()
-      let templates = JSON.parse(JSON.stringify(this.state.templates))
 
       try {
-        let template = templates.find( r => r.name === json.template )
-        let l = [template.name, template.moId]
-        await this.templateSet(l)
+        await this.templateSet(json.templateName)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `template: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -841,12 +809,14 @@ class CreateVmService extends React.Component {
     this.setState({ request: request})
   }
 
-  templateSet = async template => {
+  templateSet = async templateName => {
+    let templates = JSON.parse(JSON.stringify(this.state.templates))
+    let template = templates.find( t => t.name === templateName )
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.template = template[0]
-    request.templateMoId = template[1]
+    request.template = template.name
+    request.templateMoId = template.moId
     await this.setState({request: request})
-    await this.templateFetch()
+    await this.templateFetch(template.moId)
   }
 
   mainDatastoreSet = async mainDatastore => {
@@ -3094,7 +3064,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.templates.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                       )
                                     })
                                     }
@@ -3118,7 +3088,7 @@ class CreateVmService extends React.Component {
                                   <React.Fragment>
                                     {this.state.templates.map((n, i) => {
                                       return (
-                                        <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                       )
                                     })
                                     }
