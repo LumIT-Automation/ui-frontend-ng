@@ -58,7 +58,7 @@ class CreateVmService extends React.Component {
         datacenterName: "",
         clusterName: "",
         hostName: "",
-        main_datastoreMoId: "",
+        main_datastoreName: "",
         folderMoId: "",
         templateName: "",
         network_devices: [
@@ -105,7 +105,8 @@ class CreateVmService extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
       console.log(this.state.request)
-      console.log('templates', this.state.templates)
+      console.log('diskDevices', this.state.diskDevices)
+
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -191,7 +192,7 @@ class CreateVmService extends React.Component {
   }
 
 
-  //Get functions
+  //REST Call GET
   getData = async data => {
     let r
     let rest = new Rest(
@@ -223,7 +224,7 @@ class CreateVmService extends React.Component {
   }
 
 
-  //Handler for cluster[s], and template[s]
+  //Handlers for cluster[s], and template[s]
   clustersFetch = async (datacenterMoId) => {
     await this.setState({clustersLoading: true})
     let clustersFetched = await this.getData(`datacenter/${datacenterMoId}/`)
@@ -493,14 +494,9 @@ class CreateVmService extends React.Component {
 
     }
 
-    if (json.main_datastoreMoId) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      let datastores = JSON.parse(JSON.stringify(this.state.datastores))
-
+    if (json.main_datastoreName) {
       try {
-        let datastore = datastores.find( r => r.moId === json.main_datastoreMoId )
-        let l = [datastore.name, datastore.moId]
-        await this.mainDatastoreSet(l)
+        await this.mainDatastoreSet(json.main_datastoreName)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `datastore: ${error.message}`
@@ -527,7 +523,6 @@ class CreateVmService extends React.Component {
 
     if (json.templateName) {
       await this.templatesFetch()
-
       try {
         await this.templateSet(json.templateName)
       } catch (error) {
@@ -550,7 +545,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `portgroup: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
 
@@ -560,7 +554,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `network device_type: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -579,7 +572,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice datastore: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
 
@@ -589,7 +581,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice device_type: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
 
@@ -601,7 +592,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice size_gib: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -613,7 +603,6 @@ class CreateVmService extends React.Component {
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = error.message
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -625,7 +614,6 @@ class CreateVmService extends React.Component {
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `hostname ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -638,7 +626,6 @@ class CreateVmService extends React.Component {
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `domainName ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -651,7 +638,6 @@ class CreateVmService extends React.Component {
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `dns1 ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -664,7 +650,6 @@ class CreateVmService extends React.Component {
       catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `dns2 ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -686,7 +671,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `Dhcp : ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
 
@@ -699,7 +683,6 @@ class CreateVmService extends React.Component {
         catch (error) {
           errors = JSON.parse(JSON.stringify(this.state.errors))
           errors.jsonError = `ip address ${error.message}`
-          errors.jsonColor = 'red'
           await this.setState({errors: errors})
         }
 
@@ -711,7 +694,6 @@ class CreateVmService extends React.Component {
         catch (error) {
           errors = JSON.parse(JSON.stringify(this.state.errors))
           errors.jsonError = `netMask address ${error.message}`
-          errors.jsonColor = 'red'
           await this.setState({errors: errors})
         }
 
@@ -723,7 +705,6 @@ class CreateVmService extends React.Component {
         catch (error) {
           errors = JSON.parse(JSON.stringify(this.state.errors))
           errors.jsonError = `gw address ${error.message}`
-          errors.jsonColor = 'red'
           await this.setState({errors: errors})
         }
       }
@@ -738,7 +719,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `bootstrapkey: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -752,7 +732,6 @@ class CreateVmService extends React.Component {
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `finalpubkey: ${error.message}`
-        errors.jsonColor = 'red'
         await this.setState({errors: errors})
       }
     }
@@ -819,13 +798,13 @@ class CreateVmService extends React.Component {
     await this.templateFetch(template.moId)
   }
 
-  mainDatastoreSet = async mainDatastore => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.mainDatastore = mainDatastore[0]
-    request.mainDatastoreMoId = mainDatastore[1]
-
+  mainDatastoreSet = async mainDatastoreName => {
     let datastores = JSON.parse(JSON.stringify(this.state.datastores))
-    let datastore = datastores.find( r => r.moId === mainDatastore[1] )
+    let datastore = datastores.find( d => d.name === mainDatastoreName )
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.mainDatastore = datastore.name
+    request.mainDatastoreMoId = datastore.moId
+
     let main = JSON.parse(JSON.stringify(datastore))
     main.name = 'MainDatastore'
 
@@ -839,7 +818,7 @@ class CreateVmService extends React.Component {
 
     diskDevices.forEach((item, i) => {
       if (item.datastoreName === 'MainDatastore') {
-        item.datastoreMoId = mainDatastore[1]
+        item.datastoreMoId = main.moId
       }
       newDiskDevices.push(item)
     });
@@ -1063,7 +1042,6 @@ class CreateVmService extends React.Component {
     } catch (error) {
       let errors = JSON.parse(JSON.stringify(this.state.errors))
       errors.jsonError = `Something wrong in Custom Spec : ${error.message}`
-      errors.jsonColor = 'red'
       await this.setState({errors: errors})
     }
   }
@@ -3469,7 +3447,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datastores.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
@@ -3492,7 +3470,7 @@ class CreateVmService extends React.Component {
                               <React.Fragment>
                                 {this.state.datastores.map((n, i) => {
                                   return (
-                                    <Select.Option key={i} value={[n.name, n.moId]}>{n.name}</Select.Option>
+                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                                   )
                                 })
                                 }
