@@ -104,6 +104,9 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
+      console.log(this.state.request)
+      console.log('hosts', this.state.hosts)
+      console.log('clusters', this.state.clusters)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -157,7 +160,8 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({bootstrapkeysLoading: true})
-      let bootstrapkeysFetched = await this.bootstrapkeysGet()
+      //let bootstrapkeysFetched = await this.bootstrapkeysGet()
+      let bootstrapkeysFetched = await this.getStage2Data('bootstrapkeys/')
       await this.setState({bootstrapkeysLoading: false})
       if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
         this.props.dispatch(bootstrapkeysError(bootstrapkeysFetched))
@@ -171,7 +175,8 @@ class CreateVmService extends React.Component {
       }
 
       await this.setState({finalpubkeysLoading: true})
-      let finalpubkeysFetched = await this.finalpubkeysGet()
+      //let finalpubkeysFetched = await this.finalpubkeysGet()
+      let finalpubkeysFetched = await this.getStage2Data('finalpubkeys/')
       await this.setState({finalpubkeysLoading: false})
       if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
         this.props.dispatch(finalpubkeysError(finalpubkeysFetched))
@@ -192,7 +197,7 @@ class CreateVmService extends React.Component {
   }
 
 
-  //In this part
+  //Get functions
   getData = async data => {
     let r
     let rest = new Rest(
@@ -208,7 +213,7 @@ class CreateVmService extends React.Component {
     return r
   }
 
-  bootstrapkeysGet = async () => {
+  getStage2Data = async data => {
     let r
     let rest = new Rest(
       "GET",
@@ -219,52 +224,7 @@ class CreateVmService extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`vmware/stage2/bootstrapkeys/`, this.props.token)
-    return r
-  }
-
-  finalpubkeysGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/stage2/finalpubkeys/`, this.props.token)
-    return r
-  }
-
-  clustersGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/datacenter/${this.state.request.datacenterMoId}/`, this.props.token)
-    return r
-  }
-
-  clusterGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`vmware/${this.props.asset.id}/cluster/${this.state.request.clusterMoId}/`, this.props.token)
+    await rest.doXHR(`vmware/stage2/${data}`, this.props.token)
     return r
   }
 
@@ -300,9 +260,9 @@ class CreateVmService extends React.Component {
 
 
 
-  clustersFetch = async () => {
+  clustersFetch = async (datacenterMoId) => {
     await this.setState({clustersLoading: true})
-    let clustersFetched = await this.clustersGet()
+    let clustersFetched = await this.getData(`datacenter/${datacenterMoId}/`)
     await this.setState({clustersLoading: false})
     if (clustersFetched.status && clustersFetched.status !== 200 ) {
       this.props.dispatch(clustersError(clustersFetched))
@@ -310,13 +270,13 @@ class CreateVmService extends React.Component {
     }
     else {
       console.log(clustersFetched.data.clusters)
-      this.setState({clusters: clustersFetched.data.clusters})
+      await this.setState({clusters: clustersFetched.data.clusters})
     }
   }
 
-  clusterFetch = async () => {
+  clusterFetch = async (clusterMoId) => {
     await this.setState({networksLoading: true, datastoresLoading: true, hostsLoading: true})
-    let clusterFetched = await this.clusterGet()
+    let clusterFetched = await this.getData(`cluster/${clusterMoId}/`)
     if (clusterFetched.status && clusterFetched.status !== 200 ) {
       this.setState({networksLoading: false, datastoresLoading: false, hostsLoading: false})
       this.props.dispatch(clusterError(clusterFetched))
@@ -838,17 +798,22 @@ class CreateVmService extends React.Component {
   }
 
   datacenterSet = async datacenterName => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    delete request.cluster
+    delete request.clusterMoId
+    delete request.host
+    delete request.hostMoId
     let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
     let datacenter = datacenters.find( d => d.name === datacenterName )
-    let request = JSON.parse(JSON.stringify(this.state.request))
+
     let allFolders = JSON.parse(JSON.stringify(this.state.allFolders))
     let folders = allFolders.find( f => f.datacenterName === datacenter.name )
     let list = []
     list.push(folders)
     request.datacenter = datacenter.name
     request.datacenterMoId = datacenter.moId
-    await this.setState({folders: list, request: request})
-    await this.clustersFetch()
+    await this.setState({clusters: [], hosts: [], folders: list, request: request})
+    await this.clustersFetch(datacenter.moId)
   }
 
   clusterSet = async clusterName => {
@@ -858,7 +823,7 @@ class CreateVmService extends React.Component {
     request.cluster = cluster.name
     request.clusterMoId = cluster.moId
     await this.setState({request: request})
-    await this.clusterFetch()
+    await this.clusterFetch(cluster.moId)
   }
 
   hostSet = async hostName => {
