@@ -59,7 +59,7 @@ class CreateVmService extends React.Component {
         clusterName: "",
         hostName: "",
         main_datastoreName: "",
-        folderMoId: "",
+        folderName: "",
         templateName: "",
         network_devices: [
           {
@@ -105,7 +105,6 @@ class CreateVmService extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
       console.log(this.state.request)
-      console.log('diskDevices', this.state.diskDevices)
 
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -234,7 +233,6 @@ class CreateVmService extends React.Component {
       return
     }
     else {
-      console.log(clustersFetched.data.clusters)
       await this.setState({clusters: clustersFetched.data.clusters})
     }
   }
@@ -505,10 +503,15 @@ class CreateVmService extends React.Component {
       }
     }
 
-    if (json.folderMoId) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      request.vmFolderMoId = json.folderMoId
-      await this.setState({request: request})
+    if (json.folderName) {
+      try {
+        await this.folderSet(null, null, json.folderName)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `folder: ${error.message}`
+        await this.setState({errors: errors})
+        return
+      }
     }
 
     if (json.cpu) {
@@ -782,10 +785,52 @@ class CreateVmService extends React.Component {
     await this.setState({request: request})
   }
 
-  folderSet = (selectedKeys, info) => {
+  flatFolders = async (folders) => {
+    let children = []
+    let flat = []
+
+    folders.forEach((item, i) => {
+      if (item.children) {
+        item.children.forEach((item, i) => {
+          children.push(item)
+        });
+        let o = Object.assign({}, item);
+        delete o.children
+        flat.push(o)
+      }
+      else {
+        flat.push(item)
+      }
+    });
+    return flat.concat(children)
+  }
+
+  folderSet = async (selectedKeys, info, name) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.vmFolderMoId = info.node.moId
-    this.setState({ request: request})
+
+    if (info) {
+      request.vmFolderMoId = info.node.moId
+      request.vmFolderName = info.node.name
+      await this.setState({ request: request})
+    }
+    else {
+      let folders = JSON.parse(JSON.stringify(this.state.folders))
+      let s = 1
+      while (s > 0) {
+        s = 0
+        folders = await this.flatFolders(folders)
+        folders.forEach((item, i) => {
+          if (item.children && item.children.length > 0) {
+            s++
+          }
+        })
+      }
+    let folder = folders.find( f => f.name === name)
+    console.log(folder)
+    request.vmFolderMoId = folder.moId
+    request.vmFolderName = folder.name
+    await this.setState({ request: request})
+    }
   }
 
   templateSet = async templateName => {
