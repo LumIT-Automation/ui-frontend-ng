@@ -76,6 +76,7 @@ class CreateVmService extends React.Component {
         ],
         ram_mb: "",
         cpu: "",
+        sockets: "",
         guestspec: "",
         hostname: "",
         domainName: "",
@@ -515,13 +516,36 @@ class CreateVmService extends React.Component {
     }
 
     if (json.cpu) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      request.numCpu = json.cpu
-      await this.setState({request: request})
+      try {
+        await this.numCpuSet(json.cpu)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `numCpu: ${error.message}`
+        await this.setState({errors: errors})
+        return
+      }
+    }
+
+    if (json.sockets) {
+      try {
+        await this.numCoresPerSocketSet(json.sockets)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `sockets: ${error.message}`
+        await this.setState({errors: errors})
+        return
+      }
     }
 
     if (json.ram_mb) {
-      await this.memoryMBSet(json.ram_mb)
+      try {
+        await this.memoryMBSet(json.ram_mb)
+      } catch (error) {
+        errors = JSON.parse(JSON.stringify(this.state.errors))
+        errors.jsonError = `memory: ${error.message}`
+        await this.setState({errors: errors})
+        return
+      }
     }
 
     if (json.templateName) {
@@ -826,7 +850,6 @@ class CreateVmService extends React.Component {
         })
       }
     let folder = folders.find( f => f.name === name)
-    console.log(folder)
     request.vmFolderMoId = folder.moId
     request.vmFolderName = folder.name
     await this.setState({ request: request})
@@ -872,16 +895,16 @@ class CreateVmService extends React.Component {
     return request
   }
 
-  numCpuSet = numCpu => {
+  numCpuSet = async numCpu => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.numCpu = numCpu
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
-  numCoresPerSocketSet = numCoresPerSocket => {
+  numCoresPerSocketSet = async numCoresPerSocket => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.numCoresPerSocket = numCoresPerSocket
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   memoryMBSet = async mem => {
