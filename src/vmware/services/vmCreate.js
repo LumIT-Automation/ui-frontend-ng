@@ -106,10 +106,9 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('datastores', this.state.datastores)
+    console.log('request', this.state.request)
     if (this.state.visible) {
-      //console.log('cluster ---', this.state.cluster)
-      //console.log('networks ---', this.state.networks)
-      console.log('datastores ---', this.state.datastores)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -928,6 +927,8 @@ class CreateVmService extends React.Component {
   }
 
   diskDeviceDatastoreSet = async (datastoreName, diskDeviceId) => {
+    console.log('datastoreName', datastoreName)
+    console.log('diskDeviceId', diskDeviceId)
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let datastores = JSON.parse(JSON.stringify(this.state.datastores))
     let diskDevice = diskDevices.find( dd => dd.id === diskDeviceId )
@@ -935,7 +936,7 @@ class CreateVmService extends React.Component {
 
     if (datastoreName === 'MainDatastore') {
       datastore = datastores.find( ds => ds.name === this.state.request.mainDatastore )
-      diskDevice.datastoreName = datastore.name
+      diskDevice.datastoreName = 'MainDatastore'
       diskDevice.datastoreMoId = datastore.moId
     }
     else {
@@ -1546,7 +1547,7 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!addresses[0].dhcp && !this.state.isMSWindows) {
+    if (addresses[0] && !addresses[0].dhcp && !this.state.isMSWindows) {
       if (!this.state.partitioningType) {
         errors.partitioningTypeError = true
         errors.partitioningTypeColor = 'red'
@@ -1594,13 +1595,28 @@ class CreateVmService extends React.Component {
 
   customSpecAdd = async () => {
     let cs = JSON.parse(JSON.stringify(this.state.cs))
+    let addresses = JSON.parse(JSON.stringify(this.state.addresses))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
-
     let r
+    let addrs = []
+
+    addresses.forEach((addr, i) => {
+      if (addr.dhcp) {
+        delete addr.ip,
+        delete addr.netMask,
+        delete addr.gw
+      }
+      addrs.push(addr)
+    });
+
+    console.log('this.state.addresses', this.state.addresses)
+    console.log('addrs', addrs)
+
     let b = {}
+
     b.data = {
-      "network": this.state.addresses,
+      "network": addrs,
       "hostName": `${this.state.cs.csHostname}`,
       "domainName": `${this.state.cs.csDomain}`,
     }
@@ -1632,7 +1648,6 @@ class CreateVmService extends React.Component {
         b.data.dns2 = `${this.state.cs.dns2}`
       }
     }
-
 
     let rest = new Rest(
       "POST",
@@ -1683,12 +1698,14 @@ class CreateVmService extends React.Component {
     let diskDevices = {existent: [], new: []}
 
     this.state.networkDevices.forEach((nic, i) => {
+      console.log(nic)
       if (nic.existent) {
         networkDevices.existent.push(nic)
       }
       else {
         networkDevices.new.push(nic)
       }
+
     })
 
     this.state.diskDevices.forEach((disk, i) => {
@@ -1950,19 +1967,17 @@ class CreateVmService extends React.Component {
 
     console.log(b)
 
-
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)
     this.setState({loading: false})
     if (vmC.status && vmC.status !== 202 ) {
-      this.setState({loading: false, response: false})
+      this.setState({loading: false, response: false, disableCreateButton: false})
       this.props.dispatch(vmCreateError(vmC))
     }
     else {
       this.setState({loading: false, response: true})
       this.response()
     }
-
   }
 
   response = () => {
@@ -2163,7 +2178,7 @@ class CreateVmService extends React.Component {
                     value={obj.datastoreName}
                     key={obj.id}
                     style={{ width: '100%' , border: `1px solid red` }}
-                    onChange={(id, event) => this.diskDeviceDatastoreSet(id, obj.id)}>
+                    onChange={(name, event) => this.diskDeviceDatastoreSet(name, obj.id)}>
                     { this.state.datastores ?
                       <React.Fragment>
                         { this.state.request.mainDatastore ?
@@ -2188,7 +2203,7 @@ class CreateVmService extends React.Component {
                       value={obj.datastoreName}
                       key={obj.id}
                       style={{ width: '100%' }}
-                      onChange={(id, event) => this.diskDeviceDatastoreSet(id, obj.id)}>
+                      onChange={(name, event) => this.diskDeviceDatastoreSet(name, obj.id)}>
                       { this.state.datastores ?
                         <React.Fragment>
                           { this.state.request.mainDatastore ?
