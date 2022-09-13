@@ -92,7 +92,8 @@ class CreateVmService extends React.Component {
         dns2: "",
         bootstrapkeyId: "",
         finalpubkeyId: ""
-      }
+      },
+      disableCreateButton: false
     }
   }
 
@@ -1586,6 +1587,7 @@ class CreateVmService extends React.Component {
     await this.validationCheck()
     console.log(this.state.errors)
     if (Object.keys(this.state.errors).length === 0) {
+      await this.setState({disableCreateButton: true})
       this.vmCreateHandler()
     }
   }
@@ -1996,7 +1998,8 @@ class CreateVmService extends React.Component {
       bootstrapkeys: [],
       finalpubkeys: [],
       jsonEnabled: null,
-      errors: {}
+      errors: {},
+      disableCreateButton: false
     })
 
   //this.componentWillUnmount()
@@ -2786,7 +2789,7 @@ class CreateVmService extends React.Component {
 
 
                 <Row>
-                  <Col offset={3} span={15}>
+                  <Col offset={4} span={16}>
                   { !this.state.jsonEnabled ?
                     <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
@@ -2827,7 +2830,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Vm Name:</p>
                   </Col>
                   <Col span={4}>
@@ -2850,7 +2853,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenter:</p>
                   </Col>
                   <Col span={3}>
@@ -2919,7 +2922,7 @@ class CreateVmService extends React.Component {
                     </React.Fragment>
                     }
                   </Col>
-                  <Col offset={1} span={2}>
+                  <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cluster:</p>
                   </Col>
                   { this.state.clustersLoading ?
@@ -2997,7 +3000,7 @@ class CreateVmService extends React.Component {
                       }
                     </Col>
                   }
-                  <Col offset={1} span={2}>
+                  <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Host:</p>
                   </Col>
                   { this.state.hostsLoading ?
@@ -3042,15 +3045,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Folder:</p>
                   </Col>
                   { this.state.foldersLoading ?
-                    <Col span={18}>
+                    <Col span={16}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={18}>
+                    <Col span={16}>
                       { this.state.folders ?
                         <React.Fragment>
                           {this.state.errors.vmFolderMoIdError ?
@@ -3077,15 +3080,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Template:</p>
                   </Col>
                   { this.state.templatesLoading ?
-                    <Col span={15}>
+                    <Col span={14}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={15}>
+                    <Col span={14}>
                       { this.state.templates ?
                         <React.Fragment>
                           { this.state.templates && this.state.templates.length > 0 ?
@@ -3159,7 +3162,7 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>CPUs:</p>
                   </Col>
                   <Col span={2}>
@@ -3253,15 +3256,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Network Devices:</p>
                   </Col>
                   {this.state.networkDevicesLoading ?
-                    <Col span={15}>
+                    <Col span={14}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={15}>
+                    <Col span={14}>
                       {(this.state.networkDevices && this.state.networkDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.networkDeviceAdd()}>
@@ -3289,15 +3292,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>GuestSpec:</p>
                   </Col>
                   {this.state.customSpecsLoading ?
-                    <Col span={15}>
+                    <Col span={14}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                  <Col span={15}>
+                  <Col span={14}>
                     { this.state.customSpecs && this.state.customSpecs.length > 0 ?
                       <React.Fragment>
                         {this.state.errors.customSpecError ?
@@ -3363,7 +3366,7 @@ class CreateVmService extends React.Component {
                 { this.state.customSpec ?
                   <React.Fragment>
                   <Row>
-                    <Col offset={2} span={2}>
+                    <Col offset={5} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Hostname:</p>
                     </Col>
                     <Col span={4}>
@@ -3400,7 +3403,7 @@ class CreateVmService extends React.Component {
                   <br/>
 
                   <Row>
-                    <Col offset={2} span={2}>
+                    <Col offset={5} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DNS 1:</p>
                     </Col>
                     <Col span={4}>
@@ -3439,10 +3442,10 @@ class CreateVmService extends React.Component {
 
 
                   <Row>
-                    <Col offset={2} span={2}>
+                    <Col offset={5} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Addresses:</p>
                     </Col>
-                    <Col span={14}>
+                    <Col span={13}>
                       {(this.state.addresses  && this.state.addresses.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.addressAdd()}>
@@ -3480,15 +3483,15 @@ class CreateVmService extends React.Component {
                 }
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Main Datastore:</p>
                   </Col>
                   {this.state.datastoresLoading ?
-                    <Col span={15}>
+                    <Col span={14}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                     :
-                    <Col span={15}>
+                    <Col span={14}>
                       { this.state.datastores && this.state.datastores.length > 0 ?
                         <React.Fragment>
                           {this.state.errors.mainDatastoreError ?
@@ -3552,15 +3555,15 @@ class CreateVmService extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Disk Devices:</p>
                   </Col>
                   {this.state.diskDevicesLoading ?
-                    <Col span={15}>
+                    <Col span={14}>
                       <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                     </Col>
                   :
-                    <Col span={15}>
+                    <Col span={14}>
                       {(this.state.diskDevices  && this.state.diskDevices.length > 0) ?
                         <React.Fragment>
                           <Button type="primary" onClick={() => this.diskDeviceAdd()}>
@@ -3590,10 +3593,10 @@ class CreateVmService extends React.Component {
                 { !this.state.isMSWindows && this.state.addresses && this.state.addresses[0] && !this.state.addresses[0].dhcp ?
                   <React.Fragment>
                   <Row>
-                    <Col span={3}>
+                    <Col offset={3} span={3}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First disk partitioning:</p>
                     </Col>
-                    <Col span={15}>
+                    <Col span={14}>
                       { this.state.errors.partitioningTypeError ?
                         <Radio.Group
                           style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
@@ -3621,7 +3624,7 @@ class CreateVmService extends React.Component {
                     <React.Fragment>
                       <Row>
                         { this.state.partitioningType === 'default' ?
-                          <Col offset={3} span={15}>
+                          <Col offset={6} span={14}>
                             <Table
                               columns={defaultPartitionsCol}
                               dataSource={this.state.diskDevices}
@@ -3651,7 +3654,7 @@ class CreateVmService extends React.Component {
                   }
 
                   <Row>
-                    <Col offset={1} span={2}>
+                    <Col offset={4} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Bootstrap Keys:</p>
                     </Col>
                     <Col span={4}>
@@ -3807,10 +3810,10 @@ class CreateVmService extends React.Component {
                 }
 
                 <Row>
-                  <Col offset={1} span={2}>
+                  <Col offset={4} span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Notes:</p>
                   </Col>
-                  <Col span={15}>
+                  <Col span={14}>
                     {this.state.errors.notesError ?
                       <Input.TextArea
                         value={this.state.request.notes}
@@ -3832,11 +3835,19 @@ class CreateVmService extends React.Component {
 
 
                 <Row>
-                  <Col offset={7} span={2}>
-                    <Button type="primary" shape='round' onClick={() => this.validation()} >
-                      Create Virtual machine
-                    </Button>
-                  </Col>
+                  {this.state.disableCreateButton ?
+                    <Col offset={11} span={2}>
+                      <Button type="primary" shape='round' disabled>
+                        Create Virtual machine
+                      </Button>
+                    </Col>
+                    :
+                    <Col offset={11} span={2}>
+                      <Button type="primary" shape='round' onClick={() => this.validation()} >
+                        Create Virtual machine
+                      </Button>
+                    </Col>
+                  }
                 </Row>
               </React.Fragment>
 
