@@ -63,13 +63,13 @@ class CreateVmService extends React.Component {
         templateName: "",
         network_devices: [
           {
-            portgroupMoId: "",
+            portgroupName: "",
             device_type: "vmxnet3"
           }
         ],
         disk_devices: [
           {
-            datastoreMoId: "MAIN_DATASTORE",
+            datastoreName: "MainDatastore",
             device_type: "thin",
             size_gib: ""
           }
@@ -97,6 +97,7 @@ class CreateVmService extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -105,8 +106,9 @@ class CreateVmService extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      console.log(this.state.request)
-
+      //console.log('cluster ---', this.state.cluster)
+      //console.log('networks ---', this.state.networks)
+      console.log('datastores ---', this.state.datastores)
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
       }
@@ -114,6 +116,7 @@ class CreateVmService extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('unmount')
   }
 
   details = () => {
@@ -122,6 +125,7 @@ class CreateVmService extends React.Component {
 
   //main gets datacenters, folders, customspecs and keys
   main = async () => {
+    this.templatesFetch()
     try {
       await this.setState({datacentersLoading: true})
       let datacentersFetched = await this.getData('datacenters/?quick')
@@ -183,7 +187,6 @@ class CreateVmService extends React.Component {
           await this.finalpubkeySet(this.state.finalpubkeys[0].id)
         }
       }
-
       this.setState({jsonEnabled: true })
     } catch (error) {
       console.log(error)
@@ -434,6 +437,7 @@ class CreateVmService extends React.Component {
         diskDevices: [],
         datastoresPlus: [],
         cs: {},
+        customSpec: {},
         addresses: [],
         errors: errors})
       this.jsonSet()
@@ -560,15 +564,12 @@ class CreateVmService extends React.Component {
     }
 
     if (json.network_devices) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      let portgroup = json.network_devices[0].portgroupMoId
+      let portgroup = json.network_devices[0].portgroupName
       let device_type = json.network_devices[0].device_type
       let networkDevice = this.state.networkDevices[0]
-      let l = []
 
       try {
-        l = [portgroup, networkDevice.id]
-        await this.networkDeviceNetworkSet(l[0], l[1])
+        await this.networkDeviceNetworkSet(portgroup, networkDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `portgroup: ${error.message}`
@@ -576,8 +577,7 @@ class CreateVmService extends React.Component {
       }
 
       try {
-        l = [device_type, networkDevice.id]
-        await this.networkDeviceTypeSet(l[0], l[1])
+        await this.networkDeviceTypeSet(device_type, networkDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `network device_type: ${error.message}`
@@ -586,16 +586,12 @@ class CreateVmService extends React.Component {
     }
 
     if (json.disk_devices) {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      let datastoreMoId = json.disk_devices[0].datastoreMoId
+      let datastoreName = json.disk_devices[0].datastoreName
       let device_type = json.disk_devices[0].device_type
-
       let diskDevice = this.state.diskDevices[0]
-      let l = []
 
       try {
-        l = [datastoreMoId, diskDevice.id]
-        await this.diskDeviceDatastoreSet(l[0], l[1])
+        await this.diskDeviceDatastoreSet(datastoreName, diskDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice datastore: ${error.message}`
@@ -603,8 +599,7 @@ class CreateVmService extends React.Component {
       }
 
       try {
-        l = [device_type, diskDevice.id]
-        await this.diskDeviceTypeSet(l[0], l[1])
+        await this.diskDeviceTypeSet(device_type, diskDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `diskDevice device_type: ${error.message}`
@@ -914,13 +909,13 @@ class CreateVmService extends React.Component {
     this.firstDiskPartitioning()
   }
 
-  networkDeviceNetworkSet = async (networkMoId, networkDeviceId) => {
+  networkDeviceNetworkSet = async (networkName, networkDeviceId) => {
     let networkDevices = JSON.parse(JSON.stringify(this.state.networkDevices))
     let networks = JSON.parse(JSON.stringify(this.state.networks))
     let networkDevice = networkDevices.find( r => r.id === networkDeviceId )
-    let network = networks.find( r => r.moId === networkMoId )
-    networkDevice.networkMoId = networkMoId
+    let network = networks.find( n => n.name === networkName )
     networkDevice.networkName = network.name
+    networkDevice.networkMoId = network.moId
     await this.setState({networkDevices: networkDevices})
   }
 
@@ -931,21 +926,21 @@ class CreateVmService extends React.Component {
     await this.setState({networkDevices: networkDevices})
   }
 
-  diskDeviceDatastoreSet = async (datastoreMoId, diskDeviceId) => {
+  diskDeviceDatastoreSet = async (datastoreName, diskDeviceId) => {
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let datastores = JSON.parse(JSON.stringify(this.state.datastores))
-    let diskDevice = diskDevices.find( r => r.id === diskDeviceId )
+    let diskDevice = diskDevices.find( dd => dd.id === diskDeviceId )
     let datastore
 
-    if (datastoreMoId === 'MainDatastore') {
-      datastore = datastores.find( r => r.name === this.state.request.mainDatastore )
+    if (datastoreName === 'MainDatastore') {
+      datastore = datastores.find( ds => ds.name === this.state.request.mainDatastore )
+      diskDevice.datastoreName = datastore.name
       diskDevice.datastoreMoId = datastore.moId
-      diskDevice.datastoreName = datastoreMoId
     }
     else {
-      datastore = datastores.find( r => r.moId === datastoreMoId )
-      diskDevice.datastoreMoId = datastoreMoId
+      datastore = datastores.find( ds => ds.name === datastoreName )
       diskDevice.datastoreName = datastore.name
+      diskDevice.datastoreMoId = datastore.moId
     }
     await this.setState({diskDevices: diskDevices})
   }
@@ -1974,9 +1969,9 @@ class CreateVmService extends React.Component {
   }
 
   //Cleaning State and closing Modal
-  closeModal = () => {
+  closeModal = async () => {
 
-    this.setState({
+  await  this.setState({
       visible: false,
       response: false,
       request: {},
@@ -2000,8 +1995,11 @@ class CreateVmService extends React.Component {
       addresses: [],
       bootstrapkeys: [],
       finalpubkeys: [],
+      jsonEnabled: null,
       errors: {}
     })
+
+  //this.componentWillUnmount()
   }
 
 
@@ -2053,7 +2051,7 @@ class CreateVmService extends React.Component {
                     { this.state.networks?
                       this.state.networks.map((n, i) => {
                       return (
-                        <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                         )
                       })
                     :
@@ -2070,7 +2068,7 @@ class CreateVmService extends React.Component {
                       onChange={e => this.networkDeviceNetworkSet(e, obj.id)}>
                       {this.state.networks.map((n, i) => {
                         return (
-                          <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                          <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                           )
                         })
                       }
@@ -2172,7 +2170,7 @@ class CreateVmService extends React.Component {
                         }
                         {this.state.datastores.map((n, i) => {
                           return (
-                            <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                            <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                             )
                           })}
                       </React.Fragment>
@@ -2197,7 +2195,7 @@ class CreateVmService extends React.Component {
                           }
                           {this.state.datastores.map((n, i) => {
                             return (
-                              <Select.Option key={i} value={n.moId}>{n.name}</Select.Option>
+                              <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
                               )
                           })}
                         </React.Fragment>
@@ -3157,11 +3155,6 @@ class CreateVmService extends React.Component {
                       }
                     </Col>
                   }
-                  <Col offset={1} span={4}>
-                    <Button type="primary" shape='round' onClick={() => this.templatesFetch()} >
-                      Refresh
-                    </Button>
-                  </Col>
                 </Row>
                 <br/>
 
