@@ -1596,13 +1596,15 @@ class CreateVmService extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
     let r
-    let addrs = addresses.map((addr, i) => {
+    let addrs = []
+
+    let a = addresses.forEach((addr, i) => {
       if (addr.dhcp) {
         delete addr.ip,
         delete addr.netMask,
         delete addr.gw
       }
-      return addr
+      addrs.push(addr)
     });
 
     console.log('this.state.addresses', this.state.addresses)
