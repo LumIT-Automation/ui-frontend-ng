@@ -1598,10 +1598,10 @@ class CreateVmService extends React.Component {
     let r
     let addrs = []
 
-    let a = addresses.forEach((addr, i) => {
+    addresses.forEach((addr, i) => {
       if (addr.dhcp) {
-        delete addr.ip,
-        delete addr.netMask,
+        delete addr.ip
+        delete addr.netMask
         delete addr.gw
       }
       addrs.push(addr)
