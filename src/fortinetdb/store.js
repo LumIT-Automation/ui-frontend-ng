@@ -53,8 +53,10 @@ const fortinetdbSlice = createSlice({
         state.projectsLoading = action.payload
       },
       projects: (state, action) => {
-        state.projects = action.payload.data.items
+        state.projects = action.payload.data.items,
+        state.totalUniqueProjects = action.payload.data.totalUniqueProjects
       },
+
       projectsFetch: (state, action) => {
         state.projectsFetch = action.payload
       },

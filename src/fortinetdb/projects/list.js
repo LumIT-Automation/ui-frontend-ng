@@ -184,8 +184,8 @@ class List extends React.Component {
         :
           null
         }
-        {this.props.projects && this.props.projects.length ?
-          <p>Total Projects: {this.props.projects.length}</p>
+        {this.props.totalUniqueProjects ?
+          <p>Total unique Projects: {this.props.totalUniqueProjects}</p>
         :
           null
         }
@@ -209,4 +209,5 @@ class List extends React.Component {
 export default connect((state) => ({
   authorizations: state.authorizations.f5,
   projects: state.fortinetdb.projects,
+  totalUniqueProjects: state.fortinetdb.totalUniqueProjects
 }))(List);

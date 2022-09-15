@@ -39,6 +39,7 @@ class Segmento extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.field)
   }
 
   componentWillUnmount() {
@@ -101,6 +102,8 @@ class Segmento extends React.Component {
                     target: "data",
                     eventHandlers: {
                       onClick: (e, n) => {
+                        console.log(e)
+                        console.log(n)
                         this.setState({visible: true, value: n.datum.SEGMENTO}, () => this.fetchValue())
                       },
                       onMouseOver: (e, n) => {

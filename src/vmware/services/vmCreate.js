@@ -106,8 +106,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('datastores', this.state.datastores)
-    console.log('request', this.state.request)
     if (this.state.visible) {
       if ( this.props.asset && (prevProps.asset !== this.props.asset) ) {
         this.main()
@@ -116,7 +114,6 @@ class CreateVmService extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount')
   }
 
   details = () => {
