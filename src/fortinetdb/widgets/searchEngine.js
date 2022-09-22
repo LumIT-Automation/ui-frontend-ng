@@ -133,44 +133,31 @@ class SearchEngine extends React.Component {
         />
       }
     return (
-      <React.Fragment>
-      <Row style={{height: '100px'}}>
-        <Col span={8} style={{backgroundColor: 'green'}}>
+      <React.Fragment style={{height: '30vh'}}>
+      <Row>
+        <Col offset={4} xs={24} sm={24} md={24} lg={16} xl={16} xxl={4} style={{backgroundColor: 'green', marginTop: '10vh'}}>
           <Logo data={this.props.image}/>
         </Col>
-        <Col span={16}>
-        <Row>
-          <Col offset={8} span={8}>
-            <p style={{margin: '3vh 0 2vh 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
-          </Col>
-        </Row>
+        <Col offset={2} span={8} flex="1 0 25%">
+          <Row>
+            <p style={{margin: '12vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
+          </Row>
 
-        <Row>
-          <Col offset={7} span={10}>
-            <p style={{margin: '1vh 0 0 0', textAlign: 'center'}}>
-              Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
-            </p>
-            <p style={{margin: '0 0 0 0', textAlign: 'center'}}>
-              Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
-            </p>
-            <p style={{margin: '0 0 4vh 0', textAlign: 'center'}}>
-              l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
-            </p>
-          </Col>
-        </Row>
-
-
-        <Row>
-          { this.props.accountsLoading ?
-            <Col offset={11} span={1}>
-              <Spin indicator={spinIcon} style={{display: 'inline'}}/>
-            </Col>
-          :
-            <Col offset={8} span={8}>
+          <Row>
+              <p style={{margin: '5vh 0 0 0', textAlign: 'center'}}>
+                Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
+                Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
+                l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
+              </p>
+          </Row>
+          <Row>
+            { this.props.accountsLoading ?
+              <Spin indicator={spinIcon} style={{margin: '5vh 0 0 0', display: 'inline'}}/>
+            :
               <React.Fragment>
                 <Select
                   placeholder=""
-                  style={{width: '100%'}}
+                  style={{width: '100%', marginTop: '5vh'}}
                   showSearch
                   //allowClear
                   value={this.state.fby}
@@ -203,9 +190,8 @@ class SearchEngine extends React.Component {
                   }
                 </Select>
               </React.Fragment>
-            </Col>
-          }
-        </Row>
+            }
+          </Row>
         </Col>
 
       </Row>

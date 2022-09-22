@@ -80,9 +80,6 @@ class CustomSider extends Component {
   }
 
   render(){
-    console.log(this.props.authorizations)
-    console.log(this.props.authorizationsF5)
-
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
     return (

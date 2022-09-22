@@ -3,10 +3,10 @@
 class Authorizators {
 
   isSuperAdmin = a => {
+    console.log('aaaaaa', a)
     if (a) {
       try {
         for (const [key, value] of Object.entries(a) ) {
-          //if ( (key === 'any') || ('any' in value && value.any === 'any') ) {
           if (value.any) {
             console.log('true')
             return true
