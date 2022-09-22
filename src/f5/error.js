@@ -197,6 +197,7 @@ class Error extends Component {
           break;
 
         case 'partitionsError':
+        console.log('pppppp')
           this.props.dispatch(partitionsError(null))
           break;
 

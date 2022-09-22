@@ -75,31 +75,42 @@ class HeaderCustom extends Component {
         height={50}
         width={'100%'}
         style={{marginTop: '7px'}}
+        //style={{marginTop: '7px', marginLeft: '-300px'}}
         />
       }
 
     return (
       <Header className="header" style={{padding: '0 10px'}}>
         <Row>
-          { this.props.logoWhite ?
-            <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
-              <Logo data={this.props.logoWhite}/>
-            </Col>
+          { this.props.banner ?
+            <React.Fragment>
+              <Col span={4} style={{display: 'flex', justifyContent: 'center'}}>
+                <Banner data={this.props.banner}/>
+              </Col>
+              <Col span={16} style={{display: 'flex', justifyContent: 'center'}}>
+              </Col>
+            </React.Fragment>
           :
-            <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
-            </Col>
+            <React.Fragment>
+              {this.props.logoWhite ?
+                <React.Fragment>
+                  <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
+                    <Logo data={this.props.logoWhite}/>
+                  </Col>
+                  <Col span={19} style={{display: 'flex', justifyContent: 'center'}}>
+                  </Col>
+                </React.Fragment>
+              :
+                <React.Fragment>
+                  <Col span={4}>
+                  </Col>
+                  <Col span={16} style={{display: 'flex', justifyContent: 'center'}}>
+                  </Col>
+                </React.Fragment>
+              }
+            </React.Fragment>
           }
 
-          { this.props.banner ?
-            <Col offset={1} span={4} style={{display: 'flex', justifyContent: 'center'}}>
-              <Banner data={this.props.banner}/>
-            </Col>
-          :
-            <Col offset={1} span={4} style={{display: 'flex', justifyContent: 'center'}}>
-            </Col>
-          }
-          <Col span={14} style={{display: 'flex', justifyContent: 'center'}}>
-          </Col>
 
           { this.props.authenticated ?
             <Col span={4} style={{paddingRight: '10px'}}>

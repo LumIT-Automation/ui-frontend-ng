@@ -42,7 +42,7 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.request.assetId !== this.state.request.assetId) {
+    if (this.state.request.assetId && (prevState.request.assetId !== this.state.request.assetId)) {
       this.networksGet()
     }
   }

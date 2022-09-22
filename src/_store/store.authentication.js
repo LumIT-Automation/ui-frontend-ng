@@ -25,10 +25,12 @@ const authenticationSlice = createSlice({
           if (action.payload.application.logo.white) {
             state.logoWhite = action.payload.application.logo.white
           }
+          if (action.payload.application.image) {
+            state.image = action.payload.application.image
+          }
           if (action.payload.page.banner) {
             state.banner = action.payload.page.banner
           }
-
         },
         logout: (state, action) => {
           for (const l in state) {

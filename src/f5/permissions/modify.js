@@ -41,7 +41,7 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.request.assetId !== this.state.request.assetId) {
+    if (this.state.request.assetId && (prevState.request.assetId !== this.state.request.assetId)) {
       this.partitionsGet()
     }
   }
@@ -275,8 +275,8 @@ class Modify extends React.Component {
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
+  closeModal = async () => {
+    await this.setState({
       visible: false,
       request: {},
       partitions: []

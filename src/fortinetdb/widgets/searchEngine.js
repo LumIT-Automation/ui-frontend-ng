@@ -125,74 +125,89 @@ class SearchEngine extends React.Component {
 
   render() {
     console.log(this.state.account)
+    const Logo = ({ data }) => {
+      return <img
+        src={`data:${data}`}
+        height={'50%'}
+        //width={'64px'}
+        />
+      }
     return (
       <React.Fragment>
-      <Row>
-        <Col offset={8} span={8}>
-          <p style={{margin: '3vh 0 2vh 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
+      <Row style={{height: '100px'}}>
+        <Col span={8} style={{backgroundColor: 'green'}}>
+          <Logo data={this.props.image}/>
         </Col>
-      </Row>
-
-      <Row>
-        <Col offset={7} span={10}>
-          <p style={{margin: '1vh 0 0 0', textAlign: 'center'}}>
-            Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
-          </p>
-          <p style={{margin: '0 0 0 0', textAlign: 'center'}}>
-            Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
-          </p>
-          <p style={{margin: '0 0 4vh 0', textAlign: 'center'}}>
-            l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
-          </p>
-        </Col>
-      </Row>
-
-
-      <Row>
-        { this.props.accountsLoading ?
-          <Col offset={11} span={1}>
-            <Spin indicator={spinIcon} style={{display: 'inline'}}/>
-          </Col>
-        :
+        <Col span={16}>
+        <Row>
           <Col offset={8} span={8}>
-            <React.Fragment>
-              <Select
-                placeholder=""
-                style={{width: '100%'}}
-                showSearch
-                //allowClear
-                value={this.state.fby}
-                onSearch={a => this.setState({input: a})}
-                optionFilterProp="children"
-                filterOption={(input, option) => {
-                  if (option.value !== null && input.length > 2) {
-                    return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                  }
-                }
-                }
-                filterSort={(optionA, optionB) => {
-                    return optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                  }
-                }
-                onSelect={e => this.fiteredBy(e)}>
-                //onChange={e => this.fiteredBy(e)}>
-                {(this.state.input && this.state.input.length) > 2 ?
-                  <React.Fragment>
-                    {this.state.searchingList && this.state.searchingList.map((n, i) => {
-                        return (
-                          <Select.Option key={i} value={n}>{n}</Select.Option>
-                        )
-
-                      })
-                    }
-                  </React.Fragment>
-                :
-                  null
-                }
-              </Select>
-            </React.Fragment>
+            <p style={{margin: '3vh 0 2vh 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
           </Col>
-        }
+        </Row>
+
+        <Row>
+          <Col offset={7} span={10}>
+            <p style={{margin: '1vh 0 0 0', textAlign: 'center'}}>
+              Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
+            </p>
+            <p style={{margin: '0 0 0 0', textAlign: 'center'}}>
+              Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
+            </p>
+            <p style={{margin: '0 0 4vh 0', textAlign: 'center'}}>
+              l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
+            </p>
+          </Col>
+        </Row>
+
+
+        <Row>
+          { this.props.accountsLoading ?
+            <Col offset={11} span={1}>
+              <Spin indicator={spinIcon} style={{display: 'inline'}}/>
+            </Col>
+          :
+            <Col offset={8} span={8}>
+              <React.Fragment>
+                <Select
+                  placeholder=""
+                  style={{width: '100%'}}
+                  showSearch
+                  //allowClear
+                  value={this.state.fby}
+                  onSearch={a => this.setState({input: a})}
+                  optionFilterProp="children"
+                  filterOption={(input, option) => {
+                    if (option.value !== null && input.length > 2) {
+                      return option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                  }
+                  }
+                  filterSort={(optionA, optionB) => {
+                      return optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                  }
+                  onSelect={e => this.fiteredBy(e)}>
+                  //onChange={e => this.fiteredBy(e)}>
+                  {(this.state.input && this.state.input.length) > 2 ?
+                    <React.Fragment>
+                      {this.state.searchingList && this.state.searchingList.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+
+                        })
+                      }
+                    </React.Fragment>
+                  :
+                    null
+                  }
+                </Select>
+              </React.Fragment>
+            </Col>
+          }
+        </Row>
+        </Col>
+
       </Row>
 
         { this.state.visible ?
@@ -235,6 +250,7 @@ class SearchEngine extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  image: state.authentication.image,
 
   projects: state.fortinetdb.projects,
   projectsLoading: state.fortinetdb.projectsLoading,
