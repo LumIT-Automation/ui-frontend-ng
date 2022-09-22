@@ -202,9 +202,6 @@ class Rest {
                 }
               }
               catch (error) {
-                //console.error(error)
-                console.log(error.message)
-                console.log(response)
                 if (error instanceof SyntaxError && error.message.toLowerCase().includes('json')) {
                   this.onSuccess({
                     status: response.status,

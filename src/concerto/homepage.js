@@ -86,8 +86,8 @@ class Homepage extends React.Component {
         :
           null
         }
-{/*
-        {this.props.authorizationsFortinetdb.view_interface_widget_devices ?
+
+        {this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_devices) ?
           <React.Fragment>
             <br/>
             <Divider orientation="left" style={{fontWeight: 'bold'}}>Devices</Divider>
@@ -118,7 +118,7 @@ class Homepage extends React.Component {
           null
         }
 
-        {this.props.authorizationsFortinetdb.view_interface_widget_extra ?
+        {this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_extra) ?
           <React.Fragment>
           <br/>
             <Divider/>
@@ -158,7 +158,7 @@ class Homepage extends React.Component {
         :
           null
         }
-*/}
+
       </React.Fragment>
     )
   }

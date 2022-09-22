@@ -128,23 +128,23 @@ class SearchEngine extends React.Component {
     const Logo = ({ data }) => {
       return <img
         src={`data:${data}`}
-        height={'50%'}
+        height={'200px'}
         //width={'64px'}
         />
       }
     return (
-      <React.Fragment style={{height: '30vh'}}>
+      <React.Fragment>
       <Row>
-        <Col offset={4} xs={24} sm={24} md={24} lg={16} xl={16} xxl={4} style={{backgroundColor: 'green', marginTop: '10vh'}}>
+        <Col offset={5} xs={6} sm={6} md={6} lg={6} xl={4} xxl={4} style={{marginTop: '14vh'}}>
           <Logo data={this.props.image}/>
         </Col>
-        <Col offset={2} span={8} flex="1 0 25%">
+        <Col offset={1} xl={8} xxl={8}>
           <Row>
-            <p style={{margin: '12vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
+            <p style={{margin: '13vh 40% 0 40%', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
           </Row>
 
           <Row>
-              <p style={{margin: '5vh 0 0 0', textAlign: 'center'}}>
+              <p style={{margin: '3vh 4vh 0 0'}}>
                 Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
                 Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
                 l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
@@ -152,12 +152,12 @@ class SearchEngine extends React.Component {
           </Row>
           <Row>
             { this.props.accountsLoading ?
-              <Spin indicator={spinIcon} style={{margin: '5vh 0 0 0', display: 'inline'}}/>
+              <Spin indicator={spinIcon} style={{margin: '5vh 5vh 0 0', display: 'inline'}}/>
             :
               <React.Fragment>
                 <Select
                   placeholder=""
-                  style={{width: '100%', marginTop: '5vh'}}
+                  style={{width: '100%', margin: '5vh 5vh 0 0'}}
                   showSearch
                   //allowClear
                   value={this.state.fby}
