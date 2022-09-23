@@ -138,13 +138,13 @@ class SearchEngine extends React.Component {
         <Col offset={5} xs={6} sm={6} md={6} lg={6} xl={4} xxl={4} style={{marginTop: '14vh'}}>
           <Logo data={this.props.image}/>
         </Col>
-        <Col offset={1} xl={8} xxl={8}>
+        <Col xl={8} xxl={8}>
           <Row>
-            <p style={{margin: '13vh 40% 0 40%', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
+            <p style={{padding: '0 40%', margin: '13vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
           </Row>
 
           <Row>
-              <p style={{margin: '3vh 4vh 0 0'}}>
+              <p style={{padding: '0 2%', margin: '1vh 0 0 0'}}>
                 Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
                 Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
                 l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
@@ -152,12 +152,12 @@ class SearchEngine extends React.Component {
           </Row>
           <Row>
             { this.props.accountsLoading ?
-              <Spin indicator={spinIcon} style={{margin: '5vh 5vh 0 0', display: 'inline'}}/>
+              <Spin indicator={spinIcon} style={{padding: '0 47%', margin: '5vh 5vh 0 0', display: 'inline'}}/>
             :
               <React.Fragment>
                 <Select
                   placeholder=""
-                  style={{width: '100%', margin: '5vh 5vh 0 0'}}
+                  style={{width: '60%', margin: '2vh 0 0 20%'}}
                   showSearch
                   //allowClear
                   value={this.state.fby}

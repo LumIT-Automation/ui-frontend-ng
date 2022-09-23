@@ -49,11 +49,12 @@ class Homepage extends React.Component {
   }
 
   render() {
+    console.log(this.props.authorizations)
     console.log(this.props.authorizationsFortinetdb)
     return (
 
       <React.Fragment>
-        { this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_search) ?
+        { this.props.authorizationsFortinetdb && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_search) ?
           <React.Fragment>
             <SearchEngine/>
           </React.Fragment>
@@ -61,7 +62,7 @@ class Homepage extends React.Component {
           null
         }
 
-        { this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_projects) ?
+        { this.props.authorizationsFortinetdb && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_projects) ?
           <React.Fragment>
             <br/>
             <Divider orientation="left" style={{fontWeight: 'bold'}}>Projects</Divider>
@@ -87,7 +88,7 @@ class Homepage extends React.Component {
           null
         }
 
-        {this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_devices) ?
+        {this.props.authorizationsFortinetdb && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_devices) ?
           <React.Fragment>
             <br/>
             <Divider orientation="left" style={{fontWeight: 'bold'}}>Devices</Divider>
@@ -118,7 +119,7 @@ class Homepage extends React.Component {
           null
         }
 
-        {this.props.authorizations && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_extra) ?
+        {this.props.authorizationsFortinetdb && this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.view_interface_widget_extra) ?
           <React.Fragment>
           <br/>
             <Divider/>
