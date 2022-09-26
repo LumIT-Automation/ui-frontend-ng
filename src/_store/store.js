@@ -7,6 +7,7 @@ import authorizationsReducer from './store.authorizations'
 import f5Reducer from '../f5/store'
 import vmwareReducer from '../vmware/store'
 import infobloxReducer from '../infoblox/store'
+import checkpointReducer from '../checkpoint/store'
 import fortinetdbReducer from '../fortinetdb/store'
 
 
@@ -18,6 +19,7 @@ export default configureStore({
     f5: f5Reducer,
     vmware: vmwareReducer,
     infoblox: infobloxReducer,
+    checkpoint: checkpointReducer,
     fortinetdb: fortinetdbReducer,
   }
 })

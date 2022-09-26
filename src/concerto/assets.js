@@ -9,9 +9,11 @@ import Authorizators from '../_helpers/authorizators'
 import Vmware from '../vmware/assets/manager'
 import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
+import Checkpoint from '../checkpoint/assets/manager'
 
 import { assetsFetch as vmwareAssetsFetch } from '../vmware/store'
 import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store'
+import { assetsFetch as checkpointAssetsFetch } from '../checkpoint/store'
 import { assetsFetch as f5AssetsFetch } from '../f5/store'
 
 
@@ -85,6 +87,18 @@ class Assets extends React.Component {
               null
             }
 
+            <React.Fragment>
+              {this.props.checkpointLoading ?
+                <TabPane key="Checkpoint" tab="Checkpoint">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+                :
+                <TabPane key="checkpoint" tab=<span>Checkpoint <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(checkpointAssetsFetch(true))}/></span>>
+                  <Checkpoint/>
+                </TabPane>
+              }
+            </React.Fragment>
+
             { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
                 {this.props.f5Loading ?
@@ -112,10 +126,12 @@ class Assets extends React.Component {
 
 export default connect((state) => ({
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
 
   infobloxLoading: state.infoblox.assetsLoading,
+  checkpointLoading: state.checkpoint.assetsLoading,
   vmwareLoading: state.vmware.assetsLoading,
   f5Loading: state.f5.assetsLoading,
 }))(Assets);

@@ -91,7 +91,6 @@ const f5Slice = createSlice({
           state.partitionsFetch = action.payload
         },
         partitionsError: (state, action) => {
-          console.log('store-------------------', action.payload)
           state.partitionsError = action.payload
         },
 

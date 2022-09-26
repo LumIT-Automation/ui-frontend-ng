@@ -147,7 +147,7 @@ class SearchEngine extends React.Component {
               <p style={{padding: '0 2%', margin: '1vh 0 0 0'}}>
                 Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
                 Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
-                l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio
+                l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio.
               </p>
           </Row>
           <Row>
