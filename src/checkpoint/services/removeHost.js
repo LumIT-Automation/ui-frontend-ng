@@ -147,7 +147,7 @@ class RemoveHost extends React.Component {
     let r
     let b = {}
     b.data = {
-      "ipv4-address": `${this.state.request.ip}`
+      "ipv4-address": `${request.ip}`
     }
 
     let rest = new Rest(
