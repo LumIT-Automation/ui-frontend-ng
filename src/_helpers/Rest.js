@@ -103,14 +103,6 @@ class Rest {
 
 
 
-
-
-
-
-
-
-
-
       else {
         if (this.method === "GET") {
           try {
@@ -264,22 +256,47 @@ class Rest {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify(payload)
-            });
-            //let c = response.bla()
+            })
+
             if (response.ok) {
-              json = await response.json();
-              //e.g. get partitions, get nodes, etc.
-              if (json && json.data) {
-                this.onSuccess(json);
+              try {
+                json = await response.json();
+
+                if (json && json.data) {
+                  this.onSuccess(json);
+                }
+                else {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
               }
-              //
-              else {
-                this.onSuccess(response);
+              catch (error) {
+                if (error instanceof SyntaxError && error.message.toLowerCase().includes('json')) {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
+                else {
+                  this.onError({
+                      status: response.status,
+                      message: response.statusText,
+                      type: response.type,
+                      url: response.url
+                    })
+                }
+
               }
+
             }
             else {
               try {
-                //e.g. 400, get non existent partitions,
                 json = await response.json();
                 this.onError(
                   {
@@ -292,8 +309,6 @@ class Rest {
                 )
               }
               catch {
-                //e.g. 404, /../partitionsccc
-
                 this.onError(
                   {
                     status: response.status,
@@ -322,22 +337,47 @@ class Rest {
                 'Content-Type': 'application/json'
               },
               body: JSON.stringify(payload)
-            });
-            //let c = response.bla()
+            })
+
             if (response.ok) {
-              json = await response.json();
-              //e.g. get partitions, get nodes, etc.
-              if (json && json.data) {
-                this.onSuccess(json);
+              try {
+                json = await response.json();
+
+                if (json && json.data) {
+                  this.onSuccess(json);
+                }
+                else {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
               }
-              //
-              else {
-                this.onSuccess(response);
+              catch (error) {
+                if (error instanceof SyntaxError && error.message.toLowerCase().includes('json')) {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
+                else {
+                  this.onError({
+                      status: response.status,
+                      message: response.statusText,
+                      type: response.type,
+                      url: response.url
+                    })
+                }
+
               }
+
             }
             else {
               try {
-                //e.g. 400, get non existent partitions,
                 json = await response.json();
                 this.onError(
                   {
@@ -350,8 +390,6 @@ class Rest {
                 )
               }
               catch {
-                //e.g. 404, /../partitionsccc
-
                 this.onError(
                   {
                     status: response.status,
@@ -379,24 +417,48 @@ class Rest {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': 'application/json'
               },
-            });
-            //let c = response.bla()
+              body: JSON.stringify(payload)
+            })
+
             if (response.ok) {
               try {
                 json = await response.json();
+
                 if (json && json.data) {
                   this.onSuccess(json);
                 }
+                else {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
               }
-              catch {
-                this.onSuccess(response);
+              catch (error) {
+                if (error instanceof SyntaxError && error.message.toLowerCase().includes('json')) {
+                  this.onSuccess({
+                    status: response.status,
+                    message: response.statusText,
+                    type: response.type,
+                    url: response.url
+                  });
+                }
+                else {
+                  this.onError({
+                      status: response.status,
+                      message: response.statusText,
+                      type: response.type,
+                      url: response.url
+                    })
+                }
+
               }
-              //e.g. get partitions, get nodes, etc.
-              //
+
             }
             else {
               try {
-                //e.g. 400, get non existent partitions,
                 json = await response.json();
                 this.onError(
                   {
@@ -409,7 +471,6 @@ class Rest {
                 )
               }
               catch {
-                //e.g. 404, /../partitionsccc
                 this.onError(
                   {
                     status: response.status,
@@ -419,10 +480,8 @@ class Rest {
                   }
                 )
               }
-
             }
           }
-
           catch (error) {
             this.onError({
               message: error.message,
