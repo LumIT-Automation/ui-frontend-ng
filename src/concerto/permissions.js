@@ -140,15 +140,15 @@ class Permissions extends React.Component {
 
 
 export default connect((state) => ({
-  f5Auth: state.authorizations.f5,
-  checkpointAuth: state.authorizations.checkpoint,
   infobloxAuth: state.authorizations.infoblox,
+  checkpointAuth: state.authorizations.checkpoint,
+  f5Auth: state.authorizations.f5,
   vmwareAuth: state.authorizations.vmware,
   fortinetdbAuth: state.authorizations.fortinetdb,
 
-  f5Loading: state.f5.permissionsLoading,
-  checkpointLoading: state.checkpoint.permissionsLoading,
   infobloxLoading: state.infoblox.permissionsLoading,
+  checkpointLoading: state.checkpoint.permissionsLoading,
+  f5Loading: state.f5.permissionsLoading,
   vmwareLoading: state.vmware.permissionsLoading,
   fortinetdbLoading: state.fortinetdb.permissionsLoading,
 }))(Permissions);

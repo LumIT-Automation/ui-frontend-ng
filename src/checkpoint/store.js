@@ -98,8 +98,8 @@ const checkpointSlice = createSlice({
         state.domain = action.payload
       },
 
-      hostDeleteError: (state, action) => {
-        state.hostDeleteError = action.payload
+      hostRemoveError: (state, action) => {
+        state.hostRemoveError = action.payload
       },
 
       historysLoading: ( state, action) => {
@@ -168,7 +168,7 @@ export const {
 
   domain,
 
-  hostDeleteError,
+  hostRemoveError,
 
   historysLoading,
   historys,

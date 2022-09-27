@@ -25,7 +25,7 @@ import {
 
   domainsError,
 
-  hostDeleteError,
+  hostRemoveError,
 
   historysError,
 
@@ -118,8 +118,8 @@ class Error extends Component {
           break;
 
 
-        case 'hostDeleteError':
-          this.props.dispatch(hostDeleteError(null))
+        case 'hostRemoveError':
+          this.props.dispatch(hostRemoveError(null))
           break;
 
         case 'historysError':

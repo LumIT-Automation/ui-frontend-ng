@@ -60,6 +60,34 @@ class Service extends React.Component {
           null
         }
 
+        { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              FIREWALL
+            </Divider>
+            <br/>
+            <CheckpointManager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              LOAD BALANCER
+            </Divider>
+            <br/>
+            <F5Manager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+
         { this.props.authorizationsVmware &&
           (this.props.authorizationsVmware.any ||
           (this.props.authorizationsVmware.template_post && this.authorizators(this.props.authorizationsVmware.template_post)) ) ?
@@ -76,30 +104,6 @@ class Service extends React.Component {
           null
         }
 
-        <React.Fragment>
-          <Divider orientation="left" plain>
-            FIREWALL
-          </Divider>
-          <br/>
-          <CheckpointManager/>
-          <br/>
-          <br/>
-        </React.Fragment>
-
-        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
-          <React.Fragment>
-            <Divider orientation="left" plain>
-              LOAD BALANCER
-            </Divider>
-            <br/>
-            <F5Manager/>
-            <br/>
-            <br/>
-          </React.Fragment>
-        :
-          null
-        }
-
       </React.Fragment>
     )
   }
@@ -108,8 +112,9 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
-  authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsCheckpoint: state.authorizations.checkpoint,
+  authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware
 
 }))(Service);

@@ -9,7 +9,7 @@ import {
   assetsError
 } from '../store'
 
-import DeleteHost from './deleteHost'
+import RemoveHost from './removeHost'
 
 import { Row, Col } from 'antd';
 
@@ -24,7 +24,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mouuunt')
     console.log(this.props.authorizations)
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       if (!this.props.assetsError) {
@@ -66,8 +65,8 @@ class Manager extends React.Component {
       <React.Fragment >
         <Row>
           <Col span={4} offset={2}>
-            <p>Delete Host</p>
-            <DeleteHost/>
+            <p>Remove Host</p>
+            <RemoveHost/>
           </Col>
         </Row>
 

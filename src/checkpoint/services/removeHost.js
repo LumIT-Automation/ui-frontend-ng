@@ -6,7 +6,7 @@ import Validators from '../../_helpers/validators'
 import Error from '../error'
 
 import {
-  hostDeleteError,
+  hostRemoveError,
 } from '../store'
 
 import AssetSelector from '../assetSelector'
@@ -17,7 +17,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
-class DeleteHost extends React.Component {
+class RemoveHost extends React.Component {
 
   constructor(props) {
     super(props);
@@ -105,11 +105,11 @@ class DeleteHost extends React.Component {
     })
 
     if (!error) {
-      this.releaseHandler()
+      this.removeHandler()
     }
   }
 
-  releaseHandler = async () => {
+  removeHandler = async () => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
 
     requests.forEach((request, i) => {
@@ -122,28 +122,34 @@ class DeleteHost extends React.Component {
       request.isLoading = true
       this.setState({requests: requests})
       try {
-        const resp = await this.deleteHost(request)
+        const resp = await this.removeHost(request)
         request.isLoading = false
         if (resp.status !== 200) {
-          request.isReleased = 'NOT RELEASED'
+          request.isReleased = 'NOT REMOVED'
           this.setState({requests: requests})
-          this.props.dispatch(hostDeleteError(resp))
+          this.props.dispatch(hostRemoveError(resp))
         }
         else {
-          request.isReleased = 'RELEASED'
+          request.isReleased = 'REMOVED'
           this.setState({requests: requests})
         }
       } catch(resp) {
         request.isLoading = false
         request.isReleased = false
-        this.props.dispatch(hostDeleteError(resp))
+        this.props.dispatch(hostRemoveError(resp))
         this.setState({requests: requests})
       }
     }
   }
 
-  deleteHost = async request => {
+  removeHost = async request => {
+    console.log(request)
     let r
+    let b = {}
+    b.data = {
+      "ipv4-address": `${this.state.request.ip}`
+    }
+
     let rest = new Rest(
       "PUT",
       resp => {
@@ -153,7 +159,7 @@ class DeleteHost extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/remove-host/`, this.props.token )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/remove-host/`, this.props.token, b )
     return r
   }
 
@@ -250,10 +256,10 @@ class DeleteHost extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>DELETE HOST</Button>
+        <Button type="primary" onClick={() => this.details()}>REMOVE HOST</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE HOST</p>}
+          title={<p style={{textAlign: 'center'}}>REMOVE HOST</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -285,7 +291,7 @@ class DeleteHost extends React.Component {
                 style={{marginBottom: 10}}
               />
               <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validateIp()}>
-                Release Ip
+                Remove Host
               </Button>
               <br/>
             </React.Fragment>
@@ -326,7 +332,7 @@ class DeleteHost extends React.Component {
 
       {this.state.visible ?
         <React.Fragment>
-          { this.props.hostDeleteError ? <Error component={'hostDelete'} error={[this.props.hostDeleteError]} visible={true} type={'hostDeleteError'} /> : null }
+          { this.props.hostRemoveError ? <Error component={'hostRemove'} error={[this.props.hostRemoveError]} visible={true} type={'hostRemoveError'} /> : null }
         </React.Fragment>
       :
         null
@@ -344,5 +350,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.checkpoint,
   asset: state.checkpoint.asset,
 
-  hostDeleteError: state.checkpoint.hostDeleteError,
-}))(DeleteHost);
+  hostRemoveError: state.checkpoint.hostRemoveError,
+}))(RemoveHost);

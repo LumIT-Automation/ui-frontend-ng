@@ -6,16 +6,15 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Authorizators from '../_helpers/authorizators'
-import Vmware from '../vmware/assets/manager'
-import F5 from '../f5/assets/manager'
 import Infoblox from '../infoblox/assets/manager'
 import Checkpoint from '../checkpoint/assets/manager'
+import F5 from '../f5/assets/manager'
+import Vmware from '../vmware/assets/manager'
 
-import { assetsFetch as vmwareAssetsFetch } from '../vmware/store'
 import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store'
 import { assetsFetch as checkpointAssetsFetch } from '../checkpoint/store'
 import { assetsFetch as f5AssetsFetch } from '../f5/store'
-
+import { assetsFetch as vmwareAssetsFetch } from '../vmware/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -54,23 +53,6 @@ class Assets extends React.Component {
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
           <Tabs type="card">
-
-            { this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware) ?
-              <React.Fragment>
-                {this.props.vmwareLoading ?
-                  <TabPane key="Vmware" tab="Vmware">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="vmware" tab=<span>Vmware <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(vmwareAssetsFetch(true))}/></span>>
-                    <Vmware/>
-                  </TabPane>
-                }
-              </React.Fragment>
-              :
-              null
-            }
-
             { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
@@ -108,6 +90,22 @@ class Assets extends React.Component {
                   :
                   <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsFetch(true))}/></span>>
                     <F5/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+
+            { this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware) ?
+              <React.Fragment>
+                {this.props.vmwareLoading ?
+                  <TabPane key="Vmware" tab="Vmware">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="vmware" tab=<span>Vmware <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(vmwareAssetsFetch(true))}/></span>>
+                    <Vmware/>
                   </TabPane>
                 }
               </React.Fragment>
