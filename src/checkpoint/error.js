@@ -23,6 +23,8 @@ import {
   assetModifyError,
   assetDeleteError,
 
+  domainsError,
+
   hostDeleteError,
 
   historysError,
@@ -110,6 +112,10 @@ class Error extends Component {
         case 'assetDeleteError':
         	this.props.dispatch(assetDeleteError(null))
         	break;
+
+        case 'domainsError':
+          this.props.dispatch(domainsError(null))
+          break;
 
 
         case 'hostDeleteError':

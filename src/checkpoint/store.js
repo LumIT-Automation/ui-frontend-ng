@@ -81,6 +81,23 @@ const checkpointSlice = createSlice({
         state.assetDeleteError = action.payload
       },
 
+      domainsLoading: (state, action) => {
+        state.domainsLoading = action.payload
+      },
+      domains: (state, action) => {
+        state.domains = action.payload.data.items
+      },
+      domainsFetch: (state, action) => {
+        state.domainsFetch = action.payload
+      },
+      domainsError: (state, action) => {
+        state.domainsError = action.payload
+      },
+
+      domain: (state, action) => {
+        state.domain = action.payload
+      },
+
       hostDeleteError: (state, action) => {
         state.hostDeleteError = action.payload
       },
@@ -143,6 +160,13 @@ export const {
   assetAddError,
   assetModifyError,
   assetDeleteError,
+
+  domainsLoading,
+  domains,
+  domainsFetch,
+  domainsError,
+
+  domain,
 
   hostDeleteError,
 

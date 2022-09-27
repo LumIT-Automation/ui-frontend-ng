@@ -6,13 +6,15 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import SuperAdmin from './superAdmin/manager'
-import F5 from '../f5/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
+import Checkpoint from '../checkpoint/permissions/manager'
+import F5 from '../f5/permissions/manager'
 import Vmware from '../vmware/permissions/manager'
 import Fortinetdb from '../fortinetdb/permissions/manager'
 
-import { permissionsFetch as f5PermissionsFetch } from '../f5/store'
 import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store'
+import { permissionsFetch as checkpointPermissionsFetch } from '../checkpoint/store'
+import { permissionsFetch as f5PermissionsFetch } from '../f5/store'
 import { permissionsFetch as vmwarePermissionsFetch } from '../vmware/store'
 import { permissionsFetch as fortinetdbPermissionsFetch } from '../fortinetdb/store'
 
@@ -44,8 +46,6 @@ class Permissions extends React.Component {
 
 
   render() {
-    console.log(this.props.f5Auth)
-    console.log(this.props.fortinetdbAuth)
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -53,21 +53,6 @@ class Permissions extends React.Component {
             <TabPane tab="SuperAdmin" key="SuperAdmin">
               <SuperAdmin/>
             </TabPane>
-            { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
-              <React.Fragment>
-                {this.props.f5Loading ?
-                  <TabPane key="F5" tab="F5">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5PermissionsFetch(true))}/></span>>
-                    <F5/>
-                  </TabPane>
-                }
-              </React.Fragment>
-              :
-              null
-            }
             { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
@@ -83,6 +68,37 @@ class Permissions extends React.Component {
               :
               null
             }
+            { this.props.checkpointAuth && (this.props.checkpointAuth.permission_identityGroups_get || this.props.checkpointAuth.any) ?
+              <React.Fragment>
+                {this.props.checkpointLoading ?
+                  <TabPane key="Checkpoint" tab="Checkpoint">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="Checkpoint" tab=<span>Checkpoint <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(checkpointPermissionsFetch(true))}/></span>>
+                    <Checkpoint/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+            { this.props.f5Auth && (this.props.f5Auth.permission_identityGroups_get || this.props.f5Auth.any) ?
+              <React.Fragment>
+                {this.props.f5Loading ?
+                  <TabPane key="F5" tab="F5">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5PermissionsFetch(true))}/></span>>
+                    <F5/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
+
             { this.props.vmwareAuth && (this.props.vmwareAuth.permission_identityGroups_get || this.props.vmwareAuth.any) ?
               <React.Fragment>
                 {this.props.vmwareLoading ?
@@ -125,11 +141,13 @@ class Permissions extends React.Component {
 
 export default connect((state) => ({
   f5Auth: state.authorizations.f5,
+  checkpointAuth: state.authorizations.checkpoint,
   infobloxAuth: state.authorizations.infoblox,
   vmwareAuth: state.authorizations.vmware,
   fortinetdbAuth: state.authorizations.fortinetdb,
 
   f5Loading: state.f5.permissionsLoading,
+  checkpointLoading: state.checkpoint.permissionsLoading,
   infobloxLoading: state.infoblox.permissionsLoading,
   vmwareLoading: state.vmware.permissionsLoading,
   fortinetdbLoading: state.fortinetdb.permissionsLoading,
