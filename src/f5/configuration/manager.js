@@ -92,7 +92,6 @@ class Manager extends React.Component {
 
   modifyConfiguration = async () => {
     let conf = JSON.stringify(this.props.configuration)
-    console.log(conf)
 
     let b = {}
     b.data = {
@@ -104,12 +103,10 @@ class Manager extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        console.log(resp)
         this.props.dispatch(configurationLoading(false))
         this.props.dispatch(configurationFetch(true))
       },
       error => {
-        console.log(error)
         this.props.dispatch(configurationLoading(false))
         this.props.dispatch(configurationModifyError(error))
       }
@@ -120,8 +117,6 @@ class Manager extends React.Component {
 
 
   render() {
-
-    console.log(this.props.configuration)
 
     const columns = [
       {

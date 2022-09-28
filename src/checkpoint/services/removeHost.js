@@ -143,7 +143,6 @@ class RemoveHost extends React.Component {
   }
 
   removeHost = async request => {
-    console.log(request)
     let r
     let b = {}
     b.data = {
@@ -175,8 +174,6 @@ class RemoveHost extends React.Component {
 
 
   render() {
-    console.log(this.props.assets)
-
     const requests = [
       {
         title: 'Loading',

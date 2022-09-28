@@ -24,7 +24,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.props.authorizations)
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       if (!this.props.assetsError) {
         if (!this.props.assets) {
@@ -48,7 +47,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(assets( resp ))
       },
       error => {

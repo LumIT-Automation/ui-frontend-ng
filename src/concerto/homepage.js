@@ -49,8 +49,6 @@ class Homepage extends React.Component {
   }
 
   render() {
-    console.log(this.props.authorizations)
-    console.log(this.props.authorizationsFortinetdb)
     return (
 
       <React.Fragment>

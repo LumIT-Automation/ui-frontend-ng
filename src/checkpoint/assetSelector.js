@@ -97,7 +97,6 @@ class AssetSelector extends React.Component {
 
 
   render() {
-    console.log(this.props.assets)
     return (
       <React.Fragment>
       <br/>

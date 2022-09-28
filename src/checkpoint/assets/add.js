@@ -208,7 +208,7 @@ class Add extends React.Component {
     b.data = {
       "address": this.state.request.address,
       "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}/wapi/v2.10`,
+      "baseurl": `https://${this.state.request.address}/web_api/`,
       "tlsverify": this.state.request.tlsverify,
       "datacenter": this.state.request.datacenter,
       "environment": this.state.request.environment,

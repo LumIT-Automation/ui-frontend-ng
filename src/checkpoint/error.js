@@ -43,10 +43,6 @@ import { Modal, Table, Result } from 'antd';
 class Error extends Component {
 
   componentDidMount() {
-    console.log('checkpoint error mount')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -54,10 +50,6 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('checkpoint error update')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   componentWillUnmount() {
