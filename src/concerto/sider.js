@@ -16,9 +16,9 @@ import {
   FastForwardOutlined
  } from '@ant-design/icons';
 
-import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
 import IpSVG from '../svg/ip-address-svgrepo-com.svg'
 import NetworkSVG from '../svg/layer-3-switch.svg'
+import FirewallSVG from '../svg/firewall-svgrepo-com.svg'
 import LoadbalancerSVG from '../svg/loadbalancer.svg'
 import CertSVG from '../svg/certificates.svg'
 import ItemsSVG from '../svg/items.svg'
@@ -95,6 +95,7 @@ class CustomSider extends Component {
         >
 
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+
           { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
             (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
@@ -122,6 +123,14 @@ class CustomSider extends Component {
           { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
             <React.Fragment>
               <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
+
+          { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+            <React.Fragment>
+              <Menu.Item key="checkpoint" icon={this.firewallIcon()}><Link to="/checkpoint/">CHECKPOINT</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             : null
@@ -210,8 +219,9 @@ class CustomSider extends Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations,
-  authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsCheckpoint: state.authorizations.checkpoint,
+  authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
   authorizationsFortinetdb: state.authorizations.fortinetdb,
 }))(CustomSider);

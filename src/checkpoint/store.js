@@ -98,6 +98,46 @@ const checkpointSlice = createSlice({
         state.domain = action.payload
       },
 
+      hostsLoading: (state, action) => {
+        state.hostsLoading = action.payload
+      },
+      hosts: (state, action) => {
+        state.hosts = action.payload.data.items
+      },
+      hostsFetch: (state, action) => {
+        state.hostsFetch = action.payload
+      },
+      hostsError: (state, action) => {
+        state.hostsError = action.payload
+      },
+
+      hostAddError: (state, action) => {
+        state.hostAddError = action.payload
+      },
+      hostDeleteError: (state, action) => {
+        state.hostDeleteError = action.payload
+      },
+
+      networksLoading: (state, action) => {
+        state.networksLoading = action.payload
+      },
+      networks: (state, action) => {
+        state.networks = action.payload.data.items
+      },
+      networksFetch: (state, action) => {
+        state.networksFetch = action.payload
+      },
+      networksError: (state, action) => {
+        state.networksError = action.payload
+      },
+
+      networkAddError: (state, action) => {
+        state.networkAddError = action.payload
+      },
+      networkDeleteError: (state, action) => {
+        state.networkDeleteError = action.payload
+      },
+
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
@@ -167,6 +207,22 @@ export const {
   domainsError,
 
   domain,
+
+  hostsLoading,
+  hosts,
+  hostsFetch,
+  hostsError,
+
+  hostAddError,
+  hostDeleteError,
+
+  networksLoading,
+  networks,
+  networksFetch,
+  networksError,
+
+  networkAddError,
+  networkDeleteError,
 
   hostRemoveError,
 

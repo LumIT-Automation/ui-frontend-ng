@@ -25,6 +25,16 @@ import {
 
   domainsError,
 
+  hostsError,
+
+  hostAddError,
+  hostDeleteError,
+
+  networksError,
+
+  networkAddError,
+  networkDeleteError,
+
   hostRemoveError,
 
   historysError,
@@ -107,6 +117,28 @@ class Error extends Component {
 
         case 'domainsError':
           this.props.dispatch(domainsError(null))
+          break
+
+        case 'hostsError':
+          this.props.dispatch(hostsError(null))
+          break;
+
+        case 'hostAddError':
+          this.props.dispatch(hostAddError(null))
+          break;
+        case 'hostDeleteError':
+          this.props.dispatch(hostDeleteError(null))
+          break;
+
+        case 'networksError':
+          this.props.dispatch(networksError(null))
+          break;
+
+        case 'networkAddError':
+          this.props.dispatch(networkAddError(null))
+          break;
+        case 'networkDeleteError':
+          this.props.dispatch(networkDeleteError(null))
           break;
 
 

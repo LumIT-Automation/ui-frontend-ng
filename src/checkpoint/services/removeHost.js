@@ -322,7 +322,7 @@ class RemoveHost extends React.Component {
             */}
             </React.Fragment>
             :
-            <Alert message="Asset and Partition not set" type="error" />
+            <Alert message="Asset and Domain not set" type="error" />
           }
 
         </Modal>

@@ -39,7 +39,9 @@ import Configurations from './concerto/configurations'
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'
 import Projects from './fortinetdb/projects'
+
 import Infoblox from './infoblox/infoblox'
+import Checkpoint from './checkpoint/checkpoint'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
@@ -149,8 +151,8 @@ class Concerto extends Component {
   }
 
   render() {
+    console.log(this.props.authorizations)
     return (
-
       <Layout style={{overflow: 'initial'}}>
         <HeaderCustom/>
         <BrowserRouter>
@@ -174,6 +176,12 @@ class Concerto extends Component {
 
                   { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
                     <Route path='/infoblox/' component={Infoblox}/>
+                  :
+                    null
+                  }
+
+                  { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+                    <Route path='/checkpoint/' component={Checkpoint}/>
                   :
                     null
                   }
@@ -220,8 +228,9 @@ export default connect((state) => ({
   authorizations: state.authorizations,
   configurationF5Fetch: state.f5.configurationFetch,
 
-  authorizationsF5: state.authorizations.f5,
   authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsF5: state.authorizations.f5,
+  authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsFortinetdb: state.authorizations.fortinetdb,
 
   authorizationsError: state.authorizations.authorizationsError,

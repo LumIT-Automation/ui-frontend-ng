@@ -92,6 +92,7 @@ class AttivazioneAnno extends React.Component {
   }
 
   render() {
+    console.log(this.props.attivazioneAnnos)
     return (
       <React.Fragment>
         { this.props.attivazioneAnnosLoading ?
