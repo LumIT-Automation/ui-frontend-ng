@@ -35,7 +35,6 @@ const Map = props => {
   const [devices, setDevices] = useState()
 
   useEffect(async() => {
-    console.log('effect 1')
     setRegionesLoading(true)
     let rs = await regionesGet()
     if (rs.status && rs.status !== 200) {
@@ -91,8 +90,6 @@ const Map = props => {
           regioni.push(regione)
         }
     });
-    console.log(regioni)
-    console.log(rs.data.items)
     italyJSON.layers.forEach((item, i) => {
       let l = regioni.find(element => {
         return element.regione === item.name

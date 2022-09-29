@@ -6,15 +6,13 @@ import './App.css'
 import 'antd/dist/antd.css'
 import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import LogoFW from './svg/logo-fw.png'
 
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
 
 import {
-  uiconf,
-  logout
+  uiconf
 } from './_store/store.authentication'
 
 import {
@@ -150,66 +148,10 @@ class Concerto extends Component {
     return author.isObjectEmpty(a)
   }
 
-  deleteCookies = async () => {
-      try {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        return 'OK'
-      }
-      catch(e) {
-        console.log('no logout')
-      }
-  }
-
-  logout = async () => {
-    await this.deleteCookies()
-    await this.props.dispatch(logout())
-    document.location.href = '/'
-  }
-
-
   render() {
-    const menu = (
-      <Menu>
-        <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
-      </Menu>
-    )
-
-    const Logo = ({ data }) => {
-      return <img
-        src={`data:${data}`}
-        height={'64px'}
-        width={'64px'}
-        />
-      }
-
     return (
 
       <Layout style={{overflow: 'initial'}}>
-      {/*
-        <Header className="header" style={{padding: '0 10px'}}>
-          <Row>
-            <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
-              <Logo data={this.props.logoWhite}/>
-            </Col>
-
-            <Col offset={19} span={4}>
-              <div>
-                <Dropdown overlay={menu} trigger={['click']}>
-                  <Avatar
-                  style={{float: "right", marginTop: '15px'}}
-                  icon={<UserOutlined/>}
-                  //onClick={() => this.logout()}
-                  >
-                  </Avatar>
-                </Dropdown>
-                <p style={{float: "right", marginRight: '15px', color: 'white'}}>{this.props.username}</p>
-              </div>
-            </Col>
-          </Row>
-        </Header>
-      */}
-
         <HeaderCustom/>
         <BrowserRouter>
           <Layout>

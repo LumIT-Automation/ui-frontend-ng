@@ -98,7 +98,6 @@ class CreateVmService extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -924,8 +923,6 @@ class CreateVmService extends React.Component {
   }
 
   diskDeviceDatastoreSet = async (datastoreName, diskDeviceId) => {
-    console.log('datastoreName', datastoreName)
-    console.log('diskDeviceId', diskDeviceId)
     let diskDevices = JSON.parse(JSON.stringify(this.state.diskDevices))
     let datastores = JSON.parse(JSON.stringify(this.state.datastores))
     let diskDevice = diskDevices.find( dd => dd.id === diskDeviceId )
@@ -1583,7 +1580,6 @@ class CreateVmService extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
     await this.validationCheck()
-    console.log(this.state.errors)
     if (Object.keys(this.state.errors).length === 0) {
       await this.setState({disableCreateButton: true})
       this.vmCreateHandler()
@@ -1606,9 +1602,6 @@ class CreateVmService extends React.Component {
       }
       addrs.push(addr)
     });
-
-    console.log('this.state.addresses', this.state.addresses)
-    console.log('addrs', addrs)
 
     let b = {}
 
@@ -1695,7 +1688,6 @@ class CreateVmService extends React.Component {
     let diskDevices = {existent: [], new: []}
 
     this.state.networkDevices.forEach((nic, i) => {
-      console.log(nic)
       if (nic.existent) {
         networkDevices.existent.push(nic)
       }
@@ -1961,8 +1953,6 @@ class CreateVmService extends React.Component {
     if (this.state.request.host) {
       b.data.hostMoId = this.state.request.hostMoId
     }
-
-    console.log(b)
 
     this.setState({loading: true})
     let vmC = await this.VmCreate(b)

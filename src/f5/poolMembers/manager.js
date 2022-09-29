@@ -443,7 +443,6 @@ class PoolDetails extends React.Component {
 
 
   render() {
-    console.log(this.props.obj)
     const columns = [
       {
         title: 'Loading',

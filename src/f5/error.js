@@ -123,10 +123,6 @@ import {
 class Error extends Component {
 
   componentDidMount() {
-    console.log('f5 error mount')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -134,10 +130,6 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('f5 error update')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   componentWillUnmount() {

@@ -79,7 +79,6 @@ class ModifyIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp.data)
         let request = JSON.parse(JSON.stringify(resp.data))
         request.ip = this.state.request.ip
         if (request.extattrs && request.extattrs.['Name Server']) {
@@ -195,8 +194,6 @@ class ModifyIp extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
     const columns = [
       {
         title: 'Loading',

@@ -108,8 +108,6 @@ class Manager extends React.Component {
   }
 
   render() {
-    console.log(this.props.permissions)
-
     return (
       <React.Fragment>
         <br/>

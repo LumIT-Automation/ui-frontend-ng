@@ -178,7 +178,6 @@ class Device extends React.Component {
 
 
   render() {
-    console.log(this.state.extraData)
     const columns = [
       {
         title: "SERIALE",

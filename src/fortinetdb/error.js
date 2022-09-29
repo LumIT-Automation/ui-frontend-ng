@@ -80,10 +80,6 @@ import {
 class Error extends Component {
 
   componentDidMount() {
-    console.log('fortinetdb error mount')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -91,10 +87,6 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('fortinetdb error update')
-    console.log(this.props.component)
-    console.log(this.props.error)
-    console.log(this.props.type)
   }
 
   componentWillUnmount() {

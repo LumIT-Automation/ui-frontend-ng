@@ -56,6 +56,7 @@ class HeaderCustom extends Component {
 
 
   render() {
+    console.log(this.props.headerColor)
     const menu = (
       <Menu>
         <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
@@ -79,8 +80,14 @@ class HeaderCustom extends Component {
         />
       }
 
+    const HeaderColor = () => {
+      if (this.props.headerColor) {
+        return this.props.headerColor
+      }
+    }
+
     return (
-      <Header className="header" style={{padding: '0 10px'}}>
+      <Header className="header" style={{padding: '0 10px', backgroundColor: HeaderColor()}}>
         <Row>
           { this.props.banner ?
             <React.Fragment>
@@ -141,6 +148,7 @@ export default connect((state) => ({
   username: state.authentication.username,
   //token: state.authentication.token,
   logoWhite: state.authentication.logoWhite,
-  banner: state.authentication.banner
+  banner: state.authentication.banner,
+  headerColor: state.authentication.headerColor
 
 }))(HeaderCustom);

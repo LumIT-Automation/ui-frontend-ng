@@ -59,7 +59,6 @@ class Manager extends React.Component {
     }
     else {
       this.props.dispatch(historysLoading(false))
-      console.log(fetchedHistorys)
       this.props.dispatch(historys(fetchedHistorys))
     }
   }

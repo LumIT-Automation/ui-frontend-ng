@@ -125,7 +125,6 @@ class Modify extends React.Component {
   }
 
   memberRemove = async r => {
-    console.log(this.state.members)
     let members = JSON.parse(JSON.stringify(this.state.members))
     let list = members.filter(n => {
       return r !== n.id

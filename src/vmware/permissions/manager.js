@@ -105,7 +105,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('assets', resp)
         r = resp
       },
       error => {
@@ -122,7 +121,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('identity groups', resp)
         r = resp
       },
       error => {
@@ -138,7 +136,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('permissions', resp)
         r = resp
       },
       error => {
@@ -149,16 +146,10 @@ class Manager extends React.Component {
     return r
   }
 
-
   assetAddDetails = async (assets, permissions) => {
-    console.log(assets)
-    console.log(permissions)
-
-    //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
     let list = []
-
 
     for (const [key, value] of Object.entries(assetsObject)) {
       list.push(value)

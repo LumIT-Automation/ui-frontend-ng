@@ -31,6 +31,9 @@ const authenticationSlice = createSlice({
           if (action.payload.page.banner) {
             state.banner = action.payload.page.banner
           }
+          if (action.payload.page.headerColor) {
+            state.headerColor = action.payload.page.headerColor
+          }
         },
         logout: (state, action) => {
           for (const l in state) {

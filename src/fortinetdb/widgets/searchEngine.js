@@ -124,7 +124,6 @@ class SearchEngine extends React.Component {
   }
 
   render() {
-    console.log(this.state.account)
     const Logo = ({ data }) => {
       return <img
         src={`data:${data}`}

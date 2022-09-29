@@ -26,7 +26,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
     if (!this.props.historysError) {
       this.props.dispatch(historysFetch(false))
       if (!this.props.historys) {
@@ -44,8 +43,6 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.props.historys)
-    console.log('update')
     if (this.props.historysFetch) {
       clearInterval(this.interval)
       this.main()
@@ -54,7 +51,6 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount')
     clearInterval(this.interval)
   }
 
@@ -130,7 +126,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         r = resp
       },
       error => {

@@ -50,8 +50,6 @@ class NetworksTree extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=ip`, this.props.token)
-    //this.props.dispatch(treeLoading(false))
-    //this.setState({visible: true})
   }
 
 
@@ -68,9 +66,6 @@ class NetworksTree extends React.Component {
   }
 
   render() {
-    console.log(this.props.tree)
-
-
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Row>
