@@ -7,8 +7,6 @@ import Validators from '../../_helpers/validators'
 
 import {
   hostsFetch,
-  routeDomains,
-  routeDomainsError,
   hostAddError
 } from '../store'
 
@@ -51,34 +49,11 @@ class Add extends React.Component {
   }
 
   main = async () => {
-    await this.setState({routeDomainsLoading: true})
-    let fetchedRouteDomains = await this.routeDomainsGet()
-    await this.setState({routeDomainsLoading: false})
-    if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
-      this.props.dispatch(routeDomainsError(fetchedRouteDomains))
-      return
-    }
-    else {
-      this.props.dispatch(routeDomains( fetchedRouteDomains ))
-    }
+
   }
 
 
   //FETCH
-  routeDomainsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/routedomains/`, this.props.token)
-    return r
-  }
 
 
   //SETTERS
@@ -268,47 +243,6 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Route Domain (optional):</p>
-                </Col>
-                <Col span={16}>
-                  { this.state.routeDomainsLoading ?
-                    <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
-                  :
-                    <React.Fragment>
-                      { this.props.routeDomains && this.props.routeDomains.length > 0 ?
-                        <Select
-                          value={this.state.request.routeDomain}
-                          showSearch
-                          style={{width: 250}}
-                          optionFilterProp="children"
-                          filterOption={(input, option) =>
-                            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                          }
-                          filterSort={(optionA, optionB) =>
-                            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                          }
-                          onSelect={n => this.routeDomainSet(n)}
-                        >
-                          <React.Fragment>
-                            {this.props.routeDomains.map((n, i) => {
-                              return (
-                                <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
-                              )
-                            })
-                            }
-                          </React.Fragment>
-                        </Select>
-                      :
-                        null
-                      }
-                    </React.Fragment>
-                  }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Session:</p>
                 </Col>
                 <Col span={16}>
@@ -349,7 +283,6 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.routeDomainsError ? <Error component={'add host'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
             { this.props.hostAddError ? <Error component={'add host'} error={[this.props.hostAddError]} visible={true} type={'hostAddError'} /> : null }
           </React.Fragment>
         :
@@ -366,7 +299,5 @@ export default connect((state) => ({
   token: state.authentication.token,
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  routeDomains: state.checkpoint.routeDomains,
-  routeDomainsError: state.checkpoint.routeDomainsError,
   hostAddError: state.checkpoint.hostAddError
 }))(Add);
