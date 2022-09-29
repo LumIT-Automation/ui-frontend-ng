@@ -6,7 +6,6 @@ import './App.css'
 import 'antd/dist/antd.css'
 import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
-import LogoFW from './svg/logo-fw.png'
 
 import {
   logout
@@ -56,35 +55,36 @@ class HeaderCustom extends Component {
 
 
   render() {
-    console.log(this.props.headerColor)
-    const menu = (
-      <Menu>
-        <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
-      </Menu>
-    )
+    const HeaderColor = () => {
+      if (this.props.headerColor) {
+        return this.props.headerColor
+      }
+    }
+
+    const Banner = ({ data }) => {
+      return <img
+        src={`data:${data}`}
+        height={50}
+        width={'160%'}
+        style={{marginTop: '7px', marginLeft: '40px'}}
+        //style={{marginTop: '7px', marginLeft: '-300px'}}
+      />
+    }
 
     const Logo = ({ data }) => {
       return <img
         src={`data:${data}`}
         height={'64px'}
         width={'64px'}
-        />
-      }
-    const Banner = ({ data }) => {
-      return <img
-        src={`data:${data}`}
-        height={50}
-        width={'100%'}
-        style={{marginTop: '7px'}}
-        //style={{marginTop: '7px', marginLeft: '-300px'}}
-        />
-      }
-
-    const HeaderColor = () => {
-      if (this.props.headerColor) {
-        return this.props.headerColor
-      }
+      />
     }
+
+    const menu = (
+      <Menu>
+        <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
+      </Menu>
+    )
+
 
     return (
       <Header className="header" style={{padding: '0 10px', backgroundColor: HeaderColor()}}>
