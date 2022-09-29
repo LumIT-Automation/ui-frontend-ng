@@ -40,7 +40,8 @@ class HeaderCustom extends Component {
       try {
         document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        return 'OK'
+        //return 'OK'
+        await this.props.dispatch(logout())
       }
       catch(e) {
         console.log('no logout')
@@ -49,7 +50,7 @@ class HeaderCustom extends Component {
 
   logout = async () => {
     await this.deleteCookies()
-    await this.props.dispatch(logout())
+    //await this.props.dispatch(logout())
     document.location.href = '/'
   }
 
