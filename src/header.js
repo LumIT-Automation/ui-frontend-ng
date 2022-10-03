@@ -66,8 +66,8 @@ class HeaderCustom extends Component {
       return <img
         src={`data:${data}`}
         height={50}
-        width={'250px'}
-        //style={{marginTop: '7px', marginLeft: '-300px'}}
+        width={'350px'}
+        style={{marginBottom: '2px'}}
       />
     }
 
