@@ -133,11 +133,11 @@ class SearchEngine extends React.Component {
       }
     return (
       <React.Fragment>
-      <Row style={{backgroundColor:'green'}}>
-        <Col xs={{offset: 5, span: 4}} sm={{offset: 7, span: 4}} md={{offset: 8, span: 4}} lg={{offset: 10, span: 4}} xl={{offset: 5, span: 4}} xxl={{offset: 5, span: 4}} style={{backgroundColor:'green', display: 'flex', marginTop: '14vh'}}>
+      <Row>
+        <Col xs={{offset: 5, span: 4}} sm={{offset: 7, span: 4}} md={{offset: 8, span: 4}} lg={{offset: 10, span: 4}} xl={{offset: 5, span: 4}} xxl={{offset: 5, span: 4}} style={{display: 'flex', marginTop: '14vh'}}>
           <Logo data={this.props.image}/>
         </Col>
-        <Col xs={{offset: 2, span: 20}} sm={{offset: 2, span: 20}} md={{offset: 2, span: 20}} lg={{offset: 3, span: 20}} xl={{offset: 1, span: 8}} xxl={{offset: 1, span: 8}} style={{backgroundColor: 'red'}}>
+        <Col xs={{offset: 2, span: 20}} sm={{offset: 2, span: 20}} md={{offset: 2, span: 20}} lg={{offset: 3, span: 20}} xl={{offset: 1, span: 8}} xxl={{offset: 1, span: 8}}>
           <Row>
             <p style={{display: 'flex', padding: '0 40%', margin: '13vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
           </Row>
