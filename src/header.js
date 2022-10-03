@@ -66,8 +66,7 @@ class HeaderCustom extends Component {
       return <img
         src={`data:${data}`}
         height={50}
-        width={'160%'}
-        style={{marginTop: '7px', marginLeft: '40px'}}
+        width={'250px'}
         //style={{marginTop: '7px', marginLeft: '-300px'}}
       />
     }
@@ -92,10 +91,10 @@ class HeaderCustom extends Component {
         <Row>
           { this.props.banner ?
             <React.Fragment>
-              <Col span={4} style={{display: 'flex', justifyContent: 'center'}}>
+              <Col span={4} style={{justifyContent: 'center'}}>
                 <Banner data={this.props.banner}/>
               </Col>
-              <Col span={16} style={{display: 'flex', justifyContent: 'center'}}>
+              <Col span={15} style={{justifyContent: 'center'}}>
               </Col>
             </React.Fragment>
           :
@@ -105,14 +104,14 @@ class HeaderCustom extends Component {
                   <Col span={1} style={{display: 'flex', justifyContent: 'center'}}>
                     <Logo data={this.props.logoWhite}/>
                   </Col>
-                  <Col span={19} style={{display: 'flex', justifyContent: 'center'}}>
+                  <Col span={18} style={{display: 'flex', justifyContent: 'center'}}>
                   </Col>
                 </React.Fragment>
               :
                 <React.Fragment>
                   <Col span={4}>
                   </Col>
-                  <Col span={16} style={{display: 'flex', justifyContent: 'center'}}>
+                  <Col span={15} style={{display: 'flex', justifyContent: 'center'}}>
                   </Col>
                 </React.Fragment>
               }
@@ -121,7 +120,7 @@ class HeaderCustom extends Component {
 
 
           { this.props.authenticated ?
-            <Col span={4} style={{paddingRight: '10px'}}>
+            <Col span={5} style={{paddingRight: '10px'}}>
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Avatar

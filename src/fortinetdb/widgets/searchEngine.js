@@ -133,21 +133,23 @@ class SearchEngine extends React.Component {
       }
     return (
       <React.Fragment>
-      <Row>
-        <Col offset={5} xs={6} sm={6} md={6} lg={6} xl={4} xxl={4} style={{marginTop: '14vh'}}>
+      <Row style={{backgroundColor:'green'}}>
+        <Col xs={{offset: 5, span: 4}} sm={{offset: 7, span: 4}} md={{offset: 8, span: 4}} lg={{offset: 10, span: 4}} xl={{offset: 5, span: 4}} xxl={{offset: 5, span: 4}} style={{backgroundColor:'green', display: 'flex', marginTop: '14vh'}}>
           <Logo data={this.props.image}/>
         </Col>
-        <Col xl={8} xxl={8}>
+        <Col xs={{offset: 2, span: 20}} sm={{offset: 2, span: 20}} md={{offset: 2, span: 20}} lg={{offset: 3, span: 20}} xl={{offset: 1, span: 8}} xxl={{offset: 1, span: 8}} style={{backgroundColor: 'red'}}>
           <Row>
-            <p style={{padding: '0 40%', margin: '13vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
+            <p style={{display: 'flex', padding: '0 40%', margin: '13vh 0 0 0', fontSize: '3vh', textAlign: 'center'}}>Ricerca</p>
           </Row>
 
           <Row>
-              <p style={{padding: '0 2%', margin: '1vh 0 0 0'}}>
+            <Col style={{display: 'flex'}}>
+              <p style={{display: 'flex', padding: '0 2%', margin: '1vh 0 0 0'}}>
                 Inserisci i primi tre caratteri della ragione sociale o dell'account e seleziona il valore desiderato.
                 Verrà visualizzato un elenco navigabile dei servizi erogati da cui ottenere informazioni quali:
                 l’elenco dettagliato dei modelli e seriali di device o le reti oggetto di protezione del servizio.
               </p>
+            </Col>
           </Row>
           <Row>
             { this.props.accountsLoading ?
