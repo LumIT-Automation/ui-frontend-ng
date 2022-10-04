@@ -26,9 +26,12 @@ import {
   domainsError,
 
   hostsError,
-
   hostAddError,
   hostDeleteError,
+
+  groupsError,
+  groupAddError,
+  groupDeleteError,
 
   networksError,
 
@@ -128,6 +131,17 @@ class Error extends Component {
           break;
         case 'hostDeleteError':
           this.props.dispatch(hostDeleteError(null))
+          break;
+
+        case 'groupsError':
+          this.props.dispatch(groupsError(null))
+          break;
+
+        case 'groupAddError':
+          this.props.dispatch(groupAddError(null))
+          break;
+        case 'groupDeleteError':
+          this.props.dispatch(groupDeleteError(null))
           break;
 
         case 'networksError':

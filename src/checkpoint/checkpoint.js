@@ -10,12 +10,15 @@ import Error from './error'
 
 import AssetSelector from './assetSelector'
 import Hosts from './hosts/manager'
+import Groups from './groups/manager'
+import Networks from './networks/manager'
 
 import {
   assets,
   assetsError,
 
   hostsFetch,
+  groupsFetch,
   networksFetch,
 
 } from '../checkpoint/store'
@@ -68,6 +71,12 @@ class Checkpoint extends React.Component {
   hostsRefresh = () => {
     this.props.dispatch(hostsFetch(true))
   }
+  groupsRefresh = () => {
+    this.props.dispatch(groupsFetch(true))
+  }
+  networksRefresh = () => {
+    this.props.dispatch(networksFetch(true))
+  }
 
 
   render() {
@@ -93,6 +102,36 @@ class Checkpoint extends React.Component {
           :
             null
           }
+          { this.props.authorizations && (this.props.authorizations.groups_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.groupsLoading ?
+                <TabPane key="Groups" tab="Groups">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Groups" tab=<span>Groups <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.groupsRefresh()}/></span>>
+                  <Groups/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
+          { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.networksLoading ?
+                <TabPane key="Networks" tab="Networks">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                  <Networks/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
 
           </Tabs>
 
@@ -109,6 +148,8 @@ export default connect((state) => ({
   authorizations: state.authorizations.checkpoint,
 
   hostsLoading: state.checkpoint.hostsLoading,
+  groupsLoading: state.checkpoint.groupsLoading,
+  networksLoading: state.checkpoint.networksLoading,
 
   assetsError: state.checkpoint.assetsError,
 

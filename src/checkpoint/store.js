@@ -118,6 +118,28 @@ const checkpointSlice = createSlice({
         state.hostDeleteError = action.payload
       },
 
+
+
+      groupsLoading: (state, action) => {
+        state.groupsLoading = action.payload
+      },
+      groups: (state, action) => {
+        state.groups = action.payload.data.items
+      },
+      groupsFetch: (state, action) => {
+        state.groupsFetch = action.payload
+      },
+      groupsError: (state, action) => {
+        state.groupsError = action.payload
+      },
+
+      groupAddError: (state, action) => {
+        state.groupAddError = action.payload
+      },
+      groupDeleteError: (state, action) => {
+        state.groupDeleteError = action.payload
+      },
+
       networksLoading: (state, action) => {
         state.networksLoading = action.payload
       },
@@ -212,15 +234,20 @@ export const {
   hosts,
   hostsFetch,
   hostsError,
-
   hostAddError,
   hostDeleteError,
+
+  groupsLoading,
+  groups,
+  groupsFetch,
+  groupsError,
+  groupAddError,
+  groupDeleteError,
 
   networksLoading,
   networks,
   networksFetch,
   networksError,
-
   networkAddError,
   networkDeleteError,
 
