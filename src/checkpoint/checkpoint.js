@@ -68,9 +68,7 @@ class Checkpoint extends React.Component {
   hostsRefresh = () => {
     this.props.dispatch(hostsFetch(true))
   }
-  networksRefresh = () => {
-    this.props.dispatch(networksFetch(true))
-  }
+
 
   render() {
     return (
@@ -80,20 +78,6 @@ class Checkpoint extends React.Component {
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           <Tabs type="card">
-          {/*
-            hosts
-          	groups
-          	custom-apps
-          	network
-          	ranges
-          	security rules
-          		access rules
-          		threat rules
-          		https rules
-          	NAT rules
-
-          */}
-
           { this.props.authorizations && (this.props.authorizations.hosts_get || this.props.authorizations.any) ?
             <React.Fragment>
               {this.props.hostsLoading ?
@@ -109,21 +93,6 @@ class Checkpoint extends React.Component {
           :
             null
           }
-            { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
-              <React.Fragment>
-                {this.props.networksLoading ?
-                  <TabPane key="Networks" tab="Networks">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                :
-                  <TabPane key="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
-
-                  </TabPane>
-                }
-              </React.Fragment>
-            :
-              null
-            }
 
           </Tabs>
 
@@ -138,6 +107,8 @@ class Checkpoint extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
+
+  hostsLoading: state.checkpoint.hostsLoading,
 
   assetsError: state.checkpoint.assetsError,
 

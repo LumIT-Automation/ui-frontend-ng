@@ -61,17 +61,19 @@ class Manager extends React.Component {
 
 
   hostsGet = async () => {
+    console.log(this.props.domain)
     this.props.dispatch(hostsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp)
         this.props.dispatch(hosts(resp))
       },
       error => {
         this.props.dispatch(hostsError(error))
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/hosts/`, this.props.token)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/hosts/?local`, this.props.token)
     this.props.dispatch(hostsLoading(false))
   }
 

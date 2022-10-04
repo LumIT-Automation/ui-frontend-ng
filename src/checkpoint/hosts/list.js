@@ -115,7 +115,18 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-
+/*
+"name": "a2ap.centralcreditregister.ie_G",
+                "type": "host",
+                "domain": {
+                    "uid": "1e294ce0-367a-11e3-aa6e-0800200c9a66",
+                    "name": "Global",
+                    "domain-type": "global domain"
+                },
+                "ipv4-address": "212.7.73.212",
+                "icon": "Objects/host",
+                "color": "black"
+*/
 
   render() {
     const columns = [
@@ -127,32 +138,32 @@ class List extends React.Component {
         ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'Address',
+        title: 'Domain',
         align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
+        width: 'auto',
+        dataIndex: ['domain', 'name'],
+        key: 'domain',
       },
       {
-        title: 'Session',
+        title: 'Type',
         align: 'center',
-        dataIndex: 'session',
-        key: 'session',
-       ...this.getColumnSearchProps('session'),
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
       },
       {
-        title: 'Status',
+        title: 'IPv4-address',
         align: 'center',
-        dataIndex: 'state',
-        key: 'state',
-       ...this.getColumnSearchProps('state'),
+        dataIndex: 'ipv4-address',
+        key: 'ipv4-address',
+       ...this.getColumnSearchProps('ipv4-address'),
       },
       {
-        title: 'Monitor',
+        title: 'Color',
         align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-        ...this.getColumnSearchProps('monitor'),
+        dataIndex: 'color',
+        key: 'color',
+       ...this.getColumnSearchProps('color'),
       },
       {
         title: 'Delete',

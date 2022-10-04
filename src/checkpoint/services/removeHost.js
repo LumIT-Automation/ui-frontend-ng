@@ -266,7 +266,7 @@ class RemoveHost extends React.Component {
           width={1500}
         >
 
-          <AssetSelector/>
+          <AssetSelector workflow={'true'}/>
           <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?
@@ -295,34 +295,9 @@ class RemoveHost extends React.Component {
 
               <Divider/>
 
-            {/* this.state.ipDetails.length < 1 ?
-              null
-              :
-              <React.Fragment>
-                <Table
-                  columns={columns}
-                  dataSource={this.state.ipDetails}
-                  bordered
-                  rowKey="ip"
-                  scroll={{x: 'auto'}}
-                  pagination={false}
-                  style={{marginBottom: 10}}
-                />
-                { ( this.state.ipDetails[0].status === 'USED' ) ?
-                  <Button type="primary" onClick={() => this.validateMac()}>
-                    Modify Ip
-                  </Button>
-                :
-                  <Button type="primary" disabled>
-                    Modify Ip
-                  </Button>
-                }
-              </React.Fragment>
-
-            */}
             </React.Fragment>
             :
-            <Alert message="Asset and Domain not set" type="error" />
+            <Alert message="Asset not set" type="error" />
           }
 
         </Modal>
