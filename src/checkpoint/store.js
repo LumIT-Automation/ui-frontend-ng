@@ -160,6 +160,26 @@ const checkpointSlice = createSlice({
         state.networkDeleteError = action.payload
       },
 
+      address_rangesLoading: (state, action) => {
+        state.address_rangesLoading = action.payload
+      },
+      address_ranges: (state, action) => {
+        state.address_ranges = action.payload.data.items
+      },
+      address_rangesFetch: (state, action) => {
+        state.address_rangesFetch = action.payload
+      },
+      address_rangesError: (state, action) => {
+        state.address_rangesError = action.payload
+      },
+
+      address_rangeAddError: (state, action) => {
+        state.address_rangeAddError = action.payload
+      },
+      address_rangeDeleteError: (state, action) => {
+        state.address_rangeDeleteError = action.payload
+      },
+
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
@@ -250,6 +270,13 @@ export const {
   networksError,
   networkAddError,
   networkDeleteError,
+
+  address_rangesLoading,
+  address_ranges,
+  address_rangesFetch,
+  address_rangesError,
+  address_rangeAddError,
+  address_rangeDeleteError,
 
   hostRemoveError,
 

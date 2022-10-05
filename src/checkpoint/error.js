@@ -34,9 +34,12 @@ import {
   groupDeleteError,
 
   networksError,
-
   networkAddError,
   networkDeleteError,
+
+  address_rangesError,
+  address_rangeAddError,
+  address_rangeDeleteError,
 
   hostRemoveError,
 
@@ -125,7 +128,6 @@ class Error extends Component {
         case 'hostsError':
           this.props.dispatch(hostsError(null))
           break;
-
         case 'hostAddError':
           this.props.dispatch(hostAddError(null))
           break;
@@ -136,7 +138,6 @@ class Error extends Component {
         case 'groupsError':
           this.props.dispatch(groupsError(null))
           break;
-
         case 'groupAddError':
           this.props.dispatch(groupAddError(null))
           break;
@@ -147,7 +148,6 @@ class Error extends Component {
         case 'networksError':
           this.props.dispatch(networksError(null))
           break;
-
         case 'networkAddError':
           this.props.dispatch(networkAddError(null))
           break;
@@ -155,6 +155,15 @@ class Error extends Component {
           this.props.dispatch(networkDeleteError(null))
           break;
 
+        case 'address_rangesError':
+          this.props.dispatch(address_rangesError(null))
+          break;
+        case 'address_rangeAddError':
+          this.props.dispatch(address_rangeAddError(null))
+          break;
+        case 'address_rangeDeleteError':
+          this.props.dispatch(address_rangeDeleteError(null))
+          break;
 
         case 'hostRemoveError':
           this.props.dispatch(hostRemoveError(null))

@@ -12,6 +12,7 @@ import AssetSelector from './assetSelector'
 import Hosts from './hosts/manager'
 import Groups from './groups/manager'
 import Networks from './networks/manager'
+import AddressRanges from './address_ranges/manager'
 
 import {
   assets,
@@ -20,6 +21,7 @@ import {
   hostsFetch,
   groupsFetch,
   networksFetch,
+  address_rangesFetch,
 
 } from '../checkpoint/store'
 
@@ -77,6 +79,9 @@ class Checkpoint extends React.Component {
   networksRefresh = () => {
     this.props.dispatch(networksFetch(true))
   }
+  address_rangesRefresh = () => {
+    this.props.dispatch(address_rangesFetch(true))
+  }
 
 
   render() {
@@ -132,6 +137,58 @@ class Checkpoint extends React.Component {
           :
             null
           }
+          { this.props.authorizations && (this.props.authorizations.address_ranges_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.address_rangesLoading ?
+                <TabPane key="Address Ranges" tab="Address Ranges">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.address_rangesRefresh()}/></span>>
+                  <AddressRanges/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
+          <React.Fragment>
+            <TabPane key="Rules" tab="Rules">
+              <Tabs>
+                { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.networksLoading ?
+                      <TabPane key="Networks" tab="Networks">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                    :
+                      <TabPane key="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                        <Networks/>
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                :
+                  null
+                }
+                { this.props.authorizations && (this.props.authorizations.address_ranges_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.address_rangesLoading ?
+                      <TabPane key="Address Ranges" tab="Address Ranges">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                    :
+                      <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.address_rangesRefresh()}/></span>>
+                        <AddressRanges/>
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                :
+                  null
+                }
+              </Tabs>
+            </TabPane>
+          </React.Fragment>
+
 
           </Tabs>
 
@@ -150,6 +207,7 @@ export default connect((state) => ({
   hostsLoading: state.checkpoint.hostsLoading,
   groupsLoading: state.checkpoint.groupsLoading,
   networksLoading: state.checkpoint.networksLoading,
+  address_rangesLoading: state.checkpoint.address_rangesLoading,
 
   assetsError: state.checkpoint.assetsError,
 

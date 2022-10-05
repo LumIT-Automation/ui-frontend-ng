@@ -42,7 +42,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain) ) {
+    if ( (this.props.asset && this.props.domain && !this.props.hostsError) ) {
       if (!this.props.hosts) {
         this.hostsGet()
       }
