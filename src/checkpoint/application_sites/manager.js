@@ -7,10 +7,10 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  networksLoading,
-  networks,
-  networksFetch,
-  networksError
+  application_sitesLoading,
+  application_sites,
+  application_sitesFetch,
+  application_sitesError
 } from '../store'
 
 import List from './list'
@@ -28,10 +28,10 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.domain) {
-      if (!this.props.networksError) {
-        this.props.dispatch(networksFetch(false))
-        if (!this.props.networks) {
-          this.networksGet()
+      if (!this.props.application_sitesError) {
+        this.props.dispatch(application_sitesFetch(false))
+        if (!this.props.application_sites) {
+          this.application_sitesGet()
         }
       }
     }
@@ -42,16 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.networksError) ) {
-      if (!this.props.networks) {
-        this.networksGet()
+    if ( (this.props.asset && this.props.domain && !this.props.application_sitesError) ) {
+      if (!this.props.application_sites) {
+        this.application_sitesGet()
       }
-      if (this.props.networksFetch) {
-        this.networksGet()
-        this.props.dispatch(networksFetch(false))
+      if (this.props.application_sitesFetch) {
+        this.application_sitesGet()
+        this.props.dispatch(application_sitesFetch(false))
       }
       if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
-        this.networksGet()
+        this.application_sitesGet()
       }
     }
   }
@@ -60,19 +60,20 @@ class Manager extends React.Component {
   }
 
 
-  networksGet = async () => {
-    this.props.dispatch(networksLoading(true))
+  application_sitesGet = async () => {
+    this.props.dispatch(application_sitesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(networks(resp))
+        console.log(resp)
+        this.props.dispatch(application_sites(resp))
       },
       error => {
-        this.props.dispatch(networksError(error))
+        this.props.dispatch(application_sitesError(error))
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/networks/?local`, this.props.token)
-    this.props.dispatch(networksLoading(false))
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/?custom&local`, this.props.token)
+    this.props.dispatch(application_sitesLoading(false))
   }
 
 
@@ -82,7 +83,7 @@ class Manager extends React.Component {
         <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.domain) ) ?
           <React.Fragment>
-            {this.props.authorizations && (this.props.authorizations.networks_post || this.props.authorizations.any) ?
+            {this.props.authorizations && (this.props.authorizations.application_sites_post || this.props.authorizations.any) ?
               <Add/>
             :
               null
@@ -94,7 +95,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.networksError ? <Error component={'network manager'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+          { this.props.application_sitesError ? <Error component={'application_site manager'} error={[this.props.application_sitesError]} visible={true} type={'application_sitesError'} /> : null }
         </React.Fragment>
       </Space>
     )
@@ -108,7 +109,7 @@ export default connect((state) => ({
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
-  networks: state.checkpoint.networks,
-  networksFetch: state.checkpoint.networksFetch,
-  networksError: state.checkpoint.networksError
+  application_sites: state.checkpoint.application_sites,
+  application_sitesFetch: state.checkpoint.application_sitesFetch,
+  application_sitesError: state.checkpoint.application_sitesError
 }))(Manager);

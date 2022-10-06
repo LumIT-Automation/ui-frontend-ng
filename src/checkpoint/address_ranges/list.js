@@ -153,13 +153,6 @@ class List extends React.Component {
         ...this.getColumnSearchProps('ipv4-address-last'),
       },
       {
-        title: 'Color',
-        align: 'center',
-        dataIndex: 'color',
-        key: 'color',
-       ...this.getColumnSearchProps('color'),
-      },
-      {
         title: 'Delete',
         align: 'center',
         dataIndex: 'delete',

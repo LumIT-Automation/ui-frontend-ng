@@ -61,12 +61,10 @@ class Manager extends React.Component {
 
 
   groupsGet = async () => {
-    console.log(this.props.domain)
     this.props.dispatch(groupsLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(groups(resp))
       },
       error => {

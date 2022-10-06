@@ -61,12 +61,10 @@ class Manager extends React.Component {
 
 
   address_rangesGet = async () => {
-    console.log(this.props.domain)
     this.props.dispatch(address_rangesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(address_ranges(resp))
       },
       error => {

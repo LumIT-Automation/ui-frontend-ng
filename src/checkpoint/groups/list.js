@@ -140,13 +140,6 @@ class List extends React.Component {
         ...this.getColumnSearchProps('type'),
       },
       {
-        title: 'Color',
-        align: 'center',
-        dataIndex: 'color',
-        key: 'color',
-       ...this.getColumnSearchProps('color'),
-      },
-      {
         title: 'Delete',
         align: 'center',
         dataIndex: 'delete',

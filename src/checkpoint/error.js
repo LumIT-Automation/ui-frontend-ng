@@ -41,6 +41,10 @@ import {
   address_rangeAddError,
   address_rangeDeleteError,
 
+  application_sitesError,
+  application_siteAddError,
+  application_siteDeleteError,
+
   hostRemoveError,
 
   historysError,
@@ -163,6 +167,16 @@ class Error extends Component {
           break;
         case 'address_rangeDeleteError':
           this.props.dispatch(address_rangeDeleteError(null))
+          break;
+
+        case 'application_sitesError':
+          this.props.dispatch(application_sitesError(null))
+          break;
+        case 'application_siteAddError':
+          this.props.dispatch(application_siteAddError(null))
+          break;
+        case 'application_siteDeleteError':
+          this.props.dispatch(application_siteDeleteError(null))
           break;
 
         case 'hostRemoveError':

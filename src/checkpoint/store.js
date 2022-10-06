@@ -180,6 +180,26 @@ const checkpointSlice = createSlice({
         state.address_rangeDeleteError = action.payload
       },
 
+      application_sitesLoading: (state, action) => {
+        state.application_sitesLoading = action.payload
+      },
+      application_sites: (state, action) => {
+        state.application_sites = action.payload.data.items
+      },
+      application_sitesFetch: (state, action) => {
+        state.application_sitesFetch = action.payload
+      },
+      application_sitesError: (state, action) => {
+        state.application_sitesError = action.payload
+      },
+
+      application_siteAddError: (state, action) => {
+        state.application_siteAddError = action.payload
+      },
+      application_siteDeleteError: (state, action) => {
+        state.application_siteDeleteError = action.payload
+      },
+
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
@@ -277,6 +297,13 @@ export const {
   address_rangesError,
   address_rangeAddError,
   address_rangeDeleteError,
+
+  application_sitesLoading,
+  application_sites,
+  application_sitesFetch,
+  application_sitesError,
+  application_siteAddError,
+  application_siteDeleteError,
 
   hostRemoveError,
 

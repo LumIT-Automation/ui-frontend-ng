@@ -13,6 +13,7 @@ import Hosts from './hosts/manager'
 import Groups from './groups/manager'
 import Networks from './networks/manager'
 import AddressRanges from './address_ranges/manager'
+import ApplicationSites from './application_sites/manager'
 
 import {
   assets,
@@ -22,6 +23,7 @@ import {
   groupsFetch,
   networksFetch,
   address_rangesFetch,
+  application_sitesFetch,
 
 } from '../checkpoint/store'
 
@@ -81,6 +83,9 @@ class Checkpoint extends React.Component {
   }
   address_rangesRefresh = () => {
     this.props.dispatch(address_rangesFetch(true))
+  }
+  application_sitesRefresh = () => {
+    this.props.dispatch(application_sitesFetch(true))
   }
 
 
@@ -152,6 +157,21 @@ class Checkpoint extends React.Component {
           :
             null
           }
+          { this.props.authorizations && (this.props.authorizations.application_sites_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.application_sitesLoading ?
+                <TabPane key="Custom Application Sites" tab="Custom Application Sites">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Custom Application Sites" tab=<span>Custom Application Sites <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.application_sitesRefresh()}/></span>>
+                  <ApplicationSites/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
           <React.Fragment>
             <TabPane key="Rules" tab="Rules">
               <Tabs>
@@ -208,6 +228,7 @@ export default connect((state) => ({
   groupsLoading: state.checkpoint.groupsLoading,
   networksLoading: state.checkpoint.networksLoading,
   address_rangesLoading: state.checkpoint.address_rangesLoading,
+  application_sitesLoading: state.checkpoint.application_sitesLoading,
 
   assetsError: state.checkpoint.assetsError,
 

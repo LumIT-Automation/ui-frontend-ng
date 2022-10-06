@@ -161,13 +161,6 @@ class List extends React.Component {
         ...this.getColumnSearchProps('subnet-mask'),
       },
       {
-        title: 'Color',
-        align: 'center',
-        dataIndex: 'color',
-        key: 'color',
-       ...this.getColumnSearchProps('color'),
-      },
-      {
         title: 'Delete',
         align: 'center',
         dataIndex: 'delete',
