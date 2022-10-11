@@ -37,6 +37,7 @@ class Delete extends React.Component {
   }
 
   details = () => {
+
     this.setState({visible: true})
   }
 
@@ -52,7 +53,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/host/${this.props.obj.name}/`, this.props.token )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/host/${this.props.obj.uid}/`, this.props.token )
   }
 
   response = () => {
@@ -119,6 +120,7 @@ class Delete extends React.Component {
         </Modal>
 
         {this.state.visible ?
+
           <React.Fragment>
             { this.props.hostDeleteError ? <Error component={'delete host'} error={[this.props.hostDeleteError]} visible={true} type={'hostDeleteError'} /> : null }
           </React.Fragment>

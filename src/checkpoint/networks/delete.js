@@ -52,7 +52,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/network/${this.props.obj.name}/`, this.props.token )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/network/${this.props.obj.uid}/`, this.props.token )
   }
 
   response = () => {
