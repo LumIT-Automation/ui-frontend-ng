@@ -193,15 +193,15 @@ class Add extends React.Component {
 
     await this.setState({interfaces: interfaces})
 
-    return errors
+    return ok
   }
 
   validation = async () => {
     let nicsOk = await this.validationCheck()
+    console.log(nicsOk)
 
     if ((Object.keys(this.state.errors).length === 0) && nicsOk) {
-      //this.hostAdd()
-      console.log('chiamo hostAdd')
+      this.hostAdd()
     }
   }
 
@@ -209,11 +209,27 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   hostAdd = async () => {
     let request = Object.assign({}, this.state.request)
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
     let b = {}
+    let nics = []
+
     b.data = {
-      "address": this.state.request.address,
+      "ipv4-address": this.state.request.address,
       "name": this.state.request.name,
     }
+    interfaces.forEach((nic, i) => {
+      let o = {
+        name: nic.nicName,
+        subnet4: nic.subnet4,
+        subnet6: nic.subnet6
+      }
+      o['mask-length4'] = nic.mask_length4
+      o['mask-length6'] = nic.mask_length6
+      nics.push(o)
+    });
+
+    b.data.interfaces = nics
+    console.log(b)
 
     this.setState({loading: true})
 
