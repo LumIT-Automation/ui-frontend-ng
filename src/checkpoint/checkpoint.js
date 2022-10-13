@@ -178,27 +178,65 @@ class Checkpoint extends React.Component {
                 { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
                   <React.Fragment>
                     {this.props.networksLoading ?
-                      <TabPane key="Networks" tab="Networks">
+                      <TabPane key="Access Rules" tab="Access Rules">
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
-                        <Networks/>
+                      <TabPane key="Access Rules" tab=<span>Access Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                        {<React.Fragment>
+                          <p>Search:</p>
+                          <p>hosts</p>
+                          <p>groups</p>
+                          <p>custom-apps</p>
+                          <p>network</p>
+                          <p>ranges</p>
+                        </React.Fragment>
+                        }
                       </TabPane>
                     }
                   </React.Fragment>
                 :
                   null
                 }
-                { this.props.authorizations && (this.props.authorizations.address_ranges_get || this.props.authorizations.any) ?
+                { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
                   <React.Fragment>
-                    {this.props.address_rangesLoading ?
-                      <TabPane key="Address Ranges" tab="Address Ranges">
+                    {this.props.networksLoading ?
+                      <TabPane key="Threat Rules" tab="Threat Rules">
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.address_rangesRefresh()}/></span>>
-                        <AddressRanges/>
+                      <TabPane key="Threat Rules" tab=<span>Threat Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                :
+                  null
+                }
+                { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.networksLoading ?
+                      <TabPane key="Https Rules" tab="Https Rules">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                    :
+                      <TabPane key="Https Rules" tab=<span>Https Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                :
+                  null
+                }
+                { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.networksLoading ?
+                      <TabPane key="NAT Rules" tab="NAT Rules">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                    :
+                      <TabPane key="NAT Rules" tab=<span>NAT Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+
                       </TabPane>
                     }
                   </React.Fragment>

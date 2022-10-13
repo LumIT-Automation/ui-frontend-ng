@@ -32,7 +32,6 @@ class RequestIp extends React.Component {
       visible: false,
       error: null,
       errors: {},
-      counter: 1,
       requests: [],
       response: [],
       macAddress: '00:00:00:00:00:00',
@@ -158,7 +157,6 @@ class RequestIp extends React.Component {
 
   //SETTER
   requestAdd = () => {
-    //let n = this.state.counter + 1
     let id = 0
     let n = 0
     this.state.requests.forEach(r => {
@@ -256,7 +254,6 @@ class RequestIp extends React.Component {
       }
     }
     delete request.networkError
-    delete request.networkColor
 
     request.prefix = prefix
     request.subnetMask = subnetMask
@@ -271,7 +268,6 @@ class RequestIp extends React.Component {
     let request = requests.find( r => r.id === id )
     request.objectType = objectType
     delete request.objectTypeError
-    delete request.objectTypeColor
 
     if (objectType === 'Heartbeat') {
       request.macAddress2 = '00:00:00:00:00:00'
@@ -289,7 +285,6 @@ class RequestIp extends React.Component {
     let request = requests.find( r => r.id === id )
     request.serverName = e.target.value
     delete request.serverNameError
-    delete request.serverNameColor
     this.setState({requests: requests})
   }
 
@@ -298,7 +293,6 @@ class RequestIp extends React.Component {
     let request = requests.find( r => r.id === id )
     request.serverName2 = e.target.value
     delete request.serverName2Error
-    delete request.serverName2Color
     this.setState({requests: requests})
   }
 
@@ -307,7 +301,6 @@ class RequestIp extends React.Component {
     let request = requests.find( r => r.id === id )
     request.macAddress = m.target.value
     delete request.macAddressError
-    delete request.macAddressColor
     this.setState({requests: requests})
   }
 
@@ -316,7 +309,6 @@ class RequestIp extends React.Component {
     let request = requests.find( r => r.id === id )
     request.macAddress2 = m.target.value
     delete request.macAddress2Error
-    delete request.macAddress2Color
     this.setState({requests: requests})
   }
 
@@ -339,33 +331,27 @@ class RequestIp extends React.Component {
     requests.forEach((request, i) => {
       if (!request.network) {
         request.networkError = 'error'
-        request.networkColor = 'red'
         ok = false
       }
       if (!request.objectType) {
         request.objectTypeError = 'error'
-        request.objectTypeColor = 'red'
         ok = false
       }
       if (!request.serverName) {
         request.serverNameError = 'error'
-        request.serverNameColor = 'red'
         ok = false
       }
       if (!validators.macAddress(request.macAddress)) {
         request.macAddressError = 'error'
-        request.macAddressColor = 'red'
         ok = false
       }
       if (request.objectType === 'Heartbeat') {
         if (!request.serverName2) {
           request.serverName2Error = 'error'
-          request.serverName2Color = 'red'
           ok = false
         }
         if (!validators.macAddress(request.macAddress2)) {
           request.macAddress2Error = 'error'
-          request.macAddress2Color = 'red'
           ok = false
         }
       }
@@ -560,7 +546,7 @@ class RequestIp extends React.Component {
                         optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                       }
                       key={obj.id}
-                      style={{ width: '300px', border: `1px solid ${obj.networkColor}` }}
+                      style={{ width: '300px', border: `1px solid red` }}
                       onChange={(value, event) => this.setNetworkManager(value, event, obj.id)}>
                       { this.state.real ?
                         this.state.real.map((n, i) => {
@@ -620,7 +606,7 @@ class RequestIp extends React.Component {
               :
                 <React.Fragment>
                   {obj.objectTypeError ?
-                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%', border: `1px solid ${obj.objectTypeColor}` }} onChange={e => this.setObjectType(e, obj.id)}>
+                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%', border: `1px solid red` }} onChange={e => this.setObjectType(e, obj.id)}>
                       { obj.objectTypes ?
                         obj.objectTypes.map((n, i) => {
                         return (
@@ -661,13 +647,13 @@ class RequestIp extends React.Component {
             { (obj.objectType === 'Heartbeat') ?
               <React.Fragment>
                 {obj.serverNameError ?
-                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: obj.serverNameColor }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName(e, obj.id)} />
                 :
                   <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
                 }
                 <Divider/>
                 {obj.serverName2Error ?
-                  <Input placeholder={obj.serverName2} style={{ width: '150px', borderColor: obj.serverName2Color }} onChange={e => this.setServerName2(e, obj.id)} />
+                  <Input placeholder={obj.serverName2} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName2(e, obj.id)} />
                 :
                   <Input placeholder={obj.serverName2} style={{ width: '150px' }} onChange={e => this.setServerName2(e, obj.id)} />
                 }
@@ -675,7 +661,7 @@ class RequestIp extends React.Component {
             :
               <React.Fragment>
                 {obj.serverNameError ?
-                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: obj.serverNameColor }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName(e, obj.id)} />
                 :
                   <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
                 }
@@ -694,13 +680,13 @@ class RequestIp extends React.Component {
           { (obj.objectType === 'Heartbeat') ?
             <React.Fragment>
               {obj.macAddressError ?
-                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: obj.macAddressColor }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress(e, obj.id)} />
               :
                 <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
               }
               <Divider/>
               {obj.macAddress2Error ?
-                <Input defaultValue={obj.macAddress2} style={{ width: '150px', borderColor: obj.macAddress2Color }} onChange={e => this.setMacAddress2(e, obj.id)} />
+                <Input defaultValue={obj.macAddress2} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress2(e, obj.id)} />
               :
                 <Input defaultValue={obj.macAddress2} style={{ width: '150px' }} onChange={e => this.setMacAddress2(e, obj.id)} />
               }
@@ -708,7 +694,7 @@ class RequestIp extends React.Component {
           :
             <React.Fragment>
               {obj.macAddressError ?
-                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: obj.macAddressColor }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress(e, obj.id)} />
               :
                 <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
               }

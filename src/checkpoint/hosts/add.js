@@ -10,11 +10,10 @@ import {
   hostAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Divider, Table, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
@@ -26,11 +25,15 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       errors: {},
+      interfaces: [],
       request: {}
     };
   }
 
   componentDidMount() {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    interfaces.push({id:1})
+    this.setState({interfaces: interfaces})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,6 +41,17 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+
+    if (this.state.visible === true){
+      if (this.state.interfaces && this.state.interfaces.length === 0) {
+        let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+        interfaces.push({id:1})
+        this.setState({interfaces: interfaces})
+      }
+      if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
+        this.main()
+      }
+    }
   }
 
   componentWillUnmount() {
@@ -57,6 +71,29 @@ class Add extends React.Component {
 
 
   //SETTERS
+  interfaceAdd = () => {
+    let id = 0
+    let n = 0
+    this.state.interfaces.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let r = {id: n}
+    let list = JSON.parse(JSON.stringify(this.state.interfaces))
+    list.push(r)
+    this.setState({interfaces: list})
+  }
+
+  interfaceRemove = r => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let newList = interfaces.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({interfaces: newList})
+  }
   nameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
@@ -67,76 +104,104 @@ class Add extends React.Component {
     request.address = e.target.value
     this.setState({request: request})
   }
-  routeDomainSet = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.routeDomain = id.toString()
-    this.setState({request: request})
+  nicNameSet = (nicName, id) => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let nic = interfaces.find( r => r.id === id )
+    nic.nicName = nicName
+    delete nic.nicNameError
+    this.setState({interfaces: interfaces})
   }
-  setStatus = e => {
-    let request = Object.assign({}, this.state.request);
-    request.session = e[0]
-    request.state = e[1]
-    this.setState({request: request})
+  subnet4Set = (subnet4, id) => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let nic = interfaces.find( r => r.id === id )
+    nic.subnet4 = subnet4
+    delete nic.subnet4Error
+    this.setState({interfaces: interfaces})
+  }
+  mask_length4Set = (mask_length4, id) => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let nic = interfaces.find( r => r.id === id )
+    nic.mask_length4 = mask_length4
+    delete nic.mask_length4Error
+    this.setState({interfaces: interfaces})
+  }
+  subnet6Set = (subnet6, id) => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let nic = interfaces.find( r => r.id === id )
+    nic.subnet6 = subnet6
+    delete nic.subnet6Error
+    this.setState({interfaces: interfaces})
+  }
+  mask_length6Set = (mask_length6, id) => {
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
+    let nic = interfaces.find( r => r.id === id )
+    nic.mask_length6 = mask_length4
+    delete nic.mask_length6Error
+    this.setState({interfaces: interfaces})
   }
 
 
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
+    let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
+    let ok = true
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     if (!request.address || !validators.ipv4(request.address)) {
       errors.addressError = true
-      errors.addressColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.addressError
-      delete errors.addressColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
-    if (!request.session) {
-      errors.sessionError = true
-      errors.sessionColor = 'red'
-      this.setState({errors: errors})
+    interfaces.forEach((nic, i) => {
+      if (!nic.nicName) {
+        nic.nicNameError = 'nicName missing'
+        ok = false
       }
-    else {
-      delete errors.sessionError
-      delete errors.sessionColor
-      this.setState({errors: errors})
-    }
+      if (!validators.ipv4(nic.subnet4)) {
+        nic.subnet4Error = 'subnet4 error'
+        ok = false
+      }
+      if (!validators.mask_length4(nic.mask_length4)) {
+        nic.mask_length4Error = 'mask_length4 error'
+        ok = false
+      }
+      if (request.address && nic.mask_length4 && nic.subnet4) {
+        if (!validators.ipInSubnet(nic.subnet4+'/'+nic.mask_length4, [request.address])) {
+          nic.subnet4Error = 'address out of network'
+          ok = false
+        }
+        else {
+          delete nic.subnet4Error
+        }
+      }
+    });
 
-    if (!request.state) {
-      errors.stateError = true
-      errors.stateColor = 'red'
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.stateError
-      delete errors.stateColor
-      this.setState({errors: errors})
-    }
+    await this.setState({interfaces: interfaces})
+
     return errors
   }
 
   validation = async () => {
-    await this.validationCheck()
+    let nicsOk = await this.validationCheck()
 
-    if (Object.keys(this.state.errors).length === 0) {
-      this.hostAdd()
+    if ((Object.keys(this.state.errors).length === 0) && nicsOk) {
+      //this.hostAdd()
+      console.log('chiamo hostAdd')
     }
   }
 
@@ -148,14 +213,7 @@ class Add extends React.Component {
     b.data = {
       "address": this.state.request.address,
       "name": this.state.request.name,
-      "session": this.state.request.session,
-      "state": this.state.request.state
     }
-
-    if(request.routeDomain) {
-      b.data.address = `${this.state.request.address}%${request.routeDomain}`
-    }
-
 
     this.setState({loading: true})
 
@@ -183,26 +241,184 @@ class Add extends React.Component {
     this.setState({
       visible: false,
       errors: {},
+      interfaces: [],
       request: {}
     })
   }
 
 
   render() {
+    console.log(this.state.interfaces)
+    const columns = [
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        name: 'dable',
+        description: '',
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.nicNameError ?
+              <React.Fragment>
+                <Input
+                  id='nicName'
+                  defaultValue={obj.nicName}
+                  style={{borderColor: 'red' }}
+                  onChange={e => this.nicNameSet(e.target.value, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.nicNameError}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='nicName'
+                defaultValue={obj.nicName}
+                onChange={e => this.nicNameSet(e.target.value, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Subnet4',
+        align: 'center',
+        dataIndex: 'subnet4',
+        key: 'subnet4',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.subnet4Error ?
+              <React.Fragment>
+                <Input
+                  id='subnet4'
+                  defaultValue={obj.subnet4}
+                  style={{borderColor: 'red' }}
+                  onChange={e => this.subnet4Set(e.target.value, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.subnet4Error}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='subnet4'
+                defaultValue={obj.subnet4}
+                onChange={e => this.subnet4Set(e.target.value, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Mask-length4',
+        align: 'center',
+        dataIndex: 'mask-length4',
+        key: 'mask-length4',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.mask_length4Error ?
+              <React.Fragment>
+                <Input
+                  id='mask_length4'
+                  defaultValue={obj.mask_length4}
+                  style={{borderColor: 'red' }}
+                  onChange={e => this.mask_length4Set(e.target.value, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.mask_length4Error}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='mask_length4'
+                defaultValue={obj.mask_length4}
+                onChange={e => this.mask_length4Set(e.target.value, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Subnet6',
+        align: 'center',
+        dataIndex: 'subnet6',
+        key: 'subnet6',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.subnet6Error ?
+              <React.Fragment>
+                <Input
+                  id='subnet6'
+                  defaultValue={obj.subnet6}
+                  style={{borderColor: 'red' }}
+                  onChange={e => this.subnet6Set(e.target.value, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.subnet6Error}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='subnet6'
+                defaultValue={obj.subnet6}
+                onChange={e => this.subnet6Set(e.target.value, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Mask-length6',
+        align: 'center',
+        dataIndex: 'mask-length6',
+        key: 'mask-length6',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.mask_length6Error ?
+              <React.Fragment>
+                <Input
+                  id='mask_length6'
+                  defaultValue={obj.mask_length6}
+                  style={{borderColor: 'red' }}
+                  onChange={e => this.mask_length6Set(e.target.value, obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.mask_length6Error}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='mask_length6'
+                defaultValue={obj.mask_length6}
+                onChange={e => this.mask_length6Set(e.target.value, obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Remove request',
+        align: 'center',
+        dataIndex: 'remove',
+        key: 'remove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.interfaceRemove(obj)}>
+            -
+          </Button>
+        ),
+      }
+    ]
     return (
       <Space direction='vertical'>
 
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD NODE</p>}
+          title={<p style={{textAlign: 'center'}}>ADD HOST</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.response &&
@@ -214,12 +430,12 @@ class Add extends React.Component {
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
               <Row>
-                <Col offset={2} span={6}>
+                <Col offset={4} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
-                <Col span={16}>
+                <Col span={4}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.nameSet(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   :
                     <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   }
@@ -228,12 +444,12 @@ class Add extends React.Component {
               <br/>
 
               <Row>
-                <Col offset={2} span={6}>
+                <Col offset={4} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
                 </Col>
-                <Col span={16}>
+                <Col span={4}>
                   {this.state.errors.addressError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.addressColor}} name="address" id='address' onChange={e => this.addressSet(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.addressSet(e)} />
                   :
                     <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
                   }
@@ -241,37 +457,29 @@ class Add extends React.Component {
               </Row>
               <br/>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Session:</p>
-                </Col>
-                <Col span={16}>
-                {this.state.errors.sessionError ?
-                  <Select
-                    style={{width: 250, border: `1px solid ${this.state.errors.sessionColor}`}}
-                    onChange={a => this.setStatus(a)}
-                  >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
-                  </Select>
-                :
-                  <Select
-                    style={{width: 250}}
-                    onChange={a => this.setStatus(a)}
-                  >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
-                  </Select>
-                }
-                </Col>
-              </Row>
+              <Divider/>
+
+
+              <Button type="primary" onClick={() => this.interfaceAdd()}>
+                +
+              </Button>
+              <br/>
+              <br/>
+              <Table
+                columns={columns}
+                dataSource={this.state.interfaces}
+                bordered
+                rowKey="id"
+                scroll={{x: 'auto'}}
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
+
               <br/>
 
 
               <Row>
-                <Col offset={8} span={16}>
+                <Col offset={11} span={2}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
                     Add Host
                   </Button>
