@@ -48,9 +48,6 @@ class Add extends React.Component {
         interfaces.push({id:1})
         this.setState({interfaces: interfaces})
       }
-      if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
-        this.main()
-      }
     }
   }
 
@@ -59,15 +56,7 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.main()
   }
-
-  main = async () => {
-
-  }
-
-
-  //FETCH
 
 
   //SETTERS
