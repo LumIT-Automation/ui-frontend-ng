@@ -4,10 +4,11 @@ import authenticationReducer from './store.authentication'
 import errorReducer from './store.error'
 import authorizationsReducer from './store.authorizations'
 
-import f5Reducer from '../f5/store'
-import vmwareReducer from '../vmware/store'
+import workflowReducer from '../workflow/store'
 import infobloxReducer from '../infoblox/store'
 import checkpointReducer from '../checkpoint/store'
+import f5Reducer from '../f5/store'
+import vmwareReducer from '../vmware/store'
 import fortinetdbReducer from '../fortinetdb/store'
 
 
@@ -16,10 +17,11 @@ export default configureStore({
     authentication: authenticationReducer,
     authorizations: authorizationsReducer,
     error: errorReducer,
-    f5: f5Reducer,
-    vmware: vmwareReducer,
+    workflow: workflowReducer,
     infoblox: infobloxReducer,
     checkpoint: checkpointReducer,
+    f5: f5Reducer,
+    vmware: vmwareReducer,
     fortinetdb: fortinetdbReducer,
   }
 })

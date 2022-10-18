@@ -6,12 +6,14 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import SuperAdmin from './superAdmin/manager'
+import Workflow from '../workflow/permissions/manager'
 import Infoblox from '../infoblox/permissions/manager'
 import Checkpoint from '../checkpoint/permissions/manager'
 import F5 from '../f5/permissions/manager'
 import Vmware from '../vmware/permissions/manager'
 import Fortinetdb from '../fortinetdb/permissions/manager'
 
+import { permissionsFetch as workflowPermissionsFetch } from '../workflow/store'
 import { permissionsFetch as infobloxPermissionsFetch } from '../infoblox/store'
 import { permissionsFetch as checkpointPermissionsFetch } from '../checkpoint/store'
 import { permissionsFetch as f5PermissionsFetch } from '../f5/store'
@@ -53,6 +55,21 @@ class Permissions extends React.Component {
             <TabPane tab="SuperAdmin" key="SuperAdmin">
               <SuperAdmin/>
             </TabPane>
+            { this.props.workflowAuth && (this.props.workflowAuth.permission_identityGroups_get || this.props.workflowAuth.any) ?
+              <React.Fragment>
+                {this.props.workflowLoading ?
+                  <TabPane key="Workflow" tab="Workflow">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="workflow" tab=<span>Workflow <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(workflowPermissionsFetch(true))}/></span>>
+                    <Workflow/>
+                  </TabPane>
+                }
+              </React.Fragment>
+              :
+              null
+            }
             { this.props.infobloxAuth && (this.props.infobloxAuth.permission_identityGroups_get || this.props.infobloxAuth.any) ?
               <React.Fragment>
                 {this.props.infobloxLoading ?
@@ -140,12 +157,14 @@ class Permissions extends React.Component {
 
 
 export default connect((state) => ({
+  workflowAuth: state.authorizations.workflow,
   infobloxAuth: state.authorizations.infoblox,
   checkpointAuth: state.authorizations.checkpoint,
   f5Auth: state.authorizations.f5,
   vmwareAuth: state.authorizations.vmware,
   fortinetdbAuth: state.authorizations.fortinetdb,
 
+  workflowLoading: state.workflow.permissionsLoading,
   infobloxLoading: state.infoblox.permissionsLoading,
   checkpointLoading: state.checkpoint.permissionsLoading,
   f5Loading: state.f5.permissionsLoading,
