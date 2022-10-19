@@ -6,7 +6,7 @@ import Authorizators from '../_helpers/authorizators'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
 import VmwareManager from '../vmware/services/manager'
-import CheckpointManager from '../checkpoint/services/manager'
+import CheckpointManager from '../workflow/services/manager'
 
 import { Divider } from 'antd'
 
@@ -41,6 +41,11 @@ class Service extends React.Component {
     return author.isObjectEmpty(a)
   }
 
+  workflowsAuthorizator = a => {
+    let author = new Authorizators()
+    return author.workflow(a)
+  }
+
 
   render() {
     return (
@@ -60,7 +65,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+        { this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow) ?
           <React.Fragment>
             <Divider orientation="left" plain>
               FIREWALL
@@ -112,6 +117,7 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
+  authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,

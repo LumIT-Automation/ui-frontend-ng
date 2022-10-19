@@ -9,8 +9,6 @@ import {
   hostRemoveError,
 } from '../store'
 
-import AssetSelector from '../assetSelector'
-
 import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
@@ -158,7 +156,7 @@ class RemoveHost extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/remove-host/`, this.props.token, b )
+    await rest.doXHR(`workflow/checkpoint/remove-host/`, this.props.token, b )
     return r
   }
 
@@ -266,39 +264,26 @@ class RemoveHost extends React.Component {
           width={1500}
         >
 
-          <AssetSelector workflow={'true'}/>
-          <Divider/>
-
-          { ( this.props.asset && this.props.asset.id ) ?
-            <React.Fragment>
-
-            <React.Fragment>
-              <Button type="primary" onClick={() => this.setRequests()}>
-                +
-              </Button>
-              <br/>
-              <br/>
-              <Table
-                columns={requests}
-                dataSource={this.state.requests}
-                bordered
-                rowKey="id"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-              <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validateIp()}>
-                Remove Host
-              </Button>
-              <br/>
-            </React.Fragment>
-
-              <Divider/>
-
-            </React.Fragment>
-            :
-            <Alert message="Asset not set" type="error" />
-          }
+          <React.Fragment>
+            <Button type="primary" onClick={() => this.setRequests()}>
+              +
+            </Button>
+            <br/>
+            <br/>
+            <Table
+              columns={requests}
+              dataSource={this.state.requests}
+              bordered
+              rowKey="id"
+              scroll={{x: 'auto'}}
+              pagination={false}
+              style={{marginBottom: 10}}
+            />
+            <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validateIp()}>
+              Remove Host
+            </Button>
+            <br/>
+          </React.Fragment>
 
         </Modal>
 
@@ -320,7 +305,6 @@ export default connect((state) => ({
   token: state.authentication.token,
 
   authorizations: state.authorizations.checkpoint,
-  asset: state.checkpoint.asset,
 
   hostRemoveError: state.checkpoint.hostRemoveError,
 }))(RemoveHost);

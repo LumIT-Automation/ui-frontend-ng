@@ -35,6 +35,29 @@ class Authorizators {
     }
   }
 
+  workflow = list => {
+    try {
+      let resp
+      if (list) {
+        list.exec.forEach((item, i) => {
+          if (item.workflow_name === "checkpoint_remove_host") {
+            resp = true
+          }
+          else {
+            resp = false
+          }
+        });
+      }
+      else {
+        resp = false
+      }
+      return resp
+    }
+    catch (error){
+      return false
+    }
+  }
+
 }
 
 export default Authorizators

@@ -4,6 +4,7 @@ import { Tabs, Space, Spin } from 'antd'
 import 'antd/dist/antd.css'
 import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+import Authorizators from '../_helpers/authorizators'
 
 import SuperAdmin from './superAdmin/manager'
 import Workflow from '../workflow/permissions/manager'
@@ -46,6 +47,11 @@ class Permissions extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+
 
   render() {
     return (
@@ -55,7 +61,7 @@ class Permissions extends React.Component {
             <TabPane tab="SuperAdmin" key="SuperAdmin">
               <SuperAdmin/>
             </TabPane>
-            { this.props.workflowAuth && (this.props.workflowAuth.permission_identityGroups_get || this.props.workflowAuth.any) ?
+            { this.props.authorizations && this.authorizatorsSA(this.props.authorizations) ?
               <React.Fragment>
                 {this.props.workflowLoading ?
                   <TabPane key="Workflow" tab="Workflow">
@@ -157,6 +163,7 @@ class Permissions extends React.Component {
 
 
 export default connect((state) => ({
+  authorizations: state.authorizations,
   workflowAuth: state.authorizations.workflow,
   infobloxAuth: state.authorizations.infoblox,
   checkpointAuth: state.authorizations.checkpoint,
