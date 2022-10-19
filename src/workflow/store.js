@@ -59,7 +59,6 @@ const workflowSlice = createSlice({
         state.workflowsLoading = action.payload
       },
       workflows: (state, action) => {
-        console.log('èèèèèèèèèèèèè', action.payload.data)
         state.workflows = action.payload.data
       },
       workflowsFetch: (state, action) => {

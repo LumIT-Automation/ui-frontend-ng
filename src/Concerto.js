@@ -4,16 +4,11 @@ import { Component, } from "react"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import './App.css'
 import 'antd/dist/antd.css'
-import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
-import { UserOutlined } from '@ant-design/icons'
+import { Layout } from 'antd'
 
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
-
-import {
-  uiconf
-} from './_store/store.authentication'
 
 import {
   authorizations,
@@ -45,7 +40,7 @@ import Checkpoint from './checkpoint/checkpoint'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 
 

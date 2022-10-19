@@ -20,7 +20,6 @@ import List from './list'
 import Add from './add'
 
 
-
 class Manager extends React.Component {
 
   constructor(props) {
@@ -176,8 +175,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log('permissions', this.props.permissions)
-
     return (
       <React.Fragment>
         <br/>

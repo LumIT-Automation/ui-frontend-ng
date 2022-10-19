@@ -2,7 +2,7 @@ import React from 'react'
 import { Component, } from "react";
 
 import Rest from './_helpers/Rest'
-import Error from './ConcertoError'
+//import Error from './ConcertoError'
 import Login from './Login'
 import Concerto from './Concerto'
 import { login, uiconf } from './_store/store.authentication'

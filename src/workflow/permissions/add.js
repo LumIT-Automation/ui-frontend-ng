@@ -14,11 +14,12 @@ import {
   permissionAddError,
   identityGroups,
   identityGroupsError,
+  workflows,
+  workflowsError,
 
-  networksError,
-  containersError,
 } from '../store'
 
+const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
@@ -32,10 +33,20 @@ class Add extends React.Component {
       visible: false,
       request: {},
       errors: {},
-    };
+      json: {
+        details: {
+          checkpoint: {
+            allowed_asset_ids: [1,2]
+          }
+        }
+      }
+    }
   }
 
   componentDidMount() {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.details = this.state.json.details
+    this.setState({request: request})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -43,9 +54,6 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (prevState.request.assetId !== this.state.request.assetId) {
-      this.networksGet()
-    }
   }
 
   componentWillUnmount() {
@@ -70,7 +78,17 @@ class Add extends React.Component {
     identityGroupIds.forEach( ig => {
       items.push(ig.identity_group_identifier)
     })
-    this.setState({identityGroupIds: items})
+    await this.setState({identityGroupIds: items})
+
+    let fetchedWorkflows = await this.workflowsGet()
+    if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
+      this.props.dispatch(workflowsError(fetchedWorkflows))
+      return
+    }
+    else {
+      this.props.dispatch(workflows( fetchedWorkflows.data ))
+    }
+    await this.setState({workflows: fetchedWorkflows.data})
 
     await this.setState({rolesLoading: true})
     let fetchedRolesAndPrivileges = await this.rolesAndPrivilegesGet()
@@ -87,7 +105,7 @@ class Add extends React.Component {
       for (let r in rolesAndPrivileges) {
         newList.push(rolesAndPrivileges[r].role)
       }
-      this.setState({rolesNames: newList})
+      await this.setState({rolesNames: newList})
     }
   }
 
@@ -108,6 +126,21 @@ class Add extends React.Component {
     return r
   }
 
+  workflowsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("workflow/workflows/", this.props.token)
+    return r
+  }
+
   rolesAndPrivilegesGet = async () => {
     let r
     let rest = new Rest(
@@ -120,57 +153,6 @@ class Add extends React.Component {
       }
     )
     await rest.doXHR(`workflow/roles/?related=privileges`, this.props.token)
-    return r
-  }
-
-  networksGet = async () => {
-    this.setState({networksLoading: true})
-
-    let nets = await this.netsGet()
-    if (nets.status && nets.status !== 200) {
-      this.props.dispatch(networksError( nets ))
-      await this.setState({networks: null, networksLoading: false})
-      return
-    }
-
-    let containers = await this.containersGet()
-    if (containers.status && containers.status !== 200) {
-      this.props.dispatch(containersError( containers ))
-      await this.setState({networks: null, networksLoading: false})
-      return
-    }
-
-    let networks = nets.concat(containers)
-    this.setState({networks: networks, networksLoading: false})
-  }
-
-  netsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`workflow/${this.state.request.assetId}/networks/`, this.props.token)
-    return r
-  }
-
-  containersGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp.data
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`workflow/${this.state.request.assetId}/network-containers/`, this.props.token)
     return r
   }
 
@@ -262,24 +244,52 @@ class Add extends React.Component {
     }
   }
 
+  workflowIdSet = async workflowId => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.workflowId = workflowId
+    await this.setState({request: request})
+  }
+
   roleSet = role => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.role = role
     this.setState({request: request})
   }
 
-  assetSet = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.assetId = id
-    this.setState({request: request})
+  //JSON Input
+  jsonValidate = async e => {
+    let json, beauty
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    try {
+      json = JSON.parse(e.target.value)
+      beauty = JSON.stringify(json, null, 2)
+      json = JSON.parse(beauty)
+      delete errors.jsonError
+      await this.setState({
+        json: json,
+        errors: errors
+      })
+      this.jsonSet()
+    } catch (error) {
+      errors.jsonError = `json validation: ${error.message }`
+      await this.setState({errors: errors})
+    }
   }
 
-  networkSet = networkName => {
+
+  //SETTERS
+  jsonSet = async () => {
+    let json = JSON.parse(JSON.stringify(this.state.json))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.network = {}
-    request.network.name = networkName
-    this.setState({request: request})
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (json.details && json.details.checkpoint && json.details.checkpoint.allowed_asset_ids ) {
+      request.details = json.details
+      await this.setState({request: request})
+    }
   }
+
 
 
   //VALIDATION
@@ -289,46 +299,29 @@ class Add extends React.Component {
 
     if (!request.identityGroupId) {
       errors.identityGroupIdError = true
-      errors.identityGroupIdColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.identityGroupIdError
-      delete errors.identityGroupIdColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
-    if (!request.assetId) {
-      errors.assetError = true
-      errors.assetColor = 'red'
-      this.setState({errors: errors})
+    if (!request.workflowId) {
+      errors.workflowIdError = true
+      await this.setState({errors: errors})
       }
     else {
-      delete errors.assetError
-      delete errors.assetColor
-      this.setState({errors: errors})
+      delete errors.workflowIdError
+      await this.setState({errors: errors})
     }
 
     if (!request.role) {
       errors.roleError = true
-      errors.roleColor = 'red'
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
       }
     else {
       delete errors.roleError
-      delete errors.roleColor
-      this.setState({errors: errors})
-    }
-
-    if (!request.network) {
-      errors.networkError = true
-      errors.networkColor = 'red'
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.networkError
-      delete errors.networkColor
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
     return errors
@@ -370,13 +363,12 @@ class Add extends React.Component {
     this.setState({loading: true})
     let b = {}
     b.data = {
-      "identity_group_name": this.state.request.cn,
       "identity_group_identifier": this.state.request.identityGroupId,
       "role": this.state.request.role,
-      "network": {
-        "name": this.state.request.network.name,
-        "id_asset": this.state.request.assetId
-      }
+      "workflow": {
+           "id": this.state.request.workflowId
+       },
+       "details": this.state.request.details
     }
 
     let rest = new Rest(
@@ -390,6 +382,7 @@ class Add extends React.Component {
       }
     )
     await rest.doXHR(`workflow/permissions/`, this.props.token, b )
+
   }
 
   response = () => {
@@ -409,6 +402,14 @@ class Add extends React.Component {
 
 
   render() {
+    //console.log('permissions', this.props.permissions)
+    console.log('request', this.state.request)
+    console.log('errors', this.state.errors)
+
+    let jsonPretty = () => {
+      return JSON.stringify(this.state.json, null, 2)
+    }
+
     return (
       <React.Fragment>
 
@@ -445,7 +446,7 @@ class Add extends React.Component {
                           <Select
                             value={this.state.request.identityGroupId}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.identityGroupIdColor}`}}
+                            style={{width: 350, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -548,6 +549,70 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
+                  <p style={{marginRight: 25, float: 'right'}}>Workflow:</p>
+                </Col>
+                <Col span={16}>
+                  <React.Fragment>
+                    { this.state.workflows && this.state.workflows.length > 0 ?
+                      <React.Fragment>
+                        {this.state.errors.workflowIdError ?
+                          <Select
+                            value={this.state.request.workflowId}
+                            showSearch
+                            style={{width: 350, border: `1px solid red`}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.workflowIdSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.workflows.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          <Select
+                            value={this.state.request.workflowId}
+                            showSearch
+                            style={{width: 350}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => this.workflowIdSet(n)}
+                          >
+                            <React.Fragment>
+                              {this.state.workflows.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        }
+                      </React.Fragment>
+                    :
+                      null
+                    }
+                  </React.Fragment>
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
                   <p style={{marginRight: 25, float: 'right'}}>Role:</p>
                 </Col>
                 <Col span={16}>
@@ -561,7 +626,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.role}
                               showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              style={{width: 350, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -616,147 +681,29 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Asset:</p>
+                  <p style={{marginRight: 25, float: 'right'}}>Details:</p>
                 </Col>
                 <Col span={16}>
-                  { this.props.assetsLoading ?
-                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                :
                   <React.Fragment>
-                    { this.props.assets && this.props.assets.length > 0 ?
-                      <React.Fragment>
-                        {this.state.errors.assetError ?
-                          <Select
-                            value={this.state.request.assetId}
-                            showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.assetSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.props.assets.map((a, i) => {
-                                return (
-                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        :
-                          <Select
-                            value={this.state.request.assetId}
-                            showSearch
-                            style={{width: 350}}
-                            optionFilterProp="children"
-                            filterOption={(input, option) =>
-                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                            }
-                            filterSort={(optionA, optionB) =>
-                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                            }
-                            onSelect={n => this.assetSet(n)}
-                          >
-                            <React.Fragment>
-                              {this.props.assets.map((a, i) => {
-                                return (
-                                  <Select.Option key={i} value={a.id}>{a.address}</Select.Option>
-                                )
-                              })
-                              }
-                            </React.Fragment>
-                          </Select>
-                        }
-                      </React.Fragment>
-                    :
-                      null
-                    }
-                  </React.Fragment>
-                }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 25, float: 'right'}}>Network:</p>
-                </Col>
-                <Col span={16}>
-                  { this.state.networksLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%' }}/>
-                  :
+                  { this.state.errors.jsonError ?
                     <React.Fragment>
-                      { (this.state.networks && this.state.networks.length > 0) ?
-                        <React.Fragment>
-                          {this.state.errors.networkError ?
-                            <Select
-                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
-                              showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.networkColor}`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onChange={n => this.networkSet(n)}
-                            >
-                              {this.state.request.role === 'admin' ?
-                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                              :
-                                <React.Fragment>
-                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  {this.state.networks.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              }
-                            </Select>
-                          :
-                            <Select
-                              value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
-                              showSearch
-                              style={{width: 350}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onChange={n => this.networkSet(n)}
-                            >
-                              {this.state.request.role === 'admin' ?
-                                <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                              :
-                                <React.Fragment>
-                                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  {this.state.networks.map((n, i) => {
-                                    return (
-                                      <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
-                                    )
-                                  })
-                                  }
-                                </React.Fragment>
-                              }
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        <Select style={{width: 350}} disabled value={null} onChange={null}>
-                        </Select>
-                      }
+                      <Input.TextArea
+                        defaultValue={jsonPretty()}
+                        style={{width: 350, border: `1px solid red`}}
+                        rows={10}
+                        onBlur={e => this.jsonValidate(e)}
+                      />
+                      <p style={{color: 'red'}}>{this.state.errors.jsonError}</p>
                     </React.Fragment>
+                  :
+                    <Input.TextArea
+                      defaultValue={jsonPretty()}
+                      style={{width: 350}}
+                      rows={10}
+                      onBlur={e => this.jsonValidate(e)}
+                    />
                   }
+                  </React.Fragment>
                 </Col>
               </Row>
               <br/>
@@ -776,8 +723,8 @@ class Add extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.identityGroupsError ? <Error component={'permissionAdd workflow'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+            { this.props.workflowsError ? <Error component={'permissionAdd workflow'} error={[this.props.workflowsError]} visible={true} type={'workflowsError'} /> : null }
             { this.props.rolesError ? <Error component={'permissionAdd workflow'} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-            { this.props.networksError ? <Error component={'permissionAdd workflow'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
             { this.props.newIdentityGroupAddError ? <Error component={'permissionAdd workflow'} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
             { this.props.permissionAddError ? <Error component={'permissionAdd workflow'} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
           </React.Fragment>
@@ -795,11 +742,12 @@ export default connect((state) => ({
   assets: state.workflow.assets,
 
   identityGroups: state.workflow.identityGroups,
+  workflows: state.workflow.workflows,
   permissions: state.workflow.permissions,
 
-  rolesError: state.workflow.rolesError,
   identityGroupsError: state.workflow.identityGroupsError,
   newIdentityGroupAddError: state.workflow.newIdentityGroupAddError,
-  networksError: state.workflow.networksError,
+  workflowsError: state.workflow.workflowsError,
+  rolesError: state.workflow.rolesError,
   permissionAddError: state.workflow.permissionAddError,
 }))(Add);

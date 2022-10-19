@@ -124,7 +124,7 @@ class Add extends React.Component {
   mask_length6Set = (mask_length6, id) => {
     let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
     let nic = interfaces.find( r => r.id === id )
-    nic.mask_length6 = mask_length4
+    nic.mask_length6 = mask_length6
     delete nic.mask_length6Error
     this.setState({interfaces: interfaces})
   }

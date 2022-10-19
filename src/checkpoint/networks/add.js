@@ -114,7 +114,7 @@ class Add extends React.Component {
   mask_length6Set = (mask_length6, id) => {
     let nets = JSON.parse(JSON.stringify(this.state.nets))
     let net = nets.find( r => r.id === id )
-    net.mask_length6 = mask_length4
+    net.mask_length6 = mask_length6
     delete net.mask_length6Error
     this.setState({nets: nets})
   }
