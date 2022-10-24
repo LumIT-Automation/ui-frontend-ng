@@ -23,6 +23,8 @@ import {
   workflowModifyError,
   workflowDeleteError,
 
+  hostRemoveError,
+
   historysError,
 
   genericError
@@ -100,6 +102,10 @@ class Error extends Component {
         case 'workflowDeleteError':
         	this.props.dispatch(workflowDeleteError(null))
         	break;
+
+        case 'hostRemoveError':
+          this.props.dispatch(hostRemoveError(null))
+          break;
 
         case 'historysError':
           this.props.dispatch(historysError(null))

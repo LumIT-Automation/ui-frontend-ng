@@ -38,6 +38,7 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.requests)
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
@@ -79,14 +80,31 @@ class RemoveHost extends React.Component {
     this.setState({requests: newList})
   }
 
-  setIp = (e, id) => {
+  setIp = async (e, id) => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.ip = e.target.value
-    this.setState({requests: requests})
+    await this.setState({requests: requests})
   }
 
-  validateIp = async () => {
+  setAssets = async (e, id) => {
+    try {
+      let requests = JSON.parse(JSON.stringify(this.state.requests))
+      let request = requests.find( r => r.id === id )
+      let list = []
+      e.forEach((item, i) => {
+        list.push(parseInt(item))
+      });
+      console.log(list)
+      request.asset = {}
+      request.asset.checkpoint = list
+      await this.setState({requests: requests})
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  validate = async () => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let validators = new Validators()
     let error = false
@@ -98,6 +116,14 @@ class RemoveHost extends React.Component {
       else {
         request.ipError = 'Please input a valid ip'
         error = true
+      }
+      if (!request.asset.checkpoint) {
+        request.assetsError = 'Please input asset(s) id'
+        error = true
+
+      }
+      else {
+        request.assetsError = null
       }
       this.setState({requests: requests})
     })
@@ -141,11 +167,16 @@ class RemoveHost extends React.Component {
   }
 
   removeHost = async request => {
+    console.log(request.asset.checkpoint)
     let r
     let b = {}
     b.data = {
+      "asset": {
+        "checkpoint": request.asset.checkpoint
+       },
       "ipv4-address": `${request.ip}`
     }
+    console.log(b)
 
     let rest = new Rest(
       "PUT",
@@ -153,6 +184,7 @@ class RemoveHost extends React.Component {
         r = resp
       },
       error => {
+        console.log(r)
         r = error
       }
     )
@@ -234,6 +266,35 @@ class RemoveHost extends React.Component {
         ),
       },
       {
+        title: 'ASSETS',
+        align: 'center',
+        dataIndex: 'assets',
+        width: 150,
+        key: 'assets',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.assetsError ?
+              <React.Fragment>
+                <Input
+                  id='assets'
+                  placeholder={'1,2'}
+                  defaultValue={obj.assets}
+                  onChange={e => this.setAssets([e.target.value], obj.id)}
+                />
+                <p style={{color: 'red'}}>{obj.assetsError}</p>
+              </React.Fragment>
+            :
+              <Input
+                id='assets'
+                placeholder={'1,2'}
+                defaultValue={obj.assets}
+                onChange={e => this.setAssets([e.target.value], obj.id)}
+              />
+            }
+          </React.Fragment>
+        ),
+      },
+      {
         title: 'Remove request',
         align: 'center',
         dataIndex: 'remove',
@@ -279,7 +340,7 @@ class RemoveHost extends React.Component {
               pagination={false}
               style={{marginBottom: 10}}
             />
-            <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validateIp()}>
+            <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validate()}>
               Remove Host
             </Button>
             <br/>

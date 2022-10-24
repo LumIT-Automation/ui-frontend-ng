@@ -36,6 +36,11 @@ class Service extends React.Component {
   componentWillUnmount() {
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+
   authorizators = a => {
     let author = new Authorizators()
     return author.isObjectEmpty(a)
@@ -65,7 +70,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow) ?
+        { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
           <React.Fragment>
             <Divider orientation="left" plain>
               FIREWALL
@@ -117,6 +122,7 @@ class Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
+  authorizations: state.authorizations,
   authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,

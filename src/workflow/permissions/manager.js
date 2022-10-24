@@ -16,6 +16,9 @@ import {
   identityGroupsError,
 } from '../store'
 
+import { assets as checkpointAssets } from '../../checkpoint/store'
+import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
+
 import List from './list'
 import Add from './add'
 
@@ -53,52 +56,82 @@ class Manager extends React.Component {
 
 
   main = async () => {
-    this.props.dispatch(permissionsLoading(true))
+    try {
+      let permissionsWithWorkflows
+      this.props.dispatch(permissionsLoading(true))
 
-    let fetchedWorkflows = await this.workflowsGet()
-    if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
-      this.props.dispatch(workflowsError(fetchedWorkflows))
-      this.props.dispatch(permissionsLoading(false))
-      return
-    }
-    else {
-      this.props.dispatch(workflows( fetchedWorkflows ))
-    }
+      let cpAssets = await this.assetsGet()
+      if (cpAssets.status && cpAssets.status !== 200 ) {
+        this.props.dispatch(checkpointAssetsError(cpAssets))
+        return
+      }
+      else {
+        await this.props.dispatch(checkpointAssets( cpAssets ))
+      }
 
-    let fetchedIdentityGroups = await this.identityGroupsGet()
-    if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
-      this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
-      this.props.dispatch(permissionsLoading(false))
-      return
-    }
-    else {
-      this.props.dispatch(identityGroups( fetchedIdentityGroups ))
-    }
+      let fetchedWorkflows = await this.workflowsGet()
+      if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
+        this.props.dispatch(workflowsError(fetchedWorkflows))
+        this.props.dispatch(permissionsLoading(false))
+        return
+      }
+      else {
+        this.props.dispatch(workflows( fetchedWorkflows ))
+      }
+      console.log('workflow', fetchedWorkflows)
 
-    let fetchedPermissions = await this.permissionsGet()
-    if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
-      this.props.dispatch(permissionsError(fetchedPermissions))
-      this.props.dispatch(permissionsLoading(false))
-      return
-    }
-    else {
-      this.props.dispatch(permissions(fetchedPermissions))
-    }
+      let fetchedIdentityGroups = await this.identityGroupsGet()
+      if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+        this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+        this.props.dispatch(permissionsLoading(false))
+        return
+      }
+      else {
+        this.props.dispatch(identityGroups( fetchedIdentityGroups ))
+      }
 
-    if ((fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) ||
-        (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) ||
-        (fetchedPermissions.status && fetchedPermissions.status !== 200 ) ) {
-      this.props.dispatch(permissionsLoading(false))
-      return
+      let fetchedPermissions = await this.permissionsGet()
+      if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
+        this.props.dispatch(permissionsError(fetchedPermissions))
+        this.props.dispatch(permissionsLoading(false))
+        return
+      }
+      else {
+        this.props.dispatch(permissions(fetchedPermissions))
+      }
+
+      if ((fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) ||
+          (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) ||
+          (fetchedPermissions.status && fetchedPermissions.status !== 200 ) ) {
+        this.props.dispatch(permissionsLoading(false))
+        return
+      }
+      else {
+        //this.props.dispatch(permissionsLoading(false))
+        permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, fetchedPermissions)
+        this.props.dispatch(permissions( permissionsWithWorkflows ))
+        this.props.dispatch(permissionsLoading(false))
+      }
     }
-    else {
-      //this.props.dispatch(permissionsLoading(false))
-      let permissionsWithWorkflows = await this.workflowAddDetails(fetchedWorkflows, fetchedPermissions)
-      this.props.dispatch(permissions( permissionsWithWorkflows ))
-      this.props.dispatch(permissionsLoading(false))
+    catch (error) {
+      console.log(error)
     }
   }
 
+  assetsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("checkpoint/assets/", this.props.token)
+    return r
+  }
 
   workflowsGet = async () => {
     let r
@@ -147,16 +180,10 @@ class Manager extends React.Component {
   }
 
 
-  workflowAddDetails = async (workflows, permissions) => {
-    //workflows and permissions are immutable, so I stringyfy and parse in order to edit them
-    //console.log('workflows', workflows)
-    //console.log('permissions', permissions)
-
-
+  workflowAddDescription = async (workflows, permissions) => {
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
-    let workflowsObject = JSON.parse(JSON.stringify(workflows.data))
+    let workflowsObject = JSON.parse(JSON.stringify(workflows.data.items))
     let list = []
-
 
     for (const [key, value] of Object.entries(workflowsObject)) {
       list.push(value)
@@ -167,7 +194,7 @@ class Manager extends React.Component {
       value.workflow = workflow
     }
 
-    let permissionsWithWorkflowDescription =JSON.parse(JSON.stringify(newPermissions))
+    let permissionsWithWorkflowDescription = JSON.parse(JSON.stringify(newPermissions))
 
     return permissionsWithWorkflowDescription
   }
@@ -212,4 +239,5 @@ export default connect((state) => ({
   workflowsError: state.workflow.workflowsError,
   identityGroupsError: state.workflow.identityGroupsError,
   permissionsError: state.workflow.permissionsError,
+  checkpointAssets: state.checkpoint.assets
 }))(Manager);

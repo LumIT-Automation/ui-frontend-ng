@@ -59,7 +59,7 @@ const workflowSlice = createSlice({
         state.workflowsLoading = action.payload
       },
       workflows: (state, action) => {
-        state.workflows = action.payload.data
+        state.workflows = action.payload.data.items
       },
       workflowsFetch: (state, action) => {
         state.workflowsFetch = action.payload
@@ -81,7 +81,9 @@ const workflowSlice = createSlice({
         state.workflowDeleteError = action.payload
       },
 
-
+      hostRemoveError: (state, action) => {
+        state.hostRemoveError = action.payload
+      },
 
       historysLoading: ( state, action) => {
         state.historysLoading = action.payload
@@ -141,6 +143,8 @@ export const {
   workflowAddError,
   workflowModifyError,
   workflowDeleteError,
+
+  hostRemoveError,
 
   historysLoading,
   historys,

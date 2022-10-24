@@ -7,7 +7,7 @@ import Highlighter from 'react-highlight-words'
 import { SearchOutlined } from '@ant-design/icons'
 
 import RolesDescription from './rolesDescription'
-//import Modify from './modify'
+import Modify from './modify'
 import Delete from './delete'
 
 
@@ -189,7 +189,7 @@ class List extends React.Component {
         ...this.getColumnSearchProps('role'),
 
       },
-      {/*
+      {
         title: 'Modify',
         align: 'center',
         dataIndex: 'modify',
@@ -203,7 +203,7 @@ class List extends React.Component {
           }
           </Space>
         ),
-      */},
+      },
       {
         title: 'Delete',
         align: 'center',
