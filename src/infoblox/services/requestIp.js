@@ -317,6 +317,7 @@ class RequestIp extends React.Component {
   //validation
 
   validation = async () => {
+    console.log('èèèèèèèèè')
     let valid = await this.validationCheck()
     if (valid) {
       this.sendRequests()
@@ -647,23 +648,53 @@ class RequestIp extends React.Component {
             { (obj.objectType === 'Heartbeat') ?
               <React.Fragment>
                 {obj.serverNameError ?
-                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName}
+                    style={{ width: '150px', borderColor: 'red' }}
+                    onChange={e => this.setServerName(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 :
-                  <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName}
+                    style={{ width: '150px' }}
+                    onChange={e => this.setServerName(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 }
                 <Divider/>
                 {obj.serverName2Error ?
-                  <Input placeholder={obj.serverName2} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName2(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName2}
+                    style={{ width: '150px', borderColor: 'red' }}
+                    onChange={e => this.setServerName2(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 :
-                  <Input placeholder={obj.serverName2} style={{ width: '150px' }} onChange={e => this.setServerName2(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName2}
+                    style={{ width: '150px' }}
+                    onChange={e => this.setServerName2(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 }
               </React.Fragment>
             :
               <React.Fragment>
                 {obj.serverNameError ?
-                  <Input placeholder={obj.serverName} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName}
+                    style={{ width: '150px', borderColor: 'red' }}
+                    onChange={e => this.setServerName(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 :
-                  <Input placeholder={obj.serverName} style={{ width: '150px' }} onChange={e => this.setServerName(e, obj.id)} />
+                  <Input
+                    placeholder={obj.serverName}
+                    style={{ width: '150px' }}
+                    onChange={e => this.setServerName(e, obj.id)}
+                    onPressEnter={() => this.validation()}
+                  />
                 }
               </React.Fragment>
             }
@@ -680,23 +711,53 @@ class RequestIp extends React.Component {
           { (obj.objectType === 'Heartbeat') ?
             <React.Fragment>
               {obj.macAddressError ?
-                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress}
+                  style={{ width: '150px', borderColor: 'red' }}
+                  onChange={e => this.setMacAddress(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               :
-                <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress}
+                  style={{ width: '150px' }}
+                  onChange={e => this.setMacAddress(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               }
               <Divider/>
               {obj.macAddress2Error ?
-                <Input defaultValue={obj.macAddress2} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress2(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress2}
+                  style={{ width: '150px', borderColor: 'red' }}
+                  onChange={e => this.setMacAddress2(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               :
-                <Input defaultValue={obj.macAddress2} style={{ width: '150px' }} onChange={e => this.setMacAddress2(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress2}
+                  style={{ width: '150px' }}
+                  onChange={e => this.setMacAddress2(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               }
             </React.Fragment>
           :
             <React.Fragment>
               {obj.macAddressError ?
-                <Input defaultValue={obj.macAddress} style={{ width: '150px', borderColor: 'red' }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress}
+                  style={{ width: '150px', borderColor: 'red' }}
+                  onChange={e => this.setMacAddress(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               :
-                <Input defaultValue={obj.macAddress} style={{ width: '150px' }} onChange={e => this.setMacAddress(e, obj.id)} />
+                <Input
+                  defaultValue={obj.macAddress}
+                  style={{ width: '150px' }}
+                  onChange={e => this.setMacAddress(e, obj.id)}
+                  onPressEnter={() => this.validation()}
+                />
               }
             </React.Fragment>
           }
@@ -881,7 +942,11 @@ class RequestIp extends React.Component {
                   pagination={false}
                   style={{marginBottom: 10}}
                 />
-                <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validation()}>
+                <Button
+                  type="primary"
+                  style={{float: "right", marginRight: '20px'}}
+                  onClick={() => this.validation()}
+                >
                   Request Ip
                 </Button>
                 <br/>

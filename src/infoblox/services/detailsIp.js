@@ -183,10 +183,24 @@ class DetailsIp extends React.Component {
                     <React.Fragment>
                       {this.state.errors.ipError ?
                         <React.Fragment>
-                          <Input defaultValue={this.state.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                          <Input
+                            defaultValue={this.state.ip}
+                            style={{width: 450, borderColor: this.state.errors.ipColor}}
+                            name="ip"
+                            id='ip'
+                            onChange={e => this.setIp(e)}
+                            onPressEnter={() => this.validateIp()} 
+                          />
                         </React.Fragment>
                       :
-                        <Input defaultValue={this.state.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input
+                          defaultValue={this.state.ip}
+                          style={{width: 450}}
+                          name="ip"
+                          id='ip'
+                          onChange={e => this.setIp(e)}
+                          onPressEnter={() => this.validateIp()}
+                        />
                       }
                     </React.Fragment>
                   }
@@ -194,7 +208,10 @@ class DetailsIp extends React.Component {
                 </Row>
                 <Row>
                   <Col offset={8} span={16}>
-                    <Button type="primary" onClick={() => this.validateIp()} >
+                    <Button
+                      type="primary"
+                      onClick={() => this.validateIp()}
+                    >
                       IP details
                     </Button>
                   </Col>

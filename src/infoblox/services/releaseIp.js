@@ -218,6 +218,7 @@ class ReleaseIp extends React.Component {
                   id='ip'
                   defaultValue={obj.ip}
                   onChange={e => this.setIp(e, obj.id)}
+                  onPressEnter={() => this.validateIp()}
                 />
                 <p style={{color: 'red'}}>{obj.ipError}</p>
               </React.Fragment>
@@ -226,6 +227,7 @@ class ReleaseIp extends React.Component {
                 id='ip'
                 defaultValue={obj.ip}
                 onChange={e => this.setIp(e, obj.id)}
+                onPressEnter={() => this.validateIp()}
               />
             }
           </React.Fragment>

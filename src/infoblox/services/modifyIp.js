@@ -296,7 +296,12 @@ class ModifyIp extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>IP MODIFY</Button>
+        <Button
+          type="primary"
+          onClick={() => this.details()}
+        >
+          IP MODIFY
+        </Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>IP MODIFY</p>}
@@ -326,9 +331,23 @@ class ModifyIp extends React.Component {
                   :
                     <React.Fragment>
                       {this.state.errors.ipError ?
-                        <Input value={this.state.request.ip} style={{width: 450, borderColor: this.state.errors.ipColor}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input
+                          value={this.state.request.ip}
+                          style={{width: 450, borderColor: this.state.errors.ipColor}}
+                          name="ip"
+                          id='ip'
+                          onChange={e => this.setIp(e)}
+                          onPressEnter={() => this.validateIp()}
+                        />
                       :
-                        <Input value={this.state.request.ip} style={{width: 450}} name="ip" id='ip' onChange={e => this.setIp(e)} />
+                        <Input
+                          value={this.state.request.ip}
+                          style={{width: 450}}
+                          name="ip"
+                          id='ip'
+                          onChange={e => this.setIp(e)}
+                          onPressEnter={() => this.validateIp()}
+                        />
                       }
                     </React.Fragment>
                   }
