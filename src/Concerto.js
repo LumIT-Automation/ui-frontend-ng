@@ -27,6 +27,7 @@ import CustomSider from './concerto/sider'
 import Homepage from './concerto/homepage'
 import Historys from './concerto/historys'
 import Service from './concerto/services'
+import Workflow from './concerto/workflows'
 import Assets from './concerto/assets'
 import Permissions from './concerto/permissions'
 import Configurations from './concerto/configurations'
@@ -191,6 +192,7 @@ class Concerto extends Component {
                     null
                   }
                   <Route path='/services/' component={Service}/>
+                  <Route path='/workflows/' component={Workflow}/>
                   <Route path='/assets/' component={Assets}/>
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>

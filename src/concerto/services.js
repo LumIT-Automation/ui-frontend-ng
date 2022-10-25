@@ -6,7 +6,6 @@ import Authorizators from '../_helpers/authorizators'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
 import VmwareManager from '../vmware/services/manager'
-import CheckpointManager from '../workflow/services/manager'
 
 import { Divider } from 'antd'
 
@@ -63,20 +62,6 @@ class Service extends React.Component {
             </Divider>
             <br/>
             <InfobloxManager/>
-            <br/>
-            <br/>
-          </React.Fragment>
-        :
-          null
-        }
-
-        { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
-          <React.Fragment>
-            <Divider orientation="left" plain>
-              FIREWALL
-            </Divider>
-            <br/>
-            <CheckpointManager/>
             <br/>
             <br/>
           </React.Fragment>

@@ -79,6 +79,11 @@ class CustomSider extends Component {
     return author.isSuperAdmin(a)
   }
 
+  workflowsAuthorizator = a => {
+    let author = new Authorizators()
+    return author.workflow(a)
+  }
+
   render(){
     //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
     //<Sider width={150} className="site-layout-background" trigger={null}>
@@ -175,6 +180,15 @@ class CustomSider extends Component {
             null
           }
 
+          { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
+            <React.Fragment>
+              <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+          :
+            null
+          }
+
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
           { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
@@ -219,6 +233,7 @@ class CustomSider extends Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations,
+  authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
