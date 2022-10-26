@@ -389,7 +389,7 @@ class Rest {
                   }
                 )
               }
-              catch {
+              catch (error) {
                 this.onError(
                   {
                     status: response.status,

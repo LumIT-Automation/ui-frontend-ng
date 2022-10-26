@@ -56,7 +56,7 @@ class Workflow extends React.Component {
         { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
           <React.Fragment>
             <Divider orientation="left" plain>
-              REMOVE HOST FROM FIREWALL BUT NOT IF IS A GATEWAY
+              REMOVE HOST FROM FIREWALL IF NOT A NETWORK GATEWAY
             </Divider>
             <br/>
             <WorkflowRemoveHost/>

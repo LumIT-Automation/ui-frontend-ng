@@ -9,7 +9,10 @@ import {
   hostRemoveError,
 } from '../store'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
+import { assets as checkpointAssets } from '../../checkpoint/store'
+import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
+
+import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -29,7 +32,7 @@ class RemoveHost extends React.Component {
 
   componentDidMount() {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
-    requests.push({id:1})
+    requests.push({id:1, assets: []})
     this.setState({requests: requests})
   }
 
@@ -42,7 +45,7 @@ class RemoveHost extends React.Component {
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
-        requests.push({id:1})
+        requests.push({id:1, assets: []})
         this.setState({requests: requests})
       }
     }
@@ -51,8 +54,36 @@ class RemoveHost extends React.Component {
   componentWillUnmount() {
   }
 
-  details = () => {
+  details = async () => {
     this.setState({visible: true})
+    await this.main()
+  }
+
+  main = async () => {
+    let cpAssets = await this.cpAssetsGet()
+    if (cpAssets.status && cpAssets.status !== 200 ) {
+      this.props.dispatch(checkpointAssetsError(cpAssets))
+      return
+    }
+    else {
+      await this.props.dispatch(checkpointAssets( cpAssets ))
+    }
+
+  }
+
+  cpAssetsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR("checkpoint/assets/", this.props.token)
+    return r
   }
 
   setRequests = () => {
@@ -66,7 +97,7 @@ class RemoveHost extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n}
+    let r = {id: n, assets: []}
     let list = JSON.parse(JSON.stringify(this.state.requests))
     list.push(r)
     this.setState({requests: list})
@@ -80,25 +111,31 @@ class RemoveHost extends React.Component {
     this.setState({requests: newList})
   }
 
-  setIp = async (e, id) => {
+  ipSet = async (e, id) => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.ip = e.target.value
     await this.setState({requests: requests})
   }
 
-  setAssets = async (e, id) => {
+  assetsSet = async (e, requestId, asset) => {
     try {
       let requests = JSON.parse(JSON.stringify(this.state.requests))
-      let request = requests.find( r => r.id === id )
-      let list = []
-      e.forEach((item, i) => {
-        list.push(parseInt(item))
-      });
-      console.log(list)
-      request.asset = {}
-      request.asset.checkpoint = list
+      let request = requests.find( r => r.id === requestId )
+
+      if (!e) {
+        if (request.assets.find( a => a === asset.id )) {
+          const index = request.assets.indexOf(asset.id)
+          request.assets.splice(index, 1)
+        }
+      }
+      else {
+        if (!request.assets.find( a => a === asset.id )) {
+          request.assets.push(asset.id)
+        }
+      }
       await this.setState({requests: requests})
+
     } catch (error) {
       console.log(error)
     }
@@ -117,7 +154,7 @@ class RemoveHost extends React.Component {
         request.ipError = 'Please input a valid ip'
         error = true
       }
-      if (!request.asset.checkpoint) {
+      if (!request.assets) {
         request.assetsError = 'Please input asset(s) id'
         error = true
 
@@ -147,32 +184,41 @@ class RemoveHost extends React.Component {
       this.setState({requests: requests})
       try {
         const resp = await this.removeHost(request)
+        console.log(resp)
         request.isLoading = false
-        if (resp.status !== 200) {
-          request.isReleased = 'NOT REMOVED'
-          this.setState({requests: requests})
-          this.props.dispatch(hostRemoveError(resp))
-        }
-        else {
+        if (resp.status === 200) {
           request.isReleased = 'REMOVED'
           this.setState({requests: requests})
         }
-      } catch(resp) {
+        else if (resp.status === 404) {
+          request.isReleased = `${resp.status} NOT FOUND`
+          this.setState({requests: requests})
+        }
+        else if (resp.status === 412) {
+          request.isReleased = `${resp.status} ${resp.message}: IS A GATEWAY`
+          this.setState({requests: requests})
+        }
+        else {
+          request.isReleased = `${resp.status} ${resp.message}`
+          this.props.dispatch(hostRemoveError(resp))
+          this.setState({requests: requests})
+        }
+      } catch(error) {
         request.isLoading = false
         request.isReleased = false
-        this.props.dispatch(hostRemoveError(resp))
+        this.props.dispatch(hostRemoveError(error))
         this.setState({requests: requests})
       }
     }
   }
 
   removeHost = async request => {
-    console.log(request.asset.checkpoint)
+    console.log(request.assets)
     let r
     let b = {}
     b.data = {
       "asset": {
-        "checkpoint": request.asset.checkpoint
+        "checkpoint": request.assets
        },
       "ipv4-address": `${request.ip}`
     }
@@ -184,7 +230,6 @@ class RemoveHost extends React.Component {
         r = resp
       },
       error => {
-        console.log(r)
         r = error
       }
     )
@@ -251,7 +296,7 @@ class RemoveHost extends React.Component {
                 <Input
                   id='ip'
                   defaultValue={obj.ip}
-                  onChange={e => this.setIp(e, obj.id)}
+                  onChange={e => this.ipSet(e, obj.id)}
                 />
                 <p style={{color: 'red'}}>{obj.ipError}</p>
               </React.Fragment>
@@ -259,7 +304,7 @@ class RemoveHost extends React.Component {
               <Input
                 id='ip'
                 defaultValue={obj.ip}
-                onChange={e => this.setIp(e, obj.id)}
+                onChange={e => this.ipSet(e, obj.id)}
               />
             }
           </React.Fragment>
@@ -275,25 +320,71 @@ class RemoveHost extends React.Component {
           <React.Fragment>
             {obj.assetsError ?
               <React.Fragment>
-                <Input
-                  id='assets'
-                  placeholder={'1,2'}
-                  defaultValue={obj.assets}
-                  onChange={e => this.setAssets([e.target.value], obj.id)}
-                />
-                <p style={{color: 'red'}}>{obj.assetsError}</p>
+                {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
+                  return (
+                  <Checkbox
+                    key={i}
+                    onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
+                    style={{color: 'red'}}
+                  >
+                    {n.fqdn}
+                  </Checkbox>
+                  )
+                })
+                :
+                null
+                }
               </React.Fragment>
             :
-              <Input
-                id='assets'
-                placeholder={'1,2'}
-                defaultValue={obj.assets}
-                onChange={e => this.setAssets([e.target.value], obj.id)}
-              />
+              <React.Fragment>
+                {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
+                  return (
+                  <Checkbox
+                    key={i}
+                    onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
+                  >
+                    {n.fqdn}
+                  </Checkbox>
+                  )
+                })
+                :
+                null
+                }
+              </React.Fragment>
             }
           </React.Fragment>
         ),
       },
+/*
+<React.Fragment>
+  {this.props.routeDomains.map((n, i) => {
+    return (
+      <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
+    )
+  })
+  }
+</React.Fragment>
+
+<React.Fragment>
+  {ass.map((n, i) => {
+    return (
+    <Checkbox
+      onChange={e => this.assetsSet([e.target.checked], obj.id)}
+    >
+      {n.fqdn}
+    </Checkbox>
+    )
+  })
+  }
+</React.Fragment>
+
+
+
+
+
+
+*/
+
       {
         title: 'Remove request',
         align: 'center',
@@ -351,6 +442,7 @@ class RemoveHost extends React.Component {
       {this.state.visible ?
         <React.Fragment>
           { this.props.hostRemoveError ? <Error component={'hostRemove'} error={[this.props.hostRemoveError]} visible={true} type={'hostRemoveError'} /> : null }
+          { this.props.checkpointAssetsError ? <Error component={'hostRemove'} error={[this.props.checkpointAssetsError]} visible={true} type={'checkpointAssetsError'} /> : null }
         </React.Fragment>
       :
         null
@@ -366,6 +458,8 @@ export default connect((state) => ({
   token: state.authentication.token,
 
   authorizations: state.authorizations.checkpoint,
+  checkpointAssets: state.checkpoint.assets,
 
-  hostRemoveError: state.checkpoint.hostRemoveError,
+  checkpointAssetsError: state.checkpoint.assetsError,
+  hostRemoveError: state.workflow.hostRemoveError,
 }))(RemoveHost);

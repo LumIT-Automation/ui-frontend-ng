@@ -31,6 +31,8 @@ import {
 
 } from './store'
 
+import { assetsError as checkpointAssetsError } from '../checkpoint/store'
+
 import { Modal, Table, Result } from 'antd';
 
 //import notFound from './404.gif'
@@ -89,6 +91,9 @@ class Error extends Component {
 
         case 'environmentError':
         	this.props.dispatch(environmentError(null))
+        	break;
+        case 'checkpointAssetsError':
+        	this.props.dispatch(checkpointAssetsError(null))
         	break;
         case 'workflowsError':
         	this.props.dispatch(workflowsError(null))
@@ -224,7 +229,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>INFOBLOX ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>WORKFLOW ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}
