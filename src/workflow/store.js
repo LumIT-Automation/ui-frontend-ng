@@ -84,6 +84,9 @@ const workflowSlice = createSlice({
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
+      hostAddError: (state, action) => {
+        state.hostAddError = action.payload
+      },
 
       historysLoading: ( state, action) => {
         state.historysLoading = action.payload
@@ -145,6 +148,7 @@ export const {
   workflowDeleteError,
 
   hostRemoveError,
+  hostAddError,
 
   historysLoading,
   historys,

@@ -10,8 +10,7 @@ import Error from './error'
 
 import {
   assets,
-  assetsError,
-  treeFetch
+  assetsError
 } from '../workflow/store'
 
 const { TabPane } = Tabs;

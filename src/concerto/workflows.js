@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Authorizators from '../_helpers/authorizators'
-import WorkflowRemoveHost from '../workflow/services/manager'
+import WorkflowManager from '../workflow/services/manager'
 
 import { Divider } from 'antd'
 
@@ -56,10 +56,10 @@ class Workflow extends React.Component {
         { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
           <React.Fragment>
             <Divider orientation="left" plain>
-              REMOVE HOST FROM FIREWALL IF NOT A NETWORK GATEWAY
+              CHECKPOINT AND INFOBLOX
             </Divider>
             <br/>
-            <WorkflowRemoveHost/>
+            <WorkflowManager/>
             <br/>
             <br/>
           </React.Fragment>

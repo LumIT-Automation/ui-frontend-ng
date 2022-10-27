@@ -5,6 +5,7 @@ import Rest from "../../_helpers/Rest"
 import Error from '../error'
 
 import RemoveHost from './removeHost'
+import AddHost from './addHost'
 
 import { Row, Col } from 'antd';
 
@@ -36,9 +37,13 @@ class Manager extends React.Component {
     return (
       <React.Fragment >
         <Row>
-          <Col span={4} offset={2}>
-            <p>Remove Host</p>
+          <Col span={8} offset={2}>
+            <p>Remove host from firewall if not a network gateway</p>
             <RemoveHost/>
+          </Col>
+          <Col span={8} offset={2}>
+            <p>Add host in firewall if it exists in ipam</p>
+            <AddHost/>
           </Col>
         </Row>
 
