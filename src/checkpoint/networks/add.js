@@ -10,7 +10,7 @@ import {
   networkAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Divider, Table, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Table, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -123,7 +123,6 @@ class Add extends React.Component {
   //VALIDATION
   validationCheck = async () => {
     let nets = JSON.parse(JSON.stringify(this.state.nets))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
     let ok = true
 

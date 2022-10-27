@@ -10,7 +10,7 @@ import {
   hostAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Divider, Table, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Divider, Table, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -197,7 +197,6 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   hostAdd = async () => {
-    let request = Object.assign({}, this.state.request)
     let interfaces = JSON.parse(JSON.stringify(this.state.interfaces))
     let b = {}
     let nics = []

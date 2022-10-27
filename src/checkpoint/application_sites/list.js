@@ -5,7 +5,7 @@ import 'antd/dist/antd.css'
 //import Modify from './modify'
 import Delete from './delete'
 
-import { Table, Input, Button, Space, Divider } from 'antd';
+import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
 
