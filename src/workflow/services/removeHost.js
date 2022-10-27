@@ -26,14 +26,15 @@ class RemoveHost extends React.Component {
       visible: false,
       errors: {},
       request: {},
-      requests: []
+      requests: [
+        {id:1, assets: []}
+      ]
     };
   }
 
-  componentDidMount() {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    requests.push({id:1, assets: []})
-    this.setState({requests: requests})
+  async componentDidMount() {
+    await this.main()
+    this.checkedTheOnlyAsset()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,8 +46,14 @@ class RemoveHost extends React.Component {
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
-        requests.push({id:1, assets: []})
-        this.setState({requests: requests})
+        if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
+          requests.push({id:1, assets: [this.props.checkpointAssets[0].id]})
+          this.setState({requests: requests})
+        }
+        else {
+          requests.push({id:1, assets: []})
+          this.setState({requests: requests})
+        }
       }
     }
   }
@@ -56,19 +63,46 @@ class RemoveHost extends React.Component {
 
   details = async () => {
     this.setState({visible: true})
-    await this.main()
+    //await this.main()
   }
 
   main = async () => {
-    let cpAssets = await this.cpAssetsGet()
-    if (cpAssets.status && cpAssets.status !== 200 ) {
-      this.props.dispatch(checkpointAssetsError(cpAssets))
-      return
+    try {
+      let cpAssets = await this.cpAssetsGet()
+      if (cpAssets.status && cpAssets.status !== 200 ) {
+        this.props.dispatch(checkpointAssetsError(cpAssets))
+        return
+      }
+      else {
+        await this.props.dispatch(checkpointAssets( cpAssets ))
+      }
+      console.log('ho finito')
+    } catch(error) {
+      console.log('main error', error)
     }
-    else {
-      await this.props.dispatch(checkpointAssets( cpAssets ))
-    }
+  }
 
+  checkedTheOnlyAsset = async () => {
+    try {
+      console.log('faccio cose')
+      let requests = JSON.parse(JSON.stringify(this.state.requests))
+      if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
+        let assets = []
+        assets.push(this.props.checkpointAssets[0].id)
+        requests.forEach((req, i) => {
+          req.assets = [this.props.checkpointAssets[0].id]
+        });
+      } else {
+        requests.forEach((req, i) => {
+          if (!req.assets) {
+            req.assets = []
+          }
+        });
+      }
+      await this.setState({requests: requests})
+    } catch (error) {
+        console.log('checkedTheOnlyAsset error', error)
+    }
   }
 
   cpAssetsGet = async () => {
@@ -86,8 +120,7 @@ class RemoveHost extends React.Component {
     return r
   }
 
-  setRequests = () => {
-    //let n = this.state.counter + 1
+  setRequests = async () => {
     let id = 0
     let n = 0
     this.state.requests.forEach(r => {
@@ -97,10 +130,11 @@ class RemoveHost extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n, assets: []}
+    let r = {id: n}
     let list = JSON.parse(JSON.stringify(this.state.requests))
     list.push(r)
-    this.setState({requests: list})
+    await this.setState({requests: list})
+    await this.checkedTheOnlyAsset()
   }
 
   removeRequest = r => {
@@ -145,32 +179,32 @@ class RemoveHost extends React.Component {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let validators = new Validators()
     let error = false
+    let list = []
 
     requests.forEach((request, i) => {
       if (validators.ipv4(request.ip)) {
-        request.ipError = null
+        delete request.ipError
       }
       else {
         request.ipError = 'Please input a valid ip'
         error = true
       }
-      if (!request.assets) {
-        request.assetsError = 'Please input asset(s) id'
+      if (request.assets.length < 1) {
+        request.assetsError = 'Please check asset(s)'
         error = true
-
       }
       else {
-        request.assetsError = null
+        delete request.assetsError
       }
-      this.setState({requests: requests})
+      list.push(request)
     })
-
+    await this.setState({requests: list})
     if (!error) {
-      this.removeHandler()
+      this.removeHostHandler()
     }
   }
 
-  removeHandler = async () => {
+  removeHostHandler = async () => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
 
     requests.forEach((request, i) => {
@@ -249,6 +283,9 @@ class RemoveHost extends React.Component {
 
 
   render() {
+    let isChecked = () => {
+      return false
+    }
     const requests = [
       {
         title: 'Loading',
@@ -325,7 +362,7 @@ class RemoveHost extends React.Component {
                   <Checkbox
                     key={i}
                     onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                    style={{color: 'red'}}
+                    checked = {obj && obj.assets && obj.assets.includes(n.id)}
                   >
                     {n.fqdn}
                   </Checkbox>
@@ -334,6 +371,7 @@ class RemoveHost extends React.Component {
                 :
                 null
                 }
+                <p style={{color: 'red'}}>{obj.assetsError}</p>
               </React.Fragment>
             :
               <React.Fragment>
@@ -342,6 +380,7 @@ class RemoveHost extends React.Component {
                   <Checkbox
                     key={i}
                     onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
+                    checked = {obj && obj.assets && obj.assets.includes(n.id)}
                   >
                     {n.fqdn}
                   </Checkbox>
@@ -355,7 +394,14 @@ class RemoveHost extends React.Component {
           </React.Fragment>
         ),
       },
+
+
 /*
+
+obj.assets.includes(n.id)
+
+
+
 <React.Fragment>
   {this.props.routeDomains.map((n, i) => {
     return (
