@@ -32,7 +32,7 @@ class CreateF5Service extends React.Component {
       visible: false,
       errors: {},
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
-      monitorTypes: ['tcp-half-open'],
+      monitorTypes: ['tcp-half-open', 'http', 'https'],
       request: {}
     };
   }
@@ -229,6 +229,18 @@ class CreateF5Service extends React.Component {
   monitorTypeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.monitorType = e
+    this.setState({request: request})
+  }
+
+  monitorSendStringSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.monitorSendString = e.target.value
+    this.setState({request: request})
+  }
+
+  monitorReceiveStringSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.monitorReceiveString = e.target.value
     this.setState({request: request})
   }
 
@@ -436,6 +448,28 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
+    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorSendString) {
+      errors.monitorSendStringError = true
+      errors.monitorSendStringColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.monitorSendStringError
+      delete errors.monitorSendStringColor
+      this.setState({errors: errors})
+    }
+
+    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorReceiveString) {
+      errors.monitorReceiveStringError = true
+      errors.monitorReceiveStringColor = 'red'
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.monitorReceiveStringError
+      delete errors.monitorReceiveStringColor
+      this.setState({errors: errors})
+    }
+
     if (nodes.length > 0) {
       nodes.forEach((node, i) => {
         errors[node.id] = {}
@@ -483,10 +517,7 @@ class CreateF5Service extends React.Component {
   }
 
   validation = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let validators = new Validators()
     await this.validationCheck()
-
     if (Object.keys(this.state.errors).length === 0) {
       this.l4ServiceCreate()
     }
@@ -524,6 +555,11 @@ class CreateF5Service extends React.Component {
         "name": `mon_${serviceName}`,
         "type": this.state.request.monitorType
       }
+    }
+
+    if ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) {
+      b.data.monitor.send = this.state.request.monitorSendString
+      b.data.monitor.recv = this.state.request.monitorReceiveString
     }
 
     if (this.state.request.snat === 'snat') {
@@ -1053,6 +1089,40 @@ class CreateF5Service extends React.Component {
                     }
                   </Col>
                 </Row>
+
+                { ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) ?
+                  <React.Fragment>
+                    <br/>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor send string:</p>
+                      </Col>
+                      <Col span={16}>
+                      {this.state.errors.monitorSendStringError ?
+                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorSendStringColor }} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
+                      :
+                        <Input.TextArea defaultValue={this.state.request.monitorSendString} style={{width: 450}} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
+                      }
+                      </Col>
+                    </Row>
+                    <br/>
+                    <Row>
+                      <Col offset={2} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Monitor receive string:</p>
+                      </Col>
+                      <Col span={16}>
+                      {this.state.errors.monitorReceiveStringError ?
+                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorReceiveStringColor}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
+                      :
+                        <Input.TextArea defaultValue={this.state.request.monitorReceiveString} style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
+                      }
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
+                  null
+                }
+                
                 <br/>
 
                 <Row>

@@ -12,7 +12,6 @@ import {
 import { assets as checkpointAssets } from '../../checkpoint/store'
 import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
 import { domains as checkpointDomains } from '../../checkpoint/store'
-import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
 
 import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'

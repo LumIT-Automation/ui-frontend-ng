@@ -32,7 +32,7 @@ class CreateF5Service extends React.Component {
       visible: false,
       errors: {},
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
-      monitorTypes: ['tcp-half-open', 'http'],
+      monitorTypes: ['tcp-half-open', 'http', 'https'],
       request: {}
     };
   }
@@ -459,7 +459,7 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (request.monitorType === 'http' && !request.monitorSendString) {
+    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorSendString) {
       errors.monitorSendStringError = true
       errors.monitorSendStringColor = 'red'
       this.setState({errors: errors})
@@ -470,7 +470,7 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (request.monitorType === 'http' && !request.monitorReceiveString) {
+    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorReceiveString) {
       errors.monitorReceiveStringError = true
       errors.monitorReceiveStringColor = 'red'
       this.setState({errors: errors})
@@ -601,7 +601,7 @@ class CreateF5Service extends React.Component {
       }
     }
 
-    if (this.state.request.monitorType === 'http') {
+    if ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) {
       b.data.monitor.send = this.state.request.monitorSendString
       b.data.monitor.recv = this.state.request.monitorReceiveString
     }
@@ -1207,7 +1207,7 @@ class CreateF5Service extends React.Component {
                   </Col>
                 </Row>
 
-                { this.state.request.monitorType === 'http' ?
+                { ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) ?
                   <React.Fragment>
                     <br/>
                     <Row>
