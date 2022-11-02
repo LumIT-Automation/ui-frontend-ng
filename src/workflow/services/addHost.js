@@ -297,7 +297,7 @@ class AddHost extends React.Component {
       } catch(error) {
         request.isLoading = false
         request.created = false
-        this.props.dispatch(hostAddError(resp))
+        this.props.dispatch(hostAddError(error))
         this.setState({requests: requests})
       }
     }
