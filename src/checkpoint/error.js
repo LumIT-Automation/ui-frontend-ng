@@ -300,7 +300,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>INFOBLOX ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>CHECKPOINT ERROR {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}
