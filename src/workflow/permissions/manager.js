@@ -56,11 +56,18 @@ class Manager extends React.Component {
 
 
   main = async () => {
-    try {
-      let permissionsWithWorkflows
-      this.props.dispatch(permissionsLoading(true))
+    let cpAssets,
+    fetchedWorkflows,
+    fetchedIdentityGroups,
+    identityGroupsNoWorkflowLocal,
+    fetchedPermissions,
+    permissionsNoWorkflowLocal,
+    permissionsWithWorkflows
 
-      let cpAssets = await this.assetsGet()
+    this.props.dispatch(permissionsLoading(true))
+
+    try {
+      cpAssets = await this.assetsGet()
       if (cpAssets.status && cpAssets.status !== 200 ) {
         this.props.dispatch(checkpointAssetsError(cpAssets))
         return
@@ -69,7 +76,7 @@ class Manager extends React.Component {
         await this.props.dispatch(checkpointAssets( cpAssets ))
       }
 
-      let fetchedWorkflows = await this.workflowsGet()
+      fetchedWorkflows = await this.workflowsGet()
       if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
         this.props.dispatch(workflowsError(fetchedWorkflows))
         this.props.dispatch(permissionsLoading(false))
@@ -78,26 +85,27 @@ class Manager extends React.Component {
       else {
         this.props.dispatch(workflows( fetchedWorkflows ))
       }
-      console.log('workflow', fetchedWorkflows)
 
-      let fetchedIdentityGroups = await this.identityGroupsGet()
+      fetchedIdentityGroups = await this.identityGroupsGet()
       if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
         this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
         this.props.dispatch(permissionsLoading(false))
         return
       }
       else {
-        this.props.dispatch(identityGroups( fetchedIdentityGroups ))
+        identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
+        this.props.dispatch(identityGroups({data: {items: fetchedIdentityGroups}}))
       }
 
-      let fetchedPermissions = await this.permissionsGet()
+      fetchedPermissions = await this.permissionsGet()
       if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
         this.props.dispatch(permissionsError(fetchedPermissions))
         this.props.dispatch(permissionsLoading(false))
         return
       }
       else {
-        this.props.dispatch(permissions(fetchedPermissions))
+        permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
+        this.props.dispatch(permissions({data: {items: permissionsNoWorkflowLocal}}))
       }
 
       if ((fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) ||
@@ -108,14 +116,14 @@ class Manager extends React.Component {
       }
       else {
         //this.props.dispatch(permissionsLoading(false))
-        permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, fetchedPermissions)
+        permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
         this.props.dispatch(permissions( permissionsWithWorkflows ))
-        this.props.dispatch(permissionsLoading(false))
       }
     }
     catch (error) {
       console.log(error)
     }
+    this.props.dispatch(permissionsLoading(false))
   }
 
   assetsGet = async () => {
