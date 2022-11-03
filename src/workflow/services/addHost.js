@@ -28,16 +28,15 @@ class AddHost extends React.Component {
     this.state = {
       visible: false,
       errors: {},
+      cpDomains: {},
       request: {},
       requests: [
-        {id:1, assets: []}
+        {id:1, asset: {}}
       ]
     };
   }
 
-  async componentDidMount() {
-    await this.main()
-    this.checkedTheOnlyAsset()
+  componentDidMount() {
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,15 +44,16 @@ class AddHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
         if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
-          requests.push({id:1, assets: [this.props.checkpointAssets[0].id]})
+          requests.push({id:1, asset: this.props.checkpointAssets[0]})
           this.setState({requests: requests})
         }
         else {
-          requests.push({id:1, assets: []})
+          requests.push({id:1, asset: {}})
           this.setState({requests: requests})
         }
       }
@@ -65,39 +65,40 @@ class AddHost extends React.Component {
 
   details = async () => {
     this.setState({visible: true})
+    this.main()
   }
 
   main = async () => {
+    await this.setState({cpAssetsLoading: true})
     try {
       let cpAssets = await this.cpAssetsGet()
       if (cpAssets.status && cpAssets.status !== 200 ) {
-        if (this.state.visible) {
-          this.props.dispatch(checkpointAssetsError(cpAssets))
-          return
-        }
+        this.props.dispatch(checkpointAssetsError(cpAssets))
+        return
       }
       else {
         await this.props.dispatch(checkpointAssets( cpAssets ))
       }
-      await this.cpDomainsGetHandler()
     } catch(error) {
       console.log('main error', error)
     }
+    await this.setState({cpAssetsLoading: false})
+
+    await this.checkedTheOnlyAsset()
   }
 
   checkedTheOnlyAsset = async () => {
     try {
       let requests = JSON.parse(JSON.stringify(this.state.requests))
       if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
-        let assets = []
-        assets.push(this.props.checkpointAssets[0].id)
+        await this.cpDomainsGetHandler(this.props.checkpointAssets[0])
         requests.forEach((req, i) => {
-          req.assets = [this.props.checkpointAssets[0].id]
+          req.asset = this.props.checkpointAssets[0]
         });
       } else {
         requests.forEach((req, i) => {
-          if (!req.assets) {
-            req.assets = []
+          if (!req.asset) {
+            req.asset = {}
           }
         });
       }
@@ -122,23 +123,18 @@ class AddHost extends React.Component {
     return r
   }
 
-  cpDomainsGetHandler = async () => {
+  cpDomainsGetHandler = async (asset) => {
     try {
-      let cpAssets = this.props.checkpointAssets
-      for await (const asset of cpAssets) {
-        try {
-          const resp = await this.cpDomainsGet(asset)
-          if (!resp.status ) {
-            await this.setState({cpDomains: resp.data.items})
-          }
-          else {
-            this.props.dispatch(checkpointDomainsError(resp))
-          }
-        } catch(error) {
-          console.log(error)
-        }
+      let cpAssets = JSON.parse(JSON.stringify(this.props.checkpointAssets))
+      const domains = await this.cpDomainsGet(asset)
+      if (!domains.status ) {
+        let doms = JSON.parse(JSON.stringify(this.state.cpDomains))
+        doms[asset.id] = domains.data.items
+        await this.setState({cpDomains: doms})
       }
-
+      else {
+        this.props.dispatch(checkpointDomainsError(domains))
+      }
     } catch(error) {
       console.log(error)
     }
@@ -146,8 +142,7 @@ class AddHost extends React.Component {
 
   cpDomainsGet = async (asset) => {
     let r
-    let id = asset.id
-    this.setState({cpDomainsLoading: true})
+    await this.setState({cpDomainsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -157,8 +152,8 @@ class AddHost extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${id}/domains/`, this.props.token)
-    this.setState({cpDomainsLoading: false})
+    await rest.doXHR(`checkpoint/${asset.id}/domains/`, this.props.token)
+    await this.setState({cpDomainsLoading: false})
     return r
   }
 
@@ -201,23 +196,23 @@ class AddHost extends React.Component {
     await this.setState({requests: requests})
   }
 
-  assetsSet = async (e, requestId, asset) => {
+  assetSet = async (e, requestId, asset) => {
     try {
       let requests = JSON.parse(JSON.stringify(this.state.requests))
       let request = requests.find( r => r.id === requestId )
-      request.assets = []
-      request.assets.push(asset.id)
+      request.asset = asset
       await this.setState({requests: requests})
+      await this.cpDomainsGetHandler(asset)
     } catch (error) {
       console.log(error)
     }
   }
 
-  domainSet = async (e, requestId, domainName) => {
+  cpDomainSet = async (e, requestId, domainName) => {
     try {
       let requests = JSON.parse(JSON.stringify(this.state.requests))
       let request = requests.find( r => r.id === requestId )
-      request.domain = domainName
+      request.cpDomain = domainName
       await this.setState({requests: requests})
     } catch (error) {
       console.log(error)
@@ -246,19 +241,19 @@ class AddHost extends React.Component {
         request.ipError = 'Please input a valid ip'
         error = true
       }
-      if (request.assets.length < 1) {
-        request.assetsError = 'Please check asset(s)'
+      if (!request.asset) {
+        request.assetError = 'Please check asset(s)'
         error = true
       }
       else {
-        delete request.assetsError
+        delete request.assetError
       }
-      if (!request.domain) {
-        request.domainError = 'Please select a domain'
+      if (!request.cpDomain) {
+        request.cpDomainError = 'Please select a domain'
         error = true
       }
       else {
-        delete request.domainError
+        delete request.cpDomainError
       }
       list.push(request)
     })
@@ -304,16 +299,16 @@ class AddHost extends React.Component {
   }
 
   addHost = async request => {
-    console.log(request.assets)
+    console.log(request.asset)
     let r
     let b = {}
     b.data = {
       "asset": {
-        "checkpoint": request.assets
+        "checkpoint": [request.asset.id]
        },
        "name": request.name,
        "ipv4-address": request.ip,
-       "domain": request.domain
+       "domain": request.cpDomain
     }
     console.log(b)
 
@@ -343,9 +338,6 @@ class AddHost extends React.Component {
 
 
   render() {
-    let assId = a => {
-      return a[0]
-    }
     const requests = [
       {
         title: 'Loading',
@@ -440,73 +432,88 @@ class AddHost extends React.Component {
         key: 'assets',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.assetsError ?
+            { this.state.cpAssetsLoading ?
+              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+            :
               <React.Fragment>
-                {this.props.checkpointAssets ?
+                {obj.assetError ?
                   <React.Fragment>
-                    {this.props.checkpointAssets.length === 1 ?
-                      <Radio
-                        onChange={e => this.assetsSet(e.target.checked, obj.id, this.props.checkpointAssets[0])}
-                        checked
-                      >
-                        {this.props.checkpointAssets[0].fqdn}
-                      </Radio>
-                    :
-                      this.props.checkpointAssets.map((n, i) => {
-                        return (
+                    {this.props.checkpointAssets ?
+                      <React.Fragment>
+                        {this.props.checkpointAssets.length === 1 ?
                           <Radio
-                            key={i}
-                            onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                            checked = {obj && obj.assets && obj.assets.includes(n.id)}
+                            onChange={e => this.assetSet(e.target.checked, obj.id, this.props.checkpointAssets[0])}
+                            checked
                           >
-                            {n.fqdn}
+                            {this.props.checkpointAssets[0].fqdn}
                           </Radio>
-                        )
-                      })
+                        :
+                          this.props.checkpointAssets.map((n, i) => {
+                            return (
+                              <Radio
+                                key={i}
+                                onChange={e => this.assetSet(e.target.checked, obj.id, n)}
+                                checked={obj && obj.asset && (obj.asset.id === n.id)}
+                              >
+                                {n.fqdn}
+                              </Radio>
+                            )
+                          })
+                        }
+                      </React.Fragment>
+                    :
+                      <React.Fragment>
+                        <p style={{color: 'red'}}>Assets Error</p>
+                      </React.Fragment>
                     }
+                    <p style={{color: 'red'}}>{obj.assetError}</p>
                   </React.Fragment>
                 :
+                <React.Fragment>
+                  {this.props.checkpointAssets ?
+                    <React.Fragment>
+                      {this.props.checkpointAssets.length === 1 ?
+                        <Radio
+                          onChange={e => this.assetSet(e.target.checked, obj.id, this.props.checkpointAssets[0])}
+                          checked
+                        >
+                          {this.props.checkpointAssets[0].fqdn}
+                        </Radio>
+                      :
+                        this.props.checkpointAssets.map((n, i) => {
+                          return (
+                            <Radio
+                              key={i}
+                              onChange={e => this.assetSet(e.target.checked, obj.id, n)}
+                              checked={obj && obj.asset && (obj.asset.id === n.id)}
+                            >
+                              {n.fqdn}
+                            </Radio>
+                          )
+                        })
+                      }
+                    </React.Fragment>
+                  :
                   <React.Fragment>
                     <p style={{color: 'red'}}>Assets Error</p>
                   </React.Fragment>
-                }
-                <p style={{color: 'red'}}>{obj.assetsError}</p>
-              </React.Fragment>
-            :
-            <React.Fragment>
-              {this.props.checkpointAssets ?
-                <React.Fragment>
-                  {this.props.checkpointAssets.length === 1 ?
-                    <Radio
-                      onChange={e => this.assetsSet(e.target.checked, obj.id, this.props.checkpointAssets[0])}
-                      checked
-                    >
-                      {this.props.checkpointAssets[0].fqdn}
-                    </Radio>
-                  :
-                    this.props.checkpointAssets.map((n, i) => {
-                      return (
-                        <Radio
-                          key={i}
-                          onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                          checked = {obj && obj.assets && obj.assets.includes(n.id)}
-                        >
-                          {n.fqdn}
-                        </Radio>
-                      )
-                    })
                   }
                 </React.Fragment>
-              :
-              <React.Fragment>
-                <p style={{color: 'red'}}>Assets Error</p>
+                }
               </React.Fragment>
-              }
-            </React.Fragment>
             }
           </React.Fragment>
         ),
       },
+      {
+        title: 'Domains',
+        align: 'center',
+        dataIndex: 'domains',
+        width: 50,
+        key: 'domains',
+        render: (name, obj)  => (
+          console.log(obj)
+      )},
       {
         title: 'Domains',
         align: 'center',
@@ -519,36 +526,40 @@ class AddHost extends React.Component {
             <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
           :
             <React.Fragment>
-              {!this.state.cpDomains ?
+              {!this.state.cpDomains[obj.asset.id] ?
                 <Select style={{ width: '300px'}} disabled/>
               :
                 <React.Fragment>
-                  {obj.domainError ?
+                  {obj.cpDomainError ?
                     <React.Fragment>
                       <Select
                         key={obj.id}
                         style={{ width: '300px'}}
-                        onChange={(value, event) => this.domainSet(event, obj.id, value)}>
-                        { this.state.cpDomains.map((d, i) => {
+                        onChange={(value, event) => this.cpDomainSet(event, obj.id, value)}>
+                        { this.state.cpDomains[obj.asset.id] ? this.state.cpDomains[obj.asset.id].map((d, i) => {
                           return (
                             <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
                             )
                           })
+                        :
+                          null
                         }
                       </Select>
-                      <p style={{color: 'red'}}>{obj.domainError}</p>
+                      <p style={{color: 'red'}}>{obj.cpDomainError}</p>
                     </React.Fragment>
                   :
                     <React.Fragment>
                       <Select
                         key={obj.id}
                         style={{ width: '300px'}}
-                        onChange={(value, event) => this.domainSet(event, obj.id, value)}>
-                        { this.state.cpDomains.map((d, i) => {
+                        onChange={(value, event) => this.cpDomainSet(event, obj.id, value)}>
+                        { this.state.cpDomains[obj.asset.id] ? this.state.cpDomains[obj.asset.id].map((d, i) => {
                           return (
                             <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
                             )
                           })
+                        :
+                          null
                         }
                       </Select>
                     </React.Fragment>
@@ -560,43 +571,6 @@ class AddHost extends React.Component {
           </React.Fragment>
         ),
       },
-
-
-/*
-
-obj.assets.includes(n.id)
-
-
-
-<React.Fragment>
-  {this.props.routeDomains.map((n, i) => {
-    return (
-      <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
-    )
-  })
-  }
-</React.Fragment>
-
-<React.Fragment>
-  {ass.map((n, i) => {
-    return (
-    <Checkbox
-      onChange={e => this.assetsSet([e.target.checked], obj.id)}
-    >
-      {n.fqdn}
-    </Checkbox>
-    )
-  })
-  }
-</React.Fragment>
-
-
-
-
-
-
-*/
-
       {
         title: 'Remove request',
         align: 'center',
