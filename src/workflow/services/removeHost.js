@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../error'
+import CPError from '../../checkpoint/error'
 
 import {
   hostRemoveError,
@@ -32,9 +33,8 @@ class RemoveHost extends React.Component {
     };
   }
 
-  async componentDidMount() {
-    await this.main()
-    this.checkedTheOnlyAsset()
+  componentDidMount() {
+    //this.checkedTheOnlyAsset()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -42,7 +42,6 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.requests)
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
@@ -63,10 +62,11 @@ class RemoveHost extends React.Component {
 
   details = async () => {
     this.setState({visible: true})
-    //await this.main()
+    this.main()
   }
 
   main = async () => {
+    await this.setState({cpAssetsLoading: true})
     try {
       let cpAssets = await this.cpAssetsGet()
       if (cpAssets.status && cpAssets.status !== 200 ) {
@@ -76,15 +76,15 @@ class RemoveHost extends React.Component {
       else {
         await this.props.dispatch(checkpointAssets( cpAssets ))
       }
-      console.log('ho finito')
     } catch(error) {
       console.log('main error', error)
     }
+    await this.setState({cpAssetsLoading: false})
+    await this.checkedTheOnlyAsset()
   }
 
   checkedTheOnlyAsset = async () => {
     try {
-      console.log('faccio cose')
       let requests = JSON.parse(JSON.stringify(this.state.requests))
       if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
         let assets = []
@@ -208,7 +208,7 @@ class RemoveHost extends React.Component {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
 
     requests.forEach((request, i) => {
-      request.isReleased = null
+      delete request.isReleased
     })
     this.setState({requests: requests})
 
@@ -238,8 +238,8 @@ class RemoveHost extends React.Component {
           this.setState({requests: requests})
         }
       } catch(error) {
-        request.isLoading = false
-        request.isReleased = false
+        delete request.isLoading
+        delete request.isReleased
         this.props.dispatch(hostRemoveError(error))
         this.setState({requests: requests})
       }
@@ -247,7 +247,6 @@ class RemoveHost extends React.Component {
   }
 
   removeHost = async request => {
-    console.log(request.assets)
     let r
     let b = {}
     b.data = {
@@ -283,9 +282,6 @@ class RemoveHost extends React.Component {
 
 
   render() {
-    let isChecked = () => {
-      return false
-    }
     const requests = [
       {
         title: 'Loading',
@@ -355,82 +351,51 @@ class RemoveHost extends React.Component {
         key: 'assets',
         render: (name, obj)  => (
           <React.Fragment>
-            {obj.assetsError ?
-              <React.Fragment>
-                {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
-                  return (
-                  <Checkbox
-                    key={i}
-                    onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                    checked = {obj && obj.assets && obj.assets.includes(n.id)}
-                  >
-                    {n.fqdn}
-                  </Checkbox>
-                  )
-                })
-                :
-                null
-                }
-                <p style={{color: 'red'}}>{obj.assetsError}</p>
-              </React.Fragment>
+            { this.state.cpAssetsLoading ?
+              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
             :
               <React.Fragment>
-                {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
-                  return (
-                  <Checkbox
-                    key={i}
-                    onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                    checked = {obj && obj.assets && obj.assets.includes(n.id)}
-                  >
-                    {n.fqdn}
-                  </Checkbox>
-                  )
-                })
+                {obj.assetsError ?
+                  <React.Fragment>
+                    {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
+                      return (
+                      <Checkbox
+                        key={i}
+                        onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
+                        checked={obj && obj.assets && obj.assets.includes(n.id)}
+                      >
+                        {n.fqdn}
+                      </Checkbox>
+                      )
+                    })
+                    :
+                    null
+                    }
+                    <p style={{color: 'red'}}>{obj.assetsError}</p>
+                  </React.Fragment>
                 :
-                null
+                  <React.Fragment>
+                    {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
+                      return (
+                      <Checkbox
+                        key={i}
+                        onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
+                        checked={obj && obj.assets && obj.assets.includes(n.id)}
+                      >
+                        {n.fqdn}
+                      </Checkbox>
+                      )
+                    })
+                    :
+                    null
+                    }
+                  </React.Fragment>
                 }
               </React.Fragment>
             }
           </React.Fragment>
         ),
       },
-
-
-/*
-
-obj.assets.includes(n.id)
-
-
-
-<React.Fragment>
-  {this.props.routeDomains.map((n, i) => {
-    return (
-      <Select.Option key={i} value={n.id}>{n.name}</Select.Option>
-    )
-  })
-  }
-</React.Fragment>
-
-<React.Fragment>
-  {ass.map((n, i) => {
-    return (
-    <Checkbox
-      onChange={e => this.assetsSet([e.target.checked], obj.id)}
-    >
-      {n.fqdn}
-    </Checkbox>
-    )
-  })
-  }
-</React.Fragment>
-
-
-
-
-
-
-*/
-
       {
         title: 'Remove request',
         align: 'center',
@@ -443,7 +408,6 @@ obj.assets.includes(n.id)
           </Button>
         ),
       },
-
     ]
 
     return (
@@ -488,7 +452,7 @@ obj.assets.includes(n.id)
       {this.state.visible ?
         <React.Fragment>
           { this.props.hostRemoveError ? <Error component={'hostRemove'} error={[this.props.hostRemoveError]} visible={true} type={'hostRemoveError'} /> : null }
-          { this.props.checkpointAssetsError ? <Error component={'hostRemove'} error={[this.props.checkpointAssetsError]} visible={true} type={'checkpointAssetsError'} /> : null }
+          { this.props.checkpointAssetsError ? <CPError component={'hostAdd'} error={[this.props.checkpointAssetsError]} visible={true} type={'assetsError'} /> : null }
         </React.Fragment>
       :
         null

@@ -245,6 +245,7 @@ class Error extends Component {
       {
         title: 'REASON',
         align: 'left',
+        width: 300,
         dataIndex: 'reason',
         key: 'reason',
       },

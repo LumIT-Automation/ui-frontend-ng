@@ -44,7 +44,6 @@ class AddHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state)
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
@@ -83,7 +82,6 @@ class AddHost extends React.Component {
       console.log('main error', error)
     }
     await this.setState({cpAssetsLoading: false})
-
     await this.checkedTheOnlyAsset()
   }
 
@@ -583,7 +581,6 @@ class AddHost extends React.Component {
           </Button>
         ),
       },
-
     ]
 
     return (
