@@ -241,7 +241,7 @@ class AddHost extends React.Component {
         request.ipError = 'Please input a valid ip'
         error = true
       }
-      if (!request.asset) {
+      if (Object.keys(request.asset).length === 0 && request.asset.constructor === Object) {
         request.assetError = 'Please check asset(s)'
         error = true
       }
@@ -278,7 +278,6 @@ class AddHost extends React.Component {
       this.setState({requests: requests})
       try {
         const resp = await this.addHost(request)
-        console.log(resp)
         request.isLoading = false
         if (!resp.status) {
           request.created = 'CREATED'
@@ -299,7 +298,6 @@ class AddHost extends React.Component {
   }
 
   addHost = async request => {
-    console.log(request.asset)
     let r
     let b = {}
     b.data = {
@@ -512,29 +510,19 @@ class AddHost extends React.Component {
         width: 50,
         key: 'domains',
         render: (name, obj)  => (
-          console.log(obj)
-      )},
-      {
-        title: 'Domains',
-        align: 'center',
-        dataIndex: 'domains',
-        width: 50,
-        key: 'domains',
-        render: (name, obj)  => (
           <React.Fragment>
           { this.state.cpDomainsLoading ?
             <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
           :
             <React.Fragment>
-              {!this.state.cpDomains[obj.asset.id] ?
-                <Select style={{ width: '300px'}} disabled/>
-              :
+              {this.state.cpDomains && obj.asset && obj.asset.id && this.state.cpDomains[obj.asset.id] ?
                 <React.Fragment>
                   {obj.cpDomainError ?
                     <React.Fragment>
                       <Select
                         key={obj.id}
                         style={{ width: '300px'}}
+                        value={obj.cpDomain}
                         onChange={(value, event) => this.cpDomainSet(event, obj.id, value)}>
                         { this.state.cpDomains[obj.asset.id] ? this.state.cpDomains[obj.asset.id].map((d, i) => {
                           return (
@@ -552,6 +540,7 @@ class AddHost extends React.Component {
                       <Select
                         key={obj.id}
                         style={{ width: '300px'}}
+                        value={obj.cpDomain}
                         onChange={(value, event) => this.cpDomainSet(event, obj.id, value)}>
                         { this.state.cpDomains[obj.asset.id] ? this.state.cpDomains[obj.asset.id].map((d, i) => {
                           return (
@@ -563,6 +552,17 @@ class AddHost extends React.Component {
                         }
                       </Select>
                     </React.Fragment>
+                  }
+                </React.Fragment>
+              :
+                <React.Fragment>
+                  {obj.cpDomainError ?
+                    <React.Fragment>
+                      <Select style={{ width: '300px'}} disabled/>
+                      <p style={{color: 'red'}}>{obj.cpDomainError}</p>
+                    </React.Fragment>
+                  :
+                    <Select style={{ width: '300px'}} disabled/>
                   }
                 </React.Fragment>
               }
