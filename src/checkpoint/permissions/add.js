@@ -675,7 +675,6 @@ class Add extends React.Component {
                               :
                                 <React.Fragment>
                                   <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  <Select.Option key={'Global'} value={'Global'}>Global</Select.Option>
                                   {this.state.domains.map((n, i) => {
                                     return (
                                       <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
@@ -704,7 +703,6 @@ class Add extends React.Component {
                               :
                                 <React.Fragment>
                                   <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                                  <Select.Option key={'Global'} value={'Global'}>Global</Select.Option>
                                   {this.state.domains.map((n, i) => {
                                     return (
                                       <Select.Option key={i} value={n.name}>{n.name}</Select.Option>

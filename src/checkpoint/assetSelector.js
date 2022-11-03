@@ -197,12 +197,11 @@ class AssetSelector extends React.Component {
                       onChange={p => this.domain(p)}
                       style={{ width: 200, marginLeft: '10px' }}
                     >
-                      <Select.Option value={'Global'}>{'Global'}</Select.Option>
-                       {this.state.domains.map((p, i) => {
-                      return (
-                        <Select.Option key={i} value={p.name}>{p.name}</Select.Option>
-                      )
-                    })}
+                      {this.state.domains.map((p, i) => {
+                        return (
+                          <Select.Option key={i} value={p.name}>{p.name}</Select.Option>
+                        )
+                      })}
                     </Select>
                     :
                     <Select disabled value={null} onChange={null} style={{ width: 200, marginLeft: '10px' }}>

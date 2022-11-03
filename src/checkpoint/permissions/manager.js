@@ -69,6 +69,7 @@ class Manager extends React.Component {
     }
 
     let fetchedIdentityGroups = await this.identityGroupsGet()
+    console.log(fetchedIdentityGroups)
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
       this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
       this.props.dispatch(permissionsLoading(false))

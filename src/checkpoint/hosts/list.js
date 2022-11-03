@@ -115,19 +115,6 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-/*
-"name": "a2ap.centralcreditregister.ie_G",
-                "type": "host",
-                "domain": {
-                    "uid": "1e294ce0-367a-11e3-aa6e-0800200c9a66",
-                    "name": "Global",
-                    "domain-type": "global domain"
-                },
-                "ipv4-address": "212.7.73.212",
-                "icon": "Objects/host",
-                "color": "black"
-*/
-
   render() {
     const columns = [
       {
