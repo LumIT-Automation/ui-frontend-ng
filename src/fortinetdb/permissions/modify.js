@@ -80,14 +80,15 @@ class Modify extends React.Component {
       return
     }
     else {
-      await this.setState({rolesAndPrivileges: fetchedRolesAndPrivileges.data.items, rolesLoading: false})
+      let rolesNoWorkflow = fetchedRolesAndPrivileges.data.items.filter(r => r.role !== 'workflow');
+      await this.setState({rolesAndPrivileges: rolesNoWorkflow, rolesLoading: false})
       let rolesAndPrivileges = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
       let newList = []
 
       for (let r in rolesAndPrivileges) {
         newList.push(rolesAndPrivileges[r].role)
       }
-      this.setState({rolesNames: newList})
+      await this.setState({rolesNames: newList})
     }
   }
 
