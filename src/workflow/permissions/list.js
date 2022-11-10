@@ -145,6 +145,9 @@ class List extends React.Component {
 
 
   render() {
+    let jsonPretty = j => {
+      return JSON.stringify(j, null, 2)
+    }
     const columns = [
       {
         title: 'AD group name',
@@ -177,9 +180,14 @@ class List extends React.Component {
       {
         title: 'Assets',
         align: 'center',
-        dataIndex: ['details', 'checkpoint', 'allowed_asset_ids' ],
+        dataIndex: 'details',
+        width: 300,
         key: 'allowed_asset_ids',
-        ...this.getColumnSearchProps(['details', 'checkpoint', 'allowed_asset_ids' ]),
+        render: (name, obj)  => (
+          <React.Fragment>
+            <pre style={{textAlign: 'left'}}>{jsonPretty(obj.details)}</pre>
+          </React.Fragment>
+        ),
       },
       {
         title: <RolesDescription/>,
@@ -187,7 +195,6 @@ class List extends React.Component {
         dataIndex: 'role',
         key: 'role',
         ...this.getColumnSearchProps('role'),
-
       },
       {
         title: 'Modify',
