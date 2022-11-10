@@ -42,7 +42,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition && !this.props.nodesError) ) {
+    if ( (this.props.asset && this.props.partition && !prevProps.nodesError && !this.props.nodesError) ) {
       if (!this.props.nodes) {
         this.nodesGet()
       }
