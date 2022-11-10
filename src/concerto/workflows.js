@@ -38,22 +38,11 @@ class Workflow extends React.Component {
     return author.isSuperAdmin(a)
   }
 
-  authorizators = a => {
-    let author = new Authorizators()
-    return author.isObjectEmpty(a)
-  }
-
-  workflowsAuthorizator = a => {
-    let author = new Authorizators()
-    return author.workflow(a)
-  }
-
-
   render() {
     return (
       <React.Fragment>
 
-        { (this.authorizatorsSA(this.props.authorizations) || (this.props.authorizationsWorkflow && this.workflowsAuthorizator(this.props.authorizationsWorkflow)) )?
+        { this.authorizatorsSA(this.props.authorizations) || this.props.authorizationsWorkflow ?
           <React.Fragment>
             <Divider orientation="left" plain>
               CHECKPOINT AND INFOBLOX

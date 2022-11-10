@@ -35,7 +35,8 @@ class Authorizators {
     }
   }
 
-  workflow = list => {
+  workflowRemoveHost = list => {
+    console.log(list)
     try {
       let resp
       if (list) {
@@ -43,8 +44,26 @@ class Authorizators {
           if (item.workflow_name === "checkpoint_remove_host") {
             resp = true
           }
-          else {
-            resp = false
+        });
+      }
+      else {
+        resp = false
+      }
+      console.log(resp)
+      return resp
+    }
+    catch (error){
+      return false
+    }
+  }
+
+  workflowAddHost = list => {
+    try {
+      let resp
+      if (list) {
+        list.exec.forEach((item, i) => {
+          if (item.workflow_name === "checkpoint_add_host") {
+            resp = true
           }
         });
       }
