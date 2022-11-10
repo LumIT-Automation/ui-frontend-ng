@@ -50,7 +50,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition && !this.props.poolsError) {
+    if (this.props.asset && this.props.partition && !prevProps.poolsError && !this.props.poolsError) {
       if (!this.props.pools) {
         this.poolsGet()
         this.monitorsGet()

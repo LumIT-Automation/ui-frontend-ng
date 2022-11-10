@@ -42,7 +42,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition && !this.props.irulesError) ) {
+    if ( (this.props.asset && this.props.partition && !prevProps.irulesError && !this.props.irulesError) ) {
       if (!this.props.irules) {
         this.irulesGet()
       }
