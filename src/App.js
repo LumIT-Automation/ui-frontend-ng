@@ -91,6 +91,9 @@ class App extends Component {
             })
           )
         }
+        else {
+          this.props.dispatch(login({authenticated: false}))
+        }
       }
       catch (e) {
       }

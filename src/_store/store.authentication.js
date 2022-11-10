@@ -37,7 +37,7 @@ const authenticationSlice = createSlice({
         },
         logout: (state, action) => {
           for (const l in state) {
-            state[l] = null
+            delete state[l]
           }
         }
     }
