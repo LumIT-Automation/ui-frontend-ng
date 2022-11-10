@@ -36,6 +36,10 @@ const authenticationSlice = createSlice({
           }
         },
         logout: (state, action) => {
+          console.log('llllllllllllllllllllllllllll')
+          document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+          document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+          state.authenticated = false
           for (const l in state) {
             delete state[l]
           }

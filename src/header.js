@@ -8,6 +8,7 @@ import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 
 import {
+  login,
   logout
 } from './_store/store.authentication'
 
@@ -38,11 +39,11 @@ class HeaderCustom extends Component {
 
   deleteCookies = async () => {
       try {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        //document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        //document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         //return 'OK'
-        await this.props.dispatch(login({authenticated: false}))
         await this.props.dispatch(logout())
+        //await this.props.dispatch(login({authenticated: false}))
       }
       catch(e) {
         console.log('no logout')
