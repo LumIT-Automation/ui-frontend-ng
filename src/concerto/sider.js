@@ -209,9 +209,7 @@ class CustomSider extends Component {
              null
           }
 
-          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
-            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
+          { this.authorizatorsSA(this.props.authorizations) ?
             <React.Fragment>
               <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
               <Menu.Divider/>
