@@ -80,10 +80,7 @@ class CustomSider extends Component {
   }
 
   render(){
-    //<Sider width={200} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={80}>
-    //<Sider width={150} className="site-layout-background" trigger={null}>
     return (
-
       <Sider width={200} style={{backgroundColor: 'white'}} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
             {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
@@ -94,7 +91,12 @@ class CustomSider extends Component {
           style={{ borderRight: 0 }}
         >
 
+        {!this.props.authorizationsFortinetdb ?
+          null
+        :
           <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
+        }
+
 
           { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
@@ -175,7 +177,7 @@ class CustomSider extends Component {
             null
           }
 
-          { this.authorizatorsSA(this.props.authorizations) || this.props.authorizationsWorkflow ?
+          { this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsWorkflow) ?
             <React.Fragment>
               <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
               <Menu.Divider/>

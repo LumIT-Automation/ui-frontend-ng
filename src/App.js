@@ -22,6 +22,9 @@ class App extends Component {
   }
 
   componentDidMount() {
+    console.log('mount App')
+    console.log('this.props', this.props)
+    console.log('prevState', this.state)
     this.main()
   }
 
@@ -30,9 +33,15 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('update App')
+    console.log('prevProps', prevProps)
+    console.log('this.props', this.props)
+    console.log('prevState', prevState)
+    console.log('prevState', this.state)
   }
 
   componentWillUnmount() {
+    console.log('unmount App')
   }
 
   main = async () => {
@@ -99,30 +108,6 @@ class App extends Component {
       }
   }
 
-/*
-  authenticate = () => {
-    return new Promise( (resolve, reject) => {
-      let token, username;
-      try {
-        token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
-        username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
-
-        if (token && username) {
-          this.props.dispatch(login({
-            authenticated: true,
-            username: username,
-            token: token
-            })
-          )
-        }
-        resolve()
-      }
-      catch (e) {
-      }
-    })
-  }
-*/
-
   render() {
     if (this.props.authenticated) {
       return <Concerto/>
@@ -137,4 +122,6 @@ class App extends Component {
 
 export default connect((state) => ({
   authenticated: state.authentication.authenticated,
+  username: state.authentication.username,
+  token: state.authentication.token
 }))(App);

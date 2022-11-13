@@ -39,20 +39,16 @@ class Manager extends React.Component {
   }
 
   workflowRemoveHost = a => {
-    console.log(a)
     let author = new Authorizators()
     return author.workflowRemoveHost(a)
   }
 
   workflowAddHost = a => {
-    console.log(a)
     let author = new Authorizators()
     return author.workflowAddHost(a)
   }
 
   render() {
-    console.log(this.props.authorizations)
-
     return (
       <React.Fragment>
         <Row>

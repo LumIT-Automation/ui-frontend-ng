@@ -17,6 +17,7 @@ const authenticationSlice = createSlice({
     },
     reducers: {
         login: (state, action) => {
+          console.log('login')
           state.authenticated = action.payload.authenticated
           state.username = action.payload.username
           state.token = action.payload.token
@@ -36,7 +37,7 @@ const authenticationSlice = createSlice({
           }
         },
         logout: (state, action) => {
-          console.log('llllllllllllllllllllllllllll')
+          console.log('store logout')
           document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
           document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
           state.authenticated = false

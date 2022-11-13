@@ -25,6 +25,7 @@ class HeaderCustom extends Component {
   }
 
   componentDidMount() {
+    console.log('mount header')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,6 +39,7 @@ class HeaderCustom extends Component {
   }
 
   deleteCookies = async () => {
+    console.log('delete cookies')
       try {
         //document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
         //document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
@@ -83,7 +85,7 @@ class HeaderCustom extends Component {
 
     const menu = (
       <Menu>
-        <Menu.Item key="logout" onClick={() => this.logout()}>Logout</Menu.Item>
+        <Menu.Item key="logout" onClick={async () => await this.logout()}>Logout</Menu.Item>
       </Menu>
     )
 

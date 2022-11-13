@@ -26,6 +26,11 @@ class Login extends Component {
   }
 
   componentDidMount() {
+    console.log('mount login')
+    if (this.props.username && this.props.token) {
+      console.log('redirect')
+      document.location.href = '/'
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -158,5 +163,7 @@ class Login extends Component {
 }
 
 export default connect((state) => ({
-
+  authenticated: state.authentication.authenticated,
+  username: state.authentication.username,
+  token: state.authentication.token
 }))(Login);

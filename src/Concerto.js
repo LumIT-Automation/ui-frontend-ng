@@ -74,6 +74,15 @@ class Concerto extends Component {
 
   main = async () => {
 
+    let authorizationsFetched = await this.authorizationsGet()
+    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
+      this.props.dispatch(authorizationsError(authorizationsFetched))
+      return
+    }
+    else {
+      this.props.dispatch(authorizations( authorizationsFetched ))
+    }
+
     if (this.props.authorizationsF5) {
       this.props.dispatch(configurationF5Loading(true))
       let confF5 = await this.configurationF5Get()
@@ -99,16 +108,6 @@ class Concerto extends Component {
         }
       }
     }
-
-    let authorizationsFetched = await this.authorizationsGet()
-    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
-      this.props.dispatch(authorizationsError(authorizationsFetched))
-      return
-    }
-    else {
-      this.props.dispatch(authorizations( authorizationsFetched ))
-    }
-
   }
 
   authorizationsGet = async () => {
@@ -162,7 +161,12 @@ class Concerto extends Component {
                 }}
               >
                 <Switch>
-                  <Route exact path='/' component={Homepage}/>
+                  {this.props.authorizationsFortinetdb ?
+                    <Route exact path='/' component={Homepage}/>
+                  :
+                    null
+                  }
+
                   <Route exact path='/historys/' component={Historys}/>
 
                   <Route path='/projects/' component={Projects}/>
@@ -192,7 +196,13 @@ class Concerto extends Component {
                     null
                   }
                   <Route path='/services/' component={Service}/>
-                  <Route path='/workflows/' component={Workflow}/>
+
+                  { this.props.authorizationsWorkflow && this.authorizators(this.props.authorizationsWorkflow) ?
+                    <Route path='/workflows/' component={Workflow}/>
+                  :
+                    null
+                  }
+
                   <Route path='/assets/' component={Assets}/>
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>
@@ -224,6 +234,7 @@ export default connect((state) => ({
   authorizations: state.authorizations,
   configurationF5Fetch: state.f5.configurationFetch,
 
+  authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsF5: state.authorizations.f5,
   authorizationsCheckpoint: state.authorizations.checkpoint,

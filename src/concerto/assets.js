@@ -69,17 +69,21 @@ class Assets extends React.Component {
               null
             }
 
-            <React.Fragment>
-              {this.props.checkpointLoading ?
-                <TabPane key="Checkpoint" tab="Checkpoint">
-                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                </TabPane>
-                :
-                <TabPane key="checkpoint" tab=<span>Checkpoint <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(checkpointAssetsFetch(true))}/></span>>
-                  <Checkpoint/>
-                </TabPane>
-              }
-            </React.Fragment>
+            { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+              <React.Fragment>
+                {this.props.checkpointLoading ?
+                  <TabPane key="Checkpoint" tab="Checkpoint">
+                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                  </TabPane>
+                  :
+                  <TabPane key="checkpoint" tab=<span>Checkpoint <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(checkpointAssetsFetch(true))}/></span>>
+                    <Checkpoint/>
+                  </TabPane>
+                }
+              </React.Fragment>
+            :
+              null
+            }
 
             { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
               <React.Fragment>
@@ -123,6 +127,7 @@ class Assets extends React.Component {
 
 
 export default connect((state) => ({
+  authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,

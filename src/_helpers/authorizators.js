@@ -36,7 +36,6 @@ class Authorizators {
   }
 
   workflowRemoveHost = list => {
-    console.log(list)
     try {
       let resp
       if (list) {
@@ -49,7 +48,6 @@ class Authorizators {
       else {
         resp = false
       }
-      console.log(resp)
       return resp
     }
     catch (error){
