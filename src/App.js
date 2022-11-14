@@ -21,10 +21,8 @@ class App extends Component {
     };
   }
 
-  componentDidMount() {
-    console.log('mount App')
-    console.log('this.props', this.props)
-    console.log('prevState', this.state)
+  async componentDidMount() {
+    await this.authenticate()
     this.main()
   }
 
@@ -33,20 +31,33 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('update App')
-    console.log('prevProps', prevProps)
-    console.log('this.props', this.props)
-    console.log('prevState', prevState)
-    console.log('prevState', this.state)
   }
 
   componentWillUnmount() {
-    console.log('unmount App')
+  }
+
+  authenticate = async () => {
+    let token, username;
+    try {
+      token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
+      username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
+
+      if (token && username) {
+        await this.props.dispatch(login({
+          username: username,
+          token: token
+          })
+        )
+      }
+      else {
+        await this.props.dispatch(login({username: undefined, token: undefined}))
+      }
+    }
+    catch (e) {
+    }
   }
 
   main = async () => {
-    await this.authenticate()
-
     let conf = await this.uiConfGet()
     if (conf.status && conf.status !== 200 ) {
       //this.props.dispatch(authorizationsError(authorizationsFetched))
@@ -86,30 +97,10 @@ class App extends Component {
     return r
   }
 
-  authenticate = async () => {
-      let token, username;
-      try {
-        token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
-        username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
 
-        if (token && username) {
-          this.props.dispatch(login({
-            authenticated: true,
-            username: username,
-            token: token
-            })
-          )
-        }
-        else {
-          this.props.dispatch(login({authenticated: false}))
-        }
-      }
-      catch (e) {
-      }
-  }
 
   render() {
-    if (this.props.authenticated) {
+    if (this.props.username && this.props.token) {
       return <Concerto/>
     }
     else {
@@ -119,9 +110,7 @@ class App extends Component {
 }
 
 
-
 export default connect((state) => ({
-  authenticated: state.authentication.authenticated,
   username: state.authentication.username,
   token: state.authentication.token
 }))(App);

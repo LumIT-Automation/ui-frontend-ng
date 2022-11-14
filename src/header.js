@@ -41,11 +41,9 @@ class HeaderCustom extends Component {
   deleteCookies = async () => {
     console.log('delete cookies')
       try {
-        //document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        //document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        //return 'OK'
-        await this.props.dispatch(logout())
-        //await this.props.dispatch(login({authenticated: false}))
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
+        //await this.props.dispatch(logout())
       }
       catch(e) {
         console.log('no logout')
@@ -54,7 +52,6 @@ class HeaderCustom extends Component {
 
   logout = async () => {
     await this.deleteCookies()
-    //await this.props.dispatch(logout())
     document.location.href = '/'
   }
 
@@ -123,7 +120,7 @@ class HeaderCustom extends Component {
           }
 
 
-          { this.props.authenticated ?
+          { (this.props.username && this.props.token) ?
             <Col span={5} style={{paddingRight: '10px'}}>
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
@@ -148,9 +145,8 @@ class HeaderCustom extends Component {
 
 
 export default connect((state) => ({
-  authenticated: state.authentication.authenticated,
   username: state.authentication.username,
-  //token: state.authentication.token,
+  token: state.authentication.token,
   logoWhite: state.authentication.logoWhite,
   banner: state.authentication.banner,
   headerColor: state.authentication.headerColor

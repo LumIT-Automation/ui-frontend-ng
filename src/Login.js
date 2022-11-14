@@ -26,11 +26,8 @@ class Login extends Component {
   }
 
   componentDidMount() {
-    console.log('mount login')
-    if (this.props.username && this.props.token) {
-      console.log('redirect')
-      document.location.href = '/'
-    }
+    //console.log('window.location.href', window.location.href)
+    //console.log('document.location.href', document.location.href)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -56,7 +53,6 @@ class Login extends Component {
 
           // Update the store; save the access token.
           this.props.dispatch(login({
-            authenticated: true,
             username: data.username,
             token: response.access
           }))
@@ -163,7 +159,6 @@ class Login extends Component {
 }
 
 export default connect((state) => ({
-  authenticated: state.authentication.authenticated,
   username: state.authentication.username,
   token: state.authentication.token
 }))(Login);
