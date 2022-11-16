@@ -45,34 +45,29 @@ class Login extends Component {
   onFormSubmit = async data => {
     // XHR for token.
     if (data.username && data.password) {
-      let rest = new Rest("POST",
-
-        response => {
-
-          this.setState({ error: null });
-
-          // Update the store; save the access token.
-          this.props.dispatch(login({
-            username: data.username,
-            token: response.access
-          }))
-
-          // Also, save token into a cookie.
-          document.cookie = "token="+response.access;
-          document.cookie = "username="+data.username;
-
+      let rest = new Rest(
+        "POST",
+        resp => {
+          this.usernameAndTokenSet(data, resp)
         },
-
         error => {
           this.setState({ error: error.message });
         })
 
-      await rest.doXHR(
-        "login", "", {
-          username: data.username,
-          password: data.password
-        });
+      await rest.doXHR("login", "", {username: data.username, password: data.password});
     }
+  }
+
+  usernameAndTokenSet = async (data, resp) => {
+    await this.setState({ error: null });
+    // Update the store; save the access token.
+    await this.props.dispatch(login({
+      username: data.username,
+      token: resp.access
+    }))
+    // Also, save token into a cookie.
+    document.cookie = `token=${resp.access}`;
+    document.cookie = `username=${data.username}`;
   }
 
   render() {
