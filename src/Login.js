@@ -60,15 +60,24 @@ class Login extends Component {
 
   usernameAndTokenSet = async (data, resp) => {
     await this.setState({ error: null });
+    await this.cookieToken(resp.access)
+    await this.cookieUsername(data.username)
     // Update the store; save the access token.
     await this.props.dispatch(login({
       username: data.username,
       token: resp.access
     }))
     // Also, save token into a cookie.
-    document.cookie = `token=${resp.access}`;
-    document.cookie = `username=${data.username}`;
   }
+
+  cookieToken = async tok => {
+    document.cookie = `token=${tok}`;
+  }
+
+  cookieUsername = async user => {
+    document.cookie = `username=${user}`;
+  }
+
 
   render() {
 
