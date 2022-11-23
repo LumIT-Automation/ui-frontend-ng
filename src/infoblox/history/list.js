@@ -173,6 +173,13 @@ class List extends React.Component {
         key: 'username',
         ...this.getColumnSearchProps('username'),
       },
+      {
+        title: 'Reference',
+        align: 'center',
+        dataIndex: ['extattrs', 'Reference', 'value'],
+        key: 'reference',
+        ...this.getColumnSearchProps(['extattrs', 'Reference', 'value']),
+      },
     ];
 
     let randomKey = () => {
