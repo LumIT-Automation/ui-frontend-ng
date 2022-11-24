@@ -79,8 +79,9 @@ class PoolDetails extends React.Component {
       })
 
       const membersState = membersConn.map( m => {
+        console.log()
         let n
-        if (m.state === 'up' && m.session === 'monitor-enabled') {
+        if (m.state === 'up' && m.session === 'monitor-enabled' && m.parentState === 'enabled') {
           n = Object.assign(m, {status: 'enabled', color: '#90ee90'})
         }
         else if (m.state === 'up' && m.session === 'user-disabled') {
@@ -127,7 +128,7 @@ class PoolDetails extends React.Component {
 
 
 
-  statusAndSession = async (member, state, session) => {
+  statusAndSession = async (member, state, session, parentState) => {
     let members = JSON.parse(JSON.stringify(this.state.members))
 
     const index = this.state.members.findIndex(m => {
@@ -136,8 +137,9 @@ class PoolDetails extends React.Component {
 
     members[index].state = state
     members[index].session = session
+    members[index].parentState = parentState
 
-    if (state === 'up' && session === 'monitor-enabled') {
+    if (state === 'up' && session === 'monitor-enabled' && parentState === 'enabled') {
       members[index].status = 'enabled'
       members[index].color = '#90ee90'
     }
@@ -196,11 +198,12 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    this.setState({members: members})
+    await this.setState({members: members})
+    await this.main(this.props.obj)
   }
 
   poolMemberDisableHandler = async (member) => {
@@ -228,11 +231,12 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    this.setState({members: members})
+    await this.setState({members: members})
+    await this.main(this.props.obj)
   }
 
   poolMemberForceOfflineHandler = async (member) => {
@@ -260,11 +264,12 @@ class PoolDetails extends React.Component {
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session)
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
-    this.setState({members: members})
+    await this.setState({members: members})
+    await this.main(this.props.obj)
   }
 
   poolMemberEnable = async (memberName) => {
@@ -481,6 +486,12 @@ class PoolDetails extends React.Component {
         key: 'session',
       },
       {
+        title: 'Parent State',
+        align: 'center',
+        dataIndex: 'parentState',
+        key: 'parentState',
+      },
+      {
         title: 'Status',
         align: 'center',
         dataIndex: 'status',
@@ -643,7 +654,7 @@ class PoolDetails extends React.Component {
           }
 
           { this.props.poolMembersLoading ?
-              <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+              <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/>
             :
               <Table
                 dataSource={this.state.members}

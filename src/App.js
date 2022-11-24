@@ -33,9 +33,9 @@ class App extends Component {
     return true;
   }
 
-  componentDidUpdate(prevProps, prevState) {
+  async componentDidUpdate(prevProps, prevState) {
     if (this.props.token && (prevProps.token !== this.props.token)) {
-      this.authorizations()
+      await this.authorizations()
     }
     if (!this.props.token) {
       this.authenticate()
