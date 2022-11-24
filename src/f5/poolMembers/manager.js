@@ -486,7 +486,7 @@ class PoolDetails extends React.Component {
         key: 'session',
       },
       {
-        title: 'Parent State',
+        title: 'Member State',
         align: 'center',
         dataIndex: 'parentState',
         key: 'parentState',
