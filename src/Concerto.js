@@ -1,10 +1,11 @@
 import React from 'react'
 import {connect} from "react-redux"
-import { Component, } from "react"
+import { Component } from "react"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import './App.css'
 import 'antd/dist/antd.css'
 import { Layout } from 'antd'
+
 
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
@@ -44,7 +45,6 @@ import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 const { Content } = Layout;
 
 
-
 class Concerto extends Component {
 
   constructor(props) {
@@ -54,7 +54,6 @@ class Concerto extends Component {
   }
 
   componentDidMount() {
-    this.main()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -62,6 +61,9 @@ class Concerto extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.authorizationsF5 && (prevProps.authorizationsF5 !== this.props.authorizationsF5)) {
+      this.main()
+    }
     if (this.props.configurationF5Fetch) {
       this.props.dispatch(configurationF5Fetch(false))
       this.main()
@@ -73,16 +75,6 @@ class Concerto extends Component {
 
 
   main = async () => {
-
-    let authorizationsFetched = await this.authorizationsGet()
-    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
-      this.props.dispatch(authorizationsError(authorizationsFetched))
-      return
-    }
-    else {
-      this.props.dispatch(authorizations( authorizationsFetched ))
-    }
-
     if (this.props.authorizationsF5) {
       this.props.dispatch(configurationF5Loading(true))
       let confF5 = await this.configurationF5Get()
@@ -108,21 +100,6 @@ class Concerto extends Component {
         }
       }
     }
-  }
-
-  authorizationsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`authorizations/`, this.props.token)
-    return r
   }
 
   configurationF5Get = async () => {

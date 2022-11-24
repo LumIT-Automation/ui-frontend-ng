@@ -25,7 +25,6 @@ class HeaderCustom extends Component {
   }
 
   componentDidMount() {
-    console.log('mount header')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -38,20 +37,19 @@ class HeaderCustom extends Component {
   componentWillUnmount() {
   }
 
-  deleteCookies = async () => {
-    console.log('delete cookies')
-      try {
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        document.cookie = "username=; expires=Thu, 01 Jan 1970 00:00:00 GMT; ";
-        //await this.props.dispatch(logout())
-      }
-      catch(e) {
-        console.log('no logout')
-      }
+  localStorageRemove = async () => {
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+    }
+    catch(e) {
+      console.log(e)
+    }
   }
 
   logout = async () => {
-    await this.deleteCookies()
+    await this.localStorageRemove()
+    await this.props.dispatch( logout() )
     document.location.href = '/'
   }
 

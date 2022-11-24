@@ -26,8 +26,6 @@ class Login extends Component {
   }
 
   componentDidMount() {
-    //console.log('window.location.href', window.location.href)
-    //console.log('document.location.href', document.location.href)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -43,7 +41,6 @@ class Login extends Component {
 
 
   onFormSubmit = async data => {
-    // XHR for token.
     if (data.username && data.password) {
       let rest = new Rest(
         "POST",
@@ -53,29 +50,22 @@ class Login extends Component {
         error => {
           this.setState({ error: error.message });
         })
-
       await rest.doXHR("login", "", {username: data.username, password: data.password});
     }
   }
 
   usernameAndTokenSet = async (data, resp) => {
     await this.setState({ error: null });
-    await this.cookieToken(resp.access)
-    await this.cookieUsername(data.username)
-    // Update the store; save the access token.
+    await this.localStorageSet(data.username, resp.access)
     await this.props.dispatch(login({
       username: data.username,
       token: resp.access
     }))
-    // Also, save token into a cookie.
   }
 
-  cookieToken = async tok => {
-    document.cookie = `token=${tok}`;
-  }
-
-  cookieUsername = async user => {
-    document.cookie = `username=${user}`;
+  localStorageSet = async (username, token) => {
+    localStorage.setItem('token', token);
+    localStorage.setItem('username', username);
   }
 
 

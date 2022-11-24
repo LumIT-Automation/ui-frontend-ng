@@ -1,16 +1,19 @@
 import React from 'react'
-import { Component, } from "react";
+import { Component } from "react";
 
 import Rest from './_helpers/Rest'
-//import Error from './ConcertoError'
 import Login from './Login'
 import Concerto from './Concerto'
+import { Spin } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons'
 import { login, uiconf } from './_store/store.authentication'
+import { authorizations, authorizationsError } from './_store/store.authorizations'
 
 import './App.css';
 import 'antd/dist/antd.css';
 import {connect} from "react-redux";
 
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 class App extends Component {
@@ -22,8 +25,8 @@ class App extends Component {
   }
 
   async componentDidMount() {
+    await this.uiConfSet()
     await this.authenticate()
-    this.main()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -31,16 +34,44 @@ class App extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (this.props.token && (prevProps.token !== this.props.token)) {
+      this.authorizations()
+    }
+    if (!this.props.token) {
+      this.authenticate()
+    }
   }
 
   componentWillUnmount() {
   }
 
+  uiConfSet = async () => {
+    let conf = await this.uiConfGet()
+    if (conf.status && conf.status !== 200 ) {
+      //this.props.dispatch(authorizationsError(authorizationsFetched))
+    }
+    else {
+      try {
+        this.props.dispatch(uiconf( conf.data.configuration ))
+        document.title = conf.data.configuration.page.title
+        let favicon = document.querySelector("link[rel~='icon']");
+        if (!favicon) {
+            favicon = document.createElement('link');
+            favicon.rel = 'icon';
+            document.getElementsByTagName('head')[0].appendChild(favicon);
+        }
+        favicon.href = conf.data.configuration.page.favicon
+      }
+      catch (error) {
+      }
+    }
+  }
+
   authenticate = async () => {
     let token, username;
     try {
-      token = document.cookie.split('; ').find(row => row.startsWith('token')).split('=')[1];
-      username = document.cookie.split('; ').find(row => row.startsWith('username')).split('=')[1];
+      token = localStorage.getItem('token');
+      username = localStorage.getItem('username');
 
       if (token && username) {
         await this.props.dispatch(login({
@@ -54,33 +85,24 @@ class App extends Component {
       }
     }
     catch (e) {
+      console.log(e)
+      await this.props.dispatch(login({username: undefined, token: undefined}))
     }
   }
 
-  main = async () => {
-    let conf = await this.uiConfGet()
-    if (conf.status && conf.status !== 200 ) {
-      //this.props.dispatch(authorizationsError(authorizationsFetched))
+  authorizations = async () => {
+    await this.setState({authorizationsLoading: true})
+    let authorizationsFetched = await this.authorizationsGet()
+    await this.setState({authorizationsLoading: false})
+    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
+      this.props.dispatch(authorizationsError(authorizationsFetched))
+      return
     }
     else {
-      try {
-        this.props.dispatch(uiconf( conf.data.configuration ))
-
-        document.title = conf.data.configuration.page.title
-
-        let favicon = document.querySelector("link[rel~='icon']");
-        if (!favicon) {
-            favicon = document.createElement('link');
-            favicon.rel = 'icon';
-            document.getElementsByTagName('head')[0].appendChild(favicon);
-        }
-
-        favicon.href = conf.data.configuration.page.favicon
-      }
-      catch (error) {
-      }
+      this.props.dispatch(authorizations( authorizationsFetched ))
     }
   }
+
 
   uiConfGet = async () => {
     let r
@@ -97,11 +119,29 @@ class App extends Component {
     return r
   }
 
+  authorizationsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`authorizations/`, this.props.token)
+    return r
+  }
 
 
   render() {
-    if (this.props.username && this.props.token) {
-      return <Concerto/>
+    if (localStorage.getItem('token') && localStorage.getItem('username')) {
+      if (this.state.authorizationsLoading) {
+        return <Spin indicator={spinIcon} style={{margin: '20% 48%'}}/>
+      } else {
+        return <Concerto/>
+      }
     }
     else {
       return <Login/>

@@ -113,6 +113,7 @@ class PoolDetails extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log('resp', resp.data.items)
         r = resp.data.items
       },
       error => {
@@ -594,7 +595,7 @@ class PoolDetails extends React.Component {
         ),
       },
       {
-        title: 'Delete',
+        title: 'Remove',
         align: 'center',
         dataIndex: 'delete',
         key: 'delete',

@@ -194,28 +194,18 @@ class Error extends Component {
     }
   }
 
-  deleteCookies = (token, username) => {
-    return new Promise( (resolve, reject) => {
-      try {
-        document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-        document.cookie = 'username=; expires=Thu, 01 Jan 1970 00:00:00 UTC;'
-        resolve()
-      }
-      catch(e) {
-        reject(e)
-      }
-    })
-  }
-
   logout = () => {
-    this.deleteCookies('token', 'username').then( this.props.dispatch( logout() ) )
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('username');
+    }
+    catch(e) {
+      console.log(e)
+    }
   }
 
 
   render(){
-    //let err = this.state.error
-
-
 
     const columns = [
       {
@@ -260,7 +250,6 @@ class Error extends Component {
             return <Result title={'400 - Bad Request'} />
           case 401:
             this.logout()
-            //return <Result title={statusCode} />
             break;
           case 403:
             return <Result status={statusCode} title={'403 - Forbidden'} />
