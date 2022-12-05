@@ -79,7 +79,6 @@ class PoolDetails extends React.Component {
       })
 
       const membersState = membersConn.map( m => {
-        console.log()
         let n
         if (m.state === 'up' && m.session === 'monitor-enabled' && m.parentState === 'enabled') {
           n = Object.assign(m, {status: 'enabled', color: '#90ee90'})
@@ -129,6 +128,10 @@ class PoolDetails extends React.Component {
 
 
   statusAndSession = async (member, state, session, parentState) => {
+    console.log(member)
+    console.log(state)
+    console.log(session)
+    console.log(parentState)
     let members = JSON.parse(JSON.stringify(this.state.members))
 
     const index = this.state.members.findIndex(m => {
@@ -180,13 +183,13 @@ class PoolDetails extends React.Component {
     })
 
     members[index].isLoading = true
-    this.setState({members: members})
+    await this.setState({members: members})
 
     let enable = await this.poolMemberEnable(member.name)
     if (enable.status && enable.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberEnableError(enable))
     }
 
@@ -194,16 +197,26 @@ class PoolDetails extends React.Component {
     if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
+    let memberStats = await this.poolMemberStats(member)
+    if (memberStats.status && memberStats.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      await this.setState({members: members})
+      this.props.dispatch(poolMemberStatsError(error))
+    }
+
+    await this.refreshStats(member, memberStats)
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
+    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
     await this.setState({members: members})
-    await this.main(this.props.obj)
   }
 
   poolMemberDisableHandler = async (member) => {
@@ -213,13 +226,13 @@ class PoolDetails extends React.Component {
     })
 
     members[index].isLoading = true
-    this.setState({members: members})
+    await this.setState({members: members})
 
     let disable = await this.poolMemberDisable(member)
     if (disable.status && disable.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberDisableError(disable))
     }
 
@@ -227,16 +240,26 @@ class PoolDetails extends React.Component {
     if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
+    let memberStats = await this.poolMemberStats(member)
+    if (memberStats.status && memberStats.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      await this.setState({members: members})
+      this.props.dispatch(poolMemberStatsError(error))
+    }
+
+    await this.refreshStats(member, memberStats)
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
+    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
     await this.setState({members: members})
-    await this.main(this.props.obj)
   }
 
   poolMemberForceOfflineHandler = async (member) => {
@@ -246,13 +269,13 @@ class PoolDetails extends React.Component {
     })
 
     members[index].isLoading = true
-    this.setState({members: members})
+    await this.setState({members: members})
 
     let forceOffline = await this.poolMemberForceOffline(member)
     if (forceOffline.status && forceOffline.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberForceOfflineError(forceOffline))
     }
 
@@ -260,16 +283,26 @@ class PoolDetails extends React.Component {
     if (fetchedMember.status && fetchedMember.status !== 200) {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
-      this.setState({members: members})
+      await this.setState({members: members})
       this.props.dispatch(poolMemberEnableError(fetchedMember))
     }
 
-    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, fetchedMember.parentState)
+    let memberStats = await this.poolMemberStats(member)
+    if (memberStats.status && memberStats.status !== 200) {
+      members = JSON.parse(JSON.stringify(this.state.members))
+      members[index].isLoading = false
+      await this.setState({members: members})
+      this.props.dispatch(poolMemberStatsError(error))
+    }
+
+    await this.refreshStats(member, memberStats)
+
+    let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
+    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
     await this.setState({members: members})
-    await this.main(this.props.obj)
   }
 
   poolMemberEnable = async (memberName) => {
@@ -365,7 +398,7 @@ class PoolDetails extends React.Component {
     if (!isMonitored) {
       const member = members[index]
 
-      this.interval = setInterval( () => this.poolMemberStats(member), 3000)
+      this.interval = setInterval( () => this.poolMemberStatsInterval(member), 3000)
 
       const memberModified = Object.assign(member, {
         isMonitored: true,
@@ -400,6 +433,23 @@ class PoolDetails extends React.Component {
   }
 
   poolMemberStats = async member => {
+    let r
+    let rest = new Rest(
+      'GET',
+      resp => {
+        r = resp.data
+        //this.refreshStats(member, resp.data)
+      },
+      error => {
+        r = error
+        //this.props.dispatch(poolMemberStatsError(error))
+      }
+    )
+    await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
+    return r
+  }
+
+  poolMemberStatsInterval = async member => {
     let rest = new Rest(
       'GET',
       resp => {
@@ -412,7 +462,9 @@ class PoolDetails extends React.Component {
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
   }
 
-  refreshStats = (memb, data ) => {
+  refreshStats = async (memb, data ) => {
+    console.log(memb)
+    console.log(data)
     const index = this.state.members.findIndex(m => {
       return m.name === memb.name
     })
@@ -420,7 +472,7 @@ class PoolDetails extends React.Component {
     const members =  Object.assign([], this.state.members)
     const member = members[index]
 
-    const memberModified = Object.assign(member, {connections: data.serverside_curConns})
+    const memberModified = Object.assign(member, {connections: data.serverside_curConns, parentState: data.parentState})
 
     const list = members.map( m => {
       if (m.name === memberModified.name) {
@@ -430,7 +482,7 @@ class PoolDetails extends React.Component {
     })
 
     this.poolMembersGet(this.props.obj, this.props.asset.id)
-    this.setState({members: list})
+    await this.setState({members: list})
   }
 
 
