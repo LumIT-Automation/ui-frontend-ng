@@ -206,7 +206,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(error))
+      this.props.dispatch(poolMemberStatsError(memberStats))
     }
 
     await this.refreshStats(member, memberStats)
@@ -249,7 +249,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(error))
+      this.props.dispatch(poolMemberStatsError(memberStats))
     }
 
     await this.refreshStats(member, memberStats)
@@ -292,7 +292,7 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(error))
+      this.props.dispatch(poolMemberStatsError(memberStats))
     }
 
     await this.refreshStats(member, memberStats)

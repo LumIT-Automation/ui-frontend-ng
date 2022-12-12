@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
-import { logout } from './_store/store.authentication'
 
 import {
   setError

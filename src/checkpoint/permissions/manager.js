@@ -83,7 +83,7 @@ class Manager extends React.Component {
     }
     else {
       identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-      this.props.dispatch(identityGroups({data: {items: fetchedIdentityGroups}}))
+      this.props.dispatch(identityGroups({data: {items: identityGroupsNoWorkflowLocal}}))
     }
 
     fetchedPermissions = await this.permissionsGet()

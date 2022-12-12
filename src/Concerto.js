@@ -6,15 +6,9 @@ import './App.css'
 import 'antd/dist/antd.css'
 import { Layout } from 'antd'
 
-
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
-
-import {
-  authorizations,
-  authorizationsError
-} from './_store/store.authorizations'
 
 import {
   configuration as configurationF5,
