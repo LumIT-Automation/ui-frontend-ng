@@ -10,7 +10,6 @@ import Delete from './delete'
 
 import {
   poolMembersLoading,
-  poolMembers,
   poolMembersFetch,
   poolMembersError,
 

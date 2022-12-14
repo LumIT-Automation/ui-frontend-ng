@@ -5,7 +5,7 @@ class Authorizators {
   isSuperAdmin = a => {
     if (a) {
       try {
-        for (const [key, value] of Object.entries(a) ) {
+        for (const value of Object.values(a) ) {
           if (value.any) {
             return true
           }

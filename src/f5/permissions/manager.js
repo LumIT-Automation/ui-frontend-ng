@@ -83,7 +83,7 @@ class Manager extends React.Component {
     }
     else {
       identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-      this.props.dispatch(identityGroups({data: {items: fetchedIdentityGroups}}))
+      this.props.dispatch(identityGroups({data: {items: identityGroupsNoWorkflowLocal}}))
     }
 
     fetchedPermissions = await this.permissionsGet()
@@ -158,25 +158,23 @@ class Manager extends React.Component {
   }
 
   assetWithDetails = async (assets, permissions) => {
-    //assets and permissions are immutable, so I stringyfy and parse in order to edit them
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let assetsObject = JSON.parse(JSON.stringify(assets.data.items))
-    let list = []
 
-    for (const [key, value] of Object.entries(assetsObject)) {
-      list.push(value)
+    try {
+      Object.values(newPermissions).forEach((perm, i) => {
+        const asset = assetsObject.find(a => a.id === perm.partition.asset_id)
+        perm.asset = asset
+      });
+
+      let permissionsWithAsset = JSON.parse(JSON.stringify(newPermissions))
+
+      return permissionsWithAsset
+    } catch(error) {
+      console.log(error)
+      return newPermissions
     }
-
-    for (const [key, value] of Object.entries(newPermissions)) {
-      const asset = list.find(a => a.id === value.partition.asset_id)
-      value.asset = asset
-    }
-
-    let permissionsWithAsset = JSON.parse(JSON.stringify(newPermissions))
-
-    return permissionsWithAsset
   }
-
 
 
   render() {

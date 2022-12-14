@@ -175,7 +175,7 @@ class CreateF5Service extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.snat = e
     await this.setState({request: request})
-    if (e != 'snat') {
+    if (e !== 'snat') {
       request = JSON.parse(JSON.stringify(this.state.request))
       delete request.code
       delete request.snatPoolAddress
