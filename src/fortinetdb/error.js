@@ -5,10 +5,6 @@ import { Component } from 'react'
 import { Modal, Table, Result } from 'antd'
 
 import {
-  logout
-} from '../_store/store.authentication'
-
-import {
   authorizationsError
 } from '../_store/store.authorizations'
 

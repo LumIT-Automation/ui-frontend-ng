@@ -12,7 +12,6 @@ import {
   backupStatuss,
   backupStatussLoading,
   backupStatussError,
-  backupStatus,
   backupStatusError,
 } from '../store'
 

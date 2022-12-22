@@ -9,12 +9,9 @@ import ColorScale from '../../_helpers/colorScale'
 import Error from '../error'
 
 import {
-  modello,
   modellos20,
   modellos20Loading,
   modellos20Error,
-  vendor,
-  vendorError,
   modelloError
 } from '../store'
 

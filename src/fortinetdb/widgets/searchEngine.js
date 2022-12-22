@@ -2,29 +2,21 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import '../../App.css'
-import LogoFW from '../../svg/logo-compatto.png'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  projects,
-  projectsLoading,
   projectsError,
-  project,
-  projectError,
 
   accounts,
   accountsLoading,
   accountsError,
-  account,
-  accountError,
-
 } from '../store'
 
 import List from '../projects/list'
 
-import { Modal, Spin, Row, Col, Select, Divider, Image } from 'antd'
+import { Modal, Spin, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -129,6 +121,7 @@ class SearchEngine extends React.Component {
         src={`data:${data}`}
         height={'200px'}
         //width={'64px'}
+        alt="Logo"
         />
       }
     return (
@@ -175,7 +168,6 @@ class SearchEngine extends React.Component {
                     }
                   }
                   onSelect={e => this.fiteredBy(e)}>
-                  //onChange={e => this.fiteredBy(e)}>
                   {(this.state.input && this.state.input.length) > 2 ?
                     <React.Fragment>
                       {this.state.searchingList && this.state.searchingList.map((n, i) => {

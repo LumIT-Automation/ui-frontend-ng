@@ -8,13 +8,6 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  eolMeses,
-  eolMesesLoading,
-  eolMesesError,
-
-  eolMese,
-  eolMeseError,
-
   valueError
 } from '../store'
 

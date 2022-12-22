@@ -12,7 +12,6 @@ import {
   firmwares,
   firmwaresLoading,
   firmwaresError,
-  firmware,
   firmwareError,
 } from '../store'
 

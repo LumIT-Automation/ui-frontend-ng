@@ -4,31 +4,25 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 
 import {
   categorias,
   categoriasLoading,
   categoriasError,
   categoria,
-  categoriaError,
 
   vendors,
   vendorsLoading,
   vendor,
-  vendorsError,
   vendorError,
 
   modellos,
   modellosLoading,
   modello,
-  modellosError,
   modelloError,
 } from '../store'
 
-import List from '../devices/list'
-
-import { Modal, Spin, Row, Col, Select, Divider } from 'antd'
+import { Spin, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 

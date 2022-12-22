@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { VictoryPie, VictoryLabel } from 'victory'
+import { VictoryPie } from 'victory'
 import 'antd/dist/antd.css'
 import '../../App.css'
 
