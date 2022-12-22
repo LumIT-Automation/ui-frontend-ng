@@ -1,18 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Select, Row, Col, Spin } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
-
-import Rest from '../_helpers/Rest'
-import Error from './error'
+import { Select, Row, Col } from 'antd'
 
 import {
   environment,
   asset,
 } from './store'
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 

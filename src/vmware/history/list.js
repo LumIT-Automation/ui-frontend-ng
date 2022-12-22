@@ -2,10 +2,9 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import { Table, Input, Button, Space, Progress, Spin } from 'antd'
+import { Table, Input, Button, Space, Progress } from 'antd'
 import Highlighter from 'react-highlight-words'
-import { SearchOutlined, LoadingOutlined } from '@ant-design/icons'
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+import { SearchOutlined } from '@ant-design/icons'
 
 
 

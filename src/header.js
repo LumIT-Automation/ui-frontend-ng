@@ -4,15 +4,14 @@ import { Component, } from "react"
 
 import './App.css'
 import 'antd/dist/antd.css'
-import { Layout, Avatar, Menu, Dropdown, Image, Row, Col } from 'antd'
+import { Layout, Avatar, Menu, Dropdown, Row, Col } from 'antd'
 import { UserOutlined } from '@ant-design/icons'
 
 import {
-  login,
   logout
 } from './_store/store.authentication'
 
-const { Header, Content } = Layout;
+const { Header } = Layout;
 
 
 
@@ -67,6 +66,7 @@ class HeaderCustom extends Component {
         height={50}
         width={'350px'}
         style={{marginBottom: '2px'}}
+        alt='Banner'
       />
     }
 
@@ -75,6 +75,7 @@ class HeaderCustom extends Component {
         src={`data:${data}`}
         height={'64px'}
         width={'64px'}
+        alt='Logo'
       />
     }
 

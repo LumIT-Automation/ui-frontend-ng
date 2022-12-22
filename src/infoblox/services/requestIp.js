@@ -9,7 +9,6 @@ import {
   networksError,
   containersError,
   networkError,
-  containerError,
   nextAvailableIpError,
 } from '../store'
 

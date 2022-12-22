@@ -24,7 +24,6 @@ import {
 
 import AssetSelector from '../../vmware/assetSelector'
 
-const { TextArea } = Input;
 const { Panel } = Collapse;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -276,7 +275,6 @@ class CreateVmService extends React.Component {
   }
 
   templateFetch = async (templateMoid) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
     await this.setState({networkDevicesLoading: true, diskDevicesLoading: true})
     let templateFetched = await this.getData(`template/${templateMoid}/`)
 
@@ -1577,8 +1575,6 @@ class CreateVmService extends React.Component {
   }
 
   validation = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let validators = new Validators()
     await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
       await this.setState({disableCreateButton: true})
@@ -1795,7 +1791,7 @@ class CreateVmService extends React.Component {
           let tmp = this.state.diskDevices[0].tmp
           let var_log = this.state.diskDevices[0].var_log
           let var_log_audit = this.state.diskDevices[0].var_log_audit
-          let u01 = this.state.diskDevices[0].u01
+          //let u01 = this.state.diskDevices[0].u01
           let u02 = this.state.diskDevices[0].u02
           let u03 = this.state.diskDevices[0].u03
 
@@ -2009,7 +2005,7 @@ class CreateVmService extends React.Component {
 
 
   render() {
-
+/*
     let datastoreNameMoid = obj => {
       if (this.state.datastoresPlus && this.state.datastoresPlus.length > 1) {
         let n = this.state.datastoresPlus.find(e => e.moId === obj.datastoreMoId)
@@ -2024,7 +2020,7 @@ class CreateVmService extends React.Component {
         }
       }
     }
-
+*/
 
     const networkDeviceCol = [
       {

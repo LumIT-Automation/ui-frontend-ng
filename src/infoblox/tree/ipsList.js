@@ -5,11 +5,6 @@ import { Table, Input, Button, Space, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
-import Rest from '../../_helpers/Rest'
-
-import Modify from '../services/modifyIp'
-import Delete from '../services/releaseIp'
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 

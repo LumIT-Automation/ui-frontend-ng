@@ -14,9 +14,6 @@ import {
   permissionAddError,
   identityGroups,
   identityGroupsError,
-
-  objectsError,
-  containersError,
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
