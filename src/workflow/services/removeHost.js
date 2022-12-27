@@ -13,7 +13,7 @@ import {
 import { assets as checkpointAssets } from '../../checkpoint/store'
 import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
+import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />

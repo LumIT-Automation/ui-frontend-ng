@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import { Button, Modal, Spin, Result, Select, Input, Row, Col } from 'antd'
-import { LoadingOutlined, EditOutlined, CloseCircleOutlined } from '@ant-design/icons'
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -18,7 +18,6 @@ import {
 
 } from '../store'
 
-const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
@@ -218,7 +217,6 @@ class Modify extends React.Component {
   jsonSet = async () => {
     let json = JSON.parse(JSON.stringify(this.state.json))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (json.details && json.details.checkpoint && json.details.checkpoint.allowed_asset_ids ) {
       request.details = json.details

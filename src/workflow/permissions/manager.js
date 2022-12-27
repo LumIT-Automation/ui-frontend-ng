@@ -94,7 +94,7 @@ class Manager extends React.Component {
       }
       else {
         identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-        this.props.dispatch(identityGroups({data: {items: fetchedIdentityGroups}}))
+        this.props.dispatch(identityGroups({data: {items: identityGroupsNoWorkflowLocal}}))
       }
 
       fetchedPermissions = await this.permissionsGet()
@@ -193,14 +193,25 @@ class Manager extends React.Component {
     let workflowsObject = JSON.parse(JSON.stringify(workflows.data.items))
     let list = []
 
+    /*To use object.values not object.entries
     for (const [key, value] of Object.entries(workflowsObject)) {
       list.push(value)
-    }
+    }*/
 
+    Object.values(workflowsObject).forEach((value, i) => {
+      list.push(value)
+    })
+
+    /*
     for (const [key, value] of Object.entries(newPermissions)) {
       const workflow = list.find(a => a.id === value.workflow.id)
       value.workflow = workflow
-    }
+    }*/
+
+    Object.values(newPermissions).forEach((value, i) => {
+      const workflow = list.find(a => a.id === value.workflow.id)
+      value.workflow = workflow
+    })
 
     let permissionsWithWorkflowDescription = JSON.parse(JSON.stringify(newPermissions))
 

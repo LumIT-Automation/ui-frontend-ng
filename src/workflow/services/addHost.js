@@ -12,10 +12,9 @@ import {
 
 import { assets as checkpointAssets } from '../../checkpoint/store'
 import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
-import { domains as checkpointDomains } from '../../checkpoint/store'
 import { domainsError as checkpointDomainsError } from '../../checkpoint/store'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Radio, Select } from 'antd'
+import { Modal, Input, Button, Spin, Table, Space, Radio, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -123,7 +122,6 @@ class AddHost extends React.Component {
 
   cpDomainsGetHandler = async (asset) => {
     try {
-      let cpAssets = JSON.parse(JSON.stringify(this.props.checkpointAssets))
       const domains = await this.cpDomainsGet(asset)
       if (!domains.status ) {
         let doms = JSON.parse(JSON.stringify(this.state.cpDomains))

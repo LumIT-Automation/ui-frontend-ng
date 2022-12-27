@@ -1,7 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
-import { logout } from '../_store/store.authentication'
 
 import { authorizationsError } from '../_store/store.authorizations'
 
@@ -33,7 +32,6 @@ import {
 } from './store'
 
 import { assetsError as checkpointAssetsError } from '../checkpoint/store'
-import { domainsError as checkpointDomainsError } from '../checkpoint/store'
 
 import { Modal, Table, Result } from 'antd';
 

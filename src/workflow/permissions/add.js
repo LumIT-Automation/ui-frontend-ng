@@ -19,7 +19,6 @@ import {
 
 } from '../store'
 
-const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
@@ -285,7 +284,6 @@ class Add extends React.Component {
   jsonSet = async () => {
     let json = JSON.parse(JSON.stringify(this.state.json))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
 
     if (json.details && json.details.checkpoint && json.details.checkpoint.allowed_asset_ids ) {
       request.details = json.details
