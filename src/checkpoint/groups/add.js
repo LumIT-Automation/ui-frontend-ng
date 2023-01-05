@@ -86,10 +86,7 @@ class Add extends React.Component {
     let request = Object.assign({}, this.state.request)
     let b = {}
     b.data = {
-      "address": this.state.request.address,
       "name": this.state.request.name,
-      "session": this.state.request.session,
-      "state": this.state.request.state
     }
 
     this.setState({loading: true})

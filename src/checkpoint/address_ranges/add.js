@@ -44,15 +44,7 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    this.main()
   }
-
-  main = async () => {
-
-  }
-
-
-  //FETCH
 
 
   //SETTERS
@@ -61,23 +53,16 @@ class Add extends React.Component {
     request.name = e.target.value
     this.setState({request: request})
   }
-  addressSet = e => {
+  firstAddressSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.address = e.target.value
+    request.firstAddress = e.target.value
     this.setState({request: request})
   }
-  routeDomainSet = id => {
+  lastAddressSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.routeDomain = id.toString()
+    request.lastAddress = e.target.value
     this.setState({request: request})
   }
-  setStatus = e => {
-    let request = Object.assign({}, this.state.request);
-    request.session = e[0]
-    request.state = e[1]
-    this.setState({request: request})
-  }
-
 
   //VALIDATION
   validationCheck = async () => {
@@ -87,45 +72,28 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      errors.addressColor = 'red'
+    if (!request.firstAddress || !validators.ipv4(request.firstAddress)) {
+      errors.firstAddressError = true
       this.setState({errors: errors})
     }
     else {
-      delete errors.addressError
-      delete errors.addressColor
+      delete errors.firstAddressError
       this.setState({errors: errors})
     }
 
-    if (!request.session) {
-      errors.sessionError = true
-      errors.sessionColor = 'red'
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.sessionError
-      delete errors.sessionColor
+    if (!request.lastAddress || !validators.ipv4(request.lastAddress)) {
+      errors.lastAddressError = true
       this.setState({errors: errors})
     }
-
-    if (!request.state) {
-      errors.stateError = true
-      errors.stateColor = 'red'
-      this.setState({errors: errors})
-      }
     else {
-      delete errors.stateError
-      delete errors.stateColor
+      delete errors.lastAddressError
       this.setState({errors: errors})
     }
     return errors
@@ -145,16 +113,10 @@ class Add extends React.Component {
     let request = Object.assign({}, this.state.request)
     let b = {}
     b.data = {
-      "address": this.state.request.address,
       "name": this.state.request.name,
-      "session": this.state.request.session,
-      "state": this.state.request.state
+      "ipv4-address-first": this.state.request.firstAddress,
+      "ipv4-address-last": this.state.request.lastAddress,
     }
-
-    if(request.routeDomain) {
-      b.data.address = `${this.state.request.address}%${request.routeDomain}`
-    }
-
 
     this.setState({loading: true})
 
@@ -168,7 +130,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/address_ranges/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/address-ranges/`, this.props.token, b)
   }
 
   response = () => {
@@ -194,7 +156,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD NODE</p>}
+          title={<p style={{textAlign: 'center'}}>ADD ADDRESS RANGE</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -207,7 +169,7 @@ class Add extends React.Component {
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
-               title="Host Added"
+               title="Address range added"
              />
           }
           { !this.state.loading && !this.state.response &&
@@ -228,13 +190,13 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First address:</p>
                 </Col>
                 <Col span={16}>
-                  {this.state.errors.addressError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.addressColor}} name="address" id='address' onChange={e => this.addressSet(e)} />
+                  {this.state.errors.firstAddressError ?
+                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.firstAddressSet(e)} />
                   :
-                    <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
+                    <Input defaultValue={this.state.request.firstAddress} style={{width: 250}} name="address" id='name' onChange={e => this.firstAddressSet(e)} />
                   }
                 </Col>
               </Row>
@@ -242,37 +204,22 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Session:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Last address:</p>
                 </Col>
                 <Col span={16}>
-                {this.state.errors.sessionError ?
-                  <Select
-                    style={{width: 250, border: `1px solid ${this.state.errors.sessionColor}`}}
-                    onChange={a => this.setStatus(a)}
-                  >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
-                  </Select>
-                :
-                  <Select
-                    style={{width: 250}}
-                    onChange={a => this.setStatus(a)}
-                  >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
-                  </Select>
-                }
+                  {this.state.errors.lastAddressError ?
+                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.lastAddressSet(e)} />
+                  :
+                    <Input defaultValue={this.state.request.lastAddress} style={{width: 250}} name="address" id='name' onChange={e => this.lastAddressSet(e)} />
+                  }
                 </Col>
               </Row>
               <br/>
 
-
               <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Host
+                    Add Address Range
                   </Button>
                 </Col>
               </Row>
