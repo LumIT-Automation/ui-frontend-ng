@@ -44,6 +44,11 @@ import {
   application_siteAddError,
   application_siteDeleteError,
 
+  application_site_categorysError,
+  application_site_categoryAddError,
+  application_site_categoryDeleteError,
+
+
   hostRemoveError,
 
   historysError,
@@ -176,6 +181,16 @@ class Error extends Component {
           break;
         case 'application_siteDeleteError':
           this.props.dispatch(application_siteDeleteError(null))
+          break;
+
+        case 'application_site_categorysError':
+          this.props.dispatch(application_site_categorysError(null))
+          break;
+        case 'application_site_categoryAddError':
+          this.props.dispatch(application_site_categoryAddError(null))
+          break;
+        case 'application_site_categoryDeleteError':
+          this.props.dispatch(application_site_categoryDeleteError(null))
           break;
 
         case 'hostRemoveError':

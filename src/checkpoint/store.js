@@ -200,6 +200,26 @@ const checkpointSlice = createSlice({
         state.application_siteDeleteError = action.payload
       },
 
+      application_site_categorysLoading: (state, action) => {
+        state.application_site_categorysLoading = action.payload
+      },
+      application_site_categorys: (state, action) => {
+        state.application_site_categorys = action.payload.data.items
+      },
+      application_site_categorysFetch: (state, action) => {
+        state.application_site_categorysFetch = action.payload
+      },
+      application_site_categorysError: (state, action) => {
+        state.application_site_categorysError = action.payload
+      },
+
+      application_site_categoryAddError: (state, action) => {
+        state.application_site_categoryAddError = action.payload
+      },
+      application_site_categoryDeleteError: (state, action) => {
+        state.application_site_categoryDeleteError = action.payload
+      },
+
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
@@ -304,6 +324,13 @@ export const {
   application_sitesError,
   application_siteAddError,
   application_siteDeleteError,
+
+  application_site_categorysLoading,
+  application_site_categorys,
+  application_site_categorysFetch,
+  application_site_categorysError,
+  application_site_categoryAddError,
+  application_site_categoryDeleteError,
 
   hostRemoveError,
 

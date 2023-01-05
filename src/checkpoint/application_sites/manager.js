@@ -10,7 +10,11 @@ import {
   application_sitesLoading,
   application_sites,
   application_sitesFetch,
-  application_sitesError
+  application_sitesError,
+  application_site_categorysLoading,
+  application_site_categorys,
+  application_site_categorysFetch,
+  application_site_categorysError
 } from '../store'
 
 import List from './list'
@@ -32,6 +36,7 @@ class Manager extends React.Component {
         this.props.dispatch(application_sitesFetch(false))
         if (!this.props.application_sites) {
           this.application_sitesGet()
+          this.application_site_categorysGet()
         }
       }
     }
@@ -45,13 +50,16 @@ class Manager extends React.Component {
     if ( (this.props.asset && this.props.domain && !this.props.application_sitesError) ) {
       if (!this.props.application_sites) {
         this.application_sitesGet()
+        this.application_site_categorysGet()
       }
       if (this.props.application_sitesFetch) {
         this.application_sitesGet()
+        this.application_site_categorysGet()
         this.props.dispatch(application_sitesFetch(false))
       }
       if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
         this.application_sitesGet()
+        this.application_site_categorysGet()
       }
     }
   }
@@ -76,6 +84,22 @@ class Manager extends React.Component {
     this.props.dispatch(application_sitesLoading(false))
   }
 
+  application_site_categorysGet = async () => {
+    this.props.dispatch(application_site_categorysLoading(true))
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log(resp)
+        this.props.dispatch(application_site_categorys(resp))
+      },
+      error => {
+        this.props.dispatch(application_site_categorysError(error))
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-site-categories/`, this.props.token)
+    this.props.dispatch(application_site_categorysLoading(false))
+  }
+
 
   render() {
     return (
@@ -96,6 +120,7 @@ class Manager extends React.Component {
 
         <React.Fragment>
           { this.props.application_sitesError ? <Error component={'application_site manager'} error={[this.props.application_sitesError]} visible={true} type={'application_sitesError'} /> : null }
+          { this.props.application_site_categorysError ? <Error component={'application_site_category manager'} error={[this.props.application_site_categorysError]} visible={true} type={'application_site_categorysError'} /> : null }
         </React.Fragment>
       </Space>
     )
@@ -111,5 +136,8 @@ export default connect((state) => ({
 
   application_sites: state.checkpoint.application_sites,
   application_sitesFetch: state.checkpoint.application_sitesFetch,
-  application_sitesError: state.checkpoint.application_sitesError
+  application_sitesError: state.checkpoint.application_sitesError,
+  application_site_categorys: state.checkpoint.application_site_categorys,
+  application_site_categorysFetch: state.checkpoint.application_site_categorysFetch,
+  application_site_categorysError: state.checkpoint.application_site_categorysError,
 }))(Manager);
