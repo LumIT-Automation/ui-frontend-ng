@@ -179,7 +179,6 @@ class Add extends React.Component {
     if (identityGroupId === '' || identityGroupId === undefined) {
       delete errors.IdentityGroupExistsError
       delete errors.newIdentityGroupError
-      delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
       return
     }
@@ -214,7 +213,6 @@ class Add extends React.Component {
 
     if (this.state.newIdentityGroup && this.state.newCn) {
       delete errors.newIdentityGroupError
-      delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
 
       let awaitIdentityGroup = await this.newIdentityGroupAdd(this.state.newIdentityGroup, this.state.newCn)
@@ -223,7 +221,6 @@ class Add extends React.Component {
       if (awaitIdentityGroup.status && awaitIdentityGroup.status !== 201) {
         this.props.dispatch(newIdentityGroupAddError(awaitIdentityGroup))
         errors.newIdentityGroupError = true
-        errors.newIdentityGroupColor = 'red'
         await this.setState({errors: errors})
         return
       }
@@ -241,7 +238,6 @@ class Add extends React.Component {
     }
     else {
       errors.newIdentityGroupError = true
-      errors.newIdentityGroupColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -510,7 +506,7 @@ class Add extends React.Component {
                       <React.Fragment>
                         <Input
                           defaultValue={this.state.newIdentityGroup}
-                          style={{width: 350, borderColor: this.state.errors.newIdentityGroupColor}}
+                          style={{width: 350, borderColor: 'red'}}
                           placeholder="cn= ,cn= ,dc= ,dc= "
                           suffix={
                             <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
