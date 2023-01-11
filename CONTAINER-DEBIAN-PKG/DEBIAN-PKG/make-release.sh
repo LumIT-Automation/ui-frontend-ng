@@ -133,8 +133,7 @@ function System_webpack()
     cd ..
 
     # Remove development notes.
-    cp -afv src/config.js /tmp
-    ls -l /tmp
+    cp -af src/config.js /tmp
     sed -i '/.*DEVELOPMENT/d' src/config.js
     sed -i 's|//AUTH_URL|AUTH_URL|g' src/config.js
     sed -i 's|//SUPERADMIN_URL|SUPERADMIN_URL|g' src/config.js

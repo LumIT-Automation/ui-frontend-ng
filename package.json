@@ -20,7 +20,6 @@
     "redux-thunk": "^2.3.0",
     "victory": "^36.2.0"
   },
-  "devDependencies": {},
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -41,5 +40,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "packageManager": "yarn@3.3.1"
 }
