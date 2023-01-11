@@ -77,6 +77,7 @@ function System_definitions()
     declare -g projectName
     declare -g workingFolder
     declare -g workingFolderPath
+    declare -g srcFolder
 
     if [ -f DEBIAN-PKG/deb.release ]; then
         # Get program version from the release file.
@@ -93,6 +94,7 @@ function System_definitions()
     projectName="automation-interface-ui_${debPackageRelease}_all"
     workingFolder="/tmp"
     workingFolderPath="${workingFolder}/${projectName}"
+    srcFolder=$(cd .. && pwd)
 }
 
 
@@ -113,12 +115,26 @@ function System_cleanup()
 }
 
 
+
+function cleanup_sources()
+{
+    if [ "$1" == "warn" ]; then
+        echo "If the build fails, please try deleting the node_modules folder and recreating the vagrant vm from scratch."
+    fi
+
+    ( cd $srcFolder && mv -f /tmp/config.js src/config.js )
+    echo "Cleanup called."
+}
+
+
+
 function System_webpack()
 {
     cd ..
 
     # Remove development notes.
-    cp -af src/config.js /tmp
+    cp -afv src/config.js /tmp
+    ls -l /tmp
     sed -i '/.*DEVELOPMENT/d' src/config.js
     sed -i 's|//AUTH_URL|AUTH_URL|g' src/config.js
     sed -i 's|//SUPERADMIN_URL|SUPERADMIN_URL|g' src/config.js
@@ -126,15 +142,13 @@ function System_webpack()
 
     echo "** Double check config.js is insisting upon production endpoints **."
 
+    trap 'cleanup_sources warn' ERR # Be sure to clean sources if the build fails.
+    export NODE_OPTIONS=--openssl-legacy-provider
     npm run build
-
-    if [ $? -ne 0 ]; then
-        echo "If the build fails, please try deleting the node_modules folder and recreating the vagrant vm from scratch."
-    fi
+    trap - ERR
 
     # Cleanup.
-    mv -f /tmp/config.js src/config.js
-
+    cleanup_sources
     cd -
 }
 
