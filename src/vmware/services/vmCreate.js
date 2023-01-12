@@ -1187,111 +1187,91 @@ class CreateVmService extends React.Component {
 
     if (!request.vmName) {
       errors.vmNameError = true
-      errors.vmNameColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.vmNameError
-      delete errors.vmNameColor
       await this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
       errors.datacenterError = true
-      errors.datacenterColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.datacenterError
-      delete errors.datacenterColor
       await this.setState({errors: errors})
     }
 
     if (!request.cluster) {
       errors.clusterError = true
-      errors.clusterColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.clusterError
-      delete errors.clusterColor
       await this.setState({errors: errors})
     }
 
     if (!request.vmFolderMoId) {
       errors.vmFolderMoIdError = true
-      errors.vmFolderMoIdColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.vmFolderMoIdError
-      delete errors.vmFolderMoIdColor
       await this.setState({errors: errors})
     }
 
     if (!request.numCpu) {
       errors.numCpuError = true
-      errors.numCpuColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.numCpuError
-      delete errors.numCpuColor
       await this.setState({errors: errors})
     }
 
     if (!request.numCoresPerSocket) {
       errors.numCoresPerSocketError = true
-      errors.numCoresPerSocketColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.numCoresPerSocketError
-      delete errors.numCoresPerSocketColor
       await this.setState({errors: errors})
     }
 
     if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 !== 0)) {
       errors.memoryMBError = true
-      errors.memoryMBColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.memoryMBError
-      delete errors.memoryMBColor
       await this.setState({errors: errors})
     }
 
     if (!request.notes) {
       errors.notesError = true
-      errors.notesColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.notesError
-      delete errors.notesColor
       await this.setState({errors: errors})
     }
 
     if (!cs.csHostname) {
       errors.csHostnameError = true
-      errors.csHostnameColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.csHostnameError
-      delete errors.csHostnameColor
       await this.setState({errors: errors})
     }
 
     if (!cs.csDomain || !validators.fqdn(cs.csDomain)) {
       errors.csDomainError = true
-      errors.csDomainColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.csDomainError
-      delete errors.csDomainColor
       await this.setState({errors: errors})
     }
 
@@ -1301,62 +1281,44 @@ class CreateVmService extends React.Component {
 
         if (address.dhcp) {
           delete address.ipError
-          delete address.ipColor
           delete errors[address.id].ipError
-          delete errors[address.id].ipColor
           delete address.netMaskError
-          delete address.netMaskColor
           delete errors[address.id].netMaskError
-          delete errors[address.id].netMaskColor
           delete address.gwError
-          delete address.gwColor
           delete errors[address.id].gwError
-          delete errors[address.id].gwColor
           this.setState({errors: errors, addresses: addresses})
         }
         else {
           if (!address.ip || !validators.ipv4(address.ip)) {
             address.ipError = true
-            address.ipColor = 'red'
             errors[address.id].ipError = true
-            errors[address.id].ipColor = 'red'
             this.setState({errors: errors, addresses: addresses})
           }
           else {
             delete address.ipError
-            delete address.ipColor
             delete errors[address.id].ipError
-            delete errors[address.id].ipColor
             this.setState({errors: errors, addresses: addresses})
           }
 
           if (!address.netMask || !validators.ipv4(address.netMask)) {
             address.netMaskError = true
-            address.netMaskColor = 'red'
             errors[address.id].netMaskError = true
-            errors[address.id].netMaskColor = 'red'
             this.setState({errors: errors, addresses: addresses})
           }
           else {
             delete address.netMaskError
-            delete address.netMaskColor
             delete errors[address.id].netMaskError
-            delete errors[address.id].netMaskColor
             this.setState({errors: errors, addresses: addresses})
           }
 
           if (!address.gw || !validators.ipv4(address.gw)) {
             address.gwError = true
-            address.gwColor = 'red'
             errors[address.id].gwError = true
-            errors[address.id].gwColor = 'red'
             this.setState({errors: errors, addresses: addresses})
           }
           else {
             delete address.gwError
-            delete address.gwColor
             delete errors[address.id].gwError
-            delete errors[address.id].gwColor
             this.setState({errors: errors, addresses: addresses})
           }
         }
@@ -1374,31 +1336,23 @@ class CreateVmService extends React.Component {
 
         if (networkDevice.deviceType) {
           delete networkDevice.deviceTypeError
-          delete networkDevice.deviceTypeColor
           delete errors[networkDevice.id].deviceTypeError
-          delete errors[networkDevice.id].deviceTypeColor
           this.setState({errors: errors, networkDevices: networkDevices})
         }
         else {
           networkDevice.deviceTypeError = true
-          networkDevice.deviceTypeColor = 'red'
           errors[networkDevice.id].deviceTypeError = true
-          errors[networkDevice.id].deviceTypeColor = 'red'
           this.setState({errors: errors, networkDevices: networkDevices})
         }
 
         if (networkDevice.networkMoId) {
           delete networkDevice.networkMoIdError
-          delete networkDevice.networkMoIdColor
           delete errors[networkDevice.id].networkMoIdError
-          delete errors[networkDevice.id].networkMoIdColor
           this.setState({errors: errors, networkDevices: networkDevices})
         }
         else {
           networkDevice.networkMoIdError = true
-          networkDevice.networkMoIdColor = 'red'
           errors[networkDevice.id].networkMoIdError = true
-          errors[networkDevice.id].networkMoIdColor = 'red'
           this.setState({errors: errors, networkDevices: networkDevices})
         }
 
@@ -1411,23 +1365,19 @@ class CreateVmService extends React.Component {
 
     if (addresses.length !== networkDevices.length) {
       errors.addressesLengthError = true
-      errors.addressesLengthColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.addressesLengthError
-      delete errors.addressesLengthColor
       await this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
       errors.datacenterError = true
-      errors.datacenterColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.datacenterError
-      delete errors.datacenterColor
       await this.setState({errors: errors})
     }
 
@@ -1473,16 +1423,12 @@ class CreateVmService extends React.Component {
 
             if (!diskDevice.u01 || isNaN(diskDevice.u01) || diskDevice.u01 < 0) {
               diskDevice.u01Error = true
-              diskDevice.u01Color = 'red'
               errors[diskDevice.id].u01Error = true
-              errors[diskDevice.id].u01Color = 'red'
               await this.setState({errors: errors, diskDevices: diskDevices})
             }
             else {
               delete diskDevice.u01Error
-              delete diskDevice.u01Color
               delete errors[diskDevice.id].u01Error
-              delete errors[diskDevice.id].u01Color
               await this.setState({errors: errors, diskDevices: diskDevices})
             }
 
@@ -1495,9 +1441,7 @@ class CreateVmService extends React.Component {
 
             try {
               delete diskDevice.u01Error
-              delete diskDevice.u01Color
               delete errors[diskDevice.id].u01Error
-              delete errors[diskDevice.id].u01Color
               await this.setState({errors: errors, diskDevices: diskDevices})
             } catch (error) {
               console.log(error)
@@ -1516,9 +1460,7 @@ class CreateVmService extends React.Component {
         errors[diskDevice.id] = {}
 
         delete diskDevice.u01Error
-        delete diskDevice.u01Color
         delete errors[diskDevice.id].u01Error
-        delete errors[diskDevice.id].u01Color
         await this.setState({errors: errors, diskDevices: diskDevices})
 
         if (Object.keys(errors[diskDevice.id]).length === 0) {
@@ -1530,44 +1472,35 @@ class CreateVmService extends React.Component {
 
     if (!request.mainDatastore) {
       errors.mainDatastoreError = true
-      errors.mainDatastoreColor = 'red'
       await this.setState({errors: errors})
     }
     else {
       delete errors.mainDatastoreError
-      delete errors.mainDatastoreColor
       await this.setState({errors: errors})
     }
 
     if (addresses[0] && !addresses[0].dhcp && !this.state.isMSWindows) {
       if (!this.state.partitioningType) {
         errors.partitioningTypeError = true
-        errors.partitioningTypeColor = 'red'
         await this.setState({errors: errors})
       } else {
         delete errors.partitioningTypeError
-        delete errors.partitioningTypeColor
         await this.setState({errors: errors})
       }
 
       if (!request.bootstrapkey) {
         errors.bootstrapkeyError = true
-        errors.bootstrapkeyColor = 'red'
         await this.setState({errors: errors})
       }
       else {
         delete errors.bootstrapkeyError
-        delete errors.bootstrapkeyColor
         await this.setState({errors: errors})
       }
 
     } else {
       delete errors.partitioningTypeError
-      delete errors.partitioningTypeColor
       delete errors.bootstrapkeyError
-      delete errors.bootstrapkeyColor
       delete errors.finalpubkeyError
-      delete errors.finalpubkeyColor
       await this.setState({errors: errors})
     }
 
@@ -1610,12 +1543,10 @@ class CreateVmService extends React.Component {
     if (cs.dns1) {
       if (!validators.ipv4(cs.dns1)) {
         errors.dns1Error = true
-        errors.dns1Color = 'red'
         this.setState({errors: errors})
       }
       else {
         delete errors.dns1Error
-        delete errors.dns1Color
         this.setState({errors: errors})
         b.data.dns1 = `${this.state.cs.dns1}`
       }
@@ -1624,12 +1555,10 @@ class CreateVmService extends React.Component {
     if (cs.dns2) {
       if (!validators.ipv4(cs.dns2)) {
         errors.dns2Error = true
-        errors.dns2Color = 'red'
         this.setState({errors: errors})
       }
       else {
         delete errors.dns2Error
-        delete errors.dns2Color
         this.setState({errors: errors})
         b.data.dns2 = `${this.state.cs.dns2}`
       }
@@ -2047,7 +1976,7 @@ class CreateVmService extends React.Component {
                   <Select
                     value={obj.networkName}
                     key={obj.id}
-                    style={{ width: '100%' , border: `1px solid ${obj.networkMoIdColor}` }}
+                    style={{ width: '100%' , border: `1px solid red` }}
                     onChange={e => this.networkDeviceNetworkSet(e, obj.id)}>
                     { this.state.networks?
                       this.state.networks.map((n, i) => {
@@ -2096,7 +2025,7 @@ class CreateVmService extends React.Component {
               <Select
                 value={obj.deviceType}
                 key={obj.id}
-                style={{ width: '100%', border: `1px solid ${obj.deviceTypeColor}` }}
+                style={{ width: '100%', border: `1px solid red` }}
                 onChange={e => this.networkDeviceTypeSet(e, obj.id)}>
                 { this.state.networkDeviceTypes.map((n, i) => {
                   return (
@@ -2567,7 +2496,7 @@ class CreateVmService extends React.Component {
             {obj.u01Error ?
               <Input
                 defaultValue={obj.u01}
-                style={{borderColor: obj.u01Color}}
+                style={{borderColor: 'red'}}
                 disabled
               />
             :
@@ -2655,7 +2584,7 @@ class CreateVmService extends React.Component {
                 {obj.ipError ?
                   <Input
                     value={obj.ip}
-                    style={{borderColor: obj.ipColor}}
+                    style={{borderColor: 'red'}}
                     onChange={e => this.ipSet(e, obj.id)}
                   />
                 :
@@ -2685,7 +2614,7 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                     <Input
                       value={obj.netMask}
-                      style={{borderColor: obj.netMaskColor}}
+                      style={{borderColor: 'red'}}
                       onChange={e => this.netMaskSet(e, obj.id)}
                     />
                   </React.Fragment>
@@ -2716,7 +2645,7 @@ class CreateVmService extends React.Component {
                   <React.Fragment>
                     <Input
                       value={obj.gw[0]}
-                      style={{borderColor: obj.gwColor}}
+                      style={{borderColor: 'red'}}
                       onChange={e => this.gwSet(e, obj.id)}
                     />
                   </React.Fragment>
@@ -2834,7 +2763,7 @@ class CreateVmService extends React.Component {
                   <Col span={4}>
                     {this.state.errors.vmNameError ?
                       <Input
-                        style={{width: '100%', borderColor: this.state.errors.vmNameColor}}
+                        style={{width: '100%', borderColor: 'red'}}
                         value={this.state.request.vmName}
                         onChange={e => this.vmNameSet(e.target.value)}
                       />
@@ -2866,7 +2795,7 @@ class CreateVmService extends React.Component {
                               defaultValue={this.state.request.datacenter}
                               value={this.state.request.datacenter}
                               showSearch
-                              style={{width: '100%', border: `1px solid ${this.state.errors.datacenterColor}`}}
+                              style={{width: '100%', border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -2938,7 +2867,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.cluster}
                                   value={this.state.request.cluster}
                                   showSearch
-                                  style={{width: '100%', border: `1px solid ${this.state.errors.clusterColor}`}}
+                                  style={{width: '100%', border: `1px solid red`}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3057,7 +2986,7 @@ class CreateVmService extends React.Component {
                           {this.state.errors.vmFolderMoIdError ?
                             <Tree
                               showLine
-                              style={{color: this.state.errors.vmFolderMoIdColor}}
+                              style={{color: 'red'}}
                               onSelect={this.folderSet}
                               treeData={this.state.folders}
                             />
@@ -3096,7 +3025,7 @@ class CreateVmService extends React.Component {
                                   defaultValue={this.state.request.template}
                                   value={this.state.request.template}
                                   showSearch
-                                  style={{width: '100%', border: `1px solid ${this.state.errors.templateColor}`}}
+                                  style={{width: '100%', border: `1px solid red`}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3168,7 +3097,7 @@ class CreateVmService extends React.Component {
                     <Select
                       defaultValue={this.state.request.numCpu}
                       value={this.state.request.numCpu}
-                      style={{width: '100%', border: `1px solid ${this.state.errors.numCpuColor}`}}
+                      style={{width: '100%', border: `1px solid red`}}
                       onSelect={n => this.numCpuSet(n)}
                     >
                       <React.Fragment>
@@ -3205,7 +3134,7 @@ class CreateVmService extends React.Component {
                     {this.state.errors.numCoresPerSocketError ?
                     <Select
                       value={this.state.request.numCoresPerSocket}
-                      style={{width: '100%', border: `1px solid ${this.state.errors.numCoresPerSocketColor}`}}
+                      style={{width: '100%', border: `1px solid red`}}
                       onSelect={n => this.numCoresPerSocketSet(n)}
                     >
                       <React.Fragment>
@@ -3241,7 +3170,7 @@ class CreateVmService extends React.Component {
                     {this.state.errors.memoryMBError ?
                       <Input
                         value={this.state.request.memoryMB}
-                        style={{width: '100%', borderColor: this.state.errors.memoryMBColor}}
+                        style={{width: '100%', borderColor: 'red'}}
                         onChange={e => this.memoryMBSet(e.target.value)} />
                     :
                       <Input
@@ -3305,7 +3234,7 @@ class CreateVmService extends React.Component {
                           <Select
                             value={this.state.customSpec ? this.state.customSpec.name : null }
                             showSearch
-                            style={{width: '100%', border: `1px solid ${this.state.errors.customSpecColor}`}}
+                            style={{width: '100%', border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3371,7 +3300,7 @@ class CreateVmService extends React.Component {
                       {this.state.errors.csHostnameError ?
                         <Input
                           value={this.state.cs.csHostname}
-                          style={{width: '100%', borderColor: this.state.errors.csHostnameColor}}
+                          style={{width: '100%', borderColor: 'red'}}
                           onChange={e => this.csHostnameSet(e.target.value)} />
                       :
                         <Input
@@ -3388,7 +3317,7 @@ class CreateVmService extends React.Component {
                       {this.state.errors.csDomainError ?
                         <Input
                           value={this.state.cs.csDomain}
-                          style={{width: '100%', borderColor: this.state.errors.csDomainColor}}
+                          style={{width: '100%', borderColor: 'red'}}
                           onChange={e => this.csDomainSet(e)} />
                       :
                         <Input
@@ -3408,7 +3337,7 @@ class CreateVmService extends React.Component {
                       {this.state.errors.dns1Error ?
                         <Input
                           value={this.state.cs.dns1}
-                          style={{width: '100%', borderColor: this.state.errors.dns1Color}}
+                          style={{width: '100%', borderColor: 'red'}}
                           onChange={e => this.csDns1Set(e)} />
                       :
                         <Input
@@ -3425,7 +3354,7 @@ class CreateVmService extends React.Component {
                       {this.state.errors.dns2Error ?
                         <Input
                           value={this.state.cs.dns2}
-                          style={{width: '100%', borderColor: this.state.errors.dns2Color}}
+                          style={{width: '100%', borderColor: 'red'}}
                           onChange={e => this.csDns2Set(e)} />
                       :
                         <Input
@@ -3450,7 +3379,7 @@ class CreateVmService extends React.Component {
                             +
                           </Button>
                           { this.state.errors.addressesLengthError ?
-                            <p style={{marginRight: 10, marginTop: 5, float: 'right', color: this.state.errors.addressesLengthColor}}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right', color: 'red'}}>
                               Addresses' lenght is different from network devices' lenght:
                             </p>
                           :
@@ -3496,7 +3425,7 @@ class CreateVmService extends React.Component {
                             <Select
                               value={this.state.request.mainDatastore}
                               showSearch
-                              style={{width: '100%', border: `1px solid ${this.state.errors.mainDatastoreColor}`}}
+                              style={{width: '100%', border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3597,7 +3526,7 @@ class CreateVmService extends React.Component {
                     <Col span={14}>
                       { this.state.errors.partitioningTypeError ?
                         <Radio.Group
-                          style={{marginLeft: 5, marginTop: 5, border: `1px solid ${this.state.errors.partitioningTypeColor}`}}
+                          style={{marginLeft: 5, marginTop: 5, border: `1px solid red`}}
                           onChange={e => this.partitioningType(e.target.value)}
                           value={this.state.partitioningType}>
                           <Radio value={'default'}>Default</Radio>
@@ -3667,7 +3596,7 @@ class CreateVmService extends React.Component {
                                 defaultValue={this.state.request.bootstrapkey}
                                 value={this.state.request.bootstrapkey}
                                 showSearch
-                                style={{width: '100%', border: `1px solid ${this.state.errors.bootstrapkeyColor}`}}
+                                style={{width: '100%', border: `1px solid red`}}
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
                                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3740,7 +3669,7 @@ class CreateVmService extends React.Component {
                                     defaultValue={this.state.request.finalpubkey}
                                     value={this.state.request.finalpubkey}
                                     showSearch
-                                    style={{width: '100%', border: `1px solid ${this.state.errors.finalpubkeyColor}`}}
+                                    style={{width: '100%', border: `1px solid red`}}
                                     optionFilterProp="children"
                                     filterOption={(input, option) =>
                                       option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -3815,7 +3744,7 @@ class CreateVmService extends React.Component {
                     {this.state.errors.notesError ?
                       <Input.TextArea
                         value={this.state.request.notes}
-                        style={{width: '100%', borderColor: this.state.errors.notesColor}}
+                        style={{width: '100%', borderColor: 'red'}}
                         onChange={e => this.notesSet(e)}
                       />
                     :
