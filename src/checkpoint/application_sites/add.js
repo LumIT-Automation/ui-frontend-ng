@@ -25,9 +25,7 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {
-        urlList: ["www.firsturl.com", "www.secondurl.com", "www.etc.com"]
-      }
+      request: {}
     };
   }
 
@@ -65,10 +63,23 @@ class Add extends React.Component {
     request.application_site_category = v
     this.setState({request: request})
   }
-  urlListSet = e => {
+  urlListSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.urlList = e.target.value
-    this.setState({request: request})
+    let l, list
+    try {
+      l = e.target.value.split(',')
+      list = []
+
+      l.forEach((item, i) => {
+        list.push(item.trim())
+      });
+
+      request.urlList = list
+    } catch (error) {
+      console.log(error)
+    }
+
+    await this.setState({request: request})
   }
 
 
@@ -108,8 +119,21 @@ class Add extends React.Component {
       this.setState({errors: errors})
     }
     else {
-      delete errors.urlListError
-      this.setState({errors: errors})
+      let e = 0
+      request.urlList.forEach((item, i) => {
+        if (!validators.fqdn(item)) {
+          e++
+        }
+      });
+
+      if (e){
+        errors.urlListError = true
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.urlListError
+        this.setState({errors: errors})
+      }
     }
 
     return errors
@@ -275,7 +299,7 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Url list:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Url list (valid fqdn comma separated):</p>
                 </Col>
                 <Col span={16}>
                 {this.state.errors.urlListError ?
