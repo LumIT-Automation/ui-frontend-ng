@@ -144,12 +144,10 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
@@ -159,16 +157,12 @@ class Add extends React.Component {
 
         if (!member.ip || !validators.ipv4(member.ip)) {
           member.ipError = true
-          member.ipColor = 'red'
           errors[member.id].ipError = true
-          errors[member.id].ipColor = 'red'
           this.setState({errors: errors, members: members})
         }
         else {
           delete member.ipError
-          delete member.ipColor
           delete errors[member.id].ipError
-          delete errors[member.id].ipColor
           this.setState({errors: errors, members: members})
         }
 
@@ -277,7 +271,7 @@ class Add extends React.Component {
             {obj.ipError ?
               <Input
                 value={obj.ip}
-                style={{borderColor: obj.ipColor}}
+                style={{borderColor: 'red'}}
                 onChange={e => this.ipSet(e, obj.id)}
               />
             :
@@ -376,7 +370,7 @@ class Add extends React.Component {
                   {this.state.errors.nameError ?
                     <Input
                       value= {this.state.request.name}
-                      style={{width: 250, borderColor: this.state.errors.nameColor}}
+                      style={{width: 250, borderColor: 'red'}}
                       onChange={e => this.nameSet(e)} />
                   :
                     <Input

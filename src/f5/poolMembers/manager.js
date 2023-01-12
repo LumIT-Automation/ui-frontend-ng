@@ -56,6 +56,7 @@ class PoolDetails extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    console.log(this.props.obj)
     this.main(this.props.obj)
   }
 

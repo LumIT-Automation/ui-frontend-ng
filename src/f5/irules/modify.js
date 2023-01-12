@@ -66,12 +66,10 @@ class Modify extends React.Component {
 
     if (!request.text) {
       errors.textError = true
-      errors.textColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.textError
-      delete errors.textColor
       this.setState({errors: errors})
     }
 
@@ -157,7 +155,7 @@ class Modify extends React.Component {
                 </Col>
                 <Col span={10}>
                   {this.state.errors.textError ?
-                    <TextArea rows={25} style={{borderColor: this.state.errors.textColor}} value={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
+                    <TextArea rows={25} style={{borderColor: 'red'}} value={this.state.request.text} name="text" id='text' onChange={e => this.setText(e)} />
                   :
                     <TextArea rows={25} value={this.state.request.text} name="text" id='name' onChange={e => this.setText(e)} />
                   }

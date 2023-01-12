@@ -75,23 +75,19 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
     if (!request.code) {
       errors.codeError = true
-      errors.codeColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.codeError
-      delete errors.codeColor
       this.setState({errors: errors})
     }
 
@@ -177,7 +173,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.nameSet(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   :
                     <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
                   }
@@ -195,7 +191,7 @@ class Add extends React.Component {
                       rows={25}
                       defaultValue={this.state.request.code}
                       value={this.state.request.code}
-                      style={{borderColor: this.state.errors.codeColor}}
+                      style={{borderColor: 'red'}}
                       name="code"
                       id='code'
                       onChange={e => this.codeSet(e)}

@@ -73,23 +73,19 @@ class Modify extends React.Component {
 
     if (!request.loadBalancingMode) {
       errors.loadBalancingModeError = true
-      errors.loadBalancingModeColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.loadBalancingModeError
-      delete errors.loadBalancingModeColor
       this.setState({errors: errors})
     }
 
     if (!request.monitor) {
       errors.monitorError = true
-      errors.monitorColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.monitorError
-      delete errors.monitorColor
       this.setState({errors: errors})
     }
     return errors
@@ -181,7 +177,7 @@ class Modify extends React.Component {
                           <Select
                             value={this.state.request.loadBalancingMode}
                             showSearch
-                            style={{width: 250, border: `1px solid ${this.state.errors.loadBalancingModeColor}`}}
+                            style={{width: 250, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -248,7 +244,7 @@ class Modify extends React.Component {
                             <Select
                               value={this.state.request.monitor}
                               showSearch
-                              style={{width: 250, border: `1px solid ${this.state.errors.monitorColor}`}}
+                              style={{width: 250, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

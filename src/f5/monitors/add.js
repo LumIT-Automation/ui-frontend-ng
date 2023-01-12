@@ -81,45 +81,37 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
     if (!request.monitorType) {
       errors.monitorTypeError = true
-      errors.monitorTypeColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.monitorTypeError
-      delete errors.monitorTypeColor
       this.setState({errors: errors})
     }
 
     if (!request.interval || !Number.isInteger(request.interval)) {
       errors.intervalError = true
-      errors.intervalColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.intervalError
-      delete errors.intervalColor
       this.setState({errors: errors})
     }
 
     if (!request.timeout || !Number.isInteger(request.timeout)) {
       errors.timeoutError = true
-      errors.timeoutColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.timeoutError
-      delete errors.timeoutColor
       this.setState({errors: errors})
     }
 
@@ -207,7 +199,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.setName(e)} />
                   :
                     <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
                   }
@@ -230,7 +222,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.monitorType}
                               showSearch
-                              style={{width: 250, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
+                              style={{width: 250, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -289,7 +281,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.intervalError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.intervalColor}} name="interval" id='interval' onChange={e => this.setInterval(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="interval" id='interval' onChange={e => this.setInterval(e)} />
                   :
                     <Input defaultValue={this.state.request.interval} style={{width: 250}} name="interval" id='name' onChange={e => this.setInterval(e)} />
                   }
@@ -303,7 +295,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.timeoutError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.timeoutColor}} name="timeout" id='timeout' onChange={e => this.setTimeout(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="timeout" id='timeout' onChange={e => this.setTimeout(e)} />
                   :
                     <Input defaultValue={this.state.request.timeout} style={{width: 250}} name="timeout" id='name' onChange={e => this.setTimeout(e)} />
                   }

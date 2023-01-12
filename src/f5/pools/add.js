@@ -75,34 +75,28 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
     if (!request.lbMethod) {
       errors.lbMethodError = true
-      errors.lbMethodColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.lbMethodError
-      delete errors.lbMethodColor
       this.setState({errors: errors})
     }
 
     if (!request.monitor) {
       errors.monitorError = true
-      errors.monitorColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.monitorError
-      delete errors.monitorColor
       this.setState({errors: errors})
     }
     return errors
@@ -185,7 +179,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.setName(e)} />
                   :
                     <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
                   }
@@ -205,7 +199,7 @@ class Add extends React.Component {
                           <Select
                             value={this.state.request.lbMethod}
                             showSearch
-                            style={{width: 250, border: `1px solid ${this.state.errors.lbMethodColor}`}}
+                            style={{width: 250, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -272,7 +266,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.monitor}
                               showSearch
-                              style={{width: 250, border: `1px solid ${this.state.errors.monitorColor}`}}
+                              style={{width: 250, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

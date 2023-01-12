@@ -100,23 +100,19 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      errors.nameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      delete errors.nameColor
       this.setState({errors: errors})
     }
 
     if (!request.profileType) {
       errors.profileTypeError = true
-      errors.profileTypeColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.profileTypeError
-      delete errors.profileTypeColor
       this.setState({errors: errors})
     }
     return errors
@@ -201,7 +197,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.nameColor}} name="name" id='name' onChange={e => this.setName(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.setName(e)} />
                   :
                     <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.setName(e)} />
                   }
@@ -224,7 +220,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.profile}
                               showSearch
-                              style={{width: 250, border: `1px solid ${this.state.errors.profileColor}`}}
+                              style={{width: 250, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

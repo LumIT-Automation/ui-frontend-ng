@@ -87,12 +87,10 @@ class DeleteF5Service extends React.Component {
 
     if (!request.serviceName) {
       errors.serviceNameError = true
-      errors.serviceNameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.serviceNameError
-      delete errors.serviceNameColor
       this.setState({errors: errors})
     }
     return errors
@@ -188,7 +186,7 @@ class DeleteF5Service extends React.Component {
                                   defaultValue={this.state.request.serviceName}
                                   value={this.state.request.serviceName}
                                   showSearch
-                                  style={{width: 450, border: `1px solid ${this.state.errors.serviceNameColor}`}}
+                                  style={{width: 450, border: `1px solid red`}}
                                   optionFilterProp="children"
                                   filterOption={(input, option) =>
                                     option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

@@ -72,23 +72,19 @@ class Modify extends React.Component {
 
     if (!request.interval || !Number.isInteger(request.interval)) {
       errors.intervalError = true
-      errors.intervalColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.intervalError
-      delete errors.intervalColor
       this.setState({errors: errors})
     }
 
     if (!request.timeout || !Number.isInteger(request.timeout)) {
       errors.timeoutError = true
-      errors.timeoutColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.timeoutError
-      delete errors.timeoutColor
       this.setState({errors: errors})
     }
 
@@ -178,7 +174,7 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.intervalError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.intervalColor}} name="interval" id='interval' onChange={e => this.setInterval(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="interval" id='interval' onChange={e => this.setInterval(e)} />
                 :
                   <Input defaultValue={this.state.request.interval} style={{width: 250}} name="interval" id='name' onChange={e => this.setInterval(e)} />
                 }
@@ -192,7 +188,7 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.timeoutError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.timeoutColor}} name="timeout" id='timeout' onChange={e => this.setTimeout(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="timeout" id='timeout' onChange={e => this.setTimeout(e)} />
                 :
                   <Input defaultValue={this.state.request.timeout} style={{width: 250}} name="timeout" id='name' onChange={e => this.setTimeout(e)} />
                 }

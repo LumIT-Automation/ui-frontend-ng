@@ -322,35 +322,29 @@ class CreateF5Service extends React.Component {
 
     if (!request.serviceName) {
       errors.serviceNameError = true
-      errors.serviceNameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.serviceNameError
-      delete errors.serviceNameColor
       this.setState({errors: errors})
     }
 
     if (!request.snat) {
       errors.snatError = true
-      errors.snatColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.snatError
-      delete errors.snatColor
       this.setState({errors: errors})
     }
 
     if (request.snat && request.snat === 'snat') {
       if (!request.snatPoolAddress || !validators.ipv4(request.snatPoolAddress)) {
         errors.snatPoolAddressError = true
-        errors.snatPoolAddressColor = 'red'
         this.setState({errors: errors})
       }
       else {
         delete errors.snatPoolAddressError
-        delete errors.snatPoolAddressColor
         this.setState({errors: errors})
       }
 
@@ -381,23 +375,19 @@ class CreateF5Service extends React.Component {
       if (this.state.dgChoices && this.state.dgChoices.length > 0) {
         if (!this.state.dgName) {
           errors.dgNameError = true
-          errors.dgNameColor = 'red'
           this.setState({errors: errors})
         }
         else {
           delete errors.dgNameError
-          delete errors.dgNameColor
           this.setState({errors: errors})
         }
 
         if (!this.state.request.code){
           errors.codeError = true
-          errors.codeColor = 'red'
           this.setState({errors: errors})
         }
         else {
           delete errors.codeError
-          delete errors.codeColor
           this.setState({errors: errors})
         }
       }
@@ -406,67 +396,55 @@ class CreateF5Service extends React.Component {
 
     if (!request.destination || !validators.ipv4(request.destination)) {
       errors.destinationError = true
-      errors.destinationColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.destinationError
-      delete errors.destinationColor
       this.setState({errors: errors})
     }
 
     if (!request.destinationPort || !validators.port(request.destinationPort)) {
       errors.destinationPortError = true
-      errors.destinationPortColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.destinationPortError
-      delete errors.destinationPortColor
       this.setState({errors: errors})
     }
 
     if (!request.lbMethod) {
       errors.lbMethodError = true
-      errors.lbMethodColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.lbMethodError
-      delete errors.lbMethodColor
       this.setState({errors: errors})
     }
 
     if (!request.monitorType) {
       errors.monitorTypeError = true
-      errors.monitorTypeColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.monitorTypeError
-      delete errors.monitorTypeColor
       this.setState({errors: errors})
     }
 
     if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorSendString) {
       errors.monitorSendStringError = true
-      errors.monitorSendStringColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.monitorSendStringError
-      delete errors.monitorSendStringColor
       this.setState({errors: errors})
     }
 
     if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorReceiveString) {
       errors.monitorReceiveStringError = true
-      errors.monitorReceiveStringColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.monitorReceiveStringError
-      delete errors.monitorReceiveStringColor
       this.setState({errors: errors})
     }
 
@@ -476,34 +454,28 @@ class CreateF5Service extends React.Component {
 
         if (node.address && validators.ipv4(node.address)) {
           delete errors[node.id].addressError
-          delete errors[node.id].addressColor
           this.setState({errors: errors})
         }
         else {
           errors[node.id].addressError = true
-          errors[node.id].addressColor = 'red'
           this.setState({errors: errors})
         }
 
         if (!node.name) {
           errors[node.id].nameError = true
-          errors[node.id].nameColor = 'red'
           this.setState({errors: errors})
         }
         else {
           delete errors[node.id].nameError
-          delete errors[node.id].nameColor
           this.setState({errors: errors})
         }
 
         if (node.port && validators.port(node.port) ) {
           delete errors[node.id].portError
-          delete errors[node.id].portColor
           this.setState({errors: errors})
         }
         else {
           errors[node.id].portError = true
-          errors[node.id].portColor = 'red'
           this.setState({errors: errors})
         }
         if (Object.keys(errors[node.id]).length === 0) {
@@ -655,7 +627,7 @@ class CreateF5Service extends React.Component {
                   </Col>
                   <Col span={16}>
                     {this.state.errors.serviceNameError ?
-                      <Input style={{width: 450, borderColor: this.state.errors.serviceNameColor}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
+                      <Input style={{width: 450, borderColor: 'red'}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
                     :
                       <Input defaultValue={this.state.request.serviceName} style={{width: 450}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
                     }
@@ -718,7 +690,7 @@ class CreateF5Service extends React.Component {
                           defaultValue={this.state.request.snat}
                           value={this.state.request.snat}
                           showSearch
-                          style={{width: 450, border: `1px solid ${this.state.errors.snatColor}`}}
+                          style={{width: 450, border: `1px solid red`}}
                           optionFilterProp="children"
                           filterOption={(input, option) =>
                             option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -771,7 +743,7 @@ class CreateF5Service extends React.Component {
                         <React.Fragment>
                           {this.state.errors.snatPoolAddressError ?
                             <Input
-                              style={{width: '100%', borderColor: this.state.errors.snatPoolAddressColor}}
+                              style={{width: '100%', borderColor: 'red'}}
                               value={this.state.request.snatPoolAddress}
                               onChange={e => this.snatPoolAddressSet(e)}
                             />
@@ -805,7 +777,7 @@ class CreateF5Service extends React.Component {
                           <Select
                             value={this.state.dgName}
                             showSearch
-                            style={{width: '100%', border: `1px solid ${this.state.errors.dgNameColor}`}}
+                            style={{width: '100%', border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -866,7 +838,7 @@ class CreateF5Service extends React.Component {
                           <TextArea
                             rows={5}
                             value={this.state.request.code}
-                            style={{width: '100%', border: `1px solid ${this.state.errors.codeColor}`}}
+                            style={{width: '100%', border: `1px solid red`}}
                             name="code"
                             id='code'
                             onChange={e => this.codeSet(e)}
@@ -967,7 +939,7 @@ class CreateF5Service extends React.Component {
                               defaultValue={this.state.request.lbMethod}
                               value={this.state.request.lbMethod}
                               showSearch
-                              style={{width: 450, border: `1px solid ${this.state.errors.lbMethodColor}`}}
+                              style={{width: 450, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1037,7 +1009,7 @@ class CreateF5Service extends React.Component {
                                 defaultValue={this.state.request.monitorType}
                                 value={this.state.request.monitorType}
                                 showSearch
-                                style={{width: 450, border: `1px solid ${this.state.errors.monitorTypeColor}`}}
+                                style={{width: 450, border: `1px solid red`}}
                                 optionFilterProp="children"
                                 filterOption={(input, option) =>
                                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1099,7 +1071,7 @@ class CreateF5Service extends React.Component {
                       </Col>
                       <Col span={16}>
                       {this.state.errors.monitorSendStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorSendStringColor }} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
+                        <Input.TextArea style={{width: 450, borderColor: 'red' }} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
                       :
                         <Input.TextArea defaultValue={this.state.request.monitorSendString} style={{width: 450}} name="monitorSendString" id='monitorSendString' onChange={e => this.monitorSendStringSet(e)} />
                       }
@@ -1112,7 +1084,7 @@ class CreateF5Service extends React.Component {
                       </Col>
                       <Col span={16}>
                       {this.state.errors.monitorReceiveStringError ?
-                        <Input.TextArea style={{width: 450, borderColor: this.state.errors.monitorReceiveStringColor}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
+                        <Input.TextArea style={{width: 450, borderColor: 'red'}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
                       :
                         <Input.TextArea defaultValue={this.state.request.monitorReceiveString} style={{width: 450}} name="monitorReceiveString" id='monitorReceiveString' onChange={e => this.monitorReceiveStringSet(e)} />
                       }
@@ -1151,7 +1123,7 @@ class CreateF5Service extends React.Component {
                             <Input
                               key={i}
                               defaultValue={n.address}
-                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].addressColor}}
+                              style={{display: 'block', width: 450, borderColor: 'red'}}
                               onChange={e => this.nodeAddressSet(n.id, e)}
                             />
                           :
@@ -1174,7 +1146,7 @@ class CreateF5Service extends React.Component {
                             <Input
                               key={i}
                               defaultValue={n.name}
-                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].nameColor}}
+                              style={{display: 'block', width: 450, borderColor: 'red'}}
                               onChange={e => this.nodeNameSet(n.id, e)}
                             />
                           :
@@ -1197,7 +1169,7 @@ class CreateF5Service extends React.Component {
                             <Input
                               key={i}
                               defaultValue={n.port}
-                              style={{display: 'block', width: 450, borderColor: this.state.errors[n.id].portColor}}
+                              style={{display: 'block', width: 450, borderColor: 'red'}}
                               onChange={e => this.nodePortSet(n.id, e)}
                             />
                           :

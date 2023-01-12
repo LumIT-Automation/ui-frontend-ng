@@ -159,7 +159,6 @@ class Add extends React.Component {
     if (identityGroupId === '' || identityGroupId === undefined) {
       delete errors.IdentityGroupExistsError
       delete errors.newIdentityGroupError
-      delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
       return
     }
@@ -194,7 +193,6 @@ class Add extends React.Component {
 
     if (this.state.newIdentityGroup && this.state.newCn) {
       delete errors.newIdentityGroupError
-      delete errors.newIdentityGroupColor
       await this.setState({errors: errors})
 
       let awaitIdentityGroup = await this.newIdentityGroupAdd(this.state.newIdentityGroup, this.state.newCn)
@@ -203,7 +201,6 @@ class Add extends React.Component {
       if (awaitIdentityGroup.status && awaitIdentityGroup.status !== 201) {
         this.props.dispatch(newIdentityGroupAddError(awaitIdentityGroup))
         errors.newIdentityGroupError = true
-        errors.newIdentityGroupColor = 'red'
         await this.setState({errors: errors})
         return
       }
@@ -221,7 +218,6 @@ class Add extends React.Component {
     }
     else {
       errors.newIdentityGroupError = true
-      errors.newIdentityGroupColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -253,45 +249,37 @@ class Add extends React.Component {
 
     if (!request.identityGroupId) {
       errors.identityGroupIdError = true
-      errors.identityGroupIdColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.identityGroupIdError
-      delete errors.identityGroupIdColor
       this.setState({errors: errors})
     }
 
     if (!request.assetId) {
       errors.assetError = true
-      errors.assetColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.assetError
-      delete errors.assetColor
       this.setState({errors: errors})
     }
 
     if (!request.role) {
       errors.roleError = true
-      errors.roleColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.roleError
-      delete errors.roleColor
       this.setState({errors: errors})
     }
 
     if (!request.partition) {
       errors.partitionError = true
-      errors.partitionColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.partitionError
-      delete errors.partitionColor
       this.setState({errors: errors})
     }
 
@@ -409,7 +397,7 @@ class Add extends React.Component {
                           <Select
                             value={this.state.request.identityGroupId}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.identityGroupIdColor}`}}
+                            style={{width: 350, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -475,7 +463,7 @@ class Add extends React.Component {
                       <React.Fragment>
                         <Input
                           defaultValue={this.state.newIdentityGroup}
-                          style={{width: 350, borderColor: this.state.errors.newIdentityGroupColor}}
+                          style={{width: 350, borderColor: 'red'}}
                           placeholder="cn= ,cn= ,dc= ,dc= "
                           suffix={
                             <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
@@ -525,7 +513,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.role}
                               showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              style={{width: 350, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -593,7 +581,7 @@ class Add extends React.Component {
                           <Select
                             value={this.state.request ? this.state.request.assetId : null}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
+                            style={{width: 350, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -661,7 +649,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request && this.state.request.partition ? this.state.request.partition.name : null}
                               showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.partitionColor}`}}
+                              style={{width: 350, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

@@ -163,16 +163,12 @@ class Modify extends React.Component {
 
         if (!member.ip || !validators.ipv4(member.ip)) {
           member.ipError = true
-          member.ipColor = 'red'
           errors[member.id].ipError = true
-          errors[member.id].ipColor = 'red'
           this.setState({errors: errors, members: members})
         }
         else {
           delete member.ipError
-          delete member.ipColor
           delete errors[member.id].ipError
-          delete errors[member.id].ipColor
           this.setState({errors: errors, members: members})
         }
 
@@ -277,7 +273,7 @@ class Modify extends React.Component {
             {obj.ipError ?
               <Input
                 value={obj.ip}
-                style={{borderColor: obj.ipColor}}
+                style={{borderColor: 'red'}}
                 onChange={e => this.ipSet(e, obj.id)}
               />
             :

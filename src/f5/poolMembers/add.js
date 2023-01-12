@@ -115,23 +115,19 @@ class Add extends React.Component {
 
     if (!request.poolMember) {
       errors.poolMemberError = true
-      errors.poolMemberColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.poolMemberError
-      delete errors.poolMemberColor
       this.setState({errors: errors})
     }
 
     if (!request.port || !validators.port(request.port)) {
       errors.portError = true
-      errors.portColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.portError
-      delete errors.portColor
       this.setState({errors: errors})
     }
 
@@ -239,7 +235,7 @@ class Add extends React.Component {
                             <Select
                               value={this.state.request.poolMember}
                               showSearch
-                              style={{width: 250, border: `1px solid ${this.state.errors.poolMemberColor}`}}
+                              style={{width: 250, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -298,7 +294,7 @@ class Add extends React.Component {
                 </Col>
                 <Col span={16}>
                   {this.state.errors.portError ?
-                    <Input style={{width: 250, borderColor: this.state.errors.portColor}} name="port" id='port' onChange={e => this.portSet(e)} />
+                    <Input style={{width: 250, borderColor: 'red'}} name="port" id='port' onChange={e => this.portSet(e)} />
                   :
                     <Input defaultValue={this.state.request.port} style={{width: 250}} name="port" id='port' onChange={e => this.portSet(e)} />
                   }
