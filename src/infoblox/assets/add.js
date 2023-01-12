@@ -104,89 +104,73 @@ class Add extends React.Component {
 
     if (!request.address || !validators.ipv4(request.address)) {
       errors.addressError = true
-      errors.addressColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.addressError
-      delete errors.addressColor
       this.setState({errors: errors})
     }
 
     if (!request.fqdn || !validators.fqdn(request.fqdn)) {
       errors.fqdnError = true
-      errors.fqdnColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.fqdnError
-      delete errors.fqdnColor
       this.setState({errors: errors})
     }
 
     if (!request.datacenter) {
       errors.datacenterError = true
-      errors.datacenterColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.datacenterError
-      delete errors.datacenterColor
       this.setState({errors: errors})
     }
 
     if (!request.environment) {
       errors.environmentError = true
-      errors.environmentColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.environmentError
-      delete errors.environmentColor
       this.setState({errors: errors})
     }
 
     if (!request.position) {
       errors.positionError = true
-      errors.positionColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.positionError
-      delete errors.positionColor
       this.setState({errors: errors})
     }
 
     if (!request.tlsverify) {
       errors.tlsverifyError = true
-      errors.tlsverifyColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.tlsverifyError
-      delete errors.tlsverifyColor
       this.setState({errors: errors})
     }
 
     if (!request.username) {
       errors.usernameError = true
-      errors.usernameColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.usernameError
-      delete errors.usernameColor
       this.setState({errors: errors})
     }
 
     if (!request.password) {
       errors.passwordError = true
-      errors.passwordColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.passwordError
-      delete errors.passwordColor
       this.setState({errors: errors})
     }
 
@@ -279,7 +263,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.addressError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.addressColor}} name="address" id='address' onChange={e => this.addressSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.addressSet(e)} />
                 :
                   <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
                 }
@@ -293,7 +277,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.fqdnError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.fqdnColor}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
                 :
                   <Input defaultValue={this.state.request.fqdn} style={{width: 250}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
                 }
@@ -307,7 +291,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.datacenterError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.datacenterColor}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
                 :
                   <Input defaultValue={this.state.request.datacenter} style={{width: 250}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
                 }
@@ -321,7 +305,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.environmentError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.environmentColor}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
                 :
                   <Input defaultValue={this.state.request.environment} style={{width: 250}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
                 }
@@ -335,7 +319,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.positionError ?
-                  <Input style={{width: 250, borderColor: this.state.errors.positionColor}} name="position" id='position' onChange={e => this.positionSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} name="position" id='position' onChange={e => this.positionSet(e)} />
                 :
                   <Input defaultValue={this.state.request.position} style={{width: 250}} name="position" id='position' onChange={e => this.positionSet(e)} />
                 }
@@ -349,7 +333,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
-                  <Radio.Group style={{marginTop: 5, backgroundColor: this.state.errors.tlsverifyColor}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5, backgroundColor: 'red'}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
@@ -370,7 +354,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.usernameError ?
-                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: this.state.errors.usernameColor}} name="username" id='username' onChange={e => this.usernameSet(e)} />
+                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: 'red'}} name="username" id='username' onChange={e => this.usernameSet(e)} />
                 :
                   <Input suffix={<UserOutlined className="site-form-item-icon" />} defaultValue={this.state.request.username} style={{width: 250}} name="username" id='username' onChange={e => this.usernameSet(e)} />
                 }
@@ -384,7 +368,7 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.passwordError ?
-                  <Input.Password style={{width: 250, borderColor: this.state.errors.passwordColor}} name="password" id='password' onChange={e => this.passwordSet(e)} />
+                  <Input.Password style={{width: 250, borderColor: 'red'}} name="password" id='password' onChange={e => this.passwordSet(e)} />
                 :
                   <Input.Password defaultValue={this.state.request.password} style={{width: 250}} name="password" id='password' onChange={e => this.passwordSet(e)} />
                 }

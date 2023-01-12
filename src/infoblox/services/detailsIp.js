@@ -58,12 +58,10 @@ class DetailsIp extends React.Component {
 
     if (validators.ipv4(this.state.ip)) {
       delete errors.ipError
-      delete errors.ipColor
       this.setState({errors: errors}, () => this.ipDetail())
     }
     else {
       errors.ipError = 'Please input a valid ip'
-      errors.ipColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -185,11 +183,11 @@ class DetailsIp extends React.Component {
                         <React.Fragment>
                           <Input
                             defaultValue={this.state.ip}
-                            style={{width: 450, borderColor: this.state.errors.ipColor}}
+                            style={{width: 450, borderColor: 'red'}}
                             name="ip"
                             id='ip'
                             onChange={e => this.setIp(e)}
-                            onPressEnter={() => this.validateIp()} 
+                            onPressEnter={() => this.validateIp()}
                           />
                         </React.Fragment>
                       :

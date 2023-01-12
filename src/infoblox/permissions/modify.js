@@ -224,45 +224,37 @@ class Modify extends React.Component {
 
     if (!request.identityGroupId) {
       errors.identityGroupIdError = true
-      errors.identityGroupIdColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.identityGroupIdError
-      delete errors.identityGroupIdColor
       this.setState({errors: errors})
     }
 
     if (!request.assetId) {
       errors.assetError = true
-      errors.assetColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.assetError
-      delete errors.assetColor
       this.setState({errors: errors})
     }
 
     if (!request.role) {
       errors.roleError = true
-      errors.roleColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.roleError
-      delete errors.roleColor
       this.setState({errors: errors})
     }
 
     if (!request.network) {
       errors.networkError = true
-      errors.networkColor = 'red'
       this.setState({errors: errors})
       }
     else {
       delete errors.networkError
-      delete errors.networkColor
       this.setState({errors: errors})
     }
 
@@ -359,7 +351,7 @@ class Modify extends React.Component {
                           <Select
                             value={this.state.request.identityGroupId}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.identityGroupIdColor}`}}
+                            style={{width: 350, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -426,7 +418,7 @@ class Modify extends React.Component {
                             <Select
                               value={this.state.request.role}
                               showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.roleColor}`}}
+                              style={{width: 350, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -494,7 +486,7 @@ class Modify extends React.Component {
                           <Select
                             value={this.state.request.assetId}
                             showSearch
-                            style={{width: 350, border: `1px solid ${this.state.errors.assetColor}`}}
+                            style={{width: 350, border: `1px solid red`}}
                             optionFilterProp="children"
                             filterOption={(input, option) =>
                               option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -562,7 +554,7 @@ class Modify extends React.Component {
                             <Select
                               value={this.state.request && this.state.request.network ? this.state.request.network.name : null}
                               showSearch
-                              style={{width: 350, border: `1px solid ${this.state.errors.networkColor}`}}
+                              style={{width: 350, border: `1px solid red`}}
                               optionFilterProp="children"
                               filterOption={(input, option) =>
                                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0

@@ -64,12 +64,10 @@ class ModifyIp extends React.Component {
 
     if (validators.ipv4(this.state.request.ip)) {
       delete errors.ipError
-      delete errors.ipColor
       this.setState({errors: errors}, () => this.ipGet())
     }
     else {
       errors.ipError = 'Please input a valid ip'
-      errors.ipColor = 'red'
       this.setState({errors: errors})
     }
   }
@@ -122,23 +120,19 @@ class ModifyIp extends React.Component {
 
     if (!request.serverName) {
       errors.serverNameError = true
-      errors.serverNameColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.serverNameError
-      delete errors.serverNameColor
       this.setState({errors: errors})
     }
 
     if (!validators.macAddress(request.macAddress)) {
       errors.macAddressError = true
-      errors.macAddressColor = 'red'
       this.setState({errors: errors})
     }
     else {
       delete errors.macAddressError
-      delete errors.macAddressColor
       this.setState({errors: errors})
     }
   }
@@ -224,7 +218,7 @@ class ModifyIp extends React.Component {
                 {this.state.errors.serverNameError ?
                   <Input
                     id='nameServer'
-                    style={{borderColor: this.state.errors.serverNameColor}}
+                    style={{borderColor: 'red'}}
                     defaultValue={obj.extattrs['Name Server'].value}
                     onChange={e => this.serverNameSet(e)}
                   />
@@ -252,7 +246,7 @@ class ModifyIp extends React.Component {
             {this.state.errors.macAddressError ?
               <Input
                 id='macAddress'
-                style={{borderColor: this.state.errors.macAddressColor}}
+                style={{borderColor: 'red'}}
                 defaultValue={obj.mac_address}
                 onChange={e => this.setMacAddress(e)}
               />
@@ -333,7 +327,7 @@ class ModifyIp extends React.Component {
                       {this.state.errors.ipError ?
                         <Input
                           value={this.state.request.ip}
-                          style={{width: 450, borderColor: this.state.errors.ipColor}}
+                          style={{width: 450, borderColor: 'red'}}
                           name="ip"
                           id='ip'
                           onChange={e => this.setIp(e)}
