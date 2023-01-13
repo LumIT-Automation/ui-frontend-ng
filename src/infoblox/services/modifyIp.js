@@ -79,8 +79,8 @@ class ModifyIp extends React.Component {
       resp => {
         let request = JSON.parse(JSON.stringify(resp.data))
         request.ip = this.state.request.ip
-        if (request.extattrs && request.extattrs.['Name Server']) {
-          request.serverName = request.extattrs.['Name Server'].value
+        if (request.extattrs && request.extattrs['Name Server']) {
+          request.serverName = request.extattrs['Name Server'].value
         }
         request.macAddress = request.mac_address
         this.setState({request: request, details: true})

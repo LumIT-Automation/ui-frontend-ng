@@ -115,39 +115,13 @@ function System_cleanup()
 }
 
 
-
-function cleanup_sources()
-{
-    if [ "$1" == "warn" ]; then
-        echo "If the build fails, please try deleting the node_modules folder and recreating the vagrant vm from scratch."
-    fi
-
-    ( cd $srcFolder && mv -f /tmp/config.js src/config.js )
-    echo "Cleanup called."
-}
-
-
-
 function System_webpack()
 {
     cd ..
 
-    # Remove development notes.
-    cp -af src/config.js /tmp
-    sed -i '/.*DEVELOPMENT/d' src/config.js
-    sed -i 's|//AUTH_URL|AUTH_URL|g' src/config.js
-    sed -i 's|//SUPERADMIN_URL|SUPERADMIN_URL|g' src/config.js
-    sed -i 's|//BACKEND_URL|BACKEND_URL|g' src/config.js
-
-    echo "** Double check config.js is insisting upon production endpoints **."
-
-    trap 'cleanup_sources warn' ERR # Be sure to clean sources if the build fails.
     export NODE_OPTIONS=--openssl-legacy-provider
     npm run build
-    trap - ERR
 
-    # Cleanup.
-    cleanup_sources
     cd -
 }
 
