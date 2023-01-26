@@ -4,7 +4,7 @@ import 'antd/dist/antd.css'
 import Rest from "../../_helpers/Rest"
 import Error from '../error'
 
-import { address_rangesFetch, address_rangeDeleteError } from '../store'
+import { addressRangesFetch, addressRangeDeleteError } from '../store'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -40,7 +40,7 @@ class Delete extends React.Component {
     this.setState({visible: true})
   }
 
-  address_rangeDelete = async address_range => {
+  addressRangeDelete = async addressRange => {
     this.setState({loading: true})
     let rest = new Rest(
       "DELETE",
@@ -48,7 +48,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(address_rangeDeleteError(error))
+        this.props.dispatch(addressRangeDeleteError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -57,7 +57,7 @@ class Delete extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(address_rangesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(addressRangesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -103,7 +103,7 @@ class Delete extends React.Component {
               <br/>
               <Row>
                 <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.address_rangeDelete(this.props.obj)}>
+                  <Button type="primary" onClick={() => this.addressRangeDelete(this.props.obj)}>
                     YES
                   </Button>
                 </Col>
@@ -120,7 +120,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.address_rangeDeleteError ? <Error component={'delete address_range'} error={[this.props.address_rangeDeleteError]} visible={true} type={'address_rangeDeleteError'} /> : null }
+            { this.props.addressRangeDeleteError ? <Error component={'delete addressRange'} error={[this.props.addressRangeDeleteError]} visible={true} type={'addressRangeDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -137,5 +137,5 @@ export default connect((state) => ({
  	error: state.error.error,
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  address_rangeDeleteError: state.checkpoint.address_rangeDeleteError
+  addressRangeDeleteError: state.checkpoint.addressRangeDeleteError
 }))(Delete);

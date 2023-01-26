@@ -126,6 +126,8 @@ class AssetSelector extends React.Component {
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
               filterSort={(optionA, optionB) =>
+                //console.log(optionA)
+                //console.log(optionB)
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
               onChange={e => this.environment(e)}
@@ -149,7 +151,7 @@ class AssetSelector extends React.Component {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
                 filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  optionA.children.toString().toLowerCase().localeCompare(optionB.children.toString().toLowerCase())
                 }
                 onChange={n => this.asset(n)}
                 style={{ width: 350, marginLeft: '10px' }}

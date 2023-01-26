@@ -12,7 +12,7 @@ import AssetSelector from './assetSelector'
 import Hosts from './hosts/manager'
 import Groups from './groups/manager'
 import Networks from './networks/manager'
-import AddressRanges from './address_ranges/manager'
+import AddressRanges from './addressRanges/manager'
 import ApplicationSites from './application_sites/manager'
 
 import {
@@ -22,7 +22,7 @@ import {
   hostsFetch,
   groupsFetch,
   networksFetch,
-  address_rangesFetch,
+  addressRangesFetch,
   application_sitesFetch,
 
 } from '../checkpoint/store'
@@ -81,8 +81,8 @@ class Checkpoint extends React.Component {
   networksRefresh = () => {
     this.props.dispatch(networksFetch(true))
   }
-  address_rangesRefresh = () => {
-    this.props.dispatch(address_rangesFetch(true))
+  addressRangesRefresh = () => {
+    this.props.dispatch(addressRangesFetch(true))
   }
   application_sitesRefresh = () => {
     this.props.dispatch(application_sitesFetch(true))
@@ -142,14 +142,14 @@ class Checkpoint extends React.Component {
           :
             null
           }
-          { this.props.authorizations && (this.props.authorizations.address_ranges_get || this.props.authorizations.any) ?
+          { this.props.authorizations && (this.props.authorizations.addressRanges_get || this.props.authorizations.any) ?
             <React.Fragment>
-              {this.props.address_rangesLoading ?
+              {this.props.addressRangesLoading ?
                 <TabPane key="Address Ranges" tab="Address Ranges">
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.address_rangesRefresh()}/></span>>
+                <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.addressRangesRefresh()}/></span>>
                   <AddressRanges/>
                 </TabPane>
               }
@@ -265,7 +265,7 @@ export default connect((state) => ({
   hostsLoading: state.checkpoint.hostsLoading,
   groupsLoading: state.checkpoint.groupsLoading,
   networksLoading: state.checkpoint.networksLoading,
-  address_rangesLoading: state.checkpoint.address_rangesLoading,
+  addressRangesLoading: state.checkpoint.addressRangesLoading,
   application_sitesLoading: state.checkpoint.application_sitesLoading,
 
   assetsError: state.checkpoint.assetsError,

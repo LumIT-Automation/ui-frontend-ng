@@ -98,6 +98,10 @@ const checkpointSlice = createSlice({
         state.domain = action.payload
       },
 
+      itemTypesError: (state, action) => {
+        state.itemTypesError = action.payload
+      },
+
       hostsLoading: (state, action) => {
         state.hostsLoading = action.payload
       },
@@ -113,6 +117,9 @@ const checkpointSlice = createSlice({
 
       hostAddError: (state, action) => {
         state.hostAddError = action.payload
+      },
+      hostModifyError: (state, action) => {
+        state.hostModifyError = action.payload
       },
       hostDeleteError: (state, action) => {
         state.hostDeleteError = action.payload
@@ -136,6 +143,9 @@ const checkpointSlice = createSlice({
       groupAddError: (state, action) => {
         state.groupAddError = action.payload
       },
+      groupModifyError: (state, action) => {
+        state.groupModifyError = action.payload
+      },
       groupDeleteError: (state, action) => {
         state.groupDeleteError = action.payload
       },
@@ -156,28 +166,34 @@ const checkpointSlice = createSlice({
       networkAddError: (state, action) => {
         state.networkAddError = action.payload
       },
+      networkModifyError: (state, action) => {
+        state.networkModifyError = action.payload
+      },
       networkDeleteError: (state, action) => {
         state.networkDeleteError = action.payload
       },
 
-      address_rangesLoading: (state, action) => {
-        state.address_rangesLoading = action.payload
+      addressRangesLoading: (state, action) => {
+        state.addressRangesLoading = action.payload
       },
-      address_ranges: (state, action) => {
-        state.address_ranges = action.payload.data.items
+      addressRanges: (state, action) => {
+        state.addressRanges = action.payload.data.items
       },
-      address_rangesFetch: (state, action) => {
-        state.address_rangesFetch = action.payload
+      addressRangesFetch: (state, action) => {
+        state.addressRangesFetch = action.payload
       },
-      address_rangesError: (state, action) => {
-        state.address_rangesError = action.payload
+      addressRangesError: (state, action) => {
+        state.addressRangesError = action.payload
       },
 
-      address_rangeAddError: (state, action) => {
-        state.address_rangeAddError = action.payload
+      addressRangeAddError: (state, action) => {
+        state.addressRangeAddError = action.payload
       },
-      address_rangeDeleteError: (state, action) => {
-        state.address_rangeDeleteError = action.payload
+      addressRangeModifyError: (state, action) => {
+        state.addressRangeModifyError = action.payload
+      },
+      addressRangeDeleteError: (state, action) => {
+        state.addressRangeDeleteError = action.payload
       },
 
       application_sitesLoading: (state, action) => {
@@ -195,6 +211,9 @@ const checkpointSlice = createSlice({
 
       application_siteAddError: (state, action) => {
         state.application_siteAddError = action.payload
+      },
+      application_siteModifyError: (state, action) => {
+        state.application_siteModifyError = action.payload
       },
       application_siteDeleteError: (state, action) => {
         state.application_siteDeleteError = action.payload
@@ -215,6 +234,9 @@ const checkpointSlice = createSlice({
 
       application_site_categoryAddError: (state, action) => {
         state.application_site_categoryAddError = action.payload
+      },
+      application_site_categoryModifyError: (state, action) => {
+        state.application_site_categoryModifyError = action.payload
       },
       application_site_categoryDeleteError: (state, action) => {
         state.application_site_categoryDeleteError = action.payload
@@ -290,11 +312,14 @@ export const {
 
   domain,
 
+  itemTypesError,
+
   hostsLoading,
   hosts,
   hostsFetch,
   hostsError,
   hostAddError,
+  hostModifyError,
   hostDeleteError,
 
   groupsLoading,
@@ -302,6 +327,7 @@ export const {
   groupsFetch,
   groupsError,
   groupAddError,
+  groupModifyError,
   groupDeleteError,
 
   networksLoading,
@@ -309,20 +335,23 @@ export const {
   networksFetch,
   networksError,
   networkAddError,
+  networkModifyError,
   networkDeleteError,
 
-  address_rangesLoading,
-  address_ranges,
-  address_rangesFetch,
-  address_rangesError,
-  address_rangeAddError,
-  address_rangeDeleteError,
+  addressRangesLoading,
+  addressRanges,
+  addressRangesFetch,
+  addressRangesError,
+  addressRangeAddError,
+  addressRangeModifyError,
+  addressRangeDeleteError,
 
   application_sitesLoading,
   application_sites,
   application_sitesFetch,
   application_sitesError,
   application_siteAddError,
+  application_siteModifyError,
   application_siteDeleteError,
 
   application_site_categorysLoading,
@@ -330,6 +359,7 @@ export const {
   application_site_categorysFetch,
   application_site_categorysError,
   application_site_categoryAddError,
+  application_site_categoryModifyError,
   application_site_categoryDeleteError,
 
   hostRemoveError,

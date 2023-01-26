@@ -24,28 +24,36 @@ import {
 
   domainsError,
 
+  itemTypesError,
+
   hostsError,
   hostAddError,
+  hostModifyError,
   hostDeleteError,
 
   groupsError,
   groupAddError,
+  groupModifyError,
   groupDeleteError,
 
   networksError,
   networkAddError,
+  networkModifyError,
   networkDeleteError,
 
-  address_rangesError,
-  address_rangeAddError,
-  address_rangeDeleteError,
+  addressRangesError,
+  addressRangeAddError,
+  addressRangeModifyError,
+  addressRangeDeleteError,
 
   application_sitesError,
   application_siteAddError,
+  application_siteModifyError,
   application_siteDeleteError,
 
   application_site_categorysError,
   application_site_categoryAddError,
+  application_site_categoryModifyError,
   application_site_categoryDeleteError,
 
 
@@ -133,11 +141,18 @@ class Error extends Component {
           this.props.dispatch(domainsError(null))
           break
 
+        case 'itemTypesError':
+          this.props.dispatch(itemTypesError(null))
+          break
+
         case 'hostsError':
           this.props.dispatch(hostsError(null))
           break;
         case 'hostAddError':
           this.props.dispatch(hostAddError(null))
+          break;
+        case 'hostModifyError':
+          this.props.dispatch(hostModifyError(null))
           break;
         case 'hostDeleteError':
           this.props.dispatch(hostDeleteError(null))
@@ -149,6 +164,9 @@ class Error extends Component {
         case 'groupAddError':
           this.props.dispatch(groupAddError(null))
           break;
+        case 'groupModifyError':
+          this.props.dispatch(groupModifyError(null))
+          break;
         case 'groupDeleteError':
           this.props.dispatch(groupDeleteError(null))
           break;
@@ -159,18 +177,24 @@ class Error extends Component {
         case 'networkAddError':
           this.props.dispatch(networkAddError(null))
           break;
+        case 'networkModifyError':
+          this.props.dispatch(networkModifyError(null))
+          break;
         case 'networkDeleteError':
           this.props.dispatch(networkDeleteError(null))
           break;
 
-        case 'address_rangesError':
-          this.props.dispatch(address_rangesError(null))
+        case 'addressRangesError':
+          this.props.dispatch(addressRangesError(null))
           break;
-        case 'address_rangeAddError':
-          this.props.dispatch(address_rangeAddError(null))
+        case 'addressRangeAddError':
+          this.props.dispatch(addressRangeAddError(null))
           break;
-        case 'address_rangeDeleteError':
-          this.props.dispatch(address_rangeDeleteError(null))
+        case 'addressRangeModifyError':
+          this.props.dispatch(addressRangeModifyError(null))
+          break;
+        case 'addressRangeDeleteError':
+          this.props.dispatch(addressRangeDeleteError(null))
           break;
 
         case 'application_sitesError':
@@ -178,6 +202,9 @@ class Error extends Component {
           break;
         case 'application_siteAddError':
           this.props.dispatch(application_siteAddError(null))
+          break;
+        case 'application_siteModifyError':
+          this.props.dispatch(application_siteModifyError(null))
           break;
         case 'application_siteDeleteError':
           this.props.dispatch(application_siteDeleteError(null))
@@ -188,6 +215,9 @@ class Error extends Component {
           break;
         case 'application_site_categoryAddError':
           this.props.dispatch(application_site_categoryAddError(null))
+          break;
+        case 'application_site_categoryModifyError':
+          this.props.dispatch(application_site_categoryModifyError(null))
           break;
         case 'application_site_categoryDeleteError':
           this.props.dispatch(application_site_categoryDeleteError(null))

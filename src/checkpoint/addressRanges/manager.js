@@ -7,10 +7,10 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 
 import {
-  address_rangesLoading,
-  address_ranges,
-  address_rangesFetch,
-  address_rangesError
+  addressRangesLoading,
+  addressRanges,
+  addressRangesFetch,
+  addressRangesError
 } from '../store'
 
 import List from './list'
@@ -28,10 +28,10 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.domain) {
-      if (!this.props.address_rangesError) {
-        this.props.dispatch(address_rangesFetch(false))
-        if (!this.props.address_ranges) {
-          this.address_rangesGet()
+      if (!this.props.addressRangesError) {
+        this.props.dispatch(addressRangesFetch(false))
+        if (!this.props.addressRanges) {
+          this.addressRangesGet()
         }
       }
     }
@@ -42,16 +42,16 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.address_rangesError) ) {
-      if (!this.props.address_ranges) {
-        this.address_rangesGet()
+    if ( (this.props.asset && this.props.domain && !this.props.addressRangesError) ) {
+      if (!this.props.addressRanges) {
+        this.addressRangesGet()
       }
-      if (this.props.address_rangesFetch) {
-        this.address_rangesGet()
-        this.props.dispatch(address_rangesFetch(false))
+      if (this.props.addressRangesFetch) {
+        this.addressRangesGet()
+        this.props.dispatch(addressRangesFetch(false))
       }
       if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
-        this.address_rangesGet()
+        this.addressRangesGet()
       }
     }
   }
@@ -60,19 +60,19 @@ class Manager extends React.Component {
   }
 
 
-  address_rangesGet = async () => {
-    this.props.dispatch(address_rangesLoading(true))
+  addressRangesGet = async () => {
+    this.props.dispatch(addressRangesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(address_ranges(resp))
+        this.props.dispatch(addressRanges(resp))
       },
       error => {
-        this.props.dispatch(address_rangesError(error))
+        this.props.dispatch(addressRangesError(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/address-ranges/?local`, this.props.token)
-    this.props.dispatch(address_rangesLoading(false))
+    this.props.dispatch(addressRangesLoading(false))
   }
 
 
@@ -82,7 +82,7 @@ class Manager extends React.Component {
         <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.domain) ) ?
           <React.Fragment>
-            {this.props.authorizations && (this.props.authorizations.address_ranges_post || this.props.authorizations.any) ?
+            {this.props.authorizations && (this.props.authorizations.addressRanges_post || this.props.authorizations.any) ?
               <Add/>
             :
               null
@@ -94,7 +94,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.address_rangesError ? <Error component={'address_range manager'} error={[this.props.address_rangesError]} visible={true} type={'address_rangesError'} /> : null }
+          { this.props.addressRangesError ? <Error component={'addressRange manager'} error={[this.props.addressRangesError]} visible={true} type={'addressRangesError'} /> : null }
         </React.Fragment>
       </Space>
     )
@@ -108,7 +108,7 @@ export default connect((state) => ({
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
-  address_ranges: state.checkpoint.address_ranges,
-  address_rangesFetch: state.checkpoint.address_rangesFetch,
-  address_rangesError: state.checkpoint.address_rangesError
+  addressRanges: state.checkpoint.addressRanges,
+  addressRangesFetch: state.checkpoint.addressRangesFetch,
+  addressRangesError: state.checkpoint.addressRangesError
 }))(Manager);

@@ -6,8 +6,8 @@ import Error from '../error'
 import Validators from '../../_helpers/validators'
 
 import {
-  address_rangesFetch,
-  address_rangeAddError
+  addressRangesFetch,
+  addressRangeAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -103,13 +103,13 @@ class Add extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.address_rangeAdd()
+      this.addressRangeAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  address_rangeAdd = async () => {
+  addressRangeAdd = async () => {
     let request = Object.assign({}, this.state.request)
     let b = {}
     b.data = {
@@ -126,7 +126,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(address_rangeAddError(error))
+        this.props.dispatch(addressRangeAddError(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -135,7 +135,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(address_rangesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(addressRangesFetch(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -229,7 +229,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.address_rangeAddError ? <Error component={'add address_range'} error={[this.props.address_rangeAddError]} visible={true} type={'address_rangeAddError'} /> : null }
+            { this.props.addressRangeAddError ? <Error component={'add addressRange'} error={[this.props.addressRangeAddError]} visible={true} type={'addressRangeAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -245,5 +245,5 @@ export default connect((state) => ({
   token: state.authentication.token,
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  address_rangeAddError: state.checkpoint.address_rangeAddError
+  addressRangeAddError: state.checkpoint.addressRangeAddError
 }))(Add);

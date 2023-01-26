@@ -41,8 +41,8 @@ class List extends React.Component {
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={address_range => {
-            this.searchInput = address_range;
+          ref={addressRange => {
+            this.searchInput = addressRange;
           }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
@@ -159,7 +159,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.address_range_delete || this.props.authorizations.any) ?
+            { this.props.authorizations && (this.props.authorizations.addressRange_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -174,7 +174,7 @@ class List extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <Table
           columns={columns}
-          dataSource={this.props.address_ranges}
+          dataSource={this.props.addressRanges}
           bordered
           rowKey="name"
           scroll={{x: 'auto'}}
@@ -189,5 +189,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   authorizations: state.authorizations.checkpoint,
-  address_ranges: state.checkpoint.address_ranges,
+  addressRanges: state.checkpoint.addressRanges,
 }))(List);
