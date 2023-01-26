@@ -21,10 +21,10 @@ import {
   addressRangesError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio } from 'antd';
-
-import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Divider, Table } from 'antd';
+import Highlighter from 'react-highlight-words'
+import { LoadingOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
@@ -63,12 +63,99 @@ class Modify extends React.Component {
     this.setState({request: request})
   }
 
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
+      }
+      catch (error){
+
+      }
+    },
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
+    },
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
+    }
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
+
+  /*handleReset = clearFilters => {
+    console.log(clearFilters)
+    clearFilters();
+    this.setState({ searchText: '' });
+  };*/
+
+  handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    this.setState({ searchText: '' });
+  };
+
   //SETTERS
   itemTypesSet = e => {
     this.setState({itemTypes: e.target.value})
   }
 
   dataGet = async () => {
+    let list = []
     let gData = JSON.parse(JSON.stringify(this.state.groupData))
     this.setState({dataLoading: true})
 
@@ -81,18 +168,23 @@ class Modify extends React.Component {
       switch(this.state.itemTypes) {
         case 'hosts':
           gData.hosts = groupData.data.items
+          list = gData.hosts
           break;
         case 'groups':
           gData.groups = groupData.data.items
+          list = gData.groups
           break;
         case 'networks':
           gData.networks = groupData.data.items
+          list = gData.networks
           break;
         case 'address-ranges':
           gData['address-ranges'] = groupData.data.items
+          list = gData['address-ranges']
           break;
       }
-      this.setState({groupData: gData})
+      await this.setState({groupData: gData})
+
     }
 
     let domainData = await this.domainDataGet()
@@ -129,7 +221,8 @@ class Modify extends React.Component {
           break;
       }
     }
-    this.setState({dataLoading: false})
+    list = list.concat(domainData.data.items)
+    await this.setState({tableData: list, dataLoading: false})
   }
 
   groupDataGet = async () => {
@@ -162,66 +255,6 @@ class Modify extends React.Component {
     return r
   }
 
-/*
-  //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
-
-    if (!request.name) {
-      errors.nameError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.nameError
-      this.setState({errors: errors})
-    }
-
-    return errors
-  }
-
-  validation = async () => {
-    await this.validationCheck()
-
-    if (Object.keys(this.state.errors).length === 0) {
-      this.groupModify()
-    }
-  }
-
-
-
-  //DISPOSAL ACTION
-  groupModify = async () => {
-    let request = Object.assign({}, this.state.request)
-    let b = {}
-    b.data = {
-      "name": this.state.request.name,
-    }
-
-    this.setState({loading: true})
-
-    let rest = new Rest(
-      "POST",
-      resp => {
-        this.setState({loading: false, response: true}, () => this.response())
-      },
-      error => {
-        this.props.dispatch(groupModifyError(error))
-        this.setState({loading: false, response: false})
-      }
-    )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/groups/`, this.props.token, b)
-  }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(groupsFetch(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
-  }
-
-  */
-
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -234,13 +267,38 @@ class Modify extends React.Component {
 
   render() {
     console.log(this.state.itemTypes)
-    console.log(this.state.groupData)
-    console.log('hosts', this.props.hosts)
-    console.log('groups', this.props.groups)
-    console.log('networks', this.props.networks)
-    console.log('addressRanges', this.props.addressRanges)
+    console.log(this.state.tableData)
+
+    const columns = [
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'Domain',
+        align: 'center',
+        dataIndex: ['domain', 'name'],
+        key: 'domain',
+        ...this.getColumnSearchProps(['domain', 'name']),
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+      }
+    ]
+
+    let randomKey = () => {
+      return Math.random().toString()
+    }
 
     return (
+
       <Space direction='vertical'>
 
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
@@ -266,15 +324,46 @@ class Modify extends React.Component {
             <React.Fragment>
               <Row>
                 <Col offset={1} span={16}>
+                {this.state.dataLoading ?
+                  <Radio.Group disabled={true} value={this.state.itemTypes}>
+                    <Radio value={'hosts'}>hosts</Radio>
+                    <Radio value={'groups'}>groups</Radio>
+                    <Radio value={'networks'}>networks</Radio>
+                    <Radio value={'address-ranges'}>address ranges</Radio>
+                  </Radio.Group>
+                  :
                   <Radio.Group onChange={e => this.itemTypesSet(e)} value={this.state.itemTypes}>
                     <Radio value={'hosts'}>hosts</Radio>
                     <Radio value={'groups'}>groups</Radio>
                     <Radio value={'networks'}>networks</Radio>
                     <Radio value={'address-ranges'}>address ranges</Radio>
                   </Radio.Group>
+                }
                 </Col>
               </Row>
-              <br/>
+
+              <Divider/>
+
+              <Row>
+                <Col span={24}>
+                {this.state.dataLoading ?
+                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+                :
+                  <Row>
+                    <Col span={24}>
+                      <Table
+                        columns={columns}
+                        dataSource={this.state.tableData}
+                        bordered
+                        rowKey={randomKey}
+                        scroll={{x: 'auto'}}
+                        pagination={{ pageSize: 10 }}
+                      />
+                    </Col>
+                  </Row>
+                }
+                </Col>
+              </Row>
 
               <Row>
                 <Col offset={11} span={4}>
