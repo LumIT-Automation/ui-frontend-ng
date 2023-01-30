@@ -21,7 +21,7 @@ import {
   addressRangesError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Divider, Table } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Divider, Table, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -35,7 +35,7 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      groupData: {},
+      groupData: [],
       request: {},
       errors: {},
     };
@@ -155,8 +155,7 @@ class Modify extends React.Component {
   }
 
   dataGet = async () => {
-    let list = []
-    let gData = JSON.parse(JSON.stringify(this.state.groupData))
+    let list = JSON.parse(JSON.stringify(this.state.groupData))
     this.setState({dataLoading: true})
 
     let groupData = await this.groupDataGet()
@@ -167,23 +166,23 @@ class Modify extends React.Component {
     else {
       switch(this.state.itemTypes) {
         case 'hosts':
-          gData.hosts = groupData.data.items
-          list = gData.hosts
+          list = groupData.data.items
           break;
         case 'groups':
-          gData.groups = groupData.data.items
-          list = gData.groups
+          list = groupData.data.items
           break;
         case 'networks':
-          gData.networks = groupData.data.items
-          list = gData.networks
+          list = groupData.data.items
           break;
         case 'address-ranges':
-          gData['address-ranges'] = groupData.data.items
-          list = gData['address-ranges']
+          list = groupData.data.items
           break;
       }
-      await this.setState({groupData: gData})
+      list.forEach((item, i) => {
+        item.groupMember = true
+      });
+
+      await this.setState({groupData: list, flagged: list})
 
     }
 
@@ -222,6 +221,7 @@ class Modify extends React.Component {
       }
     }
     list = list.concat(domainData.data.items)
+    console.log(list)
     await this.setState({tableData: list, dataLoading: false})
   }
 
@@ -255,6 +255,66 @@ class Modify extends React.Component {
     return r
   }
 
+  memberGroupSet = async (e, obj) => {
+    let table = JSON.parse(JSON.stringify(this.state.tableData))
+    let flagged = JSON.parse(JSON.stringify(this.state.flagged))
+    let item = table.find( o => o.uid === obj.uid )
+
+    if (e.target.checked) {
+      item.groupMember = true
+      flagged.push(item)
+    }
+    else {
+      item.groupMember = false
+      flagged = flagged.filter(o => o.uid != obj.uid)
+    }
+
+    await this.setState({tableData: table, flagged: flagged})
+  }
+
+  createBody = async() => {
+    let groupData = JSON.parse(JSON.stringify(this.state.groupData))
+    let flagged = JSON.parse(JSON.stringify(this.state.flagged))
+    let toAdd = []
+    let toRemove = []
+    let flaggedUids = []
+    let groupDataUids = []
+
+    flagged.forEach((item, i) => {
+      flaggedUids.push(item.uid)
+    });
+    groupData.forEach((item, i) => {
+      groupDataUids.push(item.uid)
+    });
+
+    flaggedUids.forEach((item, i) => {
+      if (!groupDataUids.includes(item)) {
+        toAdd.push(item)
+      }
+    });
+    groupDataUids.forEach((item, i) => {
+      if (!flaggedUids.includes(item)) {
+        toRemove.push(item)
+      }
+    });
+
+    if (toRemove.length) > 0 {
+      await this.removeHandler(toRemove)
+    }
+
+    if (toAdd.length > 0) {
+      await this.addHandler(toAdd)
+    }
+  }
+
+  removeHandler = async () => {
+    console.log('toRemove', toRemove)
+  }
+
+  addHandler = async () => {
+    console.log('toAdd', toAdd)
+  }
+
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -266,10 +326,22 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.state.itemTypes)
+    console.log(this.state.groupData)
+    console.log(this.state.flagged)
     console.log(this.state.tableData)
 
     const columns = [
+      {
+        title: 'Group member',
+        align: 'center',
+        dataIndex: 'groupMember',
+        key: 'groupMember',
+        render: (name, obj)  => (
+          <React.Fragment>
+            <Checkbox checked={obj.groupMember} onChange={e => this.memberGroupSet(e, obj)}/>
+          </React.Fragment>
+        ),
+      },
       {
         title: 'Name',
         align: 'center',
@@ -367,7 +439,7 @@ class Modify extends React.Component {
 
               <Row>
                 <Col offset={11} span={4}>
-                  <Button type="primary" shape='round' onClick={null} >
+                  <Button type="primary" shape='round' onClick={() => this.createBody()} >
                     Modify Group
                   </Button>
                 </Col>
