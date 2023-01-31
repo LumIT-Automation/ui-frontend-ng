@@ -155,6 +155,7 @@ class Modify extends React.Component {
   }
 
   dataGet = async () => {
+    console.log('dataGet')
     let list = JSON.parse(JSON.stringify(this.state.groupData))
     this.setState({dataLoading: true})
 
@@ -221,11 +222,12 @@ class Modify extends React.Component {
       }
     }
     list = list.concat(domainData.data.items)
-    console.log(list)
+    //console.log(list)
     await this.setState({tableData: list, dataLoading: false})
   }
 
   groupDataGet = async () => {
+    console.log('groupDataGet')
     let r
     let rest = new Rest(
       "GET",
@@ -233,6 +235,7 @@ class Modify extends React.Component {
         r = resp
       },
       error => {
+        console.log('groupDataGet', error)
         r = error
       }
     )
@@ -273,6 +276,7 @@ class Modify extends React.Component {
   }
 
   createBody = async() => {
+    console.log('createBody')
     let groupData = JSON.parse(JSON.stringify(this.state.groupData))
     let flagged = JSON.parse(JSON.stringify(this.state.flagged))
     let toAdd = []
@@ -298,22 +302,121 @@ class Modify extends React.Component {
       }
     });
 
-    if (toRemove.length) > 0 {
-      await this.removeHandler(toRemove)
+    if (toRemove.length > 0 || toAdd.length > 0) {
+      await this.setState({loading: true})
+
+      if (toRemove.length > 0) {
+        await this.removeHandler(toRemove)
+        console.log('createBody removeHandler ha finito')
+      }
+
+      if (toAdd.length > 0) {
+        await this.addHandler(toAdd)
+      }
+
+      if (await this.isUnlocked()) {
+        await this.setState({loading: false})
+        await this.dataGet()
+      }
+    }
+  }
+
+  isUnlocked = async () => {
+    let recall = await this.groupDataGet()
+    console.log(recall)
+    if (recall.status && recall.status === 423) {
+      await this.isUnlocked()
+    }
+    else if (recall.status && recall.status !== 200) {
+      this.props.dispatch(itemTypesError(recall))
+      return false
+    }
+    else {
+      return true
+    }
+  }
+
+  removeHandler = async (toRemove) => {
+    console.log('removeHandler')
+    let itemType, isUnlocked
+    switch(this.state.itemTypes) {
+      case 'hosts':
+        itemType = 'host'
+        break;
+      case 'groups':
+        itemType = 'group'
+        break;
+      case 'networks':
+        itemType = 'network'
+        break;
+      case 'address-ranges':
+        itemType = 'address-range'
+        break;
     }
 
-    if (toAdd.length > 0) {
-      await this.addHandler(toAdd)
+    for (const item of toRemove) {
+      console.log('iterazione', item)
+      isUnlocked = await this.isUnlocked()
+      console.log(isUnlocked)
+      if (isUnlocked) {
+        await this.removeItem(item, itemType)
+      }
+    }
+    console.log('for removeHandler ha finito')
+
+
+  }
+
+  addHandler = async (toAdd) => {
+    let itemsAdd, isUnlocked
+    console.log('addHandler')
+    isUnlocked = await this.isUnlocked()
+    console.log(isUnlocked)
+    if (isUnlocked) {
+      console.log('this.isUnlocked() true')
+      itemsAdd = await this.addItems(toAdd)
     }
   }
 
-  removeHandler = async () => {
-    console.log('toRemove', toRemove)
+  removeItem = async (item, itemType) => {
+    let r
+
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+      this.props.dispatch(itemTypesError(error))
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group/${this.props.obj.uid}/${itemType}/${item}/`, this.props.token)
+    return r
   }
 
-  addHandler = async () => {
-    console.log('toAdd', toAdd)
+  addItems = async (toAdd) => {
+    let r
+    let b = {}
+    b.data = {
+      [this.state.itemTypes]: toAdd,
+    }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        this.props.dispatch(itemTypesError(error))
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group/${this.props.obj.uid}/${this.state.itemTypes}/`, this.props.token, b)
+    return r
   }
+
+
 
   //Close and Error
   closeModal = () => {
@@ -326,9 +429,9 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.state.groupData)
-    console.log(this.state.flagged)
-    console.log(this.state.tableData)
+    //console.log(this.state.groupData)
+    //console.log(this.state.flagged)
+    //console.log(this.state.tableData)
 
     const columns = [
       {
@@ -439,9 +542,15 @@ class Modify extends React.Component {
 
               <Row>
                 <Col offset={11} span={4}>
-                  <Button type="primary" shape='round' onClick={() => this.createBody()} >
-                    Modify Group
-                  </Button>
+                  {this.state.dataLoading ?
+                    <Button type="primary" shape='round' disabled>
+                      Modify Group
+                    </Button>
+                  :
+                    <Button type="primary" shape='round' onClick={() => this.createBody()} >
+                      Modify Group
+                    </Button>
+                  }
                 </Col>
               </Row>
             </React.Fragment>
