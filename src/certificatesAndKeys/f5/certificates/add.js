@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import colors from './test.css'
+
 import { Input, Button, Card, Radio, Alert, Spin, Result, Modal, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
@@ -166,7 +166,7 @@ class Add extends React.Component {
             <React.Fragment>
               <Row>
                 <Col offset={5} span={2}>
-                  <p class={colors.expired} style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={10}>
                   <Input onChange={e => this.fileNameSet(e)}/>

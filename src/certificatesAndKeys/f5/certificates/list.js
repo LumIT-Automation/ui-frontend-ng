@@ -2,8 +2,6 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import styles from './test.css'
-
 import Delete from './delete'
 
 import { Table, Input, Button, Space } from 'antd';
@@ -120,29 +118,6 @@ class List extends React.Component {
     let today = new Date().getTime();
     let thirtyDays = 2592000000
     let inThirtyDays = new Date(today + thirtyDays);
-    console.log('today', today)
-    console.log('thirtyDays', thirtyDays)
-    console.log('inThirtyDays', inThirtyDays)
-    console.log(styles.expired)
-
-    /*
-    render: (name, obj) => {
-    return {
-        props: {
-          style: {
-            background: 'red'
-              //obj.apiRawValues.expiration.getTime() < inThirtyDays.getTime()
-                //? "red"
-                //: obj.status > (today + 30)
-                //? "yellow"
-                //: "white",
-          },
-        },
-        children: <div>{obj}</div>,
-      };
-    },
-
-    */
 
     const columns = [
       {
@@ -162,12 +137,27 @@ class List extends React.Component {
       {
         title: 'EXPIRATION',
         align: 'center',
-        className: styles.expired,
         dataIndex: ['apiRawValues','expiration'],
         key: ['apiRawValues','expiration'],
         defaultSortOrder: 'descend',
         sorter: (a, b) => new Date(a.apiRawValues.expiration) - new Date(b.apiRawValues.expiration),
-       ...this.getColumnSearchProps(['apiRawValues','expiration']),
+        ...this.getColumnSearchProps(['apiRawValues','expiration']),
+        render: (value, obj) => {
+          return {
+            props: {
+              style: {
+                background: (new Date(value).getTime()) < today ?
+                  '#FCF2F0'
+                :
+                  (new Date(value).getTime()) < inThirtyDays.getTime() ?
+                    '#FFFBE6'
+                  :
+                    'white',
+              }
+            },
+            children: <div>{value}</div>,
+          }
+        }
       },
       {
         title: 'Delete',
@@ -188,8 +178,6 @@ class List extends React.Component {
 
 
     return (
-      <React.Fragment>
-      <h1 className={styles.bigblue}>Hello Car!</h1>
       <Table
         columns={columns}
         dataSource={this.props.certificates}
@@ -200,7 +188,6 @@ class List extends React.Component {
         pagination={{ pageSize: 10 }}
         style={{marginBottom: 10}}
       />
-      </React.Fragment>
     )
   }
 }
