@@ -1,0 +1,14 @@
+.expired {
+  background-color: #FCF2F0;
+}
+
+.expiring {
+  background-color: #FFFBE6;
+}
+
+.bigblue {
+  color: DodgerBlue;
+  padding: 40px;
+  font-family: Arial;
+  text-align: center;
+}

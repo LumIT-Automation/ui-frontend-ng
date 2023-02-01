@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Form, Input, Button, Card, Radio, Alert, Spin, Result, Modal } from 'antd'
+import colors from './test.css'
+import { Input, Button, Card, Radio, Alert, Spin, Result, Modal, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
@@ -42,13 +43,13 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
-  setFilename = e => {
+  fileNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.fileName = e.target.value
     this.setState({request: request})
   }
 
-  setSourceType = e => {
+  sourceTypeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (e.target.value === 'pasteText') {
       request.sourceValue = e.target.value
@@ -60,31 +61,31 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  setText = event => {
+  textSet = event => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.text = event.target.value
     this.setState({request: request})
   }
 
-  uploadFile = event => {
+  fileUpload = event => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.selectedFile = event.target.files[0]
-    this.setState({request: request}, () => this.readSingleFile(event))
+    this.setState({request: request}, () => this.singleFileRead(event))
   }
 
-  readSingleFile = e => {
+  singleFileRead = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = this.state.request.selectedFile.name
     request.size = this.state.request.selectedFile.size
     request.type = this.state.request.selectedFile.type
 
-    var file = e.target.files[0];
+    let file = e.target.files[0];
     if (!file) {
       return;
     }
-    var reader = new FileReader();
+    let reader = new FileReader();
     reader.onload = (e) => {
-      var contents = e.target.result;
+      let contents = e.target.result;
       request.text = contents
     };
     reader.readAsText(file);
@@ -96,7 +97,7 @@ class Add extends React.Component {
     let certificateName = `${this.state.request.fileName}`
     let contentBase64 = btoa(this.state.request.text)
 
-    let request = {
+    let body = {
       "certificate": {
         "name": certificateName,
         "content_base64": contentBase64
@@ -115,7 +116,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/certificates/`, this.props.token, request )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificates/`, this.props.token, body )
   }
 
 
@@ -125,19 +126,18 @@ class Add extends React.Component {
     setTimeout( () => this.closeModal(), 2050)
   }
 
-  resetError = () => {
-    this.setState({ error: null})
-  }
-
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
+      errors: {},
+      request: {}
     })
   }
 
 
   render() {
+    console.log(this.props.partition)
 
     return (
       <React.Fragment>
@@ -148,7 +148,7 @@ class Add extends React.Component {
           title={<p style={{textAlign: 'center'}}>ADD CERTIFICATE</p>}
           centered
           destroyOnClose={true}
-          visible={this.state.visible}
+          open={this.state.visible}
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
@@ -162,77 +162,96 @@ class Add extends React.Component {
            />
         }
         { !this.state.loading && !this.state.response &&
-          <Form
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 8 }}
-            layout="horizontal"
-            initialValues={{ size: 'default' }}
-            size={'default'}
-          >
-
-              <Form.Item label="Certificate name" >
-                <Input onChange={e => this.setFilename(e)}/>
-              </Form.Item>
+          <React.Fragment>
+            <React.Fragment>
+              <Row>
+                <Col offset={5} span={2}>
+                  <p class={colors.expired} style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                </Col>
+                <Col span={10}>
+                  <Input onChange={e => this.fileNameSet(e)}/>
+                </Col>
+              </Row>
+              <br/>
+            </React.Fragment>
 
             { (this.state.request.fileName) ?
-              <Form.Item label="File source">
-              <Radio.Group onChange={e => this.setSourceType(e)} value={this.state.request.sourceValue}>
-                <Radio value={"upload"}>Upload</Radio>
-                <Radio value={"pasteText"}>Paste text</Radio>
-              </Radio.Group>
-              </Form.Item>
-              :
+              <React.Fragment>
+                <Row>
+                  <Col offset={7} span={10}>
+                    <Radio.Group onChange={e => this.sourceTypeSet(e)} value={this.state.request.sourceValue}>
+                      <Radio value={"upload"}>Upload</Radio>
+                      <Radio value={"pasteText"}>Paste text</Radio>
+                    </Radio.Group>
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
               null
             }
 
             {this.state.request.sourceValue === "upload" ?
-              <Form.Item label="Upload File">
-                <Input type="file" onChange={this.uploadFile} />
-              </Form.Item>
-              :
+              <React.Fragment>
+                <Row>
+                  <Col offset={7} span={10}>
+                    <Input type="file" onChange={this.fileUpload} />
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
               null
             }
 
             {this.state.request.sourceValue === "pasteText" ?
-              <Form.Item label="Paste Text">
-                <TextArea rows={4} onChange={e => this.setText(e)} />
-              </Form.Item>
-              :
+              <React.Fragment>
+                <Row>
+                  <Col offset={1} span={22}>
+                    <TextArea rows={22} onChange={e => this.textSet(e)} />
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
               null
             }
 
             {this.state.request.selectedFile ?
-              <Form.Item label="File Details">
-                <Card>
-                    <p>Name: {this.state.request.name}</p>
-                    <p>Type: {this.state.request.type}</p>
-                    <p>Size: {this.state.request.size} Bytes</p>
-                </Card>
-              </Form.Item>
-              :
+              <React.Fragment>
+                <Row>
+                  <Col offset={7} span={10}>
+                    <Card>
+                        <p>Name: {this.state.request.name}</p>
+                        <p>Type: {this.state.request.type}</p>
+                        <p>Size: {this.state.request.size} Bytes</p>
+                    </Card>
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
               null
             }
 
-            { (this.props.asset) ?
-              <Form.Item wrapperCol={ {offset: 8, span: 16 }}>
-                <React.Fragment>
-                { this.state.request.fileName &&
-                  (this.state.request.text || this.state.request.selectedFile) ?
+            { (this.props.asset && this.props.partition) ?
+              <Row>
+                <Col offset={7} span={4}>
+                { this.state.request.fileName && (this.state.request.text || this.state.request.selectedFile) ?
                   <Button type="primary" onClick={this.installCertificate}>Install {this.state.request.fileType}</Button>
                 :
-                  <Button type="primary" onClick={this.installCertificate} disabled >Install {this.state.request.fileType}</Button>
+                  <Button type="primary" disabled >Install {this.state.request.fileType}</Button>
                 }
-                </React.Fragment>
-              </Form.Item>
+                </Col>
+              </Row>
             :
-              <Form.Item wrapperCol={ {offset: 8, span: 8 }}>
-                {
+              <Row>
+                <Col offset={2} span={6}>
                   <Alert message="Asset not set" type="error" />
-                }
-              </Form.Item>
+                </Col>
+              </Row>
             }
-
-          </Form>
+          </React.Fragment>
         }
 
         {this.state.visible ?
@@ -252,6 +271,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	certificateAddError: state.f5.certificateAddError,
   asset: state.f5.asset,
+  partition: state.f5.partition,
+
+  certificateAddError: state.f5.certificateAddError,
 }))(Add);
