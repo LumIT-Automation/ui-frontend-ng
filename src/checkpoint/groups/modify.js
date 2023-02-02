@@ -137,12 +137,6 @@ class Modify extends React.Component {
     });
   };
 
-  /*handleReset = clearFilters => {
-    console.log(clearFilters)
-    clearFilters();
-    this.setState({ searchText: '' });
-  };*/
-
   handleReset = (clearFilters, confirm) => {
     clearFilters();
     confirm();
@@ -221,8 +215,9 @@ class Modify extends React.Component {
           break;
       }
     }
+    //togli dai domain quelli del gruppo
     list = list.concat(domainData.data.items)
-    //console.log(list)
+
     await this.setState({tableData: list, dataLoading: false})
   }
 
@@ -307,32 +302,15 @@ class Modify extends React.Component {
 
       if (toRemove.length > 0) {
         await this.removeHandler(toRemove)
-        console.log('createBody removeHandler ha finito')
       }
 
       if (toAdd.length > 0) {
         await this.addHandler(toAdd)
       }
 
-      if (await this.isUnlocked()) {
-        await this.setState({loading: false})
-        await this.dataGet()
-      }
-    }
-  }
+      await this.setState({loading: false})
+      await this.dataGet()
 
-  isUnlocked = async () => {
-    let recall = await this.groupDataGet()
-    console.log(recall)
-    if (recall.status && recall.status === 423) {
-      await this.isUnlocked()
-    }
-    else if (recall.status && recall.status !== 200) {
-      this.props.dispatch(itemTypesError(recall))
-      return false
-    }
-    else {
-      return true
     }
   }
 
@@ -355,27 +333,13 @@ class Modify extends React.Component {
     }
 
     for (const item of toRemove) {
-      console.log('iterazione', item)
-      isUnlocked = await this.isUnlocked()
-      console.log(isUnlocked)
-      if (isUnlocked) {
-        await this.removeItem(item, itemType)
-      }
+      await this.removeItem(item, itemType)
     }
-    console.log('for removeHandler ha finito')
-
 
   }
 
   addHandler = async (toAdd) => {
-    let itemsAdd, isUnlocked
-    console.log('addHandler')
-    isUnlocked = await this.isUnlocked()
-    console.log(isUnlocked)
-    if (isUnlocked) {
-      console.log('this.isUnlocked() true')
-      itemsAdd = await this.addItems(toAdd)
-    }
+    await this.addItems(toAdd)
   }
 
   removeItem = async (item, itemType) => {
@@ -417,7 +381,6 @@ class Modify extends React.Component {
   }
 
 
-
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -429,9 +392,6 @@ class Modify extends React.Component {
 
 
   render() {
-    //console.log(this.state.groupData)
-    //console.log(this.state.flagged)
-    //console.log(this.state.tableData)
 
     const columns = [
       {
@@ -444,6 +404,13 @@ class Modify extends React.Component {
             <Checkbox checked={obj.groupMember} onChange={e => this.memberGroupSet(e, obj)}/>
           </React.Fragment>
         ),
+      },
+      {
+        title: 'IPv4-address',
+        align: 'center',
+        dataIndex: 'ipv4-address',
+        key: 'ipv4-address',
+       ...this.getColumnSearchProps('ipv4-address'),
       },
       {
         title: 'Name',
@@ -467,6 +434,13 @@ class Modify extends React.Component {
         ...this.getColumnSearchProps('type'),
       }
     ]
+
+    let returnColumns = () => {
+      console.log(typeof columns)
+      return columns
+    }
+
+    console.log(returnColumns())
 
     let randomKey = () => {
       return Math.random().toString()
@@ -527,7 +501,7 @@ class Modify extends React.Component {
                   <Row>
                     <Col span={24}>
                       <Table
-                        columns={columns}
+                        columns={returnColumns()}
                         dataSource={this.state.tableData}
                         bordered
                         rowKey={randomKey}

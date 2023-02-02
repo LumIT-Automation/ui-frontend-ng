@@ -78,21 +78,8 @@ class Project extends React.Component {
           >
             Search
           </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             Reset
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              confirm({ closeDropdown: false });
-              this.setState({
-                searchText: selectedKeys[0],
-                searchedColumn: dataIndex,
-              });
-            }}
-          >
-            Filter
           </Button>
         </Space>
       </div>
@@ -120,8 +107,8 @@ class Project extends React.Component {
         setTimeout(() => this.searchInput.select(), 100);
       }
     },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[this.state.searchText]}
@@ -130,7 +117,8 @@ class Project extends React.Component {
         />
       ) : (
         text
-      ),
+      )
+    }
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -141,8 +129,9 @@ class Project extends React.Component {
     });
   };
 
-  handleReset = clearFilters => {
+  handleReset = (clearFilters, confirm) => {
     clearFilters();
+    confirm();
     this.setState({ searchText: '' });
   };
 

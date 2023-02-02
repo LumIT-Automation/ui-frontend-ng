@@ -38,12 +38,11 @@ class List extends React.Component {
 
 
   getColumnSearchProps = dataIndex => ({
-
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={application_site => {
-            this.searchInput = application_site;
+          ref={node => {
+            this.searchInput = node;
           }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
@@ -61,7 +60,7 @@ class List extends React.Component {
           >
             Search
           </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -91,42 +90,16 @@ class List extends React.Component {
       }
     },
     render: text => {
-      if (JSON.stringify(this.state.searchedColumn) === JSON.stringify(dataIndex)) {
-        if (Array.isArray(text)) {
-          text = text.map(r => {
-            return (
-            <React.Fragment key={Math.random()}>
-              <Highlighter
-                 highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-                 searchWords={[this.state.searchText]}
-                 autoEscape
-                 textToHighlight={r}
-               />
-               <br/>
-            </React.Fragment>)
-           })
-          return text
-        }
-        else {
-          return <Highlighter
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-            searchWords={[this.state.searchText]}
-            autoEscape
-            textToHighlight={text ? text.toString() : ''}
-          />
-        }
-      }
-      else {
-        if (Array.isArray(text)) {
-          text = text.map(r => {
-             return <React.Fragment key={Math.random()}>{r} <br/></React.Fragment>
-           })
-          return text
-        }
-        else {
-          return text.toString()
-        }
-      }
+      return this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
     }
   });
 
@@ -138,8 +111,9 @@ class List extends React.Component {
     });
   };
 
-  handleReset = clearFilters => {
+  handleReset = (clearFilters, confirm) => {
     clearFilters();
+    confirm();
     this.setState({ searchText: '' });
   };
 

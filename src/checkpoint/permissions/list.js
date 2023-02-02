@@ -58,7 +58,7 @@ class List extends React.Component {
           >
             Search
           </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -109,8 +109,9 @@ class List extends React.Component {
     });
   };
 
-  handleReset = clearFilters => {
+  handleReset = (clearFilters, confirm) => {
     clearFilters();
+    confirm();
     this.setState({ searchText: '' });
   };
 

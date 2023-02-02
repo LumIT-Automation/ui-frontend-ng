@@ -93,7 +93,7 @@ class Add extends React.Component {
   }
 
 
-  installCertificate =  async () => {
+  certificateInstall =  async () => {
     let certificateName = `${this.state.request.fileName}`
     let contentBase64 = btoa(this.state.request.text)
 
@@ -238,7 +238,7 @@ class Add extends React.Component {
               <Row>
                 <Col offset={7} span={4}>
                 { this.state.request.fileName && (this.state.request.text || this.state.request.selectedFile) ?
-                  <Button type="primary" onClick={this.installCertificate}>Install {this.state.request.fileType}</Button>
+                  <Button type="primary" onClick={this.certificateInstall}>Install {this.state.request.fileType}</Button>
                 :
                   <Button type="primary" disabled >Install {this.state.request.fileType}</Button>
                 }

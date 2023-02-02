@@ -43,8 +43,8 @@ class List extends React.Component {
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={irule => {
-            this.searchInput = irule;
+          ref={node => {
+            this.searchInput = node;
           }}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
@@ -62,7 +62,7 @@ class List extends React.Component {
           >
             Search
           </Button>
-          <Button onClick={() => this.handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -91,8 +91,8 @@ class List extends React.Component {
         setTimeout(() => this.searchInput.select(), 100);
       }
     },
-    render: text =>
-      this.state.searchedColumn === dataIndex ? (
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[this.state.searchText]}
@@ -101,7 +101,8 @@ class List extends React.Component {
         />
       ) : (
         text
-      ),
+      )
+    }
   });
 
   handleSearch = (selectedKeys, confirm, dataIndex) => {
@@ -112,8 +113,9 @@ class List extends React.Component {
     });
   };
 
-  handleReset = clearFilters => {
+  handleReset = (clearFilters, confirm) => {
     clearFilters();
+    confirm();
     this.setState({ searchText: '' });
   };
 
