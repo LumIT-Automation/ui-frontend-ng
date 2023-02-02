@@ -215,7 +215,8 @@ class Modify extends React.Component {
           break;
       }
     }
-    //togli dai domain quelli del gruppo
+
+    //togli dai domain quelli del gruppo 
     list = list.concat(domainData.data.items)
 
     await this.setState({tableData: list, dataLoading: false})
@@ -393,7 +394,7 @@ class Modify extends React.Component {
 
   render() {
 
-    const columns = [
+    let columns = [
       {
         title: 'Group member',
         align: 'center',
@@ -406,13 +407,6 @@ class Modify extends React.Component {
         ),
       },
       {
-        title: 'IPv4-address',
-        align: 'center',
-        dataIndex: 'ipv4-address',
-        key: 'ipv4-address',
-       ...this.getColumnSearchProps('ipv4-address'),
-      },
-      {
         title: 'Name',
         align: 'center',
         dataIndex: 'name',
@@ -420,23 +414,89 @@ class Modify extends React.Component {
         ...this.getColumnSearchProps('name'),
       },
       {
+        title: 'IPv4-address',
+        align: 'center',
+        dataIndex: 'ipv4-address',
+        key: 'ipv4-address',
+       ...this.getColumnSearchProps('ipv4-address'),
+      },
+      {
+        title: 'Subnet4',
+        align: 'center',
+        dataIndex: 'subnet4',
+        key: 'subnet4',
+        ...this.getColumnSearchProps('subnet4'),
+      },
+      {
+        title: 'Mask-length4',
+        align: 'center',
+        dataIndex: 'mask-length4',
+        key: 'mask-length4',
+        ...this.getColumnSearchProps('mask-length4'),
+      },
+      {
+        title: 'Subnet-mask',
+        align: 'center',
+        dataIndex: 'subnet-mask',
+        key: 'subnet-mask',
+        ...this.getColumnSearchProps('subnet-mask'),
+      },
+      {
+        title: 'IPv4-address-first',
+        align: 'center',
+        dataIndex: 'ipv4-address-first',
+        key: 'ipv4-address-first',
+        ...this.getColumnSearchProps('ipv4-address-first'),
+      },
+      {
+        title: 'IPv4-address-last',
+        align: 'center',
+        dataIndex: 'ipv4-address-last',
+        key: 'ipv4-address-last',
+        ...this.getColumnSearchProps('ipv4-address-last'),
+      },
+      {
         title: 'Domain',
         align: 'center',
         dataIndex: ['domain', 'name'],
         key: 'domain',
         ...this.getColumnSearchProps(['domain', 'name']),
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
       }
     ]
 
     let returnColumns = () => {
-      console.log(typeof columns)
+      switch(this.state.itemTypes) {
+        case 'hosts':
+          columns = columns.filter(col => col.dataIndex !== 'subnet4')
+          columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+          columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+          return columns
+          break;
+        case 'groups':
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+          columns = columns.filter(col => col.dataIndex !== 'subnet4')
+          columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+          columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+          return columns
+          break;
+        case 'networks':
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+          return columns
+          break;
+        case 'address-ranges':
+          columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+          columns = columns.filter(col => col.dataIndex !== 'subnet4')
+          columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+          columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+          return columns
+          break;
+      }
       return columns
     }
 
@@ -453,7 +513,7 @@ class Modify extends React.Component {
         <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>MODIFY GROUP</p>}
+          title={<p style={{textAlign: 'center'}}>{this.props.obj.name}</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -462,7 +522,7 @@ class Modify extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 50%'}}/> }
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
@@ -496,12 +556,12 @@ class Modify extends React.Component {
               <Row>
                 <Col span={24}>
                 {this.state.dataLoading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+                  <Spin indicator={spinIcon} style={{margin: '2% 50%'}}/>
                 :
                   <Row>
                     <Col span={24}>
                       <Table
-                        columns={returnColumns()}
+                        columns={this.state.itemTypes ? returnColumns() : null}
                         dataSource={this.state.tableData}
                         bordered
                         rowKey={randomKey}
@@ -515,8 +575,8 @@ class Modify extends React.Component {
               </Row>
 
               <Row>
-                <Col offset={11} span={4}>
-                  {this.state.dataLoading ?
+                <Col offset={11} span={2}>
+                  {(this.state.dataLoading || this.state.itemTypes === undefined) ?
                     <Button type="primary" shape='round' disabled>
                       Modify Group
                     </Button>
