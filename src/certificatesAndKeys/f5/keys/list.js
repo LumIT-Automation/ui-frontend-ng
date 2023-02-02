@@ -109,12 +109,17 @@ class List extends React.Component {
   };
 
   handleReset = clearFilters => {
+    console.log(clearFilters)
     clearFilters();
     this.setState({ searchText: '' });
   };
 
 
   render() {
+    console.log(this.props.keys)
+    let today = new Date().getTime();
+    let thirtyDays = 2592000000
+    let inThirtyDays = new Date(today + thirtyDays);
 
     const columns = [
       {
@@ -125,18 +130,25 @@ class List extends React.Component {
         ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'KEYSIZE',
+        title: 'KeyType',
+        align: 'center',
+        dataIndex: 'keyType',
+        key: 'keyType',
+        ...this.getColumnSearchProps('keyType'),
+      },
+      {
+        title: 'KeySize',
         align: 'center',
         dataIndex: 'keySize',
         key: 'keySize',
         ...this.getColumnSearchProps('keySize'),
       },
       {
-        title: 'KEYTYPE',
+        title: 'SecurityType',
         align: 'center',
-        dataIndex: 'keyType',
-        key: 'keyType',
-       ...this.getColumnSearchProps('keyType'),
+        dataIndex: 'securityType',
+        key: 'securityType',
+        ...this.getColumnSearchProps('securityType'),
       },
       {
         title: 'Delete',
@@ -145,8 +157,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            {/*certificate_delete da sostituire con key_delete*/}
-            { this.props.authorizations && (this.props.authorizations.certificate_delete || this.props.authorizations.any) ?
+            { this.props.authorizations && (this.props.authorizations.key_delete || this.props.authorizations.any) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -174,5 +185,5 @@ class List extends React.Component {
 
 export default connect((state) => ({
   keys: state.f5.keys,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.f5
 }))(List);

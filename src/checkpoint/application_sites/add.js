@@ -68,11 +68,15 @@ class Add extends React.Component {
     let l, list
     try {
       l = e.target.value.split(',')
+      // \r \n \r\n \t \s http:// https://
+      // * accetta dominio superiore
       list = []
 
       l.forEach((item, i) => {
         list.push(item.trim())
       });
+
+      //unique
 
       request.urlList = list
     } catch (error) {
@@ -243,7 +247,7 @@ class Add extends React.Component {
                 </Col>
               </Row>
               <br/>
-
+              {/* solo custom */}
               <Row>
                 <Col offset={2} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application sites category:</p>
@@ -297,6 +301,7 @@ class Add extends React.Component {
               </Row>
               <br/>
 
+              {/* radio button  per text area o tabella */}
               <Row>
                 <Col offset={2} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Url list (valid fqdn comma separated):</p>

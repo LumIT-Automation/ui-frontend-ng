@@ -109,6 +109,7 @@ class List extends React.Component {
   };
 
   handleReset = clearFilters => {
+    console.log(clearFilters)
     clearFilters();
     this.setState({ searchText: '' });
   };
