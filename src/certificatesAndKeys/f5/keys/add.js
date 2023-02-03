@@ -22,7 +22,8 @@ class Add extends React.Component {
   constructor(props) {
     super(props)
       this.state = {
-        request: {}
+        request: {},
+        errors: {}
       };
     }
 
@@ -43,19 +44,19 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
-  fileNameSet = e => {
+  keyNameSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.fileName = e.target.value
+    request.keyName = e.target.value
     this.setState({request: request})
   }
 
   sourceTypeSet = e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (e.target.value === 'pasteText') {
-      request.sourceValue = e.target.value
-      delete request.selectedFile
+      request.sourceType = e.target.value
+      delete request.file
     } else if (e.target.value === 'upload') {
-      request.sourceValue = e.target.value
+      request.sourceType = e.target.value
       delete request.text
     }
     this.setState({request: request})
@@ -67,34 +68,71 @@ class Add extends React.Component {
     this.setState({request: request})
   }
 
-  fileUpload = event => {
+  fileUpload = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.selectedFile = event.target.files[0]
-    this.setState({request: request}, () => this.singleFileRead(event))
-  }
+    let file, reader, contents
 
-  singleFileRead = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.name = this.state.request.selectedFile.name
-    request.size = this.state.request.selectedFile.size
-    request.type = this.state.request.selectedFile.type
+    try {
+      file = e.target.files[0]
+      request.file = file
+      request.fileName = file.name
+      request.size = file.size
+      request.type = file.type
 
-    let file = e.target.files[0];
-    if (!file) {
-      return;
+      reader = new FileReader();
+      reader.onload = (e) => {
+        contents = e.target.result;
+        request.text = contents
+      };
+      reader.readAsText(file);
+      await this.setState({request: request})
     }
-    let reader = new FileReader();
-    reader.onload = (e) => {
-      let contents = e.target.result;
-      request.text = contents
-    };
-    reader.readAsText(file);
-    this.setState({request: request})
+    catch(error) {
+      console.log(error)
+    }
   }
 
+  validationCheck = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+
+    if (!request.keyName) {
+      errors.keyNameError = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors.keyNameError
+      await this.setState({errors: errors})
+    }
+    if (!request.sourceType) {
+      errors.sourceTypeError = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors.sourceTypeError
+      await this.setState({errors: errors})
+    }
+    if (!request.text) {
+      errors.textError = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors.textError
+      await this.setState({errors: errors})
+    }
+    return errors
+  }
+
+  validation = async () => {
+    await this.validationCheck()
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.keyInstall()
+    }
+  }
 
   keyInstall =  async () => {
-    let keyName = `${this.state.request.fileName}`
+    let keyName = `${this.state.request.keyName}`
     let contentBase64 = btoa(this.state.request.text)
 
     let body = {
@@ -137,7 +175,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.props.partition)
+    console.log(this.state.request)
 
     return (
       <React.Fragment>
@@ -145,7 +183,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD KEY</p>}
+          title={<p style={{textAlign: 'center'}}>Add key</p>}
           centered
           destroyOnClose={true}
           open={this.state.visible}
@@ -154,7 +192,7 @@ class Add extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 47%'}}/> }
         { !this.state.loading && this.state.response &&
           <Result
              status="success"
@@ -169,60 +207,93 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={10}>
-                  <Input onChange={e => this.fileNameSet(e)}/>
+                  {this.state.errors.keyNameError ?
+                    <Input value={this.state.request.keyName} style={{borderColor: 'red'}} onChange={e => this.keyNameSet(e)}/>
+                  :
+                    <Input value={this.state.request.keyName} onChange={e => this.keyNameSet(e)}/>
+                  }
                 </Col>
               </Row>
               <br/>
             </React.Fragment>
 
-            { (this.state.request.fileName) ?
+
+
+            { (this.state.request.keyName) ?
               <React.Fragment>
-                <Row>
-                  <Col offset={7} span={10}>
-                    <Radio.Group onChange={e => this.sourceTypeSet(e)} value={this.state.request.sourceValue}>
-                      <Radio value={"upload"}>Upload</Radio>
-                      <Radio value={"pasteText"}>Paste text</Radio>
-                    </Radio.Group>
-                  </Col>
-                </Row>
+                {this.state.errors.sourceTypeError ?
+                  <Row>
+                    <Col offset={7} span={10}>
+                      <Radio.Group style={{backgroundColor: 'red'}} onChange={e => this.sourceTypeSet(e)} value={this.state.request.sourceType}>
+                        <Radio value={"upload"}>Upload</Radio>
+                        <Radio value={"pasteText"}>Paste text</Radio>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
+                :
+                  <Row>
+                    <Col offset={7} span={10}>
+                      <Radio.Group onChange={e => this.sourceTypeSet(e)} value={this.state.request.sourceType}>
+                        <Radio value={"upload"}>Upload</Radio>
+                        <Radio value={"pasteText"}>Paste text</Radio>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
+                }
                 <br/>
               </React.Fragment>
             :
               null
             }
 
-            {this.state.request.sourceValue === "upload" ?
+            {this.state.request.sourceType === "upload" ?
               <React.Fragment>
-                <Row>
-                  <Col offset={7} span={10}>
-                    <Input type="file" onChange={this.fileUpload} />
-                  </Col>
-                </Row>
+                {this.state.errors.textError ?
+                  <Row>
+                    <Col offset={7} span={10}>
+                      <Input type="file" style={{borderColor: 'red'}} onChange={e => this.fileUpload(e)} />
+                    </Col>
+                  </Row>
+                :
+                  <Row>
+                    <Col offset={7} span={10}>
+                      <Input type="file" onChange={e => this.fileUpload(e)} />
+                    </Col>
+                  </Row>
+                }
                 <br/>
               </React.Fragment>
             :
               null
             }
 
-            {this.state.request.sourceValue === "pasteText" ?
+            {this.state.request.sourceType === "pasteText" ?
               <React.Fragment>
-                <Row>
-                  <Col offset={1} span={22}>
-                    <TextArea rows={22} onChange={e => this.textSet(e)} />
-                  </Col>
-                </Row>
+                {this.state.errors.textError ?
+                  <Row>
+                    <Col offset={1} span={22}>
+                      <TextArea value={this.state.request.text} rows={22} style={{borderColor: 'red'}} onChange={e => this.textSet(e)} />
+                    </Col>
+                  </Row>
+                :
+                  <Row>
+                    <Col offset={1} span={22}>
+                      <TextArea value={this.state.request.text} rows={22} onChange={e => this.textSet(e)} />
+                    </Col>
+                  </Row>
+                }
                 <br/>
               </React.Fragment>
             :
               null
             }
 
-            {this.state.request.selectedFile ?
+            {this.state.request.file ?
               <React.Fragment>
                 <Row>
                   <Col offset={7} span={10}>
                     <Card>
-                        <p>Name: {this.state.request.name}</p>
+                        <p>Name: {this.state.request.fileName}</p>
                         <p>Type: {this.state.request.type}</p>
                         <p>Size: {this.state.request.size} Bytes</p>
                     </Card>
@@ -234,23 +305,12 @@ class Add extends React.Component {
               null
             }
 
-            { (this.props.asset && this.props.partition) ?
-              <Row>
-                <Col offset={7} span={4}>
-                { this.state.request.fileName && (this.state.request.text || this.state.request.selectedFile) ?
-                  <Button type="primary" onClick={this.keyInstall}>Install {this.state.request.fileType}</Button>
-                :
-                  <Button type="primary" disabled >Install {this.state.request.fileType}</Button>
-                }
-                </Col>
-              </Row>
-            :
-              <Row>
-                <Col offset={2} span={6}>
-                  <Alert message="Asset not set" type="error" />
-                </Col>
-              </Row>
-            }
+            <Row>
+              <Col offset={7} span={4}>
+                <Button type="primary" onClick={() => this.validation()}>Install key</Button>
+              </Col>
+            </Row>
+
           </React.Fragment>
         }
 

@@ -86,7 +86,7 @@ class Delete extends React.Component {
           onCancel={() => this.closeModal()}
           width={750}
         >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
+          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 47%'}}/> }
           {!this.state.loading && this.state.response &&
             <Result
                status="success"
