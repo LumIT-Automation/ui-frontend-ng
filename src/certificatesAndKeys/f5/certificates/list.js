@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Delete from './delete'
+import Modify from './modify'
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -160,6 +161,21 @@ class List extends React.Component {
             children: <div>{value}</div>,
           }
         }
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Space size="small">
+           { this.props.authorizations && (this.props.authorizations.certificate_patch || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
       },
       {
         title: 'Delete',

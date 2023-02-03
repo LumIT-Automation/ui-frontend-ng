@@ -580,6 +580,7 @@ export const {
   certificatesError,
 
   certificateAddError,
+  certificateModifyError,
   certificateDeleteError,
 
   keysLoading,
@@ -588,6 +589,7 @@ export const {
   keysError,
 
   keyAddError,
+  keyModifyError,
   keyDeleteError,
 
   profilesLoading,

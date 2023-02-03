@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Delete from './delete'
+import Modify from './modify'
 
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -117,7 +118,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.keys)
     let today = new Date().getTime();
     let thirtyDays = 2592000000
     let inThirtyDays = new Date(today + thirtyDays);
@@ -150,6 +150,21 @@ class List extends React.Component {
         dataIndex: 'securityType',
         key: 'securityType',
         ...this.getColumnSearchProps('securityType'),
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Space size="small">
+           { this.props.authorizations && (this.props.authorizations.key_patch || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
       },
       {
         title: 'Delete',

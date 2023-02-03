@@ -79,11 +79,13 @@ import {
   certificatesError,
 
   certificateAddError,
+  certificateModifyError,
   certificateDeleteError,
 
   keysError,
 
   keyAddError,
+  keyModifyError,
   keyDeleteError,
 
   profilesError,
@@ -300,6 +302,9 @@ class Error extends Component {
         case 'certificateAddError':
           this.props.dispatch(certificateAddError(null))
           break;
+        case 'certificateModifyError':
+          this.props.dispatch(certificateModifyError(null))
+          break;
         case 'certificateDeleteError':
           this.props.dispatch(certificateDeleteError(null))
           break;
@@ -310,6 +315,9 @@ class Error extends Component {
 
         case 'keyAddError':
           this.props.dispatch(keyAddError(null))
+          break;
+        case 'keyModifyError':
+          this.props.dispatch(keyModifyError(null))
           break;
         case 'keyDeleteError':
           this.props.dispatch(keyDeleteError(null))
