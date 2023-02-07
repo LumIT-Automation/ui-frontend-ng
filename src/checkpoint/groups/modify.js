@@ -143,13 +143,18 @@ class Modify extends React.Component {
     this.setState({ searchText: '' });
   };
 
+
+
+
+
+
+
   //SETTERS
   itemTypesSet = e => {
     this.setState({itemTypes: e.target.value})
   }
 
   dataGet = async () => {
-    console.log('dataGet')
     let list = JSON.parse(JSON.stringify(this.state.groupData))
     this.setState({dataLoading: true})
 
@@ -175,9 +180,10 @@ class Modify extends React.Component {
       }
       list.forEach((item, i) => {
         item.groupMember = true
+        item.flagged = true
       });
 
-      await this.setState({groupData: list, flagged: list})
+      await this.setState({groupData: list})
 
     }
 
@@ -216,14 +222,12 @@ class Modify extends React.Component {
       }
     }
 
-    //togli dai domain quelli del gruppo 
-    list = list.concat(domainData.data.items)
+    let l = domainData.data.items.filter(dm => !this.state.groupData.find(gr => (gr.uid === dm.uid ) ))
 
-    await this.setState({tableData: list, dataLoading: false})
+    await this.setState({domainDataPurged: l, dataLoading: false})
   }
 
   groupDataGet = async () => {
-    console.log('groupDataGet')
     let r
     let rest = new Rest(
       "GET",
@@ -231,7 +235,6 @@ class Modify extends React.Component {
         r = resp
       },
       error => {
-        console.log('groupDataGet', error)
         r = error
       }
     )
@@ -254,47 +257,50 @@ class Modify extends React.Component {
     return r
   }
 
-  memberGroupSet = async (e, obj) => {
-    let table = JSON.parse(JSON.stringify(this.state.tableData))
-    let flagged = JSON.parse(JSON.stringify(this.state.flagged))
-    let item = table.find( o => o.uid === obj.uid )
+  flagSet = async (e, obj) => {
+    let groupData = JSON.parse(JSON.stringify(this.state.groupData))
+    let domainDataPurged = JSON.parse(JSON.stringify(this.state.domainDataPurged))
+    let item
 
-    if (e.target.checked) {
-      item.groupMember = true
-      flagged.push(item)
+    if (obj.groupMember) {
+      item = groupData.find( o => o.uid === obj.uid )
+      if (e.target.checked) {
+        item.flagged = true
+      }
+      else {
+        delete item.flagged
+      }
+      await this.setState({groupData: groupData})
     }
     else {
-      item.groupMember = false
-      flagged = flagged.filter(o => o.uid != obj.uid)
+      item = domainDataPurged.find( o => o.uid === obj.uid )
+      if (e.target.checked) {
+        item.flagged = true
+      }
+      else {
+        delete item.flagged
+      }
+      await this.setState({domainDataPurged: domainDataPurged})
     }
-
-    await this.setState({tableData: table, flagged: flagged})
   }
 
   createBody = async() => {
-    console.log('createBody')
     let groupData = JSON.parse(JSON.stringify(this.state.groupData))
-    let flagged = JSON.parse(JSON.stringify(this.state.flagged))
+    let domainDataPurged = JSON.parse(JSON.stringify(this.state.domainDataPurged))
     let toAdd = []
     let toRemove = []
     let flaggedUids = []
     let groupDataUids = []
 
-    flagged.forEach((item, i) => {
-      flaggedUids.push(item.uid)
-    });
-    groupData.forEach((item, i) => {
-      groupDataUids.push(item.uid)
-    });
-
-    flaggedUids.forEach((item, i) => {
-      if (!groupDataUids.includes(item)) {
-        toAdd.push(item)
+    domainDataPurged.forEach((item, i) => {
+      if (item.flagged) {
+        toAdd.push(item.uid)
       }
     });
-    groupDataUids.forEach((item, i) => {
-      if (!flaggedUids.includes(item)) {
-        toRemove.push(item)
+
+    groupData.forEach((item, i) => {
+      if (!item.flagged) {
+        toRemove.push(item.uid)
       }
     });
 
@@ -316,7 +322,6 @@ class Modify extends React.Component {
   }
 
   removeHandler = async (toRemove) => {
-    console.log('removeHandler')
     let itemType, isUnlocked
     switch(this.state.itemTypes) {
       case 'hosts':
@@ -402,7 +407,7 @@ class Modify extends React.Component {
         key: 'groupMember',
         render: (name, obj)  => (
           <React.Fragment>
-            <Checkbox checked={obj.groupMember} onChange={e => this.memberGroupSet(e, obj)}/>
+            <Checkbox checked={obj.flagged} onChange={e => this.flagSet(e, obj)}/>
           </React.Fragment>
         ),
       },
@@ -500,10 +505,12 @@ class Modify extends React.Component {
       return columns
     }
 
-    console.log(returnColumns())
-
     let randomKey = () => {
       return Math.random().toString()
+    }
+
+    let joinedData = () => {
+      return this.state.groupData.concat(this.state.domainDataPurged)
     }
 
     return (
@@ -562,7 +569,7 @@ class Modify extends React.Component {
                     <Col span={24}>
                       <Table
                         columns={this.state.itemTypes ? returnColumns() : null}
-                        dataSource={this.state.tableData}
+                        dataSource={(this.state.groupData && this.state.domainDataPurged) ? joinedData() : null}
                         bordered
                         rowKey={randomKey}
                         scroll={{x: 'auto'}}
