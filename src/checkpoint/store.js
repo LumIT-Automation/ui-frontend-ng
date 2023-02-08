@@ -250,6 +250,7 @@ const checkpointSlice = createSlice({
         state.historysLoading = action.payload
       },
       historys: ( state, action) => {
+        console.log(action.payload)
         state.historys = action.payload.data.items
       },
       historysFetch: ( state, action) => {

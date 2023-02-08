@@ -126,13 +126,6 @@ class List extends React.Component {
         ...this.getColumnSearchProps('config_object_type'),
       },
       {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        ...this.getColumnSearchProps('status'),
-      },
-      {
         title: 'Action',
         align: 'center',
         width: 500,
@@ -155,6 +148,13 @@ class List extends React.Component {
         defaultSortOrder: 'descend',
         sorter: (a, b) => new Date(a.date) - new Date(b.date),
         ...this.getColumnSearchProps('date'),
+      },
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        ...this.getColumnSearchProps('status'),
       },
       {
         title: 'Username',
@@ -184,5 +184,5 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  historys: state.f5.historys,
+  historys: state.checkpoint.historys,
 }))(List);

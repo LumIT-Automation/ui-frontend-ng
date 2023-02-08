@@ -51,6 +51,7 @@ class Manager extends React.Component {
   main = async () => {
     this.props.dispatch(historysLoading(true))
     let fetchedHistorys = await this.historysGet()
+    console.log(fetchedHistorys)
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
       this.props.dispatch(historysError(fetchedHistorys))
       this.props.dispatch(historysLoading(false))

@@ -115,6 +115,7 @@ class List extends React.Component {
 
 
   render() {
+    console.log(this.props.historys)
     const columns = [
       {
         title: 'Type',
