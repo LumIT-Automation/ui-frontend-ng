@@ -8,6 +8,8 @@ import {
   permissionsError,
   identityGroupsError,
 
+  identityGroupDeleteError,
+
   newIdentityGroupAddError,
 
   rolesError,
@@ -71,9 +73,6 @@ class Error extends Component {
           break;
 
 
-        case 'newIdentityGroupAddError':
-          this.props.dispatch(newIdentityGroupAddError(null))
-          break;
         case 'rolesError':
           this.props.dispatch(rolesError(null))
           break;
@@ -94,6 +93,13 @@ class Error extends Component {
         case 'identityGroupsError':
           this.props.dispatch(identityGroupsError(null))
           break;
+        case 'identityGroupDeleteError':
+          this.props.dispatch(identityGroupDeleteError(null))
+          break;
+        case 'newIdentityGroupAddError':
+          this.props.dispatch(newIdentityGroupAddError(null))
+          break;
+
 
         case 'environmentError':
         	this.props.dispatch(environmentError(null))

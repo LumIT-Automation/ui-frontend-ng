@@ -11,13 +11,13 @@ import { SearchOutlined } from '@ant-design/icons';
 
 
 
-class List extends React.Component {
 
+class TableConcerto extends React.Component{
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
       searchText: '',
-      searchedColumn: ''
+      searchedColumn: '',
     };
   }
 
@@ -25,7 +25,7 @@ class List extends React.Component {
   }
 
   shouldComponentUpdate(newProps, newState) {
-      return true;
+    return true;
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -33,7 +33,6 @@ class List extends React.Component {
 
   componentWillUnmount() {
   }
-
 
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -115,10 +114,8 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
-
-
-  render() {
-    const columns = [
+  columns = (type) => {
+    let col = [
       {
         title: 'Name',
         align: 'center',
@@ -131,28 +128,7 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'address',
         key: 'address',
-        ...this.getColumnSearchProps('address'),
-      },
-      {
-        title: 'Session',
-        align: 'center',
-        dataIndex: 'session',
-        key: 'session',
-       ...this.getColumnSearchProps('session'),
-      },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'state',
-        key: 'state',
-       ...this.getColumnSearchProps('state'),
-      },
-      {
-        title: 'Monitor',
-        align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-        ...this.getColumnSearchProps('monitor'),
+        //...this.getColumnSearchProps('address'),
       },
       {
         title: 'Delete',
@@ -169,27 +145,14 @@ class List extends React.Component {
           </Space>
         ),
       }
-    ];
+    ]
+    return col
+  }
 
 
-    return (
-      <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-        <Table
-          columns={columns}
-          dataSource={this.props.nodes}
-          bordered
-          rowKey="name"
-          scroll={{x: 'auto'}}
-          pagination={{ pageSize: 10 }}
-          style={{marginBottom: 10}}
-        />
-      </Space>
-
-    )
+  render(){
+    //return false
   }
 }
 
-export default connect((state) => ({
-  authorizations: state.authorizations.f5,
-  nodes: state.f5.nodes,
-}))(List);
+export default TableConcerto

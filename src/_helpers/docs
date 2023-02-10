@@ -1,0 +1,33 @@
+class A extends React.Component{
+  constructor(props) {
+    super(props)
+    this.parentMethod = this.parentMethod.bind(this) //referencing the method in constructor
+  }
+
+  parentMethod(){
+    console.log('Parent Method')
+  }
+
+  render(){
+    return false
+  }
+}
+
+class B extends A{
+  constructor(){
+    super() //call super to run parent's constructor
+  }
+
+  render(){
+    this.parentMethod() //calling parent method
+    return false
+  }
+}
+
+ReactDOM.render(
+  <div>
+    <A/>
+    <B/>
+  </div>,
+  document.getElementById('app')
+)

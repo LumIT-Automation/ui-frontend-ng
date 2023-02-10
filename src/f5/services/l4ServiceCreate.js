@@ -598,6 +598,7 @@ class CreateF5Service extends React.Component {
           title={<p style={{textAlign: 'center'}}>L4 CREATE</p>}
           centered
           destroyOnClose={true}
+          maskClosable={false}
           visible={this.state.visible}
           footer={''}
           onOk={() => this.setState({visible: true})}

@@ -18,6 +18,7 @@ import {
 
 import List from './list'
 import Add from './add'
+import IdentityGroupDelete from './identityGroupDelete'
 
 
 
@@ -182,6 +183,7 @@ class Manager extends React.Component {
         { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
           <React.Fragment>
             <Add/>
+            <IdentityGroupDelete/>
             <br/>
             <br/>
           </React.Fragment>
