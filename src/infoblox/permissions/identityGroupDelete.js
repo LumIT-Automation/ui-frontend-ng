@@ -10,7 +10,8 @@ import Error from '../error'
 import {
   permissionsFetch,
   identityGroups,
-  identityGroupDeleteError
+  identityGroupDeleteError,
+  identityGroupsError
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
