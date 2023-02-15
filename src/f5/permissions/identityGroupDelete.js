@@ -68,7 +68,7 @@ class IdentityGroupDelete extends React.Component {
         r = error
       }
     )
-    await rest.doXHR("infoblox/identity-groups/", this.props.token)
+    await rest.doXHR("f5/identity-groups/", this.props.token)
     return r
   }
 
@@ -89,7 +89,7 @@ class IdentityGroupDelete extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`infoblox/identity-group/${this.state.identity_group_identifier}/`, this.props.token)
+    await rest.doXHR(`f5/identity-group/${this.state.identity_group_identifier}/`, this.props.token)
   }
 
   response = () => {
@@ -217,6 +217,6 @@ class IdentityGroupDelete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  identityGroups: state.infoblox.identityGroups,
-  identityGroupDeleteError: state.infoblox.identityGroupDeleteError,
+  identityGroups: state.f5.identityGroups,
+  identityGroupDeleteError: state.f5.identityGroupDeleteError,
 }))(IdentityGroupDelete);

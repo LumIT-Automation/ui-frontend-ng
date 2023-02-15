@@ -4,6 +4,8 @@ import 'antd/dist/antd.css'
 import Error from '../error'
 import Rest from '../../_helpers/Rest'
 
+import { Row, Col } from 'antd'
+
 import {
   permissionsLoading,
   permissions,
@@ -16,7 +18,7 @@ import {
 
 import List from './list'
 import Add from './add'
-
+import IdentityGroupDelete from './identityGroupDelete'
 
 
 class Manager extends React.Component {
@@ -110,16 +112,23 @@ class Manager extends React.Component {
   render() {
     return (
       <React.Fragment>
+        <Row>
+          { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+            <Col span={2}>
+              <Add/>
+            </Col>
+            :
+            null
+          }
+          { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
+            <Col span={2}>
+                <IdentityGroupDelete/>
+            </Col>
+            :
+            null
+          }
+        </Row>
         <br/>
-        { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-          <React.Fragment>
-            <Add/>
-            <br/>
-            <br/>
-          </React.Fragment>
-          :
-          null
-        }
 
         <List/>
 

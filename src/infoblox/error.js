@@ -6,16 +6,15 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   permissionsError,
-  identityGroupsError,
-
-  identityGroupDeleteError,
-
-  newIdentityGroupAddError,
-
-  rolesError,
   permissionAddError,
   permissionModifyError,
   permissionDeleteError,
+
+  identityGroupsError,
+  identityGroupDeleteError,
+  newIdentityGroupAddError,
+
+  rolesError,
 
   environmentError,
   assetsError,
@@ -72,9 +71,8 @@ class Error extends Component {
           this.props.dispatch(authorizationsError(null))
           break;
 
-
-        case 'rolesError':
-          this.props.dispatch(rolesError(null))
+        case 'permissionsError':
+          this.props.dispatch(permissionsError(null))
           break;
         case 'permissionAddError':
           this.props.dispatch(permissionAddError(null))
@@ -86,10 +84,6 @@ class Error extends Component {
           this.props.dispatch(permissionDeleteError(null))
           break;
 
-
-        case 'permissionsError':
-        	this.props.dispatch(permissionsError(null))
-        	break;
         case 'identityGroupsError':
           this.props.dispatch(identityGroupsError(null))
           break;
@@ -100,6 +94,9 @@ class Error extends Component {
           this.props.dispatch(newIdentityGroupAddError(null))
           break;
 
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
+          break;
 
         case 'environmentError':
         	this.props.dispatch(environmentError(null))

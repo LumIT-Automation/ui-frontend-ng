@@ -47,6 +47,9 @@ const fortinetdbSlice = createSlice({
       identityGroupsError: (state, action) => {
         state.identityGroupsError = action.payload
       },
+      identityGroupDeleteError: (state, action) => {
+        state.identityGroupDeleteError = action.payload
+      },
 
 
       projectsLoading: (state, action) => {
@@ -362,12 +365,14 @@ export const {
   permissionDeleteError,
 
   rolesError,
-  newIdentityGroupAddError,
 
   identityGroupsLoading,
   identityGroups,
   identityGroupsFetch,
   identityGroupsError,
+
+  identityGroupDeleteError,
+  newIdentityGroupAddError,
 
   projectsLoading,
   projects,

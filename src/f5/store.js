@@ -47,6 +47,9 @@ const f5Slice = createSlice({
         identityGroupsError: (state, action) => {
           state.identityGroupsError = action.payload
         },
+        identityGroupDeleteError: (state, action) => {
+          state.identityGroupDeleteError = action.payload
+        },
 
         environment: (state, action) => {
           state.environment = action.payload
@@ -477,12 +480,13 @@ export const {
 
   rolesError,
 
-  newIdentityGroupAddError,
-
   identityGroupsLoading,
   identityGroups,
   identityGroupsFetch,
   identityGroupsError,
+
+  identityGroupDeleteError,
+  newIdentityGroupAddError,
 
   environment,
   environmentError,

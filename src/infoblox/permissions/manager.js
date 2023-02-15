@@ -4,6 +4,8 @@ import 'antd/dist/antd.css'
 import Error from '../error'
 import Rest from '../../_helpers/Rest'
 
+import { Row, Col } from 'antd'
+
 import {
   permissionsLoading,
   permissions,
@@ -180,18 +182,28 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <br/>
-        { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-          <React.Fragment>
-            <Add/>
-            <IdentityGroupDelete/>
-            <br/>
-            <br/>
-          </React.Fragment>
-          :
-          null
-        }
-
-        <List/>
+        <Row>
+          { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
+            <Col span={1}>
+              <Add/>
+            </Col>
+            :
+            null
+          }
+          { this.props.authorizations && (this.props.authorizations.permission_identityGroup_delete || this.props.authorizations.any) ?
+            <Col span={2}>
+                <IdentityGroupDelete/>
+            </Col>
+            :
+            null
+          }
+        </Row>
+        <br/>
+        <Row>
+          <Col span={24}>
+            <List/>
+          </Col>
+        </Row>
 
         { this.props.assetsError ? <Error component={'manager infoblox'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
         { this.props.identityGroupsError ? <Error component={'manager infoblox'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
