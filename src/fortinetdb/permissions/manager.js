@@ -112,9 +112,10 @@ class Manager extends React.Component {
   render() {
     return (
       <React.Fragment>
+        <br/>
         <Row>
           { this.props.authorizations && (this.props.authorizations.permission_identityGroups_post || this.props.authorizations.any) ?
-            <Col span={2}>
+            <Col span={1}>
               <Add/>
             </Col>
             :
@@ -129,8 +130,11 @@ class Manager extends React.Component {
           }
         </Row>
         <br/>
-
-        <List/>
+        <Row>
+          <Col span={24}>
+            <List/>
+          </Col>
+        </Row>
 
         { this.props.identityGroupsError ? <Error component={'manager fortinetdb'} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
         { this.props.permissionsError ? <Error component={'manager fortinetdb'} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
