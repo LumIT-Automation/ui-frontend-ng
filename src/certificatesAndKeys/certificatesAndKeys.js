@@ -8,7 +8,7 @@ import { Tabs, Space, Spin, Divider } from 'antd'
 import Rest from '../_helpers/Rest'
 import Error from '../f5/error'
 
-import AssetSelector from '../f5/assetSelector'
+import AssetSelector from '../concerto/assetSelector'
 import CertificatesManager from './f5/certificates/manager'
 import KeysManager from './f5/keys/manager'
 
@@ -82,46 +82,43 @@ class CertificatesAndKeys extends React.Component {
           <TabPane tab="F5" key="2">
             {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
             <React.Fragment>
-              <div style={{margin: '0 130px'}}>
-                <AssetSelector />
-              </div>
-            <Divider/>
-            <Tabs type="card">
-              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                <React.Fragment>
-                  {this.props.certificatesLoading ?
-                    <TabPane key="Certificates" tab="Certificates">
-                      <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                    </TabPane>
-                    :
-                    <TabPane key="Certificates" tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
-                      <CertificatesManager/>
-                    </TabPane>
-                  }
-                </React.Fragment>
-                :
-                null
-              }
-              {/*certificates_get da sostituire con keys_get*/}
-              { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                <React.Fragment>
-                  {this.props.keysLoading ?
-                    <TabPane key="Keys" tab="Keys">
-                      <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                    </TabPane>
-                    :
-                    <TabPane key="Keys" tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
-                      <KeysManager/>
-                    </TabPane>
-                  }
-                </React.Fragment>
-                :
-                null
-              }
+              <AssetSelector vendor='f5'/>
+              <Divider/>
+              <Tabs type="card">
+                { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.certificatesLoading ?
+                      <TabPane key="Certificates" tab="Certificates">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                      :
+                      <TabPane key="Certificates" tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
+                        <CertificatesManager/>
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                  :
+                  null
+                }
+                {/*certificates_get da sostituire con keys_get*/}
+                { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
+                  <React.Fragment>
+                    {this.props.keysLoading ?
+                      <TabPane key="Keys" tab="Keys">
+                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                      </TabPane>
+                      :
+                      <TabPane key="Keys" tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
+                        <KeysManager/>
+                      </TabPane>
+                    }
+                  </React.Fragment>
+                  :
+                  null
+                }
 
 
-            </Tabs>
-
+              </Tabs>
             </React.Fragment>
             }
           </TabPane>

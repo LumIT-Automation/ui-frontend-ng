@@ -12,7 +12,7 @@ import {
   nextAvailableIpError,
 } from '../store'
 
-import AssetSelector from '../assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 import { Space, Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -316,7 +316,6 @@ class RequestIp extends React.Component {
   //validation
 
   validation = async () => {
-    console.log('èèèèèèèèè')
     let valid = await this.validationCheck()
     if (valid) {
       this.sendRequests()
@@ -921,7 +920,7 @@ class RequestIp extends React.Component {
           width={1500}
         >
 
-          <AssetSelector />
+          <AssetSelector vendor='infoblox'/>
           <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?

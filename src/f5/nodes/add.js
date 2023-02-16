@@ -82,26 +82,43 @@ class Add extends React.Component {
 
 
   //SETTERS
-  nameSet = e => {
+  nameSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.name = e.target.value
-    this.setState({request: request})
+    await this.setState({request: request})
   }
-  addressSet = e => {
+  addressSet = async e => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.address = e.target.value
-    this.setState({request: request})
+    await this.setState({request: request})
   }
-  routeDomainSet = id => {
+  routeDomainSet = async id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request.routeDomain = id.toString()
-    this.setState({request: request})
+    await this.setState({request: request})
   }
-  setStatus = e => {
-    let request = Object.assign({}, this.state.request);
-    request.session = e[0]
-    request.state = e[1]
-    this.setState({request: request})
+  setStatus = async e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+
+    console.log(e)
+    try {
+      if (e === 'Enabled' ){
+        request.session = 'user-enabled'
+        request.state = 'unchecked'
+      }
+      if (e === 'Disabled' ){
+        request.session = 'user-disabled'
+        request.state = 'unchecked'
+      }
+      if (e === 'Foffline' ){
+        request.session = 'user-disabled'
+        request.state = 'user-down'
+      }
+    }catch(error) {
+      console.log(e)
+    }
+
+    await this.setState({request: request})
   }
 
 
@@ -309,18 +326,18 @@ class Add extends React.Component {
                     style={{width: 250, border: `1px solid red`}}
                     onChange={a => this.setStatus(a)}
                   >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
+                    <Select.Option key={'Enabled'} value={'Enabled'}>Enabled</Select.Option>
+                    <Select.Option key={'Disabled'} value={'Disabled'}>Disabled</Select.Option>
+                    <Select.Option key={'Foffline'} value={'Foffline'}>Force Offline</Select.Option>
                   </Select>
                 :
                   <Select
                     style={{width: 250}}
                     onChange={a => this.setStatus(a)}
                   >
-                    <Select.Option key={'Enabled'} value={['user-enabled', 'unchecked']}>Enabled</Select.Option>
-                    <Select.Option key={'Disabled'} value={['user-disabled', 'unchecked']}>Disabled</Select.Option>
-                    <Select.Option key={'Foffline'} value={['user-disabled', 'user-down']}>Force Offline</Select.Option>
+                  <Select.Option key={'Enabled'} value={'Enabled'}>Enabled</Select.Option>
+                  <Select.Option key={'Disabled'} value={'Disabled'}>Disabled</Select.Option>
+                  <Select.Option key={'Foffline'} value={'Foffline'}>Force Offline</Select.Option>
                   </Select>
                 }
                 </Col>

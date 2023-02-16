@@ -12,7 +12,7 @@ import {
   poolsError
 } from '../../store'
 
-import AssetSelector from '../../assetSelector'
+import AssetSelector from '../../../concerto/assetSelector'
 import Pools from './pools'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -99,7 +99,7 @@ class Manager extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
         >
-          <AssetSelector />
+          <AssetSelector vendor='f5'/>
           <Divider/>
 
           { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?

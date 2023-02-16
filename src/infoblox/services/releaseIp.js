@@ -9,7 +9,7 @@ import {
   ipReleaseError,
 } from '../store'
 
-import AssetSelector from '../assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -264,7 +264,7 @@ class ReleaseIp extends React.Component {
           width={1500}
         >
 
-          <AssetSelector/>
+          <AssetSelector vendor='infoblox'/>
           <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?

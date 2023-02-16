@@ -11,7 +11,7 @@ import {
   serviceDeleteError
 } from '../store'
 
-import AssetSelector from '../../f5/assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 import { Modal, Alert, Result, Button, Spin, Divider, Row, Col, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -156,7 +156,7 @@ class DeleteF5Service extends React.Component {
           width={1500}
         >
 
-          <AssetSelector />
+          <AssetSelector vendor='f5'/>
           <Divider/>
 
           { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?

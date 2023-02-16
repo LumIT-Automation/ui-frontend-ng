@@ -17,7 +17,7 @@ import {
   l4ServiceCreateError,
 } from '../store'
 
-import AssetSelector from '../../f5/assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -606,7 +606,7 @@ class CreateF5Service extends React.Component {
           width={1500}
         >
 
-          <AssetSelector />
+          <AssetSelector vendor='f5'/>
 
           <Divider/>
 

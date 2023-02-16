@@ -8,7 +8,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import Rest from '../_helpers/Rest'
 import Error from './error'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../concerto/assetSelector'
 import Tree from './tree/manager'
 
 import {
@@ -69,7 +69,7 @@ class Infoblox extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <AssetSelector/>
+        <AssetSelector vendor='infoblox'/>
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>

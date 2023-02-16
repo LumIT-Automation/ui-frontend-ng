@@ -8,7 +8,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import Rest from '../_helpers/Rest'
 import Error from './error'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../concerto/assetSelector'
 import Nodes from './nodes/manager'
 import Monitors from './monitors/manager'
 import Pools from './pools/manager'
@@ -109,7 +109,7 @@ class F5 extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <AssetSelector/>
+        <AssetSelector vendor='f5'/>
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>

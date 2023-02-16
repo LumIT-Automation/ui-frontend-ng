@@ -9,7 +9,7 @@ import {
   ipDetailError,
 } from '../store'
 
-import AssetSelector from '../assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -163,7 +163,7 @@ class DetailsIp extends React.Component {
           width={1500}
         >
 
-          <AssetSelector/>
+          <AssetSelector vendor='infoblox'/>
           <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?

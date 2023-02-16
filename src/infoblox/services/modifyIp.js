@@ -10,7 +10,7 @@ import {
   ipModifyError,
 } from '../store'
 
-import AssetSelector from '../assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -308,7 +308,7 @@ class ModifyIp extends React.Component {
           width={1500}
         >
 
-          <AssetSelector/>
+          <AssetSelector vendor='infoblox'/>
           <Divider/>
 
           { ( this.props.asset && this.props.asset.id ) ?
