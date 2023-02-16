@@ -8,7 +8,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import Rest from '../_helpers/Rest'
 import Error from './error'
 
-import AssetSelector from './assetSelector'
+import AssetSelector from '../concerto/assetSelector'
 import Hosts from './hosts/manager'
 import Groups from './groups/manager'
 import Networks from './networks/manager'
@@ -92,7 +92,7 @@ class Checkpoint extends React.Component {
   render() {
     return (
       <React.Fragment>
-        <AssetSelector/>
+        <AssetSelector vendor='checkpoint'/>
         <Divider style={{borderBottom: '3vh solid #f0f2checkpoint'}}/>
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>

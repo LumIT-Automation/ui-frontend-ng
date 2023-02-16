@@ -22,7 +22,7 @@ import {
   vmCreateError
 } from '../store'
 
-import AssetSelector from '../../vmware/assetSelector'
+import AssetSelector from '../../concerto/assetSelector'
 
 const { Panel } = Collapse;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -2698,7 +2698,7 @@ class CreateVmService extends React.Component {
           bodyStyle={{height: '80vh', overflowY: 'scroll'}}
         >
 
-          <AssetSelector />
+          <AssetSelector vendor='vmware'/>
 
           <Divider/>
 
