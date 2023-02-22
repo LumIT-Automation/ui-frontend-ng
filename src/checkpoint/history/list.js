@@ -115,7 +115,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.historys)
     const columns = [
       {
         title: 'Config Object Type',
@@ -126,19 +125,28 @@ class List extends React.Component {
         ...this.getColumnSearchProps('config_object_type'),
       },
       {
+        title: 'Name',
+        align: 'center',
+        width: 500,
+        dataIndex: 'config_object_name',
+        key: 'config_object_name',
+        ...this.getColumnSearchProps('config_object_name'),
+      },
+      {
+        title: 'Description',
+        align: 'center',
+        width: 500,
+        dataIndex: 'config_object_description',
+        key: 'config_object_description',
+        ...this.getColumnSearchProps('config_object_description'),
+      },
+      {
         title: 'Action',
         align: 'center',
         width: 500,
         dataIndex: 'action',
         key: 'action',
         ...this.getColumnSearchProps('action'),
-      },
-      {
-        title: 'Config Object',
-        align: 'center',
-        dataIndex: 'config_object',
-        key: 'config_object',
-        ...this.getColumnSearchProps('config_object'),
       },
       {
         title: 'Date',

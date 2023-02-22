@@ -187,7 +187,6 @@ class Add extends React.Component {
 
   validation = async () => {
     let nicsOk = await this.validationCheck()
-    console.log(nicsOk)
 
     if ((Object.keys(this.state.errors).length === 0) && nicsOk) {
       this.hostAdd()
@@ -217,7 +216,6 @@ class Add extends React.Component {
     });
 
     b.data.interfaces = nics
-    console.log(b)
 
     this.setState({loading: true})
 
@@ -252,7 +250,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.interfaces)
     const columns = [
       {
         title: 'id',
@@ -263,7 +260,7 @@ class Add extends React.Component {
         description: '',
       },
       {
-        title: 'Name',
+        title: 'Interface name',
         align: 'center',
         dataIndex: 'name',
         key: 'name',
@@ -327,6 +324,7 @@ class Add extends React.Component {
               <React.Fragment>
                 <Input
                   id='mask_length4'
+                  placeholder='24'
                   defaultValue={obj.mask_length4}
                   style={{borderColor: 'red' }}
                   onChange={e => this.mask_length4Set(e.target.value, obj.id)}
@@ -336,6 +334,7 @@ class Add extends React.Component {
             :
               <Input
                 id='mask_length4'
+                placeholder='24'
                 defaultValue={obj.mask_length4}
                 onChange={e => this.mask_length4Set(e.target.value, obj.id)}
               />
@@ -434,7 +433,7 @@ class Add extends React.Component {
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
               <Row>
-                <Col offset={4} span={6}>
+                <Col span={1}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={4}>
@@ -448,7 +447,7 @@ class Add extends React.Component {
               <br/>
 
               <Row>
-                <Col offset={4} span={6}>
+                <Col span={1}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
                 </Col>
                 <Col span={4}>
