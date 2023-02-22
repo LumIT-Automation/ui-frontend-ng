@@ -215,7 +215,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpointd/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
   }
 
   response = () => {
