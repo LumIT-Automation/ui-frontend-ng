@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-//import Modify from './modify'
+import Modify from './modify'
 import Delete from './delete'
 
 import { Table, Input, Button, Space } from 'antd';
@@ -220,14 +220,15 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'url-list',
         key: 'url-list',
-        /*
-        render: (record) => {
-         let urlP = record['url-list'].map(r => {
-            return <React.Fragment key={Math.random()}>{r} <br/></React.Fragment>
-          })
-          return urlP
-        }*/
-        ...this.getColumnSearchProps('url-list'),
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.application_site_modify || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),
       },
       {
         title: 'Validation-state',
