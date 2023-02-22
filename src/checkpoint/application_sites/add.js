@@ -10,11 +10,12 @@ import {
   application_siteAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
 
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const deleteIcon = <CloseCircleOutlined/>
 
 
 
@@ -24,6 +25,7 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      input: [],
       errors: {},
       request: {}
     };
@@ -58,31 +60,70 @@ class Add extends React.Component {
     request.description = e.target.value
     this.setState({request: request})
   }
-  application_site_categorySet = (e, v) => {
+  urlListInput = async e => {
+    let input = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.application_site_category = v
-    this.setState({request: request})
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    delete request.urlList
+    delete errors.urlListError
+    await this.setState({request: request, errors: errors, input: input})
   }
-  urlListSet = async e => {
+  urlListSet = async () => {
+    console.log('input', this.state.input)
+    let input = JSON.parse(JSON.stringify(this.state.input))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let l, list
-    try {
-      l = e.target.value.split(',')
-      // \r \n \r\n \t \s http:// https://
-      // * accetta dominio superiore
-      list = []
+    let list=[], nlist=[], urlsList=[]
+    let regexp = new RegExp(/^[*]/g);
 
-      l.forEach((item, i) => {
-        list.push(item.trim())
+    try {
+      input = input.replace('http://','');
+      input = input.replace('https://','');
+      input = input.replace(/[\/\\]/g,'');
+      input = input.replace(/[/\t]/g,' ');
+      input = input.replace(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,'');
+      input = input.replace(/[/\r\n]/g,' ');
+      input = input.replace(/[/\n]/g,' ');
+      input = input.replace(/[/\s]{1,}/g, ',' )
+
+      list = input.split(',')
+      list = list.forEach(x => {
+        if (x.length !== 0) {
+          nlist.push(x)
+        }
       });
 
-      //unique
+      nlist.forEach(x => {
+        if (regexp.test(x)) {
+          let father = x.replace('*.', '')
+          nlist.push(father)
+        }
+      });
 
-      request.urlList = list
+      let unique = [...new Set(nlist)];
+
+      urlsList = []
+      unique.sort().forEach((item, i) => {
+        urlsList.push({url: item})
+      });
+
+
+      request.urlList = urlsList
     } catch (error) {
       console.log(error)
     }
 
+    await this.setState({request: request})
+  }
+
+  removeUrl = async obj => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let list = []
+    request.urlList.map( o => {
+      if (o.url !== obj.url) {
+        list.push(o)
+      }
+    })
+    request.urlList = list
     await this.setState({request: request})
   }
 
@@ -93,6 +134,7 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
+    let regexp = new RegExp(/^[*]/g);
 
     if (!request.name) {
       errors.nameError = true
@@ -110,34 +152,27 @@ class Add extends React.Component {
       delete errors.descriptionError
       this.setState({errors: errors})
     }
-    if (!request.application_site_category) {
-      errors.application_site_categoryError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.application_site_categoryError
-      this.setState({errors: errors})
-    }
     if (!request.urlList) {
       errors.urlListError = true
       this.setState({errors: errors})
     }
     else {
-      let e = 0
-      request.urlList.forEach((item, i) => {
-        if (!validators.fqdn(item)) {
-          e++
+      for await (let item of request.urlList) {
+        if (regexp.test(item.url)) {
+          continue
         }
-      });
+        if (!validators.fqdn(item.url)) {
+          errors.urlListError = item.url
+          await this.setState({errors: errors})
+          break
+        }
+        else {
+          delete errors.urlListError
+          await this.setState({errors: errors})
+        }
+      }
 
-      if (e){
-        errors.urlListError = true
-        this.setState({errors: errors})
-      }
-      else {
-        delete errors.urlListError
-        this.setState({errors: errors})
-      }
+
     }
 
     return errors
@@ -155,12 +190,16 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   application_siteAdd = async () => {
     let request = Object.assign({}, this.state.request)
+    let list = []
+    request.urlList.map( o => {
+      list.push(o.url)
+    })
     let b = {}
     b.data = {
       "name": this.state.request.name,
       "description": this.state.request.description,
-      "url-list": this.state.request.urlList,
-      "primary-category": this.state.request.application_site_category,
+      "url-list": list,
+      "primary-category": "Custom_Application_Site",
       "urls-defined-as-regular-expression": true
     }
 
@@ -176,7 +215,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
+    await rest.doXHR(`checkpointd/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
   }
 
   response = () => {
@@ -196,6 +235,31 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state.request)
+    console.log(this.state.errors)
+
+    let cicciput = (obj) => {
+      console.log('obj', obj)
+    }
+    const columns = [
+      {
+        title: 'Url',
+        align: 'center',
+        width: 'auto',
+        dataIndex: 'url',
+        key: 'url',
+        //...this.getColumnSearchProps('tags'),
+      },
+      {
+        title: 'Remove',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <CloseCircleOutlined onClick={() => this.removeUrl(obj)}/>
+        ),
+      }
+    ]
     return (
       <Space direction='vertical'>
 
@@ -205,11 +269,12 @@ class Add extends React.Component {
           title={<p style={{textAlign: 'center'}}>ADD CUSTOM APPLICATION SITES</p>}
           centered
           destroyOnClose={true}
+            maskClosable={false}
           visible={this.state.visible}
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.response &&
@@ -221,7 +286,7 @@ class Add extends React.Component {
           { !this.state.loading && !this.state.response &&
             <React.Fragment>
               <Row>
-                <Col offset={2} span={6}>
+                <Col span={2}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={16}>
@@ -235,7 +300,7 @@ class Add extends React.Component {
               <br/>
 
               <Row>
-                <Col offset={2} span={6}>
+                <Col span={2}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
                 </Col>
                 <Col span={16}>
@@ -246,87 +311,71 @@ class Add extends React.Component {
                   }
                 </Col>
               </Row>
-              <br/>
-              {/* solo custom */}
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application sites category:</p>
-                </Col>
-                <Col span={16}>
-                  <React.Fragment>
-                  { this.props.application_site_categorysLoading ?
-                    <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
-                  :
-                    <React.Fragment>
-                      {this.state.errors.application_site_categoryError ?
-                        <React.Fragment>
-                          <Select
-                            style={{ width: '250px'}}
-                            value={this.state.request.application_site_category}
-                            onChange={(value, event) => this.application_site_categorySet(event, value)}>
-                            { this.props.application_site_categorys ? this.props.application_site_categorys.map((d, i) => {
-                              return (
-                                <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
-                                )
-                              })
-                            :
-                              null
-                            }
-                          </Select>
-                          <p style={{color: 'red'}}>Select a category</p>
-                        </React.Fragment>
-                      :
-                        <React.Fragment>
-                        <React.Fragment>
-                          <Select
-                            style={{ width: '250px'}}
-                            value={this.state.request.application_site_category}
-                            onChange={(value, event) => this.application_site_categorySet(event, value)}>
-                            { this.props.application_site_categorys ? this.props.application_site_categorys.map((d, i) => {
-                              return (
-                                <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
-                                )
-                              })
-                            :
-                              null
-                            }
-                          </Select>
-                        </React.Fragment>
-                        </React.Fragment>
-                      }
-                    </React.Fragment>
-                  }
-                  </React.Fragment>
-                </Col>
-              </Row>
-              <br/>
+
+              <Divider/>
 
               {/* radio button  per text area o tabella */}
               <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Url list (valid fqdn comma separated):</p>
+                <Col offset={1} span={9}>
+                  <Input.TextArea
+                    rows={7}
+                    placeholder="Insert your url's list"
+                    value={this.state.input}
+                    onChange={e => this.urlListInput(e)}
+                  />
                 </Col>
-                <Col span={16}>
-                {this.state.errors.urlListError ?
-                  <Input.TextArea
-                    rows={25}
-                    style={{width: 250, borderColor: 'red'}}
-                    onChange={e => this.urlListSet(e)}
-                  />
-                :
-                  <Input.TextArea
-                    rows={15}
-                    style={{width: 250}}
-                    defaultValue={this.state.request.urlList}
-                    onChange={e => this.urlListSet(e)}
-                  />
-                }
+
+                <Col offset={1} span={2}>
+                  <Button type="primary" shape='round' onClick={() => this.urlListSet()} >
+                    Normalize
+                  </Button>
+                </Col>
+
+                <Col offset={1} span={9}>
+                  {this.state.errors.urlListError ?
+                    <React.Fragment>
+                      <Table
+                        columns={columns}
+                        dataSource={this.state.request.urlList}
+                        bordered
+                        rowKey="name"
+                        scroll={{x: 'auto'}}
+                        pagination={{ pageSize: 10 }}
+                        rowClassName={ (record, index) => (record.url === this.state.errors.urlListError) ? "rowClassName1" : "" }
+                        style={{marginBottom: 10}}
+                        showHeader={false}
+                      />
+                      {this.state.errors.urlListError && (this.state.errors.urlListError.length > 0) ?
+                        <React.Fragment>
+                          <p><span style={{color: 'red'}}>{this.state.errors.urlListError}</span> is not a valid fqdn. <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
+                        </React.Fragment>
+                      :
+                        null
+                      }
+
+                    </React.Fragment>
+                  :
+                    <Table
+                      columns={columns}
+                      dataSource={this.state.request.urlList}
+                      bordered
+                      rowKey="name"
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                      style={{marginBottom: 10}}
+                      showHeader={false}
+                    />
+                  }
                 </Col>
               </Row>
               <br/>
 
               <Row>
-                <Col offset={8} span={16}>
+
+              </Row>
+
+              <Row>
+                <Col offset={10} span={3}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
                     Add Custom Application Sites
                   </Button>
@@ -355,6 +404,4 @@ export default connect((state) => ({
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
   application_siteAddError: state.checkpoint.application_siteAddError,
-  application_site_categorysLoading: state.checkpoint.application_site_categorysLoading,
-  application_site_categorys: state.checkpoint.application_site_categorys
 }))(Add);
