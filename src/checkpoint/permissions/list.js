@@ -117,6 +117,7 @@ class List extends React.Component {
 
 
   render() {
+    console.log(this.props.permissions)
     const columns = [
       {
         title: 'AD group name',
