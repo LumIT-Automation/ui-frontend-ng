@@ -1,4 +1,5 @@
 import React from 'react'
+import {useRef} from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
@@ -206,6 +207,18 @@ class Modify extends React.Component {
     await this.setState({request: request})
   }
 
+  urlSet = async obj => {
+    await this.setState({url: obj.url})
+  }
+
+  urlModify = async value => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    let item
+    item = request.urlList.find( o => o.url === this.state.url )
+    item.url = value
+    await this.setState({url: value, request: request})
+  }
+
   removeUrl = async obj => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let list = []
@@ -308,6 +321,7 @@ class Modify extends React.Component {
 
   render() {
     console.log(this.state.request)
+    console.log(this.state.url)
     console.log(this.state.errors)
 
     let cicciput = (obj) => {
@@ -321,6 +335,16 @@ class Modify extends React.Component {
         dataIndex: 'url',
         key: 'url',
         ...this.getColumnSearchProps('url'),
+        render: (name, obj)  => (
+          <Input
+            placeholder={obj.url}
+            value={obj.url}
+            style={{ width: '150px' }}
+            onFocus={() => this.urlSet(obj)}
+            onChange={e => this.urlModify(e.target.value)}
+            onPressEnter={null}
+          />
+        ),
       },
       {
         title: 'Remove',
