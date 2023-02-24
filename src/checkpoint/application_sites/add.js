@@ -101,7 +101,6 @@ class Add extends React.Component {
 
       let unique = [...new Set(nlist)];
 
-      urlsList = []
       unique.sort().forEach((item, i) => {
         urlsList.push({url: item})
       });

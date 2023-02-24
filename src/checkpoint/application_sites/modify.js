@@ -65,15 +65,13 @@ class Modify extends React.Component {
     let input = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
-    delete request.urlList
-    delete errors.urlListError
     await this.setState({request: request, errors: errors, input: input})
   }
   urlListSet = async () => {
     console.log('input', this.state.input)
     let input = JSON.parse(JSON.stringify(this.state.input))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let list=[], nlist=[], urlsList=[]
+    let list=[], nlist=[], urlsList=[], actualUrls=[]
     let regexp = new RegExp(/^[*]/g);
 
     try {
@@ -100,7 +98,18 @@ class Modify extends React.Component {
         }
       });
 
-      let unique = [...new Set(nlist)];
+
+      request.urlList.forEach((item, i) => {
+        actualUrls.push(item.url)
+      });
+
+      console.log('actualUrls', actualUrls)
+      console.log('nlist', nlist)
+      urlsList = actualUrls.concat(nlist)
+      console.log('urlsList', urlsList)
+
+      let unique = [...new Set(urlsList)];
+      console.log('unique', unique)
 
       urlsList = []
       unique.sort().forEach((item, i) => {
