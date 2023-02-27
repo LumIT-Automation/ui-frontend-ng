@@ -44,55 +44,32 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    switch (this.props.vendor) {
+      case 'checkpoint':
+        request.baseurl = 'web_api/'
+        break;
+      case 'infoblox':
+        request.baseurl = 'wapi/v2.10'
+        break;
+      case 'f5':
+        request.baseurl = 'mgmt/'
+        break;
+      case 'vmware':
+        request.baseurl = ''
+        break;
+      default:
+
+    }
+
+    this.setState({request: request, baseurl: request.baseurl})
   }
 
 
   //SETTER
-  addressSet = e => {
+  set = async (e, type) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.address = e.target.value
-    this.setState({request: request})
-  }
-
-  fqdnSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.fqdn = e.target.value
-    this.setState({request: request})
-  }
-
-  datacenterSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.datacenter = e.target.value
-    this.setState({request: request})
-  }
-
-  environmentSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.environment = e.target.value
-    this.setState({request: request})
-  }
-
-  positionSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.position = e.target.value
-    this.setState({request: request})
-  }
-
-  tlsverifySet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.tlsverify = e.target.value
-    this.setState({request: request})
-  }
-
-  usernameSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.username = e.target.value
-    this.setState({request: request})
-  }
-
-  passwordSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.password = e.target.value
+    request[type] = e.target.value
     this.setState({request: request})
   }
 
@@ -102,6 +79,15 @@ class Add extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
+    if (!request.fqdn || !validators.fqdn(request.fqdn)) {
+      errors.fqdnError = true
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.fqdnError
+      this.setState({errors: errors})
+    }
+
     if (!request.address || !validators.ipv4(request.address)) {
       errors.addressError = true
       this.setState({errors: errors})
@@ -110,13 +96,8 @@ class Add extends React.Component {
       delete errors.addressError
       this.setState({errors: errors})
     }
-
-    if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-      errors.fqdnError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.fqdnError
+    if (!request.baseurl) {
+      request.baseurl = this.state.baseurl
       this.setState({errors: errors})
     }
 
@@ -192,7 +173,7 @@ class Add extends React.Component {
     b.data = {
       "address": this.state.request.address,
       "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}/wapi/v2.10`,
+      "baseurl": `https://${this.state.request.address}/${this.state.request.baseurl}`,
       "tlsverify": this.state.request.tlsverify,
       "datacenter": this.state.request.datacenter,
       "environment": this.state.request.environment,
@@ -213,7 +194,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`infoblox/assets/`, this.props.token, b )
+    await rest.doXHR(`checkpoint/assets/`, this.props.token, b )
   }
 
   response = () => {
@@ -233,6 +214,7 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state.request)
     return (
       <React.Fragment>
 
@@ -259,13 +241,13 @@ class Add extends React.Component {
           <React.Fragment>
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
               </Col>
               <Col span={16}>
-                {this.state.errors.addressError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.addressSet(e)} />
+                {this.state.errors.fqdnError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'fqdn')} />
                 :
-                  <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
+                  <Input defaultValue={this.state.request.fqdn} style={{width: 250}} onChange={e => this.set(e, 'fqdn')} />
                 }
               </Col>
             </Row>
@@ -273,13 +255,27 @@ class Add extends React.Component {
 
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
               </Col>
               <Col span={16}>
-                {this.state.errors.fqdnError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
+                {this.state.errors.addressError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'address')} />
                 :
-                  <Input defaultValue={this.state.request.fqdn} style={{width: 250}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
+                  <Input defaultValue={this.state.request.address} style={{width: 250}} onChange={e => this.set(e, 'address')} />
+                }
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Baseurl:</p>
+              </Col>
+              <Col span={16}>
+                {this.state.errors.baseurlError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'baseurl')} />
+                :
+                  <Input defaultValue={this.state.request.baseurl} style={{width: 250}} onChange={e => this.set(e, 'baseurl')} />
                 }
               </Col>
             </Row>
@@ -291,9 +287,9 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.datacenterError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'datacenter')} />
                 :
-                  <Input defaultValue={this.state.request.datacenter} style={{width: 250}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
+                  <Input defaultValue={this.state.request.datacenter} style={{width: 250}} onChange={e => this.set(e, 'datacenter')} />
                 }
               </Col>
             </Row>
@@ -305,9 +301,9 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.environmentError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} style={{width: 250}} onChange={e => this.set(e, 'environment')} />
                 :
-                  <Input defaultValue={this.state.request.environment} style={{width: 250}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
+                  <Input defaultValue={this.state.request.environment} style={{width: 250}} onChange={e => this.set(e, 'environment')} />
                 }
               </Col>
             </Row>
@@ -319,9 +315,9 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.positionError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="position" id='position' onChange={e => this.positionSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} style={{width: 250}} onChange={e => this.set(e, 'position')} />
                 :
-                  <Input defaultValue={this.state.request.position} style={{width: 250}} name="position" id='position' onChange={e => this.positionSet(e)} />
+                  <Input defaultValue={this.state.request.position} style={{width: 250}} onChange={e => this.set(e, 'position')} />
                 }
               </Col>
             </Row>
@@ -333,12 +329,12 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
-                  <Radio.Group style={{marginTop: 5, backgroundColor: 'red'}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5, backgroundColor: 'red'}} value={this.state.request.tlsverify} onChange={e => this.set(e, 'tlsverify')}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 :
-                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} onChange={e => this.set(e, 'tlsverify')}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
@@ -354,9 +350,9 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.usernameError ?
-                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: 'red'}} name="username" id='username' onChange={e => this.usernameSet(e)} />
+                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'username')} />
                 :
-                  <Input suffix={<UserOutlined className="site-form-item-icon" />} defaultValue={this.state.request.username} style={{width: 250}} name="username" id='username' onChange={e => this.usernameSet(e)} />
+                  <Input suffix={<UserOutlined className="site-form-item-icon" />} defaultValue={this.state.request.username} style={{width: 250}} onChange={e => this.set(e, 'username')}/>
                 }
               </Col>
             </Row>
@@ -368,9 +364,9 @@ class Add extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.passwordError ?
-                  <Input.Password style={{width: 250, borderColor: 'red'}} name="password" id='password' onChange={e => this.passwordSet(e)} />
+                  <Input.Password style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'password')}/>
                 :
-                  <Input.Password defaultValue={this.state.request.password} style={{width: 250}} name="password" id='password' onChange={e => this.passwordSet(e)} />
+                  <Input.Password defaultValue={this.state.request.password} style={{width: 250}} onChange={e => this.set(e, 'password')} />
                 }
               </Col>
             </Row>
@@ -389,7 +385,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetAddError ? <Error component={'asset add infoblox'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
+            { this.props.assetAddError ? <Error component={'asset add checkpoint'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -402,5 +398,5 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	assetAddError: state.infoblox.assetAddError,
+ 	assetAddError: state.checkpoint.assetAddError,
 }))(Add);

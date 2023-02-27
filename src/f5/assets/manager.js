@@ -83,7 +83,7 @@ class Manager extends React.Component {
         <br/>
         { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
           <React.Fragment>
-            <Add/>
+            <Add vendor='f5'/>
             <br/>
             <br/>
           </React.Fragment>
