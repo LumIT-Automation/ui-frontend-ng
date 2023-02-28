@@ -132,7 +132,7 @@ class List extends React.Component {
         ...this.getColumnSearchProps('address'),
       },
       {
-        title: 'BaseUrl',
+        title: 'Baseurl',
         align: 'center',
         dataIndex: 'baseurl',
         key: 'baseurl',
