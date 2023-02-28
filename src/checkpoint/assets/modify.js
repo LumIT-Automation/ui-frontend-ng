@@ -44,16 +44,51 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let regexp_begins = new RegExp(/^[\/]/g);
+    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.props.obj))
     request.tlsverify = request.tlsverify.toString()
-    this.setState({request: request, baseurl: request.baseurl})
+    request.baseurl = request.baseurl.replaceAll('https://','')
+    request.baseurl = request.baseurl.replaceAll('http://','')
+    request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
+    request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
+    request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
+    if (!regexp_begins.test(request.baseurl)) {
+      console.log('no / at the /beginning')
+      request.baseurl = `/${request.baseurl}`
+    }
+    if (!regexp_ends.test(request.baseurl)) {
+      console.log('no / at the ends/')
+      request.baseurl = `${request.baseurl}/`
+    }
+    this.setState({request: request})
   }
 
 
   //SETTER
   set = async (e, type) => {
+    let regexp_begins = new RegExp(/^[\/]/g);
+    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.state.request))
+
     request[type] = e.target.value
+
+    if (type === 'baseurl') {
+      request.baseurl = request.baseurl.replaceAll('https://','')
+      request.baseurl = request.baseurl.replaceAll('http://','')
+      request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
+      request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
+      request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
+      if (!regexp_begins.test(request.baseurl)) {
+        console.log('no / at the /beginning')
+        request.baseurl = `/${request.baseurl}`
+      }
+      if (!regexp_ends.test(request.baseurl)) {
+        console.log('no / at the ends/')
+        request.baseurl = `${request.baseurl}/`
+      }
+    }
+
     this.setState({request: request})
   }
 
@@ -63,26 +98,20 @@ class Modify extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.addressError
-      this.setState({errors: errors})
-    }
-
     if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-      errors.fqdnError = true
+      if (!request.fqdn || !validators.ipv4(request.fqdn)) {
+        errors.fqdnError = true
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.fqdnError
+        this.setState({errors: errors})
+      }
       this.setState({errors: errors})
       }
     else {
       delete errors.fqdnError
       this.setState({errors: errors})
-    }
-    if (!request.baseurl) {
-      request.baseurl = this.state.baseurl
-      this.setState({request: request})
     }
 
     if (!request.datacenter) {
@@ -153,17 +182,19 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   assetModify = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let b = {}
+
     b.data = {
-      "address": this.state.request.address,
-      "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}${this.state.request.baseurl}`,
-      "tlsverify": this.state.request.tlsverify,
-      "datacenter": this.state.request.datacenter,
-      "environment": this.state.request.environment,
-      "position": this.state.request.position,
-      "username": this.state.request.username,
-      "password": this.state.request.password
+      "address": request.fqdn,
+      "fqdn": request.fqdn,
+      "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "tlsverify": request.tlsverify,
+      "datacenter": request.datacenter,
+      "environment": request.environment,
+      "position": request.position,
+      "username": request.username,
+      "password": request.password
     }
 
     this.setState({loading: true})
@@ -224,27 +255,13 @@ class Modify extends React.Component {
           <React.Fragment>
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn or IP:</p>
               </Col>
               <Col span={16}>
                 {this.state.errors.fqdnError ?
                   <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'fqdn')} />
                 :
                   <Input defaultValue={this.state.request.fqdn} style={{width: 250}} onChange={e => this.set(e, 'fqdn')} />
-                }
-              </Col>
-            </Row>
-            <br/>
-
-            <Row>
-              <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-              </Col>
-              <Col span={16}>
-                {this.state.errors.addressError ?
-                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'address')} />
-                :
-                  <Input defaultValue={this.state.request.address} style={{width: 250}} onChange={e => this.set(e, 'address')} />
                 }
               </Col>
             </Row>
