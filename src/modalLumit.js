@@ -30,6 +30,7 @@ const ModalLumit = (props) => {
         onOk={handleOk}
         onCancel={handleCancel}
         footer={''}
+        maskClosable={false}
         >
         <a href="https://www.lumit.it" target="_blank">Contattaci</a>
         <br/>

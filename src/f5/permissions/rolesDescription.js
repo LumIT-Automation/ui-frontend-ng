@@ -123,6 +123,7 @@ class RolesDescription extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1000}
+          maskClosable={false}
         >
           <Table
             columns={columns}

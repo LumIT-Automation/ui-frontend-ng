@@ -365,12 +365,12 @@ class Modify extends React.Component {
           title={<p style={{textAlign: 'center'}}>Modify urls</p>}
           centered
           destroyOnClose={true}
-            maskClosable={false}
           visible={this.state.visible}
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          maskClosable={false}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.state.loading && this.state.response &&

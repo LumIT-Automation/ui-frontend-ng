@@ -124,6 +124,7 @@ class IdentityGroupDelete extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1000}
+          maskClosable={false}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
         {!this.state.loading && this.state.response &&

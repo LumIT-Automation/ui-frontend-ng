@@ -188,6 +188,7 @@ const Map = props => {
           //onOk={() => this.setState({visible: true})}
           onCancel={hide}
           width={1500}
+          maskClosable={false}
         >
           { regioneLoading ?
              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>

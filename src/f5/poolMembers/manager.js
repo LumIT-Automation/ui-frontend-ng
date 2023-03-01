@@ -690,6 +690,7 @@ class PoolDetails extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          maskClosable={false}
         >
           { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
              this.props.authorizations && (this.props.authorizations.poolMembers_post || this.props.authorizations.any) ?

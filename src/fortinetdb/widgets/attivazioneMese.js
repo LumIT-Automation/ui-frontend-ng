@@ -139,6 +139,7 @@ class AttivazioneMese extends React.Component {
                   //onOk={() => this.setState({visible: true})}
                   onCancel={this.hide}
                   width={1500}
+                  maskClosable={false}
                 >
                   { this.state.valueLoading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>

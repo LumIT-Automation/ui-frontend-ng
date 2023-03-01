@@ -157,6 +157,7 @@ class BackupStatus extends React.Component {
                   //onOk={() => this.setState({visible: true})}
                   onCancel={this.hide}
                   width={1500}
+                  maskClosable={false}
                 >
                   { this.state.backupStatusLoading ?
                     <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>

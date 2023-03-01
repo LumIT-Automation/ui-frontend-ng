@@ -258,6 +258,7 @@ class Error extends Component {
         //onCancel={() => this.props.dispatch(setError(null))}
         onCancel={this.onCancel}
         width={750}
+        maskClosable={false}
       >
         <React.Fragment>
         {e()}

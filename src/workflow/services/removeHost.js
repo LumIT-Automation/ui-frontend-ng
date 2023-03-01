@@ -424,6 +424,7 @@ class RemoveHost extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          maskClosable={false}
         >
 
           <React.Fragment>

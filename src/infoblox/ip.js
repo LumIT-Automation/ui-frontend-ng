@@ -170,6 +170,7 @@ class Ip extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={750}
+          maskClosable={false}
         >
           <Table
             columns={columns}

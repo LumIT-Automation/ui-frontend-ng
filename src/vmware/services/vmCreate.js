@@ -2696,6 +2696,7 @@ class CreateVmService extends React.Component {
           onCancel={() => this.closeModal()}
           width={1500}
           bodyStyle={{height: '80vh', overflowY: 'scroll'}}
+          maskClosable={false}
         >
 
           <AssetSelector vendor='vmware'/>

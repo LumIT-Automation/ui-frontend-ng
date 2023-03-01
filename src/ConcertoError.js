@@ -165,6 +165,7 @@ class Error extends Component {
         onOk={null}
         onCancel={this.onCancel}
         width={750}
+        maskClosable={false}
       >
         <React.Fragment>
         {renderError()}

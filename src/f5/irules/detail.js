@@ -59,6 +59,7 @@ class Detail extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          maskClosable={false}
         >
           <TextArea rows={25} defaultValue={this.props.obj.apiAnonymous} name="text" id='name' />
         </Modal>

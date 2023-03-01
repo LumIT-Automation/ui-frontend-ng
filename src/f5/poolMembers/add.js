@@ -209,6 +209,7 @@ class Add extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={750}
+          maskClosable={false}
         >
           { this.props.poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !this.props.poolMembersLoading && this.state.response &&

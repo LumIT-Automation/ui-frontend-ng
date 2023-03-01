@@ -191,6 +191,7 @@ class Add extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={750}
+          maskClosable={false}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 47%'}}/> }
         { !this.state.loading && this.state.response &&

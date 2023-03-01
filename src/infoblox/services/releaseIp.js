@@ -262,6 +262,7 @@ class ReleaseIp extends React.Component {
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
           width={1500}
+          maskClosable={false}
         >
 
           <AssetSelector vendor='infoblox'/>
