@@ -116,7 +116,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.props.assets)
     const columns = [
       {
         title: 'FQDN',
@@ -126,14 +125,7 @@ class List extends React.Component {
         ...this.getColumnSearchProps('fqdn'),
       },
       {
-        title: 'Address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
-      },
-      {
-        title: 'BaseUrl',
+        title: 'Baseurl',
         align: 'center',
         dataIndex: 'baseurl',
         key: 'baseurl',

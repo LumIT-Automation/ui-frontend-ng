@@ -47,29 +47,49 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     switch (this.props.vendor) {
       case 'checkpoint':
-        request.baseurl = 'web_api/'
+        request.baseurl = '/web_api/'
         break;
       case 'infoblox':
-        request.baseurl = 'wapi/v2.10'
+        request.baseurl = '/wapi/v2.10/'
         break;
       case 'f5':
-        request.baseurl = 'mgmt/'
+        request.baseurl = '/mgmt/'
         break;
       case 'vmware':
-        request.baseurl = ''
+        request.baseurl = '/'
         break;
       default:
 
     }
 
-    this.setState({request: request, baseurl: request.baseurl})
+    this.setState({request: request})
   }
 
 
   //SETTER
   set = async (e, type) => {
+    let regexp_begins = new RegExp(/^[\/]/g);
+    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.state.request))
+
     request[type] = e.target.value
+
+    if (type === 'baseurl') {
+      request.baseurl = request.baseurl.replaceAll('https://','')
+      request.baseurl = request.baseurl.replaceAll('http://','')
+      request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
+      request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
+      request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
+      if (!regexp_begins.test(request.baseurl)) {
+        console.log('no / at the /beginning')
+        request.baseurl = `/${request.baseurl}`
+      }
+      if (!regexp_ends.test(request.baseurl)) {
+        console.log('no / at the ends/')
+        request.baseurl = `${request.baseurl}/`
+      }
+    }
+
     this.setState({request: request})
   }
 
@@ -80,24 +100,18 @@ class Add extends React.Component {
     let validators = new Validators()
 
     if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-      errors.fqdnError = true
+      if (!request.fqdn || !validators.ipv4(request.fqdn)) {
+        errors.fqdnError = true
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.fqdnError
+        this.setState({errors: errors})
+      }
       this.setState({errors: errors})
       }
     else {
       delete errors.fqdnError
-      this.setState({errors: errors})
-    }
-
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.addressError
-      this.setState({errors: errors})
-    }
-    if (!request.baseurl) {
-      request.baseurl = this.state.baseurl
       this.setState({errors: errors})
     }
 
@@ -169,19 +183,21 @@ class Add extends React.Component {
 
   //DISPOSAL ACTION
   assetAdd = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let b = {}
-    b.data = {
-      "address": this.state.request.address,
-      "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}/${this.state.request.baseurl}`,
-      "tlsverify": this.state.request.tlsverify,
-      "datacenter": this.state.request.datacenter,
-      "environment": this.state.request.environment,
-      "position": this.state.request.position,
-      "username": this.state.request.username,
-      "password": this.state.request.password
-    }
 
+    b.data = {
+      "address": request.fqdn,
+      "fqdn": request.fqdn,
+      "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "tlsverify": request.tlsverify,
+      "datacenter": request.datacenter,
+      "environment": request.environment,
+      "position": request.position,
+      "username": request.username,
+      "password": request.password
+    }
+    console.log(b)
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -194,7 +210,7 @@ class Add extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/assets/`, this.props.token, b )
+    await rest.doXHR(`infoblox/assets/`, this.props.token, b )
   }
 
   response = () => {
@@ -241,27 +257,13 @@ class Add extends React.Component {
           <React.Fragment>
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn or IP:</p>
               </Col>
               <Col span={16}>
                 {this.state.errors.fqdnError ?
                   <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'fqdn')} />
                 :
                   <Input defaultValue={this.state.request.fqdn} style={{width: 250}} onChange={e => this.set(e, 'fqdn')} />
-                }
-              </Col>
-            </Row>
-            <br/>
-
-            <Row>
-              <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-              </Col>
-              <Col span={16}>
-                {this.state.errors.addressError ?
-                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'address')} />
-                :
-                  <Input defaultValue={this.state.request.address} style={{width: 250}} onChange={e => this.set(e, 'address')} />
                 }
               </Col>
             </Row>
@@ -385,7 +387,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assetAddError ? <Error component={'asset add checkpoint'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
+            { this.props.assetAddError ? <Error component={'asset add infoblox'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -398,5 +400,5 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	assetAddError: state.checkpoint.assetAddError,
+ 	assetAddError: state.infoblox.assetAddError,
 }))(Add);

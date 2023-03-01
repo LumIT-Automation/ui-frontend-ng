@@ -44,58 +44,51 @@ class Modify extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    let regexp_begins = new RegExp(/^[\/]/g);
+    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.props.obj))
     request.tlsverify = request.tlsverify.toString()
+    request.baseurl = request.baseurl.replaceAll('https://','')
+    request.baseurl = request.baseurl.replaceAll('http://','')
+    request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
+    request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
+    request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
+    if (!regexp_begins.test(request.baseurl)) {
+      console.log('no / at the /beginning')
+      request.baseurl = `/${request.baseurl}`
+    }
+    if (!regexp_ends.test(request.baseurl)) {
+      console.log('no / at the ends/')
+      request.baseurl = `${request.baseurl}/`
+    }
     this.setState({request: request})
   }
 
 
   //SETTER
-  addressSet = e => {
+  set = async (e, type) => {
+    let regexp_begins = new RegExp(/^[\/]/g);
+    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.address = e.target.value
-    this.setState({request: request})
-  }
 
-  fqdnSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.fqdn = e.target.value
-    this.setState({request: request})
-  }
+    request[type] = e.target.value
 
-  datacenterSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.datacenter = e.target.value
-    this.setState({request: request})
-  }
+    if (type === 'baseurl') {
+      request.baseurl = request.baseurl.replaceAll('https://','')
+      request.baseurl = request.baseurl.replaceAll('http://','')
+      request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
+      request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
+      request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
+      if (!regexp_begins.test(request.baseurl)) {
+        console.log('no / at the /beginning')
+        request.baseurl = `/${request.baseurl}`
+      }
+      if (!regexp_ends.test(request.baseurl)) {
+        console.log('no / at the ends/')
+        request.baseurl = `${request.baseurl}/`
+      }
+    }
 
-  environmentSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.environment = e.target.value
-    this.setState({request: request})
-  }
-
-  positionSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.position = e.target.value
-    this.setState({request: request})
-  }
-
-  tlsverifySet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.tlsverify = e.target.value
-    this.setState({request: request})
-  }
-
-  usernameSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.username = e.target.value
-    this.setState({request: request})
-  }
-
-  passwordSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.password = e.target.value
     this.setState({request: request})
   }
 
@@ -105,17 +98,15 @@ class Modify extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.addressError
-      this.setState({errors: errors})
-    }
-
     if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-      errors.fqdnError = true
+      if (!request.fqdn || !validators.ipv4(request.fqdn)) {
+        errors.fqdnError = true
+        this.setState({errors: errors})
+      }
+      else {
+        delete errors.fqdnError
+        this.setState({errors: errors})
+      }
       this.setState({errors: errors})
       }
     else {
@@ -191,18 +182,19 @@ class Modify extends React.Component {
 
   //DISPOSAL ACTION
   assetModify = async () => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let b = {}
 
     b.data = {
-      "address": this.state.request.address,
-      "fqdn": this.state.request.fqdn,
-      "baseurl": `https://${this.state.request.address}/mgmt/`,
-      "tlsverify": this.state.request.tlsverify,
-      "datacenter": this.state.request.datacenter,
-      "environment": this.state.request.environment,
-      "position": this.state.request.position,
-      "username": this.state.request.username,
-      "password": this.state.request.password
+      "address": request.fqdn,
+      "fqdn": request.fqdn,
+      "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "tlsverify": request.tlsverify,
+      "datacenter": request.datacenter,
+      "environment": request.environment,
+      "position": request.position,
+      "username": request.username,
+      "password": request.password
     }
 
     this.setState({loading: true})
@@ -263,13 +255,13 @@ class Modify extends React.Component {
           <React.Fragment>
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn or IP:</p>
               </Col>
               <Col span={16}>
-                {this.state.errors.addressError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.addressSet(e)} />
+                {this.state.errors.fqdnError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'fqdn')} />
                 :
-                  <Input defaultValue={this.state.request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
+                  <Input defaultValue={this.state.request.fqdn} style={{width: 250}} onChange={e => this.set(e, 'fqdn')} />
                 }
               </Col>
             </Row>
@@ -277,13 +269,13 @@ class Modify extends React.Component {
 
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Baseurl:</p>
               </Col>
               <Col span={16}>
-                {this.state.errors.fqdnError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
+                {this.state.errors.baseurlError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'baseurl')} />
                 :
-                  <Input defaultValue={this.state.request.fqdn} style={{width: 250}} name="fqdn" id='fqdn' onChange={e => this.fqdnSet(e)} />
+                  <Input defaultValue={this.state.request.baseurl} style={{width: 250}} onChange={e => this.set(e, 'baseurl')} />
                 }
               </Col>
             </Row>
@@ -295,9 +287,9 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.datacenterError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'datacenter')} />
                 :
-                  <Input defaultValue={this.state.request.datacenter} style={{width: 250}} name="datacenter" id='datacenter' onChange={e => this.datacenterSet(e)} />
+                  <Input defaultValue={this.state.request.datacenter} style={{width: 250}} onChange={e => this.set(e, 'datacenter')} />
                 }
               </Col>
             </Row>
@@ -309,9 +301,9 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.environmentError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} style={{width: 250}} onChange={e => this.set(e, 'environment')} />
                 :
-                  <Input defaultValue={this.state.request.environment} style={{width: 250}} name="environment" id='environment' onChange={e => this.environmentSet(e)} />
+                  <Input defaultValue={this.state.request.environment} style={{width: 250}} onChange={e => this.set(e, 'environment')} />
                 }
               </Col>
             </Row>
@@ -323,9 +315,9 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.positionError ?
-                  <Input style={{width: 250, borderColor: 'red'}} name="position" id='position' onChange={e => this.positionSet(e)} />
+                  <Input style={{width: 250, borderColor: 'red'}} style={{width: 250}} onChange={e => this.set(e, 'position')} />
                 :
-                  <Input defaultValue={this.state.request.position} style={{width: 250}} name="position" id='position' onChange={e => this.positionSet(e)} />
+                  <Input defaultValue={this.state.request.position} style={{width: 250}} onChange={e => this.set(e, 'position')} />
                 }
               </Col>
             </Row>
@@ -337,14 +329,14 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.tlsverifyError ?
-                  <Radio.Group style={{marginTop: 5, backgroundColor: 'red'}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
+                  <Radio.Group style={{marginTop: 5, backgroundColor: 'red'}} value={this.state.request.tlsverify} onChange={e => this.set(e, 'tlsverify')}>
                     <Radio key='1' value='1'>Yes</Radio>
                     <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 :
-                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} name="tlsverify" onChange={e => this.tlsverifySet(e)}>
-                    <Radio key='1' id='tlsverify' value='1'>Yes</Radio>
-                    <Radio key='0' id='tlsverify' value='0'>No</Radio>
+                  <Radio.Group style={{marginTop: 5}} value={this.state.request.tlsverify} onChange={e => this.set(e, 'tlsverify')}>
+                    <Radio key='1' value='1'>Yes</Radio>
+                    <Radio key='0' value='0'>No</Radio>
                   </Radio.Group>
                 }
               </Col>
@@ -358,9 +350,9 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.usernameError ?
-                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: 'red'}} name="username" id='username' onChange={e => this.usernameSet(e)} />
+                  <Input suffix={<UserOutlined className="site-form-item-icon" />} style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'username')} />
                 :
-                  <Input suffix={<UserOutlined className="site-form-item-icon" />} defaultValue={this.state.request.username} style={{width: 250}} name="username" id='username' onChange={e => this.usernameSet(e)} />
+                  <Input suffix={<UserOutlined className="site-form-item-icon" />} defaultValue={this.state.request.username} style={{width: 250}} onChange={e => this.set(e, 'username')}/>
                 }
               </Col>
             </Row>
@@ -372,9 +364,9 @@ class Modify extends React.Component {
               </Col>
               <Col span={16}>
                 {this.state.errors.passwordError ?
-                  <Input.Password style={{width: 250, borderColor: 'red'}} name="password" id='password' onChange={e => this.passwordSet(e)} />
+                  <Input.Password style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'password')}/>
                 :
-                  <Input.Password defaultValue={this.state.request.password} style={{width: 250}} name="password" id='password' onChange={e => this.passwordSet(e)} />
+                  <Input.Password defaultValue={this.state.request.password} style={{width: 250}} onChange={e => this.set(e, 'password')} />
                 }
               </Col>
             </Row>

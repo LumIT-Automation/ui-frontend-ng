@@ -125,14 +125,7 @@ class List extends React.Component {
         ...this.getColumnSearchProps('fqdn'),
       },
       {
-        title: 'Address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...this.getColumnSearchProps('address'),
-      },
-      {
-        title: 'BaseUrl',
+        title: 'Baseurl',
         align: 'center',
         dataIndex: 'baseurl',
         key: 'baseurl',
