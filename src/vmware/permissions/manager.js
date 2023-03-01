@@ -106,7 +106,6 @@ class Manager extends React.Component {
     }
     else {
       permissionsWithAssets = await this.assetWithDetails(fetchedAssets, {data: {items: permissionsNoWorkflowLocal}})
-      console.log(permissionsWithAssets)
       this.props.dispatch(permissions( permissionsWithAssets ))
       this.props.dispatch(permissionsLoading(false))
     }

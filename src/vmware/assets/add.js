@@ -81,11 +81,9 @@ class Add extends React.Component {
       request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
       request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
       if (!regexp_begins.test(request.baseurl)) {
-        console.log('no / at the /beginning')
         request.baseurl = `/${request.baseurl}`
       }
       if (!regexp_ends.test(request.baseurl)) {
-        console.log('no / at the ends/')
         request.baseurl = `${request.baseurl}/`
       }
     }
@@ -230,7 +228,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
     return (
       <React.Fragment>
 
