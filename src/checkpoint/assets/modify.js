@@ -42,54 +42,19 @@ class Modify extends React.Component {
   componentWillUnmount() {
   }
 
-  details = () => {
-    this.setState({visible: true})
-    let regexp_begins = new RegExp(/^[\/]/g);
-    let regexp_ends = new RegExp(/[\/]$/g);
+  details = async () => {
+    await this.setState({visible: true})
     let request = JSON.parse(JSON.stringify(this.props.obj))
     request.tlsverify = request.tlsverify.toString()
-    request.baseurl = request.baseurl.replaceAll('https://','')
-    request.baseurl = request.baseurl.replaceAll('http://','')
-    request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
-    request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
-    request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
-    if (!regexp_begins.test(request.baseurl)) {
-      console.log('no / at the /beginning')
-      request.baseurl = `/${request.baseurl}`
-    }
-    if (!regexp_ends.test(request.baseurl)) {
-      console.log('no / at the ends/')
-      request.baseurl = `${request.baseurl}/`
-    }
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
 
   //SETTER
   set = async (e, type) => {
-    let regexp_begins = new RegExp(/^[\/]/g);
-    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.state.request))
-
     request[type] = e.target.value
-
-    if (type === 'baseurl') {
-      request.baseurl = request.baseurl.replaceAll('https://','')
-      request.baseurl = request.baseurl.replaceAll('http://','')
-      request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
-      request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
-      request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
-      if (!regexp_begins.test(request.baseurl)) {
-        console.log('no / at the /beginning')
-        request.baseurl = `/${request.baseurl}`
-      }
-      if (!regexp_ends.test(request.baseurl)) {
-        console.log('no / at the ends/')
-        request.baseurl = `${request.baseurl}/`
-      }
-    }
-
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   //VALIDATION
@@ -111,6 +76,15 @@ class Modify extends React.Component {
       }
     else {
       delete errors.fqdnError
+      this.setState({errors: errors})
+    }
+
+    if (!request.baseurl) {
+      errors.baseurlError = true
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.baseurlError
       this.setState({errors: errors})
     }
 
@@ -188,7 +162,7 @@ class Modify extends React.Component {
     b.data = {
       "address": request.fqdn,
       "fqdn": request.fqdn,
-      "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "baseurl": request.baseurl,
       "tlsverify": request.tlsverify,
       "datacenter": request.datacenter,
       "environment": request.environment,

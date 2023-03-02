@@ -42,10 +42,10 @@ class Add extends React.Component {
   componentWillUnmount() {
   }
 
-  details = () => {
-    this.setState({visible: true})
+  details = async () => {
+    await this.setState({visible: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
 

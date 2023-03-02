@@ -58,20 +58,7 @@ class Manager extends React.Component {
       return
     }
     else {
-      try {
-        fetchedAssets.data.items.forEach((item, i) => {
-          item.baseurl = item.baseurl.replaceAll('https://','')
-          item.baseurl = item.baseurl.replaceAll('http://','')
-          item.baseurl = item.baseurl.replaceAll(`${item.address}`,'')
-          item.baseurl = item.baseurl.replaceAll(`${item.fqdn}`,'')
-          item.baseurl = item.baseurl.replaceAll(/[\/]{1,}/g,'/');
-          list.push(item)
-        });
-        this.props.dispatch(assets( {data: {items: list}} ))
-      }catch(e) {
-        console.log(e)
-      }
-
+      this.props.dispatch(assets(fetchedAssets))
     }
     this.props.dispatch(assetsLoading(false))
   }

@@ -42,8 +42,8 @@ class Modify extends React.Component {
   componentWillUnmount() {
   }
 
-  details = () => {
-    this.setState({visible: true})
+  details = async () => {
+    await this.setState({visible: true})
     let request = JSON.parse(JSON.stringify(this.props.obj))
     request.tlsverify = request.tlsverify.toString()
     await this.setState({request: request})
