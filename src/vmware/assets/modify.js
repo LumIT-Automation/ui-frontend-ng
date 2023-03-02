@@ -185,6 +185,7 @@ class Modify extends React.Component {
       "address": request.fqdn,
       "fqdn": request.fqdn,
       "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "api_type": "vmware",
       "tlsverify": request.tlsverify,
       "datacenter": request.datacenter,
       "environment": request.environment,
