@@ -47,6 +47,11 @@ import {
   addressRangeModifyError,
   addressRangeDeleteError,
 
+  datacenterServersError,
+  datacenterServerAddError,
+  datacenterServerModifyError,
+  datacenterServerDeleteError,
+
   application_sitesError,
   application_siteAddError,
   application_siteModifyError,
@@ -198,6 +203,19 @@ class Error extends Component {
           break;
         case 'addressRangeDeleteError':
           this.props.dispatch(addressRangeDeleteError(null))
+          break;
+
+        case 'datacenterServersError':
+          this.props.dispatch(datacenterServersError(null))
+          break;
+        case 'datacenterServerAddError':
+          this.props.dispatch(datacenterServerAddError(null))
+          break;
+        case 'datacenterServerModifyError':
+          this.props.dispatch(datacenterServerModifyError(null))
+          break;
+        case 'datacenterServerDeleteError':
+          this.props.dispatch(datacenterServerDeleteError(null))
           break;
 
         case 'application_sitesError':

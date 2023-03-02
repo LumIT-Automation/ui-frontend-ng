@@ -199,6 +199,29 @@ const checkpointSlice = createSlice({
         state.addressRangeDeleteError = action.payload
       },
 
+      datacenterServersLoading: (state, action) => {
+        state.datacenterServersLoading = action.payload
+      },
+      datacenterServers: (state, action) => {
+        state.datacenterServers = action.payload.data.items
+      },
+      datacenterServersFetch: (state, action) => {
+        state.datacenterServersFetch = action.payload
+      },
+      datacenterServersError: (state, action) => {
+        state.datacenterServersError = action.payload
+      },
+
+      datacenterServerAddError: (state, action) => {
+        state.datacenterServerAddError = action.payload
+      },
+      datacenterServerModifyError: (state, action) => {
+        state.datacenterServerModifyError = action.payload
+      },
+      datacenterServerDeleteError: (state, action) => {
+        state.datacenterServerDeleteError = action.payload
+      },
+
       application_sitesLoading: (state, action) => {
         state.application_sitesLoading = action.payload
       },
@@ -351,6 +374,14 @@ export const {
   addressRangeAddError,
   addressRangeModifyError,
   addressRangeDeleteError,
+
+  datacenterServersLoading,
+  datacenterServers,
+  datacenterServersFetch,
+  datacenterServersError,
+  datacenterServerAddError,
+  datacenterServerModifyError,
+  datacenterServerDeleteError,
 
   application_sitesLoading,
   application_sites,

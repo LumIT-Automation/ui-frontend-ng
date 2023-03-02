@@ -14,6 +14,7 @@ import Groups from './groups/manager'
 import Networks from './networks/manager'
 import AddressRanges from './addressRanges/manager'
 import ApplicationSites from './application_sites/manager'
+import DatacenterServers from './datacenterServers/manager'
 
 import {
   assets,
@@ -23,6 +24,7 @@ import {
   groupsFetch,
   networksFetch,
   addressRangesFetch,
+  datacenterServersFetch,
   application_sitesFetch,
 
 } from '../checkpoint/store'
@@ -83,6 +85,9 @@ class Checkpoint extends React.Component {
   }
   addressRangesRefresh = () => {
     this.props.dispatch(addressRangesFetch(true))
+  }
+  datacenterServersRefresh = () => {
+    this.props.dispatch(datacenterServersFetch(true))
   }
   application_sitesRefresh = () => {
     this.props.dispatch(application_sitesFetch(true))
@@ -166,6 +171,21 @@ class Checkpoint extends React.Component {
               :
                 <TabPane key="Custom Application Sites" tab=<span>Custom Application Sites <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.application_sitesRefresh()}/></span>>
                   <ApplicationSites/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
+          { this.props.authorizations && (this.props.authorizations.datacenterServers_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.datacenterServersLoading ?
+                <TabPane key="Datacenter Servers" tab="Datacenter Servers">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Datacenter Servers" tab=<span>Datacenter Servers<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterServersRefresh()}/></span>>
+                  <DatacenterServers/>
                 </TabPane>
               }
             </React.Fragment>
@@ -266,6 +286,7 @@ export default connect((state) => ({
   groupsLoading: state.checkpoint.groupsLoading,
   networksLoading: state.checkpoint.networksLoading,
   addressRangesLoading: state.checkpoint.addressRangesLoading,
+  datacenterServersLoading: state.checkpoint.datacenterServersLoading,
   application_sitesLoading: state.checkpoint.application_sitesLoading,
 
   assetsError: state.checkpoint.assetsError,
