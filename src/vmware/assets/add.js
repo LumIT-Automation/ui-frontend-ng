@@ -45,50 +45,15 @@ class Add extends React.Component {
   details = () => {
     this.setState({visible: true})
     let request = JSON.parse(JSON.stringify(this.state.request))
-    switch (this.props.vendor) {
-      case 'checkpoint':
-        request.baseurl = '/web_api/'
-        break;
-      case 'infoblox':
-        request.baseurl = '/wapi/v2.10/'
-        break;
-      case 'f5':
-        request.baseurl = '/mgmt/'
-        break;
-      case 'vmware':
-        request.baseurl = '/'
-        break;
-      default:
-
-    }
-
     this.setState({request: request})
   }
 
 
   //SETTER
   set = async (e, type) => {
-    let regexp_begins = new RegExp(/^[\/]/g);
-    let regexp_ends = new RegExp(/[\/]$/g);
     let request = JSON.parse(JSON.stringify(this.state.request))
-
     request[type] = e.target.value
-
-    if (type === 'baseurl') {
-      request.baseurl = request.baseurl.replaceAll('https://','')
-      request.baseurl = request.baseurl.replaceAll('http://','')
-      request.baseurl = request.baseurl.replaceAll(`${request.address}`,'')
-      request.baseurl = request.baseurl.replaceAll(`${request.fqdn}`,'')
-      request.baseurl = request.baseurl.replaceAll(/[\/]{1,}/g,'/');
-      if (!regexp_begins.test(request.baseurl)) {
-        request.baseurl = `/${request.baseurl}`
-      }
-      if (!regexp_ends.test(request.baseurl)) {
-        request.baseurl = `${request.baseurl}/`
-      }
-    }
-
-    this.setState({request: request})
+    await this.setState({request: request})
   }
 
   //VALIDATION
@@ -110,6 +75,15 @@ class Add extends React.Component {
       }
     else {
       delete errors.fqdnError
+      this.setState({errors: errors})
+    }
+
+    if (!request.baseurl) {
+      errors.baseurlError = true
+      this.setState({errors: errors})
+      }
+    else {
+      delete errors.baseurlError
       this.setState({errors: errors})
     }
 
@@ -187,7 +161,7 @@ class Add extends React.Component {
     b.data = {
       "address": request.fqdn,
       "fqdn": request.fqdn,
-      "baseurl": `https://${request.fqdn}${request.baseurl}`,
+      "baseurl": request.baseurl,
       "api_type": "vmware",
       "tlsverify": request.tlsverify,
       "datacenter": request.datacenter,
