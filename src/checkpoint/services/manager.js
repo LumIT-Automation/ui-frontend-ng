@@ -10,6 +10,7 @@ import {
 } from '../store'
 
 import VpnToServices from './vpnToServices'
+import VpnToHost from './vpnToHost'
 import { Row, Col } from 'antd'
 
 
@@ -66,6 +67,10 @@ class Manager extends React.Component {
           <Col span={4} offset={2} >
             <p>Vpn to services</p>
             <VpnToServices/>
+          </Col>
+          <Col span={4} offset={2} >
+            <p>Vpn to host</p>
+            <VpnToHost/>
           </Col>
         </Row>
 

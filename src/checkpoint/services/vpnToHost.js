@@ -6,7 +6,7 @@ import Validators from '../../_helpers/validators'
 import Error from '../error'
 
 import {
-  vpnToServiceError,
+  vpnToHostError,
 } from '../store'
 
 import AssetSelector from '../../concerto/assetSelector'
@@ -19,14 +19,14 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class VpnToServices extends React.Component {
+class VpnToHost extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       visible: false,
       errors: {},
-      vpnToServices: []
+      vpnToHosts: []
     };
   }
 
@@ -132,13 +132,23 @@ class VpnToServices extends React.Component {
   }
 
   validationCheck = async () => {
+    let validators = new Validators()
     let errors = JSON.parse(JSON.stringify(this.state.errors))
-    if (!this.state.name) {
-      errors.nameError = true
+
+    if (!this.state['ipv4-address'] || !validators.ipv4(this.state['ipv4-address'])) {
+      errors['ipv4-addressError'] = true
       await this.setState({errors: errors})
     }
     else {
-      delete errors.nameError
+      delete errors['ipv4-addressError']
+      await this.setState({errors: errors})
+    }
+    if (!this.state['rule-package']) {
+      errors['rule-packageError'] = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors['rule-packageError']
       await this.setState({errors: errors})
     }
     return errors
@@ -148,37 +158,39 @@ class VpnToServices extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.vpnToService()
+      this.vpnToHost()
     }
   }
 
-  vpnToService = async () => {
-    await this.setState({nameloading: true})
+  vpnToHost = async () => {
+    await this.setState({loading: true})
     let b = {}
 
     b.data = {
-      "name": this.state.name,
+      "ipv4-address": this.state['ipv4-address'],
+      "rule-package": this.state['rule-package'],
     }
 
     let rest = new Rest(
       "PUT",
       resp => {
-        this.setState({vpnToServices: resp.data.items})
+        this.setState({vpnToHosts: resp.data.items})
       },
       error => {
-        this.props.dispatch(vpnToServiceError(error))
+        this.props.dispatch(vpnToHostError(error))
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/vpn-to-services/`, this.props.token, b)
-    await this.setState({nameloading: false})
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/vpn-to-host/`, this.props.token, b)
+    await this.setState({loading: false})
   }
 
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
-      name: null,
-      vpnToServices: [],
+      ['ipv4-address']: null,
+      ['rule-package']: null,
+      vpnToHosts: [],
       errors: {}
     })
   }
@@ -193,13 +205,6 @@ class VpnToServices extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
       },
       {
         title: 'Uid',
@@ -217,10 +222,10 @@ class VpnToServices extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>VPN TO SERVICES</Button>
+        <Button type="primary" onClick={() => this.details()}>VPN TO HOST</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>VPN TO SERVICES</p>}
+          title={<p style={{textAlign: 'center'}}>VPN TO HOST</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -240,17 +245,28 @@ class VpnToServices extends React.Component {
               <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ipv4-address:</p>
                   </Col>
                   <Col span={8}>
-
                     <Input
-                      defaultValue={this.state.name}
-                      style={this.state.errors.nameError ? {borderColor: 'red'} : null}
-                      onChange={e => this.setKey(e, 'name')}
+                      defaultValue={this.state['ipv4-address']}
+                      style={this.state.errors['ipv4-addressError'] ? {borderColor: 'red'} : null}
+                      onChange={e => this.setKey(e, 'ipv4-address')}
                       onPressEnter={() => this.validation()}
                     />
-
+                  </Col>
+                </Row>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>rule-package:</p>
+                  </Col>
+                  <Col span={8}>
+                    <Input
+                      defaultValue={this.state['rule-package']}
+                      style={this.state.errors['rule-packageError'] ? {borderColor: 'red'} : null}
+                      onChange={e => this.setKey(e, 'rule-package')}
+                      onPressEnter={() => this.validation()}
+                    />
                   </Col>
                 </Row>
                 <Row>
@@ -259,7 +275,7 @@ class VpnToServices extends React.Component {
                       type="primary"
                       onClick={() => this.validation()}
                     >
-                      Vpn to services
+                      Vpn to host
                     </Button>
                   </Col>
                 </Row>
@@ -267,16 +283,16 @@ class VpnToServices extends React.Component {
 
               <Divider/>
 
-            { this.state.nameloading ?
+            { this.state.loading ?
               <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
             :
               <React.Fragment>
-                { this.state.vpnToServices.length < 1 ?
+                { this.state.vpnToHosts.length < 1 ?
                   null
                 :
                   <Table
                     columns={columns}
-                    dataSource={this.state.vpnToServices}
+                    dataSource={this.state.vpnToHosts}
                     bordered
                     rowKey={randomKey}
                     scroll={{x: 'auto'}}
@@ -295,7 +311,7 @@ class VpnToServices extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.vpnToServiceError ? <Error component={'vpnToService'} error={[this.props.vpnToServiceError]} visible={true} type={'vpnToServiceError'} /> : null }
+            { this.props.vpnToHostError ? <Error component={'vpnToHost'} error={[this.props.vpnToHostError]} visible={true} type={'vpnToHostError'} /> : null }
           </React.Fragment>
         :
           null
@@ -313,5 +329,5 @@ export default connect((state) => ({
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
-  vpnToServiceError: state.checkpoint.vpnToServiceError,
-}))(VpnToServices);
+  vpnToHostError: state.checkpoint.vpnToHostError,
+}))(VpnToHost);

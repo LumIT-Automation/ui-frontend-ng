@@ -271,9 +271,11 @@ const checkpointSlice = createSlice({
       hostRemoveError: (state, action) => {
         state.hostRemoveError = action.payload
       },
-
       vpnToServiceError: (state, action) => {
         state.vpnToServiceError = action.payload
+      },
+      vpnToHostError: (state, action) => {
+        state.vpnToHostError = action.payload
       },
 
       historysLoading: ( state, action) => {
@@ -405,6 +407,7 @@ export const {
 
   hostRemoveError,
   vpnToServiceError,
+  vpnToHostError,
 
   historysLoading,
   historys,
