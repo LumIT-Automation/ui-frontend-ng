@@ -272,6 +272,10 @@ const checkpointSlice = createSlice({
         state.hostRemoveError = action.payload
       },
 
+      vpnToServiceError: (state, action) => {
+        state.vpnToServiceError = action.payload
+      },
+
       historysLoading: ( state, action) => {
         state.historysLoading = action.payload
       },
@@ -400,6 +404,7 @@ export const {
   application_site_categoryDeleteError,
 
   hostRemoveError,
+  vpnToServiceError,
 
   historysLoading,
   historys,

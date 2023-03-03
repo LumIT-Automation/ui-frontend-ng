@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Authorizators from '../_helpers/authorizators'
+import CheckpointManager from '../checkpoint/services/manager'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
 import VmwareManager from '../vmware/services/manager'
@@ -62,6 +63,20 @@ class Service extends React.Component {
             </Divider>
             <br/>
             <InfobloxManager/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+          <React.Fragment>
+            <Divider orientation="left" plain >
+              FIREWALL
+            </Divider>
+            <br/>
+            <CheckpointManager/>
             <br/>
             <br/>
           </React.Fragment>

@@ -64,6 +64,7 @@ import {
 
 
   hostRemoveError,
+  vpnToServiceError,
 
   historysError,
 
@@ -247,6 +248,9 @@ class Error extends Component {
         case 'hostRemoveError':
           this.props.dispatch(hostRemoveError(null))
           break;
+        case 'vpnToServiceError':
+        	this.props.dispatch(vpnToServiceError(null))
+        	break;
 
         case 'historysError':
           this.props.dispatch(historysError(null))
