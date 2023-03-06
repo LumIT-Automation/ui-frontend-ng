@@ -64,18 +64,18 @@ class Modify extends React.Component {
     let validators = new Validators()
 
     if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-      if (!request.fqdn || !validators.ipv4(request.fqdn)) {
-        errors.fqdnError = true
-        this.setState({errors: errors})
-      }
-      else {
-        delete errors.fqdnError
-        this.setState({errors: errors})
-      }
+      errors.fqdnError = true
       this.setState({errors: errors})
-      }
-    else {
+    } else {
       delete errors.fqdnError
+      this.setState({errors: errors})
+    }
+
+    if (!request.address || !validators.ipv4(request.address)) {
+      errors.addressError = true
+      this.setState({errors: errors})
+    } else {
+      delete errors.addressError
       this.setState({errors: errors})
     }
 
@@ -160,7 +160,7 @@ class Modify extends React.Component {
     let b = {}
 
     b.data = {
-      "address": request.fqdn,
+      "address": request.address,
       "fqdn": request.fqdn,
       "baseurl": request.baseurl,
       "api_type": "vmware",
@@ -231,13 +231,27 @@ class Modify extends React.Component {
           <React.Fragment>
             <Row>
               <Col offset={2} span={6}>
-                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn or IP:</p>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Fqdn:</p>
               </Col>
               <Col span={16}>
                 {this.state.errors.fqdnError ?
                   <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'fqdn')} />
                 :
                   <Input defaultValue={this.state.request.fqdn} style={{width: 250}} onChange={e => this.set(e, 'fqdn')} />
+                }
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP:</p>
+              </Col>
+              <Col span={16}>
+                {this.state.errors.addressError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.set(e, 'address')} />
+                :
+                  <Input defaultValue={this.state.request.address} style={{width: 250}} onChange={e => this.set(e, 'address')} />
                 }
               </Col>
             </Row>
