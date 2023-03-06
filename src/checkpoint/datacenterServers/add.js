@@ -24,8 +24,11 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      types: ['aws', 'azure', 'google'],
+      'authentication-methods': ['user-authentication', 'admin-authentication'],
+      request: {},
       errors: {},
-      request: {}
+
     };
   }
 
@@ -46,22 +49,87 @@ class Add extends React.Component {
     this.setState({visible: true})
   }
 
+/*
+  "name": "Coso",
+  "type": "aws",
+  "authentication-method": "user-authentication",
+  "access-key-id": "AKIAI4EMUXLDYNO3KFGQ",
+  "secret-access-key": "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",
+  "region": "eu-west-1",
+  "tags": [
+      "testone"
+  ],
+  "color": "orange",
+  "comments": "proviamo",
+  "details-level": "standard",
+  "ignore-warnings": true
+*/
 
   //SETTERS
-  nameSet = e => {
+
+  set = async (e, component, value) => {
+    let data
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.name = e.target.value
-    this.setState({request: request})
-  }
-  firstAddressSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.firstAddress = e.target.value
-    this.setState({request: request})
-  }
-  lastAddressSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.lastAddress = e.target.value
-    this.setState({request: request})
+    console.log('e \n', e)
+    console.log('value \n', value)
+
+    switch (component) {
+      case 'input':
+        data = e.target.value
+        break;
+      case 'textArea':
+        data = e.target.value
+        break;
+      case 'select':
+        data = e
+        break;
+      case 'radio':
+        data = e
+        break;
+      case 'tags':
+        data = e
+        break;
+        break;
+
+      default:
+        await this.setState({request: request})
+    }
+
+    request[value] = data
+    await this.setState({request: request})
+    console.log(this.state.request)
+    /*switch (label) {
+      //input
+      case 'name':
+      case 'access-key-id':
+      case 'secret-access-key':
+      case 'comments':
+        request[type] = e.target.value
+        await this.setState({request: request})
+        break;
+
+      //select type
+      case 'type':
+      case 'authentication-method':
+      case 'region':
+      case 'details-level':
+        request[type] = e
+        await this.setState({request: request})
+        break;
+
+      //boolean
+      case 'ignore-warnings':
+        request[type] = e
+        await this.setState({request: request})
+
+      //tags
+      case 'tags':
+        //
+        break;
+
+      default:
+        await this.setState({request: request})
+    }*/
   }
 
   //VALIDATION
@@ -72,30 +140,49 @@ class Add extends React.Component {
 
     if (!request.name) {
       errors.nameError = true
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
     else {
       delete errors.nameError
-      this.setState({errors: errors})
+      await this.setState({errors: errors})
     }
 
-    if (!request.firstAddress || !validators.ipv4(request.firstAddress)) {
-      errors.firstAddressError = true
-      this.setState({errors: errors})
+    if (!request['type']) {
+      errors['typeError'] = true
+      await this.setState({errors: errors})
     }
     else {
-      delete errors.firstAddressError
-      this.setState({errors: errors})
+      delete errors['typeError']
+      await this.setState({errors: errors})
     }
 
-    if (!request.lastAddress || !validators.ipv4(request.lastAddress)) {
-      errors.lastAddressError = true
-      this.setState({errors: errors})
+    if (!request['authentication-method']) {
+      errors['authentication-methodError'] = true
+      await this.setState({errors: errors})
     }
     else {
-      delete errors.lastAddressError
-      this.setState({errors: errors})
+      delete errors['authentication-methodError']
+      await this.setState({errors: errors})
     }
+
+    if (!request['access-key-id']) {
+      errors['access-key-idError'] = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors['access-key-idError']
+      await this.setState({errors: errors})
+    }
+
+    if (!request['secret-access-key']) {
+      errors['secret-access-keyError'] = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors['secret-access-keyError']
+      await this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -103,7 +190,8 @@ class Add extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.datacenterServerAdd()
+      //this.datacenterServerAdd()
+      console.log('POST con questo body: ', this.state.request)
     }
   }
 
@@ -150,6 +238,71 @@ class Add extends React.Component {
 
 
   render() {
+    console.log(this.state.errors)
+
+    let createComponent = (component, value, choices) => {
+      switch (component) {
+        case 'input':
+          return (
+            <Input
+              style=
+              {this.state.errors[`${value}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              onChange={e => this.set(e, component, value)}
+            />
+          )
+          break;
+
+        case 'textArea':
+          return (
+            <Input.TextArea
+              rows={7}
+              placeholder="Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN"
+              value={this.state.request[`${value}`]}
+              onChange={e => this.set(e, component, value)}
+            />
+          )
+          break;
+
+        case 'select':
+        return (
+          <Select
+            value={this.state.request[`${value}`]}
+            showSearch
+            style=
+            { this.state.errors[`${value}Error`] ?
+              {width: "100%", border: `1px solid red`}
+            :
+              {width: "100%"}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={e => this.set(e, component, value)}
+          >
+            <React.Fragment>
+              {this.state[`${choices}`].map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
+              }
+            </React.Fragment>
+          </Select>
+        )
+
+        default:
+
+      }
+
+    }
     return (
       <Space direction='vertical'>
 
@@ -163,7 +316,7 @@ class Add extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
           maskClosable={false}
         >
           { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
@@ -179,48 +332,68 @@ class Add extends React.Component {
                 <Col offset={2} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
-                <Col span={16}>
-                  {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: 'red'}} name="name" id='name' onChange={e => this.nameSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} name="name" id='name' onChange={e => this.nameSet(e)} />
-                  }
+                <Col span={8}>
+                  {createComponent('input', 'name')}
                 </Col>
               </Row>
               <br/>
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>First address:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>type:</p>
                 </Col>
-                <Col span={16}>
-                  {this.state.errors.firstAddressError ?
-                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.firstAddressSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.firstAddress} style={{width: 250}} name="address" id='name' onChange={e => this.firstAddressSet(e)} />
-                  }
+                <Col span={8}>
+                  {createComponent('select', 'type', 'types')}
                 </Col>
               </Row>
               <br/>
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Last address:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>authentication-method:</p>
                 </Col>
-                <Col span={16}>
-                  {this.state.errors.lastAddressError ?
-                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.lastAddressSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.lastAddress} style={{width: 250}} name="address" id='name' onChange={e => this.lastAddressSet(e)} />
-                  }
+                <Col span={8}>
+                  {createComponent('select', 'authentication-method', 'authentication-methods')}
                 </Col>
               </Row>
               <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>access-key-id:</p>
+                </Col>
+                <Col span={8}>
+                  {createComponent('input', 'access-key-id')}
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>secret-access-key:</p>
+                </Col>
+                <Col span={8}>
+                  {createComponent('input', 'secret-access-key')}
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>comments:</p>
+                </Col>
+                <Col span={8}>
+                  {createComponent('textArea', 'comments')}
+                </Col>
+              </Row>
+              <br/>
+
+
 
               <Row>
                 <Col offset={8} span={16}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Address Range
+                    Add Datacenter Server
                   </Button>
                 </Col>
               </Row>
