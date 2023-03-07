@@ -143,14 +143,6 @@ class VpnToHost extends React.Component {
       delete errors['ipv4-addressError']
       await this.setState({errors: errors})
     }
-    if (!this.state['rule-package']) {
-      errors['rule-packageError'] = true
-      await this.setState({errors: errors})
-    }
-    else {
-      delete errors['rule-packageError']
-      await this.setState({errors: errors})
-    }
     return errors
   }
 
@@ -168,13 +160,29 @@ class VpnToHost extends React.Component {
 
     b.data = {
       "ipv4-address": this.state['ipv4-address'],
-      "rule-package": this.state['rule-package'],
+      "rule-package": "FWRAVPN_PKG",
     }
 
     let rest = new Rest(
       "PUT",
       resp => {
-        this.setState({vpnToHosts: resp.data.items})
+        let list = []
+        resp.data.items.forEach((item, i) => {
+          let o = {}
+          //console.log(item)
+          for (let property in item) {
+            if ( (property !== 'port') && (property !== 'protocol') && (property !== 'type') ) {
+              o.uid = property
+              o.name = item[property].name
+              //console.log(property)
+            }
+            o.port = item.port
+            o.protocol = item.protocol
+            o.type = item.type
+          }
+          list.push(o)
+        });
+        this.setState({vpnToHosts: list})
       },
       error => {
         this.props.dispatch(vpnToHostError(error))
@@ -189,7 +197,6 @@ class VpnToHost extends React.Component {
     this.setState({
       visible: false,
       ['ipv4-address']: null,
-      ['rule-package']: null,
       vpnToHosts: [],
       errors: {}
     })
@@ -197,7 +204,7 @@ class VpnToHost extends React.Component {
 
 
   render() {
-    console.log(this.state)
+    console.log(this.state.vpnToHosts)
     const columns = [
       {
         title: 'Name',
@@ -205,6 +212,27 @@ class VpnToHost extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'Port',
+        align: 'center',
+        dataIndex: 'port',
+        key: 'port',
+        ...this.getColumnSearchProps('port'),
+      },
+      {
+        title: 'Protocol',
+        align: 'center',
+        dataIndex: 'protocol',
+        key: 'protocol',
+        ...this.getColumnSearchProps('protocol'),
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
       },
       {
         title: 'Uid',
@@ -262,10 +290,8 @@ class VpnToHost extends React.Component {
                   </Col>
                   <Col span={8}>
                     <Input
-                      defaultValue={this.state['rule-package']}
-                      style={this.state.errors['rule-packageError'] ? {borderColor: 'red'} : null}
-                      onChange={e => this.setKey(e, 'rule-package')}
-                      onPressEnter={() => this.validation()}
+                      defaultValue="FWRAVPN_PKG"
+                      disabled
                     />
                   </Col>
                 </Row>

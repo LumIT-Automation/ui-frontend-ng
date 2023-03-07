@@ -24,8 +24,9 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      types: ['aws', 'azure', 'google'],
+      types: ['aws', 'azure', 'gcp'],
       'authentication-methods': ['user-authentication', 'admin-authentication'],
+      'details-levels': ['uid', 'standard', 'full'],
       request: {},
       errors: {},
 
@@ -138,12 +139,12 @@ class Add extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.name) {
-      errors.nameError = true
+    if (!request['name']) {
+      errors['nameError'] = true
       await this.setState({errors: errors})
     }
     else {
-      delete errors.nameError
+      delete errors['nameError']
       await this.setState({errors: errors})
     }
 
@@ -183,6 +184,15 @@ class Add extends React.Component {
       await this.setState({errors: errors})
     }
 
+    if (!request['details-level']) {
+      errors['details-levelError'] = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors['details-levelError']
+      await this.setState({errors: errors})
+    }
+
     return errors
   }
 
@@ -201,9 +211,19 @@ class Add extends React.Component {
     let request = Object.assign({}, this.state.request)
     let b = {}
     b.data = {
-      "name": this.state.request.name,
-      "ipv4-address-first": this.state.request.firstAddress,
-      "ipv4-address-last": this.state.request.lastAddress,
+      "name": "Coso",
+      "type": "aws",
+      "authentication-method": "user-authentication",
+      "access-key-id": "AKIAI4EMUXLDYNO3KFGQ",
+      "secret-access-key": "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",
+      "region": "eu-west-1",
+      "tags": [
+          "testone"
+      ],
+      "color": "orange",
+      "comments": "proviamo",
+      "details-level": "standard",
+      "ignore-warnings": true
     }
 
     this.setState({loading: true})
@@ -384,6 +404,16 @@ class Add extends React.Component {
                 </Col>
                 <Col span={8}>
                   {createComponent('textArea', 'comments')}
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>details-level:</p>
+                </Col>
+                <Col span={8}>
+                  {createComponent('select', 'details-level', 'details-levels')}
                 </Col>
               </Row>
               <br/>
