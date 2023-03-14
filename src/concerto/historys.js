@@ -49,10 +49,29 @@ class Historys extends React.Component {
           value={this.state.vendor}
           style={{padding: 15, paddingTop: 40 }}
         >
-          <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
-          <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
-          <Radio.Button value={'f5'}>f5</Radio.Button>
-          <Radio.Button value={'vmware'}>vmware</Radio.Button>
+          {this.authorizators(this.props.authorizationsInfoblox) ?
+            <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+          :
+            null
+          }
+
+          { this.authorizators(this.props.authorizationsCheckpoint) ?
+            <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
+          :
+            null
+          }
+
+          { this.authorizators(this.props.authorizationsF5) ?
+            <Radio.Button value={'f5'}>f5</Radio.Button>
+          :
+            null
+          }
+
+          { this.authorizators(this.props.authorizationsVmware) ?
+            <Radio.Button value={'vmware'}>vmware</Radio.Button>
+          :
+            null
+          }
         </Radio.Group>
         <Divider/>
         {
