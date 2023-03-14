@@ -13,7 +13,13 @@ const concertoSlice = createSlice({
       },
       historysError: ( state, action) => {
         state.historysError = action.payload
-      }
+      },
+      taskProgressLoading: ( state, action) => {
+          state.taskProgressLoading = action.payload
+      },
+      secondStageProgressLoading: ( state, action) => {
+        state.secondStageProgressLoading = action.payload
+      },
 
     }
 })
@@ -24,7 +30,10 @@ export const {
 
   historysLoading,
   historys,
-  historysError
+  historysError,
+
+  taskProgressLoading,
+  secondStageProgressLoading,
 
 } = actions
 

@@ -13,6 +13,8 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 import {
   historys,
   historysError,
+  taskProgressLoading,
+  secondStageProgressLoading,
 } from './store'
 
 //import List from './list'
@@ -30,7 +32,20 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.vendor === 'vmware') {
+      if (!this.props.historysError) {
+        this.setState({refreshHistorys: false})
+        if (!this.props.historys) {
+          this.main()
+        }
+        this.interval = setInterval( () => this.refresh(), 15000)
+      }
+      else {
+        clearInterval(this.interval)
+      }
+    }
     if (!this.props.historysError && !this.props.historys) {
+      this.setState({refreshHistorys: false})
       this.main()
     }
   }
@@ -41,6 +56,14 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.vendor !== this.props.vendor) {
+      this.setState({refreshHistorys: false})
+      this.main()
+    }
+    if (this.state.refreshHistorys) {
+      if (this.props.vendor === 'vmware') {
+        clearInterval(this.interval)
+      }
+      this.setState({refreshHistorys: false})
       this.main()
     }
   }
@@ -138,14 +161,80 @@ class Manager extends React.Component {
       await this.setState({loading: false})
       return
     }
+    else if (this.props.vendor === 'vmware'){
+      let list = []
+      await this.setState({loading: false})
+      fetchedHistorys.data.items.forEach((item, i) => {
+        let ts = item.task_startTime.split('.');
+        item.task_startTime = ts[0]
+        list.push(item)
+      });
+
+      this.props.dispatch(historys({data: {items:list}}))
+    }
     else {
       await this.setState({loading: false})
       this.props.dispatch(historys(fetchedHistorys))
     }
   }
 
+  refresh = async () => {
+
+    let taskProgress = false
+    let secondStage = false
+
+    this.props.historys.forEach((item, i) => {
+      if (item.second_stage_state === 'running') {
+        secondStage = true
+      }
+      if (item.task_state === 'running') {
+        taskProgress = true
+      }
+    });
+
+
+    //second_stage_state === 'running'
+
+    if (taskProgress) {
+      this.props.dispatch(taskProgressLoading(true))
+    }
+    if (secondStage) {
+      this.props.dispatch(secondStageProgressLoading(true))
+    }
+
+    let list = []
+
+    let fetchedHistorys = await this.historyGet()
+    this.props.dispatch(taskProgressLoading(false))
+    this.props.dispatch(secondStageProgressLoading(false))
+
+    if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
+      this.props.dispatch(historysError(fetchedHistorys))
+      return
+    }
+    else {
+      fetchedHistorys.data.items.forEach((item, i) => {
+        let ts = item.task_startTime.split('.');
+        item.task_startTime = ts[0]
+        list.push(item)
+      });
+      this.props.dispatch(historys({data: {items:list}}))
+    }
+  }
+
+  refreshHistorys = async () => {
+    await this.setState({refreshHistorys: true})
+  }
 
   historyGet = async () => {
+    let endpoint = ''
+    if (this.props.vendor === 'vmware') {
+     endpoint = `${this.props.vendor}/stage2/targets/?results=10`
+    }
+    else {
+      endpoint = `${this.props.vendor}/history/`
+    }
+
     let r
     let rest = new Rest(
       "GET",
@@ -156,7 +245,9 @@ class Manager extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/history/`, this.props.token)
+
+    await rest.doXHR(`${endpoint}`, this.props.token)
+
     return r
   }
 
@@ -474,7 +565,7 @@ class Manager extends React.Component {
         :
           <Space direction="vertical" style={{padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.main()}><ReloadOutlined/></Button>
+            <Button onClick={() => this.refreshHistorys()}><ReloadOutlined/></Button>
             <br/>
             <Table
               columns={returnCol()}
@@ -497,4 +588,6 @@ export default connect((state) => ({
 
   historys: state.concerto.historys,
   historysError: state.concerto.historysError,
+  taskProgressLoading: state.concerto.taskProgressLoading,
+  secondStageProgressLoading: state.concerto.secondStageProgressLoading,
 }))(Manager);
