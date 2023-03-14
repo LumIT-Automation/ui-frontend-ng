@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import '../App.css'
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
@@ -564,7 +565,7 @@ class Manager extends React.Component {
         {this.state.loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
-          <Space direction="vertical" style={{padding: 15, marginBottom: 10}}>
+          <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
             <Button onClick={() => this.refreshHistorys()}><ReloadOutlined/></Button>
             <br/>
