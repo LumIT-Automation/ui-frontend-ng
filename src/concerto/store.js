@@ -11,11 +11,7 @@ const concertoSlice = createSlice({
       historys: ( state, action) => {
         state.historys = action.payload.data.items
       },
-      historysFetch: ( state, action) => {
-        state.historysFetch = action.payload
-      },
       historysError: ( state, action) => {
-        console.log(action.payload)
         state.historysError = action.payload
       }
 
@@ -28,7 +24,6 @@ export const {
 
   historysLoading,
   historys,
-  historysFetch,
   historysError
 
 } = actions

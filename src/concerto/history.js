@@ -7,12 +7,11 @@ import Error from './error'
 
 import { Space, Table, Input, Button, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 import {
   historys,
-  historysFetch,
   historysError,
 } from './store'
 
@@ -31,11 +30,8 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.historysError) {
-      this.props.dispatch(historysFetch(false))
-      if (!this.props.historys) {
-        this.main()
-      }
+    if (!this.props.historysError && !this.props.historys) {
+      this.main()
     }
   }
 
@@ -46,10 +42,6 @@ class Manager extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.vendor !== this.props.vendor) {
       this.main()
-    }
-    if (this.props.historysFetch) {
-      this.main()
-      this.props.dispatch(historysFetch(false))
     }
   }
 
@@ -480,15 +472,19 @@ class Manager extends React.Component {
         {this.state.loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
-          <Table
-            columns={returnCol()}
-            dataSource={this.props.historys}
-            bordered
-            rowKey={randomKey}
-            scroll={{x: 'auto'}}
-            pagination={{ pageSize: 10 }}
-            style={{padding: 15, marginBottom: 10}}
-          />
+          <Space direction="vertical" style={{padding: 15, marginBottom: 10}}>
+
+            <Button onClick={() => this.main()}><ReloadOutlined/></Button>
+            <br/>
+            <Table
+              columns={returnCol()}
+              dataSource={this.props.historys}
+              bordered
+              rowKey={randomKey}
+              scroll={{x: 'auto'}}
+              pagination={{ pageSize: 10 }}
+            />
+          </Space>
         }
         { this.props.historysError ? <Error vendor={this.props.vendor} error={[this.props.historysError]} visible={true} type={'historyError'} /> : null }
       </React.Fragment>
@@ -501,5 +497,4 @@ export default connect((state) => ({
 
   historys: state.concerto.historys,
   historysError: state.concerto.historysError,
-  historysFetch: state.concerto.historysFetch,
 }))(Manager);

@@ -1,11 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Radio } from 'antd';
+import { Radio, Divider } from 'antd';
 
 import Authorizators from '../_helpers/authorizators'
 import History from './history'
-
-import { historysFetch } from './store'
 
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -46,12 +44,17 @@ class Historys extends React.Component {
     console.log(this.state.vendor)
     return (
       <React.Fragment>
-        <Radio.Group onChange={e => this.setState({vendor: e.target.value})} value={this.state.vendor}>
-          <Radio value={'infoblox'}>infoblox</Radio>
-          <Radio value={'checkpoint'}>checkpoint</Radio>
-          <Radio value={'f5'}>f5</Radio>
-          <Radio value={'vmware'}>vmware</Radio>
+        <Radio.Group
+          onChange={e => this.setState({vendor: e.target.value})}
+          value={this.state.vendor}
+          style={{padding: 15, paddingTop: 40 }}
+        >
+          <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+          <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
+          <Radio.Button value={'f5'}>f5</Radio.Button>
+          <Radio.Button value={'vmware'}>vmware</Radio.Button>
         </Radio.Group>
+        <Divider/>
         {
           this.state.vendor ?
             <History vendor={this.state.vendor}/>
