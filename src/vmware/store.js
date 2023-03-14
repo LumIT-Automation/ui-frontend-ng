@@ -119,18 +119,7 @@ const vmwareSlice = createSlice({
           state.vmCreateError = action.payload
         },
 
-        historysLoading: ( state, action) => {
-          state.historysLoading = action.payload
-        },
-        historys: ( state, action) => {
-          state.historys = action.payload
-        },
-        historysFetch: ( state, action) => {
-          state.historysFetch = action.payload
-        },
-        historysError: ( state, action) => {
-          state.historysError = action.payload
-        },
+
         taskProgressLoading: ( state, action) => {
           state.taskProgressLoading = action.payload
         },
@@ -202,10 +191,6 @@ export const {
   finalpubkeysError,
   vmCreateError,
 
-  historysLoading,
-  historys,
-  historysFetch,
-  historysError,
   taskProgressLoading,
   secondStageProgressLoading,
 

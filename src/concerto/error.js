@@ -5,36 +5,8 @@ import { Component } from "react";
 import { authorizationsError } from '../_store/store.authorizations'
 
 import {
-  permissionsError,
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
 
-  identityGroupsError,
-  identityGroupDeleteError,
-  newIdentityGroupAddError,
-
-  rolesError,
-
-  environmentError,
-  assetsError,
-
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-
-  treeError,
-  networksError,
-  containersError,
-
-  ipDetailError,
-  networkError,
-  containerError,
-  nextAvailableIpError,
-  ipModifyError,
-  ipReleaseError,
-
-  genericError
+  historysError
 
 } from './store'
 
@@ -65,79 +37,8 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
-        case 'authorizationsError':
-          this.props.dispatch(authorizationsError(null))
-          break;
-
-        case 'permissionsError':
-          this.props.dispatch(permissionsError(null))
-          break;
-        case 'permissionAddError':
-          this.props.dispatch(permissionAddError(null))
-          break;
-        case 'permissionModifyError':
-          this.props.dispatch(permissionModifyError(null))
-          break;
-        case 'permissionDeleteError':
-          this.props.dispatch(permissionDeleteError(null))
-          break;
-
-        case 'identityGroupsError':
-          this.props.dispatch(identityGroupsError(null))
-          break;
-        case 'identityGroupDeleteError':
-          this.props.dispatch(identityGroupDeleteError(null))
-          break;
-        case 'newIdentityGroupAddError':
-          this.props.dispatch(newIdentityGroupAddError(null))
-          break;
-
-        case 'rolesError':
-          this.props.dispatch(rolesError(null))
-          break;
-
-        case 'environmentError':
-        	this.props.dispatch(environmentError(null))
-        	break;
-        case 'assetsError':
-        	this.props.dispatch(assetsError(null))
-        	break;
-        case 'assetAddError':
-        	this.props.dispatch(assetAddError(null))
-        	break;
-        case 'assetModifyError':
-        	this.props.dispatch(assetModifyError(null))
-        	break;
-        case 'assetDeleteError':
-        	this.props.dispatch(assetDeleteError(null))
-        	break;
-        case 'treeError':
-        	this.props.dispatch(treeError(null))
-        	break;
-        case 'networksError':
-        	this.props.dispatch(networksError(null))
-        	break;
-        case 'containersError':
-        	this.props.dispatch(containersError(null))
-        	break;
-
-        case 'ipDetailError':
-        	this.props.dispatch(ipDetailError(null))
-        	break;
-        case 'networkError':
-          this.props.dispatch(networkError(null))
-          break;
-        case 'containerError':
-          this.props.dispatch(containerError(null))
-          break;
-        case 'nextAvailableIpError':
-          this.props.dispatch(nextAvailableIpError(null))
-          break;
-        case 'ipModifyError':
-          this.props.dispatch(ipModifyError(null))
-          break;
-        case 'ipReleaseError':
-          this.props.dispatch(ipReleaseError(null))
+        case 'historysError':
+          this.props.dispatch(historysError(null))
           break;
 
         default:
@@ -243,7 +144,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>INFOBLOX ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>{this.props.vendor} - {this.props.type}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}

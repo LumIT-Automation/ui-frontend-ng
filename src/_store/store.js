@@ -1,5 +1,6 @@
 import { configureStore } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
+import concertoReducer from '../concerto/store'
 import authenticationReducer from './store.authentication'
 import errorReducer from './store.error'
 import authorizationsReducer from './store.authorizations'
@@ -14,6 +15,7 @@ import fortinetdbReducer from '../fortinetdb/store'
 
 export default configureStore({
   reducer: {
+    concerto: concertoReducer,
     authentication: authenticationReducer,
     authorizations: authorizationsReducer,
     error: errorReducer,

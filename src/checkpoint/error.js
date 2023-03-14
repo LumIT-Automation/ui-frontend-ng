@@ -67,8 +67,6 @@ import {
   vpnToServiceError,
   vpnToHostError,
 
-  historysError,
-
   genericError
 
 } from './store'
@@ -255,10 +253,6 @@ class Error extends Component {
         case 'vpnToHostError':
         	this.props.dispatch(vpnToHostError(null))
         	break;
-
-        case 'historysError':
-          this.props.dispatch(historysError(null))
-          break;
 
         default:
           this.props.dispatch(genericError(null))

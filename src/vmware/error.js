@@ -40,8 +40,6 @@ import {
   finalpubkeysError,
   vmCreateError,
 
-  historysError,
-
   genericError
 
 } from './store'
@@ -154,10 +152,6 @@ class Error extends Component {
           break;
         case 'vmCreateError':
           this.props.dispatch(vmCreateError(null))
-          break;
-
-        case 'historysError':
-          this.props.dispatch(historysError(null))
           break;
 
         default:

@@ -157,13 +157,13 @@ class Modify extends React.Component {
     let regexp = new RegExp(/^[*]/g);
 
     try {
-      input = input.replace('http://','');
-      input = input.replace('https://','');
-      input = input.replace(/[\/\\]/g,'');
-      input = input.replace(/[/\t]/g,' ');
-      input = input.replace(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,'');
-      input = input.replace(/[/\r\n]/g,' ');
-      input = input.replace(/[/\n]/g,' ');
+      input = input.replaceAll('http://','');
+      input = input.replaceAll('https://','');
+      input = input.replaceAll(/[\/\\]/g,'');
+      input = input.replaceAll(/[/\t]/g,' ');
+      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,'');
+      input = input.replaceAll(/[/\r\n]/g,' ');
+      input = input.replaceAll(/[/\n]/g,' ');
       input = input.replace(/[/\s]{1,}/g, ',' )
 
       list = input.split(',')

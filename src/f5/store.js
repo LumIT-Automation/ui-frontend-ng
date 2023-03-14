@@ -387,19 +387,6 @@ const f5Slice = createSlice({
           state.serviceDeleteError = action.payload
         },
 
-        historysLoading: ( state, action) => {
-          state.historysLoading = action.payload
-        },
-        historys: ( state, action) => {
-          state.historys = action.payload.data.items
-        },
-        historysFetch: ( state, action) => {
-          state.historysFetch = action.payload
-        },
-        historysError: ( state, action) => {
-          state.historysError = action.payload
-        },
-
         configurationLoading: ( state, action) => {
           state.configurationLoading = action.payload
         },
@@ -616,11 +603,6 @@ export const {
   l4ServiceCreateError,
   l7ServiceCreateError,
   serviceDeleteError,
-
-  historysLoading,
-  historys,
-  historysFetch,
-  historysError,
 
   configurationLoading,
   configuration,

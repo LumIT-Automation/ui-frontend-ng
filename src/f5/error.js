@@ -102,8 +102,6 @@ import {
   l7ServiceCreateError,
   serviceDeleteError,
 
-  historysError,
-
   configurationError,
   configurationModifyError,
 
@@ -358,10 +356,6 @@ class Error extends Component {
         case 'serviceDeleteError':
           this.props.dispatch(serviceDeleteError(null))
           break;
-
-        case 'historysError':
-            this.props.dispatch(historysError(null))
-            break;
 
         case 'configurationError':
             this.props.dispatch(configurationError(null))

@@ -233,14 +233,7 @@ class VpnToHost extends React.Component {
         dataIndex: 'type',
         key: 'type',
         ...this.getColumnSearchProps('type'),
-      },
-      {
-        title: 'Uid',
-        align: 'center',
-        dataIndex: 'uid',
-        key: 'uid',
-        ...this.getColumnSearchProps('uid'),
-      },
+      }
     ];
 
     let randomKey = () => {
