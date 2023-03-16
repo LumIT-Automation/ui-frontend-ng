@@ -64,7 +64,6 @@ class Manager extends React.Component {
       <React.Fragment>
         <Row>
           <Col span={4} offset={2} >
-            <p>VM Create</p>
             <VmCreate/>
           </Col>
         </Row>

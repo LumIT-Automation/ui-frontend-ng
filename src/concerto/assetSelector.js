@@ -213,18 +213,20 @@ class AssetSelector extends React.Component {
   }
 
   domainsGet = async () => {
-    await this.setState({domainsLoading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({ domains: resp.data.items })
-      },
-      error => {
-        this.props.dispatch(checkpointDomainsError(error))
-      }
-    )
-    await rest.doXHR(`checkpoint/${this.state.asset.id}/domains/`, this.props.token)
-    await this.setState({domainsLoading: false})
+    if (!this.props.domain) {
+      await this.setState({domainsLoading: true})
+      let rest = new Rest(
+        "GET",
+        resp => {
+          this.setState({ domains: resp.data.items })
+        },
+        error => {
+          this.props.dispatch(checkpointDomainsError(error))
+        }
+      )
+      await rest.doXHR(`checkpoint/${this.state.asset.id}/domains/`, this.props.token)
+      await this.setState({domainsLoading: false})
+    }
   }
 
   partitionsGet = async () => {
@@ -252,6 +254,7 @@ class AssetSelector extends React.Component {
 
 
   render() {
+    console.log(this.props.domain)
     return (
       <React.Fragment>
         <br/>
@@ -309,7 +312,7 @@ class AssetSelector extends React.Component {
             }
           </Col>
 
-          { (this.props.vendor && this.props.vendor === 'checkpoint') ?
+          { ((this.props.vendor && this.props.vendor === 'checkpoint') && !this.props.domain) ?
             <React.Fragment>
               <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 2, span: 1}}>
                 <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain:</p>

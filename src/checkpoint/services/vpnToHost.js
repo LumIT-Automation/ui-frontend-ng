@@ -25,6 +25,7 @@ class VpnToHost extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      domain: 'SHARED-SERVICES',
       errors: {},
       vpnToHosts: []
     };
@@ -188,7 +189,7 @@ class VpnToHost extends React.Component {
         this.props.dispatch(vpnToHostError(error))
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/vpn-to-host/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.state.domain}/vpn-to-host/`, this.props.token, b)
     await this.setState({loading: false})
   }
 
@@ -243,10 +244,10 @@ class VpnToHost extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>VPN TO HOST</Button>
+        <Button type="primary" onClick={() => this.details()}>Get VPN Profiles</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>VPN TO HOST</p>}
+          title={<p style={{textAlign: 'center'}}>Get VPN Profiles</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -257,10 +258,10 @@ class VpnToHost extends React.Component {
           maskClosable={false}
         >
 
-          <AssetSelector vendor='checkpoint'/>
+          <AssetSelector vendor='checkpoint' domain={this.state.domain}/>
           <Divider/>
 
-          { (( this.props.asset && this.props.asset.id ) && this.props.domain) ?
+          { (( this.props.asset && this.props.asset.id ) && this.state.domain) ?
             <React.Fragment>
 
               <React.Fragment>
@@ -278,23 +279,12 @@ class VpnToHost extends React.Component {
                   </Col>
                 </Row>
                 <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>rule-package:</p>
-                  </Col>
-                  <Col span={8}>
-                    <Input
-                      defaultValue="FWRAVPN_PKG"
-                      disabled
-                    />
-                  </Col>
-                </Row>
-                <Row>
                   <Col offset={8} span={16}>
                     <Button
                       type="primary"
                       onClick={() => this.validation()}
                     >
-                      Vpn to host
+                      Get VPN Profiles
                     </Button>
                   </Col>
                 </Row>
@@ -346,7 +336,6 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
   asset: state.checkpoint.asset,
-  domain: state.checkpoint.domain,
 
   vpnToHostError: state.checkpoint.vpnToHostError,
 }))(VpnToHost);

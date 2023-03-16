@@ -66,22 +66,18 @@ class Manager extends React.Component {
       <React.Fragment >
         <Row>
           <Col span={4} offset={2} >
-            <p>IP details</p>
             <DetailsIp/>
           </Col>
 
           <Col span={4} offset={2}>
-            <p>IP request</p>
             <RequestIp/>
           </Col>
 
           <Col span={4} offset={2}>
-            <p>IP modify</p>
             <ModifyIp/>
           </Col>
 
           <Col span={4} offset={2}>
-            <p>IP release</p>
             <ReleaseIp/>
           </Col>
         </Row>

@@ -25,6 +25,8 @@ class VpnToServices extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      visible: false,
+      domain: 'SHARED-SERVICES',
       errors: {},
       vpnToServices: []
     };
@@ -157,9 +159,11 @@ class VpnToServices extends React.Component {
     let b = {}
 
     b.data = {
-      "name": this.state.name,
+      "name": this.state.name + ' Access Role',
     }
 
+
+    console.log(b)
     let rest = new Rest(
       "PUT",
       resp => {
@@ -169,7 +173,7 @@ class VpnToServices extends React.Component {
         this.props.dispatch(vpnToServiceError(error))
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/vpn-to-services/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.state.domain}/vpn-to-services/`, this.props.token, b)
     await this.setState({nameloading: false})
   }
 
@@ -203,10 +207,10 @@ class VpnToServices extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>VPN TO SERVICES</Button>
+        <Button type="primary" onClick={() => this.details()}>VPN Flows by Profile</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>VPN TO SERVICES</p>}
+          title={<p style={{textAlign: 'center'}}>VPN Flows by Profile</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -217,10 +221,10 @@ class VpnToServices extends React.Component {
           maskClosable={false}
         >
 
-          <AssetSelector vendor='checkpoint'/>
+          <AssetSelector vendor='checkpoint' domain={this.state.domain}/>
           <Divider/>
 
-          { (( this.props.asset && this.props.asset.id ) && this.props.domain) ?
+          { (( this.props.asset && this.props.asset.id ) && this.state.domain) ?
             <React.Fragment>
 
               <React.Fragment>
@@ -245,7 +249,7 @@ class VpnToServices extends React.Component {
                       type="primary"
                       onClick={() => this.validation()}
                     >
-                      Vpn to services
+                      VPN Flows by Profile
                     </Button>
                   </Col>
                 </Row>
@@ -297,7 +301,6 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
   asset: state.checkpoint.asset,
-  domain: state.checkpoint.domain,
 
   vpnToServiceError: state.checkpoint.vpnToServiceError,
 }))(VpnToServices);

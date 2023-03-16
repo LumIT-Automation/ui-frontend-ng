@@ -64,12 +64,10 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Row>
-          <Col span={4} offset={2} >
-            <p>Vpn to services</p>
+          <Col span={4} offset={2}>
             <VpnToServices/>
           </Col>
-          <Col span={4} offset={2} >
-            <p>Vpn to host</p>
+          <Col span={4} offset={2}>
             <VpnToHost/>
           </Col>
         </Row>

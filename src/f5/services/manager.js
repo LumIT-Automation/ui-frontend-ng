@@ -67,22 +67,18 @@ class Manager extends React.Component {
       <React.Fragment>
         <Row>
           <Col span={4} offset={2} >
-            <p>L7 Load Balancer</p>
             <L7ServiceCreate/>
           </Col>
 
           <Col span={4} offset={2} >
-            <p>L4 Load Balancer</p>
             <L4ServiceCreate/>
           </Col>
 
           <Col span={4} offset={2}>
-            <p>Delete Load Balancer</p>
             <DeleteLoadBalancer/>
           </Col>
 
           <Col span={4} offset={2}>
-            <p>Pool Maintenance</p>
             <PoolMaintenance/>
           </Col>
         </Row>
