@@ -11,8 +11,8 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space} from 'antd'
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space, Badge, Dropdown} from 'antd'
+import { LoadingOutlined, SearchOutlined, DownOutlined } from '@ant-design/icons'
 import Highlighter from 'react-highlight-words'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -26,6 +26,7 @@ class VpnToHost extends React.Component {
     this.state = {
       visible: false,
       domain: 'SHARED-SERVICES',
+      expandedKeys: [],
       errors: {},
       vpnToHosts: []
     };
@@ -124,6 +125,30 @@ class VpnToHost extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  onExpand = (expanded, {key}) => {
+    const keys = this.state.expandedKeys
+    const expandedKeys = expanded
+      ? keys.concat(key)
+      : keys.filter(k => k !== key)
+    this.setState({expandedKeys})
+  }
+
+  onTableRowExpand = (expanded, record) => {
+    console.log(expanded)
+    console.log(record)
+    let keys = Object.assign([], this.state.expandedKeys);
+
+    if(expanded){
+      keys.push(record.uid); // I have set my record.id as row key. Check the documentation for more details.
+    }
+    else {
+      keys = keys.filter(k => k !== record.uid)
+    }
+
+    console.log(keys)
+    this.setState({expandedKeys: keys});
+  }
+
   details = () => {
     this.setState({visible: true})
   }
@@ -167,6 +192,7 @@ class VpnToHost extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
+        /*
         let list = []
         resp.data.items.forEach((item, i) => {
           let o = {}
@@ -182,8 +208,8 @@ class VpnToHost extends React.Component {
             o.type = item.type
           }
           list.push(o)
-        });
-        this.setState({vpnToHosts: list})
+        });*/
+        this.setState({vpnToHosts: resp.data.items})
       },
       error => {
         this.props.dispatch(vpnToHostError(error))
@@ -204,8 +230,38 @@ class VpnToHost extends React.Component {
   }
 
 
+
   render() {
-    console.log(this.state.vpnToHosts)
+    console.log(this.state.expandedKeys)
+
+    const expandedRowRender = (...params) => {
+      const columns = [
+        {
+          title: 'Port',
+          align: 'center',
+          dataIndex: 'port',
+          key: 'port',
+          ...this.getColumnSearchProps('port'),
+        },
+        {
+          title: 'Protocol',
+          align: 'center',
+          dataIndex: 'protocol',
+          key: 'protocol',
+          ...this.getColumnSearchProps('protocol'),
+        },
+        {
+          title: 'Type',
+          align: 'center',
+          dataIndex: 'type',
+          key: 'type',
+          ...this.getColumnSearchProps('type'),
+        }
+      ];
+
+      return <Table columns={columns} dataSource={params[0].services} pagination={false} />;
+    };
+
     const columns = [
       {
         title: 'Name',
@@ -213,33 +269,14 @@ class VpnToHost extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
-      },
-      {
-        title: 'Port',
-        align: 'center',
-        dataIndex: 'port',
-        key: 'port',
-        ...this.getColumnSearchProps('port'),
-      },
-      {
-        title: 'Protocol',
-        align: 'center',
-        dataIndex: 'protocol',
-        key: 'protocol',
-        ...this.getColumnSearchProps('protocol'),
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
       }
     ];
 
     let randomKey = () => {
       return Math.random().toString()
     }
+
+
 
     return (
       <React.Fragment>
@@ -303,10 +340,19 @@ class VpnToHost extends React.Component {
                     columns={columns}
                     dataSource={this.state.vpnToHosts}
                     bordered
-                    rowKey={randomKey}
                     scroll={{x: 'auto'}}
                     pagination={{ pageSize: 10 }}
                     style={{marginBottom: 10}}
+                    onExpand={this.onTableRowExpand}
+                    expandedRowKeys={this.state.expandedKeys}
+                    rowKey={record => record.uid}
+                    expandedRowRender={ record => expandedRowRender(record)}
+                    /*expandable={{
+                      //expandedRowRender: record => expandedRowRender(record),
+                      expandedRowRender,
+                      //defaultExpandedRowKeys: ['0'],
+                    }}*/
+                    //expandedRowRender={record => expandedRowRender(record)}
                   />
                 }
               </React.Fragment>

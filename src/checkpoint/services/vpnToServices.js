@@ -197,7 +197,21 @@ class VpnToServices extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
-      }
+      },
+      {
+        title: 'IP',
+        align: 'center',
+        dataIndex: ['ipv4', 'address'],
+        key: 'ipv4',
+        ...this.getColumnSearchProps(['ipv4', 'address']),
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+      },
     ];
 
     let randomKey = () => {
