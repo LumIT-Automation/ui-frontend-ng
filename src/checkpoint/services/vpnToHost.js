@@ -125,17 +125,7 @@ class VpnToHost extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  onExpand = (expanded, {key}) => {
-    const keys = this.state.expandedKeys
-    const expandedKeys = expanded
-      ? keys.concat(key)
-      : keys.filter(k => k !== key)
-    this.setState({expandedKeys})
-  }
-
   onTableRowExpand = (expanded, record) => {
-    console.log(expanded)
-    console.log(record)
     let keys = Object.assign([], this.state.expandedKeys);
 
     if(expanded){
@@ -144,8 +134,6 @@ class VpnToHost extends React.Component {
     else {
       keys = keys.filter(k => k !== record.uid)
     }
-
-    console.log(keys)
     this.setState({expandedKeys: keys});
   }
 
@@ -192,23 +180,6 @@ class VpnToHost extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        /*
-        let list = []
-        resp.data.items.forEach((item, i) => {
-          let o = {}
-          //console.log(item)
-          for (let property in item) {
-            if ( (property !== 'port') && (property !== 'protocol') && (property !== 'type') ) {
-              o.uid = property
-              o.name = item[property].name
-              //console.log(property)
-            }
-            o.port = item.port
-            o.protocol = item.protocol
-            o.type = item.type
-          }
-          list.push(o)
-        });*/
         this.setState({vpnToHosts: resp.data.items})
       },
       error => {
@@ -232,8 +203,6 @@ class VpnToHost extends React.Component {
 
 
   render() {
-    console.log(this.state.expandedKeys)
-
     const expandedRowRender = (...params) => {
       const columns = [
         {
