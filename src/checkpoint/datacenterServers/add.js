@@ -10,7 +10,7 @@ import {
   datacenterServerAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -68,69 +68,14 @@ class Add extends React.Component {
 
   //SETTERS
 
-  set = async (e, component, value) => {
-    let data
+  set = async (e, key) => {
+
     let request = JSON.parse(JSON.stringify(this.state.request))
-    console.log('e \n', e)
-    console.log('value \n', value)
 
-    switch (component) {
-      case 'input':
-        data = e.target.value
-        break;
-      case 'textArea':
-        data = e.target.value
-        break;
-      case 'select':
-        data = e
-        break;
-      case 'radio':
-        data = e
-        break;
-      case 'tags':
-        data = e
-        break;
-        break;
-
-      default:
-        await this.setState({request: request})
-    }
-
-    request[value] = data
+    request[key] = e
     await this.setState({request: request})
     console.log(this.state.request)
-    /*switch (label) {
-      //input
-      case 'name':
-      case 'access-key-id':
-      case 'secret-access-key':
-      case 'comments':
-        request[type] = e.target.value
-        await this.setState({request: request})
-        break;
 
-      //select type
-      case 'type':
-      case 'authentication-method':
-      case 'region':
-      case 'details-level':
-        request[type] = e
-        await this.setState({request: request})
-        break;
-
-      //boolean
-      case 'ignore-warnings':
-        request[type] = e
-        await this.setState({request: request})
-
-      //tags
-      case 'tags':
-        //
-        break;
-
-      default:
-        await this.setState({request: request})
-    }*/
   }
 
   //VALIDATION
@@ -260,19 +205,42 @@ class Add extends React.Component {
   render() {
     console.log(this.state.errors)
 
-    let createComponent = (component, value, choices) => {
+    let createComponent = (component, key, choices) => {
       switch (component) {
         case 'input':
           return (
             <Input
               style=
-              {this.state.errors[`${value}Error`] ?
+              {this.state.errors[`${key}Error`] ?
                 {borderColor: 'red'}
               :
                 {}
               }
-              onChange={e => this.set(e, component, value)}
+              onChange={event => this.set(event.target.value, key)}
             />
+          )
+          break;
+
+        case 'radio':
+          return (
+            <Radio.Group
+              onChange={event => this.set(event.target.value, key)}
+              value={this.state.request[`${key}`]}
+              style={this.state.errors[`${key}Error`] ?
+                {border: `1px solid red`}
+              :
+                {}
+              }
+            >
+              <React.Fragment>
+                {this.state[`${choices}`].map((n, i) => {
+                  return (
+                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
+                  )
+                })
+                }
+              </React.Fragment>
+          </Radio.Group>
           )
           break;
 
@@ -281,8 +249,8 @@ class Add extends React.Component {
             <Input.TextArea
               rows={7}
               placeholder="Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN"
-              value={this.state.request[`${value}`]}
-              onChange={e => this.set(e, component, value)}
+              value={this.state.request[`${key}`]}
+              onChange={event => this.set(event.target.value, key)}
             />
           )
           break;
@@ -290,10 +258,10 @@ class Add extends React.Component {
         case 'select':
         return (
           <Select
-            value={this.state.request[`${value}`]}
+            value={this.state.request[`${key}`]}
             showSearch
             style=
-            { this.state.errors[`${value}Error`] ?
+            { this.state.errors[`${key}Error`] ?
               {width: "100%", border: `1px solid red`}
             :
               {width: "100%"}
@@ -305,7 +273,7 @@ class Add extends React.Component {
             filterSort={(optionA, optionB) =>
               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
             }
-            onSelect={e => this.set(e, component, value)}
+            onSelect={event => this.set(event, key)}
           >
             <React.Fragment>
               {this.state[`${choices}`].map((n, i) => {
@@ -363,7 +331,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>type:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('select', 'type', 'types')}
+                  {createComponent('radio', 'type', 'types')}
                 </Col>
               </Row>
               <br/>
@@ -373,7 +341,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>authentication-method:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('select', 'authentication-method', 'authentication-methods')}
+                  {createComponent('radio', 'authentication-method', 'authentication-methods')}
                 </Col>
               </Row>
               <br/>
@@ -413,7 +381,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>details-level:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('select', 'details-level', 'details-levels')}
+                  {createComponent('radio', 'details-level', 'details-levels')}
                 </Col>
               </Row>
               <br/>
