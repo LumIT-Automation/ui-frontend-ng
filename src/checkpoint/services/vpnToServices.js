@@ -25,7 +25,7 @@ class VpnToServices extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      visible: false,
+      expandedKeys: [],
       domain: 'SHARED-SERVICES',
       errors: {},
       vpnToServices: []
@@ -125,6 +125,18 @@ class VpnToServices extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  onTableRowExpand = (expanded, record) => {
+    let keys = Object.assign([], this.state.expandedKeys);
+
+    if(expanded){
+      keys.push(record.uid); // I have set my record.id as row key. Check the documentation for more details.
+    }
+    else {
+      keys = keys.filter(k => k !== record.uid)
+    }
+    this.setState({expandedKeys: keys});
+  }
+
   details = () => {
     this.setState({visible: true})
   }
@@ -154,6 +166,22 @@ class VpnToServices extends React.Component {
     }
   }
 
+  flatProperty = async (items) => {
+
+    let list = []
+    items.forEach((item, i) => {
+      let key = Object.keys(item.ipv4)[0]
+      let value = Object.values(item.ipv4)[0]
+      item[key] = value
+      item['ipValue'] = value
+      list.push(item)
+      //Object.getOwnPropertyNames(object1)
+    });
+    console.log(list)
+
+    await this.setState({vpnToServices: list})
+  }
+
   vpnToService = async () => {
     await this.setState({nameloading: true})
     let b = {}
@@ -167,7 +195,7 @@ class VpnToServices extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        this.setState({vpnToServices: resp.data.items})
+        this.flatProperty(resp.data.items)
       },
       error => {
         this.props.dispatch(vpnToServiceError(error))
@@ -190,6 +218,33 @@ class VpnToServices extends React.Component {
 
   render() {
     console.log(this.state.vpnToServices)
+    const expandedRowRender = (...params) => {
+      const columns = [
+        {
+          title: 'Port',
+          align: 'center',
+          dataIndex: 'port',
+          key: 'port',
+          ...this.getColumnSearchProps('port'),
+        },
+        {
+          title: 'Protocol',
+          align: 'center',
+          dataIndex: 'protocol',
+          key: 'protocol',
+          ...this.getColumnSearchProps('protocol'),
+        },
+        {
+          title: 'Type',
+          align: 'center',
+          dataIndex: 'type',
+          key: 'type',
+          ...this.getColumnSearchProps('type'),
+        }
+      ];
+
+      return <Table columns={columns} dataSource={params[0].services} pagination={false} />;
+    };
     const columns = [
       {
         title: 'Name',
@@ -201,9 +256,9 @@ class VpnToServices extends React.Component {
       {
         title: 'IP',
         align: 'center',
-        dataIndex: ['ipv4', 'address'],
-        key: 'ipv4',
-        ...this.getColumnSearchProps(['ipv4', 'address']),
+        dataIndex: 'ipValue',
+        key: 'ipValue',
+        ...this.getColumnSearchProps('ipValue'),
       },
       {
         title: 'Type',
@@ -244,7 +299,7 @@ class VpnToServices extends React.Component {
               <React.Fragment>
                 <Row>
                   <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Group Name:</p>
                   </Col>
                   <Col span={8}>
 
@@ -282,10 +337,13 @@ class VpnToServices extends React.Component {
                     columns={columns}
                     dataSource={this.state.vpnToServices}
                     bordered
-                    rowKey={randomKey}
                     scroll={{x: 'auto'}}
                     pagination={{ pageSize: 10 }}
                     style={{marginBottom: 10}}
+                    onExpand={this.onTableRowExpand}
+                    expandedRowKeys={this.state.expandedKeys}
+                    rowKey={record => record.uid}
+                    expandedRowRender={ record => expandedRowRender(record)}
                   />
                 }
               </React.Fragment>
