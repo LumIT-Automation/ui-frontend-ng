@@ -42,7 +42,6 @@ class Error extends Component {
           break;
 
         default:
-          this.props.dispatch(genericError(null))
 
       }
     }

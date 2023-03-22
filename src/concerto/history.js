@@ -9,7 +9,7 @@ import Error from './error'
 import { Space, Table, Input, Button, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+
 
 import {
   historys,
@@ -17,6 +17,8 @@ import {
   taskProgressLoading,
   secondStageProgressLoading,
 } from './store'
+
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 //import List from './list'
 
