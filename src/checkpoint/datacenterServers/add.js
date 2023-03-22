@@ -25,7 +25,9 @@ class Add extends React.Component {
     this.state = {
       visible: false,
       types: ['aws', 'azure', 'gcp'],
-      'authentication-methods': ['user-authentication', 'admin-authentication'],
+      'aws-authentication-methods': ['user-authentication', 'admin-authentication'],
+      'azure-authentication-methods': ['service-principal-authentication'],
+      'gcp-authentication-methods': ['vm-instance-authentication'],
       'details-levels': ['uid', 'standard', 'full'],
       request: {},
       errors: {},
@@ -69,13 +71,10 @@ class Add extends React.Component {
   //SETTERS
 
   set = async (e, key) => {
-
     let request = JSON.parse(JSON.stringify(this.state.request))
-
     request[key] = e
     await this.setState({request: request})
     console.log(this.state.request)
-
   }
 
   //VALIDATION
@@ -111,22 +110,83 @@ class Add extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!request['access-key-id']) {
-      errors['access-key-idError'] = true
-      await this.setState({errors: errors})
-    }
-    else {
+    if (this.state.request.type === 'gcp') {
+      //delete aws and azure error
       delete errors['access-key-idError']
-      await this.setState({errors: errors})
+      delete errors['secret-access-keyError']
+      delete errors['regionError']
+
+      delete errors['application-idError']
+      delete errors['application-keyError']
+      delete errors['directory-idError']
     }
 
-    if (!request['secret-access-key']) {
-      errors['secret-access-keyError'] = true
-      await this.setState({errors: errors})
+    if (this.state.request.type === 'aws') {
+      //delete azure error
+      delete errors['application-idError']
+      delete errors['application-keyError']
+      delete errors['directory-idError']
+
+      if (!request['access-key-id']) {
+        errors['access-key-idError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['access-key-idError']
+        await this.setState({errors: errors})
+      }
+
+      if (!request['secret-access-key']) {
+        errors['secret-access-keyError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['secret-access-keyError']
+        await this.setState({errors: errors})
+      }
+
+      if (!request['region']) {
+        errors['regionError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['regionError']
+        await this.setState({errors: errors})
+      }
     }
-    else {
+
+    if (this.state.request.type === 'azure') {
+      //delete aws error
+      delete errors['access-key-idError']
       delete errors['secret-access-keyError']
-      await this.setState({errors: errors})
+      delete errors['regionError']
+
+      if (!request['application-id']) {
+        errors['application-idError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['application-idError']
+        await this.setState({errors: errors})
+      }
+
+      if (!request['application-key']) {
+        errors['application-keyError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['application-keyError']
+        await this.setState({errors: errors})
+      }
+
+      if (!request['directory-id']) {
+        errors['directory-idError'] = true
+        await this.setState({errors: errors})
+      }
+      else {
+        delete errors['directory-idError']
+        await this.setState({errors: errors})
+      }
     }
 
     if (!request['details-level']) {
@@ -145,8 +205,8 @@ class Add extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      //this.datacenterServerAdd()
-      console.log('POST con questo body: ', this.state.request)
+      this.datacenterServerAdd()
+      //console.log('POST con questo body: ', this.state.request)
     }
   }
 
@@ -156,21 +216,40 @@ class Add extends React.Component {
     let request = Object.assign({}, this.state.request)
     let b = {}
     b.data = {
-      "name": "Coso",
-      "type": "aws",
-      "authentication-method": "user-authentication",
-      "access-key-id": "AKIAI4EMUXLDYNO3KFGQ",
-      "secret-access-key": "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",
-      "region": "eu-west-1",
-      "tags": [
-          "testone"
-      ],
+      "name": request.name,
+      "type": request.type,
+      "authentication-method": request['authentication-method'],
+      "tags": request.tags,
       "color": "orange",
-      "comments": "proviamo",
-      "details-level": "standard",
-      "ignore-warnings": true
+      "comments": request.comments,
+      "details-level": request['details-level'],
+      "ignore-warnings": true,
+      "ignore-errors": false
     }
 
+    if (this.state.request.type === 'aws') {
+      b.data["access-key-id"] = request["access-key-id"]
+      b.data["secret-access-key"] = request["secret-access-key"]
+      b.data["region"] = request["region"]
+      /*
+      b["access-key-id"] = "AKIAI4EMUXLDYNO3KFGQ"
+      b["secret-access-key"] = "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"
+      b["region"] = "eu-west-1"
+      */
+    }
+
+    if (this.state.request.type === 'azure') {
+      b.data["application-id"] = request["application-id"]
+      b.data["application-key"] = request["application-key"]
+      b.data["directory-id"] = request["directory-id"]
+      /*
+      b["application-id"] = "936aa61f-e04f-479c-a0fb-58d10f0e4016"
+      b["application-key"] = "HiDrju0Ck2mluOv6sMh9s6h2aYvuV3wNYeHl5tKWlto="
+      b["directory-id"] = "e97896c5-9549-48fb-976d-ef5f2c7dcbfc"
+      */
+    }
+
+    console.log(b)
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -248,7 +327,7 @@ class Add extends React.Component {
           return (
             <Input.TextArea
               rows={7}
-              placeholder="Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN"
+              placeholder={key === 'tags' ? "Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN" : ""}
               value={this.state.request[`${key}`]}
               onChange={event => this.set(event.target.value, key)}
             />
@@ -297,7 +376,7 @@ class Add extends React.Component {
         <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD ADDRESS RANGE</p>}
+          title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -311,7 +390,7 @@ class Add extends React.Component {
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
-               title="Address range added"
+               title="Datacenter Server addedd"
              />
           }
           { !this.state.loading && !this.state.response &&
@@ -328,7 +407,7 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>type:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Type:</p>
                 </Col>
                 <Col span={8}>
                   {createComponent('radio', 'type', 'types')}
@@ -336,39 +415,127 @@ class Add extends React.Component {
               </Row>
               <br/>
 
+              {this.state.request.type === 'aws' ?
+                <React.Fragment>
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('radio', 'authentication-method', 'aws-authentication-methods')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Access-key-id:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'access-key-id')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Secret-access-key:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'secret-access-key')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Region:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'region')}
+                    </Col>
+                  </Row>
+                  <br/>
+                </React.Fragment>
+              :
+                null
+              }
+
+              {this.state.request.type === 'azure' ?
+                <React.Fragment>
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('radio', 'authentication-method', 'azure-authentication-methods')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-id:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'application-id')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-key:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'application-key')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Directory-id:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('input', 'directory-id')}
+                    </Col>
+                  </Row>
+                  <br/>
+                </React.Fragment>
+              :
+                null
+              }
+
+              {this.state.request.type === 'gcp' ?
+                <React.Fragment>
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                    </Col>
+                    <Col span={7}>
+                      {createComponent('radio', 'authentication-method', 'gcp-authentication-methods')}
+                    </Col>
+                  </Row>
+                  <br/>
+                </React.Fragment>
+              :
+                null
+              }
+
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>authentication-method:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('radio', 'authentication-method', 'authentication-methods')}
+                  {createComponent('textArea', 'tags')}
                 </Col>
               </Row>
               <br/>
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>access-key-id:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('input', 'access-key-id')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>secret-access-key:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('input', 'secret-access-key')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>comments:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
                 </Col>
                 <Col span={8}>
                   {createComponent('textArea', 'comments')}
@@ -378,7 +545,7 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>details-level:</p>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
                 </Col>
                 <Col span={8}>
                   {createComponent('radio', 'details-level', 'details-levels')}
