@@ -195,6 +195,8 @@ class VpnToServices extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
+        let beauty = JSON.stringify(resp.data.items, null, 2)
+        let base64 = btoa(beauty)
         //this.flatProperty(resp.data.items)
         let list = []
         let list2 = []
@@ -212,7 +214,7 @@ class VpnToServices extends React.Component {
           list.push(item)
         });
 
-        this.setState({vpnToServices: list})
+        this.setState({vpnToServices: list, base64: base64})
       },
       error => {
         this.props.dispatch(vpnToServiceError(error))
@@ -329,6 +331,7 @@ class VpnToServices extends React.Component {
             <React.Fragment>
 
               <React.Fragment>
+
                 <Row>
                   <Col offset={2} span={6}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Group Name:</p>
@@ -365,18 +368,23 @@ class VpnToServices extends React.Component {
                 { this.state.vpnToServices.length < 1 ?
                   null
                 :
-                  <Table
-                    columns={columns}
-                    dataSource={this.state.vpnToServices}
-                    bordered
-                    scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
-                    style={{marginBottom: 10}}
-                    onExpand={this.onTableRowExpand}
-                    expandedRowKeys={this.state.expandedKeys}
-                    rowKey={record => record.uid}
-                    expandedRowRender={ record => expandedRowRender(record)}
-                  />
+                  <React.Fragment>
+                    <a download='VPN Flows by Profile.txt' href={`data:application/octet-stream;charset=utf-8;base64,${this.state.base64}`}>Download data</a>
+                    <br/>
+                    <br/>
+                    <Table
+                      columns={columns}
+                      dataSource={this.state.vpnToServices}
+                      bordered
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                      style={{marginBottom: 10}}
+                      onExpand={this.onTableRowExpand}
+                      expandedRowKeys={this.state.expandedKeys}
+                      rowKey={record => record.uid}
+                      expandedRowRender={ record => expandedRowRender(record)}
+                    />
+                  </React.Fragment>
                 }
               </React.Fragment>
             }

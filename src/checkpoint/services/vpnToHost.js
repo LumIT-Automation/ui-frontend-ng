@@ -180,7 +180,9 @@ class VpnToHost extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        this.setState({vpnToHosts: resp.data.items})
+        let beauty = JSON.stringify(resp.data.items, null, 2)
+        let base64 = btoa(beauty)
+        this.setState({vpnToHosts: resp.data.items, base64: base64})
       },
       error => {
         this.props.dispatch(vpnToHostError(error))
@@ -298,24 +300,29 @@ class VpnToHost extends React.Component {
                 { this.state.vpnToHosts.length < 1 ?
                   null
                 :
-                  <Table
-                    columns={columns}
-                    dataSource={this.state.vpnToHosts}
-                    bordered
-                    scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
-                    style={{marginBottom: 10}}
-                    onExpand={this.onTableRowExpand}
-                    expandedRowKeys={this.state.expandedKeys}
-                    rowKey={record => record.uid}
-                    expandedRowRender={ record => expandedRowRender(record)}
-                    /*expandable={{
-                      //expandedRowRender: record => expandedRowRender(record),
-                      expandedRowRender,
-                      //defaultExpandedRowKeys: ['0'],
-                    }}*/
-                    //expandedRowRender={record => expandedRowRender(record)}
-                  />
+                  <React.Fragment>
+                    <a download='Get VPN Profiles.txt' href={`data:application/octet-stream;charset=utf-8;base64,${this.state.base64}`}>Download data</a>
+                    <br/>
+                    <br/>
+                    <Table
+                      columns={columns}
+                      dataSource={this.state.vpnToHosts}
+                      bordered
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                      style={{marginBottom: 10}}
+                      onExpand={this.onTableRowExpand}
+                      expandedRowKeys={this.state.expandedKeys}
+                      rowKey={record => record.uid}
+                      expandedRowRender={ record => expandedRowRender(record)}
+                      /*expandable={{
+                        //expandedRowRender: record => expandedRowRender(record),
+                        expandedRowRender,
+                        //defaultExpandedRowKeys: ['0'],
+                      }}*/
+                      //expandedRowRender={record => expandedRowRender(record)}
+                    />
+                  </React.Fragment>
                 }
               </React.Fragment>
             }
