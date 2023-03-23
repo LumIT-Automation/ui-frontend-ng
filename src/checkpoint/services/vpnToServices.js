@@ -195,7 +195,24 @@ class VpnToServices extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        this.flatProperty(resp.data.items)
+        //this.flatProperty(resp.data.items)
+        let list = []
+        let list2 = []
+        console.log(resp.data.items)
+        resp.data.items.forEach((item, i) => {
+          //console.log(item)
+
+          item.ipv4s.forEach((ip, i) => {
+            list2.push({ip: ip})
+          });
+
+          item.ipv4s = list2
+          list2 = []
+          //item.ipv4s = {value: item.ipv4s}
+          list.push(item)
+        });
+
+        this.setState({vpnToServices: list})
       },
       error => {
         this.props.dispatch(vpnToServiceError(error))
@@ -218,6 +235,15 @@ class VpnToServices extends React.Component {
 
   render() {
     console.log(this.state.vpnToServices)
+    const ipValueColumns = [
+      {
+        title: 'ipValue',
+        align: 'center',
+        dataIndex: 'ip',
+        key: 'ip',
+        ...this.getColumnSearchProps('ip'),
+      }
+    ]
     const expandedRowRender = (...params) => {
       const columns = [
         {
@@ -226,13 +252,6 @@ class VpnToServices extends React.Component {
           dataIndex: 'port',
           key: 'port',
           ...this.getColumnSearchProps('port'),
-        },
-        {
-          title: 'Protocol',
-          align: 'center',
-          dataIndex: 'protocol',
-          key: 'protocol',
-          ...this.getColumnSearchProps('protocol'),
         },
         {
           title: 'Type',
@@ -249,24 +268,37 @@ class VpnToServices extends React.Component {
       {
         title: 'Name',
         align: 'center',
+        width: 300,
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'IP',
-        align: 'center',
-        dataIndex: 'ipValue',
-        key: 'ipValue',
-        ...this.getColumnSearchProps('ipValue'),
-      },
-      {
         title: 'Type',
         align: 'center',
+        width: 300,
         dataIndex: 'type',
         key: 'type',
         ...this.getColumnSearchProps('type'),
       },
+      {
+        title: 'IP',
+        align: 'center',
+        width: 300,
+        dataIndex: '',
+        key: 'ipv4s',
+        render: (name, obj)  => (
+          <Table
+            columns={ipValueColumns}
+            dataSource={obj.ipv4s}
+            bordered
+            scroll={{x: 'auto'}}
+            style={{marginLeft: -25}}
+            pagination={{ pageSize: 10 }}
+            rowKey={record => record.uid}
+          />
+        ),
+      }
     ];
 
     let randomKey = () => {

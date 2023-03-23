@@ -59,6 +59,19 @@ class Manager extends React.Component {
   componentWillUnmount() {
   }
 
+  /*
+    #Frankfurt (eu-central-1)
+    #London (eu-west-2)
+    #Ohio (us-east-2)
+    #Hong Kong (ap-east-1)
+    #Singapore (ap-southeast-1)
+    #Ireland (eu-west-1)
+    #N. Virginia (us-east-1)
+    #Milan (eu-south-1)
+    #Bahrain (me-south-1)
+    #Mumbai (ap-south-1)
+  */
+
 
   datacenterServersGet = async () => {
     this.props.dispatch(datacenterServersLoading(true))

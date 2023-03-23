@@ -213,13 +213,6 @@ class VpnToHost extends React.Component {
           ...this.getColumnSearchProps('port'),
         },
         {
-          title: 'Protocol',
-          align: 'center',
-          dataIndex: 'protocol',
-          key: 'protocol',
-          ...this.getColumnSearchProps('protocol'),
-        },
-        {
           title: 'Type',
           align: 'center',
           dataIndex: 'type',
