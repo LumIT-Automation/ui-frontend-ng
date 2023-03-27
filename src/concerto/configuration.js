@@ -207,18 +207,18 @@ class Manager extends React.Component {
 
   removeRecord = async obj => {
     let conf = JSON.parse(JSON.stringify(this.state.configurations))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
     let newList = conf.filter(n => {
       return obj.id !== n.id
     })
-    console.log('newList', newList)
-    await this.setState({configurations: newList})
+    delete errors[obj.id]
+    await this.setState({configurations: newList, errors: errors})
   }
 
   keySet = async (event, id) => {
     let conf = JSON.parse(JSON.stringify(this.state.configurations))
     let record = conf.find( r => r.id === id )
     record.key = event
-    delete record.keyError
     await this.setState({configurations: conf})
   }
 
@@ -242,9 +242,25 @@ class Manager extends React.Component {
           this.setState({errors: errors})
         }
         else {
-          delete errors[conf.id]
+          delete errors[conf.id].keyError
           this.setState({errors: errors})
         }
+
+        if (this.props.vendor === 'checkpoint') {
+          if (!conf.value) {
+            errors[conf.id].valueError = true
+            this.setState({errors: errors})
+          }
+          else {
+            delete errors[conf.id].valueError
+            this.setState({errors: errors})
+          }
+        }
+
+        if (Object.keys(errors[conf.id]).length === 0) {
+          delete errors[conf.id]
+        }
+
       })
     }
     return errors
@@ -278,7 +294,7 @@ class Manager extends React.Component {
         this.props.dispatch(configurationsError(error))
       }
     )
-    await rest.doXHR(`f5/configuration/global/`, this.props.token, b )
+    await rest.doXHR(`${this.props.vendor}/configuration/global/`, this.props.token, b )
   }
 
 
@@ -303,60 +319,43 @@ class Manager extends React.Component {
 
     const checkpointColumns = [
       {
-        title: 'Config Object Type',
+        title: 'Key',
         align: 'center',
-        width: 300,
-        dataIndex: 'config_object_type',
-        key: 'config_object_type',
-        ...this.getColumnSearchProps('config_object_type'),
+        dataIndex: 'key',
+        key: 'key',
+        render: (name, obj)  => (
+          <Input
+            defaultValue={obj.key}
+            style={(this.state.errors[obj.id] && this.state.errors[obj.id].keyError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
+            onBlur={e => this.keySet(e.target.value, obj.id)}
+          />
+        ),
       },
       {
-        title: 'Name',
+        title: 'Value',
         align: 'center',
-        width: 500,
-        dataIndex: 'config_object_name',
-        key: 'config_object_name',
-        ...this.getColumnSearchProps('config_object_name'),
+        dataIndex: 'value',
+        key: 'value',
+        render: (name, obj)  => (
+          <Input
+            defaultValue={obj.value}
+            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
+            onBlur={e => this.valueSet(e.target.value, obj.id)}
+          />
+        ),
       },
       {
-        title: 'Description',
+        title: 'Remove record',
         align: 'center',
-        width: 500,
-        dataIndex: 'config_object_description',
-        key: 'config_object_description',
-        ...this.getColumnSearchProps('config_object_description'),
+        dataIndex: 'remove',
+        width: 150,
+        key: 'remove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.removeRecord(obj)} shape='round'>
+            -
+          </Button>
+        ),
       },
-      {
-        title: 'Action',
-        align: 'center',
-        width: 500,
-        dataIndex: 'action',
-        key: 'action',
-        ...this.getColumnSearchProps('action'),
-      },
-      {
-        title: 'Date',
-        align: 'center',
-        dataIndex: 'date',
-        key: 'date',
-        defaultSortOrder: 'descend',
-        sorter: (a, b) => new Date(a.date) - new Date(b.date),
-        ...this.getColumnSearchProps('date'),
-      },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        ...this.getColumnSearchProps('status'),
-      },
-      {
-        title: 'Username',
-        align: 'center',
-        dataIndex: 'username',
-        key: 'username',
-        ...this.getColumnSearchProps('username'),
-      }
     ];
     const f5Columns = [
       {
