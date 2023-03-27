@@ -334,12 +334,14 @@ class Manager extends React.Component {
       {
         title: 'Value',
         align: 'center',
+        width: 500,
         dataIndex: 'value',
         key: 'value',
         render: (name, obj)  => (
-          <Input
+          <Input.TextArea
             defaultValue={obj.value}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
+            rows={12}
+            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? {borderColor: 'red'} : {} }
             onBlur={e => this.valueSet(e.target.value, obj.id)}
           />
         ),
