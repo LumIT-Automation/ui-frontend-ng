@@ -73,7 +73,9 @@ class Historys extends React.Component {
             null
           }
         </Radio.Group>
+
         <Divider/>
+
         {
           this.state.vendor ?
             <History vendor={this.state.vendor}/>
@@ -91,10 +93,4 @@ export default connect((state) => ({
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
-
-  infobloxLoading: state.infoblox.historysLoading,
-  checkpointLoading: state.checkpoint.historysLoading,
-  f5Loading: state.f5.historysLoading,
-  vmwareLoading: state.vmware.historysLoading,
-
 }))(Historys);

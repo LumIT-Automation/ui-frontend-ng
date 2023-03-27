@@ -10,8 +10,6 @@ import {
   superAdminPermissionsError
 } from './_store/store.authorizations'
 
-import { configurationError as configurationF5Error } from './f5/store'
-
 import { Modal, Table, Result } from 'antd';
 
 //import notFound from './404.gif'
@@ -44,10 +42,6 @@ class Error extends Component {
 
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
-          break
-
-        case 'configurationF5Error':
-          this.props.dispatch(configurationF5Error(null))
           break
 
         case 'superAdminPermissionsError':

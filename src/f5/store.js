@@ -387,23 +387,6 @@ const f5Slice = createSlice({
           state.serviceDeleteError = action.payload
         },
 
-        configurationLoading: ( state, action) => {
-          state.configurationLoading = action.payload
-        },
-        configuration: ( state, action) => {
-          state.configuration = action.payload
-        },
-        configurationFetch: ( state, action) => {
-          state.configurationFetch = action.payload
-        },
-        configurationError: ( state, action) => {
-          state.configurationError = action.payload
-        },
-
-        configurationModifyError: ( state, action) => {
-          state.configurationModifyError = action.payload
-        },
-
         genericError: ( state, action) => {
           state.genericError = action.payload
         },
@@ -603,13 +586,6 @@ export const {
   l4ServiceCreateError,
   l7ServiceCreateError,
   serviceDeleteError,
-
-  configurationLoading,
-  configuration,
-  configurationFetch,
-  configurationError,
-
-  configurationModifyError,
 
   genericError,
 

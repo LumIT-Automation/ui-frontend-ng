@@ -5,6 +5,13 @@ const concertoSlice = createSlice({
     initialState: {},
     reducers: {
 
+      configurations: ( state, action) => {
+        state.configurations = action.payload.data.configuration
+      },
+      configurationsError: ( state, action) => {
+        state.configurationsError = action.payload
+      },
+
       historysLoading: ( state, action) => {
         state.historysLoading = action.payload
       },
@@ -27,6 +34,9 @@ const concertoSlice = createSlice({
 const { actions, reducer } = concertoSlice;
 
 export const {
+
+  configurations,
+  configurationsError,
 
   historysLoading,
   historys,

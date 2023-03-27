@@ -10,13 +10,6 @@ import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
 
-import {
-  configuration as configurationF5,
-  configurationLoading as configurationF5Loading,
-  configurationFetch as configurationF5Fetch,
-  configurationError as configurationF5Error
-} from './f5/store'
-
 import HeaderCustom from './header'
 import CustomSider from './concerto/sider'
 import Homepage from './concerto/homepage'
@@ -55,60 +48,9 @@ class Concerto extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.authorizationsF5 && (prevProps.authorizationsF5 !== this.props.authorizationsF5)) {
-      this.main()
-    }
-    if (this.props.configurationF5Fetch) {
-      this.props.dispatch(configurationF5Fetch(false))
-      this.main()
-    }
   }
 
   componentWillUnmount() {
-  }
-
-
-  main = async () => {
-    if (this.props.authorizationsF5) {
-      this.props.dispatch(configurationF5Loading(true))
-      let confF5 = await this.configurationF5Get()
-      this.props.dispatch(configurationF5Loading(false))
-      if (confF5.status && confF5.status !== 200 ) {
-        this.props.dispatch(configurationF5Error(confF5))
-      }
-      else {
-        let configuration = JSON.parse(confF5.data.configuration)
-        if (Array.isArray(configuration)) {
-          this.props.dispatch(configurationF5( configuration ))
-        }
-        else {
-          let e = {
-            message: 'Configuration bad format',
-            reason: 'Configuration bad format',
-            status: 500,
-            type: 'basic',
-            url: 'https://10.0.111.10/backend/f5/configuration/global/'
-          }
-          this.props.dispatch(configurationF5Error(e))
-          this.props.dispatch(configurationF5( [] ))
-        }
-      }
-    }
-  }
-
-  configurationF5Get = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR("f5/configuration/global/", this.props.token)
-    return r
   }
 
   authorizators = a => {
@@ -190,7 +132,6 @@ class Concerto extends Component {
         </BrowserRouter>
 
         { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'authorizationsError'} /> : null }
-        { this.props.configurationF5Error ? <Error error={[this.props.configurationF5Error]} visible={true} type={'configurationF5Error'} /> : null }
 
       </Layout>
     )
@@ -204,14 +145,11 @@ export default connect((state) => ({
   logoWhite: state.authentication.logoWhite,
 
   authorizations: state.authorizations,
-  configurationF5Fetch: state.f5.configurationFetch,
-
   authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsF5: state.authorizations.f5,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsFortinetdb: state.authorizations.fortinetdb,
 
-  authorizationsError: state.authorizations.authorizationsError,
-  configurationF5Error: state.f5.configurationError,
+  authorizationsError: state.authorizations.authorizationsError
 }))(Concerto);

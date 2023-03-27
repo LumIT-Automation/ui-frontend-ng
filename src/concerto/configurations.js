@@ -1,21 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin } from 'antd'
-import 'antd/dist/antd.css'
+import { Radio, Divider } from 'antd';
+
+import Authorizators from '../_helpers/authorizators'
+import Configuration from './configuration'
+
+import 'antd/dist/antd.css';
 import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
-import Authorizators from '../_helpers/authorizators'
-import F5 from '../f5/configuration/manager'
-
-import { configurationFetch as configurationF5Fetch } from '../f5/store'
-
-const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
-class Configuration extends React.Component {
+class Configurations extends React.Component {
 
   constructor(props) {
     super(props);
@@ -43,28 +41,35 @@ class Configuration extends React.Component {
 
 
   render() {
+    console.log(this.state.vendor)
     return (
       <React.Fragment>
-        <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-          <Tabs type="card">
-            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
-              <React.Fragment>
-                {this.props.configurationF5Loading ?
-                  <TabPane key="F5" tab="F5">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(configurationF5Fetch(true))}/></span>>
-                    <F5/>
-                  </TabPane>
-                }
-              </React.Fragment>
-            :
-              null
-            }
-          </Tabs>
-        </Space>
+        <Radio.Group
+          onChange={e => this.setState({vendor: e.target.value})}
+          value={this.state.vendor}
+          style={{padding: 15, paddingTop: 40 }}
+        >
+          { this.authorizators(this.props.authorizationsCheckpoint) ?
+            <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
+          :
+            null
+          }
 
+          { this.authorizators(this.props.authorizationsF5) ?
+            <Radio.Button value={'f5'}>f5</Radio.Button>
+          :
+            null
+          }
+        </Radio.Group>
+
+        <Divider/>
+        
+        {
+          this.state.vendor ?
+            <Configuration vendor={this.state.vendor}/>
+          :
+            null
+        }
       </React.Fragment>
     )
   }
@@ -72,6 +77,8 @@ class Configuration extends React.Component {
 
 
 export default connect((state) => ({
+  authorizationsInfoblox: state.authorizations.infoblox,
+  authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
-  configurationF5Loading: state.f5.configurationLoading
-}))(Configuration);
+  authorizationsVmware: state.authorizations.vmware,
+}))(Configurations);

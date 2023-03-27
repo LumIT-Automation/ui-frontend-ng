@@ -6,6 +6,7 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
 
+  configurationsError,
   historysError
 
 } from './store'
@@ -36,6 +37,10 @@ class Error extends Component {
   onCancel = async () => {
     if ( this.props.type ) {
       switch(this.props.type) {
+
+        case 'configurationsError':
+          this.props.dispatch(configurationsError(null))
+          break;
 
         case 'historysError':
           this.props.dispatch(historysError(null))

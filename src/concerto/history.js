@@ -37,7 +37,7 @@ class Manager extends React.Component {
   componentDidMount() {
     if (this.props.vendor === 'vmware') {
       if (!this.props.historysError) {
-        this.setState({refreshHistorys: false})
+        this.setState({historysRefresh: false})
         if (!this.props.historys) {
           this.main()
         }
@@ -48,7 +48,7 @@ class Manager extends React.Component {
       }
     }
     if (!this.props.historysError && !this.props.historys) {
-      this.setState({refreshHistorys: false})
+      this.setState({historysRefresh: false})
       this.main()
     }
   }
@@ -59,14 +59,14 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.vendor !== this.props.vendor) {
-      this.setState({refreshHistorys: false})
+      this.setState({historysRefresh: false})
       this.main()
     }
-    if (this.state.refreshHistorys) {
+    if (this.state.historysRefresh) {
       if (this.props.vendor === 'vmware') {
         clearInterval(this.interval)
       }
-      this.setState({refreshHistorys: false})
+      this.setState({historysRefresh: false})
       this.main()
     }
   }
@@ -226,8 +226,8 @@ class Manager extends React.Component {
     }
   }
 
-  refreshHistorys = async () => {
-    await this.setState({refreshHistorys: true})
+  historysRefresh = async () => {
+    await this.setState({historysRefresh: true})
   }
 
   historyGet = async () => {
@@ -569,7 +569,7 @@ class Manager extends React.Component {
         :
           <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.refreshHistorys()}><ReloadOutlined/></Button>
+            <Button onClick={() => this.historysRefresh()}><ReloadOutlined/></Button>
             <br/>
             <Table
               columns={returnCol()}

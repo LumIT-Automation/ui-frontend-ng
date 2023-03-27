@@ -921,30 +921,6 @@ class CreateF5Service extends React.Component {
                       null
                     }
 
-                    {/* this.props.configuration && this.props.configuration[0] && this.props.configuration[0].key === 'iruleHide' && this.props.configuration[0].value ?
-                      null
-                    :
-                      <React.Fragment>
-                        <Row>
-                          <Col offset={2} span={6}>
-                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>irule (optional):</p>
-                          </Col>
-                          <Col span={16}>
-                            <TextArea
-                              rows={5}
-                              defaultValue={this.state.request.code}
-                              value={this.state.request.code}
-                              style={{width: 450}}
-                              name="code"
-                              id='code'
-                              onChange={e => this.codeSet(e)}
-                            />
-                          </Col>
-                        </Row>
-                        <br/>
-                      </React.Fragment>
-                    */}
-
                   </React.Fragment>
                 :
                   null
@@ -1354,8 +1330,6 @@ class CreateF5Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
-
-  configuration: state.f5.configuration,
 
   asset: state.f5.asset,
   partition: state.f5.partition,

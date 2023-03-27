@@ -102,9 +102,6 @@ import {
   l7ServiceCreateError,
   serviceDeleteError,
 
-  configurationError,
-  configurationModifyError,
-
   genericError
 
 } from './store'
@@ -356,13 +353,6 @@ class Error extends Component {
         case 'serviceDeleteError':
           this.props.dispatch(serviceDeleteError(null))
           break;
-
-        case 'configurationError':
-            this.props.dispatch(configurationError(null))
-            break;
-        case 'configurationModifyError':
-            this.props.dispatch(configurationModifyError(null))
-            break;
 
         default:
           this.props.dispatch(genericError(null))
