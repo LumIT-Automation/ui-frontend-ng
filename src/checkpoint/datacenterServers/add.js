@@ -3,12 +3,17 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
+import ConcertoError from '../../concerto/error'
 import Validators from '../../_helpers/validators'
 
 import {
   datacenterServersFetch,
   datacenterServerAddError
 } from '../store'
+
+import {
+  configurationsError
+} from '../../concerto/store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio } from 'antd';
 
@@ -24,6 +29,7 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      ['AWS Regions']: [],
       types: ['aws', 'azure', 'gcp'],
       'aws-authentication-methods': ['user-authentication', 'admin-authentication'],
       'azure-authentication-methods': ['service-principal-authentication'],
@@ -36,6 +42,9 @@ class Add extends React.Component {
   }
 
   componentDidMount() {
+    if (!this.props.configurationsError) {
+      this.main()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -69,6 +78,48 @@ class Add extends React.Component {
 */
 
   //SETTERS
+
+  main = async () => {
+    await this.setState({loading: true})
+    let conf = []
+    let configurationsFetched = await this.configurationGet()
+    console.log(configurationsFetched)
+    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
+      this.props.dispatch(configurationsError(configurationsFetched))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      if (configurationsFetched.data.configuration.length > 0) {
+        conf = JSON.parse(configurationsFetched.data.configuration)
+        console.log(conf)
+        conf.forEach((item, i) => {
+          if (item.key === 'AWS Regions') {
+            let list = JSON.parse(item.value)
+            this.setState({['AWS Regions']: list})
+          }
+        });
+
+      }
+      await this.setState({loading: false})
+    }
+  }
+
+  configurationGet = async () => {
+    let r
+
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR('checkpoint/configuration/global/', this.props.token)
+    return r
+  }
 
   set = async (e, key) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -282,9 +333,13 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.errors)
+    console.log(this.state['AWS Regions'])
+    console.log(this.props.configurationsError)
+
+
 
     let createComponent = (component, key, choices) => {
+
       switch (component) {
         case 'input':
           return (
@@ -335,35 +390,45 @@ class Add extends React.Component {
           break;
 
         case 'select':
-        return (
-          <Select
-            value={this.state.request[`${key}`]}
-            showSearch
-            style=
-            { this.state.errors[`${key}Error`] ?
-              {width: "100%", border: `1px solid red`}
-            :
-              {width: "100%"}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={event => this.set(event, key)}
-          >
-            <React.Fragment>
-              {this.state[`${choices}`].map((n, i) => {
-                return (
-                  <Select.Option key={i} value={n}>{n}</Select.Option>
-                )
-              })
+          return (
+            <Select
+              value={this.state.request[`${key}`]}
+              showSearch
+              style=
+              { this.state.errors[`${key}Error`] ?
+                {width: "100%", border: `1px solid red`}
+              :
+                {width: "100%"}
               }
-            </React.Fragment>
-          </Select>
-        )
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => this.set(event, key)}
+            >
+              <React.Fragment>
+              { choices === 'AWS Regions' ?
+
+                this.state['AWS Regions'].map((v,i) => {
+                  console.log(v)
+                  console.log(i)
+                  return (
+                    <Select.Option key={i} value={v[1]}>{v[0]}</Select.Option>
+                  )
+                })
+              :
+                this.state[`${choices}`].map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                  )
+                })
+              }
+              </React.Fragment>
+            </Select>
+          )
 
         default:
 
@@ -452,7 +517,7 @@ class Add extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Region:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('input', 'region')}
+                      {createComponent('select', 'region', 'AWS Regions')}
                     </Col>
                   </Row>
                   <br/>
@@ -574,6 +639,8 @@ class Add extends React.Component {
           null
         }
 
+        { this.props.configurationsError ? <ConcertoError vendor={this.props.vendor} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
+
       </Space>
 
     )
@@ -584,5 +651,6 @@ export default connect((state) => ({
   token: state.authentication.token,
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  datacenterServerAddError: state.checkpoint.datacenterServerAddError
+  datacenterServerAddError: state.checkpoint.datacenterServerAddError,
+  configurationsError: state.concerto.configurationsError,
 }))(Add);
