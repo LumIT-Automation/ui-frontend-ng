@@ -234,24 +234,18 @@ class Add extends React.Component {
           await this.setState({errors: errors})
         }
 
-        if (!request['password']) {
+        if (!request['password'] && !request['password-base64']) {
           errors['passwordError'] = true
-          await this.setState({errors: errors})
-        }
-        else {
-          delete errors['passwordError']
-          await this.setState({errors: errors})
-        }
-
-        if (!request['password-base64Error']) {
           errors['password-base64Error'] = true
           await this.setState({errors: errors})
         }
         else {
+          delete errors['passwordError']
           delete errors['password-base64Error']
           await this.setState({errors: errors})
         }
-      } else {
+      }
+      else {
         delete errors['usernameError']
         delete errors['passwordError']
         delete errors['password-base64Error']
@@ -365,8 +359,13 @@ class Add extends React.Component {
     if (this.state.request.type === 'azure') {
       if (request['authentication-method'] === 'user-authentication') {
         b.data["username"] = request["username"]
-        b.data["password"] = request["password"]
-        b.data["password-base64"] = request["password-base64"]
+
+        if (request["password"]) {
+          b.data["password"] = request["password"]
+        }
+        else {
+          b.data["password-base64"] = request["password-base64"]
+        }
       }
 
       if (request['authentication-method'] === 'service-principal-authentication') {
@@ -375,7 +374,13 @@ class Add extends React.Component {
         b.data["directory-id"] = request["directory-id"]
       }
 
-      b.data["environment"] = request["environment"]
+      if (!request["environment"]) {
+        b.data["environment"] = "AzureCloud"
+      }
+      else {
+        b.data["environment"] = request["environment"]
+      }
+
       /*
       b["application-id"] = "936aa61f-e04f-479c-a0fb-58d10f0e4016"
       b["application-key"] = "HiDrju0Ck2mluOv6sMh9s6h2aYvuV3wNYeHl5tKWlto="
