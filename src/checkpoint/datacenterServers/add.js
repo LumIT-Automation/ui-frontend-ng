@@ -15,7 +15,7 @@ import {
   configurationsError
 } from '../../concerto/store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -31,7 +31,7 @@ class Add extends React.Component {
       visible: false,
       ['AWS Regions']: [],
       types: ['aws', 'azure', 'gcp'],
-      'aws-authentication-methods': ['user-authentication', 'admin-authentication'],
+      'aws-authentication-methods': ['user-authentication', 'role-authentication'],
       'azure-authentication-methods': ['service-principal-authentication'],
       'gcp-authentication-methods': ['vm-instance-authentication'],
       'details-levels': ['uid', 'standard', 'full'],
@@ -83,7 +83,6 @@ class Add extends React.Component {
     await this.setState({loading: true})
     let conf = []
     let configurationsFetched = await this.configurationGet()
-    console.log(configurationsFetched)
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       this.props.dispatch(configurationsError(configurationsFetched))
       await this.setState({loading: false})
@@ -92,7 +91,6 @@ class Add extends React.Component {
     else {
       if (configurationsFetched.data.configuration.length > 0) {
         conf = JSON.parse(configurationsFetched.data.configuration)
-        console.log(conf)
         conf.forEach((item, i) => {
           if (item.key === 'AWS Regions') {
             let list = JSON.parse(item.value)
@@ -166,6 +164,7 @@ class Add extends React.Component {
       delete errors['access-key-idError']
       delete errors['secret-access-keyError']
       delete errors['regionError']
+      delete errors['sts-roleError']
 
       delete errors['application-idError']
       delete errors['application-keyError']
@@ -204,6 +203,19 @@ class Add extends React.Component {
         delete errors['regionError']
         await this.setState({errors: errors})
       }
+
+      if (request['enable-sts-assume-role']) {
+        if (!request['sts-role']) {
+          errors['sts-roleError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['sts-roleError']
+          await this.setState({errors: errors})
+        }
+      } else {
+        delete errors['sts-roleError']
+      }
     }
 
     if (this.state.request.type === 'azure') {
@@ -211,6 +223,7 @@ class Add extends React.Component {
       delete errors['access-key-idError']
       delete errors['secret-access-keyError']
       delete errors['regionError']
+      delete errors['sts-roleError']
 
       if (!request['application-id']) {
         errors['application-idError'] = true
@@ -257,7 +270,6 @@ class Add extends React.Component {
 
     if (Object.keys(this.state.errors).length === 0) {
       this.datacenterServerAdd()
-      //console.log('POST con questo body: ', this.state.request)
     }
   }
 
@@ -282,6 +294,13 @@ class Add extends React.Component {
       b.data["access-key-id"] = request["access-key-id"]
       b.data["secret-access-key"] = request["secret-access-key"]
       b.data["region"] = request["region"]
+      if (request["enable-sts-assume-role"]) {
+        b.data["enable-sts-assume-role"] = request["enable-sts-assume-role"]
+        b.data["sts-role"] = request["sts-role"]
+        if (request["sts-external-id"]) {
+          b.data["sts-external-id"] = request["sts-external-id"]
+        }
+      }
       /*
       b["access-key-id"] = "AKIAI4EMUXLDYNO3KFGQ"
       b["secret-access-key"] = "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"
@@ -333,7 +352,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state['AWS Regions'])
+    console.log(this.state.errors)
     console.log(this.props.configurationsError)
 
 
@@ -351,6 +370,15 @@ class Add extends React.Component {
                 {}
               }
               onChange={event => this.set(event.target.value, key)}
+            />
+          )
+          break;
+
+        case 'checkbox':
+          return (
+            <Checkbox
+              checked={this.state.request[`${key}`]}
+              onChange={event => this.set(event.target.checked, key)}
             />
           )
           break;
@@ -411,10 +439,7 @@ class Add extends React.Component {
             >
               <React.Fragment>
               { choices === 'AWS Regions' ?
-
                 this.state['AWS Regions'].map((v,i) => {
-                  console.log(v)
-                  console.log(i)
                   return (
                     <Select.Option key={i} value={v[1]}>{v[0]}</Select.Option>
                   )
@@ -511,6 +536,42 @@ class Add extends React.Component {
                     </Col>
                   </Row>
                   <br/>
+
+                  <Row>
+                    <Col offset={3} span={6}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Enable-sts-assume-role:</p>
+                    </Col>
+                    <Col span={7} style={{marginTop: 5}}>
+                      {createComponent('checkbox', 'enable-sts-assume-role')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  {this.state.request['enable-sts-assume-role'] ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-role:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'sts-role')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-external-id:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'sts-external-id')}
+                        </Col>
+                      </Row>
+                      <br/>
+                    </React.Fragment>
+                  :
+                    null
+                  }
 
                   <Row>
                     <Col offset={3} span={6}>
