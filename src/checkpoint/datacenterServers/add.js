@@ -32,8 +32,9 @@ class Add extends React.Component {
       ['AWS Regions']: [],
       types: ['aws', 'azure', 'gcp'],
       'aws-authentication-methods': ['user-authentication', 'role-authentication'],
-      'azure-authentication-methods': ['service-principal-authentication'],
+      'azure-authentication-methods': ['user-authentication', 'service-principal-authentication'],
       'gcp-authentication-methods': ['key-authentication', 'vm-instance-authentication'],
+      'azure-environment': ['AzureCloud', 'AzureChinaCloud', 'AzureUSGovernment'],
       'details-levels': ['uid', 'standard', 'full'],
       request: {},
       errors: {},
@@ -159,38 +160,28 @@ class Add extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (this.state.request.type === 'gcp') {
-      //delete aws and azure error
+    if (this.state.request.type !== 'aws') {
       delete errors['access-key-idError']
       delete errors['secret-access-keyError']
       delete errors['regionError']
       delete errors['sts-roleError']
+    }
 
+    if (this.state.request.type !== 'azure') {
       delete errors['application-idError']
       delete errors['application-keyError']
       delete errors['directory-idError']
+      delete errors['usernameError']
+      delete errors['passwordError']
+      delete errors['password-base64Error']
+      delete errors['environmentError']
+    }
 
-      if (request['authentication-method'] === 'key-authentication') {
-        if (!request['private-key']) {
-          errors['private-keyError'] = true
-          await this.setState({errors: errors})
-        }
-        else {
-          delete errors['private-keyError']
-          await this.setState({errors: errors})
-        }
-      } else {
-        delete errors['private-keyError']
-      }
+    if (this.state.request.type !== 'gcp') {
+      delete errors['private-keyError']
     }
 
     if (this.state.request.type === 'aws') {
-      //delete azure error
-      delete errors['application-idError']
-      delete errors['application-keyError']
-      delete errors['directory-idError']
-      delete errors['private-keyError']
-
       if (!request['access-key-id']) {
         errors['access-key-idError'] = true
         await this.setState({errors: errors})
@@ -233,38 +224,86 @@ class Add extends React.Component {
     }
 
     if (this.state.request.type === 'azure') {
-      //delete aws error
-      delete errors['access-key-idError']
-      delete errors['secret-access-keyError']
-      delete errors['regionError']
-      delete errors['sts-roleError']
-      delete errors['private-keyError']
+      if (request['authentication-method'] === 'user-authentication') {
+        if (!request['username']) {
+          errors['usernameError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['usernameError']
+          await this.setState({errors: errors})
+        }
 
-      if (!request['application-id']) {
-        errors['application-idError'] = true
-        await this.setState({errors: errors})
+        if (!request['password']) {
+          errors['passwordError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['passwordError']
+          await this.setState({errors: errors})
+        }
+
+        if (!request['password-base64Error']) {
+          errors['password-base64Error'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['password-base64Error']
+          await this.setState({errors: errors})
+        }
+      } else {
+        delete errors['usernameError']
+        delete errors['passwordError']
+        delete errors['password-base64Error']
       }
-      else {
+
+      if (request['authentication-method'] === 'service-principal-authentication') {
+        if (!request['application-id']) {
+          errors['application-idError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['application-idError']
+          await this.setState({errors: errors})
+        }
+
+        if (!request['application-key']) {
+          errors['application-keyError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['application-keyError']
+          await this.setState({errors: errors})
+        }
+
+        if (!request['directory-id']) {
+          errors['directory-idError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['directory-idError']
+          await this.setState({errors: errors})
+        }
+      } else {
         delete errors['application-idError']
-        await this.setState({errors: errors})
-      }
-
-      if (!request['application-key']) {
-        errors['application-keyError'] = true
-        await this.setState({errors: errors})
-      }
-      else {
         delete errors['application-keyError']
-        await this.setState({errors: errors})
+        delete errors['directory-idError']
       }
 
-      if (!request['directory-id']) {
-        errors['directory-idError'] = true
-        await this.setState({errors: errors})
-      }
-      else {
-        delete errors['directory-idError']
-        await this.setState({errors: errors})
+    }
+
+    if (this.state.request.type === 'gcp') {
+      if (request['authentication-method'] === 'key-authentication') {
+        if (!request['private-key']) {
+          errors['private-keyError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['private-keyError']
+          await this.setState({errors: errors})
+        }
+      } else {
+        delete errors['private-keyError']
       }
     }
 
@@ -324,9 +363,19 @@ class Add extends React.Component {
     }
 
     if (this.state.request.type === 'azure') {
-      b.data["application-id"] = request["application-id"]
-      b.data["application-key"] = request["application-key"]
-      b.data["directory-id"] = request["directory-id"]
+      if (request['authentication-method'] === 'user-authentication') {
+        b.data["username"] = request["username"]
+        b.data["password"] = request["password"]
+        b.data["password-base64"] = request["password-base64"]
+      }
+
+      if (request['authentication-method'] === 'service-principal-authentication') {
+        b.data["application-id"] = request["application-id"]
+        b.data["application-key"] = request["application-key"]
+        b.data["directory-id"] = request["directory-id"]
+      }
+
+      b.data["environment"] = request["environment"]
       /*
       b["application-id"] = "936aa61f-e04f-479c-a0fb-58d10f0e4016"
       b["application-key"] = "HiDrju0Ck2mluOv6sMh9s6h2aYvuV3wNYeHl5tKWlto="
@@ -408,6 +457,7 @@ class Add extends React.Component {
           return (
             <Radio.Group
               onChange={event => this.set(event.target.value, key)}
+              defaultValue={key === 'environment' ? 'AzureCloud' : null}
               value={this.state.request[`${key}`]}
               style={this.state.errors[`${key}Error`] ?
                 {border: `1px solid red`}
@@ -626,35 +676,87 @@ class Add extends React.Component {
                   </Row>
                   <br/>
 
+                  { this.state.request['authentication-method'] === 'service-principal-authentication' ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-id:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'application-id')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-key:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'application-key')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Directory-id:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'directory-id')}
+                        </Col>
+                      </Row>
+                      <br/>
+                    </React.Fragment>
+                  :
+                    null
+                  }
+                  { this.state.request['authentication-method'] === 'user-authentication' ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Username:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'username')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'password')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password-base64:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('input', 'password-base64')}
+                        </Col>
+                      </Row>
+                      <br/>
+                    </React.Fragment>
+                  :
+                    null
+                  }
+
                   <Row>
                     <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-id:</p>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('input', 'application-id')}
+                      {createComponent('radio', 'environment', 'azure-environment')}
                     </Col>
                   </Row>
                   <br/>
 
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-key:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('input', 'application-key')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Directory-id:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('input', 'directory-id')}
-                    </Col>
-                  </Row>
-                  <br/>
                 </React.Fragment>
               :
                 null
