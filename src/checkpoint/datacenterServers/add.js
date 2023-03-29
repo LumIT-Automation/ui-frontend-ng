@@ -33,7 +33,7 @@ class Add extends React.Component {
       types: ['aws', 'azure', 'gcp'],
       'aws-authentication-methods': ['user-authentication', 'role-authentication'],
       'azure-authentication-methods': ['service-principal-authentication'],
-      'gcp-authentication-methods': ['vm-instance-authentication'],
+      'gcp-authentication-methods': ['key-authentication', 'vm-instance-authentication'],
       'details-levels': ['uid', 'standard', 'full'],
       request: {},
       errors: {},
@@ -169,6 +169,19 @@ class Add extends React.Component {
       delete errors['application-idError']
       delete errors['application-keyError']
       delete errors['directory-idError']
+
+      if (request['authentication-method'] === 'key-authentication') {
+        if (!request['private-key']) {
+          errors['private-keyError'] = true
+          await this.setState({errors: errors})
+        }
+        else {
+          delete errors['private-keyError']
+          await this.setState({errors: errors})
+        }
+      } else {
+        delete errors['private-keyError']
+      }
     }
 
     if (this.state.request.type === 'aws') {
@@ -176,6 +189,7 @@ class Add extends React.Component {
       delete errors['application-idError']
       delete errors['application-keyError']
       delete errors['directory-idError']
+      delete errors['private-keyError']
 
       if (!request['access-key-id']) {
         errors['access-key-idError'] = true
@@ -224,6 +238,7 @@ class Add extends React.Component {
       delete errors['secret-access-keyError']
       delete errors['regionError']
       delete errors['sts-roleError']
+      delete errors['private-keyError']
 
       if (!request['application-id']) {
         errors['application-idError'] = true
@@ -317,6 +332,12 @@ class Add extends React.Component {
       b["application-key"] = "HiDrju0Ck2mluOv6sMh9s6h2aYvuV3wNYeHl5tKWlto="
       b["directory-id"] = "e97896c5-9549-48fb-976d-ef5f2c7dcbfc"
       */
+    }
+
+    if (this.state.request.type === 'gcp') {
+      if (request["authentication-method"] === "key-authentication") {
+        b.data["private-key"] = request["private-key"]
+      }
     }
 
     console.log(b)
@@ -413,6 +434,12 @@ class Add extends React.Component {
               placeholder={key === 'tags' ? "Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN" : ""}
               value={this.state.request[`${key}`]}
               onChange={event => this.set(event.target.value, key)}
+              style=
+              { this.state.errors[`${key}Error`] ?
+                {borderColor: `red`}
+              :
+                {}
+              }
             />
           )
           break;
@@ -644,6 +671,22 @@ class Add extends React.Component {
                     </Col>
                   </Row>
                   <br/>
+
+                  { this.state.request['authentication-method'] === 'key-authentication' ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={3} span={6}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Private-key:</p>
+                        </Col>
+                        <Col span={7}>
+                          {createComponent('textArea', 'private-key')}
+                        </Col>
+                      </Row>
+                      <br/>
+                    </React.Fragment>
+                  :
+                    null
+                  }
                 </React.Fragment>
               :
                 null
