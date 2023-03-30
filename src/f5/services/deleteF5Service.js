@@ -143,7 +143,7 @@ class DeleteF5Service extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>DELETE LOAD BALANCER</Button>
+        <Button type="primary" onClick={() => this.details()}>DELETE LB</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>DELETE LOAD BALANCER</p>}
@@ -251,7 +251,7 @@ class DeleteF5Service extends React.Component {
 
                   <Row>
                     <Col offset={2} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove virtual server:</p>
                     </Col>
                     <Col span={16}>
                       <Button type="danger" onClick={() => this.validation()}>

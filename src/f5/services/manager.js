@@ -11,7 +11,8 @@ import {
 
 import L7ServiceCreate from './l7ServiceCreate'
 import L4ServiceCreate from './l4ServiceCreate'
-import DeleteLoadBalancer from './deleteF5Service'
+import LoadBalancerDelete from './deleteF5Service'
+import NodeDelete from './deleteObject'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
 
@@ -66,19 +67,23 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Row>
-          <Col span={4} offset={2} >
+          <Col span={3} offset={2} >
             <L7ServiceCreate/>
           </Col>
 
-          <Col span={4} offset={2} >
+          <Col span={3} offset={1} >
             <L4ServiceCreate/>
           </Col>
 
-          <Col span={4} offset={2}>
-            <DeleteLoadBalancer/>
+          <Col span={3} offset={1}>
+            <LoadBalancerDelete/>
           </Col>
 
-          <Col span={4} offset={2}>
+          <Col span={3} offset={1}>
+            <NodeDelete f5object='node'/>
+          </Col>
+
+          <Col span={3} offset={1}>
             <PoolMaintenance/>
           </Col>
         </Row>

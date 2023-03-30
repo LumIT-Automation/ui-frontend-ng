@@ -34,8 +34,11 @@ import {
 
   dataGroupsError,
 
-  nodesError,
+  f5objectsError,
+  f5objectAddError,
+  f5objectDeleteError,
 
+  nodesError,
   nodeAddError,
   nodeDeleteError,
 
@@ -193,10 +196,21 @@ class Error extends Component {
           this.props.dispatch(dataGroupsError(null))
           break;
 
-        case 'nodesError':
-          this.props.dispatch(nodesError(null))
+        case 'f5objectsError':
+          console.log('f5objectsError')
+          this.props.dispatch(f5objectsError(null))
+          break;
+        case 'f5objectAddError':
+          this.props.dispatch(f5objectAddError(null))
+          break;
+        case 'f5objectDeleteError':
+          this.props.dispatch(f5objectDeleteError(null))
           break;
 
+        case 'nodesError':
+          console.log('nodesError')
+          this.props.dispatch(nodesError(null))
+          break;
         case 'nodeAddError':
           this.props.dispatch(nodeAddError(null))
           break;
