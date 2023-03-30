@@ -11,8 +11,7 @@ import {
 
 import L7ServiceCreate from './l7ServiceCreate'
 import L4ServiceCreate from './l4ServiceCreate'
-import LoadBalancerDelete from './deleteF5Service'
-import NodeDelete from './deleteObject'
+import F5ObjectDelete from './deleteObject'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
 
@@ -67,23 +66,28 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Row>
-          <Col span={3} offset={2} >
+          <Col span={4} offset={2} >
             <L7ServiceCreate/>
           </Col>
 
-          <Col span={3} offset={1} >
+          <Col span={4} offset={2} >
             <L4ServiceCreate/>
           </Col>
 
-          <Col span={3} offset={1}>
-            <LoadBalancerDelete/>
+          <Col span={4} offset={2}>
+            <F5ObjectDelete f5object='virtualserver'/>
           </Col>
 
-          <Col span={3} offset={1}>
-            <NodeDelete f5object='node'/>
+          <Col span={4} offset={2}>
+            <F5ObjectDelete f5object='node'/>
           </Col>
+        </Row>
 
-          <Col span={3} offset={1}>
+        <br/>
+        <br/>
+
+        <Row>
+          <Col span={4} offset={2}>
             <PoolMaintenance/>
           </Col>
         </Row>
@@ -97,7 +101,6 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations.f5,
 
   assets: state.f5.assets,
