@@ -14,7 +14,7 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Space, Modal, Input, Button, Select, Spin, Divider, Table, Alert } from 'antd'
+import { Space, Modal, Input, Button, Select, Spin, Divider, Table, Alert, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -40,7 +40,7 @@ class RequestIp extends React.Component {
 
   componentDidMount() {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
-    requests.push({id:1, macAddress: '00:00:00:00:00:00'})
+    requests.push({id:1, macAddress: '00:00:00:00:00:00', range: false})
     this.setState({requests: requests})
   }
 
@@ -53,7 +53,7 @@ class RequestIp extends React.Component {
     if (this.state.visible === true){
       if (this.state.requests && this.state.requests.length === 0) {
         let requests = JSON.parse(JSON.stringify(this.state.requests))
-        requests.push({id:1, macAddress: '00:00:00:00:00:00'})
+        requests.push({id:1, macAddress: '00:00:00:00:00:00', range: false})
         this.setState({requests: requests})
       }
       if (this.props.asset && (this.props.asset !== prevProps.asset) ) {
@@ -165,7 +165,7 @@ class RequestIp extends React.Component {
     });
     n = id + 1
 
-    let r = {id: n, macAddress: '00:00:00:00:00:00'}
+    let r = {id: n, macAddress: '00:00:00:00:00:00', range: false}
     let list = JSON.parse(JSON.stringify(this.state.requests))
     list.push(r)
     this.setState({requests: list})
@@ -311,6 +311,35 @@ class RequestIp extends React.Component {
     this.setState({requests: requests})
   }
 
+  rangeSet = (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.range = value
+    if (!request.range) {
+      delete request.firstAddressError
+      delete request.lastAddressError
+    }
+    this.setState({requests: requests})
+  }
+
+  firstAddressSet = (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.firstAddress = value
+    delete request.firstAddressError
+    this.setState({requests: requests})
+  }
+
+  lastAddressSet = (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.lastAddress = value
+    delete request.lastAddressError
+    this.setState({requests: requests})
+  }
+
+
+
 
 
   //validation
@@ -343,6 +372,23 @@ class RequestIp extends React.Component {
       if (!validators.macAddress(request.macAddress)) {
         request.macAddressError = 'error'
         ok = false
+      }
+      if (request.range) {
+        console.log(validators.ipv4(request.firstAddress))
+        if (!request.firstAddress) {
+          request.firstAddressError = 'error'
+          ok = false
+        } else if (!validators.ipv4(request.firstAddress)) {
+          request.firstAddressError = 'error'
+          ok = false
+        }
+        if (!request.lastAddress && validators.ipv4(request.lastAddress)) {
+          request.lastAddressError = 'error'
+          ok = false
+        } else if (!validators.ipv4(request.lastAddress)) {
+          request.lastAddressError = 'error'
+          ok = false
+        }
       }
       if (request.objectType === 'Heartbeat') {
         if (!request.serverName2) {
@@ -429,6 +475,11 @@ class RequestIp extends React.Component {
       }
     }
 
+    if (r.range) {
+      b.data["range_first_ip"] = r.firstAddress
+      b.data["range_last_ip"] = r.lastAddress
+    }
+
     let rest = new Rest(
       "POST",
       resp => {
@@ -498,6 +549,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
+    console.log(this.state.requests)
     const requests = [
       {
         title: 'Loading',
@@ -588,6 +640,50 @@ class RequestIp extends React.Component {
             }
           </React.Fragment>
         ),
+      },
+      {
+        title: 'Range',
+        align: 'center',
+        dataIndex: 'range',
+        key: 'range',
+        render: (name, obj)  => (
+          <React.Fragment>
+            <Checkbox
+              checked={obj.range}
+              onChange={event => this.rangeSet(event.target.checked, obj.id)}
+            />
+          </React.Fragment>
+        )
+      },
+      {
+        title: 'First Address',
+        align: 'center',
+        dataIndex: 'firstAddress',
+        key: 'firstAddress',
+        render: (name, obj)  => (
+          <Input
+            placeholder={obj.firstAddress}
+            style={obj.firstAddressError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
+            onChange={e => this.firstAddressSet(e.target.value, obj.id)}
+            onPressEnter={() => this.validation()}
+            disabled={obj.range ? false : true}
+          />
+        )
+      },
+      {
+        title: 'Last Address',
+        align: 'center',
+        dataIndex: 'lastAddress',
+        key: 'lastAddress',
+        render: (name, obj)  => (
+          <Input
+            placeholder={obj.lastAddress}
+            style={obj.lastAddressError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
+            onChange={e => this.lastAddressSet(e.target.value, obj.id)}
+            onPressEnter={() => this.validation()}
+            disabled={obj.range ? false : true}
+          />
+        )
       },
       {
         title: 'Object Type',
