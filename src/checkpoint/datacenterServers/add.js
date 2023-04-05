@@ -537,8 +537,9 @@ class Add extends React.Component {
               <React.Fragment>
               { choices === 'AWS Regions' ?
                 this.state['AWS Regions'].map((v,i) => {
+                  let str = `${v[0].toString()} - ${v[1].toString()}`
                   return (
-                    <Select.Option key={i} value={v[1]}>{v[0]}</Select.Option>
+                    <Select.Option key={i} value={v[1]}>{str}</Select.Option>
                   )
                 })
               :
