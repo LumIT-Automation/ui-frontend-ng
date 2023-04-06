@@ -340,12 +340,26 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   datacenterServerAdd = async () => {
     let request = Object.assign({}, this.state.request)
+    let list = []
+    let l = []
+    try {
+      l = request.tags.split(',')
+
+      l.forEach((item, i) => {
+        list.push(item)
+      });
+    }
+    catch (error) {
+      console.log(error)
+    }
+
+
     let b = {}
     b.data = {
       "name": request.name,
       "type": request.type,
       "authentication-method": request['authentication-method'],
-      "tags": request.tags,
+      "tags": list,
       "color": "orange",
       "comments": request.comments,
       "details-level": request['details-level'],
@@ -501,7 +515,7 @@ class Add extends React.Component {
           return (
             <Input.TextArea
               rows={7}
-              placeholder={key === 'tags' ? "Insert your tags's list. &#10;Example: tag1, tag2, ..., tagN" : ""}
+              placeholder={key === 'tags' ? "Insert your tags's list. Example: tag1, tag2, ..., tagN" : ""}
               value={this.state.request[`${key}`]}
               onChange={event => this.set(event.target.value, key)}
               style=

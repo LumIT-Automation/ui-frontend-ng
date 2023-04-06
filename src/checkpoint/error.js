@@ -52,6 +52,11 @@ import {
   datacenterServerModifyError,
   datacenterServerDeleteError,
 
+  datacenterQuerysError,
+  datacenterQueryAddError,
+  datacenterQueryModifyError,
+  datacenterQueryDeleteError,
+
   application_sitesError,
   application_siteAddError,
   application_siteModifyError,
@@ -216,6 +221,19 @@ class Error extends Component {
           break;
         case 'datacenterServerDeleteError':
           this.props.dispatch(datacenterServerDeleteError(null))
+          break;
+
+        case 'datacenterQuerysError':
+          this.props.dispatch(datacenterQuerysError(null))
+          break;
+        case 'datacenterQueryAddError':
+          this.props.dispatch(datacenterQueryAddError(null))
+          break;
+        case 'datacenterQueryModifyError':
+          this.props.dispatch(datacenterQueryModifyError(null))
+          break;
+        case 'datacenterQueryDeleteError':
+          this.props.dispatch(datacenterQueryDeleteError(null))
           break;
 
         case 'application_sitesError':

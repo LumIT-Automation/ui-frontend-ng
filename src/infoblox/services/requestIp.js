@@ -322,6 +322,16 @@ class RequestIp extends React.Component {
     this.setState({requests: requests})
   }
 
+  option12Set = (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.option12 = value
+    if (!request.option12) {
+      delete request.option12Error
+    }
+    this.setState({requests: requests})
+  }
+
   firstAddressSet = (value, id) => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
@@ -339,11 +349,7 @@ class RequestIp extends React.Component {
   }
 
 
-
-
-
   //validation
-
   validation = async () => {
     let valid = await this.validationCheck()
     if (valid) {
@@ -372,6 +378,12 @@ class RequestIp extends React.Component {
       if (!validators.macAddress(request.macAddress)) {
         request.macAddressError = 'error'
         ok = false
+      }
+      if (request.option12) {
+        if (request.macAddress === '00:00:00:00:00:00') {
+          request.macAddressError = 'error'
+          ok = false
+        }
       }
       if (request.range) {
         console.log(validators.ipv4(request.firstAddress))
@@ -478,6 +490,17 @@ class RequestIp extends React.Component {
     if (r.range) {
       b.data["range_first_ip"] = r.firstAddress
       b.data["range_last_ip"] = r.lastAddress
+    }
+
+    if (r.option12) {
+      b.data["options"] = [
+        {
+          "name": "host-name",
+          "num": 12,
+          "value": r.serverName,
+          "vendor_class": "DHCP"
+        }
+      ]
     }
 
     let rest = new Rest(
@@ -794,6 +817,20 @@ class RequestIp extends React.Component {
             }
           </React.Fragment>
         ),
+      },
+      {
+        title: 'Option 12',
+        align: 'center',
+        dataIndex: 'option12',
+        key: 'option12',
+        render: (name, obj)  => (
+          <React.Fragment>
+            <Checkbox
+              checked={obj.option12}
+              onChange={event => this.option12Set(event.target.checked, obj.id)}
+            />
+          </React.Fragment>
+        )
       },
       {
         title: 'Mac address',

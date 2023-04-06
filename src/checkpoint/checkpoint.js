@@ -15,6 +15,7 @@ import Networks from './networks/manager'
 import AddressRanges from './addressRanges/manager'
 import ApplicationSites from './application_sites/manager'
 import DatacenterServers from './datacenterServers/manager'
+import DatacenterQuerys from './datacenterQuerys/manager'
 
 import {
   assets,
@@ -25,6 +26,7 @@ import {
   networksFetch,
   addressRangesFetch,
   datacenterServersFetch,
+  datacenterQuerysFetch,
   application_sitesFetch,
 
 } from '../checkpoint/store'
@@ -88,6 +90,9 @@ class Checkpoint extends React.Component {
   }
   datacenterServersRefresh = () => {
     this.props.dispatch(datacenterServersFetch(true))
+  }
+  datacenterQuerysRefresh = () => {
+    this.props.dispatch(datacenterQuerysFetch(true))
   }
   application_sitesRefresh = () => {
     this.props.dispatch(application_sitesFetch(true))
@@ -192,6 +197,21 @@ class Checkpoint extends React.Component {
           :
             null
           }
+          { this.props.authorizations && (this.props.authorizations.datacenterQuerys_get || this.props.authorizations.any) ?
+            <React.Fragment>
+              {this.props.datacenterQuerysLoading ?
+                <TabPane key="Datacenter Queries" tab="Datacenter Queries">
+                  <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+                </TabPane>
+              :
+                <TabPane key="Datacenter Queries" tab=<span>Datacenter Queries<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterQuerysRefresh()}/></span>>
+                  <DatacenterQuerys/>
+                </TabPane>
+              }
+            </React.Fragment>
+          :
+            null
+          }
           <React.Fragment>
             <TabPane key="Rules" tab="Rules">
               <Tabs>
@@ -287,6 +307,7 @@ export default connect((state) => ({
   networksLoading: state.checkpoint.networksLoading,
   addressRangesLoading: state.checkpoint.addressRangesLoading,
   datacenterServersLoading: state.checkpoint.datacenterServersLoading,
+  datacenterQuerysLoading: state.checkpoint.datacenterQuerysLoading,
   application_sitesLoading: state.checkpoint.application_sitesLoading,
 
   assetsError: state.checkpoint.assetsError,
