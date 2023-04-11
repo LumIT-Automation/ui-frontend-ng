@@ -503,10 +503,13 @@ class RequestIp extends React.Component {
       ]
     }
 
+    console.log(b)
+
     let rest = new Rest(
       "POST",
       resp => {
         re = resp
+        console.log(resp)
       },
       error => {
         this.props.dispatch(nextAvailableIpError(error))
@@ -572,7 +575,7 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.requests)
+    console.log(this.state.response)
     const requests = [
       {
         title: 'Loading',
@@ -1024,6 +1027,27 @@ class RequestIp extends React.Component {
             :
             <React.Fragment>
               {obj.macAddress}
+            </React.Fragment>
+          }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'Option 12 (DHCP)',
+        align: 'center',
+        dataIndex: 'option12',
+        key: 'option12',
+        render: (name, obj)  => (
+          <React.Fragment>
+          { (obj.ips.length > 1) ?
+              <React.Fragment>
+                {obj.option12 ? obj.option12.toString() : null}
+                <br/>
+                {obj.option12 ? obj.option12.toString() : null}
+              </React.Fragment>
+            :
+            <React.Fragment>
+              {obj.option12 ? obj.option12.toString() : null}
             </React.Fragment>
           }
           </React.Fragment>
