@@ -83,6 +83,17 @@ class ModifyIp extends React.Component {
           request.serverName = request.extattrs['Name Server'].value
         }
         request.macAddress = request.mac_address
+
+        if (request.objects && request.objects[0] && request.objects[0].options) {
+          request.objects[0].options.forEach((item, i) => {
+            console.log(item)
+            if (item.num === 12) {
+              request.option12 = true
+            }
+          });
+
+        }
+
         this.setState({request: request, details: true})
       },
       error => {
@@ -283,6 +294,17 @@ class ModifyIp extends React.Component {
         align: 'center',
         dataIndex: 'names',
         key: 'RecordA',
+      },
+      {
+        title: 'Option 12 (DHCP)',
+        align: 'center',
+        dataIndex: 'option12',
+        key: 'option12',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.option12 ? obj.option12.toString() : null}
+          </React.Fragment>
+        ),
       },
 
     ];

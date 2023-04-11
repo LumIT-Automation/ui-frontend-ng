@@ -71,8 +71,19 @@ class DetailsIp extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
+        let r = JSON.parse(JSON.stringify(resp.data))
+        if (r.objects && r.objects[0] && r.objects[0].options) {
+          r.objects[0].options.forEach((item, i) => {
+            console.log(item)
+            if (item.num === 12) {
+              r.option12 = true
+            }
+          });
+
+        }
+        console.log(r)
         let ipDetails = []
-        ipDetails.push(resp.data)
+        ipDetails.push(r)
         this.setState({ipDetails: ipDetails})
       },
       error => {
@@ -95,6 +106,7 @@ class DetailsIp extends React.Component {
 
 
   render() {
+    console.log(this.state.ipDetails)
 
     const columns = [
       {
@@ -138,6 +150,17 @@ class DetailsIp extends React.Component {
         align: 'center',
         dataIndex: 'names',
         key: 'recordA',
+      },
+      {
+        title: 'Option 12 (DHCP)',
+        align: 'center',
+        dataIndex: 'option12',
+        key: 'option12',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.option12 ? obj.option12.toString() : null}
+          </React.Fragment>
+        ),
       },
       {
         title: 'Reference',
