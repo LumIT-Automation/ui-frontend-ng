@@ -9,7 +9,7 @@ import {
   assetsError
 } from '../store'
 
-import DetailsIp from './detailsIp'
+import IpComponent from './ipComponent'
 import RequestIp from './requestIp'
 import ModifyIp from './modifyIp'
 import ReleaseIp from './releaseIp'
@@ -66,7 +66,7 @@ class Manager extends React.Component {
       <React.Fragment >
         <Row>
           <Col span={4} offset={2} >
-            <DetailsIp/>
+            <IpComponent service='ip details'/>
           </Col>
 
           <Col span={4} offset={2}>
