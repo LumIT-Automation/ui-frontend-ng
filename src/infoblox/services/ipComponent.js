@@ -25,7 +25,7 @@ class IpComponent extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      request: {},
+      request: {pippo: 123},
       ipDetailsResponse: []
     };
   }
@@ -38,6 +38,8 @@ class IpComponent extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.request)
+    console.log(this.state.errors)
   }
 
   componentWillUnmount() {
@@ -51,23 +53,39 @@ class IpComponent extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request[key] = e
     await this.setState({request: request})
-    console.log(this.state.request)
   }
 
-  validateIp = async () => {
+  validationChecks = async () => {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
-
+    let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
 
-    if (validators.ipv4(this.state.request.ip)) {
-      delete errors.ipError
-      this.setState({errors: errors}, () => this.ipDetail())
+    for (const key in request) {
+      console.log(key)
+      if (key === 'pippo') {
+        continue
+      }
+      if (validators.ipv4(request[key])) {
+        delete errors[`${key}Error`]
+        this.setState({errors: errors})
+      }
+      else {
+        errors[`${key}Error`] = true
+        this.setState({errors: errors})
+      }
     }
-    else {
-      errors.ipError = 'Please input a valid ip'
-      this.setState({errors: errors})
+    return errors
+  }
+
+  validatation = async() => {
+    await this.validationChecks()
+
+    if (Object.keys(this.state.errors).length === 0) {
+      this.ipDetail()
     }
   }
+
+
 
   ipDetail = async () => {
     this.setState({ipRequestLoading: true})
@@ -123,6 +141,7 @@ class IpComponent extends React.Component {
                 {}
               }
               onChange={event => this.set(event.target.value, key)}
+              onPressEnter={() => this.validatation()}
             />
           )
           break;
@@ -243,7 +262,7 @@ class IpComponent extends React.Component {
                 <Col offset={8} span={16}>
                   <Button
                     type="primary"
-                    onClick={() => this.validateIp()}
+                    onClick={() => this.validatation()}
                   >
                     {this.props.service}
                   </Button>
