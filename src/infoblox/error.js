@@ -33,6 +33,7 @@ import {
   nextAvailableIpError,
   ipModifyError,
   ipReleaseError,
+  assignCloudNetworkError,
 
   genericError
 
@@ -138,6 +139,9 @@ class Error extends Component {
           break;
         case 'ipReleaseError':
           this.props.dispatch(ipReleaseError(null))
+          break;
+        case 'assignCloudNetworkError':
+          this.props.dispatch(assignCloudNetworkError(null))
           break;
 
         default:

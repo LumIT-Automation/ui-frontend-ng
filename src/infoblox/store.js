@@ -124,6 +124,9 @@ const infobloxSlice = createSlice({
       ipReleaseError: (state, action) => {
         state.ipReleaseError = action.payload
       },
+      assignCloudNetworkError: (state, action) => {
+        state.assignCloudNetworkError = action.payload
+      },
 
       genericError: (state, action) => {
         state.genericError = action.payload
@@ -187,6 +190,7 @@ export const {
   nextAvailableIpError,
   ipModifyError,
   ipReleaseError,
+  assignCloudNetworkError,
 
   genericError,
 

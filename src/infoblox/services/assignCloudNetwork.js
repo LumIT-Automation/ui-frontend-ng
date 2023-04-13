@@ -6,7 +6,7 @@ import Validators from '../../_helpers/validators'
 import Error from '../error'
 
 import {
-  ipDetailError,
+  assignCloudNetworkError,
   ipModifyError,
 } from '../store'
 
@@ -369,42 +369,6 @@ class IpComponent extends React.Component {
                 </Col>
               </Row>
 
-              <Divider/>
-
-            { (this.state.ipDetailsResponse.length < 1 || this.state.ipRequestLoading)?
-              null
-            :
-              <React.Fragment>
-                <Table
-                  columns={columns}
-                  dataSource={this.state.ipDetailsResponse}
-                  bordered
-                  rowKey="ip"
-                  scroll={{x: 'auto'}}
-                  pagination={false}
-                  style={{marginBottom: 10}}
-                />
-                  {(this.props.service === 'ip details') ?
-                    null
-                  :
-                   (( this.state.ipDetailsResponse && this.state.ipDetailsResponse[0] && this.state.ipDetailsResponse[0].status === 'USED' ) ?
-                    <Button
-                      type="primary"
-                      onClick={() => this.validation('ip modify')}
-                    >
-                      ip modify
-                    </Button>
-                  :
-                    <Button
-                      type="primary"
-                      disabled
-                    >
-                      ip modify
-                    </Button>
-                  )
-                  }
-              </React.Fragment>
-            }
             </React.Fragment>
             :
             <Alert message="Asset and Partition not set" type="error" />
@@ -414,8 +378,7 @@ class IpComponent extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
-            { this.props.ipModifyError ? <Error component={'ipModify'} error={[this.props.ipModifyError]} visible={true} type={'ipModifyError'} /> : null }
+            { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetwork'} /> : null }
           </React.Fragment>
         :
           null
@@ -432,6 +395,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 
-  ipDetailError: state.infoblox.ipDetailError,
-  ipModifyError: state.infoblox.ipModifyError,
+  assignCloudNetworkError: state.infoblox.assignCloudNetworkError,
 }))(IpComponent);

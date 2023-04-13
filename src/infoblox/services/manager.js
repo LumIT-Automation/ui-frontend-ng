@@ -12,6 +12,7 @@ import {
 import IpComponent from './ipComponent'
 import RequestIp from './requestIp'
 import ReleaseIp from './releaseIp'
+import AssignCloudNetwork from './assignCloudNetwork'
 
 import { Row, Col } from 'antd';
 
@@ -78,6 +79,14 @@ class Manager extends React.Component {
 
           <Col span={4} offset={2}>
             <ReleaseIp/>
+          </Col>
+        </Row>
+
+        <br/>
+
+        <Row>
+          <Col span={4} offset={2}>
+            <AssignCloudNetwork service='ip details'/>
           </Col>
         </Row>
 

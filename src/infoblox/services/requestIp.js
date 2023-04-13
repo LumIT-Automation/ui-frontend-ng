@@ -386,7 +386,6 @@ class RequestIp extends React.Component {
         }
       }
       if (request.range) {
-        console.log(validators.ipv4(request.firstAddress))
         if (!request.firstAddress) {
           request.firstAddressError = 'error'
           ok = false
@@ -509,7 +508,6 @@ class RequestIp extends React.Component {
       "POST",
       resp => {
         re = resp
-        console.log(resp)
       },
       error => {
         this.props.dispatch(nextAvailableIpError(error))
@@ -542,12 +540,18 @@ class RequestIp extends React.Component {
       let request = this.state.requests.find( r => r.id === id )
       let res = Object.assign({}, request)
       res.ips = ips
+      if (request.option12) {
+        res.option12 = res.serverName
+      }
       return res
     }
     else {
       let request = this.state.requests.find( r => r.id === id )
       let res = Object.assign({}, request)
       res.ips = ['no ip']
+      if (request.option12) {
+        res.option12 = res.serverName
+      }
       return res
     }
 
@@ -575,7 +579,6 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.response)
     const requests = [
       {
         title: 'Loading',
@@ -1041,13 +1044,13 @@ class RequestIp extends React.Component {
           <React.Fragment>
           { (obj.ips.length > 1) ?
               <React.Fragment>
-                {obj.option12 ? obj.option12.toString() : null}
+                {obj.option12 ? obj.option12 : null}
                 <br/>
-                {obj.option12 ? obj.option12.toString() : null}
+                {obj.option12 ? obj.option12 : null}
               </React.Fragment>
             :
             <React.Fragment>
-              {obj.option12 ? obj.option12.toString() : null}
+              {obj.option12 ? obj.option12 : null}
             </React.Fragment>
           }
           </React.Fragment>
@@ -1060,7 +1063,6 @@ class RequestIp extends React.Component {
         key: 'objectType',
       },
     ];
-
 
     return (
       <React.Fragment>
