@@ -75,14 +75,17 @@ class Add extends React.Component {
     }
     else {
       if (configurationsFetched.data.configuration.length > 0) {
-        conf = JSON.parse(configurationsFetched.data.configuration)
-        conf.forEach((item, i) => {
-          if (item.key === 'AWS Regions') {
-            let list = JSON.parse(item.value)
-            this.setState({['AWS Regions']: list})
-          }
-        });
-
+        try {
+          conf = JSON.parse(configurationsFetched.data.configuration)
+          conf.forEach((item, i) => {
+            if (item.key === 'AWS Regions') {
+              let list = JSON.parse(item.value)
+              this.setState({['AWS Regions']: list})
+            }
+          });
+        } catch (error) {
+          console.log(error)
+        }
       }
       await this.setState({loading: false})
     }

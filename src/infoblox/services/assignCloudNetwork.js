@@ -71,19 +71,22 @@ class IpComponent extends React.Component {
     }
     else {
       if (configurationsFetched.data.configuration.length > 0) {
-        conf = JSON.parse(configurationsFetched.data.configuration)
-        conf.forEach((item, i) => {
-          if (item.key === 'AWS Regions') {
-            let list = JSON.parse(item.value)
-            let list2 = []
-            list.forEach((item, i) => {
-              item[1] = 'aws-' + item[1]
-              list2.push(item)
-            });
-            this.setState({['AWS Regions']: list2})
-          }
-        });
-
+        try {
+          conf = JSON.parse(configurationsFetched.data.configuration)
+          conf.forEach((item, i) => {
+            if (item.key === 'AWS Regions') {
+              let list = JSON.parse(item.value)
+              let list2 = []
+              list.forEach((item, i) => {
+                item[1] = 'aws-' + item[1]
+                list2.push(item)
+              });
+              this.setState({['AWS Regions']: list2})
+            }
+          });
+        } catch (error) {
+          console.log(error)
+        }
       }
       await this.setState({loading: false})
     }
