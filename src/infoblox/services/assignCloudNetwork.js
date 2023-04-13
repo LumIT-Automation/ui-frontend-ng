@@ -7,12 +7,11 @@ import Error from '../error'
 
 import {
   assignCloudNetworkError,
-  ipModifyError,
 } from '../store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space} from 'antd'
+import { Modal, Row, Col, Divider, Input, Radio, Select, Button, Spin, Alert, Result } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -25,16 +24,22 @@ class IpComponent extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      errors: {},
+      providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
       request: {
-        ip: ''
+        provider: '',
+        region: '',
+        ['account ID']: '',
+        ['account name']: '',
+        ['reference']: '',
       },
-      ipDetailsResponse: [],
-      ipModifyResponse: []
+      errors: {},
     };
   }
 
   componentDidMount() {
+    if (!this.props.configurationsError) {
+      this.main()
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -51,6 +56,51 @@ class IpComponent extends React.Component {
     this.setState({visible: true})
   }
 
+  main = async () => {
+    await this.setState({loading: true})
+    let conf = []
+    let configurationsFetched = await this.configurationGet()
+    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
+      this.props.dispatch(configurationsError(configurationsFetched))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      if (configurationsFetched.data.configuration.length > 0) {
+        conf = JSON.parse(configurationsFetched.data.configuration)
+        conf.forEach((item, i) => {
+          if (item.key === 'AWS Regions') {
+            let list = JSON.parse(item.value)
+            let list2 = []
+            list.forEach((item, i) => {
+              item[1] = 'aws-' + item[1]
+              list2.push(item)
+            });
+            this.setState({['AWS Regions']: list2})
+          }
+        });
+
+      }
+      await this.setState({loading: false})
+    }
+  }
+
+  configurationGet = async () => {
+    let r
+
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR('checkpoint/configuration/global/', this.props.token)
+    return r
+  }
+
   set = async (e, key) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request[key] = e
@@ -62,40 +112,19 @@ class IpComponent extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let validators = new Validators()
 
-    for (const key in request) {
-      if (key === 'ip') {
-        if (validators.ipv4(request[key])) {
-          delete errors[`${key}Error`]
-          this.setState({errors: errors})
-        }
-        else {
-          errors[`${key}Error`] = true
-          this.setState({errors: errors})
-        }
+    for (const [key, value] of Object.entries(request)) {
+      if (request.provider !== 'AWS' && key === 'region') {
+        delete errors[`${key}Error`]
+        this.setState({errors: errors})
+        continue
       }
-      if (key === 'macAddress') {
-        if (this.state.request.macAddress === '' || this.state.request.macAddress === undefined) {
-          request.macAddress = '00:00:00:00:00:00'
-          this.setState({request: request})
-        }
-        if (!validators.macAddress(request.macAddress)) {
-          errors.macAddressError = true
-          this.setState({errors: errors})
-        }
-        else {
-          delete errors.macAddressError
-          this.setState({errors: errors})
-        }
+      if (value) {
+        delete errors[`${key}Error`]
+        this.setState({errors: errors})
       }
-      if (key === 'serverName') {
-        if (!request.serverName) {
-          errors.serverNameError = true
-          this.setState({errors: errors})
-        }
-        else {
-          delete errors.serverNameError
-          this.setState({errors: errors})
-        }
+      else {
+        errors[`${key}Error`] = true
+        this.setState({errors: errors})
       }
     }
     return errors
@@ -105,97 +134,80 @@ class IpComponent extends React.Component {
     await this.validationChecks()
 
     if (Object.keys(this.state.errors).length === 0) {
-      if (action === 'ip details') {
-        this.ipDetail()
-      }
-      if (action === 'ip modify') {
-        this.ipModify()
-      }
+      this.assignCloudNetwork()
     }
   }
 
-  ipDetail = async () => {
-    this.setState({ipRequestLoading: true})
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let rest = new Rest(
-      "GET",
-      resp => {
-        let r = JSON.parse(JSON.stringify(resp.data))
-        if (this.props.service === 'ip modify') {
-          if (r.extattrs && r.extattrs['Name Server']) {
-            r.serverName = r.extattrs['Name Server'].value
-          }
-          r.macAddress = r.mac_address
-
-          request.serverName = r.serverName
-          request.macAddress = r.macAddress
-          request.status = r.status
-
-        }
-        if (r.objects && r.objects[0] && r.objects[0].options) {
-          r.objects[0].options.forEach((item, i) => {
-            if (item.num === 12) {
-              r.option12 = item.value
-            }
-          });
-
-        }
-        let list = []
-        list.push(r)
-
-
-        this.setState({ipDetailsResponse: list, request: request})
-      },
-      error => {
-        this.props.dispatch(ipDetailError(error))
-      }
-    )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
-    this.setState({ipRequestLoading: false})
-  }
-
-  ipModify = async () => {
+  assignCloudNetwork = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let b = {}
+
     b.data = {
-      "mac": `${request.macAddress}`,
-      "extattrs": {
-          "Name Server": {
-              "value": `${request.serverName}`
+      "provider": request.provider,
+      "network_data": {
+        "network": "next-available",
+        "comment": "a",
+        "extattrs": {
+          "Account ID": {
+            "value": request['account ID']
+          },
+          "Account Name": {
+            "value": request['account name']
+          },
+          "Reference": {
+            "value": request['reference']
           }
-      },
+        }
+      }
     }
 
-    this.setState({ipModifyLoading: true})
+    if (request.provider === 'AWS') {
+      b.data.region = request.region
+    }
+
+    this.setState({loading: true})
 
     let rest = new Rest(
-      "PATCH",
+      "PUT",
       resp => {
-        this.setState({ipModifyLoading: false})
-        this.ipDetail()
+        this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
+        this.props.dispatch(assignCloudNetworkError(error))
+        this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${request.ip}/`, this.props.token, b )
+    await rest.doXHR(`infoblox/${this.props.asset.id}/assign-cloud-network/`, this.props.token, b )
+  }
+
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
-      request: {ip: ''},
-      ipDetailsResponse: [],
+      request: {
+        provider: '',
+        region: '',
+        ['account ID']: '',
+        ['account name']: '',
+        ['reference']: '',
+      },
       errors: {}
     })
   }
 
 
   render() {
+    console.log(this.state.request)
+    console.log(this.state.errors)
 
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {
+
         case 'input':
           return (
             <Input
@@ -212,110 +224,74 @@ class IpComponent extends React.Component {
           )
           break;
 
+        case 'radio':
+          return (
+            <Radio.Group
+              onChange={event => this.set(event.target.value, key)}
+              defaultValue={key === 'environment' ? 'AzureCloud' : null}
+              value={this.state.request[`${key}`]}
+              style={this.state.errors[`${key}Error`] ?
+                {border: `1px solid red`}
+              :
+                {}
+              }
+            >
+              <React.Fragment>
+                {this.state[`${choices}`].map((n, i) => {
+                  return (
+                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
+                  )
+                })
+                }
+              </React.Fragment>
+          </Radio.Group>
+          )
+          break;
+
+        case 'select':
+          return (
+            <Select
+              value={this.state.request[`${key}`]}
+              showSearch
+              style=
+              { this.state.errors[`${key}Error`] ?
+                {width: "100%", border: `1px solid red`}
+              :
+                {width: "100%"}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => this.set(event, key)}
+            >
+              <React.Fragment>
+              { choices === 'AWS Regions' ?
+                this.state['AWS Regions'].map((v,i) => {
+                  let str = `${v[0].toString()} - ${v[1].toString()}`
+                  return (
+                    <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                  )
+                })
+              :
+                this.state[`${choices}`].map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                  )
+                })
+              }
+              </React.Fragment>
+            </Select>
+          )
+
         default:
 
       }
 
     }
-
-    const columns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {this.state.ipModifyLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'IP address',
-        align: 'center',
-        dataIndex: 'ip_address',
-        key: 'ip_address',
-      },
-      this.props.service === 'ip details' ?
-        {
-          title: 'Name Server',
-          align: 'center',
-          dataIndex: ['extattrs', 'Name Server', 'value'],
-          key: 'nameServer',
-        }
-      :
-        {
-          title: 'Name Server',
-          align: 'center',
-          dataIndex: ['extattrs', 'Name Server', 'value'],
-          key: 'nameServer',
-          render: (name, obj)  => (
-            <React.Fragment>
-              {createElement('input', 'serverName', '', obj, 'ip modify')}
-            </React.Fragment>
-          ),
-        },
-      this.props.service === 'ip details' ?
-        {
-          title: 'Mac address',
-          align: 'center',
-          dataIndex: 'mac_address',
-          key: 'mac_address',
-        }
-      :
-        {
-          title: 'Mac address',
-          align: 'center',
-          dataIndex: 'mac_address',
-          key: 'mac_address',
-          render: (name, obj)  => (
-            <React.Fragment>
-              {createElement('input', 'macAddress', '', obj, 'ip modify')}
-            </React.Fragment>
-          ),
-        },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-      },
-      {
-        title: 'Gateway',
-        align: 'center',
-        dataIndex: ['extattrs', 'Gateway', 'value'],
-        key: 'gateway',
-      },
-      {
-        title: 'Mask',
-        align: 'center',
-        dataIndex: ['extattrs', 'Mask', 'value'],
-        key: 'mask',
-      },
-      {
-        title: 'Record A',
-        align: 'center',
-        dataIndex: 'names',
-        key: 'recordA',
-      },
-      {
-        title: 'Option 12 (DHCP)',
-        align: 'center',
-        dataIndex: 'option12',
-        key: 'option12',
-        render: (name, obj)  => (
-          <React.Fragment>
-            {obj.option12 ? obj.option12 : null}
-          </React.Fragment>
-        ),
-      },
-      {
-        title: 'Reference',
-        align: 'center',
-        dataIndex: ['extattrs', 'Reference', 'value'],
-        key: 'reference',
-      }
-    ];
 
     return (
       <React.Fragment>
@@ -339,38 +315,85 @@ class IpComponent extends React.Component {
 
           { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
-              <Row>
-                <Col offset={6} span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IP address:</p>
-                </Col>
-                <Col span={15}>
-                { this.state.ipRequestLoading ?
-                  <Spin indicator={spinIcon} style={{margin: 'auto 10%'}}/>
-                :
+              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+              { !this.state.loading && this.state.response &&
+                <Result
+                   status="success"
+                   title="Asset Modified"
+                 />
+              }
+              { !this.state.loading && !this.state.response &&
+              <React.Fragment>
+                <Row>
+                  <Col offset={6} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
+                  </Col>
+                  <Col span={8}>
+                    {createElement('radio', 'provider', 'providers')}
+                  </Col>
+                </Row>
+                <br/>
+
+                { this.state.request.provider === 'AWS' ?
                   <React.Fragment>
                     <Row>
+                      <Col offset={6} span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Region:</p>
+                      </Col>
                       <Col span={8}>
-                        {createElement('input', 'ip', '', '', 'ip details')}
+                        {createElement('select', 'region', 'AWS Regions')}
                       </Col>
                     </Row>
                     <br/>
                   </React.Fragment>
+                :
+                  null
                 }
-                </Col>
-              </Row>
-              <Row>
-                <Col offset={8} span={16}>
-                  <Button
-                    type="primary"
-                    onClick={() => this.validation('ip details')}
-                  >
-                    ip details
-                  </Button>
-                </Col>
-              </Row>
 
+                <Row>
+                  <Col offset={6} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                  </Col>
+                  <Col span={8}>
+                    {createElement('input', 'account ID')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={6} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                  </Col>
+                  <Col span={8}>
+                    {createElement('input', 'account name')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={6} span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Reference:</p>
+                  </Col>
+                  <Col span={8}>
+                    {createElement('input', 'reference')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={8} span={16}>
+                    <Button
+                      type="primary"
+                      onClick={() => this.validation()}
+                    >
+                      {this.props.service}
+                    </Button>
+                  </Col>
+                </Row>
+              </React.Fragment>
+              }
             </React.Fragment>
-            :
+          :
             <Alert message="Asset and Partition not set" type="error" />
           }
 
@@ -378,7 +401,7 @@ class IpComponent extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetwork'} /> : null }
+            { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetworkError'} /> : null }
           </React.Fragment>
         :
           null

@@ -86,7 +86,7 @@ class Manager extends React.Component {
 
         <Row>
           <Col span={4} offset={2}>
-            <AssignCloudNetwork service='ip details'/>
+            <AssignCloudNetwork service='assign cloud network'/>
           </Col>
         </Row>
 
