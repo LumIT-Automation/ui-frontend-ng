@@ -11,7 +11,6 @@ import {
 
 import IpComponent from './ipComponent'
 import RequestIp from './requestIp'
-import ModifyIp from './modifyIp'
 import ReleaseIp from './releaseIp'
 
 import { Row, Col } from 'antd';
@@ -73,8 +72,8 @@ class Manager extends React.Component {
             <RequestIp/>
           </Col>
 
-          <Col span={4} offset={2}>
-            <ModifyIp/>
+          <Col span={4} offset={2} >
+            <IpComponent service='ip modify'/>
           </Col>
 
           <Col span={4} offset={2}>

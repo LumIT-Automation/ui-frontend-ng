@@ -727,7 +727,7 @@ class RequestIp extends React.Component {
               :
                 <React.Fragment>
                   {obj.objectTypeError ?
-                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%', border: `1px solid red` }} onChange={e => this.setObjectType(e, obj.id)}>
+                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '150px', border: `1px solid red` }} onChange={e => this.setObjectType(e, obj.id)}>
                       { obj.objectTypes ?
                         obj.objectTypes.map((n, i) => {
                         return (
@@ -739,7 +739,7 @@ class RequestIp extends React.Component {
                       }
                     </Select>
                   :
-                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '100%' }} onChange={e => this.setObjectType(e, obj.id)}>
+                    <Select defaultValue={obj.objectType} key={obj.id} style={{ width: '150px' }} onChange={e => this.setObjectType(e, obj.id)}>
                       { obj.objectTypes ?
                         obj.objectTypes.map((n, i) => {
                         return (
