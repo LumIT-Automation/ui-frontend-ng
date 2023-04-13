@@ -9,6 +9,10 @@ import {
   assignCloudNetworkError,
 } from '../store'
 
+import {
+  configurationsError,
+} from '../../checkpoint/error'
+
 import AssetSelector from '../../concerto/assetSelector'
 
 import { Modal, Row, Col, Divider, Input, Radio, Select, Button, Spin, Alert, Result } from 'antd'
@@ -146,7 +150,7 @@ class IpComponent extends React.Component {
       "provider": request.provider,
       "network_data": {
         "network": "next-available",
-        "comment": "a",
+        "comment": '',
         "extattrs": {
           "Account ID": {
             "value": request['account ID']
