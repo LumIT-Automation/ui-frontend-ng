@@ -7,14 +7,16 @@ import ConcertoError from '../../concerto/error'
 import Validators from '../../_helpers/validators'
 
 import {
+  datacenterServersError,
   datacenterQuerysFetch,
   datacenterQueryAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox, Divider } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const datacenterServerLoading = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
@@ -25,6 +27,11 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      datacenterServers: [],
+      defaultCheckedList: [],
+      checkedList: [],
+      indeterminate: true,
+      checkAll: false,
       'key-types': ['predefined', 'tag'],
       'predefined-keys': ['type-in-data-center', 'name-in-data-center', 'ip-address'],
       'tag-keys': ['tag'],
@@ -62,9 +69,29 @@ class Add extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    this.datacenterServersGet()
   }
 
-  //SETTERS
+  datacenterServersGet = async () => {
+    this.setState({datacenterServersLoading: true})
+    let rest = new Rest(
+      "GET",
+      resp => {
+        console.log(resp)
+        let list = []
+        resp.data.items.forEach((item, i) => {
+          list.push(item.name)
+        });
+        this.setState({datacenterServers: list, datacenterServersLoading: false})
+      },
+      error => {
+        this.setState({datacenterServersLoading: false})
+        this.props.dispatch(datacenterServersError(error))
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/datacenter-servers/?local`, this.props.token)
+
+  }
 
   set = async (e, key) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -72,7 +99,6 @@ class Add extends React.Component {
     await this.setState({request: request})
     console.log(this.state.request)
   }
-
   //VALIDATION
   validationCheck = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -117,6 +143,15 @@ class Add extends React.Component {
       }
     }
 
+    if (!request['tags']) {
+      errors['tagsError'] = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors['tagsError']
+      await this.setState({errors: errors})
+    }
+
     if (!request['details-level']) {
       errors['details-levelError'] = true
       await this.setState({errors: errors})
@@ -141,15 +176,21 @@ class Add extends React.Component {
   //DISPOSAL ACTION
   datacenterQueryAdd = async () => {
     let request = Object.assign({}, this.state.request)
-    let list = []
+    let tags = []
+    let values = []
     let l = []
 
     try {
       l = request.tags.split(',')
-
       l.forEach((item, i) => {
-        list.push(item)
+        tags.push(item.trim())
       });
+
+      l = request.values.split(',')
+      l.forEach((item, i) => {
+        values.push(item.trim())
+      });
+
     }
     catch (error) {
       console.log(error)
@@ -161,15 +202,21 @@ class Add extends React.Component {
       "query-rules": {
         "key-type": request['key-type'],
         "key": request.key,
-        "values": list
+        "values": values
       },
-      "data-centers": 'All',
-      "tags": list,
+
+      "tags": tags,
       "color": "orange",
       "comments": request.comments,
       "details-level": request['details-level'],
       "ignore-warnings": true,
       "ignore-errors": false
+    }
+
+    if (this.state.checkedList.length === 0) {
+      b.data["data-centers"] = 'All'
+    } else {
+      b.data["data-centers"] = this.state.checkedList
     }
 
     console.log(b)
@@ -206,8 +253,21 @@ class Add extends React.Component {
 
   render() {
     console.log(this.state.errors)
+    console.log(this.state.checkedList)
 
-    let createComponent = (component, key, choices) => {
+    const onChange = (list) => {
+      this.setState({checkedList: list});
+      this.setState({indeterminate: (!!list.length && list.length < this.state.datacenterServers.length)} )
+      this.setState({checkAll: list.length === this.state.datacenterServers.length});
+    };
+
+    const onCheckAllChange = (e) => {
+      this.setState({checkedList : (e.target.checked ? this.state.datacenterServers : []) })
+      this.setState({indeterminate: false})
+      this.setState({checkAll: e.target.checked})
+    };
+
+    let createElement = (component, key, choices) => {
 
       switch (component) {
         case 'input':
@@ -230,6 +290,18 @@ class Add extends React.Component {
               checked={this.state.request[`${key}`]}
               onChange={event => this.set(event.target.checked, key)}
             />
+          )
+          break;
+
+        case 'checkboxGroup':
+          return (
+            <React.Fragment>
+              <Checkbox indeterminate={this.state.indeterminate} onChange={onCheckAllChange} checked={this.state.checkAll}>
+                Check all
+              </Checkbox>
+              <Divider />
+              <Checkbox.Group options={this.state.datacenterServers} value={this.state.checkedList} onChange={onChange} />
+            </React.Fragment>
           )
           break;
 
@@ -261,8 +333,8 @@ class Add extends React.Component {
             <Input.TextArea
               rows={7}
               placeholder={
-              (key === 'tags') ? "Insert your tags's list. Example: tag1, tag2, ..., tagN" :
-              (key === "values") ? "The value(s) of the Data Center property to match the Query Rule. Values are case-insensitive. There is an 'OR' operation between multiple values. For key-type 'predefined' and key 'ip-address', the values must be an IPv4 or IPv6 address. For key-type 'tag', the values must be the Data Center tag values" :
+              (key === 'tags') ? "Insert your tags' list, each one comma separated. \nExample: tag1, tag2, ..., tagN" :
+              (key === "values") ? "The value(s) of the Data Center property to match the Query Rule. Values are case-insensitive. There is an 'OR' operation between multiple values. \n\nFor key-type 'predefined' and key 'ip-address', the values must be an IPv4 or IPv6 address. \nFor key-type 'tag', the values must be the Data Center tag values. \n\nInsert your values' list, each one comma separated. \nExample: val1, val2, ..., valN" :
               ""
               }
               value={this.state.request[`${key}`]}
@@ -351,7 +423,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('input', 'name')}
+                  {createElement('input', 'name')}
                 </Col>
               </Row>
               <br/>
@@ -361,7 +433,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key Type:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('radio', 'key-type', 'key-types')}
+                  {createElement('radio', 'key-type', 'key-types')}
                 </Col>
               </Row>
               <br/>
@@ -373,7 +445,7 @@ class Add extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('radio', 'key', 'predefined-keys')}
+                      {createElement('radio', 'key', 'predefined-keys')}
                     </Col>
                   </Row>
                   <br/>
@@ -382,7 +454,7 @@ class Add extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('textArea', 'values')}
+                      {createElement('textArea', 'values')}
                     </Col>
                   </Row>
                   <br/>
@@ -398,7 +470,7 @@ class Add extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('radio', 'key', 'tag-keys')}
+                      {createElement('radio', 'key', 'tag-keys')}
                     </Col>
                   </Row>
                   <br/>
@@ -407,7 +479,7 @@ class Add extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
                     </Col>
                     <Col span={7}>
-                      {createComponent('textArea', 'values')}
+                      {createElement('textArea', 'values')}
                     </Col>
                   </Row>
                   <br/>
@@ -418,10 +490,27 @@ class Add extends React.Component {
 
               <Row>
                 <Col offset={2} span={6}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenters:</p>
+                </Col>
+                {this.state.datacenterServersLoading ?
+                  <Col span={8}>
+                    <Spin indicator={datacenterServerLoading} style={{margin: 'auto 48%'}}/>
+                  </Col>
+                :
+                <Col span={8}>
+                  {createElement('checkboxGroup')}
+                </Col>
+                }
+
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={2} span={6}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('textArea', 'tags')}
+                  {createElement('textArea', 'tags')}
                 </Col>
               </Row>
               <br/>
@@ -431,7 +520,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('textArea', 'comments')}
+                  {createElement('textArea', 'comments')}
                 </Col>
               </Row>
               <br/>
@@ -441,7 +530,7 @@ class Add extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
                 </Col>
                 <Col span={8}>
-                  {createComponent('radio', 'details-level', 'details-levels')}
+                  {createElement('radio', 'details-level', 'details-levels')}
                 </Col>
               </Row>
               <br/>
@@ -461,6 +550,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
+            { this.props.datacenterServersError ? <Error component={'add datacenterQuery'} error={[this.props.datacenterServersError]} visible={true} type={'datacenterServersError'} /> : null }
             { this.props.datacenterQueryAddError ? <Error component={'add datacenterQuery'} error={[this.props.datacenterQueryAddError]} visible={true} type={'datacenterQueryAddError'} /> : null }
           </React.Fragment>
         :
@@ -477,5 +567,6 @@ export default connect((state) => ({
   token: state.authentication.token,
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
+  datacenterServersError: state.checkpoint.datacenterServersError,
   datacenterQueryAddError: state.checkpoint.datacenterQueryAddError,
 }))(Add);

@@ -320,7 +320,7 @@ class Error extends Component {
       {
         title: 'REASON',
         align: 'left',
-        width: 300,
+        width: 400,
         dataIndex: 'reason',
         key: 'reason',
       },
