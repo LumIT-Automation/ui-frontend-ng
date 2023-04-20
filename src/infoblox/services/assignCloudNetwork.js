@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../error'
+import ConcertoError from '../../concerto/error'
 
 import {
   assignCloudNetworkError,
@@ -11,7 +12,7 @@ import {
 
 import {
   configurationsError,
-} from '../../checkpoint/error'
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -29,21 +30,20 @@ class IpComponent extends React.Component {
     this.state = {
       visible: false,
       providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
+      ['AWS Regions']: [],
       request: {
         provider: '',
         region: '',
         ['account ID']: '',
         ['account name']: '',
         ['reference']: '',
+        comment: '',
       },
       errors: {},
     };
   }
 
   componentDidMount() {
-    if (!this.props.configurationsError) {
-      this.main()
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -58,37 +58,40 @@ class IpComponent extends React.Component {
 
   details = () => {
     this.setState({visible: true})
+    if (!this.props.configurationsError) {
+      this.main()
+    }
   }
 
   main = async () => {
     await this.setState({loading: true})
     let conf = []
     let configurationsFetched = await this.configurationGet()
-    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-      this.props.dispatch(configurationsError(configurationsFetched))
-      await this.setState({loading: false})
-      return
-    }
-    else {
-      if (configurationsFetched.data.configuration.length > 0) {
-        try {
+
+    try {
+      if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
+        this.props.dispatch(configurationsError(configurationsFetched))
+        await this.setState({loading: false})
+      }
+      else {
+        if (configurationsFetched.data.configuration.length > 0) {
           conf = JSON.parse(configurationsFetched.data.configuration)
           conf.forEach((item, i) => {
             if (item.key === 'AWS Regions') {
               let list = JSON.parse(item.value)
               let list2 = []
               list.forEach((item, i) => {
-                item[1] = 'aws-' + item[1]
                 list2.push(item)
               });
               this.setState({['AWS Regions']: list2})
             }
           });
-        } catch (error) {
-          console.log(error)
         }
+        await this.setState({loading: false})
       }
+    } catch (error) {
       await this.setState({loading: false})
+      console.log(error)
     }
   }
 
@@ -104,7 +107,7 @@ class IpComponent extends React.Component {
         r = error
       }
     )
-    await rest.doXHR('checkpoint/configuration/global/', this.props.token)
+    await rest.doXHR('infoblox/configuration/global/', this.props.token)
     return r
   }
 
@@ -153,7 +156,7 @@ class IpComponent extends React.Component {
       "provider": request.provider,
       "network_data": {
         "network": "next-available",
-        "comment": '',
+        "comment": request.comment,
         "extattrs": {
           "Account ID": {
             "value": request['account ID']
@@ -169,7 +172,7 @@ class IpComponent extends React.Component {
     }
 
     if (request.provider === 'AWS') {
-      b.data.region = request.region
+      b.data.region = `aws-${request.region}`
     }
 
     this.setState({loading: true})
@@ -252,6 +255,22 @@ class IpComponent extends React.Component {
                 }
               </React.Fragment>
           </Radio.Group>
+          )
+          break;
+
+        case 'textArea':
+          return (
+            <Input.TextArea
+              rows={7}
+              value={this.state.request[`${key}`]}
+              onChange={event => this.set(event.target.value, key)}
+              style=
+              { this.state.errors[`${key}Error`] ?
+                {borderColor: `red`}
+              :
+                {}
+              }
+            />
           )
           break;
 
@@ -378,11 +397,21 @@ class IpComponent extends React.Component {
                 <br/>
 
                 <Row>
-                  <Col offset={6} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Reference:</p>
+                  <Col offset={5} span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>IT Service Manager:</p>
                   </Col>
                   <Col span={8}>
                     {createElement('input', 'reference')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={5} span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>comment:</p>
+                  </Col>
+                  <Col span={8}>
+                    {createElement('textArea', 'comment')}
                   </Col>
                 </Row>
                 <br/>
@@ -408,6 +437,7 @@ class IpComponent extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
+            { this.props.configurationsError ? <ConcertoError component={'assignCloudNetwork'} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
             { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetworkError'} /> : null }
           </React.Fragment>
         :
@@ -425,5 +455,6 @@ export default connect((state) => ({
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 
+  configurationsError: state.concerto.configurationsError,
   assignCloudNetworkError: state.infoblox.assignCloudNetworkError,
 }))(IpComponent);

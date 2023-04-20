@@ -246,6 +246,17 @@ class Manager extends React.Component {
           this.setState({errors: errors})
         }
 
+        if (this.props.vendor === 'infoblox') {
+          if (!conf.value) {
+            errors[conf.id].valueError = true
+            this.setState({errors: errors})
+          }
+          else {
+            delete errors[conf.id].valueError
+            this.setState({errors: errors})
+          }
+        }
+
         if (this.props.vendor === 'checkpoint') {
           if (!conf.value) {
             errors[conf.id].valueError = true
@@ -306,6 +317,9 @@ class Manager extends React.Component {
 
     let returnCol = () => {
       switch (this.props.vendor) {
+        case 'infoblox':
+          return infobloxColumns
+          break;
         case 'checkpoint':
           return checkpointColumns
           break;
@@ -316,6 +330,49 @@ class Manager extends React.Component {
 
       }
     }
+
+    const infobloxColumns = [
+      {
+        title: 'Key',
+        align: 'center',
+        dataIndex: 'key',
+        key: 'key',
+        render: (name, obj)  => (
+          <Input
+            defaultValue={obj.key}
+            style={(this.state.errors[obj.id] && this.state.errors[obj.id].keyError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
+            onBlur={e => this.keySet(e.target.value, obj.id)}
+          />
+        ),
+      },
+      {
+        title: 'Value',
+        align: 'center',
+        width: 500,
+        dataIndex: 'value',
+        key: 'value',
+        render: (name, obj)  => (
+          <Input.TextArea
+            defaultValue={obj.value}
+            rows={12}
+            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? {borderColor: 'red'} : {} }
+            onBlur={e => this.valueSet(e.target.value, obj.id)}
+          />
+        ),
+      },
+      {
+        title: 'Remove record',
+        align: 'center',
+        dataIndex: 'remove',
+        width: 150,
+        key: 'remove',
+        render: (name, obj)  => (
+          <Button type="danger" onClick={() => this.removeRecord(obj)} shape='round'>
+            -
+          </Button>
+        ),
+      },
+    ];
 
     const checkpointColumns = [
       {
@@ -359,6 +416,7 @@ class Manager extends React.Component {
         ),
       },
     ];
+
     const f5Columns = [
       {
         title: 'Key',
@@ -410,9 +468,21 @@ class Manager extends React.Component {
         :
           <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.configurationsRefresh()} shape='round'><ReloadOutlined/></Button>
-            <br/>
-            <Button type="primary" onClick={() => this.addRecord()} shape='round'> + </Button>
+            <Space wrap>
+              <Button
+                onClick={() => this.configurationsRefresh()}
+                shape='round'
+              >
+                <ReloadOutlined/>
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => this.addRecord()}
+                shape='round'
+              >
+                +
+              </Button>
+            </Space>
 
             <Table
               columns={returnCol()}

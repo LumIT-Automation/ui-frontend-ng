@@ -49,6 +49,12 @@ class Configurations extends React.Component {
           value={this.state.vendor}
           style={{padding: 15, paddingTop: 40 }}
         >
+          { this.authorizators(this.props.authorizationsInfoblox) ?
+            <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+          :
+            null
+          }
+
           { this.authorizators(this.props.authorizationsCheckpoint) ?
             <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
           :
@@ -63,7 +69,7 @@ class Configurations extends React.Component {
         </Radio.Group>
 
         <Divider/>
-        
+
         {
           this.state.vendor ?
             <Configuration vendor={this.state.vendor}/>
