@@ -29,7 +29,17 @@ class Add extends React.Component {
       visible: false,
       vendor: 'f5',
       assets: [],
-      request: {},
+      request: {
+        address: '',
+        fqdn: '',
+        baseurl: '',
+        datacenter: '',
+        environment: '',
+        position: '',
+        tlsverify: '',
+        username: '',
+        password: ''
+      },
       tlsverifyChoices: ['yes', 'no'],
       errors: {}
     };
@@ -98,87 +108,30 @@ class Add extends React.Component {
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    if (!request.fqdn || !validators.fqdn(request.fqdn)) {
-        errors.fqdnError = true
-        this.setState({errors: errors})
+    for (const [key, value] of Object.entries(request)) {
+      if (key === 'assetDrId') {
+        continue
       }
-    else {
-      delete errors.fqdnError
-      this.setState({errors: errors})
-    }
-
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      this.setState({errors: errors})
+      else {
+        if (value) {
+          if (key === 'fqdn' && !validators.fqdn(request.fqdn)) {
+            errors[`${key}Error`] = true
+            this.setState({errors: errors})
+          }
+          else if (key === 'address' && !validators.ipv4(request.address)) {
+            errors[`${key}Error`] = true
+            this.setState({errors: errors})
+          }
+          else {
+            delete errors[`${key}Error`]
+            this.setState({errors: errors})
+          }
+        }
+        else {
+          errors[`${key}Error`] = true
+          this.setState({errors: errors})
+        }
       }
-    else {
-      delete errors.addressError
-      this.setState({errors: errors})
-    }
-
-
-
-    if (!request.baseurl) {
-      errors.baseurlError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.baseurlError
-      this.setState({errors: errors})
-    }
-
-    if (!request.datacenter) {
-      errors.datacenterError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.datacenterError
-      this.setState({errors: errors})
-    }
-
-    if (!request.environment) {
-      errors.environmentError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.environmentError
-      this.setState({errors: errors})
-    }
-
-    if (!request.position) {
-      errors.positionError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.positionError
-      this.setState({errors: errors})
-    }
-
-    if (!request.tlsverify) {
-      errors.tlsverifyError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.tlsverifyError
-      this.setState({errors: errors})
-    }
-
-    if (!request.username) {
-      errors.usernameError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.usernameError
-      this.setState({errors: errors})
-    }
-
-    if (!request.password) {
-      errors.passwordError = true
-      this.setState({errors: errors})
-      }
-    else {
-      delete errors.passwordError
-      this.setState({errors: errors})
     }
 
     return errors
@@ -186,7 +139,6 @@ class Add extends React.Component {
 
   validation = async () => {
     await this.validationCheck()
-
     if (Object.keys(this.state.errors).length === 0) {
       this.assetAddHandler()
     }
