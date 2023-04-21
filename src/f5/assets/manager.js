@@ -22,6 +22,7 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      vendor: 'f5'
     };
   }
 
@@ -58,6 +59,18 @@ class Manager extends React.Component {
       return
     }
     else {
+      let list = []
+      fetchedAssets.data.items.forEach((item, i) => {
+        if (item.assetsDr && item.assetsDr.length > 0) {
+          item.assetsDr.forEach((a, i) => {
+            list.push(a.asset.fqdn)
+          });
+          item.assetsDrList = list
+        }
+      });
+
+      console.log(fetchedAssets.data.items)
+
       this.props.dispatch(assets(fetchedAssets))
     }
     this.props.dispatch(assetsLoading(false))
@@ -74,7 +87,7 @@ class Manager extends React.Component {
         r = error
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR(`${this.state.vendor}/assets/?includeDr`, this.props.token)
     return r
   }
 
@@ -85,7 +98,7 @@ class Manager extends React.Component {
         <br/>
         { this.props.authorizations && (this.props.authorizations.assets_post || this.props.authorizations.any) ?
           <React.Fragment>
-            <Add vendor='f5'/>
+            <Add vendor={this.state.vendor}/>
             <br/>
             <br/>
           </React.Fragment>

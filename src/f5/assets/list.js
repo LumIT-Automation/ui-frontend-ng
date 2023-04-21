@@ -116,6 +116,7 @@ class List extends React.Component {
 
 
   render() {
+    console.log(this.props.assets)
     const columns = [
       {
         title: 'FQDN',
@@ -158,6 +159,13 @@ class List extends React.Component {
         dataIndex: 'position',
         key: 'position',
         ...this.getColumnSearchProps('position'),
+      },
+      {
+        title: 'DR',
+        align: 'center',
+        dataIndex: 'assetsDrList',
+        key: 'assetsDrList',
+        ...this.getColumnSearchProps('assetsDrList'),
       },
       {
         title: 'Modify',

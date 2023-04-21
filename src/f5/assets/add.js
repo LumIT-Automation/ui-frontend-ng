@@ -50,7 +50,7 @@ class Add extends React.Component {
 
   details = async () => {
     await this.setState({visible: true})
-    if (this.state.vendor === 'f5') {
+    if (this.props.vendor === 'f5') {
       this.main()
     }
   }
@@ -80,7 +80,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.state.vendor}/assets/?includeDr`, this.props.token)
+    await rest.doXHR(`${this.props.vendor}/assets/?includeDr`, this.props.token)
     return r
   }
 
@@ -224,7 +224,7 @@ class Add extends React.Component {
       //return
     }
     else {
-      if (this.state.vendor === 'f5') {
+      if (this.props.vendor === 'f5') {
         if (this.state.request.assetDrId !== undefined) {
           await this.main()
 
@@ -271,7 +271,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/assets/`, this.props.token, b )
+    await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token, b )
     return r
   }
 
@@ -286,7 +286,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.state.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
 
     return r
   }
@@ -489,7 +489,7 @@ class Add extends React.Component {
             </Row>
             <br/>
 
-            { this.state.vendor === 'f5' ?
+            { this.props.vendor === 'f5' ?
               <React.Fragment>
                 <Row>
                   <Col offset={6} span={2}>
