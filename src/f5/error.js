@@ -27,6 +27,7 @@ import {
   assetAddError,
   assetModifyError,
   assetDeleteError,
+  drAddError,
 
   partitionsError,
 
@@ -183,6 +184,10 @@ class Error extends Component {
         case 'assetDeleteError':
           this.props.dispatch(assetDeleteError(null))
           break;
+        case 'drAddError':
+          this.props.dispatch(drAddError(null))
+          break;
+
 
         case 'partitionsError':
           this.props.dispatch(partitionsError(null))

@@ -111,9 +111,9 @@ class IpComponent extends React.Component {
     return r
   }
 
-  set = async (e, key) => {
+  set = async (value, key) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request[key] = e
+    request[key] = value
     await this.setState({request: request})
   }
 
@@ -140,7 +140,7 @@ class IpComponent extends React.Component {
     return errors
   }
 
-  validation = async(action) => {
+  validation = async (action) => {
     await this.validationChecks()
 
     if (Object.keys(this.state.errors).length === 0) {
@@ -408,7 +408,7 @@ class IpComponent extends React.Component {
 
                 <Row>
                   <Col offset={5} span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>comment:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comment:</p>
                   </Col>
                   <Col span={8}>
                     {createElement('textArea', 'comment')}
