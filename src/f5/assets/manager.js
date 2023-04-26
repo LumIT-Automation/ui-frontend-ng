@@ -67,10 +67,8 @@ class Manager extends React.Component {
           });
           item.assetsDrList = list
         }
+        list = []
       });
-
-      console.log(fetchedAssets.data.items)
-
       this.props.dispatch(assets(fetchedAssets))
     }
     this.props.dispatch(assetsLoading(false))
