@@ -27,7 +27,6 @@ class Add extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      vendor: 'f5',
       assets: [],
       request: {
         address: '',

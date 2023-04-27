@@ -21,8 +21,7 @@ class Delete extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      visible: false,
-      vendor: 'f5'
+      visible: false
     };
   }
 
@@ -55,7 +54,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`${this.state.vendor}/asset/${asset.id}/`, this.props.token )
+    await rest.doXHR(`${this.props.vendor}/asset/${asset.id}/`, this.props.token )
 
   }
 

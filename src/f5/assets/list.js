@@ -175,7 +175,7 @@ class List extends React.Component {
         render: (name, obj)  => (
           <Space size="small">
            { this.props.authorizations && (this.props.authorizations.asset_patch || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
+            <Modify name={name} obj={obj} vendor='f5'/>
             :
             '-'
           }
@@ -190,7 +190,7 @@ class List extends React.Component {
         render: (name, obj)  => (
           <Space size="small">
             { this.props.authorizations && (this.props.authorizations.asset_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
+            <Delete name={name} obj={obj} vendor='f5'/>
             :
             '-'
           }

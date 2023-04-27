@@ -28,6 +28,8 @@ import {
   assetModifyError,
   assetDeleteError,
   drAddError,
+  drModifyError,
+  drDeleteError,
 
   partitionsError,
 
@@ -186,6 +188,12 @@ class Error extends Component {
           break;
         case 'drAddError':
           this.props.dispatch(drAddError(null))
+          break;
+        case 'drModifyError':
+          this.props.dispatch(drModifyError(null))
+          break;
+        case 'drDeleteError':
+          this.props.dispatch(drDeleteError(null))
           break;
 
 
