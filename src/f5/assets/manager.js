@@ -104,7 +104,7 @@ class Manager extends React.Component {
           null
         }
 
-        <List/>
+        <List vendor={this.state.vendor}/>
 
         { this.props.assetsError ? <Error component={'asset manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
 

@@ -199,12 +199,6 @@ class Modify extends React.Component {
           let list = JSON.parse(JSON.stringify(this.state.assets))
           let asset = list.find( a => a.fqdn === this.state.request.fqdn )
 
-          
-
-
-
-
-
           let b = {}
 
           b.data = {

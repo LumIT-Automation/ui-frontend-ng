@@ -1,12 +1,24 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Table, Input, Button, Space } from 'antd'
+import { Table, Input, Button, Space, Select, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'
-import { SearchOutlined } from '@ant-design/icons'
+import { LoadingOutlined, SearchOutlined, CloseCircleOutlined } from '@ant-design/icons'
+
+import Rest from '../../_helpers/Rest'
+import Error from '../error'
 
 import Modify from './modify'
 import Delete from './delete'
+
+import {
+  assetsFetch,
+  drAddError,
+  drModifyError,
+  drDeleteError
+} from '../store'
+
+const loadingIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
@@ -21,6 +33,10 @@ class List extends React.Component {
   }
 
   componentDidMount() {
+    if (this.props.assets) {
+      let assets = JSON.parse(JSON.stringify(this.props.assets))
+      this.setState({assets: assets})
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -114,9 +130,83 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  assetDr = async (drId, assetId) => {
+    let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let assetDr = assets.find( a => a.id === drId )
+    let asset = assets.find( a => a.id === assetId )
+
+    console.log('asset', asset)
+    console.log('assetDr', assetDr)
+
+    if (asset.assetsDr.length < 1) {
+      asset.assetDrLoading = true
+      await this.setState({assets: assets})
+      //await this.setState({loading: true})
+      let b = {}
+      b.data = {
+        "assetDrId": drId,
+        "enabled": true
+      }
+
+      let drAdd = await this.drAdd(assetId, b)
+      if (drAdd.status && drAdd.status !== 201 ) {
+        this.props.dispatch(drAddError(drAdd))
+        asset.assetDrLoading = false
+        await this.setState({assets: assets})
+      }
+      else {
+        asset.assetDrLoading = false
+        await this.setState({assets: assets})
+        this.props.dispatch(assetsFetch(true))
+      }
+    }
+
+    if (asset.assetsDr && asset.assetsDr[0] && asset.assetsDr[0].asset.id !== drId) {
+    //cambiato -> modify
+    }
+  }
+
+  drRemove = async (drId, assetId) => {
+    console.log('drId', drId)
+    console.log('assetId', assetId)
+  }
+
+
+  drAdd = async (id, b) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+
+    return r
+  }
+
+  drDelete = async (assetId, assetDrId, b) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetsdr/${assetDrId}/`, this.props.token, b )
+
+    return r
+  }
+
 
   render() {
-    console.log(this.props.assets)
+    console.log(this.state.assets)
     const columns = [
       {
         title: 'FQDN',
@@ -165,7 +255,32 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'assetsDrList',
         key: 'assetsDrList',
-        ...this.getColumnSearchProps('assetsDrList'),
+        //...this.getColumnSearchProps('assetsDrList'),
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.assetDrLoading ?
+              <Spin indicator={loadingIcon} style={{margin: 'auto auto'}}/>
+            :
+              <React.Fragment>
+                <Select
+                  value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
+                  key={obj.id}
+                  style={{ width: '150px'}}
+                  onChange={e => this.assetDr(e, obj.id)}
+                >
+                  { this.state.assets.map((v,i) => {
+                    let str = `${v.fqdn} - ${v.address}`
+                    return (
+                      <Select.Option key={i} value={v.id}>{str}</Select.Option>
+                    )
+                  })
+                  }
+                </Select>
+                <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={e => this.drRemove(e, obj.id)}/>
+              </React.Fragment>
+            }
+          </React.Fragment>
+        )
       },
       {
         title: 'Modify',
@@ -200,21 +315,33 @@ class List extends React.Component {
     ];
 
     return (
-      <Table
-        columns={columns}
-        dataSource={this.props.assets}
-        bordered
-        rowKey="id"
-        scroll={{x: 'auto'}}
-        pagination={{ pageSize: 10 }}
-        style={{marginBottom: 10}}
-      />
+      <React.Fragment>
+        <Table
+          columns={columns}
+          dataSource={this.state.assets}
+          bordered
+          rowKey="id"
+          scroll={{x: 'auto'}}
+          pagination={{ pageSize: 10 }}
+          style={{marginBottom: 10}}
+        />
+
+        { this.props.drAddError ? <Error component={'asset list f5'} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
+        { this.props.drModifyError ? <Error component={'asset list f5'} error={[this.props.drModifyError]} visible={true} type={'drModifyError'} /> : null }
+        { this.props.drDeleteError ? <Error component={'asset list f5'} error={[this.props.drDeleteError]} visible={true} type={'drDeleteError'} /> : null }
+
+      </React.Fragment>
     )
   }
 }
 
 
 export default connect((state) => ({
+  token: state.authentication.token,
   authorizations: state.authorizations.f5,
+
   assets: state.f5.assets,
+  drAddError: state.f5.drAddError,
+  drModifyError: state.f5.drAModifyError,
+  drDeleteError: state.f5.drDeleteError,
 }))(List);

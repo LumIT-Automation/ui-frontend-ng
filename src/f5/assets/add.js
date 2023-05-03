@@ -12,7 +12,6 @@ import {
   assetsFetch,
   assetsError,
   assetAddError,
-  drAddError
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -59,40 +58,7 @@ class Add extends React.Component {
 
   details = async () => {
     await this.setState({visible: true})
-    if (this.props.vendor === 'f5') {
-      this.main()
-    }
   }
-
-  main = async () => {
-    await this.setState({assetsLoading: true})
-
-    let fetchedAssets = await this.assetsGet()
-    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-      this.props.dispatch(assetsError(fetchedAssets))
-      await this.setState({assetsLoading: false})
-    }
-    else {
-      await this.setState({assets: fetchedAssets.data.items})
-    }
-    await this.setState({assetsLoading: false})
-  }
-
-  assetsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/assets/?includeDr`, this.props.token)
-    return r
-  }
-
 
   //SETTER
   set = async (value, key) => {
@@ -108,28 +74,23 @@ class Add extends React.Component {
     let validators = new Validators()
 
     for (const [key, value] of Object.entries(request)) {
-      if (key === 'assetDrId') {
-        continue
-      }
-      else {
-        if (value) {
-          if (key === 'fqdn' && !validators.fqdn(request.fqdn)) {
-            errors[`${key}Error`] = true
-            this.setState({errors: errors})
-          }
-          else if (key === 'address' && !validators.ipv4(request.address)) {
-            errors[`${key}Error`] = true
-            this.setState({errors: errors})
-          }
-          else {
-            delete errors[`${key}Error`]
-            this.setState({errors: errors})
-          }
-        }
-        else {
+      if (value) {
+        if (key === 'fqdn' && !validators.fqdn(request.fqdn)) {
           errors[`${key}Error`] = true
           this.setState({errors: errors})
         }
+        else if (key === 'address' && !validators.ipv4(request.address)) {
+          errors[`${key}Error`] = true
+          this.setState({errors: errors})
+        }
+        else {
+          delete errors[`${key}Error`]
+          this.setState({errors: errors})
+        }
+      }
+      else {
+        errors[`${key}Error`] = true
+        this.setState({errors: errors})
       }
     }
 
@@ -175,38 +136,8 @@ class Add extends React.Component {
       //return
     }
     else {
-      if (this.props.vendor === 'f5') {
-        if (this.state.request.assetDrId !== undefined) {
-          await this.main()
-
-          let list = JSON.parse(JSON.stringify(this.state.assets))
-          let asset = list.find( a => a.fqdn === this.state.request.fqdn )
-          let b = {}
-
-          b.data = {
-            "assetDrId": this.state.request.assetDrId,
-            "enabled": true
-          }
-
-          let drAdd = await this.drAdd(asset.id, b)
-          if (drAdd.status && drAdd.status !== 201 ) {
-            this.props.dispatch(drAddError(drAdd))
-            await this.setState({loading: false})
-          }
-          else {
-            await this.setState({loading: false, response: true})
-            this.response()
-          }
-        }
-        else {
-          await this.setState({loading: false, response: true})
-          this.response()
-        }
-      }
-      else {
-        await this.setState({loading: false, response: true})
-        this.response()
-      }
+      await this.setState({loading: false, response: true})
+      this.response()
     }
   }
 
@@ -225,25 +156,6 @@ class Add extends React.Component {
     await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token, b )
     return r
   }
-
-  drAdd = async (id, b) => {
-    let r
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
-
-    return r
-  }
-
-
-
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
@@ -440,27 +352,6 @@ class Add extends React.Component {
             </Row>
             <br/>
 
-            { this.props.vendor === 'f5' ?
-              <React.Fragment>
-                <Row>
-                  <Col offset={6} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DR:</p>
-                  </Col>
-                  <Col span={8}>
-                    {this.state.assetsLoading ?
-                      <Spin indicator={loadingIcon} style={{margin: 'auto 15%'}}/>
-                    :
-                      createElement('select', 'assetDrId', 'assets')
-                    }
-                  </Col>
-                </Row>
-                <br/>
-              </React.Fragment>
-            :
-              null
-            }
-
-
             <Row>
               <Col offset={6} span={2}>
                 <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Position:</p>
@@ -515,7 +406,6 @@ class Add extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.assetAddError ? <Error component={'asset add f5'} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
-            { this.props.drAddError ? <Error component={'asset add f5'} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -529,5 +419,4 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
  	assetAddError: state.f5.assetAddError,
-  drAddError: state.f5.drAddError,
 }))(Add);
