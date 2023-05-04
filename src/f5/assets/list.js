@@ -138,7 +138,7 @@ class List extends React.Component {
     console.log('asset', asset)
     console.log('assetDr', assetDr)
 
-    if (asset.assetsDr.length < 1) {
+    if (asset.assetsDr && asset.assetsDr.length < 1) {
       asset.assetDrLoading = true
       await this.setState({assets: assets})
       //await this.setState({loading: true})
@@ -160,17 +160,34 @@ class List extends React.Component {
         this.props.dispatch(assetsFetch(true))
       }
     }
+    else {
+      console.log('modify')
+    }
 
-    if (asset.assetsDr && asset.assetsDr[0] && asset.assetsDr[0].asset.id !== drId) {
-    //cambiato -> modify
+
+  }
+
+  drRemove = async (assetId) => {
+    let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let asset = assets.find( a => a.id === assetId )
+    if (asset.assetsDr) {
+      asset.assetDrLoading = true
+      await this.setState({assets: assets})
+      //await this.setState({loading: true})
+
+      let drDelete = await this.drDelete(asset.id, asset.assetsDr[0].asset.id)
+      if (drDelete.status && drDelete.status !== 200 ) {
+        this.props.dispatch(drDeleteError(drDelete))
+        asset.assetDrLoading = false
+        await this.setState({assets: assets})
+      }
+      else {
+        asset.assetDrLoading = false
+        await this.setState({assets: assets})
+        this.props.dispatch(assetsFetch(true))
+      }
     }
   }
-
-  drRemove = async (drId, assetId) => {
-    console.log('drId', drId)
-    console.log('assetId', assetId)
-  }
-
 
   drAdd = async (id, b) => {
     let r
@@ -184,11 +201,10 @@ class List extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
-
     return r
   }
 
-  drDelete = async (assetId, assetDrId, b) => {
+  drDelete = async (assetId, assetDrId) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -199,8 +215,7 @@ class List extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetsdr/${assetDrId}/`, this.props.token, b )
-
+    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetdr/${assetDrId}/`, this.props.token )
     return r
   }
 
@@ -255,7 +270,6 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'assetsDrList',
         key: 'assetsDrList',
-        //...this.getColumnSearchProps('assetsDrList'),
         render: (name, obj)  => (
           <React.Fragment>
             {obj.assetDrLoading ?
@@ -276,7 +290,7 @@ class List extends React.Component {
                   })
                   }
                 </Select>
-                <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={e => this.drRemove(e, obj.id)}/>
+                <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => this.drRemove(obj.id)}/>
               </React.Fragment>
             }
           </React.Fragment>
