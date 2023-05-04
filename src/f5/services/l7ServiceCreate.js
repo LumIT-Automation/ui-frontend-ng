@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -30,10 +30,11 @@ class CreateF5Service extends React.Component {
     super(props);
     this.state = {
       visible: false,
-      errors: {},
+      dr: false,
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypes: ['tcp-half-open', 'http', 'https'],
-      request: {}
+      request: {},
+      errors: {},
     };
   }
 
@@ -164,6 +165,10 @@ class CreateF5Service extends React.Component {
     request.serviceName = e.target.value
     this.setState({request: request})
   }
+
+  writeDrSet = (e) => {
+    this.setState({dr: e})
+  };
 
   routeDomainSet = id => {
     let request = JSON.parse(JSON.stringify(this.state.request))
@@ -610,9 +615,13 @@ class CreateF5Service extends React.Component {
       )
     }
 
-
-
     this.setState({loading: true})
+
+    let url = `f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`
+
+    if (this.state.dr) {
+      url = `f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/?drReplica=1`
+    }
 
     let rest = new Rest(
       "POST",
@@ -625,8 +634,7 @@ class CreateF5Service extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/virtualservers/`, this.props.token, b )
-
+    await rest.doXHR(url, this.props.token, b )
   }
 
   response = () => {
@@ -691,6 +699,19 @@ class CreateF5Service extends React.Component {
                     :
                       <Input defaultValue={this.state.request.serviceName} style={{width: 450}} name="serviceName" id='serviceName' onChange={e => this.serviceNameSet(e)} />
                     }
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={8} span={6}>
+                    <Checkbox
+                      onChange={e => this.writeDrSet(e.target.checked)}
+                      disabled={(this.props.asset.assetsDr && this.props.asset.assetsDr.length > 0) ? false : true}
+                      value={this.state.dr}
+                    >
+                      Write in dr
+                    </Checkbox>
                   </Col>
                 </Row>
                 <br/>

@@ -264,7 +264,7 @@ class Error extends Component {
         onOk={null}
         //onCancel={() => this.props.dispatch(setError(null))}
         onCancel={this.onCancel}
-        width={750}
+        width={1500}
         maskClosable={false}
       >
         <React.Fragment>

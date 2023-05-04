@@ -428,7 +428,6 @@ class Error extends Component {
       {
         title: 'REASON',
         align: 'left',
-        width: 300,
         dataIndex: 'reason',
         key: 'reason',
       },
@@ -491,7 +490,7 @@ class Error extends Component {
         onOk={null}
         //onCancel={() => this.props.dispatch(setError(null))}
         onCancel={this.onCancel}
-        width={750}
+        width={1500}
         maskClosable={false}
       >
         <React.Fragment>

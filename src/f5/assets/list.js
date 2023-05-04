@@ -160,7 +160,7 @@ class List extends React.Component {
       }
     }
     else {
-      if (drId !==  asset.assetsDr[0].asset.id) {
+      if (asset.assetsDr[0].asset.id && (asset.assetsDr[0].asset.id !== drId)) {
         asset.assetDrLoading = true
         await this.setState({assets: assets})
 
