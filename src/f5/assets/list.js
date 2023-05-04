@@ -170,7 +170,7 @@ class List extends React.Component {
   drRemove = async (assetId) => {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let asset = assets.find( a => a.id === assetId )
-    if (asset.assetsDr) {
+    if (asset.assetsDr && asset.assetsDr.length > 0) {
       asset.assetDrLoading = true
       await this.setState({assets: assets})
       //await this.setState({loading: true})
