@@ -130,18 +130,17 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+
+
   assetDr = async (drId, assetId) => {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let assetDr = assets.find( a => a.id === drId )
     let asset = assets.find( a => a.id === assetId )
 
-    console.log('asset', asset)
-    console.log('assetDr', assetDr)
-
     if (asset.assetsDr && asset.assetsDr.length < 1) {
       asset.assetDrLoading = true
       await this.setState({assets: assets})
-      //await this.setState({loading: true})
+
       let b = {}
       b.data = {
         "assetDrId": drId,
@@ -161,10 +160,38 @@ class List extends React.Component {
       }
     }
     else {
-      console.log('modify')
+      if (drId !==  asset.assetsDr[0].asset.id) {
+        asset.assetDrLoading = true
+        await this.setState({assets: assets})
+
+        let drDelete = await this.drDelete(asset.id, asset.assetsDr[0].asset.id)
+        if (drDelete.status && drDelete.status !== 200 ) {
+          this.props.dispatch(drDeleteError(drDelete))
+          asset.assetDrLoading = false
+          await this.setState({assets: assets})
+        }
+        else {
+
+          let b = {}
+          b.data = {
+            "assetDrId": drId,
+            "enabled": true
+          }
+
+          let drAdd = await this.drAdd(assetId, b)
+          if (drAdd.status && drAdd.status !== 201 ) {
+            this.props.dispatch(drAddError(drAdd))
+            asset.assetDrLoading = false
+            await this.setState({assets: assets})
+          }
+          else {
+            asset.assetDrLoading = false
+            await this.setState({assets: assets})
+            this.props.dispatch(assetsFetch(true))
+          }
+        }
+      }
     }
-
-
   }
 
   drRemove = async (assetId) => {
@@ -173,7 +200,6 @@ class List extends React.Component {
     if (asset.assetsDr && asset.assetsDr.length > 0) {
       asset.assetDrLoading = true
       await this.setState({assets: assets})
-      //await this.setState({loading: true})
 
       let drDelete = await this.drDelete(asset.id, asset.assetsDr[0].asset.id)
       if (drDelete.status && drDelete.status !== 200 ) {
@@ -221,7 +247,6 @@ class List extends React.Component {
 
 
   render() {
-    console.log(this.state.assets)
     const columns = [
       {
         title: 'FQDN',
