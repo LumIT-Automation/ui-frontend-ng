@@ -9,8 +9,7 @@ import {
   assetsError
 } from '../store'
 
-import L7ServiceCreate from './l7ServiceCreate'
-import L4ServiceCreate from './l4ServiceCreate'
+import CreateVs from './createVs'
 import F5ObjectDelete from './deleteObject'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
@@ -56,7 +55,7 @@ class Manager extends React.Component {
         this.props.dispatch(assetsError(error))
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR("f5/assets/?includeDr", this.props.token)
   }
 
 
@@ -66,12 +65,13 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Row>
+
           <Col span={4} offset={2} >
-            <L7ServiceCreate/>
+            <CreateVs type='L7'/>
           </Col>
 
           <Col span={4} offset={2} >
-            <L4ServiceCreate/>
+            <CreateVs type='L4'/>
           </Col>
 
           <Col span={4} offset={2}>
