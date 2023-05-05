@@ -1092,6 +1092,7 @@ class CreateF5Service extends React.Component {
             { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
             { this.props.dataGroupsError ? <Error component={'create loadbalancer'} error={[this.props.dataGroupsError]} visible={true} type={'dataGroupsError'} /> : null }
             { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
+            { this.props.l7ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l7ServiceCreateError]} visible={true} type={'l7ServiceCreateError'} /> : null }
           </React.Fragment>
         :
           null
@@ -1114,4 +1115,5 @@ export default connect((state) => ({
   routeDomainsError: state.f5.routeDomainsError,
   dataGroupsError: state.f5.dataGroupsError,
   l4ServiceCreateError: state.f5.l4ServiceCreateError,
+  l7ServiceCreateError: state.f5.l7ServiceCreateError,
 }))(CreateF5Service);
