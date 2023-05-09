@@ -6,7 +6,8 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   configurationsError,
-  historysError
+  historysError,
+  triggersError,
 } from './store'
 
 import { Modal, Table, Result } from 'antd';
@@ -44,6 +45,10 @@ class Error extends Component {
 
         case 'historysError':
           this.props.dispatch(historysError(null))
+          break;
+
+        case 'triggersError':
+          this.props.dispatch(triggersError(null))
           break;
 
         default:

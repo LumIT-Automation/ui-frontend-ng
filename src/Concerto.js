@@ -18,6 +18,7 @@ import Service from './concerto/services'
 import Workflow from './concerto/workflows'
 import Assets from './concerto/assets'
 import Permissions from './concerto/permissions'
+import Triggers from './concerto/triggers'
 import Configurations from './concerto/configurations'
 
 import Devices from './fortinetdb/devices'
@@ -118,11 +119,19 @@ class Concerto extends Component {
                   }
 
                   <Route path='/assets/' component={Assets}/>
+
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>
                   :
                     null
                   }
+
+                  { this.props.authorizations && this.authorizators(this.props.authorizations) ?
+                    <Route path='/triggers/' component={Triggers}/>
+                  :
+                    null
+                  }
+
                   <Route path='/configurations/' component={Configurations}/>
 
                 </Switch>

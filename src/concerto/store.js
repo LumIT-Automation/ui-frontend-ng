@@ -28,6 +28,13 @@ const concertoSlice = createSlice({
         state.secondStageProgressLoading = action.payload
       },
 
+      triggers: ( state, action) => {
+        state.triggers = action.payload.data.items
+      },
+      triggersError: ( state, action) => {
+        state.triggersError = action.payload
+      },
+
     }
 })
 
@@ -45,6 +52,8 @@ export const {
   taskProgressLoading,
   secondStageProgressLoading,
 
+  triggers,
+  triggersError,
 } = actions
 
 export default reducer

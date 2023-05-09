@@ -23,6 +23,8 @@ import LoadbalancerSVG from '../svg/loadbalancer.svg'
 import CertSVG from '../svg/certificates.svg'
 import ItemsSVG from '../svg/items.svg'
 import VmSVG from '../svg/vm.svg'
+import PermissionsPNG from '../svg/icons8-diritti-utente-50.png'
+import TriggersPNG from '../svg/icons8-priorità-media-50.png'
 
 const { Sider } = Layout;
 
@@ -65,6 +67,12 @@ class CustomSider extends Component {
   vmIcon = () => (
       <img src={VmSVG} alt="VmSVG" width="20" height="20" />
   );
+  permissionsIcon = () => (
+      <img src={PermissionsPNG} alt="PermissionsPNG" width="23" height="23" />
+  );
+  triggersIcon = () => (
+      <img src={TriggersPNG} alt="TriggersPNG" width="21" height="21" />
+  );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
@@ -80,6 +88,8 @@ class CustomSider extends Component {
   }
 
   render(){
+    console.log(this.props.authorizations)
+    console.log(this.props.authorizationsInfoblox)
     return (
       <Sider width={200} style={{backgroundColor: 'white'}} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
@@ -202,11 +212,20 @@ class CustomSider extends Component {
             (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
             (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
             <React.Fragment>
-              <Menu.Item key="permissions" icon={<HomeOutlined style={{fontSize:'20px'}}/>}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
+              <Menu.Item key="permissions" icon={this.permissionsIcon()}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
              null
+          }
+
+          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ?
+            <React.Fragment>
+              <Menu.Item key="triggers" icon={this.triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>
+              <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+            </React.Fragment>
+          :
+            null
           }
 
           { this.authorizatorsSA(this.props.authorizations) ?
