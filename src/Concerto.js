@@ -18,7 +18,7 @@ import Service from './concerto/services'
 import Workflow from './concerto/workflows'
 import Assets from './concerto/assets'
 import Permissions from './concerto/permissions'
-import Triggers from './concerto/triggers'
+import Triggers from './concerto/triggers/triggers'
 import Configurations from './concerto/configurations'
 
 import Devices from './fortinetdb/devices'

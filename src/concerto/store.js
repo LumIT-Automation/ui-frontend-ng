@@ -34,6 +34,18 @@ const concertoSlice = createSlice({
       triggersError: ( state, action) => {
         state.triggersError = action.payload
       },
+      triggersFetch: (state, action) => {
+        state.triggersFetch = action.payload
+      },
+      triggerAddError: ( state, action) => {
+        state.triggerAddError = action.payload
+      },
+      triggerModifyError: ( state, action) => {
+        state.triggerModifyError = action.payload
+      },
+      triggerDeleteError: ( state, action) => {
+        state.triggerDeleteError = action.payload
+      },
 
     }
 })
@@ -53,7 +65,13 @@ export const {
   secondStageProgressLoading,
 
   triggers,
+  triggersFetch,
   triggersError,
+  
+  triggerAddError,
+  triggerModifyError,
+  triggerDeleteError
+
 } = actions
 
 export default reducer

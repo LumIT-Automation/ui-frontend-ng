@@ -1,20 +1,22 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import '../App.css'
+import '../../App.css'
 
-import Rest from '../_helpers/Rest'
-import Error from './error'
+import Rest from '../../_helpers/Rest'
+import Error from '../error'
 
 import { Space, Table, Input, Button, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
+import Delete from './delete'
 
 import {
   triggers,
+  triggersFetch,
   triggersError,
-} from './store'
+} from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -34,7 +36,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.triggersError && !this.props.triggers) {
-      this.setState({triggersRefresh: false})
+      this.props.dispatch(triggersFetch(false))
       this.main()
     }
   }
@@ -45,11 +47,11 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.vendor !== this.props.vendor) {
-      this.setState({triggersRefresh: false})
+      this.props.dispatch(triggersFetch(false))
       this.main()
     }
-    if (this.state.triggersRefresh) {
-      this.setState({triggersRefresh: false})
+    if (this.props.triggersFetch) {
+      this.props.dispatch(triggersFetch(false))
       this.main()
     }
   }
@@ -155,7 +157,7 @@ class Manager extends React.Component {
   }
 
   triggersRefresh = async () => {
-    await this.setState({triggersRefresh: true})
+    this.props.dispatch(triggersFetch(true))
   }
 
   triggerGet = async () => {
@@ -226,6 +228,15 @@ class Manager extends React.Component {
         dataIndex: 'enabled',
         key: 'enabled',
         ...this.getColumnSearchProps('enabled'),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Delete name={name} obj={obj} vendor='infoblox'/>
+        ),
       }
     ];
 
@@ -240,7 +251,22 @@ class Manager extends React.Component {
         :
           <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.triggersRefresh()}><ReloadOutlined/></Button>
+            <Space wrap>
+              <Button
+                shape='round'
+                onClick={() => this.triggersRefresh()}
+              >
+                <ReloadOutlined/>
+              </Button>
+
+              <Button
+                type="primary"
+                shape='round'
+              >
+                +
+              </Button>
+            </Space>
+
             <br/>
             <Table
               columns={returnCol()}
@@ -262,5 +288,6 @@ export default connect((state) => ({
   token: state.authentication.token,
 
   triggers: state.concerto.triggers,
+  triggersFetch: state.concerto.triggersFetch,
   triggersError: state.concerto.triggersError,
 }))(Manager);

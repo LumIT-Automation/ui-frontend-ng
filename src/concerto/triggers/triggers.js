@@ -2,11 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Radio, Divider } from 'antd';
 
-import Authorizators from '../_helpers/authorizators'
+import Authorizators from '../../_helpers/authorizators'
 import Trigger from './trigger'
 
 import 'antd/dist/antd.css';
-import '../App.css'
+import '../../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />

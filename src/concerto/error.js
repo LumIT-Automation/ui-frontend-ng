@@ -6,8 +6,15 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   configurationsError,
+  
   historysError,
+
   triggersError,
+  triggersFetch,
+
+  triggerAddError,
+  triggerModifyError,
+  triggerDeleteError
 } from './store'
 
 import { Modal, Table, Result } from 'antd';
@@ -49,6 +56,18 @@ class Error extends Component {
 
         case 'triggersError':
           this.props.dispatch(triggersError(null))
+          break;
+
+        case 'triggerAddError':
+          this.props.dispatch(triggerAddError(null))
+          break;
+
+        case 'triggerModifyError':
+          this.props.dispatch(triggerModifyError(null))
+          break;
+
+        case 'triggerDeleteError':
+          this.props.dispatch(triggerDeleteError(null))
           break;
 
         default:
