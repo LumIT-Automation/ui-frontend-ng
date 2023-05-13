@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import { Button, Modal, Spin, Result, Input, Row, Col, Radio, Select, Checkbox } from 'antd'
-import { LoadingOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
+import { LoadingOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
@@ -11,17 +11,17 @@ import Validators from '../../_helpers/validators'
 import {
   triggersFetch,
 
-  triggerAddError,
+  triggerModifyError,
 } from '../store'
 
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const loadingIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
 
-class Add extends React.Component {
+class Modify extends React.Component {
 
   constructor(props) {
     super(props);
@@ -54,11 +54,24 @@ class Add extends React.Component {
   }
 
   details = async () => {
+    console.log(this.props.obj)
     await this.setState({visible: true})
     if (this.props.assets) {
       let assets = JSON.parse(JSON.stringify(this.props.assets))
       await this.setState({assets: assets})
     }
+    let request = JSON.parse(JSON.stringify(this.props.obj))
+    request.name
+    request.dst_asset_id
+    request.action
+    if (request.enabled) {
+      request.enabled = true
+    }
+    else {
+      request.enabled = false
+    }
+
+    await this.setState({request: request})
   }
 
   //SETTER
@@ -92,12 +105,12 @@ class Add extends React.Component {
   validation = async () => {
     await this.validationCheck()
     if (Object.keys(this.state.errors).length === 0) {
-      this.triggerAddHandler()
+      this.triggerModifyHandler()
     }
   }
 
 
-  triggerAddHandler = async () => {
+  triggerModifyHandler = async () => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     let b = {}
 
@@ -115,9 +128,9 @@ class Add extends React.Component {
     }
 
     await this.setState({loading: true})
-    let triggerAdd = await this.triggerAdd(b)
-    if (triggerAdd.status && triggerAdd.status !== 201 ) {
-      this.props.dispatch(triggerAddError(triggerAdd))
+    let triggerModify = await this.triggerModify(b)
+    if (triggerModify.status && triggerModify.status !== 200 ) {
+      this.props.dispatch(triggerModifyError(triggerModify))
       await this.setState({loading: false})
       //return
     }
@@ -128,10 +141,10 @@ class Add extends React.Component {
   }
 
   //DISPOSAL ACTION
-  triggerAdd = async (b) => {
+  triggerModify = async (b) => {
     let r
     let rest = new Rest(
-      "POST",
+      "PATCH",
       resp => {
         r = resp
       },
@@ -139,7 +152,7 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/triggers/`, this.props.token, b )
+    await rest.doXHR(`${this.props.vendor}/trigger/${this.props.obj.id}/`, this.props.token, b )
     return r
   }
 
@@ -234,10 +247,10 @@ class Add extends React.Component {
     return (
       <React.Fragment>
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD TRIGGER</p>}
+          title={<p style={{textAlign: 'center'}}>MODIFY TRIGGER</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -251,7 +264,7 @@ class Add extends React.Component {
         { !this.state.loading && this.state.response &&
           <Result
              status="success"
-             title="Trigger Added"
+             title="Trigger Modified"
            />
         }
         { !this.state.loading && !this.state.response &&
@@ -296,7 +309,7 @@ class Add extends React.Component {
             <Row>
               <Col offset={8} span={16}>
                 <Button type="primary" shape='round' onClick={() => this.validation()} >
-                  Add Trigger
+                  Modify Trigger
                 </Button>
               </Col>
             </Row>
@@ -306,7 +319,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.triggerAddError ? <Error component={`trigger add ${this.props.vendor}`} error={[this.props.triggerAddError]} visible={true} type={'triggerAddError'} /> : null }
+            { this.props.triggerModifyError ? <Error component={`trigger add ${this.props.vendor}`} error={[this.props.triggerModifyError]} visible={true} type={'triggerModifyError'} /> : null }
           </React.Fragment>
         :
           null
@@ -319,5 +332,5 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	triggerAddError: state.concerto.triggerAddError,
-}))(Add);
+ 	triggerModifyError: state.concerto.triggerModifyError,
+}))(Modify);

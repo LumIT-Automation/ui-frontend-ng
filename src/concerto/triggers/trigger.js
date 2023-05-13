@@ -12,6 +12,7 @@ import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import Add from './add'
+import Modify from './modify'
 import Delete from './delete'
 
 import {
@@ -223,7 +224,7 @@ class Manager extends React.Component {
   }
 
   render() {
-    
+
     let returnCol = () => {
       switch (this.props.vendor) {
         case 'infoblox':
@@ -276,6 +277,15 @@ class Manager extends React.Component {
         dataIndex: 'enabled',
         key: 'enabled',
         ...this.getColumnSearchProps('enabled'),
+      },
+      {
+        title: 'Modify',
+        align: 'center',
+        dataIndex: 'modify',
+        key: 'modify',
+        render: (name, obj)  => (
+          <Modify name={name} obj={obj} vendor='infoblox'/>
+        ),
       },
       {
         title: 'Delete',
