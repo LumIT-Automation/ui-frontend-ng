@@ -108,8 +108,9 @@ class CustomSider extends Component {
         }
 
 
-          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
+            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
             <React.Fragment>
               <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
@@ -174,8 +175,9 @@ class CustomSider extends Component {
           }
 
 
-          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
+            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
             <React.Fragment>
               <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
@@ -195,8 +197,9 @@ class CustomSider extends Component {
           }
 
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
+            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
             (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
@@ -207,8 +210,9 @@ class CustomSider extends Component {
           }
 
           { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ||
-            (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
             (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
+            (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.permission_identityGroups_post) ||
+            (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
             (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
             (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
             <React.Fragment>

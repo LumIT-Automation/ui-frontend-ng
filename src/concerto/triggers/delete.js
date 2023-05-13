@@ -131,5 +131,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	triggerDeleteError: state.f5.triggerDeleteError,
+ 	triggerDeleteError: state.concerto.triggerDeleteError,
 }))(Delete);

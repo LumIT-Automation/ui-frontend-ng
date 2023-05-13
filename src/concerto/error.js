@@ -6,11 +6,10 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   configurationsError,
-  
+
   historysError,
 
   triggersError,
-  triggersFetch,
 
   triggerAddError,
   triggerModifyError,

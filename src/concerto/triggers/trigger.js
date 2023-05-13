@@ -5,11 +5,13 @@ import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
+import InfobloxError from '../../infoblox/error'
 
 import { Space, Table, Input, Button, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
+import Add from './add'
 import Delete from './delete'
 
 import {
@@ -17,6 +19,10 @@ import {
   triggersFetch,
   triggersError,
 } from '../store'
+
+import {
+  assetsError,
+} from '../../infoblox/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -144,6 +150,16 @@ class Manager extends React.Component {
   main = async () => {
     await this.setState({loading: true})
 
+    let fetchedAssets = await this.assetGet()
+    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+      this.props.dispatch(assetsError(fetchedAssets))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      await this.setState({assets: fetchedAssets.data.items})
+    }
+
     let fetchedTriggers = await this.triggerGet()
     if (fetchedTriggers.status && fetchedTriggers.status !== 200 ) {
       this.props.dispatch(triggersError(fetchedTriggers))
@@ -151,13 +167,40 @@ class Manager extends React.Component {
       return
     }
     else {
+      let trigs = []
+      fetchedTriggers.data.items.forEach((trig, i) => {
+        let asset = this.state.assets.find(a => a.id === trig.dst_asset_id)
+        trig.dst_asset_fqdn = asset.fqdn
+        trigs.push(trig)
+      });
+
+
       await this.setState({loading: false})
-      this.props.dispatch(triggers(fetchedTriggers))
+      await this.props.dispatch(triggers(trigs))
     }
   }
 
   triggersRefresh = async () => {
     this.props.dispatch(triggersFetch(true))
+  }
+
+  assetGet = async () => {
+    let endpoint = `${this.props.vendor}/assets/`
+
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+
+    await rest.doXHR(`${endpoint}`, this.props.token)
+
+    return r
   }
 
   triggerGet = async () => {
@@ -180,9 +223,7 @@ class Manager extends React.Component {
   }
 
   render() {
-    console.log(this.props.vendor)
-    console.log(this.props.triggers)
-
+    
     let returnCol = () => {
       switch (this.props.vendor) {
         case 'infoblox':
@@ -207,6 +248,13 @@ class Manager extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'dst_asset_fqdn',
+        align: 'center',
+        dataIndex: 'dst_asset_fqdn',
+        key: 'dst_asset_fqdn',
+        ...this.getColumnSearchProps('dst_asset_fqdn'),
       },
       {
         title: 'dst_asset_id',
@@ -259,12 +307,7 @@ class Manager extends React.Component {
                 <ReloadOutlined/>
               </Button>
 
-              <Button
-                type="primary"
-                shape='round'
-              >
-                +
-              </Button>
+              <Add vendor={this.props.vendor} assets={this.state.assets}/>
             </Space>
 
             <br/>
@@ -279,6 +322,7 @@ class Manager extends React.Component {
           </Space>
         }
         { this.props.triggersError ? <Error vendor={this.props.vendor} error={[this.props.triggersError]} visible={true} type={'triggersError'} /> : null }
+        { this.props.assetsError ? <InfobloxError vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
       </React.Fragment>
     )
   }
@@ -290,4 +334,6 @@ export default connect((state) => ({
   triggers: state.concerto.triggers,
   triggersFetch: state.concerto.triggersFetch,
   triggersError: state.concerto.triggersError,
+
+  assetsError: state.infoblox.assetsError,
 }))(Manager);

@@ -717,7 +717,7 @@ class CreateF5Service extends React.Component {
                       <Checkbox
                         onChange={e => this.writeDrSet(e.target.checked)}
                         disabled={(this.props.asset.assetsDr && this.props.asset.assetsDr.length > 0) ? false : true}
-                        value={this.state.dr}
+                        checked={this.state.dr}
                       >
                         Write in dr
                       </Checkbox>

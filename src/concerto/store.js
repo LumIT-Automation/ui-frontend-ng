@@ -29,7 +29,7 @@ const concertoSlice = createSlice({
       },
 
       triggers: ( state, action) => {
-        state.triggers = action.payload.data.items
+        state.triggers = action.payload
       },
       triggersError: ( state, action) => {
         state.triggersError = action.payload
@@ -67,7 +67,7 @@ export const {
   triggers,
   triggersFetch,
   triggersError,
-  
+
   triggerAddError,
   triggerModifyError,
   triggerDeleteError
