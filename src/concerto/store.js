@@ -28,14 +28,11 @@ const concertoSlice = createSlice({
         state.secondStageProgressLoading = action.payload
       },
 
-      triggers: ( state, action) => {
-        state.triggers = action.payload
+      triggersFetch: (state, action) => {
+        state.triggersFetch = action.payload
       },
       triggersError: ( state, action) => {
         state.triggersError = action.payload
-      },
-      triggersFetch: (state, action) => {
-        state.triggersFetch = action.payload
       },
       triggerAddError: ( state, action) => {
         state.triggerAddError = action.payload
@@ -64,7 +61,6 @@ export const {
   taskProgressLoading,
   secondStageProgressLoading,
 
-  triggers,
   triggersFetch,
   triggersError,
 

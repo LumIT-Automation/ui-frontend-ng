@@ -16,7 +16,6 @@ import Modify from './modify'
 import Delete from './delete'
 
 import {
-  triggers,
   triggersFetch,
   triggersError,
 } from '../store'
@@ -36,6 +35,7 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      triggers: [],
       expandedKeys: [],
       searchText: '',
       searchedColumn: ''
@@ -43,7 +43,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.triggersError && !this.props.triggers) {
+    if (!this.props.triggersError) {
       this.props.dispatch(triggersFetch(false))
       this.main()
     }
@@ -65,7 +65,6 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -149,8 +148,6 @@ class Manager extends React.Component {
   };
 
   onTableRowExpand = (expanded, record) => {
-    console.log(expanded)
-    console.log(record)
     let keys = Object.assign([], this.state.expandedKeys);
 
     if(expanded){
@@ -184,15 +181,27 @@ class Manager extends React.Component {
     }
     else {
       let trigs = []
+      let asset
+      let ass
       fetchedTriggers.data.items.forEach((trig, i) => {
-        let asset = this.state.assets.find(a => a.id === trig.dst_asset_id)
+        asset = this.state.assets.find(a => a.id === trig.dst_asset_id)
         trig.dst_asset_fqdn = asset.fqdn
+
+        if (trig.conditions.length > 0) {
+          trig.conditions.forEach((cond, i) => {
+            ass = this.state.assets.find(a => a.id === cond.src_asset_id)
+            console.log(ass)
+            cond.src_asset_fqdn = ass.fqdn
+            cond.existent = true
+            let split = cond.condition.split('src-ip-in:')
+            cond.conditionNoPrfx = split[1]
+          });
+        }
+
         trigs.push(trig)
       });
 
-
-      await this.setState({loading: false})
-      await this.props.dispatch(triggers(trigs))
+      await this.setState({triggers: trigs, loading: false})
     }
   }
 
@@ -238,8 +247,32 @@ class Manager extends React.Component {
     return r
   }
 
+  requestAdd = () => {
+    let id = 0
+    let n = 0
+    this.state.requests.forEach(r => {
+      if (r.id > id) {
+        id = r.id
+      }
+    });
+    n = id + 1
+
+    let r = {id: n, macAddress: '00:00:00:00:00:00', range: false}
+    let list = JSON.parse(JSON.stringify(this.state.requests))
+    list.push(r)
+    this.setState({requests: list})
+  }
+
+  requestRemove = r => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let newList = requests.filter(n => {
+      return r.id !== n.id
+    })
+    this.setState({requests: newList})
+  }
+
   render() {
-    console.log(this.props.triggers)
+    console.log(this.state.triggers)
 
     let returnCol = () => {
       switch (this.props.vendor) {
@@ -263,20 +296,48 @@ class Manager extends React.Component {
         {
           title: 'Condition',
           align: 'center',
-          dataIndex: 'condition',
-          key: 'condition',
-          ...this.getColumnSearchProps('condition'),
+          dataIndex: 'conditionNoPrfx',
+          key: 'conditionNoPrfx',
+          ...this.getColumnSearchProps('conditionNoPrfx'),
+          render: (name, obj)  => (
+            <Input
+              addonBefore="src-ip-in:"
+              value={obj.conditionNoPrfx}
+              disabled={obj.existent ? true : false}
+              onFocus={null}
+              onChange={null}
+              onPressEnter={null}
+            />
+          ),
         },
         {
-          title: 'Src asset id',
+          title: 'Source asset',
           align: 'center',
-          dataIndex: 'src_asset_id',
-          key: 'src_asset_id',
-          ...this.getColumnSearchProps('src_asset_id'),
+          dataIndex: 'src_asset_fqdn',
+          key: 'src_asset_fqdn',
+          ...this.getColumnSearchProps('src_asset_fqdn'),
+
         }
       ];
 
-      return <Table columns={columns} dataSource={params[0].conditions} pagination={false} />;
+      return (
+        <React.Fragment>
+          <Button
+            type="primary"
+            shape='round'
+            onClick={() => console.log(params[0])}
+          >
+            +
+          </Button>
+          <br/>
+          <Table
+            columns={columns}
+            dataSource={params[0].conditions}
+            pagination={false}
+          />
+          <p onClick={e => console.log('miao')}>miao</p>
+        </React.Fragment>
+      )
     };
 
 
@@ -296,18 +357,11 @@ class Manager extends React.Component {
         ...this.getColumnSearchProps('name'),
       },
       {
-        title: 'dst_asset_fqdn',
+        title: 'Destination asset',
         align: 'center',
         dataIndex: 'dst_asset_fqdn',
         key: 'dst_asset_fqdn',
         ...this.getColumnSearchProps('dst_asset_fqdn'),
-      },
-      {
-        title: 'dst_asset_id',
-        align: 'center',
-        dataIndex: 'dst_asset_id',
-        key: 'dst_asset_id',
-        ...this.getColumnSearchProps('dst_asset_id'),
       },
       {
         title: 'Action',
@@ -368,7 +422,7 @@ class Manager extends React.Component {
             <br/>
             <Table
               columns={returnCol()}
-              dataSource={this.props.triggers}
+              dataSource={this.state.triggers}
               bordered
               rowKey={randomKey}
               scroll={{x: 'auto'}}
@@ -391,9 +445,8 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
-  triggers: state.concerto.triggers,
   triggersFetch: state.concerto.triggersFetch,
-  triggersError: state.concerto.triggersError,
 
+  triggersError: state.concerto.triggersError,
   assetsError: state.infoblox.assetsError,
 }))(Manager);
