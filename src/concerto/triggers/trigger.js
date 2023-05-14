@@ -36,6 +36,7 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      expandedKeys: [],
       searchText: '',
       searchedColumn: ''
     };
@@ -64,7 +65,7 @@ class Manager extends React.Component {
   }
 
   componentWillUnmount() {
-    clearInterval(this.interval)
+
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -147,6 +148,20 @@ class Manager extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  onTableRowExpand = (expanded, record) => {
+    console.log(expanded)
+    console.log(record)
+    let keys = Object.assign([], this.state.expandedKeys);
+
+    if(expanded){
+      keys.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
+    }
+    else {
+      keys = keys.filter(k => k !== record.id)
+    }
+    this.setState({expandedKeys: keys});
+  }
+
 
   main = async () => {
     await this.setState({loading: true})
@@ -224,6 +239,7 @@ class Manager extends React.Component {
   }
 
   render() {
+    console.log(this.props.triggers)
 
     let returnCol = () => {
       switch (this.props.vendor) {
@@ -233,6 +249,35 @@ class Manager extends React.Component {
         default:
       }
     }
+
+    const expandedRowRender = (...params) => {
+      console.log(params)
+      const columns = [
+        {
+          title: 'Condition id',
+          align: 'center',
+          dataIndex: 'condition_id',
+          key: 'condition_id',
+          ...this.getColumnSearchProps('condition_id'),
+        },
+        {
+          title: 'Condition',
+          align: 'center',
+          dataIndex: 'condition',
+          key: 'condition',
+          ...this.getColumnSearchProps('condition'),
+        },
+        {
+          title: 'Src asset id',
+          align: 'center',
+          dataIndex: 'src_asset_id',
+          key: 'src_asset_id',
+          ...this.getColumnSearchProps('src_asset_id'),
+        }
+      ];
+
+      return <Table columns={columns} dataSource={params[0].conditions} pagination={false} />;
+    };
 
 
     const infobloxColumns = [
@@ -328,6 +373,11 @@ class Manager extends React.Component {
               rowKey={randomKey}
               scroll={{x: 'auto'}}
               pagination={{ pageSize: 10 }}
+              style={{marginBottom: 10}}
+              onExpand={this.onTableRowExpand}
+              expandedRowKeys={this.state.expandedKeys}
+              rowKey={record => record.id}
+              expandedRowRender={ record => expandedRowRender(record)}
             />
           </Space>
         }
