@@ -73,6 +73,21 @@ class Validators {
     }
   }
 
+  isSubnet = (subnet) => {
+    console.log(subnet)
+    let block
+
+    try {
+      block = new Netmask(subnet)
+      return true
+
+    } catch(error) {
+      console.log(error)
+    }
+
+    return false
+  }
+
   ipInSubnet = (subnet, ips) => {
     if (subnet.includes('%')) {
       let sub = subnet.split('%')

@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
 import Error from '../error'
 import InfobloxError from '../../infoblox/error'
 
@@ -35,6 +36,7 @@ class Manager extends React.Component {
 
   constructor(props) {
     super(props);
+
     this.state = {
       assets: [],
       triggers: [],
@@ -56,9 +58,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    var focusedElement = document.activeElement
-    console.log(focusedElement)
-    console.log(document.hasFocus())
+
     if (prevProps.vendor !== this.props.vendor) {
       this.props.dispatch(triggersFetch(false))
       this.main()
@@ -286,6 +286,7 @@ class Manager extends React.Component {
   }
 
   set = async (key, value, trigger, condition) => {
+    console.log(value)
     let triggers = JSON.parse(JSON.stringify(this.state.triggers))
     let trig = triggers.find(t => t.id === trigger.id)
     let cond = trig.conditions.find(c => c.condition_id === condition.condition_id)
@@ -294,15 +295,63 @@ class Manager extends React.Component {
     if (key === 'src_asset_id') {
       cond.src_asset_id = value
       cond.src_asset_fqdn = ass.fqdn
+      delete cond.src_asset_idError
+      delete cond.src_asset_fqdnError
     }
     if (key === 'condition') {
       cond.condition = `src-ip-in:${value}`
       cond.conditionNoPrfx = value
+      delete cond.conditionError
+      delete cond.conditionNoPrfxError
+    }
+    if (key === 'toDelete') {
+      console.log(value)
+      if (value) {
+        cond.toDelete = true
+      }
+      else {
+        delete cond.toDelete
+      }
     }
 
     await this.setState({triggers: triggers})
-
   }
+
+  conditionCommit = async trigger => {
+    let valid = await this.validationCheck(trigger)
+    if (valid) {
+      console.log('andiamo')
+    }
+  }
+
+  validationCheck = async (trigger) => {
+    let triggers = JSON.parse(JSON.stringify(this.state.triggers))
+    let trig = triggers.find(t => t.id === trigger.id)
+    let validators = new Validators()
+    let ok = true
+
+    trig.conditions.forEach((cond, i) => {
+      if (!cond.src_asset_id) {
+        cond.src_asset_idError = 'error'
+        ok = false
+      }
+      if (!cond.conditionNoPrfx ) {
+        cond.conditionNoPrfxError = 'error'
+        ok = false
+      }
+      if (!validators.isSubnet(cond.conditionNoPrfx)) {
+        console.log(validators.isSubnet(cond.conditionNoPrfx))
+        cond.conditionNoPrfxError = 'error'
+        ok = false
+      }
+    });
+
+
+    await this.setState({triggers: triggers})
+    return ok
+  }
+
+
 
   render() {
     console.log(this.state.triggers)
@@ -332,17 +381,25 @@ class Manager extends React.Component {
           dataIndex: 'conditionNoPrfx',
           key: 'conditionNoPrfx',
           ...this.getColumnSearchProps('conditionNoPrfx'),
-          render: (name, obj)  => (
-            <Input
-              addonBefore="src-ip-in:"
-              value={obj.conditionNoPrfx}
-              disabled={obj.existent ? true : false}
-              onFocus={null}
-              onBlur={() => console.log('input lost focus')}
-              onChange={e => this.set('condition', e.target.value, params[0], obj )}
-              onPressEnter={null}
-            />
-          ),
+          render: (name, obj)  => {
+            const inputRef = React.createRef();
+            return (
+              <Input
+                addonBefore="src-ip-in:"
+                value={obj.conditionNoPrfx}
+                ref={inputRef}
+                //onClick={e => (this.textInput.current.value = e)}
+                style=
+                { obj.conditionNoPrfxError ?
+                  {border: `1px solid red`}
+                :
+                  {}
+                }
+                disabled={obj.existent ? true : false}
+                //onFocus={e => console.log('FOCUS')}
+                onChange={e => this.set('condition', e.target.value, params[0], obj )}
+              />
+            )},
         },
         {
           title: 'Source asset',
@@ -359,7 +416,7 @@ class Manager extends React.Component {
                 value={obj.src_asset_fqdn}
                 showSearch
                 style=
-                { this.state.errors ?
+                { obj.src_asset_idError ?
                   {width: 150, border: `1px solid red`}
                 :
                   {width: 150}
@@ -393,12 +450,9 @@ class Manager extends React.Component {
           render: (name, obj)  => (
             <Space size="small">
               {obj.existent ?
-                <Button
-                  icon={deleteIcon}
-                  type='primary'
-                  danger
-                  shape='round'
-                  onClick={() => console.log(params[0])}
+                <Checkbox
+                  checked={obj.toDelete}
+                  onChange={e => this.set('toDelete', e.target.checked, params[0], obj)}
                 />
               :
                 <Button
@@ -428,8 +482,7 @@ class Manager extends React.Component {
           <br/>
           <Table
             columns={columns}
-            rowKey={randomKey}
-            onBlur={() => console.log('table lost focus')}
+            rowKey={record => record.condition_id}
             dataSource={params[0].conditions}
             pagination={{pageSize: 10}}
           />
@@ -437,7 +490,7 @@ class Manager extends React.Component {
             type="primary"
             shape='round'
             style={{float: 'right'}}
-            onClick={() => console.log('commit')}
+            onClick={() => this.conditionCommit(params[0])}
           >
             Commit
           </Button>
@@ -529,14 +582,12 @@ class Manager extends React.Component {
               columns={returnCol()}
               dataSource={this.state.triggers}
               bordered
-              rowKey={randomKey}
               scroll={{x: 'auto'}}
               pagination={{pageSize: 10}}
               style={{marginBottom: 10}}
               onExpand={this.onTableRowExpand}
               expandedRowKeys={this.state.expandedKeys}
               rowKey={record => record.id}
-              onBlur={() => console.log('Gigatable lost focus')}
               expandedRowRender={ record => expandedRowRender(record)}
             />
           </Space>
