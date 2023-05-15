@@ -7,9 +7,9 @@ import Rest from '../../_helpers/Rest'
 import Error from '../error'
 import InfobloxError from '../../infoblox/error'
 
-import { Space, Table, Input, Button, Spin, Progress } from 'antd';
+import { Space, Table, Input, Button, Spin, Select, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
 
 import Add from './add'
 import Modify from './modify'
@@ -25,6 +25,7 @@ import {
 } from '../../infoblox/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 
 //import List from './list'
 
@@ -35,6 +36,7 @@ class Manager extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      assets: [],
       triggers: [],
       expandedKeys: [],
       searchText: '',
@@ -54,6 +56,9 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    var focusedElement = document.activeElement
+    console.log(focusedElement)
+    console.log(document.hasFocus())
     if (prevProps.vendor !== this.props.vendor) {
       this.props.dispatch(triggersFetch(false))
       this.main()
@@ -247,28 +252,56 @@ class Manager extends React.Component {
     return r
   }
 
-  requestAdd = () => {
+  conditionAdd = async trigger => {
+    let triggers = JSON.parse(JSON.stringify(this.state.triggers))
+    let trig = triggers.find(t => t.id === trigger.id)
+
     let id = 0
     let n = 0
-    this.state.requests.forEach(r => {
-      if (r.id > id) {
-        id = r.id
+    trig.conditions.forEach(c => {
+      if (c.condition_id > id) {
+        id = c.condition_id
       }
     });
     n = id + 1
 
-    let r = {id: n, macAddress: '00:00:00:00:00:00', range: false}
-    let list = JSON.parse(JSON.stringify(this.state.requests))
-    list.push(r)
-    this.setState({requests: list})
+    let newCondition = {condition_id: n}
+    trig.conditions.push(newCondition)
+
+    await this.setState({triggers: triggers})
   }
 
-  requestRemove = r => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let newList = requests.filter(n => {
-      return r.id !== n.id
+  conditionRemove = async (trigger, condition_id) => {
+
+    let triggers = JSON.parse(JSON.stringify(this.state.triggers))
+    let trig = triggers.find(t => t.id === trigger.id)
+    let cond = trig.conditions.find(c => c.id === condition_id)
+
+    let newConditions = trig.conditions.filter(c => {
+      return condition_id.condition_id !== c.condition_id
     })
-    this.setState({requests: newList})
+    trig.conditions = newConditions
+
+    await this.setState({triggers: triggers})
+  }
+
+  set = async (key, value, trigger, condition) => {
+    let triggers = JSON.parse(JSON.stringify(this.state.triggers))
+    let trig = triggers.find(t => t.id === trigger.id)
+    let cond = trig.conditions.find(c => c.condition_id === condition.condition_id)
+    let ass = this.state.assets.find(a => a.id === value)
+
+    if (key === 'src_asset_id') {
+      cond.src_asset_id = value
+      cond.src_asset_fqdn = ass.fqdn
+    }
+    if (key === 'condition') {
+      cond.condition = `src-ip-in:${value}`
+      cond.conditionNoPrfx = value
+    }
+
+    await this.setState({triggers: triggers})
+
   }
 
   render() {
@@ -305,7 +338,8 @@ class Manager extends React.Component {
               value={obj.conditionNoPrfx}
               disabled={obj.existent ? true : false}
               onFocus={null}
-              onChange={null}
+              onBlur={() => console.log('input lost focus')}
+              onChange={e => this.set('condition', e.target.value, params[0], obj )}
               onPressEnter={null}
             />
           ),
@@ -316,26 +350,97 @@ class Manager extends React.Component {
           dataIndex: 'src_asset_fqdn',
           key: 'src_asset_fqdn',
           ...this.getColumnSearchProps('src_asset_fqdn'),
+          render: (name, obj)  => (
+            <Space size="small">
+            { obj.existent ?
+              name
+            :
+              <Select
+                value={obj.src_asset_fqdn}
+                showSearch
+                style=
+                { this.state.errors ?
+                  {width: 150, border: `1px solid red`}
+                :
+                  {width: 150}
+                }
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={value => this.set('src_asset_id', value, params[0], obj )}
+              >
+                { this.state.assets.map((ass, i) => {
+                    return (
+                      <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+                    )
+                  })
+                }
+              </Select>
+            }
 
+            </Space>
+          ),
+        },
+        {
+          title: 'Delete',
+          align: 'center',
+          dataIndex: 'delete',
+          key: 'delete',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.existent ?
+                <Button
+                  icon={deleteIcon}
+                  type='primary'
+                  danger
+                  shape='round'
+                  onClick={() => console.log(params[0])}
+                />
+              :
+                <Button
+                  type='danger'
+                  shape='round'
+                  onClick={(e) => this.conditionRemove(params[0], obj)}
+                >
+                  -
+                </Button>
+              }
+            </Space>
+          ),
         }
       ];
 
       return (
         <React.Fragment>
+          <br/>
           <Button
             type="primary"
             shape='round'
-            onClick={() => console.log(params[0])}
+            onClick={() => this.conditionAdd(params[0])}
           >
             +
           </Button>
           <br/>
+          <br/>
           <Table
             columns={columns}
+            rowKey={randomKey}
+            onBlur={() => console.log('table lost focus')}
             dataSource={params[0].conditions}
-            pagination={false}
+            pagination={{pageSize: 10}}
           />
-          <p onClick={e => console.log('miao')}>miao</p>
+          <Button
+            type="primary"
+            shape='round'
+            style={{float: 'right'}}
+            onClick={() => console.log('commit')}
+          >
+            Commit
+          </Button>
         </React.Fragment>
       )
     };
@@ -426,11 +531,12 @@ class Manager extends React.Component {
               bordered
               rowKey={randomKey}
               scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
+              pagination={{pageSize: 10}}
               style={{marginBottom: 10}}
               onExpand={this.onTableRowExpand}
               expandedRowKeys={this.state.expandedKeys}
               rowKey={record => record.id}
+              onBlur={() => console.log('Gigatable lost focus')}
               expandedRowRender={ record => expandedRowRender(record)}
             />
           </Space>
