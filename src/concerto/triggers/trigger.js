@@ -19,6 +19,8 @@ import Delete from './delete'
 import {
   triggersFetch,
   triggersError,
+  conditionAddError,
+  conditionDeleteError,
 } from '../store'
 
 import {
@@ -26,6 +28,7 @@ import {
 } from '../../infoblox/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const loadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 
 //import List from './list'
@@ -195,7 +198,6 @@ class Manager extends React.Component {
         if (trig.conditions.length > 0) {
           trig.conditions.forEach((cond, i) => {
             ass = this.state.assets.find(a => a.id === cond.src_asset_id)
-            console.log(ass)
             cond.src_asset_fqdn = ass.fqdn
             cond.existent = true
             let split = cond.condition.split('src-ip-in:')
@@ -286,7 +288,6 @@ class Manager extends React.Component {
   }
 
   set = async (key, value, trigger, condition) => {
-    console.log(value)
     let triggers = JSON.parse(JSON.stringify(this.state.triggers))
     let trig = triggers.find(t => t.id === trigger.id)
     let cond = trig.conditions.find(c => c.condition_id === condition.condition_id)
@@ -305,7 +306,6 @@ class Manager extends React.Component {
       delete cond.conditionNoPrfxError
     }
     if (key === 'toDelete') {
-      console.log(value)
       if (value) {
         cond.toDelete = true
       }
@@ -315,13 +315,6 @@ class Manager extends React.Component {
     }
 
     await this.setState({triggers: triggers})
-  }
-
-  conditionCommit = async trigger => {
-    let valid = await this.validationCheck(trigger)
-    if (valid) {
-      console.log('andiamo')
-    }
   }
 
   validationCheck = async (trigger) => {
@@ -340,7 +333,6 @@ class Manager extends React.Component {
         ok = false
       }
       if (!validators.isSubnet(cond.conditionNoPrfx)) {
-        console.log(validators.isSubnet(cond.conditionNoPrfx))
         cond.conditionNoPrfxError = 'error'
         ok = false
       }
@@ -351,10 +343,90 @@ class Manager extends React.Component {
     return ok
   }
 
+  conditionCommit = async trigger => {
+    let valid = await this.validationCheck(trigger)
+    let triggers = JSON.parse(JSON.stringify(this.state.triggers))
+    let trig = triggers.find(t => t.id === trigger.id)
+    let smtToCommit = false
+    if (valid) {
+      for await (const cond of trig.conditions) {
+        if (cond.toDelete) {
+          smtToCommit = true
+          cond.loading = true
+          this.setState({triggers: triggers})
+
+          let condDel = await this.condDel(cond.condition_id, trig.id)
+          if (condDel.status && condDel.status !== 200 ) {
+            this.props.dispatch(conditionDeleteError(condDel))
+            cond.loading = false
+            this.setState({triggers: triggers})
+          }
+
+          cond.loading = false
+          this.setState({triggers: triggers})
+        }
+        else if (!cond.existent) {
+          smtToCommit = true
+          cond.loading = true
+          this.setState({triggers: triggers})
+
+          let condAdd = await this.condAdd(cond, trig.id)
+          if (condAdd.status && condAdd.status !== 201 ) {
+            this.props.dispatch(conditionAddError(condAdd))
+            cond.loading = false
+            this.setState({triggers: triggers})
+          }
+
+          cond.loading = false
+          this.setState({triggers: triggers})
+        }
+      }
+    }
+    if (smtToCommit) {
+      this.props.dispatch(triggersFetch(true))
+    }
+  }
+
+  condAdd = async (cond, trig_id) => {
+    let r
+    let b = {}
+
+    b.data = {
+      "src_asset_id": cond.src_asset_id,
+      "condition": cond.condition
+    }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`infoblox/trigger/${trig_id}/conditions/`, this.props.token, b )
+    return r
+  }
+
+  condDel = async (cond_id, trig_id) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`infoblox/trigger/${trig_id}/condition/${cond_id}/`, this.props.token )
+    return r
+  }
+
 
 
   render() {
-    console.log(this.state.triggers)
 
     let returnCol = () => {
       switch (this.props.vendor) {
@@ -366,8 +438,18 @@ class Manager extends React.Component {
     }
 
     const expandedRowRender = (...params) => {
-      console.log(params)
       const columns = [
+        {
+          title: 'Loading',
+          align: 'center',
+          dataIndex: 'loading',
+          key: 'loading',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.loading ? <Spin indicator={loadIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
         {
           title: 'Condition id',
           align: 'center',
@@ -391,12 +473,11 @@ class Manager extends React.Component {
                 //onClick={e => (this.textInput.current.value = e)}
                 style=
                 { obj.conditionNoPrfxError ?
-                  {border: `1px solid red`}
+                  {width: 250, border: `1px solid red`}
                 :
-                  {}
+                  {width: 250}
                 }
                 disabled={obj.existent ? true : false}
-                //onFocus={e => console.log('FOCUS')}
                 onChange={e => this.set('condition', e.target.value, params[0], obj )}
               />
             )},
@@ -476,7 +557,7 @@ class Manager extends React.Component {
             shape='round'
             onClick={() => this.conditionAdd(params[0])}
           >
-            +
+            Add condition
           </Button>
           <br/>
           <br/>
@@ -594,6 +675,8 @@ class Manager extends React.Component {
         }
         { this.props.triggersError ? <Error vendor={this.props.vendor} error={[this.props.triggersError]} visible={true} type={'triggersError'} /> : null }
         { this.props.assetsError ? <InfobloxError vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { this.props.conditionAddError ? <Error vendor={this.props.vendor} error={[this.props.conditionAddError]} visible={true} type={'conditionAddError'} /> : null }
+        { this.props.conditionDeleteError ? <Error vendor={this.props.vendor} error={[this.props.conditionDeleteError]} visible={true} type={'conditionDeleteError'} /> : null }
       </React.Fragment>
     )
   }
@@ -606,4 +689,7 @@ export default connect((state) => ({
 
   triggersError: state.concerto.triggersError,
   assetsError: state.infoblox.assetsError,
+  conditionAddError: state.concerto.conditionAddError,
+  conditionDeleteError:state.concerto.conditionDeleteError,
+
 }))(Manager);

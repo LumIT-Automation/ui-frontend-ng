@@ -13,7 +13,9 @@ import {
 
   triggerAddError,
   triggerModifyError,
-  triggerDeleteError
+  triggerDeleteError,
+  conditionAddError,
+  conditionDeleteError
 } from './store'
 
 import { Modal, Table, Result } from 'antd';
@@ -68,6 +70,14 @@ class Error extends Component {
         case 'triggerDeleteError':
           this.props.dispatch(triggerDeleteError(null))
           break;
+
+        case 'conditionAddError':
+          this.props.dispatch(conditionAddError(null))
+          break;
+
+        case 'conditionDeleteError':
+          this.props.dispatch(conditionDeleteError(null))
+          break;      
 
         default:
 
