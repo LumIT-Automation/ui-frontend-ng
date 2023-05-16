@@ -290,7 +290,7 @@ class Add extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
           maskClosable={false}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }

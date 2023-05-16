@@ -61,9 +61,7 @@ class Modify extends React.Component {
       await this.setState({assets: assets})
     }
     let request = JSON.parse(JSON.stringify(this.props.obj))
-    request.name
-    request.dst_asset_id
-    request.action
+    console.log(request)
     if (request.enabled) {
       request.enabled = true
     }

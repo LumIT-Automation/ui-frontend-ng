@@ -11,9 +11,7 @@ import Validators from '../../_helpers/validators'
 import {
   assetsFetch,
   assetModifyError,
-  drAddError,
-  drModifyError,
-  drDeleteError
+  assetsError,
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -61,8 +59,8 @@ class Modify extends React.Component {
 
   details = async () => {
     await this.setState({visible: true})
-    console.log(this.props.obj)
     let request = JSON.parse(JSON.stringify(this.props.obj))
+    let assets = JSON.parse(JSON.stringify(this.props.assets))
     if (request.tlsverify) {
       request.tlsverify = 'yes'
     }
@@ -76,39 +74,9 @@ class Modify extends React.Component {
     await this.setState({request: request})
 
     if (this.props.vendor === 'f5') {
-      await this.main()
+      await this.setState({assets: assets})
     }
   }
-
-  main = async () => {
-    await this.setState({assetsLoading: true})
-
-    let fetchedAssets = await this.assetsGet()
-    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-      this.props.dispatch(assetsError(fetchedAssets))
-      await this.setState({assetsLoading: false})
-    }
-    else {
-      await this.setState({assets: fetchedAssets.data.items})
-    }
-    await this.setState({assetsLoading: false})
-  }
-
-  assetsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/assets/?includeDr`, this.props.token)
-    return r
-  }
-
 
   //SETTER
   set = async (value, key) => {
@@ -193,35 +161,6 @@ class Modify extends React.Component {
     }
     else {
       if (this.props.vendor === 'f5') {
-        if (this.state.request.assetDrId !== undefined) {
-          await this.main()
-
-          let list = JSON.parse(JSON.stringify(this.state.assets))
-          let asset = list.find( a => a.fqdn === this.state.request.fqdn )
-
-          let b = {}
-
-          b.data = {
-            "assetDrId": this.state.request.assetDrId,
-            "enabled": true
-          }
-
-          let drAdd = await this.drAdd(asset.id, b)
-          if (drAdd.status && drAdd.status !== 201 ) {
-            this.props.dispatch(drAddError(drAdd))
-            await this.setState({loading: false})
-          }
-          else {
-            await this.setState({loading: false, response: true})
-            this.response()
-          }
-        }
-        else {
-          await this.setState({loading: false, response: true})
-          this.response()
-        }
-      }
-      else {
         await this.setState({loading: false, response: true})
         this.response()
       }
@@ -241,38 +180,6 @@ class Modify extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/asset/${this.props.obj.id}/`, this.props.token, b )
-    return r
-  }
-
-  drAdd = async (id, b) => {
-    let r
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
-
-    return r
-  }
-
-  drDelete = async (assetId, assetDrId, b) => {
-    let r
-    let rest = new Rest(
-      "DELETE",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetsdr/${assetDrId}/`, this.props.token, b )
-
     return r
   }
 
@@ -409,7 +316,7 @@ class Modify extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={750}
+          width={1500}
           maskClosable={false}
         >
         { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
@@ -471,27 +378,6 @@ class Modify extends React.Component {
             </Row>
             <br/>
 
-            { this.props.vendor === 'f5' ?
-              <React.Fragment>
-                <Row>
-                  <Col offset={6} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>DR:</p>
-                  </Col>
-                  <Col span={8}>
-                    {this.state.assetsLoading ?
-                      <Spin indicator={loadingIcon} style={{margin: 'auto 15%'}}/>
-                    :
-                      createElement('select', 'assetDrId', 'assets')
-                    }
-                  </Col>
-                </Row>
-                <br/>
-              </React.Fragment>
-            :
-              null
-            }
-
-
             <Row>
               <Col offset={6} span={2}>
                 <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Position:</p>
@@ -546,7 +432,6 @@ class Modify extends React.Component {
         {this.state.visible ?
           <React.Fragment>
             { this.props.assetModifyError ? <Error component={'asset modify f5'} error={[this.props.assetModifyError]} visible={true} type={'assetModifyError'} /> : null }
-            { this.props.drAddError ? <Error component={'asset modify f5'} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
           </React.Fragment>
         :
           null
@@ -560,7 +445,4 @@ class Modify extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
  	assetModifyError: state.f5.assetModifyError,
-  drAddError: state.f5.drAddError,
-  drModifyError: state.f5.drAModifyError,
-  drDeleteError: state.f5.drDeleteError,
 }))(Modify);

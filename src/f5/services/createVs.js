@@ -604,29 +604,6 @@ class CreateF5Service extends React.Component {
           )
           break;
 
-        case 'radio':
-          return (
-            <Radio.Group
-              onChange={event => this.set(event.target.value, key)}
-              value={this.state.request[`${key}`]}
-              style={this.state.errors[`${key}Error`] ?
-                {border: `1px solid red`}
-              :
-                {}
-              }
-            >
-              <React.Fragment>
-                {this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Radio.Group>
-          )
-          break;
-
         case 'select':
           return (
             <Select
