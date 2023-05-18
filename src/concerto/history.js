@@ -539,7 +539,7 @@ class Manager extends React.Component {
       {
         title: 'Commands Executions',
         align: 'center',
-        width: 400,
+        width: 500,
         dataIndex: 'commandsExecutions',
         key: 'commandsExecutions',
         render: (name, obj)  => (
@@ -551,7 +551,7 @@ class Manager extends React.Component {
               rowKey={randomKey}
               scroll={{y: '30vh'}}
               pagination={false}
-              style={{maxWidth: 'none', marginLeft: '-50px', minHeight: '30vh'}}
+              style={{maxWidth: '100%', marginLeft: '-28px', minHeight: '30vh'}}
             />
           </React.Fragment>
         )

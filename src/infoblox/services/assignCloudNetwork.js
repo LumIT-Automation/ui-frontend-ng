@@ -180,7 +180,14 @@ class IpComponent extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        console.log(resp)
+        if (resp.data) {
+          let network = resp.data.split(':')
+          network = network[1]
+          this.setState({loading: false, response: true, network: network})
+        }
+        //"network/ZG5zLm5ldHdvcmskMTAuOS4yNy4wLzI0LzA:10.9.27.0/24/default"
+        //this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
         this.props.dispatch(assignCloudNetworkError(error))
@@ -212,9 +219,6 @@ class IpComponent extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
-
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {
 
@@ -345,7 +349,8 @@ class IpComponent extends React.Component {
               { !this.state.loading && this.state.response &&
                 <Result
                    status="success"
-                   title="Asset Modified"
+                   title="Cloud Network Assigned"
+                   subTitle={this.state.network}
                  />
               }
               { !this.state.loading && !this.state.response &&
