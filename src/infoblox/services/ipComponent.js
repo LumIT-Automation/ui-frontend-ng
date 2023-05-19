@@ -54,6 +54,13 @@ class IpComponent extends React.Component {
   set = async (e, key) => {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request[key] = e
+    if (key === 'serverName' && request.options) {
+      request.options.forEach((item, i) => {
+        if (item.num === 12) {
+          item.value = e
+        }
+      });
+    }
     await this.setState({request: request})
   }
 
@@ -130,6 +137,7 @@ class IpComponent extends React.Component {
           request.serverName = r.serverName
           request.macAddress = r.macAddress
           request.status = r.status
+          request.options = r.objects[0].options
 
         }
         if (r.objects && r.objects[0] && r.objects[0].options) {
@@ -165,6 +173,11 @@ class IpComponent extends React.Component {
           }
       },
     }
+
+    if (request.options) {
+      b.data.options = request.options
+    }
+
 
     this.setState({ipModifyLoading: true})
 
@@ -245,7 +258,7 @@ class IpComponent extends React.Component {
         }
       :
         {
-          title: 'Name Server',
+          title: 'Server Name',
           align: 'center',
           dataIndex: ['extattrs', 'Name Server', 'value'],
           key: 'nameServer',
