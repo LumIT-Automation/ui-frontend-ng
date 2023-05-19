@@ -145,6 +145,7 @@ class RequestIp extends React.Component {
       if (e.extattrs["Real Network"]) {
         if (e.extattrs["Real Network"].value === 'yes') {
           let o = e
+          console.log('ooooooooooooooooooo', e)
           o.isContainer = true
           list.push(o)
         }
@@ -225,6 +226,8 @@ class RequestIp extends React.Component {
 
     //children networks contained in the in the container
     const result = this.state.real.find( real => real.network === network )
+    request.option12 = false
+    delete request.option12Error
     if (result.isContainer) {
       this.state.networks.forEach((item, i) => {
         if (item.network_container === network ) {
@@ -236,9 +239,11 @@ class RequestIp extends React.Component {
       let unique = objectTypes.filter((v, i, a) => a.indexOf(v) === i);
       request.objectTypes = unique
       request.objectTypesLoading = false
+      request.isContainer = true
     }
     else {
       delete request.objectTypes
+      delete request.isContainer
       request.objectTypesLoading = false
     }
 
@@ -275,6 +280,15 @@ class RequestIp extends React.Component {
     else {
       delete request.macAddress2
       delete request.serverName2
+    }
+
+    if (request.isContainer && objectType === 'Dhcp') {
+      request.option12 = true
+      delete request.option12Error
+    }
+    else if (request.isContainer && objectType !== 'Dhcp') {
+      request.option12 = false
+      delete request.option12Error
     }
     this.setState({requests: requests})
   }
@@ -323,6 +337,7 @@ class RequestIp extends React.Component {
   }
 
   option12Set = (value, id) => {
+    console.log(value)
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.option12 = value
@@ -579,7 +594,17 @@ class RequestIp extends React.Component {
 */
 
   render() {
+    console.log(this.state)
     const requests = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          console.log('oooooooooobj', obj)
+        ),
+      },
       {
         title: 'Loading',
         align: 'center',
@@ -834,6 +859,7 @@ class RequestIp extends React.Component {
             <Checkbox
               checked={obj.option12}
               onChange={event => this.option12Set(event.target.checked, obj.id)}
+              disabled={obj.isContainer ? true : false}
             />
           </React.Fragment>
         )
