@@ -145,7 +145,6 @@ class RequestIp extends React.Component {
       if (e.extattrs["Real Network"]) {
         if (e.extattrs["Real Network"].value === 'yes') {
           let o = e
-          console.log('ooooooooooooooooooo', e)
           o.isContainer = true
           list.push(o)
         }
@@ -192,10 +191,9 @@ class RequestIp extends React.Component {
         this.props.dispatch(networkError(error))
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/`, this.props.token)
+    await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=range`, this.props.token)
     return r
   }
-
 
   setNetworkManager = async (network, e, id) => {
     let reset = await this.reset(id)
@@ -258,6 +256,15 @@ class RequestIp extends React.Component {
       }
     }
     delete request.networkError
+
+
+    if (info && info.rangeInfo.length > 0) {
+      request.rangeInfo = info.rangeInfo[0]
+    }
+    else {
+      delete request.rangeInfo
+    }
+
 
     request.prefix = prefix
     request.subnetMask = subnetMask
@@ -329,37 +336,37 @@ class RequestIp extends React.Component {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.range = value
+
+
+    if (request.rangeInfo) {
+      if (request.rangeInfo.start_addr) {
+        request.start_addr = request.rangeInfo.start_addr
+      }
+      else {
+        delete request.start_addr
+      }
+      if (request.rangeInfo.end_addr) {
+        request.end_addr = request.rangeInfo.end_addr
+      }
+      else {
+        delete request.end_addr
+      }
+    }
+
     if (!request.range) {
-      delete request.firstAddressError
-      delete request.lastAddressError
+      delete request.start_addr
+      delete request.end_addr
     }
     this.setState({requests: requests})
   }
 
   option12Set = (value, id) => {
-    console.log(value)
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.option12 = value
     if (!request.option12) {
       delete request.option12Error
     }
-    this.setState({requests: requests})
-  }
-
-  firstAddressSet = (value, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests.find( r => r.id === id )
-    request.firstAddress = value
-    delete request.firstAddressError
-    this.setState({requests: requests})
-  }
-
-  lastAddressSet = (value, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests.find( r => r.id === id )
-    request.lastAddress = value
-    delete request.lastAddressError
     this.setState({requests: requests})
   }
 
@@ -397,22 +404,6 @@ class RequestIp extends React.Component {
       if (request.option12) {
         if (request.macAddress === '00:00:00:00:00:00') {
           request.macAddressError = 'error'
-          ok = false
-        }
-      }
-      if (request.range) {
-        if (!request.firstAddress) {
-          request.firstAddressError = 'error'
-          ok = false
-        } else if (!validators.ipv4(request.firstAddress)) {
-          request.firstAddressError = 'error'
-          ok = false
-        }
-        if (!request.lastAddress && validators.ipv4(request.lastAddress)) {
-          request.lastAddressError = 'error'
-          ok = false
-        } else if (!validators.ipv4(request.lastAddress)) {
-          request.lastAddressError = 'error'
           ok = false
         }
       }
@@ -501,9 +492,11 @@ class RequestIp extends React.Component {
       }
     }
 
-    if (r.range) {
-      b.data["range_first_ip"] = r.firstAddress
-      b.data["range_last_ip"] = r.lastAddress
+    if (r.start_addr) {
+      b.data["range_first_ip"] = r.start_addr
+    }
+    if (r.end_addr) {
+      b.data["range_last_ip"] = r.end_addr
     }
 
     if (r.option12) {
@@ -594,17 +587,8 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state)
+    console.log(this.state.requests)
     const requests = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          console.log('oooooooooobj', obj)
-        ),
-      },
       {
         title: 'Loading',
         align: 'center',
@@ -695,33 +679,49 @@ class RequestIp extends React.Component {
           </React.Fragment>
         ),
       },
-      {
-        title: 'Range',
-        align: 'center',
-        dataIndex: 'range',
-        key: 'range',
-        render: (name, obj)  => (
-          <React.Fragment>
-            <Checkbox
-              checked={obj.range}
-              onChange={event => this.rangeSet(event.target.checked, obj.id)}
-            />
-          </React.Fragment>
+      ...(
+           (this.props.authorizations && (this.props.authorizations.ranges_get || this.props.authorizations.any) ) ?
+          [
+            {
+              title: 'Range',
+              align: 'center',
+              dataIndex: 'range',
+              key: 'range',
+              render: (name, obj)  => (
+                <React.Fragment>
+                  { obj.rangeInfo ?
+                    <Checkbox
+                      checked={obj.range}
+                      onChange={event => this.rangeSet(event.target.checked, obj.id)}
+                    />
+                  :
+                    null
+                  }
+                </React.Fragment>
+              )
+            },
+          ]
+          :
+          []
         )
-      },
+      ,
       {
         title: 'First Address',
         align: 'center',
         dataIndex: 'firstAddress',
         key: 'firstAddress',
         render: (name, obj)  => (
-          <Input
-            placeholder={obj.firstAddress}
-            style={obj.firstAddressError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
-            onChange={e => this.firstAddressSet(e.target.value, obj.id)}
-            onPressEnter={() => this.validation()}
-            disabled={obj.range ? false : true}
-          />
+          <React.Fragment>
+            { obj.rangeInfo ?
+              <Input
+                placeholder={obj.start_addr}
+                style={{width: '150px'}}
+                disabled
+              />
+            :
+              null
+            }
+          </React.Fragment>
         )
       },
       {
@@ -730,13 +730,17 @@ class RequestIp extends React.Component {
         dataIndex: 'lastAddress',
         key: 'lastAddress',
         render: (name, obj)  => (
-          <Input
-            placeholder={obj.lastAddress}
-            style={obj.lastAddressError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
-            onChange={e => this.lastAddressSet(e.target.value, obj.id)}
-            onPressEnter={() => this.validation()}
-            disabled={obj.range ? false : true}
-          />
+          <React.Fragment>
+            { obj.rangeInfo ?
+              <Input
+                placeholder={obj.end_addr}
+                style={{width: '150px'}}
+                disabled
+              />
+            :
+              null
+            }
+          </React.Fragment>
         )
       },
       {
