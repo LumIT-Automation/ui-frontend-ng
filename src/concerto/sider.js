@@ -223,6 +223,20 @@ class CustomSider extends Component {
              null
           }
 
+          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ||
+            (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
+            (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.permission_identityGroups_post) ||
+            (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
+            (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
+            (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
+            <React.Fragment>
+              <Menu.Item key="permissions2" icon={this.permissionsIcon()}><Link to="/permissions2/">PERMISSIONS2</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            :
+             null
+          }
+
           { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ?
             <React.Fragment>
               <Menu.Item key="triggers" icon={this.triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>

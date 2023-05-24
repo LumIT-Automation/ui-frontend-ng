@@ -5,6 +5,20 @@ const concertoSlice = createSlice({
     initialState: {},
     reducers: {
 
+      assetsError: ( state, action) => {
+        state.assetsError = action.payload
+      },
+
+      permissionsError: ( state, action) => {
+        state.permissionsError = action.payload
+      },
+      identityGroupsError: ( state, action) => {
+        state.identityGroupsError = action.payload
+      },
+      rolesError: ( state, action) => {
+        state.rolesError = action.payload
+      },
+
       configurations: ( state, action) => {
         state.configurations = action.payload.data.configuration
       },
@@ -56,6 +70,12 @@ const concertoSlice = createSlice({
 const { actions, reducer } = concertoSlice;
 
 export const {
+
+  assetsError,
+
+  permissionsError,
+  identityGroupsError,
+  rolesError,
 
   configurations,
   configurationsError,

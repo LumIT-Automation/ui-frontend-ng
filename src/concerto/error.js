@@ -5,6 +5,12 @@ import { Component } from "react";
 import { authorizationsError } from '../_store/store.authorizations'
 
 import {
+  assetsError,
+
+  permissionsError,
+  identityGroupsError,
+  rolesError,
+
   configurationsError,
 
   historysError,
@@ -47,6 +53,20 @@ class Error extends Component {
     if ( this.props.type ) {
       switch(this.props.type) {
 
+        case 'assetsError':
+          this.props.dispatch(assetsError(null))
+          break;
+
+        case 'permissionsError':
+          this.props.dispatch(permissionsError(null))
+          break;
+        case 'identityGroupsError':
+          this.props.dispatch(identityGroupsError(null))
+          break;
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
+          break;
+
         case 'configurationsError':
           this.props.dispatch(configurationsError(null))
           break;
@@ -77,7 +97,7 @@ class Error extends Component {
 
         case 'conditionDeleteError':
           this.props.dispatch(conditionDeleteError(null))
-          break;      
+          break;
 
         default:
 
