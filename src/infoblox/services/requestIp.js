@@ -289,11 +289,11 @@ class RequestIp extends React.Component {
       delete request.serverName2
     }
 
-    if (request.isContainer && objectType === 'Dhcp') {
+    if (request.isContainer && objectType === 'Serverdhcp') {
       request.option12 = true
       delete request.option12Error
     }
-    else if (request.isContainer && objectType !== 'Dhcp') {
+    else if (request.isContainer && objectType !== 'Serverdhcp') {
       request.option12 = false
       delete request.option12Error
     }
