@@ -7,7 +7,7 @@ import Rest from '../_helpers/Rest'
 import Error from './error'
 import RolesDescription from './rolesDescription'
 
-import { Space, Table, Input, Button, Checkbox, Spin, Progress } from 'antd';
+import { Space, Table, Input, Button, Checkbox, Select, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
@@ -256,16 +256,10 @@ class Permission extends React.Component {
     }
     try {
       Object.values(permissions).forEach((perm, i) => {
-        let asset
-        if (this.props.vendor === 'vmware') {
-          asset = this.state.assets.find(a => a.id === perm[subAsset].id_asset)
-        }
-        else {
-          asset = this.state.assets.find(a => a.id === perm[subAsset].asset_id)
-        }
+        let asset = this.state.assets.find(a => a.id === perm[subAsset].id_asset)
         perm.asset = asset
+        perm.assetFqdn = asset.fqdn
       });
-
 
       return permissions
     } catch(error) {
@@ -384,9 +378,36 @@ class Permission extends React.Component {
       {
         title: 'Asset',
         align: 'center',
-        dataIndex: ['asset', 'fqdn' ],
-        key: 'fqdn',
-        ...this.getColumnSearchProps(['asset', 'fqdn' ]),
+        dataIndex: 'assetFqdn',
+        key: 'assetFqdn',
+        ...this.getColumnSearchProps('assetFqdn'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.assetFqdn}
+            showSearch
+            style=
+            { obj.assetFqdnError ?
+              {width: 150, border: `1px solid red`}
+            :
+              {width: 150}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('assetId', value, obj )}
+          >
+            { this.state.assets.map((ass, i) => {
+                return (
+                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
       },
       ...(
         this.props.vendor === 'infoblox' ?
