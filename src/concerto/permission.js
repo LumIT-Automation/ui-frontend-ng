@@ -182,6 +182,7 @@ class Permission extends React.Component {
       permissionsWithAssets = await this.assetWithDetails(permissionsNoWorkflowLocal)
       permissionsWithAssets.forEach((item, i) => {
         item.existent = true
+        item.isModified = {}
       });
 
       await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
@@ -291,8 +292,65 @@ class Permission extends React.Component {
   }
 
   set = async (key, value, permission) => {
+    console.log('key', key)
+    console.log('value', value)
+    console.log('permission', permission)
+
+    console.log('this.state.assets', this.state.assets)
+    console.log('this.state.identityGroups', this.state.identityGroups)
+    console.log('this.state.originPermissions', this.state.originPermissions)
+
+    let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
     let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let origPerm = this.state.originPermissions.find(p => p.id === permission.id)
     let perm = permissions.find(p => p.id === permission.id)
+
+
+    if (key === 'identity_group_identifier') {
+      if (value) {
+        let ig = identityGroups.find(i => i.identity_group_identifier === value)
+        console.log('iiiiiiiii', ig)
+        if (perm.existent) {
+          if (ig.identity_group_identifier !== origPerm.identity_group_identifier) {
+            perm.isModified.identity_group_identifier = true
+            perm.identity_group_identifier = ig.identity_group_identifier
+            perm.identity_group_name = ig.name
+          }
+          else {
+            delete perm.isModified.identity_group_identifier
+            perm.identity_group_identifier = ig.identity_group_identifier
+            perm.identity_group_name = ig.name
+          }
+        }
+        else {
+          perm.identity_group_identifier = ig.identity_group_identifier
+          perm.identity_group_name = ig.name
+        }
+      }
+    }
+
+    if (key === 'assetId') {
+      if (value) {
+        let asset = assets.find(a => a.id === value)
+        if (perm.existent) {
+          if (asset.fqdn !== origPerm.asset.fqdn) {
+            perm.isModified.assetId = true
+            perm.asset = asset
+            perm.assetFqdn = asset.fqdn
+          }
+          else {
+            delete perm.isModified.assetId
+            perm.asset = asset
+            perm.assetFqdn = asset.fqdn
+          }
+        }
+        else {
+          perm.asset = asset
+          perm.assetFqdn = asset.fqdn
+        }
+      }
+    }
 
     if (key === 'toDelete') {
       if (value) {
@@ -302,9 +360,8 @@ class Permission extends React.Component {
         delete perm.toDelete
       }
     }
-    console.log(perm)
-    console.log(permissions)
     await this.setState({permissions: permissions})
+    console.log('this.state.permissions', this.state.permissions)
   }
 
 
@@ -336,8 +393,6 @@ class Permission extends React.Component {
   }
 
   render() {
-    console.log('permissions', this.state.permissions)
-    console.log('originPermissions', this.state.originPermissions)
 
     let returnCol = () => {
       return vendorColumns
@@ -374,6 +429,33 @@ class Permission extends React.Component {
         dataIndex: 'identity_group_identifier',
         key: 'identity_group_identifier',
         ...this.getColumnSearchProps('identity_group_identifier'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.identity_group_identifier}
+            showSearch
+            style=
+            { obj.identity_group_identifierError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('identity_group_identifier', value, obj )}
+          >
+            { this.state.identityGroups.map((ig, i) => {
+                return (
+                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
       },
       {
         title: 'Asset',
