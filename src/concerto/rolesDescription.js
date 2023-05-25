@@ -47,7 +47,7 @@ class RolesDescription extends React.Component {
 
     fetchedRoles = await this.rolesGet()
     if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
-      this.props.dispatch(rolesError(error))
+      this.props.dispatch(rolesError(fetchedRoles))
       await this.setState({loading: false})
       return
     }

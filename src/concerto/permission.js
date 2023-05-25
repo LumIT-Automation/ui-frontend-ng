@@ -7,15 +7,15 @@ import Rest from '../_helpers/Rest'
 import Error from './error'
 import RolesDescription from './rolesDescription'
 
-import { Space, Table, Input, Button, Spin, Progress } from 'antd';
+import { Space, Table, Input, Button, Checkbox, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 
 import {
-  permissionsError,
   assetsError,
   identityGroupsError,
+  permissionsError,
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -35,7 +35,7 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.permissionsError && !this.props.assetsError && !this.props.identityGroupsError) {
+    if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       this.setState({permissionsRefresh: false})
       this.main()
     }
@@ -180,7 +180,11 @@ class Permission extends React.Component {
     else {
       permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
       permissionsWithAssets = await this.assetWithDetails(permissionsNoWorkflowLocal)
-      await this.setState({permissions: permissionsWithAssets})
+      permissionsWithAssets.forEach((item, i) => {
+        item.existent = true
+      });
+
+      await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
     }
 
   await this.setState({loading: false})
@@ -200,7 +204,6 @@ class Permission extends React.Component {
     await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token)
     return r
   }
-
 
   identityGroupsGet = async () => {
     let r
@@ -293,17 +296,77 @@ class Permission extends React.Component {
     return r
   }
 
+  set = async (key, value, permission) => {
+    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let perm = permissions.find(p => p.id === permission.id)
+
+    if (key === 'toDelete') {
+      if (value) {
+        perm.toDelete = true
+      }
+      else {
+        delete perm.toDelete
+      }
+    }
+    console.log(perm)
+    console.log(permissions)
+    await this.setState({permissions: permissions})
+  }
+
+
+
+  permissionAdd = async () => {
+    let id = 0
+    let n = 0
+    let p = {}
+    let list = JSON.parse(JSON.stringify(this.state.permissions))
+
+    this.state.permissions.forEach(p => {
+      if (p.id > id) {
+        id = p.id
+      }
+    });
+    n = id + 1
+    p.id = n
+    list.push(p)
+
+    await this.setState({permissions: list})
+  }
+
+  permissionRemove = async p => {
+    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let newList = permissions.filter(n => {
+      return p.id !== n.id
+    })
+    await this.setState({permissions: newList})
+  }
+
   render() {
-    console.log('vendor', this.props.vendor)
-    console.log('assets', this.state.assets)
-    console.log('ideGroups', this.state.identityGroups)
     console.log('permissions', this.state.permissions)
+    console.log('originPermissions', this.state.originPermissions)
 
     let returnCol = () => {
       return vendorColumns
     }
 
     const vendorColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
       {
         title: 'AD group name',
         align: 'center',
@@ -378,6 +441,30 @@ class Permission extends React.Component {
         dataIndex: 'role',
         key: 'role',
         ...this.getColumnSearchProps('role'),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                shape='round'
+                onClick={(e) => this.permissionRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
       }
     ];
 
@@ -392,7 +479,13 @@ class Permission extends React.Component {
         :
           <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.permissionsRefresh()}><ReloadOutlined/></Button>
+            <Button onClick={() => this.permissionsRefresh()}>
+              <ReloadOutlined/>
+            </Button>
+            <Button type="primary" onClick={() => this.permissionAdd()}>
+              +
+            </Button>
+            <br/>
             <br/>
             <Table
               columns={returnCol()}
