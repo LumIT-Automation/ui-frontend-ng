@@ -6,6 +6,9 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   assetsError,
+  subAssetsError,
+  networksError,
+  containersError,
 
   permissionsError,
   identityGroupsError,
@@ -56,6 +59,16 @@ class Error extends Component {
         case 'assetsError':
           this.props.dispatch(assetsError(null))
           break;
+        case 'subAssetsError':
+          this.props.dispatch(subAssetsError(null))
+          break;
+        case 'networksError':
+          this.props.dispatch(networksError(null))
+          break;
+        case 'containersError':
+          this.props.dispatch(containersError(null))
+          break;
+
 
         case 'permissionsError':
           this.props.dispatch(permissionsError(null))

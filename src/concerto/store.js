@@ -8,6 +8,15 @@ const concertoSlice = createSlice({
       assetsError: ( state, action) => {
         state.assetsError = action.payload
       },
+      subAssetsError: ( state, action) => {
+        state.subAssetsError = action.payload
+      },
+      networksError: ( state, action) => {
+        state.networksError = action.payload
+      },
+      containersError: ( state, action) => {
+        state.containersError = action.payload
+      },
 
       permissionsError: ( state, action) => {
         state.permissionsError = action.payload
@@ -72,6 +81,9 @@ const { actions, reducer } = concertoSlice;
 export const {
 
   assetsError,
+  subAssetsError,
+  networksError,
+  containersError,
 
   permissionsError,
   identityGroupsError,

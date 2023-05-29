@@ -14,6 +14,10 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 import {
   assetsError,
+  subAssetsError,
+  networksError,
+  containersError,
+
   identityGroupsError,
   permissionsError,
 } from './store'
@@ -35,6 +39,7 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
+    this.setState({permissions: []})
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       this.setState({permissionsRefresh: false})
       this.main()
@@ -57,6 +62,7 @@ class Permission extends React.Component {
   }
 
   componentWillUnmount() {
+    console.log('unmount')
   }
 
   getColumnSearchProps = dataIndex => ({
@@ -148,7 +154,29 @@ class Permission extends React.Component {
     permissionsNoWorkflowLocal,
     permissionsWithAssets
 
-    await this.setState({loading: true})
+    let subAsset, subAssets
+    switch (this.props.vendor) {
+      case 'infoblox':
+        subAsset = 'network'
+        subAssets = 'networks'
+        break;
+      case 'checkpoint':
+        subAsset = 'domain'
+        subAssets = 'domains'
+        break;
+      case 'f5':
+        subAsset = 'partition'
+        subAssets = 'partitions'
+        break;
+      case 'vmware':
+        subAsset = 'object'
+        subAssets = 'objects'
+        break;
+      default:
+
+    }
+
+    await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset})
 
     fetchedAssets = await this.assetsGet()
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
@@ -157,8 +185,16 @@ class Permission extends React.Component {
       return
     }
     else {
-      await this.setState({assets: fetchedAssets.data.items})
+      let assets = []
+      fetchedAssets.data.items.forEach((item, i) => {
+        item[subAssets] = []
+        assets.push(item)
+      });
+
+      await this.setState({assets: assets})
     }
+
+    await this.assetWithSubAssets()
 
     fetchedIdentityGroups = await this.identityGroupsGet()
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
@@ -179,7 +215,7 @@ class Permission extends React.Component {
     }
     else {
       permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
-      permissionsWithAssets = await this.assetWithDetails(permissionsNoWorkflowLocal)
+      permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
       permissionsWithAssets.forEach((item, i) => {
         item.existent = true
         item.isModified = {}
@@ -188,7 +224,9 @@ class Permission extends React.Component {
       await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
     }
 
+
   await this.setState({loading: false})
+
   }
 
   assetsGet = async () => {
@@ -236,37 +274,160 @@ class Permission extends React.Component {
     return r
   }
 
-  assetWithDetails = async (permissions) => {
+  subAssetsGet = async (assetId, subAssets) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/${subAssets}/`, this.props.token)
+    return r
+  }
 
-    let subAsset
-    switch (this.props.vendor) {
-      case 'infoblox':
-        subAsset = 'network'
-        break;
-      case 'checkpoint':
-        subAsset = 'domain'
-        break;
-      case 'f5':
-        subAsset = 'partition'
-        break;
-      case 'vmware':
-        subAsset = 'object'
-        break;
-      default:
-
-    }
+  permsWithAsset = async (permissions) => {
+    console.log(permissions)
+    console.log(this.state.subAsset)
     try {
       Object.values(permissions).forEach((perm, i) => {
-        let asset = this.state.assets.find(a => a.id === perm[subAsset].id_asset)
+        let asset = this.state.assets.find(a => a.id === perm[this.state.subAsset].id_asset)
         perm.asset = asset
         perm.assetFqdn = asset.fqdn
       });
-
+      console.log(permissions)
       return permissions
     } catch(error) {
       console.log(error)
       return permissions
     }
+  }
+
+  assetWithSubAssets = async () => {
+    console.log('subAssetWithSubAssets')
+    let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let subAssetsFetched
+
+    try {
+      for (const asset of Object.values(assets)) {
+        await this.setState({assets: assets})
+
+        switch (this.state.subAssets) {
+          case 'networks':
+            subAssetsFetched = await this.networksGet(asset.id)
+            break;
+          case 'domains':
+            subAssetsFetched = await this.domainsGet(asset.id)
+            break;
+          case 'partitions':
+            subAssetsFetched = await this.partitionsGet(asset.id)
+            break;
+          case 'objects':
+            subAssetsFetched = []
+            break;
+          default:
+        }
+
+        if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
+          this.props.dispatch(subAssetsError(subAssetsFetched))
+          await this.setState({assets: assets})
+          return
+        }
+        else {
+          console.log(subAssetsFetched)
+          asset[this.state.subAssets] = subAssetsFetched
+          await this.setState({assets: assets})
+        }
+      };
+      console.log(assets)
+      return assets
+    } catch(error) {
+      console.log(error)
+      return assets
+    }
+  }
+
+  networksGet = async (assetId) => {
+
+    let nets = await this.netsGet(assetId)
+    console.log('nets', nets)
+    if (nets.status && nets.status !== 200) {
+      this.props.dispatch(networksError( nets ))
+      return
+    }
+
+    let containers = await this.containersGet(assetId)
+    console.log('containers', containers)
+    if (containers.status && containers.status !== 200) {
+      this.props.dispatch(containersError( containers ))
+      return
+    }
+
+    let networks = nets.concat(containers)
+    return networks
+  }
+
+  netsGet = async (assetId) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/networks/`, this.props.token)
+    return r
+  }
+
+  containersGet = async (assetId) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/network-containers/`, this.props.token)
+    return r
+  }
+
+  domainsGet = async (assetId) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data.items
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/domains/`, this.props.token)
+    return r
+  }
+
+  partitionsGet = async (assetId) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp.data.items
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/partitions/`, this.props.token)
+    return r
   }
 
   permissionsRefresh = async () => {
@@ -310,7 +471,6 @@ class Permission extends React.Component {
     if (key === 'identity_group_identifier') {
       if (value) {
         let ig = identityGroups.find(i => i.identity_group_identifier === value)
-        console.log('iiiiiiiii', ig)
         if (perm.existent) {
           if (ig.identity_group_identifier !== origPerm.identity_group_identifier) {
             perm.isModified.identity_group_identifier = true
@@ -333,6 +493,7 @@ class Permission extends React.Component {
     if (key === 'assetId') {
       if (value) {
         let asset = assets.find(a => a.id === value)
+
         if (perm.existent) {
           if (asset.fqdn !== origPerm.asset.fqdn) {
             perm.isModified.assetId = true
@@ -393,6 +554,10 @@ class Permission extends React.Component {
   }
 
   render() {
+    console.log('assets', this.state.assets)
+    console.log('subAssets', this.state.subAssets)
+    console.log('subAsset', this.state.subAsset)
+    console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
       return vendorColumns
@@ -495,44 +660,192 @@ class Permission extends React.Component {
         this.props.vendor === 'infoblox' ?
           [
             {
-              title: 'Network',
+              title: this.state.subAsset,
               align: 'center',
-              dataIndex: ['network', 'name' ],
-              key: 'network',
-              ...this.getColumnSearchProps(['network', 'name' ]),
+              dataIndex: [this.state.subAsset, 'name' ],
+              key: this.state.subAsset,
+              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
+              render: (name, obj)  => (
+                  <Select
+                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
+                    showSearch
+                    style=
+                    { obj.networkError ?
+                      {width: 150, border: `1px solid red`}
+                    :
+                      {width: 150}
+                    }
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={value => this.set('subAsset', value, obj )}
+                  >
+                    {obj && obj.role && obj.role === 'admin' ?
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    :
+                      <React.Fragment>
+                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
+                            return (
+                              <Select.Option key={i} value={sub.network ? sub.network : ''}>{sub.network ? sub.network : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+
+                  </Select>
+              ),
             },
           ]
         :
           this.props.vendor === 'checkpoint' ?
           [
             {
-              title: 'Domain',
+              title: this.state.subAsset,
               align: 'center',
-              dataIndex: ['domain', 'name' ],
-              key: 'domain',
-              ...this.getColumnSearchProps(['domain', 'name' ]),
+              dataIndex: [this.state.subAsset, 'name' ],
+              key: this.state.subAsset,
+              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
+              render: (name, obj)  => (
+                  <Select
+                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
+                    showSearch
+                    style=
+                    { obj.networkError ?
+                      {width: 150, border: `1px solid red`}
+                    :
+                      {width: 150}
+                    }
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={value => this.set('subAsset', value, obj )}
+                  >
+                    {obj && obj.role && obj.role === 'admin' ?
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    :
+                      <React.Fragment>
+                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
+                            return (
+                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+
+                  </Select>
+              ),
             },
           ]
           :
           this.props.vendor === 'f5' ?
           [
             {
-              title: 'Partition',
+              title: this.state.subAsset,
               align: 'center',
-              dataIndex: ['partition', 'name' ],
-              key: 'partition',
-              ...this.getColumnSearchProps(['partition', 'name' ]),
+              dataIndex: [this.state.subAsset, 'name' ],
+              key: this.state.subAsset,
+              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
+              render: (name, obj)  => (
+                  <Select
+                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
+                    showSearch
+                    style=
+                    { obj.networkError ?
+                      {width: 150, border: `1px solid red`}
+                    :
+                      {width: 150}
+                    }
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={value => this.set('subAsset', value, obj )}
+                  >
+                    {obj && obj.role && obj.role === 'admin' ?
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    :
+                      <React.Fragment>
+                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
+                            return (
+                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+
+                  </Select>
+              ),
             },
           ]
           :
           this.props.vendor === 'vmware' ?
           [
             {
-              title: 'MoId',
+              title: this.state.subAsset,
               align: 'center',
-              dataIndex: ['object', 'name' ],
-              key: 'object',
-              ...this.getColumnSearchProps(['object', 'name' ]),
+              dataIndex: [this.state.subAsset, 'name' ],
+              key: this.state.subAsset,
+              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
+              render: (name, obj)  => (
+                  <Select
+                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
+                    showSearch
+                    style=
+                    { obj.networkError ?
+                      {width: 150, border: `1px solid red`}
+                    :
+                      {width: 150}
+                    }
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={value => this.set('subAsset', value, obj )}
+                  >
+                    {obj && obj.role && obj.role === 'admin' ?
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                    :
+                      <React.Fragment>
+                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
+                            return (
+                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+
+                  </Select>
+              ),
             },
           ]
         :
@@ -601,6 +914,10 @@ class Permission extends React.Component {
           </Space>
         }
         { this.props.assetsError ? <Error vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { this.props.subAssetsError ? <Error vendor={this.props.vendor} error={[this.props.subAssetsError]} visible={true} type={'subAssetsError'} /> : null }
+        { this.props.networksError ? <Error vendor={this.props.vendor} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
+        { this.props.containersError ? <Error vendor={this.props.vendor} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
+
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
         { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
       </React.Fragment>
@@ -612,6 +929,9 @@ export default connect((state) => ({
   token: state.authentication.token,
 
   assetsError: state.concerto.assetsError,
+  subAssetsError: state.concerto.subAssetsError,
+  networksError: state.concerto.networksError,
+  containersError: state.concerto.containersError,
   identityGroupsError: state.concerto.identityGroupsError,
   permissionsError: state.concerto.permissionsError,
 }))(Permission);
