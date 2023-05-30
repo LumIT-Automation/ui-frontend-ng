@@ -412,6 +412,7 @@ class Permission extends React.Component {
           perm.identity_group_identifier = ig.identity_group_identifier
           perm.identity_group_name = ig.name
         }
+        delete perm.identity_group_identifierError
       }
     }
 
@@ -430,6 +431,7 @@ class Permission extends React.Component {
         else {
           perm.role = value
         }
+        delete perm.roleError
       }
     }
 
@@ -458,6 +460,7 @@ class Permission extends React.Component {
           perm.assetFqdn = asset.fqdn
           perm[this.state.subAsset] = {id_asset: value}
         }
+        delete perm.assetIdError
       }
     }
 
@@ -476,6 +479,7 @@ class Permission extends React.Component {
         else {
           perm[this.state.subAsset].name = value
         }
+        delete perm[`${this.state.subAsset}Error`]
       }
     }
 
@@ -488,6 +492,38 @@ class Permission extends React.Component {
       }
     }
     await this.setState({permissions: permissions})
+  }
+
+  validation = async () => {
+    let errors = await this.validationCheck()
+    if (errors === 0) {
+      console.log('si volaaaaaaaaaaaaaaaaaaa')
+    }
+  }
+
+  validationCheck = async () => {
+    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let errors = 0
+    for (const perm of Object.values(permissions)) {
+      if (!perm.identity_group_identifier) {
+        ++errors
+        perm.identity_group_identifierError = true
+      }
+      if (!perm.role) {
+        perm.roleError = true
+        ++errors
+      }
+      if (!perm[this.state.subAsset].id_asset) {
+        perm.assetIdError = true
+        ++errors
+      }
+      if (!perm[this.state.subAsset].name) {
+        perm[`${this.state.subAsset}Error`] = true
+        ++errors
+      }
+    }
+    await this.setState({permissions: permissions})
+    return errors
   }
 
 
@@ -572,7 +608,7 @@ class Permission extends React.Component {
             value={obj.assetFqdn}
             showSearch
             style=
-            { obj.assetFqdnError ?
+            { obj.assetIdError ?
               {width: 150, border: `1px solid red`}
             :
               {width: 150}
@@ -610,7 +646,7 @@ class Permission extends React.Component {
                     disabled={!obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
-                    { obj.networkError ?
+                    { obj[`${this.state.subAsset}Error`] ?
                       {width: 150, border: `1px solid red`}
                     :
                       {width: 150}
@@ -659,7 +695,7 @@ class Permission extends React.Component {
                     disabled={!obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
-                    { obj.networkError ?
+                    { obj[`${this.state.subAsset}Error`] ?
                       {width: 150, border: `1px solid red`}
                     :
                       {width: 150}
@@ -708,7 +744,7 @@ class Permission extends React.Component {
                     disabled={!obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
-                    { obj.networkError ?
+                    { obj[`${this.state.subAsset}Error`] ?
                       {width: 150, border: `1px solid red`}
                     :
                       {width: 150}
@@ -757,7 +793,7 @@ class Permission extends React.Component {
                     disabled={!obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
-                    { obj.networkError ?
+                    { obj[`${this.state.subAsset}Error`] ?
                       {width: 150, border: `1px solid red`}
                     :
                       {width: 150}
@@ -883,6 +919,14 @@ class Permission extends React.Component {
               scroll={{x: 'auto'}}
               pagination={{ pageSize: 10 }}
             />
+            <Button
+              type="primary"
+              shape='round'
+              style={{float: 'right'}}
+              onClick={() => this.validation()}
+            >
+              Commit
+            </Button>
           </Space>
         }
         { this.props.assetsError ? <Error vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
