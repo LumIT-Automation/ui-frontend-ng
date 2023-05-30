@@ -15,6 +15,9 @@ import {
   identityGroupsError,
 
   permissionsError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 
   configurationsError,
 
@@ -82,7 +85,15 @@ class Error extends Component {
         case 'permissionsError':
           this.props.dispatch(permissionsError(null))
           break;
-
+        case 'permissionAddError':
+          this.props.dispatch(permissionAddError(null))
+          break;
+        case 'permissionModifyError':
+          this.props.dispatch(permissionModifyError(null))
+          break;
+        case 'permissionDeleteError':
+          this.props.dispatch(permissionDeleteError(null))
+          break;
 
         case 'configurationsError':
           this.props.dispatch(configurationsError(null))

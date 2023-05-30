@@ -30,6 +30,16 @@ const concertoSlice = createSlice({
         state.permissionsError = action.payload
       },
 
+      permissionAddError: ( state, action) => {
+        state.permissionAddError = action.payload
+      },
+      permissionModifyError: ( state, action) => {
+        state.permissionModifyError = action.payload
+      },
+      permissionDeleteError: ( state, action) => {
+        state.permissionDeleteError = action.payload
+      },
+
       configurations: ( state, action) => {
         state.configurations = action.payload.data.configuration
       },
@@ -92,7 +102,10 @@ export const {
   identityGroupsError,
 
   permissionsError,
-  
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
+
   configurations,
   configurationsError,
 

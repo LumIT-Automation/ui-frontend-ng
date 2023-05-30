@@ -21,9 +21,13 @@ import {
   rolesError,
   identityGroupsError,
   permissionsError,
+  permissionAddError,
+  permissionModifyError,
+  permissionDeleteError,
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 //import List from './list'
 
@@ -546,6 +550,137 @@ class Permission extends React.Component {
     console.log('toDelete', toDelete)
     console.log('toPatch', toPatch)
     console.log('toPost', toPost)
+
+    if (toDelete.length > 0) {
+      for (const perm of toDelete) {
+        //let per = permissions.find(p => p.id === perm.id)
+        perm.loading = true
+        await this.setState({permissions: permissions})
+
+        let p = await this.permissionDelete(perm.id)
+        if (p.status && p.status !== 200 ) {
+          this.props.dispatch(permissionDeleteError(p))
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+        else {
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+
+      }
+    }
+
+    if (toPatch.length > 0) {
+      for (const perm of toPatch) {
+        let body = {}
+        body.data = {
+          "identity_group_name": perm.identity_group_name,
+           "identity_group_identifier": perm.identity_group_identifier,
+           "role": perm.role,
+           [this.state.subAsset]: {
+               "name": perm[this.state.subAsset].name,
+               "id_asset": perm[this.state.subAsset].id_asset
+           }
+        }
+        if (this.props.vendor === 'vmware') {
+          body.data[this.state.subAsset].moId = "any"
+        }
+        perm.loading = true
+        await this.setState({permissions: permissions})
+
+        let p = await this.permModify(perm.id, body)
+        if (p.status && p.status !== 200 ) {
+          this.props.dispatch(permissionModifyError(p))
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+        else {
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+
+      }
+    }
+
+    if (toPost.length > 0) {
+      for (const perm of toPost) {
+        let body = {}
+        body.data = {
+          "identity_group_name": perm.identity_group_name,
+           "identity_group_identifier": perm.identity_group_identifier,
+           "role": perm.role,
+           [this.state.subAsset]: {
+               "name": perm[this.state.subAsset].name,
+               "id_asset": perm[this.state.subAsset].id_asset
+           }
+        }
+        if (this.props.vendor === 'vmware') {
+          body.data[this.state.subAsset].moId = "any"
+        }
+        perm.loading = true
+        await this.setState({permissions: permissions})
+
+        let p = await this.permAdd(body)
+        if (p.status && p.status !== 201 ) {
+          this.props.dispatch(permissionAddError(p))
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+        else {
+          perm.loading = false
+          await this.setState({permissions: permissions})
+        }
+
+      }
+    }
+
+    this.permissionsRefresh()
+  }
+
+  permissionDelete = async (permissionId) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/permission/${permissionId}/`, this.props.token )
+    return r
+  }
+
+  permModify = async (permId, body) => {
+    let r
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/permission/${permId}/`, this.props.token, body )
+    return r
+  }
+
+  permAdd = async (body) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/permissions/`, this.props.token, body )
+    return r
   }
 
 
@@ -568,7 +703,7 @@ class Permission extends React.Component {
         key: 'loading',
         render: (name, obj)  => (
           <Space size="small">
-            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },
@@ -959,6 +1094,9 @@ class Permission extends React.Component {
         { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
         { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
+        { this.props.permissionAddError ? <Error vendor={this.props.vendor} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
+        { this.props.permissionModifyError ? <Error vendor={this.props.vendor} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
+        { this.props.permissionDeleteError ? <Error vendor={this.props.vendor} error={[this.props.permissionDeleteError]} visible={true} type={'permissionDeleteError'} /> : null }
       </React.Fragment>
     )
   }
@@ -977,4 +1115,7 @@ export default connect((state) => ({
   identityGroupsError: state.concerto.identityGroupsError,
 
   permissionsError: state.concerto.permissionsError,
+  permissionAddError: state.concerto.permissionAddError,
+  permissionModifyError: state.concerto.permissionModifyError,
+  permissionDeleteError: state.concerto.permissionDeleteError,
 }))(Permission);
