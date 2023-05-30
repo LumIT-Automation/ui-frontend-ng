@@ -10,9 +10,11 @@ import {
   networksError,
   containersError,
 
-  permissionsError,
-  identityGroupsError,
   rolesError,
+
+  identityGroupsError,
+
+  permissionsError,
 
   configurationsError,
 
@@ -69,16 +71,18 @@ class Error extends Component {
           this.props.dispatch(containersError(null))
           break;
 
+        case 'rolesError':
+          this.props.dispatch(rolesError(null))
+          break;
+
+        case 'identityGroupsError':
+          this.props.dispatch(identityGroupsError(null))
+          break;
 
         case 'permissionsError':
           this.props.dispatch(permissionsError(null))
           break;
-        case 'identityGroupsError':
-          this.props.dispatch(identityGroupsError(null))
-          break;
-        case 'rolesError':
-          this.props.dispatch(rolesError(null))
-          break;
+
 
         case 'configurationsError':
           this.props.dispatch(configurationsError(null))

@@ -18,6 +18,7 @@ import {
   networksError,
   containersError,
 
+  rolesError,
   identityGroupsError,
   permissionsError,
 } from './store'
@@ -149,6 +150,7 @@ class Permission extends React.Component {
   main = async () => {
     let fetchedAssets,
     fetchedIdentityGroups,
+    fetchedRoles,
     fetchedPermissions,
     identityGroupsNoWorkflowLocal,
     permissionsNoWorkflowLocal,
@@ -195,6 +197,16 @@ class Permission extends React.Component {
     }
 
     await this.assetWithSubAssets()
+
+    fetchedRoles = await this.rolesGet()
+    if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
+      this.props.dispatch(rolesError(fetchedRoles))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      await this.setState({roles: fetchedRoles.data.items})
+    }
 
     fetchedIdentityGroups = await this.identityGroupsGet()
     if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
@@ -244,6 +256,36 @@ class Permission extends React.Component {
     return r
   }
 
+  subAssetsGet = async (assetId, subAssets) => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${assetId}/${subAssets}/`, this.props.token)
+    return r
+  }
+
+  rolesGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/roles/`, this.props.token)
+    return r
+  }
+
   identityGroupsGet = async () => {
     let r
     let rest = new Rest(
@@ -274,93 +316,15 @@ class Permission extends React.Component {
     return r
   }
 
-  subAssetsGet = async (assetId, subAssets) => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/${assetId}/${subAssets}/`, this.props.token)
-    return r
-  }
-
-  permsWithAsset = async (permissions) => {
-    console.log(permissions)
-    console.log(this.state.subAsset)
-    try {
-      Object.values(permissions).forEach((perm, i) => {
-        let asset = this.state.assets.find(a => a.id === perm[this.state.subAsset].id_asset)
-        perm.asset = asset
-        perm.assetFqdn = asset.fqdn
-      });
-      console.log(permissions)
-      return permissions
-    } catch(error) {
-      console.log(error)
-      return permissions
-    }
-  }
-
-  assetWithSubAssets = async () => {
-    console.log('subAssetWithSubAssets')
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
-    let subAssetsFetched
-
-    try {
-      for (const asset of Object.values(assets)) {
-        await this.setState({assets: assets})
-
-        switch (this.state.subAssets) {
-          case 'networks':
-            subAssetsFetched = await this.networksGet(asset.id)
-            break;
-          case 'domains':
-            subAssetsFetched = await this.domainsGet(asset.id)
-            break;
-          case 'partitions':
-            subAssetsFetched = await this.partitionsGet(asset.id)
-            break;
-          case 'objects':
-            subAssetsFetched = []
-            break;
-          default:
-        }
-
-        if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
-          this.props.dispatch(subAssetsError(subAssetsFetched))
-          await this.setState({assets: assets})
-          return
-        }
-        else {
-          console.log(subAssetsFetched)
-          asset[this.state.subAssets] = subAssetsFetched
-          await this.setState({assets: assets})
-        }
-      };
-      console.log(assets)
-      return assets
-    } catch(error) {
-      console.log(error)
-      return assets
-    }
-  }
-
   networksGet = async (assetId) => {
 
     let nets = await this.netsGet(assetId)
-    console.log('nets', nets)
     if (nets.status && nets.status !== 200) {
       this.props.dispatch(networksError( nets ))
       return
     }
 
     let containers = await this.containersGet(assetId)
-    console.log('containers', containers)
     if (containers.status && containers.status !== 200) {
       this.props.dispatch(containersError( containers ))
       return
@@ -430,27 +394,99 @@ class Permission extends React.Component {
     return r
   }
 
+
+  permsWithAsset = async (permissions) => {
+    console.log(permissions)
+    console.log(this.state.subAsset)
+    try {
+      Object.values(permissions).forEach((perm, i) => {
+        let asset = this.state.assets.find(a => a.id === perm[this.state.subAsset].id_asset)
+        perm.asset = asset
+        perm.assetFqdn = asset.fqdn
+      });
+      console.log(permissions)
+      return permissions
+    } catch(error) {
+      console.log(error)
+      return permissions
+    }
+  }
+
+  assetWithSubAssets = async () => {
+    console.log('subAssetWithSubAssets')
+    let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let subAssetsFetched
+
+    try {
+      for (const asset of Object.values(assets)) {
+        await this.setState({assets: assets})
+
+        switch (this.state.subAssets) {
+          case 'networks':
+            subAssetsFetched = await this.networksGet(asset.id)
+            break;
+          case 'domains':
+            subAssetsFetched = await this.domainsGet(asset.id)
+            break;
+          case 'partitions':
+            subAssetsFetched = await this.partitionsGet(asset.id)
+            break;
+          case 'objects':
+            subAssetsFetched = []
+            break;
+          default:
+        }
+
+        if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
+          this.props.dispatch(subAssetsError(subAssetsFetched))
+          await this.setState({assets: assets})
+          return
+        }
+        else {
+          console.log(subAssetsFetched)
+          asset[this.state.subAssets] = subAssetsFetched
+          await this.setState({assets: assets})
+        }
+      };
+      console.log(assets)
+      return assets
+    } catch(error) {
+      console.log(error)
+      return assets
+    }
+  }
+
   permissionsRefresh = async () => {
     await this.setState({permissionsRefresh: true})
   }
 
-  permissionGet = async () => {
-    let endpoint = `${this.props.vendor}/permission/`
-    let r
 
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
+  permissionAdd = async () => {
+    let id = 0
+    let n = 0
+    let p = {}
+    let list = JSON.parse(JSON.stringify(this.state.permissions))
+
+    this.state.permissions.forEach(p => {
+      if (p.id > id) {
+        id = p.id
       }
-    )
+    });
+    n = id + 1
+    p.id = n
+    list.push(p)
 
-    await rest.doXHR(`${endpoint}`, this.props.token)
-    return r
+    await this.setState({permissions: list})
   }
+
+  permissionRemove = async p => {
+    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let newList = permissions.filter(n => {
+      return p.id !== n.id
+    })
+    await this.setState({permissions: newList})
+  }
+
 
   set = async (key, value, permission) => {
     console.log('key', key)
@@ -490,6 +526,24 @@ class Permission extends React.Component {
       }
     }
 
+    if (key === 'role') {
+      if (value) {
+        if (perm.existent) {
+          if (value !== origPerm.role) {
+            perm.isModified.role = true
+            perm.role = value
+          }
+          else {
+            delete perm.isModified.role
+            perm.role = value
+          }
+        }
+        else {
+          perm.role = value
+        }
+      }
+    }
+
     if (key === 'assetId') {
       if (value) {
         let asset = assets.find(a => a.id === value)
@@ -513,6 +567,27 @@ class Permission extends React.Component {
       }
     }
 
+    if (key === 'subAsset') {
+      if (value) {
+        let asset = assets.find(a => a.id === value)
+
+        if (perm.existent) {
+          if (asset.fqdn !== origPerm.asset.fqdn) {
+            perm.isModified.subAsset = true
+            perm.subAsset = {id_asset: asset.id}
+          }
+          else {
+            delete perm.isModified.subAsset
+            perm.asset = asset
+            perm.assetFqdn = asset.fqdn
+          }
+        }
+        else {
+          perm.asset = asset
+        }
+      }
+    }
+
     if (key === 'toDelete') {
       if (value) {
         perm.toDelete = true
@@ -526,37 +601,11 @@ class Permission extends React.Component {
   }
 
 
-
-  permissionAdd = async () => {
-    let id = 0
-    let n = 0
-    let p = {}
-    let list = JSON.parse(JSON.stringify(this.state.permissions))
-
-    this.state.permissions.forEach(p => {
-      if (p.id > id) {
-        id = p.id
-      }
-    });
-    n = id + 1
-    p.id = n
-    list.push(p)
-
-    await this.setState({permissions: list})
-  }
-
-  permissionRemove = async p => {
-    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
-    let newList = permissions.filter(n => {
-      return p.id !== n.id
-    })
-    await this.setState({permissions: newList})
-  }
-
   render() {
     console.log('assets', this.state.assets)
     console.log('subAssets', this.state.subAssets)
     console.log('subAsset', this.state.subAsset)
+    console.log('roles', this.state.roles)
     console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
@@ -857,6 +906,35 @@ class Permission extends React.Component {
         dataIndex: 'role',
         key: 'role',
         ...this.getColumnSearchProps('role'),
+        render: (name, obj)  => (
+          <Select
+            value={obj && obj.role ? obj.role : null}
+            showSearch
+            style=
+            { obj.roleError ?
+              {width: 150, border: `1px solid red`}
+            :
+              {width: 150}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('role', value, obj )}
+          >
+            { (this.state.roles ? this.state.roles.map((role, i) => {
+                return (
+                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+                )
+              })
+            :
+              null
+            )}
+          </Select>
+        ),
       },
       {
         title: 'Delete',
@@ -918,6 +996,7 @@ class Permission extends React.Component {
         { this.props.networksError ? <Error vendor={this.props.vendor} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
         { this.props.containersError ? <Error vendor={this.props.vendor} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
 
+        { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
         { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
       </React.Fragment>
@@ -932,6 +1011,10 @@ export default connect((state) => ({
   subAssetsError: state.concerto.subAssetsError,
   networksError: state.concerto.networksError,
   containersError: state.concerto.containersError,
+
+  rolesError: state.concerto.rolesError,
+
   identityGroupsError: state.concerto.identityGroupsError,
+
   permissionsError: state.concerto.permissionsError,
 }))(Permission);

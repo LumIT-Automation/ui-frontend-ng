@@ -18,14 +18,16 @@ const concertoSlice = createSlice({
         state.containersError = action.payload
       },
 
-      permissionsError: ( state, action) => {
-        state.permissionsError = action.payload
+      rolesError: ( state, action) => {
+        state.rolesError = action.payload
       },
+
       identityGroupsError: ( state, action) => {
         state.identityGroupsError = action.payload
       },
-      rolesError: ( state, action) => {
-        state.rolesError = action.payload
+
+      permissionsError: ( state, action) => {
+        state.permissionsError = action.payload
       },
 
       configurations: ( state, action) => {
@@ -85,10 +87,12 @@ export const {
   networksError,
   containersError,
 
-  permissionsError,
-  identityGroupsError,
   rolesError,
 
+  identityGroupsError,
+
+  permissionsError,
+  
   configurations,
   configurationsError,
 
