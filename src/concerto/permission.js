@@ -497,7 +497,7 @@ class Permission extends React.Component {
   validation = async () => {
     let errors = await this.validationCheck()
     if (errors === 0) {
-      console.log('si volaaaaaaaaaaaaaaaaaaa')
+      this.cudManager()
     }
   }
 
@@ -524,6 +524,28 @@ class Permission extends React.Component {
     }
     await this.setState({permissions: permissions})
     return errors
+  }
+
+  cudManager = async () => {
+    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+    let toDelete = []
+    let toPatch = []
+    let toPost = []
+
+    for (const perm of Object.values(permissions)) {
+      if (perm.toDelete) {
+        toDelete.push(perm)
+      }
+      if (perm.isModified && Object.keys(perm.isModified).length > 0) {
+        toPatch.push(perm)
+      }
+      if (!perm.existent) {
+        toPost.push(perm)
+      }
+    }
+    console.log('toDelete', toDelete)
+    console.log('toPatch', toPatch)
+    console.log('toPost', toPost)
   }
 
 
