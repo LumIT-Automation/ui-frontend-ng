@@ -35,11 +35,34 @@ class Permissions extends React.Component {
     return author.isObjectEmpty(a)
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+
 
   render() {
     console.log(this.state.vendor)
     return (
       <React.Fragment>
+        <Radio.Group
+          onChange={e => this.setState({vendor: e.target.value})}
+          value={this.state.vendor}
+          style={{padding: 15, paddingTop: 40 }}
+        >
+          {this.props.authorizations && this.authorizatorsSA(this.props.authorizations) ?
+            <Radio.Button value={'superAdmin'}>superAdmin</Radio.Button>
+          :
+            null
+          }
+
+          { this.props.authorizations && this.authorizatorsSA(this.props.authorizations) ?
+            <Radio.Button value={'workflow'}>workflow</Radio.Button>
+          :
+            null
+          }
+        </Radio.Group>
+
         <Radio.Group
           onChange={e => this.setState({vendor: e.target.value})}
           value={this.state.vendor}
@@ -68,6 +91,11 @@ class Permissions extends React.Component {
           :
             null
           }
+          { this.authorizators(this.props.authorizationsFortinetdb) ?
+            <Radio.Button value={'fortinetdb'}>fortinetdb</Radio.Button>
+          :
+            null
+          }
         </Radio.Group>
 
         <Divider/>
@@ -85,8 +113,10 @@ class Permissions extends React.Component {
 
 
   export default connect((state) => ({
+  authorizations: state.authorizations,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
+  authorizationsFortinetdb: state.authorizations.fortinetdb,
   }))(Permissions);

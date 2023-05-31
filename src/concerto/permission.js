@@ -7,7 +7,7 @@ import Rest from '../_helpers/Rest'
 import Error from './error'
 import RolesDescription from './rolesDescription'
 
-import { Space, Table, Input, Button, Checkbox, Select, Spin, Progress } from 'antd';
+import { Space, Row, Col, Table, Input, Button, Radio, Checkbox, Select, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
@@ -766,9 +766,9 @@ class Permission extends React.Component {
             showSearch
             style=
             { obj.assetIdError ?
-              {width: 150, border: `1px solid red`}
+              {width: '100%', border: `1px solid red`}
             :
-              {width: 150}
+              {width: '100%'}
             }
             optionFilterProp="children"
             filterOption={(input, option) =>
@@ -1060,13 +1060,39 @@ class Permission extends React.Component {
         :
           <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
 
-            <Button onClick={() => this.permissionsRefresh()}>
-              <ReloadOutlined/>
-            </Button>
-            <Button type="primary" onClick={() => this.permissionAdd()}>
-              +
-            </Button>
-            <br/>
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                style={{marginLeft: 16 }}
+                onClick={() => this.permissionsRefresh()}
+              >
+                <ReloadOutlined/>
+              </Radio.Button>
+
+              <Radio.Button
+                style={{marginLeft: 16 }}
+                onClick={() => this.permissionAdd()}
+              >
+                Add permission
+              </Radio.Button>
+
+              <Radio.Button
+                style={{marginLeft: 16 }}
+                onClick={() => alert('add ig')}
+              >
+                Add identity group
+              </Radio.Button>
+
+              <Radio.Button
+                style={{ backgroundColor: 'red', borderColor: 'red', marginLeft: 16 }}
+                onClick={() => alert('delete ig')}
+              >
+                Delete permission
+              </Radio.Button>
+            </Radio.Group>
+
+
             <br/>
             <Table
               columns={returnCol()}
@@ -1078,7 +1104,6 @@ class Permission extends React.Component {
             />
             <Button
               type="primary"
-              shape='round'
               style={{float: 'right'}}
               onClick={() => this.validation()}
             >
