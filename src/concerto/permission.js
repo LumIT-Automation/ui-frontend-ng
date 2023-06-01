@@ -9,7 +9,7 @@ import RolesDescription from './rolesDescription'
 
 import { Space, Row, Col, Table, Input, Button, Radio, Checkbox, Select, Spin, Progress } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 
 import {
@@ -685,10 +685,8 @@ class Permission extends React.Component {
 
 
   render() {
-    //console.log('assets', this.state.assets)
     console.log('subAssets', this.state.subAssets)
     console.log('subAsset', this.state.subAsset)
-    //console.log('roles', this.state.roles)
     console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
@@ -1038,7 +1036,6 @@ class Permission extends React.Component {
             :
               <Button
                 type='danger'
-                shape='round'
                 onClick={(e) => this.permissionRemove(obj)}
               >
                 -
@@ -1058,10 +1055,10 @@ class Permission extends React.Component {
         {this.state.loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
-          <Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
+          //<Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
+          <React.Fragment>
 
             <Radio.Group
-              buttonStyle="solid"
             >
               <Radio.Button
                 style={{marginLeft: 16 }}
@@ -1069,7 +1066,11 @@ class Permission extends React.Component {
               >
                 <ReloadOutlined/>
               </Radio.Button>
+            </Radio.Group>
 
+            <Radio.Group
+              buttonStyle="solid"
+            >
               <Radio.Button
                 style={{marginLeft: 16 }}
                 onClick={() => this.permissionAdd()}
@@ -1079,23 +1080,44 @@ class Permission extends React.Component {
 
               <Radio.Button
                 style={{marginLeft: 16 }}
-                onClick={() => alert('add ig')}
+                buttonStyle="solid"
+                onClick={() => this.setState({newIGShow: true})}
               >
                 Add identity group
               </Radio.Button>
 
               <Radio.Button
-                style={{ backgroundColor: 'red', borderColor: 'red', marginLeft: 16 }}
+                style={{ backgroundColor: 'red', borderColor: 'red'}}
                 onClick={() => alert('delete ig')}
               >
-                Delete permission
+                Delete identity group
               </Radio.Button>
             </Radio.Group>
 
+            { this.state.newIGShow ?
+              <React.Fragment>
+              <br/>
+              <Input
+                style={{width: 350, marginLeft: 16}}
+                defaultValue={this.state.newIdentityGroup}
+                placeholder="cn= ,cn= ,dc= ,dc= "
+                suffix={
+                  <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
+                }
+                onChange={e => this.newIdentityGroupSet(e)}
+              />
+              </React.Fragment>
+              :
+              null
+            }
 
+
+
+            <br/>
             <br/>
             <Table
               columns={returnCol()}
+              style={{width: '100%', padding: 15}}
               dataSource={this.state.permissions}
               bordered
               rowKey={randomKey}
@@ -1104,12 +1126,13 @@ class Permission extends React.Component {
             />
             <Button
               type="primary"
-              style={{float: 'right'}}
+              style={{float: 'right', marginRight: 15}}
               onClick={() => this.validation()}
             >
               Commit
             </Button>
-          </Space>
+          </React.Fragment>
+          //</Space>
         }
         { this.props.assetsError ? <Error vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
         { this.props.subAssetsError ? <Error vendor={this.props.vendor} error={[this.props.subAssetsError]} visible={true} type={'subAssetsError'} /> : null }
