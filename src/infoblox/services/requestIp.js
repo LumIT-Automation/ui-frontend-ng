@@ -698,10 +698,10 @@ class RequestIp extends React.Component {
           []
         ),
         {
-        title: 'First Address',
+        title: 'Ranges',
         align: 'center',
-        dataIndex: 'firstAddress',
-        key: 'firstAddress',
+        dataIndex: 'ranges',
+        key: 'ranges',
         render: (name, obj)  => (
           <React.Fragment>
             { obj.range ?

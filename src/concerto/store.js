@@ -25,6 +25,9 @@ const concertoSlice = createSlice({
       identityGroupsError: ( state, action) => {
         state.identityGroupsError = action.payload
       },
+      newIdentityGroupAddError: ( state, action) => {
+        state.newIdentityGroupAddError = action.payload
+      },
 
       permissionsError: ( state, action) => {
         state.permissionsError = action.payload
@@ -100,6 +103,7 @@ export const {
   rolesError,
 
   identityGroupsError,
+  newIdentityGroupAddError,
 
   permissionsError,
   permissionAddError,

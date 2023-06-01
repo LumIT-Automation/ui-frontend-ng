@@ -20,6 +20,7 @@ import {
 
   rolesError,
   identityGroupsError,
+  newIdentityGroupAddError,
   permissionsError,
   permissionAddError,
   permissionModifyError,
@@ -28,6 +29,8 @@ import {
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+
+
 
 //import List from './list'
 
@@ -39,7 +42,9 @@ class Permission extends React.Component {
     super(props);
     this.state = {
       searchText: '',
-      searchedColumn: ''
+      searchedColumn: '',
+      newIg: '',
+      errors: {}
     };
   }
 
@@ -285,7 +290,7 @@ class Permission extends React.Component {
           default:
         }
 
-        console.log('subAssetsFetched', subAssetsFetched)
+        //console.log('subAssetsFetched', subAssetsFetched)
 
         if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
           this.props.dispatch(subAssetsError(subAssetsFetched))
@@ -381,13 +386,13 @@ class Permission extends React.Component {
 
 
   set = async (key, value, permission) => {
-    console.log('key', key)
-    console.log('value', value)
-    console.log('permission', permission)
+    //console.log('key', key)
+    //console.log('value', value)
+    //console.log('permission', permission)
 
     //console.log('this.state.assets', this.state.assets)
     //console.log('this.state.identityGroups', this.state.identityGroups)
-    console.log('originPermissions', this.state.originPermissions)
+    //console.log('originPermissions', this.state.originPermissions)
 
 
     let assets = JSON.parse(JSON.stringify(this.state.assets))
@@ -442,7 +447,6 @@ class Permission extends React.Component {
     if (key === 'assetId') {
       if (value) {
         let asset = assets.find(a => a.id === value)
-        console.log('asset', asset)
         if (perm.existent) {
           if (asset.id !== origPerm.asset.id) {
             perm.isModified.subAsset_assetId = true
@@ -498,6 +502,98 @@ class Permission extends React.Component {
     await this.setState({permissions: permissions})
   }
 
+  newIdentityGroupSet = async () => {
+    let ig = JSON.parse(JSON.stringify(this.state.newIg))
+    let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
+    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let identityGroupIds = []
+    let body = {}
+
+    identityGroups.forEach((item, i) => {
+      identityGroupIds.push(item.identity_group_identifier)
+    });
+
+    console.log(identityGroupIds)
+
+    if (ig === '') {
+      errors.newIdentityGroup = 'Empty identity group.'
+      await this.setState({errors: errors})
+      return
+    }
+    else if (identityGroupIds.includes(ig)) {
+      errors.newIdentityGroup = 'Identity group already exists.'
+      await this.setState({errors: errors})
+      return
+    }
+    else {
+      try{
+        let identityGroupId = ''
+        let cn = ''
+        let list = ig.split(',')
+        let cns = []
+
+        let found = list.filter(i => {
+          let iLow = i.toLowerCase()
+          if (iLow.startsWith('cn=')) {
+            let cn = iLow.split('=')
+            cns.push(cn[1])
+          }
+        })
+        if (cns.length < 1) {
+          errors.newIdentityGroup = 'Malformed DN.'
+          await this.setState({errors: errors})
+        }
+        else {
+          body.name = cns[0]
+          body.identity_group_identifier = ig
+          delete errors.newIdentityGroup
+          await this.setState({errors: errors})
+
+          await this.setState({newIgLoading: true})
+          let newIg = await this.newIdentityGroupAdd(body)
+          await this.setState({newIgLoading: false})
+
+          if (newIg.status && newIg.status !== 201) {
+            this.props.dispatch(newIdentityGroupAddError(newIg))
+            return
+          }
+          else {
+            let fetchedIdentityGroups = await this.dataGet('identity-groups')
+            if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+              this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+              await this.setState({loading: false})
+              return
+            }
+            else {
+              let identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
+              await this.setState({identityGroups: identityGroupsNoWorkflowLocal})
+            }
+          }
+        }
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+
+  newIdentityGroupAdd = async (data) => {
+    let r
+    let b = {}
+    b.data = data
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/identity-groups/`, this.props.token, b )
+    return r
+  }
+
   validation = async () => {
     let errors = await this.validationCheck()
     if (errors === 0) {
@@ -547,9 +643,9 @@ class Permission extends React.Component {
         toPost.push(perm)
       }
     }
-    console.log('toDelete', toDelete)
-    console.log('toPatch', toPatch)
-    console.log('toPost', toPost)
+    //console.log('toDelete', toDelete)
+    //console.log('toPatch', toPatch)
+    //console.log('toPost', toPost)
 
     if (toDelete.length > 0) {
       for (const perm of toDelete) {
@@ -685,9 +781,9 @@ class Permission extends React.Component {
 
 
   render() {
-    console.log('subAssets', this.state.subAssets)
-    console.log('subAsset', this.state.subAsset)
-    console.log('permissions', this.state.permissions)
+    //console.log('subAssets', this.state.subAssets)
+    //console.log('subAsset', this.state.subAsset)
+    //console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
       return vendorColumns
@@ -1083,7 +1179,7 @@ class Permission extends React.Component {
                 buttonStyle="solid"
                 onClick={() => this.setState({newIGShow: true})}
               >
-                Add identity group
+                New identity group
               </Radio.Button>
 
               <Radio.Button
@@ -1097,15 +1193,46 @@ class Permission extends React.Component {
             { this.state.newIGShow ?
               <React.Fragment>
               <br/>
-              <Input
-                style={{width: 350, marginLeft: 16}}
-                defaultValue={this.state.newIdentityGroup}
-                placeholder="cn= ,cn= ,dc= ,dc= "
-                suffix={
-                  <CloseCircleOutlined onClick={() => this.newIdentityGroupSet({target: {value: ''}})}/>
-                }
-                onChange={e => this.newIdentityGroupSet(e)}
-              />
+              <br/>
+              { this.state.newIgLoading ?
+                  <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
+                :
+                  <Input
+                    style={{width: 350, marginLeft: 16}}
+                    value={this.state.newIg}
+                    placeholder="cn= ,cn= ,dc= ,dc= "
+                    suffix={
+                      <CloseCircleOutlined onClick={() => {
+                        let errors = JSON.parse(JSON.stringify(this.state.errors))
+                        delete errors.newIdentityGroup
+                        this.setState({newIg: '', errors: errors})
+                      }
+                      }
+                      />
+                    }
+                    onChange={e => this.setState({newIg: e.target.value})}
+                  />
+              }
+                <Button
+                  type='primary'
+                  style={{marginLeft: 8}}
+                  onClick={() => this.newIdentityGroupSet()}
+                >
+                  Add
+                </Button>
+                <Button
+                  type='danger'
+                  style={{marginLeft: 8}}
+                  onClick={() => {
+                    let errors = JSON.parse(JSON.stringify(this.state.errors))
+                    delete errors.newIdentityGroup
+                    this.setState({newIGShow: false, newIg: '', errors: errors})
+                  }
+                  }
+                >
+                  Hide
+                </Button>
+                <p style={{marginLeft: '16px', color: 'red'}}>{this.state.errors.newIdentityGroup}</p>
               </React.Fragment>
               :
               null
@@ -1141,6 +1268,8 @@ class Permission extends React.Component {
 
         { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
+        { this.props.newIdentityGroupAddError ? <Error vendor={this.props.vendor} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
+
         { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
         { this.props.permissionAddError ? <Error vendor={this.props.vendor} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
         { this.props.permissionModifyError ? <Error vendor={this.props.vendor} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
@@ -1161,6 +1290,7 @@ export default connect((state) => ({
   rolesError: state.concerto.rolesError,
 
   identityGroupsError: state.concerto.identityGroupsError,
+  newIdentityGroupAddError: state.concerto.newIdentityGroupAddError,
 
   permissionsError: state.concerto.permissionsError,
   permissionAddError: state.concerto.permissionAddError,
