@@ -257,12 +257,11 @@ class RequestIp extends React.Component {
     }
     delete request.networkError
 
-
     if (info && info.rangeInfo.length > 0) {
-      request.rangeInfo = info.rangeInfo[0]
+      request.ranges = info.rangeInfo
     }
     else {
-      delete request.rangeInfo
+      delete request.ranges
     }
 
 
@@ -336,27 +335,14 @@ class RequestIp extends React.Component {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
     request.range = value
+    this.setState({requests: requests})
+  }
 
-
-    if (request.rangeInfo) {
-      if (request.rangeInfo.start_addr) {
-        request.start_addr = request.rangeInfo.start_addr
-      }
-      else {
-        delete request.start_addr
-      }
-      if (request.rangeInfo.end_addr) {
-        request.end_addr = request.rangeInfo.end_addr
-      }
-      else {
-        delete request.end_addr
-      }
-    }
-
-    if (!request.range) {
-      delete request.start_addr
-      delete request.end_addr
-    }
+  choosedRangeSet  = (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.choosedRange = value
+    delete request.choosedRangeError
     this.setState({requests: requests})
   }
 
@@ -387,6 +373,10 @@ class RequestIp extends React.Component {
     requests.forEach((request, i) => {
       if (!request.network) {
         request.networkError = 'error'
+        ok = false
+      }
+      if (request.range && !request.choosedRange) {
+        request.choosedRangeError = 'error'
         ok = false
       }
       if (!request.objectType) {
@@ -492,12 +482,15 @@ class RequestIp extends React.Component {
       }
     }
 
-    if (r.start_addr) {
-      b.data["range_first_ip"] = r.start_addr
+    if (r.range && r.choosedRange) {
+      let ranges, start_addr, end_addr
+      ranges = r.choosedRange.split(' - ')
+      start_addr = ranges[0]
+      end_addr = ranges[1]
+      b.data["range_first_ip"] = start_addr
+      b.data["range_last_ip"] = end_addr
     }
-    if (r.end_addr) {
-      b.data["range_last_ip"] = r.end_addr
-    }
+
 
     if (r.option12) {
       b.data["options"] = [
@@ -689,7 +682,7 @@ class RequestIp extends React.Component {
               key: 'range',
               render: (name, obj)  => (
                 <React.Fragment>
-                  { obj.rangeInfo ?
+                  { obj.ranges ?
                     <Checkbox
                       checked={obj.range}
                       onChange={event => this.rangeSet(event.target.checked, obj.id)}
@@ -703,40 +696,31 @@ class RequestIp extends React.Component {
           ]
           :
           []
-        )
-      ,
-      {
+        ),
+        {
         title: 'First Address',
         align: 'center',
         dataIndex: 'firstAddress',
         key: 'firstAddress',
         render: (name, obj)  => (
           <React.Fragment>
-            { obj.rangeInfo ?
-              <Input
-                placeholder={obj.start_addr}
-                style={{width: '150px'}}
-                disabled
-              />
-            :
-              null
-            }
-          </React.Fragment>
-        )
-      },
-      {
-        title: 'Last Address',
-        align: 'center',
-        dataIndex: 'lastAddress',
-        key: 'lastAddress',
-        render: (name, obj)  => (
-          <React.Fragment>
-            { obj.rangeInfo ?
-              <Input
-                placeholder={obj.end_addr}
-                style={{width: '150px'}}
-                disabled
-              />
+            { obj.range ?
+              <Select
+                value={obj.choosedRange}
+                key={obj.id}
+                style={obj.choosedRangeError ? { width: 300, border: `1px solid red` } : {width: 300}}
+                onChange={e => this.choosedRangeSet(e, obj.id)}
+              >
+                { obj.ranges ? obj.ranges.map((r, i) => {
+                  let range = `${r.start_addr} - ${r.end_addr}`
+                  return (
+                    <Select.Option key={i} value={range}>{range}</Select.Option>
+                    )
+                  })
+                  :
+                  null
+                }
+              </Select>
             :
               null
             }
