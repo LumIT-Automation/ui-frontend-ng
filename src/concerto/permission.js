@@ -21,6 +21,7 @@ import {
   rolesError,
   identityGroupsError,
   newIdentityGroupAddError,
+  identityGroupDeleteError,
   permissionsError,
   permissionAddError,
   permissionModifyError,
@@ -44,6 +45,7 @@ class Permission extends React.Component {
       searchText: '',
       searchedColumn: '',
       newIg: '',
+      delIg: '',
       errors: {}
     };
   }
@@ -159,6 +161,7 @@ class Permission extends React.Component {
     let fetchedAssets,
     fetchedIdentityGroups,
     fetchedRoles,
+    rolesNoWorkflow,
     fetchedPermissions,
     identityGroupsNoWorkflowLocal,
     permissionsNoWorkflowLocal,
@@ -186,7 +189,7 @@ class Permission extends React.Component {
 
     }
 
-    await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset})
+    await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset, newIg: '', delIg: '', newIGShow: false, delIGShow: false})
 
     fetchedAssets = await this.dataGet('assets')
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
@@ -213,7 +216,8 @@ class Permission extends React.Component {
       return
     }
     else {
-      await this.setState({roles: fetchedRoles.data.items})
+      rolesNoWorkflow = fetchedRoles.data.items.filter(r => r.role !== 'workflow');
+      await this.setState({roles: rolesNoWorkflow})
     }
 
     fetchedIdentityGroups = await this.dataGet('identity-groups')
@@ -502,7 +506,7 @@ class Permission extends React.Component {
     await this.setState({permissions: permissions})
   }
 
-  newIdentityGroupSet = async () => {
+  newIdentityGroupHandler = async () => {
     let ig = JSON.parse(JSON.stringify(this.state.newIg))
     let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -591,6 +595,47 @@ class Permission extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/identity-groups/`, this.props.token, b )
+    return r
+  }
+
+  delIdentityGroupHandler = async () => {
+
+    await this.setState({delIgLoading: true})
+    let delIg = await this.identityGroupDelete(this.state.delIg)
+
+
+    if (delIg.status && delIg.status !== 200 ) {
+      this.props.dispatch(identityGroupDeleteError(delIg))
+      return
+    }
+    else {
+      let fetchedIdentityGroups = await this.dataGet('identity-groups')
+      if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+        this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+        return
+      }
+      else {
+        await this.setState({delIg: ''})
+      }
+    }
+    await this.setState({delIgLoading: false})
+    this.main()
+  }
+
+  identityGroupDelete = async (data) => {
+    let r
+    let b = {}
+
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/identity-group/${data}/`, this.props.token)
     return r
   }
 
@@ -1177,14 +1222,14 @@ class Permission extends React.Component {
               <Radio.Button
                 style={{marginLeft: 16 }}
                 buttonStyle="solid"
-                onClick={() => this.setState({newIGShow: true})}
+                onClick={() => this.setState({newIGShow: true, delIGShow: false})}
               >
                 New identity group
               </Radio.Button>
 
               <Radio.Button
                 style={{ backgroundColor: 'red', borderColor: 'red'}}
-                onClick={() => alert('delete ig')}
+                onClick={() => this.setState({newIGShow: false, delIGShow: true})}
               >
                 Delete identity group
               </Radio.Button>
@@ -1216,12 +1261,11 @@ class Permission extends React.Component {
                 <Button
                   type='primary'
                   style={{marginLeft: 8}}
-                  onClick={() => this.newIdentityGroupSet()}
+                  onClick={() => this.newIdentityGroupHandler()}
                 >
                   Add
                 </Button>
                 <Button
-                  type='danger'
                   style={{marginLeft: 8}}
                   onClick={() => {
                     let errors = JSON.parse(JSON.stringify(this.state.errors))
@@ -1237,10 +1281,59 @@ class Permission extends React.Component {
               :
               null
             }
+            { this.state.delIGShow ?
+              <React.Fragment>
+              <br/>
+              <br/>
+              { this.state.delIgLoading ?
+                  <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
+                :
+                  <Select
+                    value={this.state.delIg}
+                    showSearch
+                    style={{width: 350, marginLeft: 16}}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={e => this.setState({delIg: e})}
+                  >
+                    { this.state.identityGroups.map((ig, i) => {
+                        return (
+                          <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                        )
+                      })
+                    }
+                  </Select>
 
+              }
+                <Button
+                  type='danger'
+                  style={{marginLeft: 8}}
+                  onClick={() => this.delIdentityGroupHandler()}
+                >
+                  Delete
+                </Button>
+                <Button
+                  style={{marginLeft: 8}}
+                  onClick={() => {
+                    let errors = JSON.parse(JSON.stringify(this.state.errors))
+                    delete errors.delIdentityGroup
+                    this.setState({delIGShow: false, delIg: '', errors: errors})
+                  }
+                  }
+                >
+                  Hide
+                </Button>
+                <p style={{marginLeft: '16px', color: 'red'}}>{this.state.errors.delIdentityGroup}</p>
+              </React.Fragment>
+              :
+              null
+            }
 
-
-            <br/>
             <br/>
             <Table
               columns={returnCol()}
@@ -1269,6 +1362,7 @@ class Permission extends React.Component {
         { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
         { this.props.newIdentityGroupAddError ? <Error vendor={this.props.vendor} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
+        { this.props.identityGroupDeleteError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupDeleteError]} visible={true} type={'identityGroupDeleteError'} /> : null }
 
         { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
         { this.props.permissionAddError ? <Error vendor={this.props.vendor} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
@@ -1291,6 +1385,7 @@ export default connect((state) => ({
 
   identityGroupsError: state.concerto.identityGroupsError,
   newIdentityGroupAddError: state.concerto.newIdentityGroupAddError,
+  identityGroupDeleteError: state.concerto.identityGroupDeleteError,
 
   permissionsError: state.concerto.permissionsError,
   permissionAddError: state.concerto.permissionAddError,

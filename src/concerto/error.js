@@ -14,6 +14,7 @@ import {
 
   identityGroupsError,
   newIdentityGroupAddError,
+  identityGroupDeleteError,
 
   permissionsError,
   permissionAddError,
@@ -84,6 +85,9 @@ class Error extends Component {
           break;
         case 'newIdentityGroupAddError':
           this.props.dispatch(newIdentityGroupAddError(null))
+          break;
+        case 'identityGroupDeleteError':
+          this.props.dispatch(identityGroupDeleteError(null))
           break;
 
         case 'permissionsError':
