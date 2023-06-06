@@ -44,6 +44,13 @@ class Permission extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
+      assets: [],
+      subAssets: '',
+      subAsset: '',
+      identityGroups: [],
+      roles: [],
+      permissions: [],
+      originPermissions: [],
       newIg: '',
       delIg: '',
       errors: {}
@@ -158,6 +165,7 @@ class Permission extends React.Component {
 
 
   main = async () => {
+    console.log('maiiiiiin')
     let fetchedAssets,
     fetchedIdentityGroups,
     fetchedRoles,
@@ -169,6 +177,10 @@ class Permission extends React.Component {
 
     let subAsset, subAssets
     switch (this.props.vendor) {
+      case 'superAdmin':
+        subAsset = ''
+        subAssets = ''
+        break;
       case 'infoblox':
         subAsset = 'network'
         subAssets = 'networks'
@@ -191,44 +203,46 @@ class Permission extends React.Component {
 
     await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset, newIg: '', delIg: '', newIGShow: false, delIGShow: false})
 
-    fetchedAssets = await this.dataGet('assets')
-    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-      this.props.dispatch(assetsError(fetchedAssets))
-      await this.setState({loading: false})
-      return
-    }
-    else {
-      let assets = []
-      fetchedAssets.data.items.forEach((item, i) => {
-        item[subAssets] = []
-        assets.push(item)
-      });
+    if (this.props.vendor !== 'superAdmin') {
+      fetchedAssets = await this.dataGet('assets')
+      if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+        this.props.dispatch(assetsError(fetchedAssets))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let assets = []
+        fetchedAssets.data.items.forEach((item, i) => {
+          item[subAssets] = []
+          assets.push(item)
+        });
+        await this.setState({assets: assets})
+      }
 
-      await this.setState({assets: assets})
-    }
+      await this.assetWithSubAssets()
 
-    await this.assetWithSubAssets()
+      fetchedRoles = await this.dataGet('roles')
+      if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
+        this.props.dispatch(rolesError(fetchedRoles))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        rolesNoWorkflow = fetchedRoles.data.items.filter(r => r.role !== 'workflow');
+        await this.setState({roles: rolesNoWorkflow})
+      }
 
-    fetchedRoles = await this.dataGet('roles')
-    if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
-      this.props.dispatch(rolesError(fetchedRoles))
-      await this.setState({loading: false})
-      return
-    }
-    else {
-      rolesNoWorkflow = fetchedRoles.data.items.filter(r => r.role !== 'workflow');
-      await this.setState({roles: rolesNoWorkflow})
-    }
+      fetchedIdentityGroups = await this.dataGet('identity-groups')
+      if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+        this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
+        await this.setState({identityGroups: identityGroupsNoWorkflowLocal})
+      }
 
-    fetchedIdentityGroups = await this.dataGet('identity-groups')
-    if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
-      this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
-      await this.setState({loading: false})
-      return
-    }
-    else {
-      identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-      await this.setState({identityGroups: identityGroupsNoWorkflowLocal})
     }
 
     fetchedPermissions = await this.dataGet('permissions')
@@ -239,21 +253,40 @@ class Permission extends React.Component {
     }
     else {
       permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
-      permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
-      permissionsWithAssets.forEach((item, i) => {
-        item.existent = true
-        item.isModified = {}
-      });
+      if (this.props.vendor !== 'superAdmin') {
+        permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
+        permissionsWithAssets.forEach((item, i) => {
+          item.existent = true
+          item.isModified = {}
+        });
+        await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
+      }
+      else {
+        let list = []
+        for ( let s in permissionsNoWorkflowLocal) {
+          const regex = /(cn=)([\w\d]+)/gm
+          let m = regex.exec(permissionsNoWorkflowLocal[s]);
+          try {
+            list.push({'dn': permissionsNoWorkflowLocal[s], 'name': m[2]})
+          }
+          catch {
+            ;
+          }
 
-      await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
+        }
+        await this.setState({permissions: list, originPermissions: list})
+      }
     }
 
-  await this.setState({loading: false})
+    await this.setState({loading: false})
   }
 
   dataGet = async (entities, assetId) => {
     let endpoint = `${this.props.vendor}/${entities}/`
     let r
+    if (this.props.vendor === 'superAdmin') {
+      endpoint = 'superadmins'
+    }
     if (assetId) {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
@@ -828,11 +861,34 @@ class Permission extends React.Component {
   render() {
     //console.log('subAssets', this.state.subAssets)
     //console.log('subAsset', this.state.subAsset)
-    //console.log('permissions', this.state.permissions)
+    console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
-      return vendorColumns
+      if (this.props.vendor === 'superAdmin') {
+        return superAdminColumns
+      }
+      else {
+        return vendorColumns
+      }
+
     }
+
+    const superAdminColumns = [
+      {
+        title: 'AD group name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'Distinguished name',
+        align: 'center',
+        dataIndex: 'dn',
+        key: 'dn',
+        ...this.getColumnSearchProps('dn'),
+      },
+    ];
 
     const vendorColumns = [
       {
@@ -939,7 +995,7 @@ class Permission extends React.Component {
               render: (name, obj)  => (
                   <Select
                     value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={!obj[this.state.subAsset].id_asset ? true : false}
+                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
                     { obj[`${this.state.subAsset}Error`] ?
@@ -988,7 +1044,7 @@ class Permission extends React.Component {
               render: (name, obj)  => (
                   <Select
                     value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={!obj[this.state.subAsset].id_asset ? true : false}
+                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
                     { obj[`${this.state.subAsset}Error`] ?
@@ -1037,7 +1093,7 @@ class Permission extends React.Component {
               render: (name, obj)  => (
                   <Select
                     value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={!obj[this.state.subAsset].id_asset ? true : false}
+                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
                     { obj[`${this.state.subAsset}Error`] ?
@@ -1086,7 +1142,7 @@ class Permission extends React.Component {
               render: (name, obj)  => (
                   <Select
                     value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={!obj[this.state.subAsset].id_asset ? true : false}
+                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
                     showSearch
                     style=
                     { obj[`${this.state.subAsset}Error`] ?
@@ -1199,8 +1255,7 @@ class Permission extends React.Component {
           //<Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
           <React.Fragment>
 
-            <Radio.Group
-            >
+            <Radio.Group>
               <Radio.Button
                 style={{marginLeft: 16 }}
                 onClick={() => this.permissionsRefresh()}
@@ -1209,33 +1264,37 @@ class Permission extends React.Component {
               </Radio.Button>
             </Radio.Group>
 
-            <Radio.Group
-              buttonStyle="solid"
-            >
-              <Radio.Button
-                style={{marginLeft: 16 }}
-                onClick={() => this.permissionAdd()}
-              >
-                Add permission
-              </Radio.Button>
-
-              <Radio.Button
-                style={{marginLeft: 16 }}
+            {(this.props.vendor !== 'superAdmin') ?
+              <Radio.Group
                 buttonStyle="solid"
-                onClick={() => this.setState({newIGShow: true, delIGShow: false})}
               >
-                New identity group
-              </Radio.Button>
+                <Radio.Button
+                  style={{marginLeft: 16 }}
+                  onClick={() => this.permissionAdd()}
+                >
+                  Add permission
+                </Radio.Button>
 
-              <Radio.Button
-                style={{ backgroundColor: 'red', borderColor: 'red'}}
-                onClick={() => this.setState({newIGShow: false, delIGShow: true})}
-              >
-                Delete identity group
-              </Radio.Button>
-            </Radio.Group>
+                <Radio.Button
+                  style={{marginLeft: 16 }}
+                  buttonStyle="solid"
+                  onClick={() => this.setState({newIGShow: true, delIGShow: false})}
+                >
+                  New identity group
+                </Radio.Button>
 
-            { this.state.newIGShow ?
+                <Radio.Button
+                  style={{ backgroundColor: 'red', borderColor: 'red'}}
+                  onClick={() => this.setState({newIGShow: false, delIGShow: true})}
+                >
+                  Delete identity group
+                </Radio.Button>
+              </Radio.Group>
+            :
+              null
+            }
+
+            { (this.state.newIGShow && this.props.vendor !== 'superAdmin') ?
               <React.Fragment>
               <br/>
               <br/>
@@ -1281,7 +1340,7 @@ class Permission extends React.Component {
               :
               null
             }
-            { this.state.delIGShow ?
+            { (this.state.delIGShow && this.props.vendor !== 'superAdmin') ?
               <React.Fragment>
               <br/>
               <br/>
@@ -1334,6 +1393,7 @@ class Permission extends React.Component {
               null
             }
 
+
             <br/>
             <Table
               columns={returnCol()}
@@ -1344,13 +1404,18 @@ class Permission extends React.Component {
               scroll={{x: 'auto'}}
               pagination={{ pageSize: 10 }}
             />
-            <Button
-              type="primary"
-              style={{float: 'right', marginRight: 15}}
-              onClick={() => this.validation()}
-            >
-              Commit
-            </Button>
+            {(this.props.vendor !== 'superAdmin') ?
+              <Button
+                type="primary"
+                style={{float: 'right', marginRight: 15}}
+                onClick={() => this.validation()}
+              >
+                Commit
+              </Button>
+            :
+              null
+            }
+
           </React.Fragment>
           //</Space>
         }
