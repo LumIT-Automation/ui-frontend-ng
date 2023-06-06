@@ -9,6 +9,7 @@ import {
   subAssetsError,
   networksError,
   containersError,
+  workflowsError,
 
   rolesError,
 
@@ -74,6 +75,9 @@ class Error extends Component {
           break;
         case 'containersError':
           this.props.dispatch(containersError(null))
+          break;
+        case 'workflowsError':
+          this.props.dispatch(workflowsError(null))
           break;
 
         case 'rolesError':

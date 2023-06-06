@@ -17,6 +17,9 @@ const concertoSlice = createSlice({
       containersError: ( state, action) => {
         state.containersError = action.payload
       },
+      workflowsError: ( state, action) => {
+        state.workflowsError = action.payload
+      },
 
       rolesError: ( state, action) => {
         state.rolesError = action.payload
@@ -102,6 +105,7 @@ export const {
   subAssetsError,
   networksError,
   containersError,
+  workflowsError,
 
   rolesError,
 

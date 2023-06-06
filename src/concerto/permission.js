@@ -17,11 +17,13 @@ import {
   subAssetsError,
   networksError,
   containersError,
+  workflowsError,
 
   rolesError,
   identityGroupsError,
   newIdentityGroupAddError,
   identityGroupDeleteError,
+
   permissionsError,
   permissionAddError,
   permissionModifyError,
@@ -41,12 +43,16 @@ class Permission extends React.Component {
 
   constructor(props) {
     super(props);
+
+    //this.inputRef = React.createRef(null);
+
     this.state = {
       searchText: '',
       searchedColumn: '',
       assets: [],
       subAssets: '',
       subAsset: '',
+      workflows: [],
       identityGroups: [],
       roles: [],
       permissions: [],
@@ -82,6 +88,8 @@ class Permission extends React.Component {
 
   componentWillUnmount() {
   }
+
+
 
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -163,15 +171,16 @@ class Permission extends React.Component {
     this.setState({ searchText: '' });
   };
 
-
   main = async () => {
     let fetchedAssets,
+    fetchedWorkflows,
     fetchedIdentityGroups,
     fetchedRoles,
     rolesNoWorkflow,
     fetchedPermissions,
     identityGroupsNoWorkflowLocal,
     permissionsNoWorkflowLocal,
+    permissionsWithWorkflows,
     permissionsWithAssets
 
     let subAsset, subAssets
@@ -180,6 +189,12 @@ class Permission extends React.Component {
         subAsset = ''
         subAssets = ''
         break;
+
+      case 'workflow':
+        subAsset = ''
+        subAssets = ''
+        break;
+
       case 'infoblox':
         subAsset = 'network'
         subAssets = 'networks'
@@ -203,22 +218,35 @@ class Permission extends React.Component {
     await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset, newIg: '', delIg: '', newIGShow: false, delIGShow: false})
 
     if (this.props.vendor !== 'superAdmin') {
-      fetchedAssets = await this.dataGet('assets')
-      if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-        this.props.dispatch(assetsError(fetchedAssets))
-        await this.setState({loading: false})
-        return
+
+      if (this.props.vendor !== 'workflow') {
+        fetchedAssets = await this.dataGet('assets')
+        if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+          this.props.dispatch(assetsError(fetchedAssets))
+          await this.setState({loading: false})
+          return
+        }
+        else {
+          let assets = []
+          fetchedAssets.data.items.forEach((item, i) => {
+            item[subAssets] = []
+            assets.push(item)
+          });
+          await this.setState({assets: assets})
+        }
+        await this.assetWithSubAssets()
       }
       else {
-        let assets = []
-        fetchedAssets.data.items.forEach((item, i) => {
-          item[subAssets] = []
-          assets.push(item)
-        });
-        await this.setState({assets: assets})
+        fetchedWorkflows = await this.dataGet('workflows')
+        if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
+          this.props.dispatch(workflowsError(fetchedWorkflows))
+          await this.setState({loading: false})
+          return
+        }
+        else {
+          await this.setState({workflows: fetchedWorkflows.data.items})
+        }
       }
-
-      await this.assetWithSubAssets()
 
       fetchedRoles = await this.dataGet('roles')
       if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
@@ -252,15 +280,8 @@ class Permission extends React.Component {
     }
     else {
       permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
-      if (this.props.vendor !== 'superAdmin') {
-        permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
-        permissionsWithAssets.forEach((item, i) => {
-          item.existent = true
-          item.isModified = {}
-        });
-        await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
-      }
-      else {
+
+      if (this.props.vendor === 'superAdmin') {
         let list = []
         for ( let s in permissionsNoWorkflowLocal) {
           const regex = /(cn=)([\w\d]+)/gm
@@ -275,6 +296,26 @@ class Permission extends React.Component {
         }
         await this.setState({permissions: list, originPermissions: list})
       }
+
+      else if (this.props.vendor === 'workflow') {
+        permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
+        permissionsWithWorkflows.forEach((item, i) => {
+          item.existent = true
+          item.isModified = {}
+          this[`inputRef${item.id}`] = React.createRef(null);
+        });
+        await this.setState({permissions: permissionsWithWorkflows, originPermissions: permissionsWithWorkflows})
+      }
+
+      else {
+        permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
+        permissionsWithAssets.forEach((item, i) => {
+          item.existent = true
+          item.isModified = {}
+        });
+        await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
+      }
+
     }
 
     await this.setState({loading: false})
@@ -325,8 +366,6 @@ class Permission extends React.Component {
             break;
           default:
         }
-
-        //console.log('subAssetsFetched', subAssetsFetched)
 
         if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
           this.props.dispatch(subAssetsError(subAssetsFetched))
@@ -383,6 +422,36 @@ class Permission extends React.Component {
     }
   }
 
+  workflowAddDescription = async (workflows, permissions) => {
+    let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
+    let workflowsObject = JSON.parse(JSON.stringify(workflows.data.items))
+    let list = []
+
+    /*To use object.values not object.entries
+    for (const [key, value] of Object.entries(workflowsObject)) {
+      list.push(value)
+    }*/
+
+    Object.values(workflowsObject).forEach((value, i) => {
+      list.push(value)
+    })
+
+    /*
+    for (const [key, value] of Object.entries(newPermissions)) {
+      const workflow = list.find(a => a.id === value.workflow.id)
+      value.workflow = workflow
+    }*/
+
+    Object.values(newPermissions).forEach((value, i) => {
+      const workflow = list.find(a => a.id === value.workflow.id)
+      value.workflow = workflow
+    })
+
+    let permissionsWithWorkflowDescription = JSON.parse(JSON.stringify(newPermissions))
+
+    return permissionsWithWorkflowDescription
+  }
+
   permissionsRefresh = async () => {
     await this.setState({permissionsRefresh: true})
   }
@@ -399,6 +468,7 @@ class Permission extends React.Component {
         id = p.id
       }
     });
+
     n = id + 1
     p.id = n
     p.asset = {}
@@ -409,6 +479,8 @@ class Permission extends React.Component {
     p.role = ''
     list.push(p)
 
+    this[`inputRef${p.id}`] = React.createRef(null);
+
     await this.setState({permissions: list})
   }
 
@@ -417,6 +489,8 @@ class Permission extends React.Component {
     let newList = permissions.filter(n => {
       return p.id !== n.id
     })
+
+    delete this[`inputRef${p.id}`]
     await this.setState({permissions: newList})
   }
 
@@ -432,10 +506,48 @@ class Permission extends React.Component {
 
 
     let assets = JSON.parse(JSON.stringify(this.state.assets))
+    let workflows = JSON.parse(JSON.stringify(this.state.workflows))
     let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
     let permissions = JSON.parse(JSON.stringify(this.state.permissions))
     let origPerm = this.state.originPermissions.find(p => p.id === permission.id)
     let perm = permissions.find(p => p.id === permission.id)
+
+    if (key === 'workflowName') {
+      if (value) {
+        let wf = workflows.find(w => w.name === value)
+        if (perm.existent) {
+          if (wf.name !== origPerm.workflow.name) {
+            perm.isModified.workflowName = true
+            perm.workflow.id = wf.id
+            perm.workflow.name = wf.name
+            perm.workflow.description = wf.description
+          }
+          else {
+            delete perm.isModified.workflowName
+            perm.workflow.id = wf.id
+            perm.workflow.name = wf.name
+            perm.workflow.description = wf.description
+          }
+        }
+        else {
+          perm.workflow = {}
+          perm.workflow.id = wf.id
+          perm.workflow.name = wf.name
+          perm.workflow.description = wf.description
+        }
+        delete perm.workflowNameError
+      }
+    }
+
+
+    if (key === 'allowed_asset_ids') {
+      if (value) {
+        //console.log(ref)
+        //this[`inputRef${obj.id}`].current.focus()
+        console.log('è giasonico? ', value)
+        perm.details = { "cicciput": value}
+      }
+    }
 
 
     if (key === 'identity_group_identifier') {
@@ -536,6 +648,7 @@ class Permission extends React.Component {
       }
     }
     await this.setState({permissions: permissions})
+    this[`inputRef${permission.id}`].current.focus()
   }
 
   newIdentityGroupHandler = async () => {
@@ -548,8 +661,6 @@ class Permission extends React.Component {
     identityGroups.forEach((item, i) => {
       identityGroupIds.push(item.identity_group_identifier)
     });
-
-    console.log(identityGroupIds)
 
     if (ig === '') {
       errors.newIdentityGroup = 'Empty identity group.'
@@ -690,14 +801,23 @@ class Permission extends React.Component {
         perm.roleError = true
         ++errors
       }
-      if (!perm[this.state.subAsset].id_asset) {
-        perm.assetIdError = true
-        ++errors
+      if (this.props.vendor === 'workflow') {
+        if (!perm.workflow || (perm.workflow && !perm.workflow.id) ) {
+          perm.workflowNameError = true
+          ++errors
+        }
       }
-      if (!perm[this.state.subAsset].name) {
-        perm[`${this.state.subAsset}Error`] = true
-        ++errors
+      else {
+        if (!perm[this.state.subAsset].id_asset) {
+          perm.assetIdError = true
+          ++errors
+        }
+        if (!perm[this.state.subAsset].name) {
+          perm[`${this.state.subAsset}Error`] = true
+          ++errors
+        }
       }
+
     }
     await this.setState({permissions: permissions})
     return errors
@@ -858,18 +978,25 @@ class Permission extends React.Component {
 
 
   render() {
-    //console.log('subAssets', this.state.subAssets)
-    //console.log('subAsset', this.state.subAsset)
-    console.log('permissions', this.state.permissions)
+    console.log('document.activeElement', document.activeElement)
+    console.log('document.activeElement.id', document.activeElement.id)
+    console.log('this', this)
+
 
     let returnCol = () => {
       if (this.props.vendor === 'superAdmin') {
         return superAdminColumns
       }
+      else if (this.props.vendor === 'workflow') {
+        return workflowColumns
+      }
       else {
         return vendorColumns
       }
+    }
 
+    let jsonPretty = j => {
+      return JSON.stringify(j, null, 2)
     }
 
     const superAdminColumns = [
@@ -887,6 +1014,202 @@ class Permission extends React.Component {
         key: 'dn',
         ...this.getColumnSearchProps('dn'),
       },
+    ];
+
+    const workflowColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'AD group name',
+        align: 'center',
+        dataIndex: 'identity_group_name',
+        key: 'identity_group_name',
+        ...this.getColumnSearchProps('identity_group_name'),
+      },
+      {
+        title: 'Distinguished name',
+        align: 'center',
+        dataIndex: 'identity_group_identifier',
+        key: 'identity_group_identifier',
+        ...this.getColumnSearchProps('identity_group_identifier'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.identity_group_identifier}
+            showSearch
+            style=
+            { obj.identity_group_identifierError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('identity_group_identifier', value, obj )}
+          >
+            { this.state.identityGroups.map((ig, i) => {
+                return (
+                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Workflow name',
+        align: 'center',
+        dataIndex: ['workflow', 'name' ],
+        key: 'name',
+        ...this.getColumnSearchProps(['workflow', 'name' ]),
+        render: (name, obj)  => (
+          <Select
+            value={obj && obj.workflow && obj.workflow.name ? obj.workflow.name : null}
+            showSearch
+            style=
+            { obj.workflowNameError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('workflowName', value, obj )}
+          >
+            { this.state.workflows.map((wf, i) => {
+                return (
+                  <Select.Option key={i} value={wf.name}>{wf.name}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Description',
+        align: 'center',
+        width: '100%',
+        dataIndex: ['workflow', 'description' ],
+        key: 'description',
+        ...this.getColumnSearchProps(['workflow', 'description' ]),
+      },
+      {
+        title: 'Assets',
+        align: 'center',
+        dataIndex: 'details',
+        key: 'allowed_asset_ids',
+        render: (name, obj)  => {
+          return (
+            <Input.TextArea
+              value={jsonPretty(obj.details)}
+              autoSize={{minRows: 7}}
+              ref={this[`inputRef${obj.id}`]}
+              id={obj.id}
+              style={
+                obj.allowed_asset_idsError ?
+                  {borderColor: 'red', textAlign: 'left', width: 250}
+                :
+                  {textAlign: 'left', width: 250}
+              }
+              onChange={e => {
+                if (this[`inputRef${obj.id}`] && this[`inputRef${obj.id}`].current) {
+                  this[`inputRef${obj.id}`].current.focus()
+                }
+                this.set('allowed_asset_ids', e.target.value, obj )
+              }
+              }
+              blur={e => {
+                if (this[`inputRef${obj.id}`] && this[`inputRef${obj.id}`].current) {
+                  this[`inputRef${obj.id}`].current.blur()
+                }
+              }}
+            />
+          )
+        },
+      },
+      {
+        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
+        align: 'center',
+        dataIndex: 'role',
+        key: 'role',
+        ...this.getColumnSearchProps('role'),
+        render: (name, obj)  => (
+          <Select
+            value={obj && obj.role ? obj.role : null}
+            showSearch
+            style=
+            { obj.roleError ?
+              {width: 75, border: `1px solid red`}
+            :
+              {width: 75}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('role', value, obj )}
+          >
+            { (this.state.roles ? this.state.roles.map((role, i) => {
+                return (
+                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+                )
+              })
+            :
+              null
+            )}
+          </Select>
+        ),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.permissionRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
     ];
 
     const vendorColumns = [
@@ -1321,6 +1644,7 @@ class Permission extends React.Component {
         { this.props.subAssetsError ? <Error vendor={this.props.vendor} error={[this.props.subAssetsError]} visible={true} type={'subAssetsError'} /> : null }
         { this.props.networksError ? <Error vendor={this.props.vendor} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
         { this.props.containersError ? <Error vendor={this.props.vendor} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
+        { this.props.workflowsError ? <Error vendor={this.props.vendor} error={[this.props.workflowsError]} visible={true} type={'workflowsError'} /> : null }
 
         { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
         { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
@@ -1343,6 +1667,7 @@ export default connect((state) => ({
   subAssetsError: state.concerto.subAssetsError,
   networksError: state.concerto.networksError,
   containersError: state.concerto.containersError,
+  workflowsError: state.concerto.workflowsError,
 
   rolesError: state.concerto.rolesError,
 
