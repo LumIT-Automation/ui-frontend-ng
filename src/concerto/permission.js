@@ -165,7 +165,6 @@ class Permission extends React.Component {
 
 
   main = async () => {
-    console.log('maiiiiiin')
     let fetchedAssets,
     fetchedIdentityGroups,
     fetchedRoles,
@@ -1033,7 +1032,6 @@ class Permission extends React.Component {
             },
           ]
         :
-          this.props.vendor === 'checkpoint' ?
           [
             {
               title: this.state.subAsset,
@@ -1081,106 +1079,6 @@ class Permission extends React.Component {
               ),
             },
           ]
-          :
-          this.props.vendor === 'f5' ?
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-          :
-          this.props.vendor === 'vmware' ?
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-        :
-        []
       ),
       {
         title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
