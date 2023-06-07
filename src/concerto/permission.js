@@ -44,8 +44,6 @@ class Permission extends React.Component {
   constructor(props) {
     super(props);
 
-    //this.inputRef = React.createRef(null);
-
     this.state = {
       searchText: '',
       searchedColumn: '',
@@ -302,7 +300,8 @@ class Permission extends React.Component {
         permissionsWithWorkflows.forEach((item, i) => {
           item.existent = true
           item.isModified = {}
-          this[`inputRef${item.id}`] = React.createRef(null);
+          //item.details
+          this[`inputTextAreaRef${item.id}`] = React.createRef(null);
         });
         await this.setState({permissions: permissionsWithWorkflows, originPermissions: permissionsWithWorkflows})
       }
@@ -479,7 +478,7 @@ class Permission extends React.Component {
     p.role = ''
     list.push(p)
 
-    this[`inputRef${p.id}`] = React.createRef(null);
+    this[`inputTextAreaRef${p.id}`] = React.createRef(null);
 
     await this.setState({permissions: list})
   }
@@ -490,7 +489,7 @@ class Permission extends React.Component {
       return p.id !== n.id
     })
 
-    delete this[`inputRef${p.id}`]
+    delete this[`inputTextAreaRef${p.id}`]
     await this.setState({permissions: newList})
   }
 
@@ -542,13 +541,11 @@ class Permission extends React.Component {
 
     if (key === 'allowed_asset_ids') {
       if (value) {
-        //console.log(ref)
-        //this[`inputRef${obj.id}`].current.focus()
         console.log('è giasonico? ', value)
         perm.details = { "cicciput": value}
       }
       await this.setState({permissions: permissions})
-      this[`inputRef${permission.id}`].current.focus()
+      this[`inputTextAreaRef${permission.id}`].current.focus()
     }
 
 
@@ -649,9 +646,10 @@ class Permission extends React.Component {
         delete perm.toDelete
       }
     }
-      if (key !== 'allowed_asset_ids') {
-        await this.setState({permissions: permissions})
-      }
+
+    if (key !== 'allowed_asset_ids') {
+      await this.setState({permissions: permissions})
+    }
 
   }
 
@@ -1131,7 +1129,7 @@ class Permission extends React.Component {
             <Input.TextArea
               value={jsonPretty(obj.details)}
               autoSize={{minRows: 7}}
-              ref={this[`inputRef${obj.id}`]}
+              ref={this[`inputTextAreaRef${obj.id}`]}
               id={obj.id}
               style={
                 obj.allowed_asset_idsError ?
@@ -1139,18 +1137,7 @@ class Permission extends React.Component {
                 :
                   {textAlign: 'left', width: 250}
               }
-              onChange={e => {
-                if (this[`inputRef${obj.id}`] && this[`inputRef${obj.id}`].current) {
-                  this[`inputRef${obj.id}`].current.focus()
-                }
-                this.set('allowed_asset_ids', e.target.value, obj )
-              }
-              }
-              blur={e => {
-                if (this[`inputRef${obj.id}`] && this[`inputRef${obj.id}`].current) {
-                  this[`inputRef${obj.id}`].current.blur()
-                }
-              }}
+              onChange={e => {this.set('allowed_asset_ids', e.target.value, obj)} }
             />
           )
         },
