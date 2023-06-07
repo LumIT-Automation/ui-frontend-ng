@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 import '../App.css'
 
 import Rest from '../_helpers/Rest'
+import JsonHelper from '../_helpers/jsonHelper'
 import Error from './error'
 import RolesDescription from './rolesDescription'
 
@@ -44,6 +45,10 @@ class Permission extends React.Component {
   constructor(props) {
     super(props);
 
+    this.textAreaRefs = {};
+
+    //this.jsonHelper = this.jsonHelper.bind(this);
+
     this.state = {
       searchText: '',
       searchedColumn: '',
@@ -62,6 +67,7 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
+    console.log(this.jsonHelper)
     this.setState({permissions: []})
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       this.setState({permissionsRefresh: false})
@@ -86,7 +92,6 @@ class Permission extends React.Component {
 
   componentWillUnmount() {
   }
-
 
 
   getColumnSearchProps = dataIndex => ({
@@ -169,7 +174,12 @@ class Permission extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  setRef = (ref, id) => {
+    this.textAreaRefs[id] = ref;
+  };
+
   main = async () => {
+
     let fetchedAssets,
     fetchedWorkflows,
     fetchedIdentityGroups,
@@ -296,12 +306,15 @@ class Permission extends React.Component {
       }
 
       else if (this.props.vendor === 'workflow') {
+        let jsonHelper = new JsonHelper()
+
         permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
         permissionsWithWorkflows.forEach((item, i) => {
           item.existent = true
           item.isModified = {}
+          item.details = jsonHelper.jsonPretty(item.details)
           //item.details
-          this[`inputTextAreaRef${item.id}`] = React.createRef(null);
+          //this[`inputTextAreaRef${item.id}`] = React.createRef(null);
         });
         await this.setState({permissions: permissionsWithWorkflows, originPermissions: permissionsWithWorkflows})
       }
@@ -478,7 +491,7 @@ class Permission extends React.Component {
     p.role = ''
     list.push(p)
 
-    this[`inputTextAreaRef${p.id}`] = React.createRef(null);
+    //this[`inputTextAreaRef${p.id}`] = React.createRef(null);
 
     await this.setState({permissions: list})
   }
@@ -489,10 +502,9 @@ class Permission extends React.Component {
       return p.id !== n.id
     })
 
-    delete this[`inputTextAreaRef${p.id}`]
+    //delete this[`inputTextAreaRef${p.id}`]
     await this.setState({permissions: newList})
   }
-
 
   set = async (key, value, permission) => {
     //console.log('key', key)
@@ -540,12 +552,44 @@ class Permission extends React.Component {
 
 
     if (key === 'allowed_asset_ids') {
-      if (value) {
-        console.log('è giasonico? ', value)
-        perm.details = { "cicciput": value}
+      let start = 0
+      let end = 0
+      let ref = this.textAreaRefs[permission.id]
+
+      if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+        start = ref.resizableTextArea.textArea.selectionStart
+        end = ref.resizableTextArea.textArea.selectionEnd
       }
+
+      if (value) {
+        if (perm.existent) {
+          if (origPerm.details !== value) {
+            perm.isModified.details = true
+            perm.details = value
+          }
+          else {
+            delete perm.isModified.details
+            perm.details = value
+          }
+        }
+        else {
+          perm.details = value
+        }
+        delete perm.allowed_asset_idsError
+      }
+      else {
+        perm.details = ''
+      }
+
       await this.setState({permissions: permissions})
-      this[`inputTextAreaRef${permission.id}`].current.focus()
+
+      ref = this.textAreaRefs[permission.id]
+      if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+        ref.resizableTextArea.textArea.selectionStart = start
+        ref.resizableTextArea.textArea.selectionEnd = end
+      }
+
+      ref.focus()
     }
 
 
@@ -980,10 +1024,11 @@ class Permission extends React.Component {
 
 
   render() {
-    console.log('document.activeElement', document.activeElement)
-    console.log('document.activeElement.id', document.activeElement.id)
+    //console.log('document.activeElement', document.activeElement)
+    //console.log('document.activeElement.id', document.activeElement.id)
     console.log('this', this)
 
+    let jsonHelper = new JsonHelper()
 
     let returnCol = () => {
       if (this.props.vendor === 'superAdmin') {
@@ -995,10 +1040,6 @@ class Permission extends React.Component {
       else {
         return vendorColumns
       }
-    }
-
-    let jsonPretty = j => {
-      return JSON.stringify(j, null, 2)
     }
 
     const superAdminColumns = [
@@ -1127,17 +1168,18 @@ class Permission extends React.Component {
         render: (name, obj)  => {
           return (
             <Input.TextArea
-              value={jsonPretty(obj.details)}
+              value={obj.details}
               autoSize={{minRows: 7}}
-              ref={this[`inputTextAreaRef${obj.id}`]}
-              id={obj.id}
+              ref={ref => this.setRef(ref, obj.id)}
               style={
                 obj.allowed_asset_idsError ?
                   {borderColor: 'red', textAlign: 'left', width: 250}
                 :
                   {textAlign: 'left', width: 250}
               }
-              onChange={e => {this.set('allowed_asset_ids', e.target.value, obj)} }
+              onChange={e => {
+                this.set('allowed_asset_ids', e.target.value, obj)}
+              }
             />
           )
         },
