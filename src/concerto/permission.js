@@ -547,6 +547,8 @@ class Permission extends React.Component {
         console.log('è giasonico? ', value)
         perm.details = { "cicciput": value}
       }
+      await this.setState({permissions: permissions})
+      this[`inputRef${permission.id}`].current.focus()
     }
 
 
@@ -647,8 +649,10 @@ class Permission extends React.Component {
         delete perm.toDelete
       }
     }
-    await this.setState({permissions: permissions})
-    this[`inputRef${permission.id}`].current.focus()
+      if (key !== 'allowed_asset_ids') {
+        await this.setState({permissions: permissions})
+      }
+
   }
 
   newIdentityGroupHandler = async () => {
