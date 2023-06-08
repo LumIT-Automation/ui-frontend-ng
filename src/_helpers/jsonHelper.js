@@ -4,7 +4,6 @@ class JsonHelper {
   }
 
   jsonPretty = json => {
-    console.log('!!!!!!!!!!!1', json)
     let str = ''
     try {
       str = JSON.stringify(json, null, 2)
@@ -14,7 +13,15 @@ class JsonHelper {
       console.log(error)
       return '{malformed JSON}'
     }
+  }
 
+  isJsonString = str => {
+    try {
+      JSON.parse(str);
+    } catch (e) {
+      return {status: 'error', message: e.message};
+    }
+    return {status: 'ok'};
   }
 
 }

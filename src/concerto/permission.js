@@ -67,7 +67,6 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
-    console.log(this.jsonHelper)
     this.setState({permissions: []})
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       this.setState({permissionsRefresh: false})
@@ -174,9 +173,9 @@ class Permission extends React.Component {
     this.setState({ searchText: '' });
   };
 
-  setRef = (ref, id) => {
+  /*setRef = (ref, id) => {
     this.textAreaRefs[id] = ref;
-  };
+  };*/
 
   main = async () => {
 
@@ -551,7 +550,7 @@ class Permission extends React.Component {
     }
 
 
-    if (key === 'allowed_asset_ids') {
+    if (key === 'details') {
       let start = 0
       let end = 0
       let ref = this.textAreaRefs[permission.id]
@@ -564,18 +563,22 @@ class Permission extends React.Component {
       if (value) {
         if (perm.existent) {
           if (origPerm.details !== value) {
+            console.log('existent and different')
             perm.isModified.details = true
             perm.details = value
           }
           else {
+            console.log('existent and equal')
             delete perm.isModified.details
             perm.details = value
           }
         }
         else {
+          console.log('not existent')
           perm.details = value
         }
-        delete perm.allowed_asset_idsError
+        delete perm.detailsError
+        delete perm.jsonError
       }
       else {
         perm.details = ''
@@ -691,7 +694,7 @@ class Permission extends React.Component {
       }
     }
 
-    if (key !== 'allowed_asset_ids') {
+    if (key !== 'details') {
       await this.setState({permissions: permissions})
     }
 
@@ -838,6 +841,8 @@ class Permission extends React.Component {
   validationCheck = async () => {
     let permissions = JSON.parse(JSON.stringify(this.state.permissions))
     let errors = 0
+    let jsonHelper = new JsonHelper()
+
     for (const perm of Object.values(permissions)) {
       if (!perm.identity_group_identifier) {
         ++errors
@@ -850,6 +855,20 @@ class Permission extends React.Component {
       if (this.props.vendor === 'workflow') {
         if (!perm.workflow || (perm.workflow && !perm.workflow.id) ) {
           perm.workflowNameError = true
+          ++errors
+        }
+        if (!perm.details) {
+          perm.detailsError = true
+          perm.jsonError = 'Missing JSON'
+          ++errors
+        }
+        let jsonError = jsonHelper.isJsonString(perm.details)
+        if (jsonError.status === 'error') {
+          perm.detailsError = true
+          perm.jsonError = 'Malformed JSON'
+          if (jsonError.message) {
+            perm.jsonError = jsonError.message
+          }
           ++errors
         }
       }
@@ -913,18 +932,36 @@ class Permission extends React.Component {
     if (toPatch.length > 0) {
       for (const perm of toPatch) {
         let body = {}
-        body.data = {
-          "identity_group_name": perm.identity_group_name,
-           "identity_group_identifier": perm.identity_group_identifier,
-           "role": perm.role,
-           [this.state.subAsset]: {
-               "name": perm[this.state.subAsset].name,
-               "id_asset": perm[this.state.subAsset].id_asset
-           }
+
+        if (this.props.vendor === 'workflow') {
+          let details = JSON.parse(perm.details);
+          body.data = {
+             "identity_group_identifier": perm.identity_group_identifier,
+             "role": perm.role,
+             "workflow" : {
+               "id": perm.workflow.id
+             },
+             "details" : details
+          }
         }
-        if (this.props.vendor === 'vmware') {
-          body.data[this.state.subAsset].moId = "any"
+        else {
+          body.data = {
+             "identity_group_name": perm.identity_group_name,
+             "identity_group_identifier": perm.identity_group_identifier,
+             "role": perm.role,
+             [this.state.subAsset]: {
+                 "name": perm[this.state.subAsset].name,
+                 "id_asset": perm[this.state.subAsset].id_asset
+             }
+          }
+          if (this.props.vendor === 'vmware') {
+            body.data[this.state.subAsset].moId = "any"
+          }
         }
+
+
+
+
         perm.loading = true
         await this.setState({permissions: permissions})
 
@@ -945,18 +982,33 @@ class Permission extends React.Component {
     if (toPost.length > 0) {
       for (const perm of toPost) {
         let body = {}
-        body.data = {
-          "identity_group_name": perm.identity_group_name,
-           "identity_group_identifier": perm.identity_group_identifier,
-           "role": perm.role,
-           [this.state.subAsset]: {
-               "name": perm[this.state.subAsset].name,
-               "id_asset": perm[this.state.subAsset].id_asset
-           }
+
+        if (this.props.vendor === 'workflow') {
+          let details = JSON.parse(perm.details);
+          body.data = {
+             "identity_group_identifier": perm.identity_group_identifier,
+             "role": perm.role,
+             "workflow" : {
+               "id": perm.workflow.id
+             },
+             "details" : details
+          }
         }
-        if (this.props.vendor === 'vmware') {
-          body.data[this.state.subAsset].moId = "any"
+        else {
+          body.data = {
+             "identity_group_name": perm.identity_group_name,
+             "identity_group_identifier": perm.identity_group_identifier,
+             "role": perm.role,
+             [this.state.subAsset]: {
+                 "name": perm[this.state.subAsset].name,
+                 "id_asset": perm[this.state.subAsset].id_asset
+             }
+          }
+          if (this.props.vendor === 'vmware') {
+            body.data[this.state.subAsset].moId = "any"
+          }
         }
+
         perm.loading = true
         await this.setState({permissions: permissions})
 
@@ -1026,7 +1078,8 @@ class Permission extends React.Component {
   render() {
     //console.log('document.activeElement', document.activeElement)
     //console.log('document.activeElement.id', document.activeElement.id)
-    console.log('this', this)
+    //console.log('this', this)
+    console.log('permissions', this.state.permissions)
 
     let jsonHelper = new JsonHelper()
 
@@ -1164,23 +1217,31 @@ class Permission extends React.Component {
         title: 'Assets',
         align: 'center',
         dataIndex: 'details',
-        key: 'allowed_asset_ids',
+        key: 'details',
         render: (name, obj)  => {
           return (
+            <React.Fragment>
             <Input.TextArea
               value={obj.details}
               autoSize={{minRows: 7}}
-              ref={ref => this.setRef(ref, obj.id)}
+              //ref={ref => this.setRef(ref, obj.id)}
+              ref={ref => this.textAreaRefs[obj.id] = ref}
               style={
-                obj.allowed_asset_idsError ?
+                obj.detailsError ?
                   {borderColor: 'red', textAlign: 'left', width: 250}
                 :
                   {textAlign: 'left', width: 250}
               }
               onChange={e => {
-                this.set('allowed_asset_ids', e.target.value, obj)}
+                this.set('details', e.target.value, obj)}
               }
             />
+            {obj.jsonError ?
+              <p style={{color: 'red'}}>{obj.jsonError}</p>
+            :
+              null
+            }
+            </React.Fragment>
           )
         },
       },
