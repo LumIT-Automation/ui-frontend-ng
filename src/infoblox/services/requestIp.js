@@ -717,6 +717,7 @@ class RequestIp extends React.Component {
             <React.Fragment>
               {obj.range ?
                 <Input
+                  placeholder='Insert your name'
                   value={obj.rangeReference}
                   style={obj.rangeReferenceError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
                   onChange={e => this.rangeReferenceSet(e.target.value, obj.id)}
