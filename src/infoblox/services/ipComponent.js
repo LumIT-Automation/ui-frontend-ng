@@ -323,11 +323,38 @@ class IpComponent extends React.Component {
         ),
       },
       {
-        title: 'Reference',
+        title: 'Range Reference',
         align: 'center',
-        dataIndex: ['extattrs', 'Reference', 'value'],
+        width: 200,
+        //dataIndex: ['extattrs', 'Reference', 'value'],
         key: 'reference',
-      }
+        render: (name, obj)  => (
+          <React.Fragment>
+          {obj.extattrs && obj.extattrs && obj.extattrs.Reference && obj.extattrs.Reference.value ?
+            obj.extattrs.Reference.value
+          :
+            '-'
+          }
+          </React.Fragment>
+        ),
+      },
+      {
+        title: 'IP Reference',
+        align: 'center',
+        width: 200,
+        //dataIndex: ['objects', 'extattrs', 'Reference', 'value'],
+        key: 'reference',
+        render: (name, obj)  => (
+          <React.Fragment>
+          {obj.objects && obj.objects[0] && obj.objects[0].extattrs && obj.objects[0].extattrs.Reference && obj.objects[0].extattrs.Reference.value ?
+            obj.objects[0].extattrs.Reference.value
+          :
+            '-'
+          }
+          </React.Fragment>
+        ),
+      },
+
     ];
 
     return (
