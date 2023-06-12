@@ -346,6 +346,14 @@ class RequestIp extends React.Component {
     this.setState({requests: requests})
   }
 
+  rangeReferenceSet = async (value, id) => {
+    let requests = JSON.parse(JSON.stringify(this.state.requests))
+    let request = requests.find( r => r.id === id )
+    request.rangeReference = value
+    delete request.rangeReferenceError
+    await this.setState({requests: requests})
+  }
+
   option12Set = (value, id) => {
     let requests = JSON.parse(JSON.stringify(this.state.requests))
     let request = requests.find( r => r.id === id )
@@ -377,6 +385,10 @@ class RequestIp extends React.Component {
       }
       if (request.range && !request.choosedRange) {
         request.choosedRangeError = 'error'
+        ok = false
+      }
+      if (request.range && !request.rangeReference) {
+        request.rangeReferenceError = 'error'
         ok = false
       }
       if (!request.objectType) {
@@ -483,12 +495,8 @@ class RequestIp extends React.Component {
     }
 
     if (r.range && r.choosedRange) {
-      let ranges, start_addr, end_addr
-      ranges = r.choosedRange.split(' - ')
-      start_addr = ranges[0]
-      end_addr = ranges[1]
-      b.data["range_first_ip"] = start_addr
-      b.data["range_last_ip"] = end_addr
+      b.data["range_by_reference"] = r.choosedRange
+      b.data["reference_prefix"] = r.rangeReference
     }
 
 
@@ -581,6 +589,9 @@ class RequestIp extends React.Component {
 
   render() {
     console.log(this.state.requests)
+    let referenceRangeList = []
+    let list = []
+
     const requests = [
       {
         title: 'Loading',
@@ -698,6 +709,25 @@ class RequestIp extends React.Component {
           []
         ),
         {
+          title: 'Range Reference',
+          align: 'center',
+          dataIndex: 'rangeReference',
+          key: 'rangeReference',
+          render: (name, obj)  => (
+            <React.Fragment>
+              {obj.range ?
+                <Input
+                  value={obj.rangeReference}
+                  style={obj.rangeReferenceError ? { width: '150px', borderColor: 'red' } : { width: '150px'}}
+                  onChange={e => this.rangeReferenceSet(e.target.value, obj.id)}
+                />
+              :
+                null
+              }
+            </React.Fragment>
+          )
+        },
+        {
         title: 'Ranges',
         align: 'center',
         dataIndex: 'ranges',
@@ -712,12 +742,26 @@ class RequestIp extends React.Component {
                 onChange={e => this.choosedRangeSet(e, obj.id)}
               >
                 { obj.ranges ? obj.ranges.map((r, i) => {
-                  let range = `${r.start_addr} - ${r.end_addr}`
-                  return (
-                    <Select.Option key={i} value={range}>{range}</Select.Option>
-                    )
+                  console.log(r)
+                  let range = ''
+                    if (r.extattrs && r.extattrs.Reference && r.extattrs.Reference.value) {
+                      referenceRangeList.push(r.extattrs.Reference.value)
+                    }
                   })
-                  :
+                :
+                  null
+                }
+                {
+                  list = [...new Set(referenceRangeList)]
+                }
+                {
+                  list ? list.map((r, i) => {
+                    console.log(r)
+                    return (
+                      <Select.Option key={i} value={r}>{r}</Select.Option>
+                      )
+                    })
+                :
                   null
                 }
               </Select>
