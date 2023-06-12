@@ -323,7 +323,7 @@ class IpComponent extends React.Component {
         ),
       },
       {
-        title: 'Range Reference',
+        title: 'Parent Reference',
         align: 'center',
         width: 200,
         //dataIndex: ['extattrs', 'Reference', 'value'],
@@ -339,7 +339,7 @@ class IpComponent extends React.Component {
         ),
       },
       {
-        title: 'IP Reference',
+        title: 'Object Reference',
         align: 'center',
         width: 200,
         //dataIndex: ['objects', 'extattrs', 'Reference', 'value'],
