@@ -5,16 +5,6 @@ import { Component } from "react";
 import { authorizationsError } from '../_store/store.authorizations'
 
 import {
-  permissionsError,
-  identityGroupsError,
-
-  newIdentityGroupAddError,
-
-  rolesError,
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
-
   environmentError,
   workflowsError,
 
@@ -62,31 +52,6 @@ class Error extends Component {
 
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
-          break;
-
-
-        case 'newIdentityGroupAddError':
-          this.props.dispatch(newIdentityGroupAddError(null))
-          break;
-        case 'rolesError':
-          this.props.dispatch(rolesError(null))
-          break;
-        case 'permissionAddError':
-          this.props.dispatch(permissionAddError(null))
-          break;
-        case 'permissionModifyError':
-          this.props.dispatch(permissionModifyError(null))
-          break;
-        case 'permissionDeleteError':
-          this.props.dispatch(permissionDeleteError(null))
-          break;
-
-
-        case 'permissionsError':
-        	this.props.dispatch(permissionsError(null))
-        	break;
-        case 'identityGroupsError':
-          this.props.dispatch(identityGroupsError(null))
           break;
 
         case 'environmentError':
