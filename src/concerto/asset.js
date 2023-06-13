@@ -790,9 +790,9 @@ class Permission extends React.Component {
               ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
               style={
                 obj.fqdnError ?
-                  {borderColor: 'red', textAlign: 'left', width: 150}
+                  {borderColor: 'red', textAlign: 'left', width: 200}
                 :
-                  {textAlign: 'left', width: 150}
+                  {textAlign: 'left', width: 200}
               }
               onChange={e => {
                 this.set('fqdn', e.target.value, obj)}
