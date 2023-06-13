@@ -4,54 +4,6 @@ const fortinetdbSlice = createSlice({
     name: 'fortinetdb',
     initialState: {},
     reducers: {
-
-      permissionsLoading: (state, action) => {
-        state.permissionsLoading = action.payload
-      },
-      permissions: (state, action) => {
-        state.permissions = action.payload.data.items
-      },
-      permissionsFetch: (state, action) => {
-        state.permissionsFetch = action.payload
-      },
-      permissionsError: (state, action) => {
-        state.permissionsError = action.payload
-      },
-
-      permissionAddError: ( state, action) => {
-        state.permissionAddError = action.payload
-      },
-      permissionModifyError: ( state, action) => {
-        state.permissionModifyError = action.payload
-      },
-      permissionDeleteError: ( state, action) => {
-        state.permissionDeleteError = action.payload
-      },
-
-      rolesError: ( state, action) => {
-        state.rolesError = action.payload
-      },
-      newIdentityGroupAddError: ( state, action) => {
-        state.newIdentityGroupAddError = action.payload
-      },
-
-      identityGroupsLoading: (state, action) => {
-        state.identityGroupsLoading = action.payload
-      },
-      identityGroups: (state, action) => {
-        state.identityGroups = action.payload.data.items
-      },
-      identityGroupsFetch: (state, action) => {
-        state.identityGroupsFetch = action.payload
-      },
-      identityGroupsError: (state, action) => {
-        state.identityGroupsError = action.payload
-      },
-      identityGroupDeleteError: (state, action) => {
-        state.identityGroupDeleteError = action.payload
-      },
-
-
       projectsLoading: (state, action) => {
         state.projectsLoading = action.payload
       },
@@ -355,25 +307,6 @@ const fortinetdbSlice = createSlice({
 const { actions, reducer } = fortinetdbSlice;
 
 export const {
-  permissionsLoading,
-  permissions,
-  permissionsFetch,
-  permissionsError,
-
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
-
-  rolesError,
-
-  identityGroupsLoading,
-  identityGroups,
-  identityGroupsFetch,
-  identityGroupsError,
-
-  identityGroupDeleteError,
-  newIdentityGroupAddError,
-
   projectsLoading,
   projects,
   projectsFetch,
