@@ -9,18 +9,12 @@ import { Layout } from 'antd'
 import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
-
 import HeaderCustom from './header'
+
 import CustomSider from './concerto/sider'
+
 import Homepage from './concerto/homepage'
 import Historys from './concerto/historys'
-import Service from './concerto/services'
-import Workflow from './concerto/workflows'
-import Assets from './concerto/assets'
-import Permissions from './concerto/permissions'
-import Permissions2 from './concerto/permissions2'
-import Triggers from './concerto/triggers/triggers'
-import Configurations from './concerto/configurations'
 
 import Devices from './fortinetdb/devices'
 import Ddosses from './fortinetdb/ddosses'
@@ -30,6 +24,21 @@ import Infoblox from './infoblox/infoblox'
 import Checkpoint from './checkpoint/checkpoint'
 import F5 from './f5/f5'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
+
+import Service from './concerto/services'
+import Workflow from './concerto/workflows'
+
+import Assets from './concerto/assets'
+import Assets2 from './concerto/assets2'
+import Permissions from './concerto/permissions'
+import Permissions2 from './concerto/permissions2'
+import Triggers from './concerto/triggers/triggers'
+
+import Configurations from './concerto/configurations'
+
+
+
+
 
 const { Content } = Layout;
 
@@ -120,6 +129,7 @@ class Concerto extends Component {
                   }
 
                   <Route path='/assets/' component={Assets}/>
+                  <Route path='/assets2/' component={Assets2}/>
 
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>

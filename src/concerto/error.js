@@ -6,6 +6,10 @@ import { authorizationsError } from '../_store/store.authorizations'
 
 import {
   assetsError,
+  assetAddError,
+  assetModifyError,
+  assetDeleteError,
+
   subAssetsError,
   networksError,
   containersError,
@@ -67,6 +71,16 @@ class Error extends Component {
         case 'assetsError':
           this.props.dispatch(assetsError(null))
           break;
+        case 'assetAddError':
+          this.props.dispatch(assetAddError(null))
+          break;
+        case 'assetModifyError':
+          this.props.dispatch(assetModifyError(null))
+          break;
+        case 'assetDeleteError':
+          this.props.dispatch(assetDeleteError(null))
+          break;
+
         case 'subAssetsError':
           this.props.dispatch(subAssetsError(null))
           break;

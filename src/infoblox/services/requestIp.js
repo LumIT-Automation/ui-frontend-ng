@@ -89,6 +89,7 @@ class RequestIp extends React.Component {
     if (real) {
       this.setState({real: real, networkLoading: false, networks: networks, containers: containers})
     }
+    this.setState({networkLoading: false})
 
   }
 

@@ -188,9 +188,9 @@ class AssetSelector extends React.Component {
     await this.setState({ environment: e, envAssets: envAssets, partitions: '' })
   }
 
-  assetSet = async address => {
+  assetSet = async fqdn => {
     let assets = JSON.parse(JSON.stringify(this.state.envAssets))
-    let asset = assets.find( a => a.address === address )
+    let asset = assets.find( a => a.fqdn === fqdn )
 
     switch (this.props.vendor) {
       case 'infoblox':
@@ -302,7 +302,7 @@ class AssetSelector extends React.Component {
               >
                 {this.state.envAssets.map((n, i) => {
                   return (
-                    <Select.Option key={i} value={n.address}>{n.fqdn} - {n.address}</Select.Option>
+                    <Select.Option key={i} value={n.fqdn}>{n.fqdn}</Select.Option>
                   )
                 })}
               </Select>

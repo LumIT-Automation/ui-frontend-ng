@@ -209,6 +209,18 @@ class CustomSider extends Component {
             null
           }
 
+          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
+            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
+            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
+            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
+            <React.Fragment>
+              <Menu.Item key="assets2" icon={this.itemsIcon()}><Link to="/assets2/">ASSETS 2</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            :
+            null
+          }
+
           { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ||
             (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
             (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.permission_identityGroups_post) ||
@@ -230,7 +242,7 @@ class CustomSider extends Component {
             (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
             (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
             <React.Fragment>
-              <Menu.Item key="permissions2" icon={this.permissionsIcon()}><Link to="/permissions2/">PERMISSIONS2</Link></Menu.Item>
+              <Menu.Item key="permissions2" icon={this.permissionsIcon()}><Link to="/permissions2/">PERMISSIONS 2</Link></Menu.Item>
               <Menu.Divider/>
             </React.Fragment>
             :
