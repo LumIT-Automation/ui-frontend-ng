@@ -18,7 +18,10 @@ import {
 
   assetAddError,
   assetModifyError,
-  assetDeleteError
+  assetDeleteError,
+  drAddError,
+  drModifyError,
+  drDeleteError
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -1176,6 +1179,9 @@ class Permission extends React.Component {
         { this.props.assetAddError ? <Error vendor={this.props.vendor} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
         { this.props.assetModifyError ? <Error vendor={this.props.vendor} error={[this.props.assetModifyError]} visible={true} type={'assetModifyError'} /> : null }
         { this.props.assetDeleteError ? <Error vendor={this.props.vendor} error={[this.props.assetDeleteError]} visible={true} type={'assetDeleteError'} /> : null }
+        { this.props.drAddError ? <Error vendor={this.props.vendor} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
+        { this.props.drModifyError ? <Error vendor={this.props.vendor} error={[this.props.drModifyError]} visible={true} type={'drModifyError'} /> : null }
+        { this.props.drDeleteError ? <Error vendor={this.props.vendor} error={[this.props.drDeleteError]} visible={true} type={'drDeleteError'} /> : null }
 
       </React.Fragment>
     )
@@ -1189,4 +1195,7 @@ export default connect((state) => ({
   assetAddError: state.concerto.assetAddError,
   assetModifyError: state.concerto.assetModifyError,
   assetDeleteError: state.concerto.assetDeleteError,
+  drAddError: state.concerto.drAddError,
+  drModifyError: state.concerto.drAModifyError,
+  drDeleteError: state.concerto.drDeleteError,
 }))(Permission);

@@ -8,10 +8,6 @@ import {
   environmentError,
   assetsError,
 
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-
   domainsError,
 
   itemTypesError,
@@ -101,15 +97,6 @@ class Error extends Component {
         	break;
         case 'assetsError':
         	this.props.dispatch(assetsError(null))
-        	break;
-        case 'assetAddError':
-        	this.props.dispatch(assetAddError(null))
-        	break;
-        case 'assetModifyError':
-        	this.props.dispatch(assetModifyError(null))
-        	break;
-        case 'assetDeleteError':
-        	this.props.dispatch(assetDeleteError(null))
         	break;
 
         case 'domainsError':

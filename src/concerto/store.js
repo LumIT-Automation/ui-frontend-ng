@@ -17,6 +17,15 @@ const concertoSlice = createSlice({
       assetDeleteError: ( state, action) => {
         state.assetDeleteError = action.payload
       },
+      drAddError: (state, action) => {
+        state.drAddError = action.payload
+      },
+      drModifyError: (state, action) => {
+        state.drModifyError = action.payload
+      },
+      drDeleteError: (state, action) => {
+        state.drDeleteError = action.payload
+      },
 
       subAssetsError: ( state, action) => {
         state.subAssetsError = action.payload
@@ -115,6 +124,9 @@ export const {
   assetAddError,
   assetModifyError,
   assetDeleteError,
+  drAddError,
+  drModifyError,
+  drDeleteError,
 
   subAssetsError,
   networksError,

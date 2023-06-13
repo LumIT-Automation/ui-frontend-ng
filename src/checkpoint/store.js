@@ -27,15 +27,6 @@ const checkpointSlice = createSlice({
       asset: (state, action) => {
         state.asset = action.payload
       },
-      assetAddError: (state, action) => {
-        state.assetAddError = action.payload
-      },
-      assetModifyError: (state, action) => {
-        state.assetModifyError = action.payload
-      },
-      assetDeleteError: (state, action) => {
-        state.assetDeleteError = action.payload
-      },
 
       domainsLoading: (state, action) => {
         state.domainsLoading = action.payload
@@ -279,9 +270,6 @@ export const {
   assetsError,
 
   asset,
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
 
   domainsLoading,
   domains,
