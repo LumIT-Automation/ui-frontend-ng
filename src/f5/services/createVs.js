@@ -93,48 +93,53 @@ class CreateF5Service extends React.Component {
   }
 
   main = async () => {
-    await this.setState({routeDomainsLoading: true})
-    let routeDomainsFetched = await this.routeDomainsFetch()
-    console.log(routeDomainsFetched)
-    await this.setState({routeDomainsLoading: false})
-    if (routeDomainsFetched.status && routeDomainsFetched.status !== 200 ) {
-      this.props.dispatch(routeDomainsError(routeDomainsFetched))
-      return
-    }
-    else {
-      await this.setState({routeDomains: routeDomainsFetched.data.items})
-      //this.props.dispatch(routeDomains( routeDomainsFetched ))
-    }
-
-    await this.setState({dataGroupsLoading: true})
-    let dataGroupsCommon = await this.dataGroupsFetch('Common')
-    await this.setState({dataGroupsLoading: false})
-    if (dataGroupsCommon.status && dataGroupsCommon.status !== 200 ) {
-      this.props.dispatch(dataGroupsError(dataGroupsCommon))
-      return
-    }
-    else {
-      let list = dataGroupsCommon.data.items.filter(d => d.type === 'ip')
-      await this.setState({dataGroupsTypeIp: list})
-    }
-
-
-    if (this.props.partition !== 'Common') {
-      await this.setState({dataGroupsLoading: true})
-      let dataGroupsPartition = await this.dataGroupsFetch(this.props.partition)
-      await this.setState({dataGroupsLoading: false})
-      if (dataGroupsPartition.status && dataGroupsPartition.status !== 200 ) {
-        this.props.dispatch(dataGroupsError(dataGroupsPartition))
+    try {
+      await this.setState({routeDomainsLoading: true})
+      let routeDomainsFetched = await this.routeDomainsFetch()
+      console.log(routeDomainsFetched)
+      await this.setState({routeDomainsLoading: false})
+      if (routeDomainsFetched.status && routeDomainsFetched.status !== 200 ) {
+        this.props.dispatch(routeDomainsError(routeDomainsFetched))
         return
       }
       else {
-        let list = dataGroupsPartition.data.items.filter(d => d.type === 'ip')
-        let dgCommon = JSON.parse(JSON.stringify(this.state.dataGroupsTypeIp))
-        list.forEach((item, i) => {
-          dgCommon.push(item)
-        });
-        await this.setState({dataGroupsTypeIp: dgCommon})
+        await this.setState({routeDomains: routeDomainsFetched.data.items})
+        //this.props.dispatch(routeDomains( routeDomainsFetched ))
       }
+
+      await this.setState({dataGroupsLoading: true})
+      let dataGroupsCommon = await this.dataGroupsFetch('Common')
+      await this.setState({dataGroupsLoading: false})
+      if (dataGroupsCommon.status && dataGroupsCommon.status !== 200 ) {
+        this.props.dispatch(dataGroupsError(dataGroupsCommon))
+        return
+      }
+      else {
+        let list = dataGroupsCommon.data.items.filter(d => d.type === 'ip')
+        await this.setState({dataGroupsTypeIp: list})
+      }
+
+
+      if (this.props.partition !== 'Common') {
+        await this.setState({dataGroupsLoading: true})
+        let dataGroupsPartition = await this.dataGroupsFetch(this.props.partition)
+        await this.setState({dataGroupsLoading: false})
+        if (dataGroupsPartition.status && dataGroupsPartition.status !== 200 ) {
+          this.props.dispatch(dataGroupsError(dataGroupsPartition))
+          return
+        }
+        else {
+          let list = dataGroupsPartition.data.items.filter(d => d.type === 'ip')
+          let dgCommon = JSON.parse(JSON.stringify(this.state.dataGroupsTypeIp))
+          list.forEach((item, i) => {
+            dgCommon.push(item)
+          });
+          await this.setState({dataGroupsTypeIp: dgCommon})
+        }
+      }
+    }
+    catch (error) {
+      console.log(error)
     }
   }
 

@@ -31,7 +31,6 @@ import Workflow from './concerto/workflows'
 import Assets from './concerto/assets'
 import Assets2 from './concerto/assets2'
 import Permissions from './concerto/permissions'
-import Permissions2 from './concerto/permissions2'
 import Triggers from './concerto/triggers/triggers'
 
 import Configurations from './concerto/configurations'
@@ -133,12 +132,6 @@ class Concerto extends Component {
 
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>
-                  :
-                    null
-                  }
-
-                  { this.props.authorizations && this.authorizators(this.props.authorizations) ?
-                    <Route path='/permissions2/' component={Permissions2}/>
                   :
                     null
                   }
