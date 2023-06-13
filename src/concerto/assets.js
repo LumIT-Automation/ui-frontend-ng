@@ -1,25 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Tabs, Space, Spin } from 'antd'
+import { Radio, Divider, Space, Spin } from 'antd'
 import 'antd/dist/antd.css'
 import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-
 import Authorizators from '../_helpers/authorizators'
-import Infoblox from '../infoblox/assets/manager'
-import Checkpoint from '../checkpoint/assets/manager'
-import F5 from '../f5/assets/manager'
-import Vmware from '../vmware/assets/manager'
+import Asset from './asset'
 
-import { assetsFetch as infobloxAssetsFetch } from '../infoblox/store'
-import { assetsFetch as checkpointAssetsFetch } from '../checkpoint/store'
-import { assetsFetch as f5AssetsFetch } from '../f5/store'
-import { assetsFetch as vmwareAssetsFetch } from '../vmware/store'
-
-const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-
 
 class Assets extends React.Component {
 
@@ -47,94 +35,65 @@ class Assets extends React.Component {
     return author.isObjectEmpty(a)
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+
 
   render() {
+    console.log(this.state.vendor)
     return (
       <React.Fragment>
-        <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-          <Tabs type="card">
-            { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
-              <React.Fragment>
-                {this.props.infobloxLoading ?
-                  <TabPane key="Infoblox" tab="Infoblox">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="infoblox" tab=<span>Infoblox <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(infobloxAssetsFetch(true))}/></span>>
-                    <Infoblox/>
-                  </TabPane>
-                }
-              </React.Fragment>
-              :
-              null
-            }
+        <Radio.Group
+          onChange={e => this.setState({vendor: e.target.value})}
+          value={this.state.vendor}
+          style={{padding: 15, paddingTop: 40 }}
+        >
 
-            { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
-              <React.Fragment>
-                {this.props.checkpointLoading ?
-                  <TabPane key="Checkpoint" tab="Checkpoint">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="checkpoint" tab=<span>Checkpoint <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(checkpointAssetsFetch(true))}/></span>>
-                    <Checkpoint/>
-                  </TabPane>
-                }
-              </React.Fragment>
-            :
-              null
-            }
+          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsInfoblox)) ?
+            <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+          :
+            null
+          }
 
-            { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
-              <React.Fragment>
-                {this.props.f5Loading ?
-                  <TabPane key="F5" tab="F5">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="f5" tab=<span>F5 <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(f5AssetsFetch(true))}/></span>>
-                    <F5/>
-                  </TabPane>
-                }
-              </React.Fragment>
-              :
-              null
-            }
+          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsCheckpoint)) ?
+            <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
+          :
+            null
+          }
 
-            { this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware) ?
-              <React.Fragment>
-                {this.props.vmwareLoading ?
-                  <TabPane key="Vmware" tab="Vmware">
-                    <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                  </TabPane>
-                  :
-                  <TabPane key="vmware" tab=<span>Vmware <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.props.dispatch(vmwareAssetsFetch(true))}/></span>>
-                    <Vmware/>
-                  </TabPane>
-                }
-              </React.Fragment>
-              :
-              null
-            }
+          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsF5)) ?
+            <Radio.Button value={'f5'}>f5</Radio.Button>
+          :
+            null
+          }
 
-          </Tabs>
+          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsVmware)) ?
+            <Radio.Button value={'vmware'}>vmware</Radio.Button>
+          :
+            null
+          }
+        </Radio.Group>
 
-        </Space>
+        <Divider/>
+
+        {
+          this.state.vendor ?
+            <Asset vendor={this.state.vendor}/>
+          :
+            null
+        }
       </React.Fragment>
     )
   }
-}
+  }
 
 
-export default connect((state) => ({
-  authorizationsWorkflow: state.authorizations.workflow,
+  export default connect((state) => ({
+  authorizations: state.authorizations,
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
-
-  infobloxLoading: state.infoblox.assetsLoading,
-  checkpointLoading: state.checkpoint.assetsLoading,
-  vmwareLoading: state.vmware.assetsLoading,
-  f5Loading: state.f5.assetsLoading,
-}))(Assets);
+  }))(Assets);

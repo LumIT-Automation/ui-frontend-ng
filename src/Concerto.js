@@ -29,7 +29,6 @@ import Service from './concerto/services'
 import Workflow from './concerto/workflows'
 
 import Assets from './concerto/assets'
-import Assets2 from './concerto/assets2'
 import Permissions from './concerto/permissions'
 import Triggers from './concerto/triggers/triggers'
 
@@ -128,7 +127,6 @@ class Concerto extends Component {
                   }
 
                   <Route path='/assets/' component={Assets}/>
-                  <Route path='/assets2/' component={Assets2}/>
 
                   { this.props.authorizations && this.authorizators(this.props.authorizations) ?
                     <Route path='/permissions/' component={Permissions}/>
