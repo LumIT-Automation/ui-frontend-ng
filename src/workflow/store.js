@@ -73,23 +73,6 @@ const workflowSlice = createSlice({
 const { actions, reducer } = workflowSlice;
 
 export const {
-  permissionsLoading,
-  permissions,
-  permissionsFetch,
-  permissionsError,
-
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
-
-  rolesError,
-  newIdentityGroupAddError,
-
-  identityGroupsLoading,
-  identityGroups,
-  identityGroupsFetch,
-  identityGroupsError,
-
   environment,
   environmentError,
 
