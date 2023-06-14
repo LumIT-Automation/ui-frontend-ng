@@ -132,7 +132,7 @@ class List extends React.Component {
 
 
 
-  assetDr = async (drId, assetId) => {
+  assetDrSet = async (drId, assetId) => {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let assetDr = assets.find( a => a.id === drId )
     let asset = assets.find( a => a.id === assetId )
@@ -194,6 +194,21 @@ class List extends React.Component {
     }
   }
 
+  drAdd = async (id, b) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+    return r
+  }
+
   drRemove = async (assetId) => {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let asset = assets.find( a => a.id === assetId )
@@ -213,21 +228,6 @@ class List extends React.Component {
         this.props.dispatch(assetsFetch(true))
       }
     }
-  }
-
-  drAdd = async (id, b) => {
-    let r
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
-    return r
   }
 
   drDelete = async (assetId, assetDrId) => {
@@ -305,7 +305,7 @@ class List extends React.Component {
                   value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
                   key={obj.id}
                   style={{ width: '150px'}}
-                  onChange={e => this.assetDr(e, obj.id)}
+                  onChange={e => this.assetDrSet(e, obj.id)}
                 >
                   { this.state.assets.map((v,i) => {
                     let str = `${v.fqdn} - ${v.address}`

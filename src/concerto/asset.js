@@ -184,6 +184,9 @@ class Permission extends React.Component {
     if (assetId) {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
+    if (this.props.vendor === 'f5' && entities === 'assets') {
+      endpoint = `${this.props.vendor}/${entities}/?includeDr`
+    }
     let rest = new Rest(
       "GET",
       resp => {
@@ -200,7 +203,6 @@ class Permission extends React.Component {
   assetsRefresh = async () => {
     await this.setState({assetsRefresh: true})
   }
-
 
   assetAdd = async () => {
     let id = 0
@@ -239,6 +241,78 @@ class Permission extends React.Component {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let origAsset = this.state.originAssets.find(a => a.id === asset.id)
     let ass = assets.find(a => a.id === asset.id)
+
+    /*
+    {
+    "asset": {
+        "id": 5,
+        "address": "",
+        "fqdn": "f5automation1.labsec.it",
+        "baseurl": "https://192.168.22.98/mgmt/",
+        "tlsverify": 0,
+        "datacenter": "Milano",
+        "environment": "Lab",
+        "position": ""
+    },
+    "enabled": true
+}
+    */
+
+    if (key === 'assetDr') {
+      if (ass.existent) {
+        /*
+        if (value) {
+          let assDr = assets.find(a => a.id === value)
+          if (origAsset.assetsDr && origAsset.assetsDr[0]) {
+            ass.isModified.assetsDr = true
+            ass.assetsDr = value
+          }
+        }
+        else {
+
+        }*/
+      }
+      else {
+        if (value) {
+          let assDr = assets.find(a => a.id === value)
+          ass.assetsDr = []
+          ass.assetsDr.push({asset: assDr})
+        }
+        else {
+          delete ass.assetsDr
+        }
+      }
+
+
+
+/*
+      if (value) {
+        let assDr = assets.find(a => a.id === value)
+        if (ass.existent) {
+          if (origAsset.assetDr !== value) {
+            ass.isModified.assetDr = true
+            ass.assetDr = value
+          }
+          else {
+            delete ass.isModified.assetDr
+            ass.assetDr = value
+          }
+        }
+        else {
+          ass.assetDr = value
+        }
+        delete ass.assetDrError
+      }
+      else {
+        //blank value while typing.
+        ass.assetsDr = []
+      }
+*/
+      await this.setState({assets: assets})
+    }
+
+
+
 
     if (key === 'fqdn') {
       let start = 0
@@ -644,7 +718,6 @@ class Permission extends React.Component {
           body.data.api_type = "vmware"
         }
 
-
         ass.loading = true
         await this.setState({assets: assets})
 
@@ -658,7 +731,41 @@ class Permission extends React.Component {
           ass.loading = false
           await this.setState({assets: assets})
         }
+      }
+    }
 
+    if (toPost.length > 0) {
+      let tempAssets = []
+      let fetchedAssets = await this.dataGet('assets')
+      if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+        this.props.dispatch(assetsError(fetchedAssets))
+        return
+      }
+      else {
+        tempAssets = JSON.parse(JSON.stringify(fetchedAssets.data.items))
+        for (const ass of toPost) {
+          if (ass.assetsDr && ass.assetsDr.length > 0) {
+            let as = tempAssets.find(a => a.fqdn === ass.fqdn)
+            let b = {}
+            b.data = {
+              "assetDrId": ass.assetsDr[0].asset.id,
+              "enabled": true
+            }
+
+            ass.drLoading = true
+            await this.setState({assets: assets})
+            let drAdd = await this.drAdd(as.id, b)
+            if (drAdd.status && drAdd.status !== 201 ) {
+              this.props.dispatch(drAddError(drAdd))
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+            else {
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+          }
+        }
       }
     }
 
@@ -706,6 +813,21 @@ class Permission extends React.Component {
 
   }
 
+  drAdd = async (id, b) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+    return r
+  }
+
   assetDelete = async (assetId) => {
     let r
     let rest = new Rest(
@@ -720,8 +842,6 @@ class Permission extends React.Component {
     await rest.doXHR(`${this.props.vendor}/asset/${assetId}/`, this.props.token )
     return r
   }
-
-
 
   assModify = async (assId, body) => {
     let r
@@ -845,9 +965,9 @@ class Permission extends React.Component {
               ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
               style={
                 obj.environmentError ?
-                  {borderColor: 'red', textAlign: 'left', width: 150}
+                  {borderColor: 'red', textAlign: 'left', width: 100}
                 :
-                  {textAlign: 'left', width: 150}
+                  {textAlign: 'left', width: 100}
               }
               onChange={e => {
                 this.set('environment', e.target.value, obj)}
@@ -871,9 +991,9 @@ class Permission extends React.Component {
               ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
               style={
                 obj.datacenterError ?
-                  {borderColor: 'red', textAlign: 'left', width: 150}
+                  {borderColor: 'red', textAlign: 'left', width: 100}
                 :
-                  {textAlign: 'left', width: 150}
+                  {textAlign: 'left', width: 100}
               }
               onChange={e => {
                 this.set('datacenter', e.target.value, obj)}
@@ -898,18 +1018,55 @@ class Permission extends React.Component {
                     {marginTop: 5}
                 }
                 value={obj && obj.tlsverify ? obj.tlsverify : null}
-                onChange={e => {
-                  this.set('tlsverify', e.target.value, obj)}
+                onChange={e => {this.set('tlsverify', e.target.value, obj)}
                 }
               >
                 <Space direction="vertical">
                   <Radio value='1'>Yes</Radio>
-                  <Radio value='0'>No</Radio>
+                  <Radio value='0'>No </Radio>
                 </Space>
               </Radio.Group>
           )
         },
       },
+      ...(
+        this.props.vendor === 'f5' ?
+          [
+            {
+              title: 'DR',
+              align: 'center',
+              width: 250,
+              dataIndex: 'assetsDrList',
+              key: 'assetsDrList',
+              render: (name, obj)  => (
+                <React.Fragment>
+                  {obj.drLoading ?
+                    <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
+                  :
+                    <Space>
+                      <Select
+                        value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
+                        key={obj.id}
+                        style={{ width: '250px'}}
+                        onChange={e => {this.set('assetDr', e, obj)} }
+                      >
+                        { this.state.assets.map((dr,i) => {
+                          return (
+                            <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
+                          )
+                        })
+                        }
+                      </Select>
+                      <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => this.set('assetDr', '', obj)}/>
+                    </Space>
+                  }
+                </React.Fragment>
+              )
+            },
+          ]
+        :
+          []
+        ),
       {
         title: 'Username',
         align: 'center',
@@ -961,138 +1118,6 @@ class Permission extends React.Component {
           )
         },
       },
-      {/*
-        title: 'Asset',
-        align: 'center',
-        dataIndex: 'assetFqdn',
-        key: 'assetFqdn',
-        ...this.getColumnSearchProps('assetFqdn'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.assetFqdn}
-            showSearch
-            style=
-            { obj.assetIdError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('assetId', value, obj )}
-          >
-            { this.state.assets.map((ass, i) => {
-                return (
-                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      */},
-      /*...(
-        this.props.vendor === 'infoblox' ?
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.network ? sub.network : ''}>{sub.network ? sub.network : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-        :
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-      ),*/
       {
         title: 'Delete',
         align: 'center',
