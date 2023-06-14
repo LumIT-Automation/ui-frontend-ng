@@ -8,7 +8,7 @@ import JsonHelper from '../_helpers/jsonHelper'
 import Error from './error'
 import RolesDescription from './rolesDescription'
 
-import { Space, Row, Col, Table, Input, Button, Radio, Checkbox, Select, Spin, Progress } from 'antd';
+import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
@@ -46,8 +46,6 @@ class Permission extends React.Component {
     super(props);
 
     this.textAreaRefs = {};
-
-    //this.jsonHelper = this.jsonHelper.bind(this);
 
     this.state = {
       searchText: '',
@@ -740,8 +738,6 @@ class Permission extends React.Component {
     }
     else {
       try{
-        let identityGroupId = ''
-        let cn = ''
         let list = ig.split(',')
         let cns = []
 
@@ -833,7 +829,6 @@ class Permission extends React.Component {
 
   identityGroupDelete = async (data) => {
     let r
-    let b = {}
 
     let rest = new Rest(
       "DELETE",
@@ -1114,8 +1109,6 @@ class Permission extends React.Component {
     console.log('identityGroups', this.state.identityGroups)
     console.log('roles', this.state.roles)
     console.log('permissions', this.state.permissions)
-
-    let jsonHelper = new JsonHelper()
 
     let returnCol = () => {
       if (this.props.vendor === 'superAdmin') {

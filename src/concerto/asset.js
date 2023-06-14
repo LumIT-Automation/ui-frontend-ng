@@ -6,9 +6,8 @@ import '../App.css'
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from './error'
-import RolesDescription from './rolesDescription'
 
-import { Space, Row, Col, Table, Input, Button, Radio, Checkbox, Select, Spin, Progress } from 'antd';
+import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined } from '@ant-design/icons';
 
@@ -20,7 +19,6 @@ import {
   assetModifyError,
   assetDeleteError,
   drAddError,
-  drModifyError,
   drDeleteError
 } from './store'
 
@@ -797,7 +795,7 @@ class Permission extends React.Component {
             if (origAsset.assetsDr.length > 0) {
               ass.drLoading = true
               await this.setState({assets: assets})
-              
+
               let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
               if (drDelete.status && drDelete.status !== 200 ) {
                 this.props.dispatch(drDeleteError(drDelete))
@@ -1245,7 +1243,6 @@ class Permission extends React.Component {
         { this.props.assetModifyError ? <Error vendor={this.props.vendor} error={[this.props.assetModifyError]} visible={true} type={'assetModifyError'} /> : null }
         { this.props.assetDeleteError ? <Error vendor={this.props.vendor} error={[this.props.assetDeleteError]} visible={true} type={'assetDeleteError'} /> : null }
         { this.props.drAddError ? <Error vendor={this.props.vendor} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
-        { this.props.drModifyError ? <Error vendor={this.props.vendor} error={[this.props.drModifyError]} visible={true} type={'drModifyError'} /> : null }
         { this.props.drDeleteError ? <Error vendor={this.props.vendor} error={[this.props.drDeleteError]} visible={true} type={'drDeleteError'} /> : null }
 
       </React.Fragment>
@@ -1261,6 +1258,5 @@ export default connect((state) => ({
   assetModifyError: state.concerto.assetModifyError,
   assetDeleteError: state.concerto.assetDeleteError,
   drAddError: state.concerto.drAddError,
-  drModifyError: state.concerto.drAModifyError,
   drDeleteError: state.concerto.drDeleteError,
 }))(Permission);
