@@ -229,48 +229,46 @@ class Permission extends React.Component {
       return p.id !== n.id
     })
 
-    //delete this[`inputTextAreaRef${p.id}`]
     await this.setState({assets: newList})
   }
 
   set = async (key, value, asset) => {
-    console.log('key', key)
-    console.log('value', value)
-    console.log('asset', asset)
 
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let origAsset = this.state.originAssets.find(a => a.id === asset.id)
     let ass = assets.find(a => a.id === asset.id)
 
-    /*
-    {
-    "asset": {
-        "id": 5,
-        "address": "",
-        "fqdn": "f5automation1.labsec.it",
-        "baseurl": "https://192.168.22.98/mgmt/",
-        "tlsverify": 0,
-        "datacenter": "Milano",
-        "environment": "Lab",
-        "position": ""
-    },
-    "enabled": true
-}
-    */
-
     if (key === 'assetDr') {
       if (ass.existent) {
-        /*
-        if (value) {
-          let assDr = assets.find(a => a.id === value)
-          if (origAsset.assetsDr && origAsset.assetsDr[0]) {
+        if (origAsset.assetsDr && origAsset.assetsDr[0]) {
+          if (value) {
+            let assDr = assets.find(a => a.id === value)
+            if (origAsset.assetsDr[0].asset.id !== value) {
+              ass.isModified.assetsDr = true
+              ass.assetsDr[0].asset = assDr
+            }
+            else {
+              delete ass.isModified.assetsDr
+              ass.assetsDr[0].asset = origAsset.assetsDr[0].asset
+            }
+          }
+          else {
             ass.isModified.assetsDr = true
-            ass.assetsDr = value
+            ass.assetsDr = []
           }
         }
         else {
-
-        }*/
+          if (value) {
+            let assDr = assets.find(a => a.id === value)
+            ass.assetsDr = []
+            ass.assetsDr.push({asset: assDr})
+            ass.isModified.assetsDr = true
+          }
+          else {
+            ass.assetsDr = []
+            delete ass.isModified.assetsDr
+          }
+        }
       }
       else {
         if (value) {
@@ -279,40 +277,12 @@ class Permission extends React.Component {
           ass.assetsDr.push({asset: assDr})
         }
         else {
-          delete ass.assetsDr
+          ass.assetsDr = []
         }
       }
 
-
-
-/*
-      if (value) {
-        let assDr = assets.find(a => a.id === value)
-        if (ass.existent) {
-          if (origAsset.assetDr !== value) {
-            ass.isModified.assetDr = true
-            ass.assetDr = value
-          }
-          else {
-            delete ass.isModified.assetDr
-            ass.assetDr = value
-          }
-        }
-        else {
-          ass.assetDr = value
-        }
-        delete ass.assetDrError
-      }
-      else {
-        //blank value while typing.
-        ass.assetsDr = []
-      }
-*/
       await this.setState({assets: assets})
     }
-
-
-
 
     if (key === 'fqdn') {
       let start = 0
@@ -675,10 +645,6 @@ class Permission extends React.Component {
         toPost.push(ass)
       }
     }
-    console.log('toDelete', toDelete)
-    console.log('toPatch', toPatch)
-    console.log('toPost', toPost)
-
 
     if (toDelete.length > 0) {
       for (const ass of toDelete) {
@@ -698,8 +664,6 @@ class Permission extends React.Component {
 
       }
     }
-
-    //"api_type": "vmware",
 
     if (toPost.length > 0) {
       for (const ass of toPost) {
@@ -734,6 +698,7 @@ class Permission extends React.Component {
       }
     }
 
+    //add dr
     if (toPost.length > 0) {
       let tempAssets = []
       let fetchedAssets = await this.dataGet('assets')
@@ -806,6 +771,67 @@ class Permission extends React.Component {
           await this.setState({assets: assets})
         }
 
+        if (ass.isModified.assetsDr) {
+          if (ass.assetsDr && ass.assetsDr.length < 1 ) {
+            //deletedr
+            let origAsset = this.state.originAssets.find(a => a.id === ass.id)
+
+            ass.drLoading = true
+            await this.setState({assets: assets})
+
+            let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
+            if (drDelete.status && drDelete.status !== 200 ) {
+              this.props.dispatch(drDeleteError(drDelete))
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+            else {
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+          }
+          else {
+            //deletedr
+            let origAsset = this.state.originAssets.find(a => a.id === ass.id)
+
+            if (origAsset.assetsDr.length > 0) {
+              ass.drLoading = true
+              await this.setState({assets: assets})
+              
+              let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
+              if (drDelete.status && drDelete.status !== 200 ) {
+                this.props.dispatch(drDeleteError(drDelete))
+                ass.drLoading = false
+                await this.setState({assets: assets})
+              }
+              else {
+                ass.drLoading = false
+                await this.setState({assets: assets})
+              }
+            }
+
+            //add new dr
+            let b = {}
+            b.data = {
+              "assetDrId": ass.assetsDr[0].asset.id,
+              "enabled": true
+            }
+
+            ass.drLoading = true
+            await this.setState({assets: assets})
+            let drAdd = await this.drAdd(ass.id, b)
+            if (drAdd.status && drAdd.status !== 201 ) {
+              this.props.dispatch(drAddError(drAdd))
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+            else {
+              ass.drLoading = false
+              await this.setState({assets: assets})
+            }
+          }
+        }
+
       }
     }
 
@@ -825,6 +851,21 @@ class Permission extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+    return r
+  }
+
+  drDelete = async (assetId, assetDrId) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetdr/${assetDrId}/`, this.props.token )
     return r
   }
 
@@ -875,7 +916,6 @@ class Permission extends React.Component {
 
 
   render() {
-    console.log('assets', this.state.assets)
 
     let returnCol = () => {
       return vendorColumns
