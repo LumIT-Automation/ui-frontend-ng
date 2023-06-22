@@ -42,6 +42,7 @@ class Permission extends React.Component {
       searchText: '',
       searchedColumn: '',
       assets: [],
+      environments: [],
       datacenters: [],
       originAssets: [],
       errors: {}
@@ -164,16 +165,23 @@ class Permission extends React.Component {
       return
     }
     else {
+      let environments = []
       let datacenters = []
-      let unique = [];
+      let uniqueEnvironments = []
+      let uniqueDatacenters = []
+
       fetchedAssets.data.items.forEach((item, i) => {
         item.existent = true
         item.isModified = {}
         item.tlsverify = item.tlsverify.toString()
         datacenters.push(item.datacenter)
+        environments.push(item.environment)
       });
-      unique = [...new Set(datacenters)];
-      await this.setState({assets: fetchedAssets.data.items, originAssets: fetchedAssets.data.items, datacenters: unique})
+
+      uniqueEnvironments = [...new Set(environments)];
+      uniqueDatacenters = [...new Set(datacenters)];
+
+      await this.setState({assets: fetchedAssets.data.items, originAssets: fetchedAssets.data.items, environments: uniqueEnvironments, datacenters: uniqueDatacenters})
     }
 
     await this.setState({loading: false})
@@ -362,6 +370,18 @@ class Permission extends React.Component {
         ref.input.selectionEnd = end
       }
 
+      ref.focus()
+    }
+
+    if (key === 'environments') {
+      let ref = this.myRefs[`${asset.id}_environment`]
+
+      let environments = JSON.parse(JSON.stringify(this.state.environments))
+      if (value) {
+        environments.push(value)
+      }
+      await this.setState({environments: environments})
+      ref = this.myRefs[`${asset.id}_environment`]
       ref.focus()
     }
 
@@ -1010,71 +1030,19 @@ class Permission extends React.Component {
         dataIndex: 'environment',
         key: 'environment',
         render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.environment}
-              //ref={ref => this.setRef(ref, obj.id)}
-              ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
-              style={
-                obj.environmentError ?
-                  {borderColor: 'red', textAlign: 'left', width: 100}
-                :
-                  {textAlign: 'left', width: 100}
-              }
-              onChange={e => {
-                this.set('environment', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      /*{
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.datacenter}
-              ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
-              style={
-                obj.datacenterError ?
-                  {borderColor: 'red', textAlign: 'left', width: 100}
-                :
-                  {textAlign: 'left', width: 100}
-              }
-              onChange={e => {
-                this.set('datacenter', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },*/
-      {
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-        render: (name, obj)  => {
           let s = '';
 
           return (
             <React.Fragment>
               <Select
                 style={{
-                  width: 300,
+                  width: 180,
                 }}
-                value={obj.datacenter}
+                value={obj.environment}
                 onChange={e => {
-                  this.set('datacenter', e, obj)}
+                  this.set('environment', e, obj)}
                 }
-                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
-                placeholder="custom dropdown render"
+                ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
                 dropdownRender={(menu) => (
                   <>
                     {menu}
@@ -1089,12 +1057,67 @@ class Permission extends React.Component {
                       }}
                     >
                       <Input
-                        placeholder="Please enter Datacenter"
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('environments', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.environments ? this.state.environments.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+
+      },
+      {
+        title: 'Datacenter',
+        align: 'center',
+        dataIndex: 'datacenter',
+        key: 'datacenter',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={{
+                  width: 180,
+                }}
+                value={obj.datacenter}
+                onChange={e => {
+                  this.set('datacenter', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
                         onChange={e => s = e.target.value}
                       />
                       <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('datacenters', s, obj)} }
                       >
-                        Add Datacenter
                       </Button>
 
                     </Space>
