@@ -12,6 +12,7 @@ import {
   treeError,
   networksError,
   containersError,
+  cloudNetworksError,
 
   ipDetailError,
   networkError,
@@ -83,6 +84,10 @@ class Error extends Component {
         case 'containerError':
           this.props.dispatch(containerError(null))
           break;
+        case 'cloudNetworksError':
+          this.props.dispatch(cloudNetworksError(null))
+          break;
+
         case 'nextAvailableIpError':
           this.props.dispatch(nextAvailableIpError(null))
           break;

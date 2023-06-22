@@ -13,6 +13,7 @@ import IpComponent from './ipComponent'
 import RequestIp from './requestIp'
 import ReleaseIp from './releaseIp'
 import AssignCloudNetwork from './assignCloudNetwork'
+import CloudNetwork from './cloudNetwork'
 
 import { Row, Col } from 'antd';
 
@@ -87,6 +88,10 @@ class Manager extends React.Component {
         <Row>
           <Col span={4} offset={2}>
             <AssignCloudNetwork service='assign cloud network'/>
+          </Col>
+
+          <Col span={4} offset={2}>
+            <CloudNetwork vendor='infoblox' service='cloud network'/>
           </Col>
         </Row>
 

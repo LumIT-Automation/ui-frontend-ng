@@ -180,7 +180,6 @@ class IpComponent extends React.Component {
     let rest = new Rest(
       "PUT",
       resp => {
-        console.log(resp)
         if (resp.data) {
           let network = resp.data.split(':')
           network = network[1]
