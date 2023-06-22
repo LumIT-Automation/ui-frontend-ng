@@ -1035,9 +1035,12 @@ class Permission extends React.Component {
           return (
             <React.Fragment>
               <Select
-                style={{
-                  width: 180,
-                }}
+                style={
+                  obj.environmentError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
                 value={obj.environment}
                 onChange={e => {
                   this.set('environment', e, obj)}
@@ -1091,9 +1094,12 @@ class Permission extends React.Component {
           return (
             <React.Fragment>
               <Select
-                style={{
-                  width: 180,
-                }}
+                style={
+                  obj.datacenterError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
                 value={obj.datacenter}
                 onChange={e => {
                   this.set('datacenter', e, obj)}
