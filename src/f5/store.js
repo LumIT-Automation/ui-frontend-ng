@@ -27,24 +27,6 @@ const f5Slice = createSlice({
         asset: (state, action) => {
           state.asset = action.payload
         },
-        assetAddError: (state, action) => {
-          state.assetAddError = action.payload
-        },
-        assetModifyError: (state, action) => {
-          state.assetModifyError = action.payload
-        },
-        assetDeleteError: (state, action) => {
-          state.assetDeleteError = action.payload
-        },
-        drAddError: (state, action) => {
-          state.drAddError = action.payload
-        },
-        drModifyError: (state, action) => {
-          state.drModifyError = action.payload
-        },
-        drDeleteError: (state, action) => {
-          state.drDeleteError = action.payload
-        },
 
         partitionsLoading: (state, action) => {
           state.partitionsLoading = action.payload
@@ -430,12 +412,6 @@ export const {
   assetsError,
 
   asset,
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-  drAddError,
-  drModifyError,
-  drDeleteError,
 
   partitionsLoading,
   partitions,

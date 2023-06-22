@@ -392,6 +392,10 @@ class RequestIp extends React.Component {
         request.rangeReferenceError = 'error'
         ok = false
       }
+      if (request.range && request.macAddress === '00:00:00:00:00:00') {
+        request.macAddressError = 'error'
+        ok = false
+      }
       if (!request.objectType) {
         request.objectTypeError = 'error'
         ok = false
@@ -710,7 +714,7 @@ class RequestIp extends React.Component {
           []
         ),
         {
-          title: 'Range Reference',
+          title: 'Assignee',
           align: 'center',
           dataIndex: 'rangeReference',
           key: 'rangeReference',

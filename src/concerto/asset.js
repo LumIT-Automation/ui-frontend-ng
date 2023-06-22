@@ -7,9 +7,9 @@ import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from './error'
 
-import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin } from 'antd';
+import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin, Divider } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 
 
 import {
@@ -38,12 +38,11 @@ class Permission extends React.Component {
 
     this.myRefs = {};
 
-    //this.jsonHelper = this.jsonHelper.bind(this);
-
     this.state = {
       searchText: '',
       searchedColumn: '',
       assets: [],
+      datacenters: [],
       originAssets: [],
       errors: {}
     };
@@ -165,12 +164,16 @@ class Permission extends React.Component {
       return
     }
     else {
+      let datacenters = []
+      let unique = [];
       fetchedAssets.data.items.forEach((item, i) => {
         item.existent = true
         item.isModified = {}
         item.tlsverify = item.tlsverify.toString()
+        datacenters.push(item.datacenter)
       });
-      await this.setState({assets: fetchedAssets.data.items, originAssets: fetchedAssets.data.items})
+      unique = [...new Set(datacenters)];
+      await this.setState({assets: fetchedAssets.data.items, originAssets: fetchedAssets.data.items, datacenters: unique})
     }
 
     await this.setState({loading: false})
@@ -235,52 +238,6 @@ class Permission extends React.Component {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let origAsset = this.state.originAssets.find(a => a.id === asset.id)
     let ass = assets.find(a => a.id === asset.id)
-
-    if (key === 'assetDr') {
-      if (ass.existent) {
-        if (origAsset.assetsDr && origAsset.assetsDr[0]) {
-          if (value) {
-            let assDr = assets.find(a => a.id === value)
-            if (origAsset.assetsDr[0].asset.id !== value) {
-              ass.isModified.assetsDr = true
-              ass.assetsDr[0].asset = assDr
-            }
-            else {
-              delete ass.isModified.assetsDr
-              ass.assetsDr[0].asset = origAsset.assetsDr[0].asset
-            }
-          }
-          else {
-            ass.isModified.assetsDr = true
-            ass.assetsDr = []
-          }
-        }
-        else {
-          if (value) {
-            let assDr = assets.find(a => a.id === value)
-            ass.assetsDr = []
-            ass.assetsDr.push({asset: assDr})
-            ass.isModified.assetsDr = true
-          }
-          else {
-            ass.assetsDr = []
-            delete ass.isModified.assetsDr
-          }
-        }
-      }
-      else {
-        if (value) {
-          let assDr = assets.find(a => a.id === value)
-          ass.assetsDr = []
-          ass.assetsDr.push({asset: assDr})
-        }
-        else {
-          ass.assetsDr = []
-        }
-      }
-
-      await this.setState({assets: assets})
-    }
 
     if (key === 'fqdn') {
       let start = 0
@@ -408,6 +365,18 @@ class Permission extends React.Component {
       ref.focus()
     }
 
+    if (key === 'datacenters') {
+      let ref = this.myRefs[`${asset.id}_datacenter`]
+
+      let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
+      if (value) {
+        datacenters.push(value)
+      }
+      await this.setState({datacenters: datacenters})
+      ref = this.myRefs[`${asset.id}_datacenter`]
+      ref.focus()
+    }
+
     if (key === 'datacenter') {
       let start = 0
       let end = 0
@@ -466,6 +435,52 @@ class Permission extends React.Component {
           ass.tlsverify = value
         }
         delete ass.tlsverifyError
+      }
+
+      await this.setState({assets: assets})
+    }
+
+    if (key === 'assetDr') {
+      if (ass.existent) {
+        if (origAsset.assetsDr && origAsset.assetsDr[0]) {
+          if (value) {
+            let assDr = assets.find(a => a.id === value)
+            if (origAsset.assetsDr[0].asset.id !== value) {
+              ass.isModified.assetsDr = true
+              ass.assetsDr[0].asset = assDr
+            }
+            else {
+              delete ass.isModified.assetsDr
+              ass.assetsDr[0].asset = origAsset.assetsDr[0].asset
+            }
+          }
+          else {
+            ass.isModified.assetsDr = true
+            ass.assetsDr = []
+          }
+        }
+        else {
+          if (value) {
+            let assDr = assets.find(a => a.id === value)
+            ass.assetsDr = []
+            ass.assetsDr.push({asset: assDr})
+            ass.isModified.assetsDr = true
+          }
+          else {
+            ass.assetsDr = []
+            delete ass.isModified.assetsDr
+          }
+        }
+      }
+      else {
+        if (value) {
+          let assDr = assets.find(a => a.id === value)
+          ass.assetsDr = []
+          ass.assetsDr.push({asset: assDr})
+        }
+        else {
+          ass.assetsDr = []
+        }
       }
 
       await this.setState({assets: assets})
@@ -914,6 +929,7 @@ class Permission extends React.Component {
 
 
   render() {
+    console.log('this.myRefs', this.myRefs)
 
     let returnCol = () => {
       return vendorColumns
@@ -947,7 +963,6 @@ class Permission extends React.Component {
             <React.Fragment>
             <Input
               value={obj.fqdn}
-              //ref={ref => this.setRef(ref, obj.id)}
               ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
               style={
                 obj.fqdnError ?
@@ -1015,7 +1030,7 @@ class Permission extends React.Component {
           )
         },
       },
-      {
+      /*{
         title: 'Datacenter',
         align: 'center',
         dataIndex: 'datacenter',
@@ -1025,7 +1040,6 @@ class Permission extends React.Component {
             <React.Fragment>
             <Input
               value={obj.datacenter}
-              //ref={ref => this.setRef(ref, obj.id)}
               ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
               style={
                 obj.datacenterError ?
@@ -1040,6 +1054,64 @@ class Permission extends React.Component {
             </React.Fragment>
           )
         },
+      },*/
+      {
+        title: 'Datacenter',
+        align: 'center',
+        dataIndex: 'datacenter',
+        key: 'datacenter',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={{
+                  width: 300,
+                }}
+                value={obj.datacenter}
+                onChange={e => {
+                  this.set('datacenter', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
+                placeholder="custom dropdown render"
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Please enter Datacenter"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('datacenters', s, obj)} }
+                      >
+                        Add Datacenter
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.datacenters ? this.state.datacenters.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+
       },
       {
         title: 'Tlsverify',

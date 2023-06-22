@@ -13,13 +13,6 @@ import {
 
   assetsError,
 
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-  drAddError,
-  drModifyError,
-  drDeleteError,
-
   partitionsError,
 
   routeDomainsError,
@@ -138,26 +131,6 @@ class Error extends Component {
         case 'assetsError':
           this.props.dispatch(assetsError(null))
           break;
-
-        case 'assetAddError':
-          this.props.dispatch(assetAddError(null))
-          break;
-        case 'assetModifyError':
-          this.props.dispatch(assetModifyError(null))
-          break;
-        case 'assetDeleteError':
-          this.props.dispatch(assetDeleteError(null))
-          break;
-        case 'drAddError':
-          this.props.dispatch(drAddError(null))
-          break;
-        case 'drModifyError':
-          this.props.dispatch(drModifyError(null))
-          break;
-        case 'drDeleteError':
-          this.props.dispatch(drDeleteError(null))
-          break;
-
 
         case 'partitionsError':
           this.props.dispatch(partitionsError(null))
