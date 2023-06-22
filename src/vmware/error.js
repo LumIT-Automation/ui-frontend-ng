@@ -13,10 +13,6 @@ import {
 
   assetsError,
 
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-
   datacentersError,
   clustersError,
   clusterError,
@@ -69,16 +65,6 @@ class Error extends Component {
 
         case 'assetsError':
           this.props.dispatch(assetsError(null))
-          break;
-
-        case 'assetAddError':
-          this.props.dispatch(assetAddError(null))
-          break;
-        case 'assetModifyError':
-          this.props.dispatch(assetModifyError(null))
-          break;
-        case 'assetDeleteError':
-          this.props.dispatch(assetDeleteError(null))
           break;
 
         case 'datacentersError':

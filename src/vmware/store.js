@@ -27,16 +27,6 @@ const vmwareSlice = createSlice({
         asset: (state, action) => {
           state.asset = action.payload
         },
-        assetAddError: (state, action) => {
-          state.assetAddError = action.payload
-        },
-        assetModifyError: (state, action) => {
-          state.assetModifyError = action.payload
-        },
-        assetDeleteError: (state, action) => {
-          state.assetDeleteError = action.payload
-        },
-
 
         datacentersError: (state, action) => {
           state.datacentersError = action.payload
@@ -109,9 +99,6 @@ export const {
   assetsError,
 
   asset,
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
 
   datacentersError,
   clustersError,

@@ -27,15 +27,6 @@ const infobloxSlice = createSlice({
       asset: (state, action) => {
         state.asset = action.payload
       },
-      assetAddError: (state, action) => {
-        state.assetAddError = action.payload
-      },
-      assetModifyError: (state, action) => {
-        state.assetModifyError = action.payload
-      },
-      assetDeleteError: (state, action) => {
-        state.assetDeleteError = action.payload
-      },
 
       treeLoading: (state, action) => {
         state.treeLoading = action.payload
@@ -105,9 +96,6 @@ export const {
   assetsError,
 
   asset,
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
 
   treeLoading,
   tree,
