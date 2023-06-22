@@ -18,6 +18,7 @@ import {
 import AssetSelector from '../../concerto/assetSelector'
 
 import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Spin, Alert, Result } from 'antd'
+import Highlighter from 'react-highlight-words';
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
