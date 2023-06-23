@@ -65,7 +65,6 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({permissions: []})
     if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
       this.setState({permissionsRefresh: false})
       this.main()
@@ -525,11 +524,6 @@ class Permission extends React.Component {
     //console.log('value', value)
     //console.log('permission', permission)
 
-    //console.log('this.state.assets', this.state.assets)
-    //console.log('this.state.identityGroups', this.state.identityGroups)
-    //console.log('originPermissions', this.state.originPermissions)
-
-
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let workflows = JSON.parse(JSON.stringify(this.state.workflows))
     let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
@@ -563,7 +557,6 @@ class Permission extends React.Component {
         delete perm.workflowNameError
       }
     }
-
 
     if (key === 'details') {
       let start = 0
@@ -609,7 +602,6 @@ class Permission extends React.Component {
 
       ref.focus()
     }
-
 
     if (key === 'identity_group_identifier') {
       if (value) {

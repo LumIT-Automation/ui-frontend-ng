@@ -70,7 +70,11 @@ const infobloxSlice = createSlice({
       ipReleaseError: (state, action) => {
         state.ipReleaseError = action.payload
       },
+
       assignCloudNetworkError: (state, action) => {
+        state.assignCloudNetworkError = action.payload
+      },
+      cloudNetworkDeleteError: (state, action) => {
         state.assignCloudNetworkError = action.payload
       },
 
@@ -115,7 +119,9 @@ export const {
   nextAvailableIpError,
   ipModifyError,
   ipReleaseError,
+
   assignCloudNetworkError,
+  cloudNetworkDeleteError,
 
   genericError,
 

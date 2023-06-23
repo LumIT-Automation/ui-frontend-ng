@@ -8,7 +8,9 @@ import ConcertoError from '../../concerto/error'
 
 import {
   cloudNetworksError,
+
   assignCloudNetworkError,
+  cloudNetworkDeleteError,
 } from '../store'
 
 import {
@@ -17,11 +19,12 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Spin, Alert, Result } from 'antd'
+import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Checkbox, Spin, Alert, Result } from 'antd'
 import Highlighter from 'react-highlight-words';
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+const cloudNetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 /*
 Country = Provider
@@ -44,7 +47,6 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidMount() {
-
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -52,7 +54,6 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-      console.log(this.state.cloudNetworks)
   }
 
   componentWillUnmount() {
@@ -193,7 +194,13 @@ class CloudNetwork extends React.Component {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
     if (entities === 'getNetworks') {
-      endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['account ID']}`
+      if (this.state['account ID']) {
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['account ID']}`
+      }
+      else if(this.state['account Name']) {
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['account Name']}`
+      }
+
     }
     let rest = new Rest(
       "GET",
@@ -208,13 +215,148 @@ class CloudNetwork extends React.Component {
     return r
   }
 
+  cloudNetworkAdd = async () => {
+    let id = 0
+    let n = 0
+    let p = {}
+    let list = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+
+    this.state.cloudNetworks.forEach(p => {
+      if (p.id > id) {
+        id = p.id
+      }
+    });
+
+    n = id + 1
+    p.id = n
+    list.push(p)
+
+    await this.setState({cloudNetworks: list})
+  }
+
+  cloudNetworkRemove = async p => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+    let newList = cloudNetworks.filter(n => {
+      return p.id !== n.id
+    })
+
+    //delete this[`inputTextAreaRef${p.id}`]
+    await this.setState({cloudNetworks: newList})
+  }
 
   set = async (key, value, cloudNetwork) => {
+    console.log('key', key)
+    console.log('value', value)
+    console.log('cloudNetwork', cloudNetwork)
+
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+    let origCloudNet
+    let cloudNet
 
     if (key === 'account ID') {
-      await this.setState({['account ID']: value})
+      await this.setState({['account ID']: value, ['account Name']: ''})
     }
+    if (key === 'account Name') {
+      await this.setState({['account Name']: value, ['account ID']: ''})
+    }
+
+    if (cloudNetwork) {
+      origCloudNet = this.state.originCloudNetworks.find(cn => cn.id === cloudNetwork.id)
+      cloudNet = cloudNetworks.find(cn => cn.id === cloudNetwork.id)
+
+      if (key === 'toDelete') {
+        if (value) {
+          cloudNet.toDelete = true
+        }
+        else {
+          delete cloudNet.toDelete
+        }
+      }
+
+    }
+
+    await this.setState({cloudNetworks: cloudNetworks})
+  }
+
+  validation = async () => {
+    let errors = await this.validationCheck()
+    if (errors === 0) {
+      this.cudManager()
+    }
+  }
+
+  validationCheck = async () => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+    let errors = 0
+
+    for (const cloudNet of Object.values(cloudNetworks)) {
+      /*if (!cloudNet.identity_group_identifier) {
+        ++errors
+        cloudNet.identity_group_identifierError = true
+      }
+      if (!cloudNet.role) {
+        cloudNet.roleError = true
+        ++errors
+      }*/
+    }
+    await this.setState({cloudNetworks: cloudNetworks})
+    return errors
+  }
+
+  cudManager = async () => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+    let toDelete = []
+    let toPatch = []
+    let toPost = []
+
+    for (const cloudNet of Object.values(cloudNetworks)) {
+      if (cloudNet.toDelete) {
+        toDelete.push(cloudNet)
+      }
+      if (cloudNet.isModified && Object.keys(cloudNet.isModified).length > 0) {
+        toPatch.push(cloudNet)
+      }
+      if (!cloudNet.existent) {
+        toPost.push(cloudNet)
+      }
+    }
+
+    if (toDelete.length > 0) {
+      for (const cloudNet of toDelete) {
+        //let per = cloudNetworks.find(p => p.id === cloudNet.id)
+        cloudNet.loading = true
+        await this.setState({cloudNetworks: cloudNetworks})
+        let net = cloudNet.network.split('/')
+        let n = await this.cloudNetworkDelete(net[0])
+        if (n.status && n.status !== 200 ) {
+          this.props.dispatch(cloudNetworkDeleteError(n))
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+        else {
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+
+      }
+    }
+
+    this.dataGetHandler('getNetworks', this.props.asset.id)
+  }
+
+  cloudNetworkDelete = async (net) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/network/${net}/`, this.props.token )
+    return r
   }
 
   response = () => {
@@ -232,7 +374,9 @@ class CloudNetwork extends React.Component {
 
 
   render() {
-    console.log('account id', this.state['account ID'])
+    console.log('account ID', this.state['account ID'])
+    console.log('account Name', this.state['account Name'])
+    console.log(this.state.cloudNetworks)
 
     let randomKey = () => {
       return Math.random().toString()
@@ -246,12 +390,12 @@ class CloudNetwork extends React.Component {
         key: 'loading',
         render: (name, obj)  => (
           <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.loading ? <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },
       {
-        title: 'id',
+        title: 'Id',
         align: 'center',
         dataIndex: 'id',
         key: 'id'
@@ -285,10 +429,24 @@ class CloudNetwork extends React.Component {
         ...this.getColumnSearchProps('Provider'),
       },
       {
+        title: 'Region',
+        align: 'center',
+        dataIndex: 'region',
+        key: 'region',
+        ...this.getColumnSearchProps('region'),
+      },
+      {
+        title: 'Account ID',
+        align: 'center',
+        dataIndex: 'Account ID',
+        key: 'account ID',
+        ...this.getColumnSearchProps('Account ID'),
+      },
+      {
         title: 'Account Name',
         align: 'center',
         dataIndex: 'Account Name',
-        key: 'accountName',
+        key: 'account Name',
         ...this.getColumnSearchProps('Account Name'),
       },
       {
@@ -305,6 +463,29 @@ class CloudNetwork extends React.Component {
         key: 'comment',
         ...this.getColumnSearchProps('comment'),
       },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.cloudNetworkRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
     ];
 
     let createElement = (element, key, choices, obj, action) => {
@@ -319,8 +500,14 @@ class CloudNetwork extends React.Component {
               :
                 {}
               }
-              value={this.state['account ID']}
+              value={this.state[key]}
               onChange={event => this.set(key, event.target.value)}
+              onPressEnter={event => {
+                  if (event.target.value) {
+                    this.dataGetHandler(action, this.props.asset.id)
+                  }
+                }
+              }
             />
           )
           break;
@@ -330,10 +517,10 @@ class CloudNetwork extends React.Component {
             return (
               <Button
                 type="primary"
-                disabled={this.state['account ID'] ? false : true}
+                disabled={(this.state['account ID'] || this.state['account Name']) ? false : true}
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
-                Get Account ID's cloud networks
+                Get cloud networks
               </Button>
             )
           }
@@ -455,36 +642,63 @@ class CloudNetwork extends React.Component {
               }
               { !this.state.loading && !this.state.response &&
               <React.Fragment>
-              <Row>
-                <Col span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
-                </Col>
-                <Col span={4}>
-                  {createElement('input', 'account ID')}
-                </Col>
-                <Col offset={1} span={4}>
-                  {createElement('button', '', '', '', 'getNetworks')}
-                </Col>
-              </Row>
-              <br/>
+                <Row>
+                  <Col span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                  </Col>
+                  <Col span={4}>
+                    {createElement('input', 'account ID', '', '', 'getNetworks')}
+                  </Col>
 
-              <Divider/>
+                  <Col span={1}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>or</p>
+                  </Col>
 
-              {
+                  <Col span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                  </Col>
+                  <Col span={4}>
+                    {createElement('input', 'account Name', '', '', 'getNetworks')}
+                  </Col>
+
+                  <Col offset={1} span={4}>
+                    {createElement('button', '', '', '', 'getNetworks')}
+                  </Col>
+                </Row>
+
+                <Divider/>
+
+                {
                 (this.state.cloudNetworks && this.state.cloudNetworks.length > 0) ?
-                  <Table
-                    columns={columns}
-                    style={{width: '100%', padding: 15}}
-                    dataSource={this.state.cloudNetworks}
-                    bordered
-                    rowKey={randomKey}
-                    scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
-                  />
+                  <React.Fragment>
+                    <Button
+                      type="primary"
+                      style={{marginLeft: 16 }}
+                      onClick={() => this.cloudNetworkAdd()}
+                    >
+                      Add Cloud Network
+                    </Button>
+                    <Table
+                      columns={columns}
+                      style={{width: '100%', padding: 15}}
+                      dataSource={this.state.cloudNetworks}
+                      bordered
+                      rowKey={randomKey}
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                    />
+                    <Button
+                      type="primary"
+                      style={{float: 'right', marginRight: 15}}
+                      onClick={() => this.validation()}
+                    >
+                      Commit
+                    </Button>
+                    <br/>
+                  </React.Fragment>
                 :
                   null
               }
-
 
               </React.Fragment>
               }
@@ -500,6 +714,7 @@ class CloudNetwork extends React.Component {
             { this.props.configurationsError ? <ConcertoError component={'assignCloudNetwork'} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
             { this.props.cloudNetworksError ? <Error component={'cloudNetworksError'} error={[this.props.cloudNetworksError]} visible={true} type={'cloudNetworksError'} /> : null }
             { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetworkError'} /> : null }
+            { this.props.cloudNetworkDeleteError ? <Error component={'cloudNetworkDeleteError'} error={[this.props.cloudNetworkDeleteError]} visible={true} type={'cloudNetworkDeleteError'} /> : null }
           </React.Fragment>
         :
           null
@@ -517,6 +732,8 @@ export default connect((state) => ({
   asset: state.infoblox.asset,
 
   configurationsError: state.concerto.configurationsError,
+
   cloudNetworksError: state.infoblox.cloudNetworksError,
   assignCloudNetworkError: state.infoblox.assignCloudNetworkError,
+  cloudNetworkDeleteError: state.infoblox.cloudNetworkDeleteError
 }))(CloudNetwork);
