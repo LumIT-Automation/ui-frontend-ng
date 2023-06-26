@@ -36,6 +36,10 @@ class CloudNetwork extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.myRefs = {};
+    this.textAreaRefs = {};
+
     this.state = {
       visible: false,
       providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
@@ -54,7 +58,6 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state['AWS Regions'])
   }
 
   componentWillUnmount() {
@@ -269,6 +272,12 @@ class CloudNetwork extends React.Component {
 
     n = id + 1
     p.id = n
+    if (this.state['account ID']) {
+      p['Account ID'] = this.state['account ID']
+    }
+    if (this.state['account Name']) {
+      p['Account Name'] = this.state['account Name']
+    }
     list.push(p)
 
     await this.setState({cloudNetworks: list})
@@ -351,6 +360,174 @@ class CloudNetwork extends React.Component {
         }
       }
 
+      if (key === 'Account ID') {
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${cloudNetwork.id}_Account ID`]
+
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet['Account ID'] !== value) {
+              cloudNet.isModified['Account ID'] = true
+              cloudNet['Account ID'] = value
+            }
+            else {
+              delete cloudNet.isModified['Account ID']
+              cloudNet['Account ID'] = value
+            }
+          }
+          else {
+            cloudNet['Account ID'] = value
+          }
+          delete cloudNet['Account IDError']
+        }
+        else {
+          //blank value while typing.
+          cloudNet['Account ID'] = ''
+        }
+
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.myRefs[`${cloudNetwork.id}_Account ID`]
+
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
+      if (key === 'Account Name') {
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${cloudNetwork.id}_Account Name`]
+
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet['Account Name'] !== value) {
+              cloudNet.isModified['Account Name'] = true
+              cloudNet['Account Name'] = value
+            }
+            else {
+              delete cloudNet.isModified['Account Name']
+              cloudNet['Account Name'] = value
+            }
+          }
+          else {
+            cloudNet['Account Name'] = value
+          }
+          delete cloudNet['Account NameError']
+        }
+        else {
+          //blank value while typing.
+          cloudNet['Account Name'] = ''
+        }
+
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.myRefs[`${cloudNetwork.id}_Account Name`]
+
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
+      if (key === 'ITSM') {
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${cloudNetwork.id}_ITSM`]
+
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet['ITSM'] !== value) {
+              cloudNet.isModified['ITSM'] = true
+              cloudNet['ITSM'] = value
+            }
+            else {
+              delete cloudNet.isModified['ITSM']
+              cloudNet['ITSM'] = value
+            }
+          }
+          else {
+            cloudNet['ITSM'] = value
+          }
+          delete cloudNet['ITSMError']
+        }
+        else {
+          //blank value while typing.
+          cloudNet['ITSM'] = ''
+        }
+
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.myRefs[`${cloudNetwork.id}_ITSM`]
+
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
+      if (key === 'comment') {
+        let start = 0
+        let end = 0
+        let ref = this.textAreaRefs[`${cloudNetwork.id}_comment`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          start = ref.resizableTextArea.textArea.selectionStart
+          end = ref.resizableTextArea.textArea.selectionEnd
+        }
+
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet['comment'] !== value) {
+              cloudNet.isModified['comment'] = true
+              cloudNet['comment'] = value
+            }
+            else {
+              delete cloudNet.isModified['comment']
+              cloudNet['comment'] = value
+            }
+          }
+          else {
+            cloudNet['comment'] = value
+          }
+          delete cloudNet['commentError']
+        }
+        else {
+          //blank value while typing.
+          cloudNet['comment'] = ''
+        }
+
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.textAreaRefs[`${cloudNetwork.id}_comment`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          ref.resizableTextArea.textArea.selectionStart = start
+          ref.resizableTextArea.textArea.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
       if (key === 'toDelete') {
         if (value) {
           cloudNet.toDelete = true
@@ -362,7 +539,10 @@ class CloudNetwork extends React.Component {
 
     }
 
-    await this.setState({cloudNetworks: cloudNetworks})
+    if (key !== 'Account ID' && key !== 'Account Name' && key !== 'ITSM' && key !== 'comment') {
+      await this.setState({cloudNetworks: cloudNetworks})
+    }
+
   }
 
   validation = async () => {
@@ -384,6 +564,18 @@ class CloudNetwork extends React.Component {
       if (cloudNet.Provider === 'AWS' && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
+      }
+      if (!cloudNet['Account ID']) {
+        ++errors
+        cloudNet['Account IDError'] = true
+      }
+      if (!cloudNet['Account Name']) {
+        ++errors
+        cloudNet['Account NameError'] = true
+      }
+      if (!cloudNet['ITSM']) {
+        ++errors
+        cloudNet['ITSMError'] = true
       }
     }
     console.log(cloudNetworks)
@@ -462,6 +654,7 @@ class CloudNetwork extends React.Component {
 
 
   render() {
+    console.log('this.myRefs', this.myRefs)
     console.log('account ID', this.state['account ID'])
     console.log('account Name', this.state['account Name'])
     console.log(this.state.cloudNetworks)
@@ -535,6 +728,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'Account ID',
         key: 'account ID',
         ...this.getColumnSearchProps('Account ID'),
+        render: (name, cloudNet)  => (
+          createElement('input', 'Account ID', '', cloudNet, '')
+        )
       },
       {
         title: 'Account Name',
@@ -542,6 +738,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'Account Name',
         key: 'account Name',
         ...this.getColumnSearchProps('Account Name'),
+        render: (name, cloudNet)  => (
+          createElement('input', 'Account Name', '', cloudNet, '')
+        )
       },
       {
         title: 'IT Service Manager',
@@ -549,6 +748,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'ITSM',
         key: 'reference',
         ...this.getColumnSearchProps('ITSM'),
+        render: (name, cloudNet)  => (
+          createElement('input', 'ITSM', '', cloudNet, '')
+        )
       },
       {
         title: 'Comment',
@@ -556,6 +758,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'comment',
         key: 'comment',
         ...this.getColumnSearchProps('comment'),
+        render: (name, cloudNet)  => (
+          createElement('textArea', 'comment', '', cloudNet, '')
+        )
       },
       {
         title: 'Delete',
@@ -586,24 +791,55 @@ class CloudNetwork extends React.Component {
       switch (element) {
 
         case 'input':
-          return (
-            <Input
-              style=
-              {this.state.errors[`${key}Error`] ?
-                {borderColor: 'red'}
-              :
-                {}
-              }
-              value={this.state[key]}
-              onChange={event => this.set(key, event.target.value)}
-              onPressEnter={event => {
-                  if (event.target.value) {
-                    this.dataGetHandler(action, this.props.asset.id)
+          if (key === 'account ID' || key === 'account Name') {
+            return (
+              <Input
+                style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red'}
+                :
+                  {}
+                }
+                value={this.state[key]}
+                onChange={event => this.set(key, event.target.value)}
+                onPressEnter={event => {
+                    if (event.target.value) {
+                      this.dataGetHandler(action, this.props.asset.id)
+                    }
                   }
                 }
-              }
-            />
-          )
+              />
+            )
+          }
+          else {
+            return (
+              <Input
+                style=
+                {obj[`${key}Error`] && key === 'ITSM' ?
+                  {borderColor: 'red', width: 200}
+                :
+                  obj[`${key}Error`] ?
+                    {borderColor: 'red'}
+                  :
+                   key === 'ITSM' ?
+                    {width: 200}
+                   :
+                    {}
+                }
+                disabled={
+                  key === 'Account ID' && this.state['account ID'] ? true
+                  :
+                  key === 'Account Name' && this.state['account Name'] ? true
+                  :
+                  false
+                }
+                value={obj[key]}
+                ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+                onChange={event => this.set(key, event.target.value, obj)}
+              />
+            )
+          }
+
           break;
 
         case 'button':
@@ -619,7 +855,7 @@ class CloudNetwork extends React.Component {
             )
           }
 
-        case 'radio':
+      /*  case 'radio':
           return (
             <Radio.Group
               onChange={event => this.set(event.target.value, key)}
@@ -642,18 +878,19 @@ class CloudNetwork extends React.Component {
           </Radio.Group>
           )
           break;
-
+*/
         case 'textArea':
           return (
             <Input.TextArea
               rows={7}
-              value={this.state.request[`${key}`]}
-              onChange={event => this.set(event.target.value, key)}
+              value={obj[key]}
+              ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
               style=
               { this.state.errors[`${key}Error`] ?
-                {borderColor: `red`}
+                {borderColor: `red`, width: 350}
               :
-                {}
+                {width: 350}
               }
             />
           )
@@ -718,7 +955,7 @@ class CloudNetwork extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={1500}
+          width={1800}
           maskClosable={false}
         >
 

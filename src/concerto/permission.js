@@ -571,18 +571,15 @@ class Permission extends React.Component {
       if (value) {
         if (perm.existent) {
           if (origPerm.details !== value) {
-            console.log('existent and different')
             perm.isModified.details = true
             perm.details = value
           }
           else {
-            console.log('existent and equal')
             delete perm.isModified.details
             perm.details = value
           }
         }
         else {
-          console.log('not existent')
           perm.details = value
         }
         delete perm.detailsError
