@@ -54,6 +54,7 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state['AWS Regions'])
   }
 
   componentWillUnmount() {
@@ -147,7 +148,35 @@ class CloudNetwork extends React.Component {
   }
 
   main = async () => {
+    await this.setState({loading: true})
+    let conf = []
+    let configurationsFetched = await this.dataGet('configuration')
 
+    try {
+      if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
+        this.props.dispatch(configurationsError(configurationsFetched))
+        await this.setState({loading: false})
+      }
+      else {
+        if (configurationsFetched.data.configuration.length > 0) {
+          conf = JSON.parse(configurationsFetched.data.configuration)
+          conf.forEach((item, i) => {
+            if (item.key === 'AWS Regions') {
+              let list = JSON.parse(item.value)
+              let list2 = []
+              list.forEach((item, i) => {
+                list2.push(item)
+              });
+              this.setState({['AWS Regions']: list2})
+            }
+          });
+        }
+        await this.setState({loading: false})
+      }
+    } catch (error) {
+      await this.setState({loading: false})
+      console.log(error)
+    }
   }
 
   dataGetHandler = async (entities, assetId) => {
@@ -168,7 +197,14 @@ class CloudNetwork extends React.Component {
           for (let k in item.extattrs) {
             console.log(k)
             if (k === 'Country') {
-              item['Provider'] = item.extattrs[k].value
+              let v
+              if (item.extattrs[k].value.includes('Cloud-')){
+                v = item.extattrs[k].value.replace('Cloud-', '')
+                item['Provider'] = v
+              }
+              else {
+                item['Provider'] = item.extattrs[k].value
+              }
             }
             else if (k === 'City') {
               item['Region'] = item.extattrs[k].value
@@ -187,9 +223,13 @@ class CloudNetwork extends React.Component {
   }
 
   dataGet = async (entities, assetId) => {
-    ///infoblox/2/networks/?fby=*Account ID&fval=Oh Sensei
-    let endpoint = `${this.props.vendor}/${entities}/`
+    let endpoint
     let r
+
+    if (entities === 'configuration') {
+      endpoint = `${this.props.vendor}/${entities}/global/`
+    }
+
     if (assetId) {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
@@ -200,8 +240,8 @@ class CloudNetwork extends React.Component {
       else if(this.state['account Name']) {
         endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['account Name']}`
       }
-
     }
+
     let rest = new Rest(
       "GET",
       resp => {
@@ -264,6 +304,53 @@ class CloudNetwork extends React.Component {
       origCloudNet = this.state.originCloudNetworks.find(cn => cn.id === cloudNetwork.id)
       cloudNet = cloudNetworks.find(cn => cn.id === cloudNetwork.id)
 
+      if (key === 'Provider') {
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet.Provider !== value) {
+              cloudNet.isModified.Provider = true
+              cloudNet.Provider = value
+            }
+            else {
+              delete cloudNet.isModified.Provider
+              cloudNet.Provider = value
+            }
+          }
+          else {
+            cloudNet.Provider = value
+          }
+          delete cloudNet.ProviderError
+        }
+        if (value !== 'AWS') {
+          delete cloudNet.Region
+          delete cloudNet.RegionError
+          if (cloudNet.isModified && cloudNet.isModified.Region) {
+            delete cloudNet.isModified.Region
+          }
+        }
+      }
+
+      if (key === 'Region') {
+        if (cloudNet.Provider === 'AWS') {
+          if (value) {
+            if (cloudNet.existent) {
+              if (origCloudNet.Region !== 'aws-'+value) {
+                cloudNet.isModified.Region = true
+                cloudNet.Region = 'aws-'+value
+              }
+              else {
+                delete cloudNet.isModified.Region
+                cloudNet.Region = 'aws-'+value
+              }
+            }
+            else {
+              cloudNet.Region = 'aws-'+value
+            }
+            delete cloudNet.RegionError
+          }
+        }
+      }
+
       if (key === 'toDelete') {
         if (value) {
           cloudNet.toDelete = true
@@ -289,16 +376,17 @@ class CloudNetwork extends React.Component {
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let errors = 0
 
-    for (const cloudNet of Object.values(cloudNetworks)) {
-      /*if (!cloudNet.identity_group_identifier) {
+    for (let cloudNet of Object.values(cloudNetworks)) {
+      if (!cloudNet.Provider) {
         ++errors
-        cloudNet.identity_group_identifierError = true
+        cloudNet.ProviderError = true
       }
-      if (!cloudNet.role) {
-        cloudNet.roleError = true
+      if (cloudNet.Provider === 'AWS' && !cloudNet.Region) {
         ++errors
-      }*/
+        cloudNet.RegionError = true
+      }
     }
+    console.log(cloudNetworks)
     await this.setState({cloudNetworks: cloudNetworks})
     return errors
   }
@@ -427,6 +515,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'Provider',
         key: 'provider',
         ...this.getColumnSearchProps('Provider'),
+        render: (name, cloudNet)  => (
+          createElement('select', 'Provider', 'providers', cloudNet, '')
+        )
       },
       {
         title: 'Region',
@@ -434,6 +525,9 @@ class CloudNetwork extends React.Component {
         dataIndex: 'region',
         key: 'region',
         ...this.getColumnSearchProps('region'),
+        render: (name, cloudNet)  => (
+          createElement('select', 'Region', 'AWS Regions', cloudNet, '')
+        )
       },
       {
         title: 'Account ID',
@@ -568,14 +662,15 @@ class CloudNetwork extends React.Component {
         case 'select':
           return (
             <Select
-              value={this.state.request[`${key}`]}
+              value={obj[key]}
               showSearch
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {width: "100%", border: `1px solid red`}
-              :
-                {width: "100%"}
+              style={
+                obj[`${key}Error`] ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
               }
+              disabled={(key === 'Region' && obj.Provider !== 'AWS') ? true : false}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -583,23 +678,23 @@ class CloudNetwork extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onSelect={event => this.set(event, key)}
+              onSelect={event => this.set(key, event, obj)}
             >
               <React.Fragment>
-              { choices === 'AWS Regions' ?
-                this.state['AWS Regions'].map((v,i) => {
-                  let str = `${v[0].toString()} - ${v[1].toString()}`
-                  return (
-                    <Select.Option key={i} value={v[1]}>{str}</Select.Option>
-                  )
-                })
-              :
-                this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-              }
+                { choices === 'AWS Regions' ?
+                  this.state['AWS Regions'].map((v,i) => {
+                    let str = `${v[0].toString()} - ${v[1].toString()}`
+                    return (
+                      <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                    )
+                  })
+                :
+                  this.state[`${choices}`].map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                }
               </React.Fragment>
             </Select>
           )
