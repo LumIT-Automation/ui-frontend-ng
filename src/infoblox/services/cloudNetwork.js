@@ -601,6 +601,11 @@ class CloudNetwork extends React.Component {
       }
     }
 
+    console.log('toDelete', toDelete)
+    console.log('toPatch', toPatch)
+    console.log('toPost', toPost)
+
+
     if (toDelete.length > 0) {
       for (const cloudNet of toDelete) {
         //let per = cloudNetworks.find(p => p.id === cloudNet.id)
@@ -617,7 +622,49 @@ class CloudNetwork extends React.Component {
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
+      }
+    }
 
+    if (toPost.length > 0) {
+      for (const cloudNet of toPost) {
+        let body = {}
+
+        body.data = {
+          "provider": cloudNet.Provider,
+          "network_data": {
+            "network": "next-available",
+            "comment": cloudNet.comment,
+            "extattrs": {
+              "Account ID": {
+                "value": cloudNet['Account ID']
+              },
+              "Account Name": {
+                "value": cloudNet['Account Name']
+              },
+              "Reference": {
+                "value": cloudNet.ITSM
+              }
+            }
+          }
+        }
+
+        if (cloudNet.Provider === 'AWS') {
+          body.data.region = cloudNet.Region
+        }
+
+        cloudNet.loading = true
+        await this.setState({cloudNetworks: cloudNetworks})
+
+        let cn = await this.cloudNetworkPut(body)
+        if (cn.status && cn.status !== 201 ) {
+          this.props.dispatch(assignCloudNetworkError(cn))
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+        else {
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
       }
     }
 
@@ -636,6 +683,21 @@ class CloudNetwork extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/network/${net}/`, this.props.token )
+    return r
+  }
+
+  cloudNetworkPut = async (b) => {
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/assign-cloud-network/`, this.props.token, b )
     return r
   }
 
