@@ -655,7 +655,7 @@ class CloudNetwork extends React.Component {
         cloudNet.loading = true
         await this.setState({cloudNetworks: cloudNetworks})
 
-        let cn = await this.cloudNetworkPut(body)
+        let cn = await this.cloudNetworkAssign(body)
         if (cn.status && cn.status !== 201 ) {
           this.props.dispatch(assignCloudNetworkError(cn))
           cloudNet.loading = false
@@ -686,7 +686,7 @@ class CloudNetwork extends React.Component {
     return r
   }
 
-  cloudNetworkPut = async (b) => {
+  cloudNetworkAssign = async (b) => {
     let r
     let rest = new Rest(
       "PUT",
