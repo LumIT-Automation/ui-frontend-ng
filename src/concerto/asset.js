@@ -1128,9 +1128,9 @@ class Permission extends React.Component {
               <Select
                 style={
                   obj.protocolError ?
-                    {border: `1px solid red`, width: 180}
+                    {border: `1px solid red`, width: 120}
                   :
-                    {width: 180}
+                    {width: 120}
                 }
                 value={obj.protocol}
                 onChange={e => {
@@ -1186,9 +1186,9 @@ class Permission extends React.Component {
               ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
               style={
                 obj.fqdnError ?
-                  {borderColor: 'red', textAlign: 'left', width: 200}
+                  {borderColor: 'red', textAlign: 'center', width: 200}
                 :
-                  {textAlign: 'left', width: 200}
+                  {textAlign: 'center', width: 200}
               }
               onChange={e => {
                 this.set('fqdn', e.target.value, obj)}
@@ -1211,9 +1211,9 @@ class Permission extends React.Component {
               <Select
                 style={
                   obj.portError ?
-                    {border: `1px solid red`, width: 180}
+                    {border: `1px solid red`, width: 100}
                   :
-                    {width: 180}
+                    {width: 100}
                 }
                 value={obj.port}
                 onChange={e => {
@@ -1431,7 +1431,7 @@ class Permission extends React.Component {
         },
       },
       {
-        title: 'Tlsverify',
+        title: 'TLSverify',
         align: 'center',
         dataIndex: 'tlsverify',
         key: 'tlsverify',
@@ -1474,7 +1474,7 @@ class Permission extends React.Component {
                       <Select
                         value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
                         key={obj.id}
-                        style={{ width: '250px'}}
+                        style={{ width: '200px'}}
                         onChange={e => {this.set('assetDr', e, obj)} }
                       >
                         { this.state.assets.map((dr,i) => {
