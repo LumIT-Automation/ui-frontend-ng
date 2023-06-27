@@ -42,6 +42,9 @@ class Permission extends React.Component {
       searchText: '',
       searchedColumn: '',
       assets: [],
+      protocols: [],
+      ports: [],
+      paths: [],
       environments: [],
       datacenters: [],
       originAssets: [],
@@ -165,23 +168,43 @@ class Permission extends React.Component {
       return
     }
     else {
+      let protocols = []
+      let ports = []
+      let paths = []
       let environments = []
       let datacenters = []
+      let uniqueProtocols = []
+      let uniquePorts = []
+      let uniquePaths = []
       let uniqueEnvironments = []
       let uniqueDatacenters = []
 
       fetchedAssets.data.items.forEach((item, i) => {
         item.existent = true
         item.isModified = {}
-        item.tlsverify = item.tlsverify.toString()
-        datacenters.push(item.datacenter)
+        item.tlsverify = item.tlsverify
+        protocols.push(item.protocol)
+        ports.push(item.port)
+        paths.push(item.path)
         environments.push(item.environment)
+        datacenters.push(item.datacenter)
       });
 
+      uniqueProtocols = [...new Set(protocols)];
+      uniquePorts = [...new Set(ports)];
+      uniquePaths = [...new Set(paths)];
       uniqueEnvironments = [...new Set(environments)];
       uniqueDatacenters = [...new Set(datacenters)];
 
-      await this.setState({assets: fetchedAssets.data.items, originAssets: fetchedAssets.data.items, environments: uniqueEnvironments, datacenters: uniqueDatacenters})
+      await this.setState({
+        assets: fetchedAssets.data.items,
+        originAssets: fetchedAssets.data.items,
+        protocols: uniqueProtocols,
+        ports: uniquePorts,
+        paths: uniquePaths,
+        environments: uniqueEnvironments,
+        datacenters: uniqueDatacenters
+      })
     }
 
     await this.setState({loading: false})
@@ -227,6 +250,7 @@ class Permission extends React.Component {
 
     n = id + 1
     p.id = n
+    p.tlsverify = true
     list.push(p)
 
     await this.setState({assets: list})
@@ -289,10 +313,10 @@ class Permission extends React.Component {
       ref.focus()
     }
 
-    if (key === 'baseurl') {
+    if (key === 'protocol') {
       let start = 0
       let end = 0
-      let ref = this.myRefs[`${asset.id}_baseurl`]
+      let ref = this.myRefs[`${asset.id}_protocol`]
 
       if (ref && ref.input) {
         start = ref.input.selectionStart
@@ -301,33 +325,153 @@ class Permission extends React.Component {
 
       if (value) {
         if (ass.existent) {
-          if (origAsset.baseurl !== value) {
-            ass.isModified.baseurl = true
-            ass.baseurl = value
+          if (origAsset.protocol !== value) {
+            ass.isModified.protocol = true
+            ass.protocol = value
           }
           else {
-            delete ass.isModified.baseurl
-            ass.baseurl = value
+            delete ass.isModified.protocol
+            ass.protocol = value
           }
         }
         else {
-          ass.baseurl = value
+          ass.protocol = value
         }
-        delete ass.baseurlError
+        delete ass.protocolError
       }
       else {
         //blank value while typing.
-        ass.baseurl = ''
+        ass.protocol = ''
       }
 
       await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_baseurl`]
+      ref = this.myRefs[`${asset.id}_protocol`]
 
       if (ref && ref.input) {
         ref.input.selectionStart = start
         ref.input.selectionEnd = end
       }
 
+      ref.focus()
+    }
+
+    if (key === 'protocols') {
+      let ref = this.myRefs[`${asset.id}_protocol`]
+
+      let protocols = JSON.parse(JSON.stringify(this.state.protocols))
+      if (value) {
+        protocols.push(value)
+      }
+      await this.setState({protocols: protocols})
+      ref = this.myRefs[`${asset.id}_protocol`]
+      ref.focus()
+    }
+
+    if (key === 'port') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${asset.id}_port`]
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      if (value) {
+        if (ass.existent) {
+          if (origAsset.port !== value) {
+            ass.isModified.port = true
+            ass.port = value
+          }
+          else {
+            delete ass.isModified.port
+            ass.port = value
+          }
+        }
+        else {
+          ass.port = value
+        }
+        delete ass.portError
+      }
+      else {
+        //blank value while typing.
+        ass.port = ''
+      }
+
+      await this.setState({assets: assets})
+      ref = this.myRefs[`${asset.id}_port`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    if (key === 'ports') {
+      let ref = this.myRefs[`${asset.id}_port`]
+
+      let ports = JSON.parse(JSON.stringify(this.state.ports))
+      if (value) {
+        ports.push(value)
+      }
+      await this.setState({ports: ports})
+      ref = this.myRefs[`${asset.id}_port`]
+      ref.focus()
+    }
+
+    if (key === 'path') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${asset.id}_path`]
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      if (value) {
+        if (ass.existent) {
+          if (origAsset.path !== value) {
+            ass.isModified.path = true
+            ass.path = value
+          }
+          else {
+            delete ass.isModified.path
+            ass.path = value
+          }
+        }
+        else {
+          ass.path = value
+        }
+        delete ass.pathError
+      }
+      else {
+        //blank value while typing.
+        ass.path = ''
+      }
+
+      await this.setState({assets: assets})
+      ref = this.myRefs[`${asset.id}_path`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    if (key === 'paths') {
+      let ref = this.myRefs[`${asset.id}_path`]
+
+      let paths = JSON.parse(JSON.stringify(this.state.paths))
+      if (value) {
+        paths.push(value)
+      }
+      await this.setState({paths: paths})
+      ref = this.myRefs[`${asset.id}_path`]
       ref.focus()
     }
 
@@ -440,23 +584,20 @@ class Permission extends React.Component {
     }
 
     if (key === 'tlsverify') {
-      if (value) {
-        if (ass.existent) {
-          if (origAsset.tlsverify !== value) {
-            ass.isModified.tlsverify = true
-            ass.tlsverify = value
-          }
-          else {
-            delete ass.isModified.tlsverify
-            ass.tlsverify = value
-          }
-        }
-        else {
+      if (ass.existent) {
+        if (origAsset.tlsverify !== value) {
+          ass.isModified.tlsverify = true
           ass.tlsverify = value
         }
-        delete ass.tlsverifyError
+        else {
+          delete ass.isModified.tlsverify
+          ass.tlsverify = value
+        }
       }
-
+      else {
+        ass.tlsverify = value
+      }
+      delete ass.tlsverifyError
       await this.setState({assets: assets})
     }
 
@@ -619,8 +760,16 @@ class Permission extends React.Component {
         ++errors
         ass.fqdnError = true
       }
-      if (!ass.baseurl) {
-        ass.baseurlError = true
+      if (!ass.protocol) {
+        ass.protocolError = true
+        ++errors
+      }
+      if (!ass.port || !validators.port(ass.port)) {
+        ass.portError = true
+        ++errors
+      }
+      if (!ass.path) {
+        ass.pathError = true
         ++errors
       }
       if (!ass.environment) {
@@ -629,10 +778,6 @@ class Permission extends React.Component {
       }
       if (!ass.datacenter) {
         ass.datacenterError = true
-        ++errors
-      }
-      if (!ass.tlsverify) {
-        ass.tlsverifyError = true
         ++errors
       }
       if (!ass.existent) {
@@ -704,15 +849,14 @@ class Permission extends React.Component {
 
         body.data = {
            "fqdn": ass.fqdn,
-           "baseurl": ass.baseurl,
+           "protocol": ass.protocol,
+           "port": ass.port,
+           "path": ass.path,
            "environment": ass.environment,
            "datacenter": ass.datacenter,
            "tlsverify": ass.tlsverify,
            "username": ass.username,
            "password": ass.password
-        }
-        if (this.props.vendor === 'vmware') {
-          body.data.api_type = "vmware"
         }
 
         ass.loading = true
@@ -773,7 +917,9 @@ class Permission extends React.Component {
 
         body.data = {
            "fqdn": ass.fqdn,
-           "baseurl": ass.baseurl,
+           "protocol": ass.protocol,
+           "port": ass.port,
+           "path": ass.path,
            "environment": ass.environment,
            "datacenter": ass.datacenter,
            "tlsverify": ass.tlsverify
@@ -784,10 +930,6 @@ class Permission extends React.Component {
         }
         if (ass.isModified.password) {
           body.data.password = ass.password
-        }
-
-        if (this.props.vendor === 'vmware') {
-          body.data.api_type = "vmware"
         }
 
         ass.loading = true
@@ -974,6 +1116,64 @@ class Permission extends React.Component {
         key: 'id'
       },
       {
+        title: 'Protocol',
+        align: 'center',
+        dataIndex: 'protocol',
+        key: 'protocol',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.protocolError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.protocol}
+                onChange={e => {
+                  this.set('protocol', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_protocol`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('protocols', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.protocols ? this.state.protocols.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
         title: 'Fqdn',
         align: 'center',
         dataIndex: 'fqdn',
@@ -999,27 +1199,117 @@ class Permission extends React.Component {
         },
       },
       {
-        title: 'Baseurl',
+        title: 'Port',
         align: 'center',
-        dataIndex: 'baseurl',
-        key: 'baseurl',
+        dataIndex: 'port',
+        key: 'port',
         render: (name, obj)  => {
+          let s = '';
+
           return (
             <React.Fragment>
-            <Input
-              value={obj.baseurl}
-              //ref={ref => this.setRef(ref, obj.id)}
-              ref={ref => this.myRefs[`${obj.id}_baseurl`] = ref}
-              style={
-                obj.baseurlError ?
-                  {borderColor: 'red', textAlign: 'left', width: 250}
+              <Select
+                style={
+                  obj.portError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.port}
+                onChange={e => {
+                  this.set('port', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_port`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('ports', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.ports ? this.state.ports.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
                 :
-                  {textAlign: 'left', width: 250}
-              }
-              onChange={e => {
-                this.set('baseurl', e.target.value, obj)}
-              }
-            />
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Path',
+        align: 'center',
+        dataIndex: 'path',
+        key: 'path',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.pathError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.path}
+                onChange={e => {
+                  this.set('path', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_path`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('paths', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.paths ? this.state.paths.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
             </React.Fragment>
           )
         },
@@ -1081,7 +1371,6 @@ class Permission extends React.Component {
             </React.Fragment>
           )
         },
-
       },
       {
         title: 'Datacenter',
@@ -1140,7 +1429,6 @@ class Permission extends React.Component {
             </React.Fragment>
           )
         },
-
       },
       {
         title: 'Tlsverify',
@@ -1156,13 +1444,13 @@ class Permission extends React.Component {
                   :
                     {marginTop: 5}
                 }
-                value={obj && obj.tlsverify ? obj.tlsverify : null}
+                value={obj.tlsverify}
                 onChange={e => {this.set('tlsverify', e.target.value, obj)}
                 }
               >
                 <Space direction="vertical">
-                  <Radio value='1'>Yes</Radio>
-                  <Radio value='0'>No </Radio>
+                  <Radio value={true}>Yes</Radio>
+                  <Radio value={false}>No </Radio>
                 </Space>
               </Radio.Group>
           )
