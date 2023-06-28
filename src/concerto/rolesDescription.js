@@ -1,8 +1,10 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Table, List, Spin } from 'antd'
-import { QuestionCircleOutlined, LoadingOutlined } from '@ant-design/icons'
+import { Space, Modal, Table, List, Spin, Input, Select, Button } from 'antd'
+import Highlighter from 'react-highlight-words';
+import { QuestionCircleOutlined, SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
@@ -10,6 +12,8 @@ import Error from './error'
 import {
   rolesError
 } from './store'
+
+
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
@@ -45,21 +49,21 @@ class RolesDescription extends React.Component {
     await this.setState({visible: true})
     await this.setState({loading: true})
 
-    fetchedRoles = await this.rolesGet()
+    fetchedRoles = await this.dataGet('/roles/?related=privileges')
     if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
       this.props.dispatch(rolesError(fetchedRoles))
       await this.setState({loading: false})
       return
     }
     else {
+      console.log(fetchedRoles.data.items)
       await this.setState({rolesAndPrivileges: fetchedRoles.data.items})
-      await this.beautifyPriv()
       await this.setState({loading: false})
     }
 
   }
 
-  rolesGet = async () => {
+  dataGet = async (entities) => {
     let r
     let rest = new Rest(
       "GET",
@@ -70,22 +74,8 @@ class RolesDescription extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/roles/?related=privileges`, this.props.token)
+    await rest.doXHR(`${this.props.vendor}${entities}`, this.props.token)
     return r
-  }
-
-  beautifyPriv = () => {
-    let fetchedList = JSON.parse(JSON.stringify(this.state.rolesAndPrivileges))
-    let newList = []
-
-    for (let r in fetchedList) {
-      let newRole = {}
-      newRole.role = fetchedList[r].role
-      newRole.description = fetchedList[r].description
-      newRole.privileges = <List size="small" dataSource={fetchedList[r].privileges} renderItem={item => <List.Item >{item}</List.Item>} />
-      newList.push(newRole)
-    }
-    this.setState({rolesBeauty: newList})
   }
 
   //Close and Error
@@ -114,8 +104,15 @@ class RolesDescription extends React.Component {
       {
         title: 'Privileges',
         align: 'center',
-        dataIndex: 'privileges',
-        key: 'privileges',
+        dataIndex: ['privileges', 'privilege'],
+        key: 'privilege',
+        render: (name, obj)  => (
+          <List
+            size="small"
+            dataSource={obj.privileges}
+            renderItem={item => <List.Item >{item.privilege ? item.privilege : item}</List.Item>}
+          />
+        )
       },
     ];
 
@@ -142,7 +139,7 @@ class RolesDescription extends React.Component {
           :
             <Table
               columns={columns}
-              dataSource={this.state.rolesBeauty}
+              dataSource={this.state.rolesAndPrivileges}
               bordered
               rowKey="role"
               scroll={{x: 'auto'}}
