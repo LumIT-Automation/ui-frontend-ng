@@ -12,7 +12,6 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 
 import {
-  configurations,
   configurationsError,
 } from './store'
 
@@ -26,6 +25,10 @@ class Manager extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.myRefs = {};
+    this.textAreaRefs = {};
+
     this.state = {
       configurations: [],
       errors: {},
@@ -36,7 +39,6 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (!this.props.configurationsError && !this.props.configurations) {
-      this.setState({configurationsRefresh: false})
       this.main()
     }
   }
@@ -47,11 +49,6 @@ class Manager extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (prevProps.vendor !== this.props.vendor) {
-      this.setState({configurationsRefresh: false})
-      this.main()
-    }
-    if (this.state.configurationsRefresh) {
-      this.setState({configurationsRefresh: false})
       this.main()
     }
   }
@@ -143,29 +140,31 @@ class Manager extends React.Component {
 
   main = async () => {
     await this.setState({loading: true})
-    let conf = []
-    let configurationsFetched = await this.configurationGet()
+    let confs = []
+    let configurationsFetched = await this.dataGet('/configuration/global/')
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       this.props.dispatch(configurationsError(configurationsFetched))
       await this.setState({loading: false})
       return
     }
     else {
-      console.log(configurationsFetched.data.configuration)
+      confs = configurationsFetched.data.configuration
+
       if (configurationsFetched.data.configuration.length > 0) {
-        conf = JSON.parse(configurationsFetched.data.configuration)
+        confs.forEach((item, i) => {
+          item.existent = true
+        });
+        //conf = JSON.parse(configurationsFetched.data.configuration)
       }
-      await this.setState({loading: false, configurations: conf})
-      this.props.dispatch(configurations(configurationsFetched))
+
+
+
+      await this.setState({loading: false, configurations: confs})
     }
   }
 
-  configurationsRefresh = async () => {
-    await this.setState({configurationsRefresh: true})
-  }
-
-  configurationGet = async () => {
-    let endpoint = `${this.props.vendor}/configuration/global/`
+  dataGet = async (entities) => {
+    let endpoint = `${this.props.vendor}${entities}`
     let r
 
     let rest = new Rest(
@@ -215,83 +214,134 @@ class Manager extends React.Component {
     await this.setState({configurations: newList, errors: errors})
   }
 
-  keySet = async (event, id) => {
-    let conf = JSON.parse(JSON.stringify(this.state.configurations))
-    let record = conf.find( r => r.id === id )
-    record.key = event
-    await this.setState({configurations: conf})
-  }
+  set = async (key, value, configuration) => {
+    console.log('key', key)
+    console.log('value', value)
+    console.log('configuration', configuration)
 
-  valueSet = async (event, id) => {
-    let conf = JSON.parse(JSON.stringify(this.state.configurations))
-    let record = conf.find( r => r.id === id )
-    record.value = event
-    await this.setState({configurations: conf})
+    let configurations = JSON.parse(JSON.stringify(this.state.configurations))
+    let conf
+
+    if (configuration) {
+      conf = configurations.find(cn => cn.id === configuration.id)
+
+      if (key === 'key') {
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${configuration.id}_key`]
+
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          conf['key'] = value
+          delete conf['keyError']
+        }
+        else {
+          //blank value while typing.
+          conf['key'] = ''
+        }
+
+        await this.setState({configurations: configurations})
+        ref = this.myRefs[`${configuration.id}_key`]
+
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
+      if (key === 'value') {
+        let start = 0
+        let end = 0
+        let ref = this.textAreaRefs[`${configuration.id}_value`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          start = ref.resizableTextArea.textArea.selectionStart
+          end = ref.resizableTextArea.textArea.selectionEnd
+        }
+
+        if (value) {
+          conf['value'] = value
+          delete conf['valueError']
+        }
+        else {
+          //blank value while typing.
+          conf['value'] = ''
+        }
+
+        await this.setState({configurations: configurations})
+        ref = this.textAreaRefs[`${configuration.id}_value`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          ref.resizableTextArea.textArea.selectionStart = start
+          ref.resizableTextArea.textArea.selectionEnd = end
+        }
+
+        ref.focus()
+      }
+
+      if (key === 'toDelete') {
+        if (value) {
+          conf.toDelete = true
+        }
+        else {
+          delete conf.toDelete
+        }
+      }
+
+    }
+
+    if (key !== 'key' && key !== 'value') {
+      await this.setState({configurations: configurations})
+    }
+
   }
 
   validationCheck = async () => {
     let configurations = JSON.parse(JSON.stringify(this.state.configurations))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+    let errors = 0
 
-    if (configurations.length > 0) {
-      configurations.forEach((conf, i) => {
-        errors[conf.id] = {}
-
+      for (let conf of Object.values(configurations)) {
         if (!conf.key) {
-          errors[conf.id].keyError = true
-          this.setState({errors: errors})
+          ++errors
+          conf.keyError = true
         }
-        else {
-          delete errors[conf.id].keyError
-          this.setState({errors: errors})
+        if (!conf.value) {
+          ++errors
+          conf.valueError = true
         }
+      }
 
-        if (this.props.vendor === 'infoblox') {
-          if (!conf.value) {
-            errors[conf.id].valueError = true
-            this.setState({errors: errors})
-          }
-          else {
-            delete errors[conf.id].valueError
-            this.setState({errors: errors})
-          }
-        }
-
-        if (this.props.vendor === 'checkpoint') {
-          if (!conf.value) {
-            errors[conf.id].valueError = true
-            this.setState({errors: errors})
-          }
-          else {
-            delete errors[conf.id].valueError
-            this.setState({errors: errors})
-          }
-        }
-
-        if (Object.keys(errors[conf.id]).length === 0) {
-          delete errors[conf.id]
-        }
-
-      })
-    }
+    await this.setState({configurations: configurations})
     return errors
   }
 
   validation = async () => {
-    await this.validationCheck()
-    if (Object.keys(this.state.errors).length === 0) {
-      this.modifyConfiguration()
+    let errors = await this.validationCheck()
+    if (errors === 0) {
+      let configurations = JSON.parse(JSON.stringify(this.state.configurations))
+      let newList = configurations.filter(conf => {
+        return !conf.toDelete
+      })
+
+      console.log(newList)
+
+      this.modifyConfiguration(newList)
     }
   }
 
 
-  modifyConfiguration = async () => {
-    let conf = JSON.stringify(this.state.configurations)
+  modifyConfiguration = async (configurations) => {
     await this.setState({loading: true})
 
     let b = {}
     b.data = {
-      "configuration": conf
+      "configuration": configurations
     }
 
     let rest = new Rest(
@@ -315,35 +365,71 @@ class Manager extends React.Component {
     console.log(this.state.configurations)
     console.log(this.state.errors)
 
-    let returnCol = () => {
-      switch (this.props.vendor) {
-        case 'infoblox':
-          return infobloxColumns
-          break;
-        case 'checkpoint':
-          return checkpointColumns
-          break;
-        case 'f5':
-          return f5Columns
-          break;
-        default:
+    let createElement = (element, key, choices, obj, action) => {
+      switch (element) {
 
+        case 'input':
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: 200}
+                :
+                  {width: 200}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+            />
+          )
+
+        case 'textArea':
+          return (
+            <Input.TextArea
+              rows={12}
+              value={obj[key]}
+              ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+              style=
+                { obj[`${key}Error`] ?
+                  {borderColor: `red`, width: 350}
+                :
+                  {width: 350}
+                }
+            />
+          )
+
+        case 'button':
+          return (
+            <Button
+              type="danger"
+              onClick={() => this.removeRecord(obj)}
+            >
+              -
+            </Button>
+          )
+
+        case 'checkbox':
+          return (
+            <Checkbox
+              checked={obj[key]}
+              onChange={e => this.set('toDelete', e.target.checked, obj)}
+            />
+          )
+
+        default:
       }
     }
 
-    const infobloxColumns = [
+    const columns = [
       {
         title: 'Key',
         align: 'center',
         dataIndex: 'key',
         key: 'key',
-        render: (name, obj)  => (
-          <Input
-            defaultValue={obj.key}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].keyError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
-            onBlur={e => this.keySet(e.target.value, obj.id)}
-          />
-        ),
+        render: (name, record)  => (
+          createElement('input', 'key', '', record, '')
+        )
       },
       {
         title: 'Value',
@@ -351,109 +437,22 @@ class Manager extends React.Component {
         width: 500,
         dataIndex: 'value',
         key: 'value',
-        render: (name, obj)  => (
-          <Input.TextArea
-            defaultValue={obj.value}
-            rows={12}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? {borderColor: 'red'} : {} }
-            onBlur={e => this.valueSet(e.target.value, obj.id)}
-          />
-        ),
+        render: (name, record)  => (
+          createElement('textArea', 'value', '', record, '')
+        )
       },
       {
-        title: 'Remove record',
+        title: 'Delete',
         align: 'center',
-        dataIndex: 'remove',
+        dataIndex: 'delete',
         width: 150,
-        key: 'remove',
-        render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRecord(obj)} shape='round'>
-            -
-          </Button>
-        ),
-      },
-    ];
-
-    const checkpointColumns = [
-      {
-        title: 'Key',
-        align: 'center',
-        dataIndex: 'key',
-        key: 'key',
-        render: (name, obj)  => (
-          <Input
-            defaultValue={obj.key}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].keyError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
-            onBlur={e => this.keySet(e.target.value, obj.id)}
-          />
-        ),
-      },
-      {
-        title: 'Value',
-        align: 'center',
-        width: 500,
-        dataIndex: 'value',
-        key: 'value',
-        render: (name, obj)  => (
-          <Input.TextArea
-            defaultValue={obj.value}
-            rows={12}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].valueError) ? {borderColor: 'red'} : {} }
-            onBlur={e => this.valueSet(e.target.value, obj.id)}
-          />
-        ),
-      },
-      {
-        title: 'Remove record',
-        align: 'center',
-        dataIndex: 'remove',
-        width: 150,
-        key: 'remove',
-        render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRecord(obj)} shape='round'>
-            -
-          </Button>
-        ),
-      },
-    ];
-
-    const f5Columns = [
-      {
-        title: 'Key',
-        align: 'center',
-        dataIndex: 'key',
-        key: 'key',
-        render: (name, obj)  => (
-          <Input
-            defaultValue={obj.key}
-            style={(this.state.errors[obj.id] && this.state.errors[obj.id].keyError) ? { width: '250px', borderColor: 'red'} : { width: '250px'} }
-            onBlur={e => this.keySet(e.target.value, obj.id)}
-          />
-        ),
-      },
-      {
-        title: 'Value',
-        align: 'center',
-        dataIndex: 'value',
-        key: 'value',
-        render: (name, obj)  => (
-          <Checkbox
-            checked={obj.value}
-            onChange={e => this.valueSet(e.target.checked, obj.id)}
-          />
-        ),
-      },
-      {
-        title: 'Remove record',
-        align: 'center',
-        dataIndex: 'remove',
-        width: 150,
-        key: 'remove',
-        render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRecord(obj)} shape='round'>
-            -
-          </Button>
-        ),
+        key: 'delete',
+        render: (name, record)  => (
+          record.existent ?
+            createElement('checkbox', 'toDelete', '', record, '')
+          :
+            createElement('button', '', '', record, '')
+        )
       },
     ];
 
@@ -470,22 +469,20 @@ class Manager extends React.Component {
 
             <Space wrap>
               <Button
-                onClick={() => this.configurationsRefresh()}
-                shape='round'
+                onClick={() => this.main()}
               >
                 <ReloadOutlined/>
               </Button>
               <Button
                 type="primary"
                 onClick={() => this.addRecord()}
-                shape='round'
               >
                 +
               </Button>
             </Space>
 
             <Table
-              columns={returnCol()}
+              columns={columns}
               dataSource={this.state.configurations}
               bordered
               rowKey={randomKey}
@@ -497,9 +494,8 @@ class Manager extends React.Component {
               type="primary"
               style={{float: "right", marginTop: '15px'}}
               onClick={() => this.validation()}
-              shape='round'
             >
-              Update configuration
+              Commit
             </Button>
           </Space>
         }
@@ -512,6 +508,5 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
 
-  configurations: state.concerto.configurations,
   configurationsError: state.concerto.configurationsError,
 }))(Manager);

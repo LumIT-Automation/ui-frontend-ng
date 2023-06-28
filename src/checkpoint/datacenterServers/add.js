@@ -76,7 +76,7 @@ class Add extends React.Component {
     else {
       if (configurationsFetched.data.configuration.length > 0) {
         try {
-          conf = JSON.parse(configurationsFetched.data.configuration)
+          conf = configurationsFetched.data.configuration
           conf.forEach((item, i) => {
             if (item.key === 'AWS Regions') {
               let list = JSON.parse(item.value)

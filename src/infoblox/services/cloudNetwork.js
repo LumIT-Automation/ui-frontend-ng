@@ -46,7 +46,6 @@ class CloudNetwork extends React.Component {
       ['AWS Regions']: [],
       cloudNetworks: [],
       originCloudNetworks: [],
-      errors: {},
     };
   }
 
@@ -154,6 +153,7 @@ class CloudNetwork extends React.Component {
     await this.setState({loading: true})
     let conf = []
     let configurationsFetched = await this.dataGet('configuration')
+    console.log(configurationsFetched)
 
     try {
       if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
@@ -162,7 +162,7 @@ class CloudNetwork extends React.Component {
       }
       else {
         if (configurationsFetched.data.configuration.length > 0) {
-          conf = JSON.parse(configurationsFetched.data.configuration)
+          conf = configurationsFetched.data.configuration
           conf.forEach((item, i) => {
             if (item.key === 'AWS Regions') {
               let list = JSON.parse(item.value)
@@ -198,7 +198,6 @@ class CloudNetwork extends React.Component {
         item.id = ++i
         if (item.extattrs) {
           for (let k in item.extattrs) {
-            console.log(k)
             if (k === 'Country') {
               let v
               if (item.extattrs[k].value.includes('Cloud-')){
@@ -578,7 +577,6 @@ class CloudNetwork extends React.Component {
         cloudNet['ITSMError'] = true
       }
     }
-    console.log(cloudNetworks)
     await this.setState({cloudNetworks: cloudNetworks})
     return errors
   }
@@ -710,16 +708,14 @@ class CloudNetwork extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      errors: {}
+      ['account ID']: '',
+      cloudNetworks: [],
+      originCloudNetworks: [],
     })
   }
 
 
   render() {
-    console.log('this.myRefs', this.myRefs)
-    console.log('account ID', this.state['account ID'])
-    console.log('account Name', this.state['account Name'])
-    console.log(this.state.cloudNetworks)
 
     let randomKey = () => {
       return Math.random().toString()
@@ -948,12 +944,7 @@ class CloudNetwork extends React.Component {
               value={obj[key]}
               ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
               onChange={event => this.set(key, event.target.value, obj)}
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {borderColor: `red`, width: 350}
-              :
-                {width: 350}
-              }
+              style={{width: 350}}
             />
           )
           break;

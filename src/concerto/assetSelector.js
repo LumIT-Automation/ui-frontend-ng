@@ -417,9 +417,9 @@ export default connect((state) => ({
   checkpointEnvironment: state.checkpoint.environment,
   checkpointAssets: state.checkpoint.assets,
   checkpointAsset: state.checkpoint.asset,
-  checkpointPartitions: state.checkpoint.domains,
-  checkpointPartition: state.checkpoint.domain,
-  checkpointPartitionsError: state.checkpoint.domainsError,
+  checkpointDomains: state.checkpoint.domains,
+  checkpointDomain: state.checkpoint.domain,
+  checkpointDomainsError: state.checkpoint.domainsError,
 
   f5Environment: state.f5.environment,
   f5Assets: state.f5.assets,
