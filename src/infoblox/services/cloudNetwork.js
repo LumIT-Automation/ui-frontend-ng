@@ -237,10 +237,10 @@ class CloudNetwork extends React.Component {
     }
     if (entities === 'getNetworks') {
       if (this.state['account ID']) {
-        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['account ID']}`
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['account ID']}&fby=*Environment&fval=Cloud`
       }
       else if(this.state['account Name']) {
-        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['account Name']}`
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['account Name']}&fby=*Environment&fval=Cloud`
       }
     }
 
