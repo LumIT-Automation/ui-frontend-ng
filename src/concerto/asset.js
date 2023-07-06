@@ -805,7 +805,7 @@ class Permission extends React.Component {
     await this.setState({assets: assets})
     return errors
   }
-
+//
   cudManager = async () => {
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let toDelete = []
