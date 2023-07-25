@@ -47,6 +47,9 @@ const infobloxSlice = createSlice({
       containersError: (state, action) => {
         state.containersError = action.payload
       },
+      accountsAndProvidersError: (state, action) => {
+        state.accountsAndProvidersError = action.payload
+      },
       cloudNetworksError: (state, action) => {
         state.cloudNetworksError = action.payload
       },
@@ -115,6 +118,7 @@ export const {
   ipDetailError,
   networkError,
   containerError,
+  accountsAndProvidersError,
   cloudNetworksError,
   nextAvailableIpError,
   ipModifyError,
