@@ -228,6 +228,54 @@ class CloudNetwork extends React.Component {
         return
       }
       else {
+        try{
+          data.data.forEach((item, i) => {
+            item.existent = true
+            item.isModified = {}
+            item.id = ++i
+            if (item.extattrs) {
+              for (let k in item.extattrs) {
+                if (k === 'Country') {
+                  let v
+                  if (item.extattrs[k].value.includes('Cloud-')){
+                    v = item.extattrs[k].value.replace('Cloud-', '')
+                    item['Provider'] = v
+                  }
+                  else {
+                    item['Provider'] = item.extattrs[k].value
+                  }
+                }
+                else if (k === 'City') {
+                  item['Region'] = item.extattrs[k].value
+                }
+                else if (k === 'Reference') {
+                  item['ITSM'] = item.extattrs[k].value
+                }
+                else {
+                  item[k] = item.extattrs[k].value
+                }
+              }
+            }
+          });
+          await this.setState({loading: false, originCloudNetworks: data.data, cloudNetworks: data.data})
+        }
+        catch (error) {
+          await this.setState({loading: false})
+        }
+        
+        
+      }
+    }
+
+    if (entities === 'newAccount') {
+      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name']})
+      data = await this.dataGet('getNetworks', assetId)
+      if (data.status && data.status !== 200 ) {
+        this.props.dispatch(cloudNetworksError(data))
+        await this.setState({loading: false, ['Account ID']: '', ['Account Name']: '',['New Account ID']: '', ['New Account Name']: ''})
+        return
+      }
+      else {
         data.data.forEach((item, i) => {
           item.existent = true
           item.isModified = {}
@@ -256,7 +304,9 @@ class CloudNetwork extends React.Component {
             }
           }
         });
-        await this.setState({loading: false, originCloudNetworks: data.data, cloudNetworks: data.data})
+        await this.setState({loading: false, originCloudNetworks: data.data, cloudNetworks: data.data, ['New Account ID']: '', ['New Account Name']: ''})
+
+        this.dataGetHandler('accountsAndProviders', this.props.asset.id)
       }
     }
     
@@ -270,9 +320,9 @@ class CloudNetwork extends React.Component {
       endpoint = `${this.props.vendor}/${entities}/global/`
     }
 
-    if (assetId) {
+   /* if (assetId) {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
-    }
+    }*/
 
     if (entities === 'getNetworks') {
       if (this.state['Account ID']) {
@@ -443,6 +493,14 @@ class CloudNetwork extends React.Component {
 
       ref.focus()
       */
+    }
+
+    if (key === 'New Account ID') {
+      await this.setState({['New Account ID']: value})
+    }
+
+    if (key === 'New Account Name') {
+      await this.setState({['New Account Name']: value})
     }
 
     if (cloudNetwork) {
@@ -682,6 +740,7 @@ class CloudNetwork extends React.Component {
       }
     }
 
+    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     this.dataGetHandler('getNetworks', this.props.asset.id)
   }
 
@@ -734,6 +793,8 @@ class CloudNetwork extends React.Component {
 
 
   render() {
+    console.log('New Account ID', this.state['New Account ID'])
+    console.log('New Account Name', this.state['New Account Name'])
 
     let randomKey = () => {
       return Math.random().toString()
@@ -827,9 +888,20 @@ class CloudNetwork extends React.Component {
     ];
 
     let createElement = (element, key, choices, obj, action) => {
+      console.log(action)
       switch (element) {
 
         case 'input':
+
+          if (key === 'New Account ID' || key === 'New Account Name') {
+            return (
+              <Input
+                value={this.state[key]}
+                onChange={event => this.set(key, event.target.value)}
+              />
+            )
+          }
+
           if (key === 'Account ID' || key === 'Account Name') {
             return (
               <Input
@@ -890,6 +962,18 @@ class CloudNetwork extends React.Component {
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
                 Get cloud networks
+              </Button>
+            )
+          }
+
+          if (action === 'newAccount') {
+            return (
+              <Button
+                type="primary"
+                disabled={(this.state['New Account ID'] && this.state['New Account Name']) ? false : true}
+                onClick={() => this.dataGetHandler(action, this.props.asset.id)}
+              >
+                Set new Account
               </Button>
             )
           }
@@ -961,11 +1045,7 @@ class CloudNetwork extends React.Component {
                       )
                     })
                   :
-                    this.state[`${choices}`].map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                      )
-                    })
+                    null 
                   }
                 </React.Fragment>
               </Select>
@@ -1073,6 +1153,7 @@ class CloudNetwork extends React.Component {
               }
               { !this.state.loading && !this.state.response &&
               <React.Fragment>
+
                 <Row>
                   <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
@@ -1082,6 +1163,7 @@ class CloudNetwork extends React.Component {
                   </Col>
 
                 </Row>
+
                 <Row>
                   <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
@@ -1093,9 +1175,7 @@ class CloudNetwork extends React.Component {
                       {createElement('select', 'Account ID', 'accounts', '', 'getNetworks')}
                     </Col>
                   }
-                  
-
-                  <Col offset={1} span={3}>
+                  <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                   </Col>
                   {this.state.accountsLoading ?
@@ -1105,6 +1185,24 @@ class CloudNetwork extends React.Component {
                       {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
                     </Col>
                   }
+                </Row>
+
+                <Row>
+                  <Col span={2}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
+                  </Col>
+                  <Col span={4}>
+                    {createElement('input', 'New Account ID', '', '', '')}
+                  </Col>
+                  <Col span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
+                  </Col>
+                  <Col span={4}>
+                    {createElement('input', 'New Account Name', '', '', '')}
+                  </Col>
+                  <Col offset={1} span={4}>
+                    {createElement('button', '', '', '', 'newAccount')}
+                  </Col>
                 </Row>
 
                 <Divider/>
