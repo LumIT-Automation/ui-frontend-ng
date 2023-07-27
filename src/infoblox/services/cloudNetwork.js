@@ -65,7 +65,9 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.accountsLoading)
+
+    console.log('cloudNetworks', this.state.cloudNetworks)
+
     if (this.state.provider !== prevState.provider) {
       this.setState({['Account ID']: '', ['Account Name']: ''})
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
@@ -170,7 +172,6 @@ class CloudNetwork extends React.Component {
     await this.setState({loading: true})
     let conf = []
     let configurationsFetched = await this.dataGet('configuration')
-    console.log(configurationsFetched)
 
     try {
       if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
@@ -740,6 +741,49 @@ class CloudNetwork extends React.Component {
       }
     }
 
+    if (toPatch.length > 0) {
+      for (const cloudNet of toPatch) {
+        let body = {}
+
+        body.data = {
+          "network_data": {
+            "network": "next-available",
+            "comment": cloudNet.comment,
+            "extattrs": {
+              "Account ID": {
+                "value": this.state['Account ID']
+              },
+              "Account Name": {
+                "value": this.state['Account Name']
+              },
+              "Reference": {
+                "value": cloudNet.ITSM
+              }
+            }
+          }
+        }
+
+        if (this.state.provider === 'AWS') {
+          body.data.region = cloudNet.Region
+        }
+
+        cloudNet.loading = true
+        await this.setState({cloudNetworks: cloudNetworks})
+        let net = cloudNet.network.split('/')
+        let cn = await this.cloudNetworkModify(net[0], body)
+        
+        if (cn.status && cn.status !== 200 ) {
+          this.props.dispatch(assignCloudNetworkError(cn))
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+        else {
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+      }
+    }
+
     this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     this.dataGetHandler('getNetworks', this.props.asset.id)
   }
@@ -774,6 +818,21 @@ class CloudNetwork extends React.Component {
     return r
   }
 
+  cloudNetworkModify = async (net, b) => {
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/modify-cloud-network/${net}/`, this.props.token, b )
+    return r
+  }
+
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
     setTimeout( () => this.closeModal(), 2050)
@@ -793,8 +852,6 @@ class CloudNetwork extends React.Component {
 
 
   render() {
-    console.log('New Account ID', this.state['New Account ID'])
-    console.log('New Account Name', this.state['New Account Name'])
 
     let randomKey = () => {
       return Math.random().toString()
@@ -888,7 +945,6 @@ class CloudNetwork extends React.Component {
     ];
 
     let createElement = (element, key, choices, obj, action) => {
-      console.log(action)
       switch (element) {
 
         case 'input':
