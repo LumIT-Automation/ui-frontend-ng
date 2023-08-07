@@ -54,7 +54,7 @@ class Delete extends React.Component {
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profiles/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${this.props.obj.type}/${this.props.obj.name}/`, this.props.token )
   }
 
   //Close and Error
