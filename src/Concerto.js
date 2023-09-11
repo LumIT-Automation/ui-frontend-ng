@@ -23,6 +23,7 @@ import Projects from './fortinetdb/projects'
 import Infoblox from './infoblox/infoblox'
 import Checkpoint from './checkpoint/checkpoint'
 import F5 from './f5/f5'
+import F5bis from './f5bis/f5bis'
 import CertificatesAndKeys from './certificatesAndKeys/certificatesAndKeys'
 
 import Service from './concerto/services'
@@ -110,6 +111,11 @@ class Concerto extends Component {
 
                   { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
                     <Route path='/f5/' component={F5}/>
+                  :
+                    null
+                  }
+                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+                    <Route path='/f5bis/' component={F5bis}/>
                   :
                     null
                   }

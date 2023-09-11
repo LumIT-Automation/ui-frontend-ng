@@ -157,6 +157,14 @@ class CustomSider extends Component {
             : null
           }
 
+          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsF5 && this.props.authorizationsF5.full_visibility) ?
+            <React.Fragment>
+              <Menu.Item key="f5bis" icon={this.loadbalancerIcon()}><Link to="/f5bis/">F5bis</Link></Menu.Item>
+              <Menu.Divider/>
+            </React.Fragment>
+            : null
+          }
+
           { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsVmware && this.props.authorizationsVmware.full_visibility) ?
             <React.Fragment>
               <Menu.Item key="vmware" icon={this.vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
