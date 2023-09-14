@@ -3,13 +3,13 @@ import { connect } from 'react-redux'
 import { Space, Radio, Alert, Divider } from 'antd'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
 //import Error from './error'
 
 import AssetSelector from '../concerto/assetSelector'
-import F5Object from './object'
+import F5Elements from './elements'
 
 import {
   assets,
@@ -40,7 +40,6 @@ class F5 extends React.Component {
   }
 
   componentWillUnmount() {
-    //this.props.dispatch(resetObjects())
   }
 
 
@@ -59,7 +58,6 @@ class F5 extends React.Component {
   }
 
   render() {
-    console.log(this.state.f5object)
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -70,10 +68,11 @@ class F5 extends React.Component {
             <Alert message="Asset and Partition not set" type="error" />
           :
             <React.Fragment>
+
               <Radio.Group
-                onChange={e => this.setState({f5object: e.target.value})}
-                value={this.state.f5object}
-                style={{padding: 15, paddingTop: 40 }}
+                onChange={e => this.setState({f5elements: e.target.value})}
+                value={this.state.f5elements}
+                style={{marginLeft: 16}}
               >
                 <Radio.Button value={'nodes'}>nodes</Radio.Button>
               </Radio.Group>
@@ -81,8 +80,8 @@ class F5 extends React.Component {
               <Divider/>
         
               {
-                this.state.f5object ?
-                  <F5Object f5object={this.state.f5object}/>
+                this.state.f5elements ?
+                  <F5Elements f5elements={this.state.f5elements}/>
                 :
                   null
               }
@@ -90,7 +89,7 @@ class F5 extends React.Component {
           }
           
         </Space>
-        
+
       </React.Fragment>
     )
   }

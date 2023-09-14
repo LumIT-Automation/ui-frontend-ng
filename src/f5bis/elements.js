@@ -2,9 +2,9 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { Space, Table, Input, Button, Spin } from 'antd';
+import { Space, Table, Input, Button, Spin, Checkbox, Radio } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
@@ -14,22 +14,26 @@ import {
 } from './store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
-class F5Object extends React.Component {
+class F5Elements extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       searchText: '',
       searchedColumn: '',
+      f5elements: [],
+      originf5elements: [],
+      element: 'node',
       errors: {}
     };
   }
 
   componentDidMount() {
     console.log('mount')
-    if (this.props.f5object) {
+    if (this.props.f5elements) {
       this.main()
     }
   }
@@ -39,8 +43,7 @@ class F5Object extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.props.f5object)
-    if (this.props.f5object !== prevProps.f5object) {
+    if (this.props.f5elements !== prevProps.f5elements) {
       this.main()
     }
   }
@@ -131,16 +134,22 @@ class F5Object extends React.Component {
 
   main = async () => {
     await this.setState({loading: true})
-    let f5object = await this.dataGet(this.props.f5object, this.props.asset.id)
-    console.log(f5object)
+    let f5elements = await this.dataGet(this.props.f5elements, this.props.asset.id)
+    console.log(f5elements)
     
-    if (f5object.status && f5object.status !== 200 ) {
-      this.props.dispatch(nodesError(f5object))
+    if (f5elements.status && f5elements.status !== 200 ) {
+      this.props.dispatch(nodesError(f5elements))
       await this.setState({loading: false})
       return
     }
     else {
-      await this.setState({f5object: f5object.data.items, loading: false})
+      let elements = f5elements.data.items.map(el => {
+        el.existent = true, 
+        el.isModified = {}
+        return el
+      })
+      console.log(elements)
+      await this.setState({f5elements: elements, originf5elements: elements, loading: false})
     }
   }
 
@@ -164,18 +173,30 @@ class F5Object extends React.Component {
   }
 
   render() {
+    console.log('f5elements', this.state.f5elements)
 
     let randomKey = () => {
       return Math.random().toString()
     }
 
     let returnCol = () => {
-      if (this.props.f5object === 'nodes') {
+      if (this.props.f5elements === 'nodes') {
         return nodesColumns
       }
     }
 
     const nodesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
       {
         title: 'Name',
         align: 'center',
@@ -211,21 +232,25 @@ class F5Object extends React.Component {
         key: 'monitor',
         ...this.getColumnSearchProps('monitor'),
       },
-      {/*
+      {
         title: 'Delete',
         align: 'center',
         dataIndex: 'delete',
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.node_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
+            { obj.existent ? 
+              <Checkbox 
+                checked={obj.toDelete}
+                onChange={e => console.log('toDelete')}
+                //onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
             :
-            '-'
-          }
+              null
+            }
           </Space>
         ),
-        */}
+      }
     ];
 
     return (
@@ -234,10 +259,35 @@ class F5Object extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
           <React.Fragment>
+
+            <Radio.Group>
+              <Radio.Button
+                style={{marginLeft: 10 }}
+                onClick={() => this.main()}
+              >
+                <ReloadOutlined/>
+              </Radio.Button>
+            </Radio.Group>
+
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                buttonStyle="solid"
+                style={{marginLeft: 10 }}
+                onClick={() => this.elementAdd()}
+              >
+                Add {this.state.element}
+              </Radio.Button>
+            </Radio.Group>
+
+            <br/>
+            <br/>
+
             <Table
               columns={returnCol()}
               style={{width: '100%', padding: 5}}
-              dataSource={this.state.f5object}
+              dataSource={this.state.f5elements}
               bordered
               rowKey={randomKey}
               scroll={{x: 'auto'}}
@@ -246,7 +296,7 @@ class F5Object extends React.Component {
             <br/>
             <Button
               type="primary"
-              style={{float: 'right', marginRight: 15, marginBottom: 15}}
+              style={{float: 'right', marginRight: 5, marginBottom: 15}}
               //onClick={() => this.validation()}
             >
               Commit
@@ -254,7 +304,7 @@ class F5Object extends React.Component {
           </React.Fragment>
         }
 
-        { this.props.nodesError ? <Error object={this.props.f5object} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+        { this.props.nodesError ? <Error object={this.props.f5elements} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
 
       </React.Fragment>
     )
@@ -269,6 +319,6 @@ asset: state.f5.asset,
 partition: state.f5.partition,
 
 nodesError: state.f5.nodesError,
-}))(F5Object);
+}))(F5Elements);
   
   
