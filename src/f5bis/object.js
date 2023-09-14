@@ -236,17 +236,17 @@ class F5Object extends React.Component {
           <React.Fragment>
             <Table
               columns={returnCol()}
-              style={{width: '100%', padding: 15}}
+              style={{width: '100%', padding: 5}}
               dataSource={this.state.f5object}
               bordered
               rowKey={randomKey}
               scroll={{x: 'auto'}}
               pagination={{ pageSize: 10 }}
             />
-
+            <br/>
             <Button
               type="primary"
-              style={{float: 'right', marginRight: 15}}
+              style={{float: 'right', marginRight: 15, marginBottom: 15}}
               //onClick={() => this.validation()}
             >
               Commit

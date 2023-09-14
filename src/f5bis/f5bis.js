@@ -1,12 +1,12 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Radio, Spin, Divider } from 'antd'
+import { Space, Radio, Alert, Divider } from 'antd'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
+import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-import Error from './error'
+//import Error from './error'
 
 import AssetSelector from '../concerto/assetSelector'
 import F5Object from './object'
@@ -14,10 +14,7 @@ import F5Object from './object'
 import {
   assets,
   assetsError,
-  nodesFetch,
 } from '../f5/store'
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -68,24 +65,32 @@ class F5 extends React.Component {
         <AssetSelector vendor='f5'/>
 
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
-        
-        <Radio.Group
-          onChange={e => this.setState({f5object: e.target.value})}
-          value={this.state.f5object}
-          style={{padding: 15, paddingTop: 40 }}
-          disabled={!(this.props.asset && this.props.partition)}
-        >
-          <Radio.Button value={'nodes'}>nodes</Radio.Button>
-        </Radio.Group>
-
-        <Divider/>
-      
-        {
-          this.state.f5object ?
-            <F5Object f5object={this.state.f5object}/>
+        <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+          {!(this.props.asset && this.props.partition) ?
+            <Alert message="Asset and Partition not set" type="error" />
           :
-            null
-        }
+            <React.Fragment>
+              <Radio.Group
+                onChange={e => this.setState({f5object: e.target.value})}
+                value={this.state.f5object}
+                style={{padding: 15, paddingTop: 40 }}
+              >
+                <Radio.Button value={'nodes'}>nodes</Radio.Button>
+              </Radio.Group>
+
+              <Divider/>
+        
+              {
+                this.state.f5object ?
+                  <F5Object f5object={this.state.f5object}/>
+                :
+                  null
+              }
+            </React.Fragment>
+          }
+          
+        </Space>
+        
       </React.Fragment>
     )
   }
