@@ -172,6 +172,39 @@ class F5Elements extends React.Component {
     return r
   }
 
+
+  //to do: external function
+  elementAdd = async () => {
+    let id = 0
+    let n = 0
+    let e = {}
+    let list = JSON.parse(JSON.stringify(this.state.f5elements))
+
+    this.state.f5elements.forEach(e => {
+      if (e.id > id) {
+        id = e.id
+      }
+    });
+
+    n = id + 1
+    e.id = n
+    //list.push(p)
+    list = [e].concat(list)
+
+    await this.setState({f5elements: list})
+  }
+  //to do: external function
+  elementRemove = async e => {
+    let f5elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let newList = f5elements.filter(n => {
+      return e.id !== n.id
+    })
+
+    await this.setState({f5elements: newList})
+  }
+
+
+
   render() {
     console.log('f5elements', this.state.f5elements)
 
@@ -194,6 +227,7 @@ class F5Elements extends React.Component {
         render: (name, obj)  => (
           <Space size="small">
             {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+            {/*to do: createElement()*/} 
           </Space>
         ),
       },
@@ -239,6 +273,7 @@ class F5Elements extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
+            {/*to do: createElement()*/} 
             { obj.existent ? 
               <Checkbox 
                 checked={obj.toDelete}
@@ -259,7 +294,7 @@ class F5Elements extends React.Component {
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
           <React.Fragment>
-
+            {/*to do: createElement()*/} 
             <Radio.Group>
               <Radio.Button
                 style={{marginLeft: 10 }}
@@ -294,6 +329,7 @@ class F5Elements extends React.Component {
               pagination={{ pageSize: 10 }}
             />
             <br/>
+            {/*to do: createElement()*/} 
             <Button
               type="primary"
               style={{float: 'right', marginRight: 5, marginBottom: 15}}
