@@ -9,7 +9,7 @@ import Rest from '../_helpers/Rest'
 import Error from './error'
 
 import AssetSelector from '../concerto/assetSelector'
-import Object from './object'
+import F5Object from './object'
 
 import {
   assets,
@@ -62,7 +62,7 @@ class F5 extends React.Component {
   }
 
   render() {
-    console.log(this.state.object)
+    console.log(this.state.f5object)
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -70,21 +70,22 @@ class F5 extends React.Component {
         <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
         
         <Radio.Group
-          onChange={e => this.setState({object: e.target.value})}
-          value={this.state.object}
+          onChange={e => this.setState({f5object: e.target.value})}
+          value={this.state.f5object}
           style={{padding: 15, paddingTop: 40 }}
+          disabled={!(this.props.asset && this.props.partition)}
         >
           <Radio.Button value={'nodes'}>nodes</Radio.Button>
         </Radio.Group>
 
         <Divider/>
       
-        {/*
-          this.state.object ?
-            <Object object={this.state.object}/>
+        {
+          this.state.f5object ?
+            <F5Object f5object={this.state.f5object}/>
           :
             null
-    */}
+        }
       </React.Fragment>
     )
   }
