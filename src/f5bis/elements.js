@@ -8,6 +8,7 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
+import CommonFunctions from '../_helpers/commonFunctions';
 
 import {
   nodesError,
@@ -136,6 +137,7 @@ class F5Elements extends React.Component {
     await this.setState({loading: true})
     let f5elements = await this.dataGet(this.props.f5elements, this.props.asset.id)
     console.log(f5elements)
+    let id = 1
     
     if (f5elements.status && f5elements.status !== 200 ) {
       this.props.dispatch(nodesError(f5elements))
@@ -146,9 +148,10 @@ class F5Elements extends React.Component {
       let elements = f5elements.data.items.map(el => {
         el.existent = true, 
         el.isModified = {}
+        el.id = id
+        id++
         return el
       })
-      console.log(elements)
       await this.setState({f5elements: elements, originf5elements: elements, loading: false})
     }
   }
@@ -172,35 +175,18 @@ class F5Elements extends React.Component {
     return r
   }
 
-
-  //to do: external function
-  elementAdd = async () => {
-    let id = 0
-    let n = 0
-    let e = {}
-    let list = JSON.parse(JSON.stringify(this.state.f5elements))
-
-    this.state.f5elements.forEach(e => {
-      if (e.id > id) {
-        id = e.id
-      }
-    });
-
-    n = id + 1
-    e.id = n
-    //list.push(p)
-    list = [e].concat(list)
-
+  elementAdd = async (elements) => {
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.elementAdd(elements)
     await this.setState({f5elements: list})
   }
-  //to do: external function
-  elementRemove = async e => {
-    let f5elements = JSON.parse(JSON.stringify(this.state.f5elements))
-    let newList = f5elements.filter(n => {
-      return e.id !== n.id
-    })
-
-    await this.setState({f5elements: newList})
+  
+  elementRemove = async (el, elements) => {
+    console.log('el', el)
+    console.log('elements', elements)
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.elementRemove(el, elements)
+    await this.setState({f5elements: list})
   }
 
 
@@ -230,6 +216,13 @@ class F5Elements extends React.Component {
             {/*to do: createElement()*/} 
           </Space>
         ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
       },
       {
         title: 'Name',
@@ -281,7 +274,12 @@ class F5Elements extends React.Component {
                 //onChange={e => this.set('toDelete', e.target.checked, obj)}
               />
             :
-              null
+              <Button
+                type='danger'
+                onClick={(e) => this.elementRemove(obj, this.state.f5elements)}
+              >
+                -
+              </Button>
             }
           </Space>
         ),
@@ -310,7 +308,7 @@ class F5Elements extends React.Component {
               <Radio.Button
                 buttonStyle="solid"
                 style={{marginLeft: 10 }}
-                onClick={() => this.elementAdd()}
+                onClick={() => this.elementAdd(this.state.f5elements)}
               >
                 Add {this.state.element}
               </Radio.Button>
