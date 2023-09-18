@@ -180,7 +180,7 @@ class F5Elements extends React.Component {
     let list = await commonFunctions.elementAdd(elements)
     await this.setState({f5elements: list})
   }
-  
+
   elementRemove = async (el, elements) => {
     console.log('el', el)
     console.log('elements', elements)
@@ -189,13 +189,60 @@ class F5Elements extends React.Component {
     await this.setState({f5elements: list})
   }
 
-
+  set = async (key, value, el) => {
+    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let origEl = this.state.originf5elements.find(e => e.id === el.id)
+    let e = elements.find(e => e.id === el.id)
+    if (key === 'toDelete') {
+      if (value) {
+        e.toDelete = true
+      }
+      else {
+        delete e.toDelete
+      }
+    }
+    await this.setState({f5elements: elements})
+  }
+  
 
   render() {
     console.log('f5elements', this.state.f5elements)
 
     let randomKey = () => {
       return Math.random().toString()
+    }
+
+    let createElement = (element, key, choices, obj, action, event) => {
+      switch (element) {
+        case 'input':
+          return (
+            <Input
+              style=
+              {this.state.errors[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              defaultValue={obj ? obj[key] : this.state.request ? this.state.request[key] : ''}
+              onChange={event => this.set(event.target.value, key)}
+              onPressEnter={() => this.validation(action)}
+            />
+          )
+          break;
+        
+        case 'checkbox':
+          return (
+            <Checkbox 
+              checked={obj.toDelete}
+              //onChange={e => console.log(action)}
+              onChange={e => this.set(action, e.target.checked, obj)}
+            />
+          )
+        
+        default:
+
+      }
+
     }
 
     let returnCol = () => {
@@ -268,11 +315,7 @@ class F5Elements extends React.Component {
           <Space size="small">
             {/*to do: createElement()*/} 
             { obj.existent ? 
-              <Checkbox 
-                checked={obj.toDelete}
-                onChange={e => console.log('toDelete')}
-                //onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
               <Button
                 type='danger'
