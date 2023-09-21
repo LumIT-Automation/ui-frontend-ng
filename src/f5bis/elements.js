@@ -14,6 +14,7 @@ import CommonFunctions from '../_helpers/commonFunctions';
 import {
   routeDomainsError,
   nodesError,
+  nodeAddError,
   nodeDeleteError,
 } from './store'
   
@@ -43,6 +44,7 @@ class F5Elements extends React.Component {
     this.state = {
       searchText: '',
       searchedColumn: '',
+      disableCommit: false,
       f5elements: [],
       originf5elements: [],
       element: 'node',
@@ -375,9 +377,11 @@ class F5Elements extends React.Component {
   }
 
   validation = async () => {
+    this.setState({disableCommit: true})
     let errors = await this.validationCheck()
-    console.log(errors)
+    this.setState({disableCommit: false})
     if (errors === 0) {
+      this.setState({disableCommit: true})
       this.cudManager()
       //console.log('Andiamo!!!!')
     }
@@ -396,9 +400,9 @@ class F5Elements extends React.Component {
       /*if (el.isModified && Object.keys(el.isModified).length > 0) {
         toPatch.push(el)
       }*/
-      /*if (!el.existent) {
+      if (!el.existent) {
         toPost.push(el)
-      }*/
+      }
     }
 
     if (toDelete.length > 0) {
@@ -420,8 +424,38 @@ class F5Elements extends React.Component {
       }
     }
 
-    this.main()
+    if (toPost.length > 0) {
+      for (const el of toPost) {
+        let body = {}
 
+        body.data = {
+          "address": el.address,
+          "name": el.name,
+          "session": el.session,
+          "state": el.state
+        }
+
+        if(el.routeDomain) {
+          body.data.address = `${el.address}%${el.routeDomain}`
+        }
+
+        el.loading = true
+        await this.setState({f5elements: elements})
+
+        let e = await this.elAdd(body)
+        if (e.status && e.status !== 201 ) {
+          this.props.dispatch(nodeAddError(e))
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+        else {
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+      }
+    }
+    this.setState({disableCommit: false})
+    this.main()
   }
 
   elDelete = async (name) => {
@@ -439,8 +473,25 @@ class F5Elements extends React.Component {
     return r
   }
 
+  elAdd = async (body) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body )
+    return r
+  }
+
 
   render() {
+
+    console.log(this.state.disableCommit)
 
     let randomKey = () => {
       return Math.random().toString()
@@ -599,6 +650,7 @@ class F5Elements extends React.Component {
           return (
             <Button
               type="primary"
+              disabled={this.state.disableCommit}
               style={{float: 'right', marginRight: 5, marginBottom: 15}}
               onClick={() => this.validation()}
               //onClick={() => console.log('commit!!!')}
@@ -783,6 +835,7 @@ class F5Elements extends React.Component {
 
         { this.props.routeDomainsError ? <Error object={this.props.f5elements} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
         { this.props.nodesError ? <Error object={this.props.f5elements} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+        { this.props.nodeAddError ? <Error object={this.props.f5elements} error={[this.props.nodeAddError]} visible={true} type={'nodeAddError'} /> : null }
         { this.props.nodeDeleteError ? <Error object={this.props.f5elements} error={[this.props.nodeDeleteError]} visible={true} type={'nodeDeleteError'} /> : null }
 
       </React.Fragment>
@@ -799,6 +852,7 @@ partition: state.f5.partition,
 
 routeDomainsError: state.f5.routeDomainsError,
 nodesError: state.f5.nodesError,
+nodeAddError: state.f5.nodeAddError,
 nodeDeleteError: state.f5.nodeDeleteError,
 
 }))(F5Elements);
