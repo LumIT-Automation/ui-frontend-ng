@@ -8,11 +8,13 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
+import Validators from '../_helpers/validators'
 import CommonFunctions from '../_helpers/commonFunctions';
 
 import {
-  nodesError,
   routeDomainsError,
+  nodesError,
+  nodeDeleteError,
 } from './store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -61,8 +63,8 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.routeDomains)
-    console.log(this.state.f5elements)
+    //console.log(this.state.routeDomains)
+    //console.log(this.state.f5elements)
 
     if (this.props.f5elements !== prevProps.f5elements || this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
@@ -340,6 +342,103 @@ class F5Elements extends React.Component {
     
   }
 
+  validationCheck = async () => {
+    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let errors = 0
+    let validators = new Validators()
+
+    if (this.props.f5elements === 'nodes') {
+
+      for (const el of Object.values(elements)) {
+
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+        if (!el.address) {
+          el.addressError = true
+          ++errors
+        }
+        if (!el.session) {
+          el.sessionError = true
+          ++errors
+        }
+        if (!el.state) {
+          el.stateError = true
+          ++errors
+        }
+
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
+  }
+
+  validation = async () => {
+    let errors = await this.validationCheck()
+    console.log(errors)
+    if (errors === 0) {
+      this.cudManager()
+      //console.log('Andiamo!!!!')
+    }
+  }
+
+  cudManager = async () => {
+    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let toDelete = []
+    let toPatch = []
+    let toPost = []
+
+    for (const el of Object.values(elements)) {
+      if (el.toDelete) {
+        toDelete.push(el)
+      }
+      /*if (el.isModified && Object.keys(el.isModified).length > 0) {
+        toPatch.push(el)
+      }*/
+      /*if (!el.existent) {
+        toPost.push(el)
+      }*/
+    }
+
+    if (toDelete.length > 0) {
+      for (const el of toDelete) {
+        el.loading = true
+        await this.setState({f5elements: elements})
+
+        let e = await this.elDelete(el.name)
+        if (e.status && e.status !== 200 ) {
+          this.props.dispatch(nodeDeleteError(e))
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+        else {
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+
+      }
+    }
+
+    this.main()
+
+  }
+
+  elDelete = async (name) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+    return r
+  }
+
 
   render() {
 
@@ -415,7 +514,12 @@ class F5Elements extends React.Component {
             <Select
               value={obj.session}
               showSearch
-              style={{width: 150}}
+              style={
+                obj[`${key}Error`] ?
+                  {border: `1px solid red`, width: 120}
+                :
+                  {width: 120}
+              }
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -442,7 +546,12 @@ class F5Elements extends React.Component {
             <Select
               value={obj.state}
               showSearch
-              style={{width: 150}}
+              style={
+                obj[`${key}Error`] ?
+                  {border: `1px solid red`, width: 120}
+                :
+                  {width: 120}
+              }
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -491,8 +600,8 @@ class F5Elements extends React.Component {
             <Button
               type="primary"
               style={{float: 'right', marginRight: 5, marginBottom: 15}}
-              //onClick={() => this.validation()}
-              onClick={() => console.log('commit!!!')}
+              onClick={() => this.validation()}
+              //onClick={() => console.log('commit!!!')}
             >
               Commit
             </Button>
@@ -674,6 +783,7 @@ class F5Elements extends React.Component {
 
         { this.props.routeDomainsError ? <Error object={this.props.f5elements} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
         { this.props.nodesError ? <Error object={this.props.f5elements} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+        { this.props.nodeDeleteError ? <Error object={this.props.f5elements} error={[this.props.nodeDeleteError]} visible={true} type={'nodeDeleteError'} /> : null }
 
       </React.Fragment>
     )
@@ -687,8 +797,10 @@ token: state.authentication.token,
 asset: state.f5.asset,
 partition: state.f5.partition,
 
-nodesError: state.f5.nodesError,
 routeDomainsError: state.f5.routeDomainsError,
+nodesError: state.f5.nodesError,
+nodeDeleteError: state.f5.nodeDeleteError,
+
 }))(F5Elements);
   
   

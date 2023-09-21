@@ -10,6 +10,7 @@ class Rest {
 
 
   async doXHR(resource, token = "", payload = null) {
+    resource = encodeURI(resource)
     let json;
 
     if (resource) {
