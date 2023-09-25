@@ -57,7 +57,6 @@ class F5 extends React.Component {
   }
 
   render() {
-    console.log(this.state.f5elements)
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -75,6 +74,7 @@ class F5 extends React.Component {
                 style={{marginLeft: 16}}
               >
                 <Radio.Button value={'nodes'}>nodes</Radio.Button>
+                <Radio.Button value={'monitors'}>monitors</Radio.Button>
                 <Radio.Button value={'profiles'}>profiles</Radio.Button>
               </Radio.Group>
 

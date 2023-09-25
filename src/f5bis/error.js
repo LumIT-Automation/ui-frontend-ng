@@ -42,10 +42,8 @@ class Error extends Component {
 
   onCancel = async () => {
     if ( this.props.type ) {
-      console.log(this.props.type)
       switch(this.props.type) {
         
-
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
           break;
@@ -107,7 +105,6 @@ class Error extends Component {
 
     let e = () => {
       if (this.props.error && this.props.error[0]) {
-        console.log(this.props.error)
         const statusCode = this.props.error[0].status
 
         switch(statusCode) {

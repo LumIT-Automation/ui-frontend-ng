@@ -46,7 +46,6 @@ const f5Slice = createSlice({
         },
 
         err: (state, action) => {
-          console.log('Payload', action)
           state.err = action.payload
         },
 

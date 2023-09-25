@@ -44,6 +44,7 @@ class F5Elements extends React.Component {
       searchedColumn: '',
       disableCommit: false,
       f5elements: [],
+      monitorTypes: [],
       profileTypes: [],
       originf5elements: [],
       element: '',
@@ -64,8 +65,7 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('element', this.state.element)
-    console.log(this.props.err)
+    //@todo: pass element as a prop
     if (this.props.f5elements !== prevProps.f5elements) {
       let str = this.props.f5elements;
       str = str.replace(/.$/, "");
@@ -197,6 +197,42 @@ class F5Elements extends React.Component {
       }
     }
 
+    else if (this.props.f5elements === 'monitors') {
+      let f5elements = await this.dataGet('monitorTypes', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        await this.setState({monitorTypes: f5elements.data.items})
+      }
+    
+      f5elements = await this.dataGet('monitors', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let list = []
+  
+        for (let t in f5elements.data) {
+          let type = t
+          let values = Object.values(f5elements.data[t])
+  
+          values.forEach(o => {
+            o.forEach(p => {
+              Object.assign(p, {type: type, id: id, existent: true, isModified: {}});
+              list.push(p)
+              id++
+            })
+          })
+        }
+        await this.setState({f5elements: list, originf5elements: list, loading: false})
+      }
+    }
+
     else if (this.props.f5elements === 'profiles') {
       let f5elements = await this.dataGet('profileTypes', this.props.asset.id)
       if (f5elements.status && f5elements.status !== 200 ) {
@@ -242,6 +278,12 @@ class F5Elements extends React.Component {
     }
     if (entities === 'routedomains') {
       endpoint = `f5/${assetId}/${entities}/`
+    }
+    if (entities === 'monitorTypes') {
+      endpoint = `f5/${assetId}/${this.props.partition}/monitors/`
+    }
+    if (entities === 'monitors') {
+      endpoint = `f5/${assetId}/${this.props.partition}/${entities}/ANY/`
     }
     if (entities === 'profileTypes') {
       endpoint = `f5/${assetId}/${this.props.partition}/profiles/`
@@ -381,7 +423,6 @@ class F5Elements extends React.Component {
         await this.setState({f5elements: elements})
       }
 
-      //if (key === 'type' && this.state.f5elements === 'profiles') {
       if (key === 'type') {
         value = value.toString()
         if (value) {
@@ -439,6 +480,24 @@ class F5Elements extends React.Component {
       return errors
     }
 
+    if (this.props.f5elements === 'monitors') {
+
+      for (const el of Object.values(elements)) {
+
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+        if (!el.type) {
+          el.typeError = true
+          ++errors
+        }
+
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
+
     if (this.props.f5elements === 'profiles') {
 
       for (const el of Object.values(elements)) {
@@ -465,7 +524,6 @@ class F5Elements extends React.Component {
     if (errors === 0) {
       this.setState({disableCommit: true})
       this.cudManager()
-      //console.log('Andiamo!!!!')
     }
   }
 
@@ -494,7 +552,6 @@ class F5Elements extends React.Component {
 
         let e = await this.elDelete(el.name, el.type ? el.type : null )
         if (e.status && e.status !== 200 ) {
-          console.log(e)
           this.props.dispatch(err(e))
           el.loading = false
           await this.setState({f5elements: elements})
@@ -524,8 +581,14 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'monitors') {
+          body.data = {
+            "name": el.name,
+            "type": el.type
+          }
+        }
+
         if (this.props.f5elements === 'profiles') {
-          console.log(el)
           body.data = {
             "name": el.name,
             "type": el.type
@@ -562,11 +625,14 @@ class F5Elements extends React.Component {
         r = error
       }
     )
-    if (this.props.f5elements === 'profiles') {
+    if (this.props.f5elements === 'monitors') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    }
+    else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.state.element}/${name}/`, this.props.token )
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
     }
     return r
   }
@@ -582,8 +648,11 @@ class F5Elements extends React.Component {
         r = error
       }
     )
-    if (this.props.f5elements === 'profiles') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}ddd/`, this.props.token, body )
+    if (this.props.f5elements === 'monitors') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'profiles') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
     }
     else {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
@@ -735,6 +804,9 @@ class F5Elements extends React.Component {
       if (this.props.f5elements === 'nodes') {
         return nodesColumns
       }
+      if (this.props.f5elements === 'monitors') {
+        return monitorsColumns
+      }
       if (this.props.f5elements === 'profiles') {
         return profilesColumns
       }
@@ -840,6 +912,68 @@ class F5Elements extends React.Component {
         dataIndex: 'monitor',
         key: 'monitor',
         ...this.getColumnSearchProps('monitor'),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const monitorsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.monitorTypes, obj, '')
+        )
       },
       {
         title: 'Delete',
