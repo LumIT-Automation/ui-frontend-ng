@@ -45,30 +45,9 @@ const f5Slice = createSlice({
           state.partition = action.payload
         },
 
-        routeDomainsLoading: (state, action) => {
-          state.routeDomainsLoading = action.payload
-        },
-        routeDomains: (state, action) => {
-          state.routeDomains = action.payload.data.items
-        },
-        routeDomainsFetch: (state, action) => {
-          state.routeDomainsFetch = action.payload
-        },
-        routeDomainsError: (state, action) => {
-          state.routeDomainsError = action.payload
-        },
-
-        dataGroupsLoading: (state, action) => {
-          state.dataGroupsLoading = action.payload
-        },
-        dataGroups: (state, action) => {
-          state.dataGroups = action.payload.data.items
-        },
-        dataGroupsFetch: (state, action) => {
-          state.dataGroupsFetch = action.payload
-        },
-        dataGroupsError: (state, action) => {
-          state.dataGroupsError = action.payload
+        err: (state, action) => {
+          console.log('Payload', action)
+          state.err = action.payload
         },
 
         f5objectsLoading: (state, action) => {
@@ -90,22 +69,7 @@ const f5Slice = createSlice({
         f5objectDeleteError: (state, action) => {
           state.f5objectDeleteError = action.payload
         },
-
-
-        nodes: (state, action) => {
-          state.nodes = action.payload.data.items
-        },
-        nodesError: (state, action) => {
-          state.nodesError = action.payload
-        },
-
-        nodeAddError: (state, action) => {
-          state.nodeAddError = action.payload
-        },
-        nodeDeleteError: (state, action) => {
-          state.nodeDeleteError = action.payload
-        },
-
+       
     }
 })
 
@@ -129,20 +93,8 @@ export const {
 
   partition,
 
-  routeDomainsLoading,
-  routeDomains,
-  routeDomainsFetch,
-  routeDomainsError,
-
-  dataGroupsLoading,
-  dataGroups,
-  dataGroupsFetch,
-  dataGroupsError,
-
-  nodes,
-  nodesError,
-  nodeAddError,
-  nodeDeleteError,
+  err,
+  
 
 } = actions
 

@@ -12,12 +12,9 @@ import {
   environmentError,
   assetsError,
   partitionsError,
-  routeDomainsError,
   dataGroupsError,
 
-  nodesError,
-  nodeAddError,
-  nodeDeleteError,
+  err,
 
 } from './store'
 
@@ -45,42 +42,19 @@ class Error extends Component {
 
   onCancel = async () => {
     if ( this.props.type ) {
+      console.log(this.props.type)
       switch(this.props.type) {
+        
 
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
           break;
-        case 'environmentError':
-          this.props.dispatch(environmentError(null))
-          break;
-        case 'assetsError':
-          this.props.dispatch(assetsError(null))
-          break;
         case 'partitionsError':
           this.props.dispatch(partitionsError(null))
           break;
-        case 'routeDomainsError':
-          this.props.dispatch(routeDomainsError(null))
-          break;
-        case 'dataGroupsError':
-          this.props.dispatch(dataGroupsError(null))
-          break;  
-
-          
-        case 'nodesError':
-          console.log('nodesError')
-          this.props.dispatch(nodesError(null))
-          break;
-        case 'nodeAddError':
-          this.props.dispatch(nodeAddError(null))
-          break;
-        case 'nodeDeleteError':
-          this.props.dispatch(nodeDeleteError(null))
-          break;
-
   
         default:
-          this.props.dispatch(genericError(null))
+          this.props.dispatch(err(null))
       }
     }
   }
@@ -133,6 +107,7 @@ class Error extends Component {
 
     let e = () => {
       if (this.props.error && this.props.error[0]) {
+        console.log(this.props.error)
         const statusCode = this.props.error[0].status
 
         switch(statusCode) {
@@ -180,7 +155,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>F5 ERROR {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>F5 element: {this.props.object}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}

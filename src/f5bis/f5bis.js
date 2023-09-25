@@ -6,15 +6,14 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-//import Error from './error'
 
 import AssetSelector from '../concerto/assetSelector'
 import F5Elements from './elements'
 
 import {
   assets,
-  assetsError,
-} from '../f5/store'
+  err,
+} from '../f5bis/store'
 
 
 
@@ -51,13 +50,14 @@ class F5 extends React.Component {
         this.setState( {loading: false}, () => this.props.dispatch(assets(resp)) )
       },
       error => {
-        this.setState( {loading: false}, () => this.props.dispatch(assetsError(error)) )
+        this.setState( {loading: false}, () => this.props.dispatch(err(error)) )
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
   }
 
   render() {
+    console.log(this.state.f5elements)
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -75,6 +75,7 @@ class F5 extends React.Component {
                 style={{marginLeft: 16}}
               >
                 <Radio.Button value={'nodes'}>nodes</Radio.Button>
+                <Radio.Button value={'profiles'}>profiles</Radio.Button>
               </Radio.Group>
 
               <Divider/>
@@ -100,8 +101,8 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  assetsError: state.f5.assetsError,
+  asset: state.f5bis.asset,
+  partition: state.f5bis.partition,
 
-  asset: state.f5.asset,
-  partition: state.f5.partition
+  err: state.f5bis.err,
 }))(F5);

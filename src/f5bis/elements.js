@@ -12,10 +12,8 @@ import Validators from '../_helpers/validators'
 import CommonFunctions from '../_helpers/commonFunctions';
 
 import {
-  routeDomainsError,
-  nodesError,
-  nodeAddError,
-  nodeDeleteError,
+  err,
+
 } from './store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -46,8 +44,9 @@ class F5Elements extends React.Component {
       searchedColumn: '',
       disableCommit: false,
       f5elements: [],
+      profileTypes: [],
       originf5elements: [],
-      element: 'node',
+      element: '',
       nodeSessions: ['user-enabled', 'user-disabled'],
       nodeStates: ['unchecked', 'user-down'],
       errors: {}
@@ -65,10 +64,16 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log(this.state.routeDomains)
-    //console.log(this.state.f5elements)
+    console.log('element', this.state.element)
+    console.log(this.props.err)
+    if (this.props.f5elements !== prevProps.f5elements) {
+      let str = this.props.f5elements;
+      str = str.replace(/.$/, "");
+      this.setState({element: str})
+      this.main()
+    }
 
-    if (this.props.f5elements !== prevProps.f5elements || this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
+    if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
   }
@@ -158,11 +163,11 @@ class F5Elements extends React.Component {
   };
 
   main = async () => {
-    await this.setState({loading: true})
+    await this.setState({f5elements: [], originf5elements: [], loading: true})
 
     let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
     if (routeDomains.status && routeDomains.status !== 200 ) {
-      this.props.dispatch(routeDomainsError(routeDomains))
+      this.props.dispatch(err(routeDomains))
       await this.setState({loading: false})
       return
     }
@@ -170,23 +175,62 @@ class F5Elements extends React.Component {
       await this.setState({routeDomains: routeDomains.data.items})
     }
 
-    let f5elements = await this.dataGet(this.props.f5elements, this.props.asset.id)
+    
     let id = 1
     
-    if (f5elements.status && f5elements.status !== 200 ) {
-      this.props.dispatch(nodesError(f5elements))
-      await this.setState({loading: false})
-      return
+    if (this.props.f5elements === 'nodes') {
+      let f5elements = await this.dataGet('nodes', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let elements = f5elements.data.items.map(el => {
+          el.existent = true, 
+          el.isModified = {}
+          el.id = id
+          id++
+          return el
+        })
+        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+      }
     }
-    else {
-      let elements = f5elements.data.items.map(el => {
-        el.existent = true, 
-        el.isModified = {}
-        el.id = id
-        id++
-        return el
-      })
-      await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+
+    else if (this.props.f5elements === 'profiles') {
+      let f5elements = await this.dataGet('profileTypes', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        await this.setState({profileTypes: f5elements.data.items})
+      }
+    
+      f5elements = await this.dataGet('profiles', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let list = []
+  
+        for (let t in f5elements.data) {
+          let type = t
+          let values = Object.values(f5elements.data[t])
+  
+          values.forEach(o => {
+            o.forEach(p => {
+              Object.assign(p, {type: type, id: id, existent: true, isModified: {}});
+              list.push(p)
+              id++
+            })
+          })
+        }
+        await this.setState({f5elements: list, originf5elements: list, loading: false})
+      }
     }
   }
 
@@ -198,6 +242,12 @@ class F5Elements extends React.Component {
     }
     if (entities === 'routedomains') {
       endpoint = `f5/${assetId}/${entities}/`
+    }
+    if (entities === 'profileTypes') {
+      endpoint = `f5/${assetId}/${this.props.partition}/profiles/`
+    }
+    if (entities === 'profiles') {
+      endpoint = `f5/${assetId}/${this.props.partition}/${entities}/ANY/`
     }
     let rest = new Rest(
       "GET",
@@ -330,6 +380,20 @@ class F5Elements extends React.Component {
         }
         await this.setState({f5elements: elements})
       }
+
+      //if (key === 'type' && this.state.f5elements === 'profiles') {
+      if (key === 'type') {
+        value = value.toString()
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+        await this.setState({f5elements: elements})
+      }
   
       if (key === 'toDelete') {
         if (value) {
@@ -374,6 +438,24 @@ class F5Elements extends React.Component {
       await this.setState({f5elements: elements})
       return errors
     }
+
+    if (this.props.f5elements === 'profiles') {
+
+      for (const el of Object.values(elements)) {
+
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+        if (!el.type) {
+          el.typeError = true
+          ++errors
+        }
+
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
   }
 
   validation = async () => {
@@ -410,9 +492,10 @@ class F5Elements extends React.Component {
         el.loading = true
         await this.setState({f5elements: elements})
 
-        let e = await this.elDelete(el.name)
+        let e = await this.elDelete(el.name, el.type ? el.type : null )
         if (e.status && e.status !== 200 ) {
-          this.props.dispatch(nodeDeleteError(e))
+          console.log(e)
+          this.props.dispatch(err(e))
           el.loading = false
           await this.setState({f5elements: elements})
         }
@@ -428,15 +511,25 @@ class F5Elements extends React.Component {
       for (const el of toPost) {
         let body = {}
 
-        body.data = {
-          "address": el.address,
-          "name": el.name,
-          "session": el.session,
-          "state": el.state
+        if (this.props.f5elements === 'nodes') {
+          body.data = {
+            "address": el.address,
+            "name": el.name,
+            "session": el.session,
+            "state": el.state
+          }
+
+          if(el.routeDomain) {
+            body.data.address = `${el.address}%${el.routeDomain}`
+          }
         }
 
-        if(el.routeDomain) {
-          body.data.address = `${el.address}%${el.routeDomain}`
+        if (this.props.f5elements === 'profiles') {
+          console.log(el)
+          body.data = {
+            "name": el.name,
+            "type": el.type
+          }
         }
 
         el.loading = true
@@ -444,7 +537,7 @@ class F5Elements extends React.Component {
 
         let e = await this.elAdd(body)
         if (e.status && e.status !== 201 ) {
-          this.props.dispatch(nodeAddError(e))
+          this.props.dispatch(err(e))
           el.loading = false
           await this.setState({f5elements: elements})
         }
@@ -458,7 +551,7 @@ class F5Elements extends React.Component {
     this.main()
   }
 
-  elDelete = async (name) => {
+  elDelete = async (name, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -469,7 +562,12 @@ class F5Elements extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+    if (this.props.f5elements === 'profiles') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+    }
+    else {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.state.element}/${name}/`, this.props.token )
+    }
     return r
   }
 
@@ -484,14 +582,18 @@ class F5Elements extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token, body )
+    if (this.props.f5elements === 'profiles') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}ddd/`, this.props.token, body )
+    }
+    else {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    }
+    
     return r
   }
 
 
   render() {
-
-    console.log(this.state.disableCommit)
 
     let randomKey = () => {
       return Math.random().toString()
@@ -560,10 +662,10 @@ class F5Elements extends React.Component {
           )
         }
 
-        else if (key === 'session') {
+        else {
           return (
             <Select
-              value={obj.session}
+              value={obj[key]}
               showSearch
               style={
                 obj[`${key}Error`] ?
@@ -578,44 +680,12 @@ class F5Elements extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onSelect={event => this.set('session', event, obj)}
+              onSelect={event => this.set(key, event, obj)}
             >
               <React.Fragment>
-                {choices.map((session, i) => {
+                {choices.map((c, i) => {
                   return (
-                    <Select.Option key={i} value={session}>{session}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-
-        else if (key === 'state') {
-          return (
-            <Select
-              value={obj.state}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: 120}
-                :
-                  {width: 120}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set('state', event, obj)}
-            >
-              <React.Fragment>
-                {choices.map((state, i) => {
-                  return (
-                    <Select.Option key={i} value={state}>{state}</Select.Option>
+                    <Select.Option key={i} value={c}>{c}</Select.Option>
                   )
                 })
                 }
@@ -653,7 +723,6 @@ class F5Elements extends React.Component {
               disabled={this.state.disableCommit}
               style={{float: 'right', marginRight: 5, marginBottom: 15}}
               onClick={() => this.validation()}
-              //onClick={() => console.log('commit!!!')}
             >
               Commit
             </Button>
@@ -665,6 +734,9 @@ class F5Elements extends React.Component {
     let returnCol = () => {
       if (this.props.f5elements === 'nodes') {
         return nodesColumns
+      }
+      if (this.props.f5elements === 'profiles') {
+        return profilesColumns
       }
     }
 
@@ -786,6 +858,68 @@ class F5Elements extends React.Component {
       }
     ];
 
+    const profilesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.profileTypes, obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -833,11 +967,8 @@ class F5Elements extends React.Component {
           </React.Fragment>
         }
 
-        { this.props.routeDomainsError ? <Error object={this.props.f5elements} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-        { this.props.nodesError ? <Error object={this.props.f5elements} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
-        { this.props.nodeAddError ? <Error object={this.props.f5elements} error={[this.props.nodeAddError]} visible={true} type={'nodeAddError'} /> : null }
-        { this.props.nodeDeleteError ? <Error object={this.props.f5elements} error={[this.props.nodeDeleteError]} visible={true} type={'nodeDeleteError'} /> : null }
-
+        { this.props.err ? <Error object={this.props.f5elements} error={[this.props.err]} visible={true} type={'err'} /> : null }
+  
       </React.Fragment>
     )
   }
@@ -847,13 +978,10 @@ class F5Elements extends React.Component {
 export default connect((state) => ({
 token: state.authentication.token,
 
-asset: state.f5.asset,
-partition: state.f5.partition,
+asset: state.f5bis.asset,
+partition: state.f5bis.partition,
 
-routeDomainsError: state.f5.routeDomainsError,
-nodesError: state.f5.nodesError,
-nodeAddError: state.f5.nodeAddError,
-nodeDeleteError: state.f5.nodeDeleteError,
+err: state.f5bis.err,
 
 }))(F5Elements);
   

@@ -9,6 +9,7 @@ import workflowReducer from '../workflow/store'
 import infobloxReducer from '../infoblox/store'
 import checkpointReducer from '../checkpoint/store'
 import f5Reducer from '../f5/store'
+import f5bisReducer from '../f5bis/store'
 import vmwareReducer from '../vmware/store'
 import fortinetdbReducer from '../fortinetdb/store'
 
@@ -23,6 +24,7 @@ export default configureStore({
     infoblox: infobloxReducer,
     checkpoint: checkpointReducer,
     f5: f5Reducer,
+    f5bis: f5bisReducer,
     vmware: vmwareReducer,
     fortinetdb: fortinetdbReducer,
   }
