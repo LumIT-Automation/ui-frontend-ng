@@ -65,6 +65,7 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.f5elements)
     //@todo: pass element as a prop
     if (this.props.f5elements !== prevProps.f5elements) {
       let str = this.props.f5elements;
@@ -221,10 +222,16 @@ class F5Elements extends React.Component {
           let type = t
           let values = Object.values(f5elements.data[t])
   
-          values.forEach(o => {
-            o.forEach(p => {
-              Object.assign(p, {type: type, id: id, existent: true, isModified: {}});
-              list.push(p)
+          values.forEach(mt => {
+            mt.forEach(m => {
+              Object.assign(m, {type: type, id: id, existent: true, isModified: {}});
+              if (m.interval || m.interval === 0) {
+                m.interval = m.interval.toString()
+              }
+              if (m.timeout || m.timeout === 0) {
+                m.timeout = m.timeout.toString()
+              }
+              list.push(m)
               id++
             })
           })
@@ -384,6 +391,66 @@ class F5Elements extends React.Component {
         ref.focus()
       }
 
+      if (key === 'interval'){
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${el.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+  
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+
+        await this.setState({f5elements: elements})
+        ref = this.myRefs[`${el.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+  
+        ref.focus()
+      }
+
+      if (key === 'timeout'){
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${el.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+  
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+
+        await this.setState({f5elements: elements})
+        ref = this.myRefs[`${el.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+  
+        ref.focus()
+      }
+
       if (key === 'routeDomain') {
         value = value.toString()
         if (value) {
@@ -480,7 +547,7 @@ class F5Elements extends React.Component {
       return errors
     }
 
-    if (this.props.f5elements === 'monitors') {
+    else if (this.props.f5elements === 'monitors') {
 
       for (const el of Object.values(elements)) {
 
@@ -492,13 +559,32 @@ class F5Elements extends React.Component {
           el.typeError = true
           ++errors
         }
+        if ((el.type === 'inband')) {
+          continue
+        }
+        if (!el.interval) {
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.name)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.type)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.interval)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.timeout)
+          el.intervalError = true
+          ++errors
+        }
+        if (!el.timeout) {
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.name)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.type)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.interval)
+          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.timeout)
+          el.timeoutError = true
+          ++errors
+        }
 
       }
       await this.setState({f5elements: elements})
       return errors
     }
 
-    if (this.props.f5elements === 'profiles') {
+    else if (this.props.f5elements === 'profiles') {
 
       for (const el of Object.values(elements)) {
 
@@ -520,6 +606,7 @@ class F5Elements extends React.Component {
   validation = async () => {
     this.setState({disableCommit: true})
     let errors = await this.validationCheck()
+    console.log(errors)
     this.setState({disableCommit: false})
     if (errors === 0) {
       this.setState({disableCommit: true})
@@ -584,7 +671,9 @@ class F5Elements extends React.Component {
         if (this.props.f5elements === 'monitors') {
           body.data = {
             "name": el.name,
-            "type": el.type
+            "type": el.type,
+            "interval": +el.interval,
+            "timeout": +el.timeout,
           }
         }
 
@@ -694,6 +783,36 @@ class F5Elements extends React.Component {
                   {borderColor: 'red', width: 200}
                 :
                   {width: 200}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+            />          
+          )
+        }
+        else if (key === 'interval') {
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: 80}
+                :
+                  {width: 80}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+            />          
+          )
+        }
+        else if (key === 'timeout') {
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: 80}
+                :
+                  {width: 80}
                 }
               ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
               onChange={event => this.set(key, event.target.value, obj)}
@@ -973,6 +1092,32 @@ class F5Elements extends React.Component {
             val
           :
             createElement('select', 'type', this.state.monitorTypes, obj, '')
+        )
+      },
+      {
+        title: 'Interval',
+        align: 'center',
+        dataIndex: 'interval',
+        key: 'interval',
+        ...this.getColumnSearchProps('interval'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'interval', '', obj, '')
+        )
+      },
+      {
+        title: 'Timeout',
+        align: 'center',
+        dataIndex: 'timeout',
+        key: 'timeout',
+        ...this.getColumnSearchProps('timeout'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'timeout', '', obj, '')
         )
       },
       {
