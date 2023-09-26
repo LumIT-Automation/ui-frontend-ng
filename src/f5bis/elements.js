@@ -47,7 +47,6 @@ class F5Elements extends React.Component {
       monitorTypes: [],
       profileTypes: [],
       originf5elements: [],
-      element: '',
       nodeSessions: ['user-enabled', 'user-disabled'],
       nodeStates: ['unchecked', 'user-down'],
       errors: {}
@@ -66,13 +65,6 @@ class F5Elements extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log(this.state.f5elements)
-    //@todo: pass element as a prop
-    if (this.props.f5elements !== prevProps.f5elements) {
-      let str = this.props.f5elements;
-      str = str.replace(/.$/, "");
-      this.setState({element: str})
-      this.main()
-    }
 
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
@@ -370,7 +362,7 @@ class F5Elements extends React.Component {
           start = ref.input.selectionStart
           end = ref.input.selectionEnd
         }
-  
+
         if (value) {
           e[key] = value
           delete e[`${key}Error`]
@@ -379,6 +371,27 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
+  
+        /*if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
+          }
+          else {
+            e[key] = value
+          }
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }*/
 
         await this.setState({f5elements: elements})
         ref = this.myRefs[`${el.id}_${key}`]
@@ -402,7 +415,19 @@ class F5Elements extends React.Component {
         }
   
         if (value) {
-          e[key] = value
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
+          }
+          else {
+            e[key] = value
+          }
           delete e[`${key}Error`]
         }
         else {
@@ -432,7 +457,19 @@ class F5Elements extends React.Component {
         }
   
         if (value) {
-          e[key] = value
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
+          }
+          else {
+            e[key] = value
+          }
           delete e[`${key}Error`]
         }
         else {
@@ -563,18 +600,10 @@ class F5Elements extends React.Component {
           continue
         }
         if (!el.interval) {
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.name)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.type)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.interval)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.timeout)
           el.intervalError = true
           ++errors
         }
         if (!el.timeout) {
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.name)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.type)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.interval)
-          console.log('!!!!!!!!!!!!!!!!!!!!!!!', el.timeout)
           el.timeoutError = true
           ++errors
         }
@@ -624,9 +653,9 @@ class F5Elements extends React.Component {
       if (el.toDelete) {
         toDelete.push(el)
       }
-      /*if (el.isModified && Object.keys(el.isModified).length > 0) {
+      if (el.isModified && Object.keys(el.isModified).length > 0) {
         toPatch.push(el)
-      }*/
+      }
       if (!el.existent) {
         toPost.push(el)
       }
@@ -648,6 +677,38 @@ class F5Elements extends React.Component {
           await this.setState({f5elements: elements})
         }
 
+      }
+    }
+
+    if (toPatch.length > 0) {
+      for (const el of toPatch) {
+        let body = {}
+
+        if (this.props.f5elements === 'monitors') {
+          body.data = {
+            "destination": "*:*",
+            "interval": +el.interval,
+            "manualResume": "disabled",
+            "timeUntilUp": 0,
+            "timeout": +el.timeout,
+            "transparent": "disabled",
+            "upInterval": 0
+          }
+        }
+
+        el.loading = true
+        await this.setState({f5elements: elements})
+
+        let e = await this.elPatch(el.name, el.type, body)
+        if (e.status && e.status !== 200 ) {
+          this.props.dispatch(err(e))
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+        else {
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
       }
     }
 
@@ -716,6 +777,29 @@ class F5Elements extends React.Component {
     )
     if (this.props.f5elements === 'monitors') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    }
+    else if (this.props.f5elements === 'profiles') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+    }
+    else {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+    }
+    return r
+  }
+
+  elPatch = async (name, type, body) => {
+    let r
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    if (this.props.f5elements === 'monitors') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
@@ -1101,10 +1185,7 @@ class F5Elements extends React.Component {
         key: 'interval',
         ...this.getColumnSearchProps('interval'),
         render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'interval', '', obj, '')
+          createElement('input', 'interval', '', obj, '')
         )
       },
       {
@@ -1114,10 +1195,7 @@ class F5Elements extends React.Component {
         key: 'timeout',
         ...this.getColumnSearchProps('timeout'),
         render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'timeout', '', obj, '')
+          createElement('input', 'timeout', '', obj, '')
         )
       },
       {
@@ -1223,7 +1301,7 @@ class F5Elements extends React.Component {
                 style={{marginLeft: 10 }}
                 onClick={() => this.elementAdd(this.state.f5elements)}
               >
-                Add {this.state.element}
+                +
               </Radio.Button>
             </Radio.Group>
 
