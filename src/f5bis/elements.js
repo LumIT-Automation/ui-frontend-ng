@@ -38,6 +38,7 @@ class F5Elements extends React.Component {
     super(props);
 
     this.myRefs = {};
+    this.textAreaRefs = {};
 
     this.state = {
       searchText: '',
@@ -64,9 +65,12 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.f5elements)
+    //console.log(this.state.f5elements)
 
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
+      this.main()
+    }
+    if (this.props.f5elements !== prevProps.f5elements) {
       this.main()
     }
   }
@@ -157,21 +161,19 @@ class F5Elements extends React.Component {
 
   main = async () => {
     await this.setState({f5elements: [], originf5elements: [], loading: true})
-
-    let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
-    if (routeDomains.status && routeDomains.status !== 200 ) {
-      this.props.dispatch(err(routeDomains))
-      await this.setState({loading: false})
-      return
-    }
-    else {
-      await this.setState({routeDomains: routeDomains.data.items})
-    }
-
-    
     let id = 1
     
     if (this.props.f5elements === 'nodes') {
+      let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
+      if (routeDomains.status && routeDomains.status !== 200 ) {
+        this.props.dispatch(err(routeDomains))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        await this.setState({routeDomains: routeDomains.data.items})
+      }
+
       let f5elements = await this.dataGet('nodes', this.props.asset.id)
       if (f5elements.status && f5elements.status !== 200 ) {
         this.props.dispatch(err(f5elements))
@@ -229,6 +231,25 @@ class F5Elements extends React.Component {
           })
         }
         await this.setState({f5elements: list, originf5elements: list, loading: false})
+      }
+    }
+
+    else if (this.props.f5elements === 'irules') {
+      let f5elements = await this.dataGet('irules', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let elements = f5elements.data.items.map(el => {
+          el.existent = true, 
+          el.isModified = {}
+          el.id = id
+          id++
+          return el
+        })
+        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
       }
     }
 
@@ -371,27 +392,6 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-  
-        /*if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }*/
 
         await this.setState({f5elements: elements})
         ref = this.myRefs[`${el.id}_${key}`]
@@ -539,6 +539,48 @@ class F5Elements extends React.Component {
         }
         await this.setState({f5elements: elements})
       }
+
+      if (key === 'apiAnonymous') {
+        let start = 0
+        let end = 0
+        let ref = this.textAreaRefs[`${el.id}_${key}`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          start = ref.resizableTextArea.textArea.selectionStart
+          end = ref.resizableTextArea.textArea.selectionEnd
+        }
+
+        if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
+          }
+          else {
+            e[key] = value
+          }
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+
+        await this.setState({f5elements: elements})
+        ref = this.textAreaRefs[`${el.id}_${key}`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          ref.resizableTextArea.textArea.selectionStart = start
+          ref.resizableTextArea.textArea.selectionEnd = end
+        }
+
+        ref.focus()
+      }
   
       if (key === 'toDelete') {
         if (value) {
@@ -605,6 +647,25 @@ class F5Elements extends React.Component {
         }
         if (!el.timeout) {
           el.timeoutError = true
+          ++errors
+        }
+
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
+
+    else if (this.props.f5elements === 'irules') {
+
+      for (const el of Object.values(elements)) {
+
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+        if (!el.apiAnonymous) {
+          console.log('NO CODE OBJECT N ', el.id )
+          el.apiAnonymousError = true
           ++errors
         }
 
@@ -696,10 +757,17 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'irules') {
+          body.data = {
+            "name": el.name,
+            "apiAnonymous": el.apiAnonymous
+          }
+        }
+
         el.loading = true
         await this.setState({f5elements: elements})
 
-        let e = await this.elPatch(el.name, el.type, body)
+        let e = await this.elPatch(el.name, el.type ? el.type : null, body)
         if (e.status && e.status !== 200 ) {
           this.props.dispatch(err(e))
           el.loading = false
@@ -738,6 +806,13 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'irules') {
+          body.data = {
+            "name": el.name,
+            "apiAnonymous": el.apiAnonymous
+          }
+        }
+
         if (this.props.f5elements === 'profiles') {
           body.data = {
             "name": el.name,
@@ -748,7 +823,7 @@ class F5Elements extends React.Component {
         el.loading = true
         await this.setState({f5elements: elements})
 
-        let e = await this.elAdd(body)
+        let e = await this.elPost(body)
         if (e.status && e.status !== 201 ) {
           this.props.dispatch(err(e))
           el.loading = false
@@ -775,8 +850,12 @@ class F5Elements extends React.Component {
         r = error
       }
     )
+    //@todo: element as a prop
     if (this.props.f5elements === 'monitors') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    }
+    else if (this.props.f5elements === 'irules') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
@@ -798,8 +877,12 @@ class F5Elements extends React.Component {
         r = error
       }
     )
+    //@todo: element as a prop
     if (this.props.f5elements === 'monitors') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'irules') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token, body )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
@@ -810,7 +893,7 @@ class F5Elements extends React.Component {
     return r
   }
 
-  elAdd = async (body) => {
+  elPost = async (body) => {
     let r
     let rest = new Rest(
       "POST",
@@ -823,6 +906,9 @@ class F5Elements extends React.Component {
     )
     if (this.props.f5elements === 'monitors') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'irules') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
@@ -904,6 +990,23 @@ class F5Elements extends React.Component {
           )
         }
 
+      }
+
+      else if (element === 'textarea') {
+        return (
+          <Input.TextArea
+            rows={12}
+            value={obj[key]}
+            ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
+            onChange={event => this.set(key, event.target.value, obj)}
+            style=
+              { obj[`${key}Error`] ?
+                {borderColor: `red`, width: 350}
+              :
+                {width: 350}
+              }
+          />
+        )
       }
 
       else if (element === 'select') {
@@ -1009,6 +1112,9 @@ class F5Elements extends React.Component {
       }
       if (this.props.f5elements === 'monitors') {
         return monitorsColumns
+      }
+      if (this.props.f5elements === 'irules') {
+        return irulesColumns
       }
       if (this.props.f5elements === 'profiles') {
         return profilesColumns
@@ -1196,6 +1302,65 @@ class F5Elements extends React.Component {
         ...this.getColumnSearchProps('timeout'),
         render: (val, obj)  => (
           createElement('input', 'timeout', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const irulesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Code',
+        align: 'center',
+        dataIndex: 'apiAnonymous',
+        key: 'apiAnonymous',
+        ...this.getColumnSearchProps('apiAnonymous'),
+        render: (val, obj)  => (
+          createElement('textarea', 'apiAnonymous', '', obj, '')
         )
       },
       {
