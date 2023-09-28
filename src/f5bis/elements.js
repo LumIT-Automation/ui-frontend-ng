@@ -44,10 +44,13 @@ class F5Elements extends React.Component {
       searchText: '',
       searchedColumn: '',
       disableCommit: false,
+      routeDomains: [],
       f5elements: [],
       monitorTypes: [],
       profileTypes: [],
       originf5elements: [],
+      f5elements: [],
+      expandedKeys: [],
       nodeSessions: ['user-enabled', 'user-disabled'],
       nodeStates: ['unchecked', 'user-down'],
       errors: {}
@@ -161,6 +164,18 @@ class F5Elements extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  onTableRowExpand = (expanded, record) => {
+    let keys = Object.assign([], this.state.expandedKeys);
+
+    if(expanded){
+      keys.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
+    }
+    else {
+      keys = keys.filter(k => k !== record.id)
+    }
+    this.setState({expandedKeys: keys});
+  }
+
   main = async () => {
     await this.setState({f5elements: [], originf5elements: [], loading: true})
     let id = 1
@@ -233,6 +248,46 @@ class F5Elements extends React.Component {
           })
         }
         await this.setState({f5elements: list, originf5elements: list, loading: false})
+      }
+    }
+
+    else if (this.props.f5elements === 'snatpools') {
+      
+      let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
+      if (routeDomains.status && routeDomains.status !== 200 ) {
+        this.props.dispatch(err(routeDomains))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        await this.setState({routeDomains: routeDomains.data.items})
+      }
+      
+      let f5elements = await this.dataGet('snatpools', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let elements = f5elements.data.items.map(el => {
+          el.existent = true, 
+          el.isModified = {}
+          el.id = id
+          el.members = el.members.map(m => {
+            let l = m.split('/')
+            let o = {}
+            o.name  = l[1]
+            o.address  = l[2]
+            console.log(m)
+            console.log(l)
+            console.log(o)
+            return o
+          })
+          id++
+          return el
+        })
+        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
       }
     }
 
@@ -349,6 +404,9 @@ class F5Elements extends React.Component {
     if (entities === 'monitors') {
       endpoint = `f5/${assetId}/${this.props.partition}/${entities}/ANY/`
     }
+    if (entities === 'snatpools') {
+      endpoint = `f5/${assetId}/${this.props.partition}/snatpools/`
+    }
     if (entities === 'profileTypes') {
       endpoint = `f5/${assetId}/${this.props.partition}/profiles/`
     }
@@ -383,30 +441,6 @@ class F5Elements extends React.Component {
   /*
     SET
   */
-
-  transformFile = async file => {
-    console.log('transformFile', file)
-    let reader = new FileReader();
-    console.log(reader)
-    let r
-
-    try {
-      reader.onload = function () {
-        console.log(reader.result);
-        r = reader
-      }
-      console.log(reader)
-  
-      reader.readAsText(file);
-      console.log(reader)
-      
-    }
-    catch (error) {
-      console.log(error)
-      r = error
-    }
-    return r    
-  }
 
   readFile = (file) => {
     return new Promise((resolve, reject) => {
@@ -1434,6 +1468,9 @@ class F5Elements extends React.Component {
       if (this.props.f5elements === 'monitors') {
         return monitorsColumns
       }
+      if (this.props.f5elements === 'snatpools') {
+        return snatpoolsColumns
+      }
       if (this.props.f5elements === 'irules') {
         return irulesColumns
       }
@@ -1449,14 +1486,124 @@ class F5Elements extends React.Component {
     }
 
     let rd = (address) => {
-      let val = address.split('%')
-      if (val.length > 1) {
-        return val[1]
+      try {
+        let val = address.split('%')
+        if (val.length > 1) {
+          return val[1]
+        }
+        else {
+          return null
+        }
       }
-      else {
-        return null
+      catch (error) {
+
       }
+      
     }
+
+    const expandedRowRender = (...params) => {
+      const columns = [
+        {
+          title: 'Loading',
+          align: 'center',
+          dataIndex: 'loading',
+          key: 'loading',
+          render: (val, obj)  => (
+            <Space size="small">
+              {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
+        {
+          title: 'Id',
+          align: 'center',
+          dataIndex: 'id',
+          key: 'id',
+          ...this.getColumnSearchProps('id'),
+        },
+        {
+          title: 'Name',
+          align: 'center',
+          dataIndex: 'name',
+          key: 'name',
+          ...this.getColumnSearchProps('name'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'name', '', obj, '')
+          )
+        },
+        {
+          title: 'Address',
+          align: 'center',
+          dataIndex: 'address',
+          key: 'address',
+          ...this.getColumnSearchProps('address'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'address', '', obj, '')
+          )
+        },
+        {
+          title: 'Route domain (optional)',
+          align: 'center',
+          dataIndex: 'routeDomain',
+          key: 'routeDomain',
+          ...this.getColumnSearchProps('routeDomain'),
+          render: (val, obj)  => (
+            obj.existent ?
+              rd(obj.address)
+            :
+              createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
+          )
+        },
+        {
+          title: 'Delete',
+          align: 'center',
+          dataIndex: 'delete',
+          key: 'delete',
+          render: (val, obj)  => (
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              }
+            </Space>
+          ),
+        }
+      ];
+
+      return (
+        <React.Fragment>
+          <br/>
+          <Button
+            type="primary"
+            //onClick={() => this.conditionAdd(params[0])}
+          >
+            +
+          </Button>
+          <br/>
+          <br/>
+          <Table
+            columns={columns}
+            rowKey={record => record.id}
+            dataSource={params[0].members}
+            pagination={{pageSize: 10}}
+          />
+          <Button
+            type="primary"
+            style={{float: 'right'}}
+            //onClick={() => this.conditionCommit(params[0])}
+          >
+            Commit
+          </Button>
+        </React.Fragment>
+      )
+    };
 
     const nodesColumns = [
       {
@@ -1629,6 +1776,55 @@ class F5Elements extends React.Component {
         ...this.getColumnSearchProps('timeout'),
         render: (val, obj)  => (
           createElement('input', 'timeout', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const snatpoolsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
         )
       },
       {
@@ -2018,16 +2214,30 @@ class F5Elements extends React.Component {
 
             <br/>
             <br/>
-
-            <Table
-              columns={returnCol()}
-              style={{width: '100%', padding: 5}}
-              dataSource={this.state.f5elements}
-              bordered
-              rowKey={randomKey}
-              scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
-            />
+            { this.props.f5elements === 'snatpools' ?
+              <Table
+                columns={returnCol()}
+                dataSource={this.state.f5elements}
+                bordered
+                scroll={{x: 'auto'}}
+                pagination={{pageSize: 10}}
+                style={{marginBottom: 10}}
+                onExpand={this.onTableRowExpand}
+                expandedRowKeys={this.state.expandedKeys}
+                rowKey={record => record.id}
+                expandedRowRender={ record => expandedRowRender(record)}
+              />
+            :
+              <Table
+                columns={returnCol()}
+                style={{width: '100%', padding: 5}}
+                dataSource={this.state.f5elements}
+                bordered
+                rowKey={randomKey}
+                scroll={{x: 'auto'}}
+                pagination={{ pageSize: 10 }}
+              />
+            }
             <br/>
 
             {createElement('button', '', '', '', 'commit')}
