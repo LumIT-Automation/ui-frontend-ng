@@ -66,6 +66,7 @@ class F5Elements extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log(this.state.f5elements)
+    console.log(this.state.searchText)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -153,6 +154,8 @@ class F5Elements extends React.Component {
   };
 
   handleReset = (clearFilters, confirm) => {
+    console.log(clearFilters())
+    console.log(confirm())
     clearFilters();
     confirm();
     this.setState({ searchText: '' });
@@ -264,6 +267,8 @@ class F5Elements extends React.Component {
           el.existent = true, 
           el.isModified = {}
           el.id = id
+          el.issuer = el.apiRawValues.issuer
+          el.expiration = el.apiRawValues.expiration
           id++
           return el
         })
@@ -1204,7 +1209,7 @@ class F5Elements extends React.Component {
         return (
           <React.Fragment>
             <Input 
-              type="file" 
+              type="file"
               style=
                 { 
                   obj[`textError`] ?
@@ -1650,25 +1655,25 @@ class F5Elements extends React.Component {
         title: 'ISSUER',
         align: 'center',
         width: '100px',
-        dataIndex: ['apiRawValues','issuer'],
+        dataIndex: 'issuer',
         key: 'issuer',
-        ...this.getColumnSearchProps(['apiRawValues','issuer']),
+        ...this.getColumnSearchProps('issuer'),
       },
       {
         title: 'EXPIRATION',
         align: 'center',
         width: 200,
-        dataIndex: ['apiRawValues','expiration'],
-        key: ['apiRawValues','expiration'],
+        dataIndex: 'expiration',
+        key: 'expiration',
         defaultSortOrder: 'descend',
         sorter: (a, b) => {
-          if (a?.apiRawValues?.expiration && b?.apiRawValues?.expiration) {
-            return new Date(a.apiRawValues.expiration) - new Date(b.apiRawValues.expiration)
+          if (a?.expiration && b?.expiration) {
+            return new Date(a.expiration) - new Date(b.expiration)
           }
         },
-        ...this.getColumnSearchProps(['apiRawValues','expiration']),
+        ...this.getColumnSearchProps('expiration'),
         render: (val, obj) => (
-          obj?.apiRawValues?.expiration ?
+          obj?.expiration ?
             <div
               style={{
                 background: (new Date(val).getTime()) < today ? 
