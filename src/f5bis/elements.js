@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio } from 'antd';
+import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio, Card } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
@@ -65,8 +65,7 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log(this.state.f5elements)
-
+    console.log(this.state.f5elements)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -253,6 +252,25 @@ class F5Elements extends React.Component {
       }
     }
 
+    else if (this.props.f5elements === 'certificates') {
+      let f5elements = await this.dataGet('certificates', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let elements = f5elements.data.items.map(el => {
+          el.existent = true, 
+          el.isModified = {}
+          el.id = id
+          id++
+          return el
+        })
+        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+      }
+    }
+
     else if (this.props.f5elements === 'profiles') {
       let f5elements = await this.dataGet('profileTypes', this.props.asset.id)
       if (f5elements.status && f5elements.status !== 200 ) {
@@ -336,13 +354,56 @@ class F5Elements extends React.Component {
     await this.setState({f5elements: list})
   }
 
+  /*
+    SET
+  */
+
+  transformFile = async file => {
+    console.log('transformFile', file)
+    let reader = new FileReader();
+    console.log(reader)
+    let r
+
+    try {
+      reader.onload = function () {
+        console.log(reader.result);
+        r = reader
+      }
+      console.log(reader)
+  
+      reader.readAsText(file);
+      console.log(reader)
+      
+    }
+    catch (error) {
+      console.log(error)
+      r = error
+    }
+    return r    
+  }
+
+  readFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onload = res => {
+        resolve(res.target.result);
+      };
+      reader.onerror = err => reject(err);
+  
+      reader.readAsText(file);
+    });
+  }
+
   set = async (key, value, el) => {
     let elements = JSON.parse(JSON.stringify(this.state.f5elements))
-    let origEl = this.state.originf5elements.find(e => e.id === el.id)
-    let e
+    //console.log(key)
+    //console.log(value)
+    //console.log(el)
 
     if (el) {
-      e = elements.find(e => e.id === el.id)
+      let origEl = this.state.originf5elements.find(e => e.id === el.id)
+      let e = elements.find(e => e.id === el.id)
 
       if (key === 'name'){
         let start = 0
@@ -581,6 +642,94 @@ class F5Elements extends React.Component {
 
         ref.focus()
       }
+
+      if (key === 'sourceType') {
+        e.sourceType = value
+        await this.setState({f5elements: elements})
+      }
+
+      if (key === 'upload') {
+
+        if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e.file = value
+              e.fileName = value.name
+              e.size = value.size
+              e.type = value.type
+              let t = await this.readFile(value)
+              e.text = t
+            }
+            else {
+              delete e.isModified[key]
+              e.file = value
+              e.fileName = value.name
+              e.size = value.size
+              e.type = value.type
+              let t = await this.readFile(value)
+              e.text = t
+            }
+          }
+          else {
+            e.file = value
+            e.fileName = value.name
+            e.size = value.size
+            e.type = value.type
+            let t = await this.readFile(value)
+            e.text = t
+          }
+          delete e[`textError`]
+        }
+        else {
+          //blank value while typing.
+          e.text = ''
+        }
+
+        await this.setState({f5elements: elements})
+      }
+
+      if (key === 'text') {
+        let start = 0
+        let end = 0
+        let ref = this.textAreaRefs[`${el.id}_${key}`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          start = ref.resizableTextArea.textArea.selectionStart
+          end = ref.resizableTextArea.textArea.selectionEnd
+        }
+
+        if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
+          }
+          else {
+            e[key] = value
+          }
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+
+        await this.setState({f5elements: elements})
+        ref = this.textAreaRefs[`${el.id}_${key}`]
+
+        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
+          ref.resizableTextArea.textArea.selectionStart = start
+          ref.resizableTextArea.textArea.selectionEnd = end
+        }
+
+        ref.focus()
+      }
   
       if (key === 'toDelete') {
         if (value) {
@@ -594,6 +743,10 @@ class F5Elements extends React.Component {
     }
     
   }
+
+  /*
+    VALIDATION
+  */
 
   validationCheck = async () => {
     let elements = JSON.parse(JSON.stringify(this.state.f5elements))
@@ -674,6 +827,24 @@ class F5Elements extends React.Component {
       return errors
     }
 
+    else if (this.props.f5elements === 'certificates') {
+
+      for (const el of Object.values(elements)) {
+
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+        if (el.sourceType === 'text' && !el.text) {
+          el.textError = true
+          ++errors
+        }
+
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
+
     else if (this.props.f5elements === 'profiles') {
 
       for (const el of Object.values(elements)) {
@@ -704,21 +875,87 @@ class F5Elements extends React.Component {
     }
   }
 
+  /*
+    CREATE, UPDATE, DELETE
+  */
   cudManager = async () => {
     let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let toPost = []
     let toDelete = []
     let toPatch = []
-    let toPost = []
 
     for (const el of Object.values(elements)) {
+      if (!el.existent) {
+        toPost.push(el)
+      }
       if (el.toDelete) {
         toDelete.push(el)
       }
       if (el.isModified && Object.keys(el.isModified).length > 0) {
         toPatch.push(el)
       }
-      if (!el.existent) {
-        toPost.push(el)
+    }
+
+    if (toPost.length > 0) {
+      for (const el of toPost) {
+        let body = {}
+
+        if (this.props.f5elements === 'nodes') {
+          body.data = {
+            "address": el.address,
+            "name": el.name,
+            "session": el.session,
+            "state": el.state
+          }
+
+          if(el.routeDomain) {
+            body.data.address = `${el.address}%${el.routeDomain}`
+          }
+        }
+
+        if (this.props.f5elements === 'monitors') {
+          body.data = {
+            "name": el.name,
+            "type": el.type,
+            "interval": +el.interval,
+            "timeout": +el.timeout,
+          }
+        }
+
+        if (this.props.f5elements === 'irules') {
+          body.data = {
+            "name": el.name,
+            "apiAnonymous": el.apiAnonymous
+          }
+        }
+        
+        if (this.props.f5elements === 'certificates') {
+          body.certificate = {
+            "name": el.name,
+            "content_base64": btoa(el.text)
+          }
+        }
+
+        if (this.props.f5elements === 'profiles') {
+          body.data = {
+            "name": el.name,
+            "type": el.type
+          }
+        }
+
+        el.loading = true
+        await this.setState({f5elements: elements})
+
+        let e = await this.elPost(body)
+        if (e.status && e.status !== 201 ) {
+          this.props.dispatch(err(e))
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
+        else {
+          el.loading = false
+          await this.setState({f5elements: elements})
+        }
       }
     }
 
@@ -726,6 +963,11 @@ class F5Elements extends React.Component {
       for (const el of toDelete) {
         el.loading = true
         await this.setState({f5elements: elements})
+
+        if (this.props.f5elements === 'certificates') {
+          let l = el.name.split('/')
+          el.name  = l[2]
+        }
 
         let e = await this.elDelete(el.name, el.type ? el.type : null )
         if (e.status && e.status !== 200 ) {
@@ -764,6 +1006,14 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'certificates') {
+          let l = el.name.split('/')
+          el.name = l[2]
+          body.certificate = {
+            "content_base64": btoa(el.text)
+          }
+        }
+
         el.loading = true
         await this.setState({f5elements: elements})
 
@@ -780,63 +1030,39 @@ class F5Elements extends React.Component {
       }
     }
 
-    if (toPost.length > 0) {
-      for (const el of toPost) {
-        let body = {}
 
-        if (this.props.f5elements === 'nodes') {
-          body.data = {
-            "address": el.address,
-            "name": el.name,
-            "session": el.session,
-            "state": el.state
-          }
-
-          if(el.routeDomain) {
-            body.data.address = `${el.address}%${el.routeDomain}`
-          }
-        }
-
-        if (this.props.f5elements === 'monitors') {
-          body.data = {
-            "name": el.name,
-            "type": el.type,
-            "interval": +el.interval,
-            "timeout": +el.timeout,
-          }
-        }
-
-        if (this.props.f5elements === 'irules') {
-          body.data = {
-            "name": el.name,
-            "apiAnonymous": el.apiAnonymous
-          }
-        }
-
-        if (this.props.f5elements === 'profiles') {
-          body.data = {
-            "name": el.name,
-            "type": el.type
-          }
-        }
-
-        el.loading = true
-        await this.setState({f5elements: elements})
-
-        let e = await this.elPost(body)
-        if (e.status && e.status !== 201 ) {
-          this.props.dispatch(err(e))
-          el.loading = false
-          await this.setState({f5elements: elements})
-        }
-        else {
-          el.loading = false
-          await this.setState({f5elements: elements})
-        }
-      }
-    }
     this.setState({disableCommit: false})
     this.main()
+  }
+
+  elPost = async (body) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    if (this.props.f5elements === 'monitors') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'irules') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'certificates') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'profiles') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    }
+    else {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    }
+    
+    return r
   }
 
   elDelete = async (name, type) => {
@@ -856,6 +1082,9 @@ class F5Elements extends React.Component {
     }
     else if (this.props.f5elements === 'irules') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
+    }
+    else if (this.props.f5elements === 'certificates') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
@@ -884,6 +1113,9 @@ class F5Elements extends React.Component {
     else if (this.props.f5elements === 'irules') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token, body )
     }
+    else if (this.props.f5elements === 'certificates') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token, body )
+    }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
@@ -893,35 +1125,12 @@ class F5Elements extends React.Component {
     return r
   }
 
-  elPost = async (body) => {
-    let r
-    let rest = new Rest(
-      "POST",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    if (this.props.f5elements === 'monitors') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
-    }
-    else if (this.props.f5elements === 'irules') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
-    }
-    else if (this.props.f5elements === 'profiles') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
-    }
-    else {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
-    }
-    
-    return r
-  }
-
 
   render() {
+
+    let today = new Date().getTime();
+    let thirtyDays = 2592000000
+    let inThirtyDays = new Date(today + thirtyDays);
 
     let randomKey = () => {
       return Math.random().toString()
@@ -986,10 +1195,32 @@ class F5Elements extends React.Component {
                 }
               ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
               onChange={event => this.set(key, event.target.value, obj)}
-            />          
+            />
           )
         }
+      }
 
+      else if (element === 'file') {
+        return (
+          <React.Fragment>
+            <Input 
+              type="file" 
+              style=
+                { 
+                  obj[`textError`] ?
+                  {borderColor: `red`, width: 350}
+                :
+                  {width: 350}
+                }
+              onChange={e => this.set(key, e.target.files[0], obj)} 
+            />
+            <Card>
+              <p>Name: {obj.fileName}</p>
+              <p>Type: {obj.type}</p>
+              <p>Size: {obj.size} Bytes</p>
+            </Card>    
+          </React.Fragment>    
+        )
       }
 
       else if (element === 'textarea') {
@@ -1115,6 +1346,9 @@ class F5Elements extends React.Component {
       }
       if (this.props.f5elements === 'irules') {
         return irulesColumns
+      }
+      if (this.props.f5elements === 'certificates') {
+        return certificatesColumns
       }
       if (this.props.f5elements === 'profiles') {
         return profilesColumns
@@ -1361,6 +1595,126 @@ class F5Elements extends React.Component {
         ...this.getColumnSearchProps('apiAnonymous'),
         render: (val, obj)  => (
           createElement('textarea', 'apiAnonymous', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const certificatesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'ISSUER',
+        align: 'center',
+        width: '100px',
+        dataIndex: ['apiRawValues','issuer'],
+        key: 'issuer',
+        ...this.getColumnSearchProps(['apiRawValues','issuer']),
+      },
+      {
+        title: 'EXPIRATION',
+        align: 'center',
+        width: 200,
+        dataIndex: ['apiRawValues','expiration'],
+        key: ['apiRawValues','expiration'],
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => {
+          if (a?.apiRawValues?.expiration && b?.apiRawValues?.expiration) {
+            return new Date(a.apiRawValues.expiration) - new Date(b.apiRawValues.expiration)
+          }
+        },
+        ...this.getColumnSearchProps(['apiRawValues','expiration']),
+        render: (val, obj) => (
+          obj?.apiRawValues?.expiration ?
+            <div
+              style={{
+                background: (new Date(val).getTime()) < today ? 
+                  '#FCF2F0' 
+                : (new Date(val).getTime()) < inThirtyDays.getTime() ?
+                    '#FFFBE6'
+                  :
+                    'white'
+              }}
+            >
+              {val}
+            </div>
+          :
+            null
+        )
+      },
+      {
+        title: 'Edit',
+        align: 'center',
+        dataIndex: '',
+        key: 'edit',
+        render: (val, obj)  => (
+          <Space size="small">
+            <Radio.Group 
+              onChange={e => this.set('sourceType', e.target.value, obj)} 
+              value={obj.sourceType}
+            >
+              <Radio value={"upload"}>Upload</Radio>
+              <Radio value={"text"}>Text</Radio>
+            </Radio.Group>
+          </Space>
+        )
+      },
+      {
+        title: 'Content',
+        align: 'center',
+        dataIndex: '',
+        key: 'content',
+        render: (val, obj)  => (
+          (obj.sourceType === 'text') ? 
+            createElement('textarea', 'text', '', obj, '')
+          :
+            (obj.sourceType === 'upload') ?
+              createElement('file', 'upload', '', obj, '')
+            :
+              null
         )
       },
       {
