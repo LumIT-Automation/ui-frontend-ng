@@ -77,6 +77,7 @@ class F5 extends React.Component {
                 <Radio.Button value={'monitors'}>monitors</Radio.Button>
                 <Radio.Button value={'irules'}>irules</Radio.Button>
                 <Radio.Button value={'certificates'}>certificates</Radio.Button>
+                <Radio.Button value={'keys'}>keys</Radio.Button>
                 <Radio.Button value={'profiles'}>profiles</Radio.Button>
               </Radio.Group>
 

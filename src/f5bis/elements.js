@@ -276,6 +276,27 @@ class F5Elements extends React.Component {
       }
     }
 
+    else if (this.props.f5elements === 'keys') {
+      let f5elements = await this.dataGet('keys', this.props.asset.id)
+      if (f5elements.status && f5elements.status !== 200 ) {
+        this.props.dispatch(err(f5elements))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let elements = f5elements.data.items.map(el => {
+          el.existent = true, 
+          el.isModified = {}
+          el.id = id
+          //el.issuer = el.apiRawValues.issuer
+          //el.expiration = el.apiRawValues.expiration
+          id++
+          return el
+        })
+        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+      }
+    }
+
     else if (this.props.f5elements === 'profiles') {
       let f5elements = await this.dataGet('profileTypes', this.props.asset.id)
       if (f5elements.status && f5elements.status !== 200 ) {
@@ -650,6 +671,7 @@ class F5Elements extends React.Component {
 
       if (key === 'sourceType') {
         e.sourceType = value
+        delete e[`${key}Error`]
         await this.setState({f5elements: elements})
       }
 
@@ -836,15 +858,49 @@ class F5Elements extends React.Component {
 
       for (const el of Object.values(elements)) {
 
-        if (!el.name) {
-          el.nameError = true
-          ++errors
+        if (el.existent) {
+          if (el.sourceType && !el.text) {
+            el.textError = true
+            ++errors
+          }
         }
-        if (el.sourceType === 'text' && !el.text) {
-          el.textError = true
-          ++errors
+        else {
+          if (!el.name) {
+            el.nameError = true
+            ++errors
+          }
+          if (!el.sourceType && !el.text) {
+            el.sourceTypeError = true
+            el.textError = true
+            ++errors
+          }
         }
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
 
+    else if (this.props.f5elements === 'keys') {
+
+      for (const el of Object.values(elements)) {
+
+        if (el.existent) {
+          if (el.sourceType && !el.text) {
+            el.textError = true
+            ++errors
+          }
+        }
+        else {
+          if (!el.name) {
+            el.nameError = true
+            ++errors
+          }
+          if (!el.sourceType && !el.text) {
+            el.sourceTypeError = true
+            el.textError = true
+            ++errors
+          }
+        }
       }
       await this.setState({f5elements: elements})
       return errors
@@ -941,6 +997,13 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'keys') {
+          body.key = {
+            "name": el.name,
+            "content_base64": btoa(el.text)
+          }
+        }
+
         if (this.props.f5elements === 'profiles') {
           body.data = {
             "name": el.name,
@@ -970,6 +1033,11 @@ class F5Elements extends React.Component {
         await this.setState({f5elements: elements})
 
         if (this.props.f5elements === 'certificates') {
+          let l = el.name.split('/')
+          el.name  = l[2]
+        }
+
+        if (this.props.f5elements === 'keys') {
           let l = el.name.split('/')
           el.name  = l[2]
         }
@@ -1019,6 +1087,14 @@ class F5Elements extends React.Component {
           }
         }
 
+        if (this.props.f5elements === 'keys') {
+          let l = el.name.split('/')
+          el.name = l[2]
+          body.key = {
+            "content_base64": btoa(el.text)
+          }
+        }
+
         el.loading = true
         await this.setState({f5elements: elements})
 
@@ -1060,6 +1136,9 @@ class F5Elements extends React.Component {
     else if (this.props.f5elements === 'certificates') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
     }
+    else if (this.props.f5elements === 'keys') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
     }
@@ -1091,6 +1170,9 @@ class F5Elements extends React.Component {
     else if (this.props.f5elements === 'certificates') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token )
     }
+    else if (this.props.f5elements === 'keys') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token )
+    }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
@@ -1120,6 +1202,9 @@ class F5Elements extends React.Component {
     }
     else if (this.props.f5elements === 'certificates') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token, body )
+    }
+    else if (this.props.f5elements === 'keys') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token, body )
     }
     else if (this.props.f5elements === 'profiles') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
@@ -1354,6 +1439,9 @@ class F5Elements extends React.Component {
       }
       if (this.props.f5elements === 'certificates') {
         return certificatesColumns
+      }
+      if (this.props.f5elements === 'keys') {
+        return keysColumns
       }
       if (this.props.f5elements === 'profiles') {
         return profilesColumns
@@ -1652,7 +1740,7 @@ class F5Elements extends React.Component {
         )
       },
       {
-        title: 'ISSUER',
+        title: 'Issuer',
         align: 'center',
         width: '100px',
         dataIndex: 'issuer',
@@ -1660,7 +1748,7 @@ class F5Elements extends React.Component {
         ...this.getColumnSearchProps('issuer'),
       },
       {
-        title: 'EXPIRATION',
+        title: 'Expiration',
         align: 'center',
         width: 200,
         dataIndex: 'expiration',
@@ -1700,6 +1788,105 @@ class F5Elements extends React.Component {
             <Radio.Group 
               onChange={e => this.set('sourceType', e.target.value, obj)} 
               value={obj.sourceType}
+              style={obj.sourceTypeError ? {backgroundColor: 'red'} : {}}
+            >
+              <Radio value={"upload"}>Upload</Radio>
+              <Radio value={"text"}>Text</Radio>
+            </Radio.Group>
+          </Space>
+        )
+      },
+      {
+        title: 'Content',
+        align: 'center',
+        dataIndex: '',
+        key: 'content',
+        render: (val, obj)  => (
+          (obj.sourceType === 'text') ? 
+            createElement('textarea', 'text', '', obj, '')
+          :
+            (obj.sourceType === 'upload') ?
+              createElement('file', 'upload', '', obj, '')
+            :
+              null
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const keysColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Key Type',
+        align: 'center',
+        width: '100px',
+        dataIndex: 'keyType',
+        key: 'keyType',
+        ...this.getColumnSearchProps('keyType'),
+      },
+      {
+        title: 'Security Type',
+        align: 'center',
+        width: '100px',
+        dataIndex: 'securityType',
+        key: 'securityType',
+        ...this.getColumnSearchProps('securityType'),
+      },
+      {
+        title: 'Edit',
+        align: 'center',
+        dataIndex: '',
+        key: 'edit',
+        render: (val, obj)  => (
+          <Space size="small">
+            <Radio.Group 
+              onChange={e => this.set('sourceType', e.target.value, obj)} 
+              value={obj.sourceType}
+              style={obj.sourceTypeError ? {backgroundColor: 'red'} : {}}
             >
               <Radio value={"upload"}>Upload</Radio>
               <Radio value={"text"}>Text</Radio>
