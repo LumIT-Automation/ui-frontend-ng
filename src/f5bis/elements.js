@@ -22,14 +22,19 @@ const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 /*
 @todo:
 aggiornamento antd
+axios
+localStorage
+auth component
 foreach --> map
 1 funzione, 1 azione
+
 1 get
 1 set
 validation
 del, post, patch
 createElement
-localStorage
+
+
 */ 
 
 class F5Elements extends React.Component {
@@ -81,6 +86,9 @@ class F5Elements extends React.Component {
   componentWillUnmount() {
   }
 
+  /*
+    COLUMNS METHODS
+  */
 
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
@@ -175,6 +183,10 @@ class F5Elements extends React.Component {
     }
     this.setState({expandedKeys: keys});
   }
+
+  /*
+    MAIN
+  */
 
   main = async () => {
     await this.setState({f5elements: [], originf5elements: [], loading: true})
@@ -271,17 +283,17 @@ class F5Elements extends React.Component {
       }
       else {
         let elements = f5elements.data.items.map(el => {
+          let mid = 1
           el.existent = true, 
           el.isModified = {}
           el.id = id
+
           el.members = el.members.map(m => {
             let l = m.split('/')
             let o = {}
-            o.name  = l[1]
             o.address  = l[2]
-            console.log(m)
-            console.log(l)
-            console.log(o)
+            o.id = mid
+            mid++
             return o
           })
           id++
@@ -869,6 +881,17 @@ class F5Elements extends React.Component {
       return errors
     }
 
+    else if (this.props.f5elements === 'snatpools') {
+      for (const el of Object.values(elements)) {
+        if (!el.name) {
+          el.nameError = true
+          ++errors
+        }
+      }
+      await this.setState({f5elements: elements})
+      return errors
+    }
+
     else if (this.props.f5elements === 'irules') {
 
       for (const el of Object.values(elements)) {
@@ -973,6 +996,7 @@ class F5Elements extends React.Component {
   /*
     CREATE, UPDATE, DELETE
   */
+ 
   cudManager = async () => {
     let elements = JSON.parse(JSON.stringify(this.state.f5elements))
     let toPost = []
@@ -1197,6 +1221,9 @@ class F5Elements extends React.Component {
     //@todo: element as a prop
     if (this.props.f5elements === 'monitors') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    }
+    else if (this.props.f5elements === 'snatpools') {
+      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpool/${name}/`, this.props.token )
     }
     else if (this.props.f5elements === 'irules') {
       await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
@@ -1504,35 +1531,11 @@ class F5Elements extends React.Component {
     const expandedRowRender = (...params) => {
       const columns = [
         {
-          title: 'Loading',
-          align: 'center',
-          dataIndex: 'loading',
-          key: 'loading',
-          render: (val, obj)  => (
-            <Space size="small">
-              {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-            </Space>
-          ),
-        },
-        {
           title: 'Id',
           align: 'center',
           dataIndex: 'id',
           key: 'id',
           ...this.getColumnSearchProps('id'),
-        },
-        {
-          title: 'Name',
-          align: 'center',
-          dataIndex: 'name',
-          key: 'name',
-          ...this.getColumnSearchProps('name'),
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('input', 'name', '', obj, '')
-          )
         },
         {
           title: 'Address',
