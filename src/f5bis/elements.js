@@ -453,32 +453,35 @@ class F5Elements extends React.Component {
     let e = elements.find(e => e.id === obj.id)
 
     if (e.existent) {
-      let origEl = this.state.originf5elements.find(e => e.id === obj.id)
+      e.isModified.members = true
+    }
+
+    if (e.members.length < 1) {
+      e.members.push({id:1})
     }
     else {
-      if (e.members.length < 1) {
-        e.members.push({id:1})
-      }
-      else {
-        let idList = e.members.map(o => {
-          return o.id 
-        })
-        console.log(idList)
-        let n = Math.max(...idList)
-        n++
-        let o = {id: n}
-        e.members = [o].concat(e.members)
-      }
-      
+      let idList = e.members.map(o => {
+        return o.id 
+      })
+      let n = Math.max(...idList)
+      n++
+      let o = {id: n}
+      e.members = [o].concat(e.members)
     }
+    
     await this.setState({f5elements: elements})
   }
 
   subElementRemove = async (el, father) => {
     let elements = JSON.parse(JSON.stringify(this.state.f5elements))
     let e = elements.find(e => e.id === father.id)
+
+    if (e.existent) {
+      e.isModified.members = true
+    }
+    
     let member = e.members.find(m => m.id === el.id)
-    console.log(e)
+   
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.elementRemove(member, father.members)
     e.members = list
@@ -1619,13 +1622,7 @@ class F5Elements extends React.Component {
           dataIndex: 'delete',
           key: 'delete',
           render: (val, obj)  => (
-            <Space size="small">
-              { obj.existent ? 
-                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-              :
-                createElement('button', 'subElementRemove', params[0], obj, 'subElementRemove')
-              }
-            </Space>
+            createElement('button', 'subElementRemove', params[0], obj, 'subElementRemove')
           ),
         }
       ];
