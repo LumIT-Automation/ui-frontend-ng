@@ -211,7 +211,7 @@ class F5Elements extends React.Component {
       }
       else {
         let elements = f5elements.data.items.map(el => {
-          el.existent = true, 
+          el.existent = true
           el.isModified = {}
           el.id = id
           id++
@@ -284,7 +284,7 @@ class F5Elements extends React.Component {
       else {
         let elements = f5elements.data.items.map(el => {
           let mid = 1
-          el.existent = true, 
+          el.existent = true
           el.isModified = {}
           el.id = id
 
@@ -312,7 +312,7 @@ class F5Elements extends React.Component {
       }
       else {
         let elements = f5elements.data.items.map(el => {
-          el.existent = true, 
+          el.existent = true
           el.isModified = {}
           el.id = id
           id++
@@ -331,7 +331,7 @@ class F5Elements extends React.Component {
       }
       else {
         let elements = f5elements.data.items.map(el => {
-          el.existent = true, 
+          el.existent = true
           el.isModified = {}
           el.id = id
           el.issuer = el.apiRawValues.issuer
@@ -352,7 +352,7 @@ class F5Elements extends React.Component {
       }
       else {
         let elements = f5elements.data.items.map(el => {
-          el.existent = true, 
+          el.existent = true
           el.isModified = {}
           el.id = id
           //el.issuer = el.apiRawValues.issuer
@@ -438,9 +438,9 @@ class F5Elements extends React.Component {
     return r
   }
 
-  elementAdd = async (elements) => {
+  elementAdd = async (elements, type) => {
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.elementAdd(elements)
+    let list = await commonFunctions.elementAdd(elements, type)
     await this.setState({f5elements: list})
   }
 
@@ -448,6 +448,35 @@ class F5Elements extends React.Component {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.elementRemove(el, elements)
     await this.setState({f5elements: list})
+  }
+
+  subElementAdd = async (obj) => {
+    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let e = elements.find(e => e.id === obj.id)
+
+    if (e.existent) {
+      let origEl = this.state.originf5elements.find(e => e.id === obj.id)
+    }
+    else {
+      let idList = e.members.map(o => o.id)
+      let n = Math.max(...idList)
+      n++
+      let o = {id: n}
+      e.members = [o].concat(e.members)
+    }
+    await this.setState({f5elements: elements})
+  }
+
+  subElementRemove = async (el, father) => {
+    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let e = elements.find(e => e.id === father.id)
+    let member = e.members.find(m => m.id === el.id)
+    console.log(e)
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.elementRemove(member, father.members)
+    e.members = list
+
+    await this.setState({f5elements: elements})
   }
 
   /*
@@ -885,6 +914,10 @@ class F5Elements extends React.Component {
       for (const el of Object.values(elements)) {
         if (!el.name) {
           el.nameError = true
+          ++errors
+        }
+        if (!el.members || el.members.length < 1) {
+          el.membersError = true
           ++errors
         }
       }
@@ -1473,6 +1506,16 @@ class F5Elements extends React.Component {
             </Button>
           )
         }
+        else if (action === 'subElementRemove') {
+          return (
+            <Button
+              type='danger'
+              onClick={() => this.subElementRemove(obj, choices)}
+            >
+              -
+            </Button>
+          )
+        }
         else if (action === 'commit') {
           return (
             <Button
@@ -1573,7 +1616,7 @@ class F5Elements extends React.Component {
               { obj.existent ? 
                 createElement('checkbox', 'toDelete', '', obj, 'toDelete')
               :
-                createElement('button', 'elementRemove', '', obj, 'elementRemove')
+                createElement('button', 'subElementRemove', params[0], obj, 'subElementRemove')
               }
             </Space>
           ),
@@ -1585,7 +1628,7 @@ class F5Elements extends React.Component {
           <br/>
           <Button
             type="primary"
-            //onClick={() => this.conditionAdd(params[0])}
+            onClick={() => this.subElementAdd(params[0])}
           >
             +
           </Button>
@@ -2209,7 +2252,7 @@ class F5Elements extends React.Component {
               <Radio.Button
                 buttonStyle="solid"
                 style={{marginLeft: 10 }}
-                onClick={() => this.elementAdd(this.state.f5elements)}
+                onClick={() => this.elementAdd(this.state.f5elements, this.props.f5elements)}
               >
                 +
               </Radio.Button>

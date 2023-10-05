@@ -1,8 +1,6 @@
 class CommonFunctions {
-  constructor() {
-  }
 
-  elementAdd = elements => {
+  elementAdd = (elements, type) => {
     let id = 0
     let n = 0
     let e = {}
@@ -16,6 +14,9 @@ class CommonFunctions {
 
     n = id + 1
     e.id = n
+    if (type === 'snatpools') {
+      e.members = [{id:1}]
+    }
     //list.push(p)
     list = [e].concat(list)
     return list
