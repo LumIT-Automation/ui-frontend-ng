@@ -355,8 +355,6 @@ class F5Elements extends React.Component {
           el.existent = true
           el.isModified = {}
           el.id = id
-          //el.issuer = el.apiRawValues.issuer
-          //el.expiration = el.apiRawValues.expiration
           id++
           return el
         })
@@ -458,11 +456,20 @@ class F5Elements extends React.Component {
       let origEl = this.state.originf5elements.find(e => e.id === obj.id)
     }
     else {
-      let idList = e.members.map(o => o.id)
-      let n = Math.max(...idList)
-      n++
-      let o = {id: n}
-      e.members = [o].concat(e.members)
+      if (e.members.length < 1) {
+        e.members.push({id:1})
+      }
+      else {
+        let idList = e.members.map(o => {
+          return o.id 
+        })
+        console.log(idList)
+        let n = Math.max(...idList)
+        n++
+        let o = {id: n}
+        e.members = [o].concat(e.members)
+      }
+      
     }
     await this.setState({f5elements: elements})
   }
