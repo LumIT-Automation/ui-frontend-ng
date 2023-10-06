@@ -479,7 +479,7 @@ class F5Elements extends React.Component {
     if (e.existent) {
       e.isModified.members = true
     }
-    
+
     let member = e.members.find(m => m.id === el.id)
    
     let commonFunctions = new CommonFunctions()
@@ -930,6 +930,15 @@ class F5Elements extends React.Component {
           el.membersError = true
           ++errors
         }
+        /*else {
+          el.members.forEach(e => {
+            if (!validators.ipv4(e.address)) {
+              errors.addressError = true
+              this.setState({errors: errors})
+            }
+            
+          });
+        }*/
       }
       await this.setState({f5elements: elements})
       return errors
@@ -1641,16 +1650,10 @@ class F5Elements extends React.Component {
           <Table
             columns={columns}
             rowKey={record => record.id}
+            //style={{backgroundColor:'black'}}
             dataSource={params[0].members}
             pagination={{pageSize: 10}}
           />
-          <Button
-            type="primary"
-            style={{float: 'right'}}
-            //onClick={() => this.conditionCommit(params[0])}
-          >
-            Commit
-          </Button>
         </React.Fragment>
       )
     };
