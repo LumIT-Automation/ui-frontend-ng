@@ -258,7 +258,7 @@ class RequestIp extends React.Component {
     }
     delete request.networkError
 
-    if (info && info?.rangeInfo.length > 0) {
+    if (info && info.rangeInfo && info.rangeInfo.length > 0) {
       request.ranges = info.rangeInfo
     }
     else {
