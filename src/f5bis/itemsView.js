@@ -28,6 +28,7 @@ auth component
 foreach --> map
 1 funzione, 1 azione
 
+element --> item
 1 get
 1 set
 validation
@@ -37,7 +38,7 @@ createElement
 
 */ 
 
-class F5Elements extends React.Component {
+class ItemsView extends React.Component {
 
   constructor(props) {
     super(props);
@@ -50,11 +51,11 @@ class F5Elements extends React.Component {
       searchedColumn: '',
       disableCommit: false,
       routeDomains: [],
-      f5elements: [],
+      originitems: [],
+      items: [],
       monitorTypes: [],
       profileTypes: [],
-      originf5elements: [],
-      f5elements: [],
+      items: [],
       expandedKeys: [],
       nodeSessions: ['user-enabled', 'user-disabled'],
       nodeStates: ['unchecked', 'user-down'],
@@ -63,7 +64,7 @@ class F5Elements extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.f5elements) {
+    if (this.props.items) {
       this.main()
     }
   }
@@ -73,12 +74,12 @@ class F5Elements extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.f5elements)
+    console.log(this.state.items)
     console.log(this.state.searchText)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
-    if (this.props.f5elements !== prevProps.f5elements) {
+    if (this.props.items !== prevProps.items) {
       this.main()
     }
   }
@@ -189,11 +190,12 @@ class F5Elements extends React.Component {
   */
 
   main = async () => {
-    await this.setState({f5elements: [], originf5elements: [], loading: true})
+    await this.setState({items: [], originitems: [], loading: true})
     let id = 1
     
-    if (this.props.f5elements === 'nodes') {
+    if (this.props.items === 'nodes') {
       let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
+      console.log(routeDomains)
       if (routeDomains.status && routeDomains.status !== 200 ) {
         this.props.dispatch(err(routeDomains))
         await this.setState({loading: false})
@@ -203,47 +205,47 @@ class F5Elements extends React.Component {
         await this.setState({routeDomains: routeDomains.data.items})
       }
 
-      let f5elements = await this.dataGet('nodes', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+      let items = await this.dataGet('nodes', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = f5elements.data.items.map(el => {
+        let elements = items.data.items.map(el => {
           el.existent = true
           el.isModified = {}
           el.id = id
           id++
           return el
         })
-        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+        await this.setState({items: elements, originitems: elements, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'monitors') {
-      let f5elements = await this.dataGet('monitorTypes', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+    else if (this.props.items === 'monitors') {
+      let items = await this.dataGet('monitorTypes', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        await this.setState({monitorTypes: f5elements.data.items})
+        await this.setState({monitorTypes: items.data.items})
       }
     
-      f5elements = await this.dataGet('monitors', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+      items = await this.dataGet('monitors', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
         let list = []
   
-        for (let t in f5elements.data) {
+        for (let t in items.data) {
           let type = t
-          let values = Object.values(f5elements.data[t])
+          let values = Object.values(items.data[t])
   
           values.forEach(mt => {
             mt.forEach(m => {
@@ -259,11 +261,11 @@ class F5Elements extends React.Component {
             })
           })
         }
-        await this.setState({f5elements: list, originf5elements: list, loading: false})
+        await this.setState({items: list, originitems: list, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'snatpools') {
+    else if (this.props.items === 'snatpools') {
       
       let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
       if (routeDomains.status && routeDomains.status !== 200 ) {
@@ -275,14 +277,14 @@ class F5Elements extends React.Component {
         await this.setState({routeDomains: routeDomains.data.items})
       }
       
-      let f5elements = await this.dataGet('snatpools', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+      let items = await this.dataGet('snatpools', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = f5elements.data.items.map(el => {
+        let elements = items.data.items.map(el => {
           let mid = 1
           el.existent = true
           el.isModified = {}
@@ -299,38 +301,38 @@ class F5Elements extends React.Component {
           id++
           return el
         })
-        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+        await this.setState({items: elements, originitems: elements, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'irules') {
-      let f5elements = await this.dataGet('irules', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+    else if (this.props.items === 'irules') {
+      let items = await this.dataGet('irules', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = f5elements.data.items.map(el => {
+        let elements = items.data.items.map(el => {
           el.existent = true
           el.isModified = {}
           el.id = id
           id++
           return el
         })
-        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+        await this.setState({items: elements, originitems: elements, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'certificates') {
-      let f5elements = await this.dataGet('certificates', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+    else if (this.props.items === 'certificates') {
+      let items = await this.dataGet('certificates', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = f5elements.data.items.map(el => {
+        let elements = items.data.items.map(el => {
           el.existent = true
           el.isModified = {}
           el.id = id
@@ -339,52 +341,52 @@ class F5Elements extends React.Component {
           id++
           return el
         })
-        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+        await this.setState({items: elements, originitems: elements, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'keys') {
-      let f5elements = await this.dataGet('keys', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+    else if (this.props.items === 'keys') {
+      let items = await this.dataGet('keys', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = f5elements.data.items.map(el => {
+        let elements = items.data.items.map(el => {
           el.existent = true
           el.isModified = {}
           el.id = id
           id++
           return el
         })
-        await this.setState({f5elements: elements, originf5elements: elements, loading: false})
+        await this.setState({items: elements, originitems: elements, loading: false})
       }
     }
 
-    else if (this.props.f5elements === 'profiles') {
-      let f5elements = await this.dataGet('profileTypes', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+    else if (this.props.items === 'profiles') {
+      let items = await this.dataGet('profileTypes', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
-        await this.setState({profileTypes: f5elements.data.items})
+        await this.setState({profileTypes: items.data.items})
       }
     
-      f5elements = await this.dataGet('profiles', this.props.asset.id)
-      if (f5elements.status && f5elements.status !== 200 ) {
-        this.props.dispatch(err(f5elements))
+      items = await this.dataGet('profiles', this.props.asset.id)
+      if (items.status && items.status !== 200 ) {
+        this.props.dispatch(err(items))
         await this.setState({loading: false})
         return
       }
       else {
         let list = []
   
-        for (let t in f5elements.data) {
+        for (let t in items.data) {
           let type = t
-          let values = Object.values(f5elements.data[t])
+          let values = Object.values(items.data[t])
   
           values.forEach(o => {
             o.forEach(p => {
@@ -394,34 +396,34 @@ class F5Elements extends React.Component {
             })
           })
         }
-        await this.setState({f5elements: list, originf5elements: list, loading: false})
+        await this.setState({items: list, originitems: list, loading: false})
       }
     }
   }
 
   dataGet = async (entities, assetId) => {
-    let endpoint = `f5/${entities}/`
+    let endpoint = `${this.props.vendor}/${entities}/`
     let r
     if (assetId) {
-      endpoint = `f5/${assetId}/${this.props.partition}/${entities}/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/`
     }
     if (entities === 'routedomains') {
-      endpoint = `f5/${assetId}/${entities}/`
+      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
     if (entities === 'monitorTypes') {
-      endpoint = `f5/${assetId}/${this.props.partition}/monitors/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/monitors/`
     }
     if (entities === 'monitors') {
-      endpoint = `f5/${assetId}/${this.props.partition}/${entities}/ANY/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/ANY/`
     }
     if (entities === 'snatpools') {
-      endpoint = `f5/${assetId}/${this.props.partition}/snatpools/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/snatpools/`
     }
     if (entities === 'profileTypes') {
-      endpoint = `f5/${assetId}/${this.props.partition}/profiles/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/profiles/`
     }
     if (entities === 'profiles') {
-      endpoint = `f5/${assetId}/${this.props.partition}/${entities}/ANY/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/ANY/`
     }
     let rest = new Rest(
       "GET",
@@ -439,17 +441,17 @@ class F5Elements extends React.Component {
   elementAdd = async (elements, type) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.elementAdd(elements, type)
-    await this.setState({f5elements: list})
+    await this.setState({items: list})
   }
 
   elementRemove = async (el, elements) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.elementRemove(el, elements)
-    await this.setState({f5elements: list})
+    await this.setState({items: list})
   }
 
   subElementAdd = async (obj) => {
-    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let elements = JSON.parse(JSON.stringify(this.state.items))
     let e = elements.find(e => e.id === obj.id)
 
     if (e.existent) {
@@ -469,11 +471,11 @@ class F5Elements extends React.Component {
       e.members = [o].concat(e.members)
     }
     
-    await this.setState({f5elements: elements})
+    await this.setState({items: elements})
   }
 
   subElementRemove = async (el, father) => {
-    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let elements = JSON.parse(JSON.stringify(this.state.items))
     let e = elements.find(e => e.id === father.id)
 
     if (e.existent) {
@@ -486,7 +488,7 @@ class F5Elements extends React.Component {
     let list = await commonFunctions.elementRemove(member, father.members)
     e.members = list
 
-    await this.setState({f5elements: elements})
+    await this.setState({items: elements})
   }
 
   /*
@@ -506,14 +508,49 @@ class F5Elements extends React.Component {
     });
   }
 
-  set = async (key, value, el) => {
-    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+  set = async (key, value, el, father) => {
+    let elements = JSON.parse(JSON.stringify(this.state.items))
     //console.log(key)
     //console.log(value)
     //console.log(el)
 
-    if (el) {
-      let origEl = this.state.originf5elements.find(e => e.id === el.id)
+    if (father) {
+      let e = father.elements.find(e => e.id === el.id)
+      if (el) {
+        if (key === 'address'){
+          let start = 0
+          let end = 0
+          let ref = this.myRefs[`${el.id}_${key}`]
+    
+          if (ref && ref.input) {
+            start = ref.input.selectionStart
+            end = ref.input.selectionEnd
+          }
+  
+          if (value) {
+            e[key] = value
+            delete e[`${key}Error`]
+          }
+          else {
+            //blank value while typing.
+            e[key] = ''
+          }
+  
+          await this.setState({items: elements})
+          ref = this.myRefs[`${el.id}_${key}`]
+    
+          if (ref && ref.input) {
+            ref.input.selectionStart = start
+            ref.input.selectionEnd = end
+          }
+    
+          ref.focus()
+        }
+      }
+    }
+
+    else if (el) {
+      let origEl = this.state.originitems.find(e => e.id === el.id)
       let e = elements.find(e => e.id === el.id)
 
       if (key === 'name'){
@@ -535,7 +572,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.myRefs[`${el.id}_${key}`]
   
         if (ref && ref.input) {
@@ -565,7 +602,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.myRefs[`${el.id}_${key}`]
   
         if (ref && ref.input) {
@@ -607,7 +644,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.myRefs[`${el.id}_${key}`]
   
         if (ref && ref.input) {
@@ -649,7 +686,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.myRefs[`${el.id}_${key}`]
   
         if (ref && ref.input) {
@@ -670,7 +707,7 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'session') {
@@ -683,7 +720,7 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'state') {
@@ -696,7 +733,7 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'type') {
@@ -709,7 +746,7 @@ class F5Elements extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'apiAnonymous') {
@@ -743,7 +780,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.textAreaRefs[`${el.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
@@ -757,7 +794,7 @@ class F5Elements extends React.Component {
       if (key === 'sourceType') {
         e.sourceType = value
         delete e[`${key}Error`]
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'upload') {
@@ -798,7 +835,7 @@ class F5Elements extends React.Component {
           e.text = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
 
       if (key === 'text') {
@@ -832,7 +869,7 @@ class F5Elements extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
         ref = this.textAreaRefs[`${el.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
@@ -850,7 +887,7 @@ class F5Elements extends React.Component {
         else {
           delete e.toDelete
         }
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
       }
     }
     
@@ -861,11 +898,11 @@ class F5Elements extends React.Component {
   */
 
   validationCheck = async () => {
-    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let elements = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
 
-    if (this.props.f5elements === 'nodes') {
+    if (this.props.items === 'nodes') {
 
       for (const el of Object.values(elements)) {
 
@@ -887,11 +924,11 @@ class F5Elements extends React.Component {
         }
 
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'monitors') {
+    else if (this.props.items === 'monitors') {
 
       for (const el of Object.values(elements)) {
 
@@ -916,11 +953,11 @@ class F5Elements extends React.Component {
         }
 
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'snatpools') {
+    else if (this.props.items === 'snatpools') {
       for (const el of Object.values(elements)) {
         if (!el.name) {
           el.nameError = true
@@ -940,11 +977,11 @@ class F5Elements extends React.Component {
           });
         }*/
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'irules') {
+    else if (this.props.items === 'irules') {
 
       for (const el of Object.values(elements)) {
 
@@ -959,11 +996,11 @@ class F5Elements extends React.Component {
         }
 
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'certificates') {
+    else if (this.props.items === 'certificates') {
 
       for (const el of Object.values(elements)) {
 
@@ -985,11 +1022,11 @@ class F5Elements extends React.Component {
           }
         }
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'keys') {
+    else if (this.props.items === 'keys') {
 
       for (const el of Object.values(elements)) {
 
@@ -1011,11 +1048,11 @@ class F5Elements extends React.Component {
           }
         }
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
 
-    else if (this.props.f5elements === 'profiles') {
+    else if (this.props.items === 'profiles') {
 
       for (const el of Object.values(elements)) {
 
@@ -1029,7 +1066,7 @@ class F5Elements extends React.Component {
         }
 
       }
-      await this.setState({f5elements: elements})
+      await this.setState({items: elements})
       return errors
     }
   }
@@ -1050,7 +1087,7 @@ class F5Elements extends React.Component {
   */
  
   cudManager = async () => {
-    let elements = JSON.parse(JSON.stringify(this.state.f5elements))
+    let elements = JSON.parse(JSON.stringify(this.state.items))
     let toPost = []
     let toDelete = []
     let toPatch = []
@@ -1071,7 +1108,7 @@ class F5Elements extends React.Component {
       for (const el of toPost) {
         let body = {}
 
-        if (this.props.f5elements === 'nodes') {
+        if (this.props.items === 'nodes') {
           body.data = {
             "address": el.address,
             "name": el.name,
@@ -1084,7 +1121,7 @@ class F5Elements extends React.Component {
           }
         }
 
-        if (this.props.f5elements === 'monitors') {
+        if (this.props.items === 'monitors') {
           body.data = {
             "name": el.name,
             "type": el.type,
@@ -1093,28 +1130,28 @@ class F5Elements extends React.Component {
           }
         }
 
-        if (this.props.f5elements === 'irules') {
+        if (this.props.items === 'irules') {
           body.data = {
             "name": el.name,
             "apiAnonymous": el.apiAnonymous
           }
         }
         
-        if (this.props.f5elements === 'certificates') {
+        if (this.props.items === 'certificates') {
           body.certificate = {
             "name": el.name,
             "content_base64": btoa(el.text)
           }
         }
 
-        if (this.props.f5elements === 'keys') {
+        if (this.props.items === 'keys') {
           body.key = {
             "name": el.name,
             "content_base64": btoa(el.text)
           }
         }
 
-        if (this.props.f5elements === 'profiles') {
+        if (this.props.items === 'profiles') {
           body.data = {
             "name": el.name,
             "type": el.type
@@ -1122,17 +1159,17 @@ class F5Elements extends React.Component {
         }
 
         el.loading = true
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
 
         let e = await this.elPost(body)
         if (e.status && e.status !== 201 ) {
           this.props.dispatch(err(e))
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
         else {
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
       }
     }
@@ -1140,14 +1177,14 @@ class F5Elements extends React.Component {
     if (toDelete.length > 0) {
       for (const el of toDelete) {
         el.loading = true
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
 
-        if (this.props.f5elements === 'certificates') {
+        if (this.props.items === 'certificates') {
           let l = el.name.split('/')
           el.name  = l[2]
         }
 
-        if (this.props.f5elements === 'keys') {
+        if (this.props.items === 'keys') {
           let l = el.name.split('/')
           el.name  = l[2]
         }
@@ -1156,11 +1193,11 @@ class F5Elements extends React.Component {
         if (e.status && e.status !== 200 ) {
           this.props.dispatch(err(e))
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
         else {
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
 
       }
@@ -1170,7 +1207,7 @@ class F5Elements extends React.Component {
       for (const el of toPatch) {
         let body = {}
 
-        if (this.props.f5elements === 'monitors') {
+        if (this.props.items === 'monitors') {
           body.data = {
             "destination": "*:*",
             "interval": +el.interval,
@@ -1182,14 +1219,14 @@ class F5Elements extends React.Component {
           }
         }
 
-        if (this.props.f5elements === 'irules') {
+        if (this.props.items === 'irules') {
           body.data = {
             "name": el.name,
             "apiAnonymous": el.apiAnonymous
           }
         }
 
-        if (this.props.f5elements === 'certificates') {
+        if (this.props.items === 'certificates') {
           let l = el.name.split('/')
           el.name = l[2]
           body.certificate = {
@@ -1197,7 +1234,7 @@ class F5Elements extends React.Component {
           }
         }
 
-        if (this.props.f5elements === 'keys') {
+        if (this.props.items === 'keys') {
           let l = el.name.split('/')
           el.name = l[2]
           body.key = {
@@ -1206,17 +1243,17 @@ class F5Elements extends React.Component {
         }
 
         el.loading = true
-        await this.setState({f5elements: elements})
+        await this.setState({items: elements})
 
         let e = await this.elPatch(el.name, el.type ? el.type : null, body)
         if (e.status && e.status !== 200 ) {
           this.props.dispatch(err(e))
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
         else {
           el.loading = false
-          await this.setState({f5elements: elements})
+          await this.setState({items: elements})
         }
       }
     }
@@ -1237,23 +1274,23 @@ class F5Elements extends React.Component {
         r = error
       }
     )
-    if (this.props.f5elements === 'monitors') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'irules') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    else if (this.props.items === 'irules') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'certificates') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    else if (this.props.items === 'certificates') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'keys') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+    else if (this.props.items === 'keys') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'profiles') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/${body.data.type}/`, this.props.token, body )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
     else {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${this.props.f5elements}/`, this.props.token, body )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
     }
     
     return r
@@ -1271,26 +1308,26 @@ class F5Elements extends React.Component {
       }
     )
     //@todo: element as a prop
-    if (this.props.f5elements === 'monitors') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
     }
-    else if (this.props.f5elements === 'snatpools') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/snatpool/${name}/`, this.props.token )
+    else if (this.props.items === 'snatpools') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/snatpool/${name}/`, this.props.token )
     }
-    else if (this.props.f5elements === 'irules') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
+    else if (this.props.items === 'irules') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
     }
-    else if (this.props.f5elements === 'certificates') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token )
+    else if (this.props.items === 'certificates') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token )
     }
-    else if (this.props.f5elements === 'keys') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token )
+    else if (this.props.items === 'keys') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token )
     }
-    else if (this.props.f5elements === 'profiles') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
     }
     return r
   }
@@ -1307,23 +1344,23 @@ class F5Elements extends React.Component {
       }
     )
     //@todo: element as a prop
-    if (this.props.f5elements === 'monitors') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'irules') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token, body )
+    else if (this.props.items === 'irules') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'certificates') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token, body )
+    else if (this.props.items === 'certificates') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'keys') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token, body )
+    else if (this.props.items === 'keys') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token, body )
     }
-    else if (this.props.f5elements === 'profiles') {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
     }
     return r
   }
@@ -1339,7 +1376,7 @@ class F5Elements extends React.Component {
       return Math.random().toString()
     }
 
-    let createElement = (element, key, choices, obj, action) => {
+    let createElement = (element, key, choices, obj, action, father) => {
       if (element === 'input') {
         if (key === 'name') {
           return (
@@ -1357,6 +1394,9 @@ class F5Elements extends React.Component {
           )
         }
         else if (key === 'address') {
+          console.log('subaddress obj ', obj)
+          console.log('subaddress father ', father)
+          console.log('subaddress action', action)
           return (
             <Input
               value={obj[key]}
@@ -1367,7 +1407,7 @@ class F5Elements extends React.Component {
                   {width: 200}
                 }
               ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
+              onChange={event => this.set(key, event.target.value, obj, father)}
             />          
           )
         }
@@ -1519,7 +1559,7 @@ class F5Elements extends React.Component {
           return (
             <Button
               type='danger'
-              onClick={() => this.elementRemove(obj, this.state.f5elements)}
+              onClick={() => this.elementRemove(obj, this.state.items)}
             >
               -
             </Button>
@@ -1551,25 +1591,25 @@ class F5Elements extends React.Component {
     }
 
     let returnCol = () => {
-      if (this.props.f5elements === 'nodes') {
+      if (this.props.items === 'nodes') {
         return nodesColumns
       }
-      if (this.props.f5elements === 'monitors') {
+      if (this.props.items === 'monitors') {
         return monitorsColumns
       }
-      if (this.props.f5elements === 'snatpools') {
+      if (this.props.items === 'snatpools') {
         return snatpoolsColumns
       }
-      if (this.props.f5elements === 'irules') {
+      if (this.props.items === 'irules') {
         return irulesColumns
       }
-      if (this.props.f5elements === 'certificates') {
+      if (this.props.items === 'certificates') {
         return certificatesColumns
       }
-      if (this.props.f5elements === 'keys') {
+      if (this.props.items === 'keys') {
         return keysColumns
       }
-      if (this.props.f5elements === 'profiles') {
+      if (this.props.items === 'profiles') {
         return profilesColumns
       }
     }
@@ -1591,6 +1631,8 @@ class F5Elements extends React.Component {
     }
 
     const expandedRowRender = (...params) => {
+      //console.log(params[0])
+      //console.log(typeof(params[0]))
       const columns = [
         {
           title: 'Id',
@@ -1609,7 +1651,7 @@ class F5Elements extends React.Component {
             obj.existent ?
               val
             :
-              createElement('input', 'address', '', obj, '')
+              createElement('input', 'address', '', obj, '', params[0])
           )
         },
         {
@@ -2259,7 +2301,7 @@ class F5Elements extends React.Component {
               <Radio.Button
                 buttonStyle="solid"
                 style={{marginLeft: 10 }}
-                onClick={() => this.elementAdd(this.state.f5elements, this.props.f5elements)}
+                onClick={() => this.elementAdd(this.state.items, this.props.items)}
               >
                 +
               </Radio.Button>
@@ -2267,10 +2309,10 @@ class F5Elements extends React.Component {
 
             <br/>
             <br/>
-            { this.props.f5elements === 'snatpools' ?
+            { this.props.items === 'snatpools' ?
               <Table
                 columns={returnCol()}
-                dataSource={this.state.f5elements}
+                dataSource={this.state.items}
                 bordered
                 scroll={{x: 'auto'}}
                 pagination={{pageSize: 10}}
@@ -2284,7 +2326,7 @@ class F5Elements extends React.Component {
               <Table
                 columns={returnCol()}
                 style={{width: '100%', padding: 5}}
-                dataSource={this.state.f5elements}
+                dataSource={this.state.items}
                 bordered
                 rowKey={randomKey}
                 scroll={{x: 'auto'}}
@@ -2298,7 +2340,7 @@ class F5Elements extends React.Component {
           </React.Fragment>
         }
 
-        { this.props.err ? <Error object={this.props.f5elements} error={[this.props.err]} visible={true} type={'err'} /> : null }
+        { this.props.err ? <Error object={this.props.items} error={[this.props.err]} visible={true} type={'err'} /> : null }
   
       </React.Fragment>
     )
@@ -2314,6 +2356,6 @@ partition: state.f5bis.partition,
 
 err: state.f5bis.err,
 
-}))(F5Elements);
+}))(ItemsView);
   
   

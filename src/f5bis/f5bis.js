@@ -8,7 +8,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import Rest from '../_helpers/Rest'
 
 import AssetSelector from '../concerto/assetSelector'
-import F5Elements from './elements'
+import ItemsView from './itemsView'
 
 import {
   assets,
@@ -17,7 +17,7 @@ import {
 
 
 
-class F5 extends React.Component {
+class Manager extends React.Component {
 
   constructor(props) {
     super(props);
@@ -69,8 +69,8 @@ class F5 extends React.Component {
             <React.Fragment>
 
               <Radio.Group
-                onChange={e => this.setState({f5elements: e.target.value})}
-                value={this.state.f5elements}
+                onChange={e => this.setState({items: e.target.value})}
+                value={this.state.items}
                 style={{marginLeft: 16}}
               >
                 <Radio.Button value={'nodes'}>nodes</Radio.Button>
@@ -85,8 +85,8 @@ class F5 extends React.Component {
               <Divider/>
         
               {
-                this.state.f5elements ?
-                  <F5Elements f5elements={this.state.f5elements}/>
+                this.state.items ?
+                  <ItemsView vendor='f5' items={this.state.items}/>
                 :
                   null
               }
@@ -109,4 +109,4 @@ export default connect((state) => ({
   partition: state.f5bis.partition,
 
   err: state.f5bis.err,
-}))(F5);
+}))(Manager);
