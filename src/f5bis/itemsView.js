@@ -13,7 +13,6 @@ import CommonFunctions from '../_helpers/commonFunctions';
 
 import {
   err,
-
 } from './store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -194,7 +193,7 @@ class ItemsView extends React.Component {
     let id = 1
     
     if (this.props.items === 'nodes') {
-      let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
+      let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
       console.log(routeDomains)
       if (routeDomains.status && routeDomains.status !== 200 ) {
         this.props.dispatch(err(routeDomains))
@@ -205,7 +204,7 @@ class ItemsView extends React.Component {
         await this.setState({routeDomains: routeDomains.data.items})
       }
 
-      let items = await this.dataGet('nodes', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -224,7 +223,8 @@ class ItemsView extends React.Component {
     }
 
     else if (this.props.items === 'monitors') {
-      let items = await this.dataGet('monitorTypes', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id, 'monitorTypes')
+      console.log(items)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -234,7 +234,8 @@ class ItemsView extends React.Component {
         await this.setState({monitorTypes: items.data.items})
       }
     
-      items = await this.dataGet('monitors', this.props.asset.id)
+      items = await this.dataGet(this.props.asset.id)
+      console.log(items)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -267,7 +268,7 @@ class ItemsView extends React.Component {
 
     else if (this.props.items === 'snatpools') {
       
-      let routeDomains = await this.dataGet('routedomains', this.props.asset.id)
+      let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
       if (routeDomains.status && routeDomains.status !== 200 ) {
         this.props.dispatch(err(routeDomains))
         await this.setState({loading: false})
@@ -277,7 +278,7 @@ class ItemsView extends React.Component {
         await this.setState({routeDomains: routeDomains.data.items})
       }
       
-      let items = await this.dataGet('snatpools', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -306,7 +307,7 @@ class ItemsView extends React.Component {
     }
 
     else if (this.props.items === 'irules') {
-      let items = await this.dataGet('irules', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -325,7 +326,7 @@ class ItemsView extends React.Component {
     }
 
     else if (this.props.items === 'certificates') {
-      let items = await this.dataGet('certificates', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -346,7 +347,7 @@ class ItemsView extends React.Component {
     }
 
     else if (this.props.items === 'keys') {
-      let items = await this.dataGet('keys', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -365,7 +366,7 @@ class ItemsView extends React.Component {
     }
 
     else if (this.props.items === 'profiles') {
-      let items = await this.dataGet('profileTypes', this.props.asset.id)
+      let items = await this.dataGet(this.props.asset.id, 'profileTypes')
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -375,7 +376,7 @@ class ItemsView extends React.Component {
         await this.setState({profileTypes: items.data.items})
       }
     
-      items = await this.dataGet('profiles', this.props.asset.id)
+      items = await this.dataGet(this.props.asset.id)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -401,29 +402,29 @@ class ItemsView extends React.Component {
     }
   }
 
-  dataGet = async (entities, assetId) => {
-    let endpoint = `${this.props.vendor}/${entities}/`
+  dataGet = async (assetId, entities) => {
+    console.log(assetId)
+    console.log(entities)
+    let endpoint
     let r
-    if (assetId) {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/`
-    }
+
     if (entities === 'routedomains') {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
-    if (entities === 'monitorTypes') {
+    else if (entities === 'monitorTypes') {
       endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/monitors/`
     }
-    if (entities === 'monitors') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/ANY/`
-    }
-    if (entities === 'snatpools') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/snatpools/`
-    }
-    if (entities === 'profileTypes') {
+    else if (entities === 'profileTypes') {
       endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/profiles/`
     }
-    if (entities === 'profiles') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${entities}/ANY/`
+    else if (this.props.items === 'monitors') {
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
+    }
+    else if (this.props.items === 'profiles') {
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
+    }
+    else {
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/`
     }
     let rest = new Rest(
       "GET",
@@ -1277,15 +1278,6 @@ class ItemsView extends React.Component {
     if (this.props.items === 'monitors') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
-    else if (this.props.items === 'irules') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
-    }
-    else if (this.props.items === 'certificates') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
-    }
-    else if (this.props.items === 'keys') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
-    }
     else if (this.props.items === 'profiles') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
@@ -1311,23 +1303,11 @@ class ItemsView extends React.Component {
     if (this.props.items === 'monitors') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
     }
-    else if (this.props.items === 'snatpools') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/snatpool/${name}/`, this.props.token )
-    }
-    else if (this.props.items === 'irules') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token )
-    }
-    else if (this.props.items === 'certificates') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token )
-    }
-    else if (this.props.items === 'keys') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token )
-    }
     else if (this.props.items === 'profiles') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items.slice(0, -1)}/${name}/`, this.props.token )
     }
     return r
   }
@@ -1347,20 +1327,11 @@ class ItemsView extends React.Component {
     if (this.props.items === 'monitors') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
-    else if (this.props.items === 'irules') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/irule/${name}/`, this.props.token, body )
-    }
-    else if (this.props.items === 'certificates') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/certificate/${name}/`, this.props.token, body )
-    }
-    else if (this.props.items === 'keys') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/key/${name}/`, this.props.token, body )
-    }
     else if (this.props.items === 'profiles') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/node/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items.slice(0, -1)}/${name}/`, this.props.token )
     }
     return r
   }
