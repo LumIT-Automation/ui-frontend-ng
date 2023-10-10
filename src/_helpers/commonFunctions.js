@@ -1,10 +1,10 @@
 class CommonFunctions {
 
-  elementAdd = (elements, type) => {
+  itemAdd = (items, type) => {
     let id = 0
     let n = 0
     let e = {}
-    let list = JSON.parse(JSON.stringify(elements))
+    let list = JSON.parse(JSON.stringify(items))
 
     list.forEach(e => {
       if (e.id > id) {
@@ -22,14 +22,10 @@ class CommonFunctions {
     return list
   }
 
-  elementRemove = async (el, elements) => {
-    console.log('el', el)
-    console.log('elements', elements)
-    let list = JSON.parse(JSON.stringify(elements))
-    let newList = list.filter(n => {
-      return el.id !== n.id
-    })
-    return newList
+  itemRemove = async (el, items) => {
+    let list = JSON.parse(JSON.stringify(items))
+    list = list.filter(n => el.id !== n.id)
+    return list
   }
 
 

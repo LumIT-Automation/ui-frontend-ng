@@ -185,7 +185,7 @@ class ItemsView extends React.Component {
   */
 
   main = async () => {
-    await this.setState({items: [], originitems: [], loading: true})
+    await this.setState({items: [], originitems: [], expandedKeys: [], loading: true})
     let id = 1
     
     if (this.props.items === 'nodes') {
@@ -430,15 +430,15 @@ class ItemsView extends React.Component {
     return r
   }
 
-  elementAdd = async (elements, type) => {
+  itemAdd = async (elements, type) => {
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.elementAdd(elements, type)
+    let list = await commonFunctions.itemAdd(elements, type)
     await this.setState({items: list})
   }
 
-  elementRemove = async (el, elements) => {
+  itemRemove = async (el, elements) => {
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.elementRemove(el, elements)
+    let list = await commonFunctions.itemRemove(el, elements)
     await this.setState({items: list})
   }
 
@@ -477,7 +477,7 @@ class ItemsView extends React.Component {
     let member = e.members.find(m => m.id === el.id)
    
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.elementRemove(member, father.members)
+    let list = await commonFunctions.itemRemove(member, father.members)
     e.members = list
 
     await this.setState({items: elements})
@@ -1543,11 +1543,11 @@ class ItemsView extends React.Component {
       }
 
       else if (element === 'button'){
-        if (action === 'elementRemove') {
+        if (action === 'itemRemove') {
           return (
             <Button
               type='danger'
-              onClick={() => this.elementRemove(obj, this.state.items)}
+              onClick={() => this.itemRemove(obj, this.state.items)}
             >
               -
             </Button>
@@ -1787,7 +1787,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -1869,7 +1869,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -1918,7 +1918,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -1977,7 +1977,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -2098,7 +2098,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -2196,7 +2196,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -2258,7 +2258,7 @@ class ItemsView extends React.Component {
             { obj.existent ? 
               createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'elementRemove', '', obj, 'elementRemove')
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
           </Space>
         ),
@@ -2287,7 +2287,7 @@ class ItemsView extends React.Component {
               <Radio.Button
                 buttonStyle="solid"
                 style={{marginLeft: 10 }}
-                onClick={() => this.elementAdd(this.state.items, this.props.items)}
+                onClick={() => this.itemAdd(this.state.items, this.props.items)}
               >
                 +
               </Radio.Button>
