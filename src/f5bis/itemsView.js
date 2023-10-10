@@ -73,8 +73,6 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.items)
-    console.log(this.state.searchText)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -165,8 +163,6 @@ class ItemsView extends React.Component {
   };
 
   handleReset = (clearFilters, confirm) => {
-    console.log(clearFilters())
-    console.log(confirm())
     clearFilters();
     confirm();
     this.setState({ searchText: '' });
@@ -194,7 +190,6 @@ class ItemsView extends React.Component {
     
     if (this.props.items === 'nodes') {
       let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
-      console.log(routeDomains)
       if (routeDomains.status && routeDomains.status !== 200 ) {
         this.props.dispatch(err(routeDomains))
         await this.setState({loading: false})
@@ -224,7 +219,6 @@ class ItemsView extends React.Component {
 
     else if (this.props.items === 'monitors') {
       let items = await this.dataGet(this.props.asset.id, 'monitorTypes')
-      console.log(items)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -235,7 +229,6 @@ class ItemsView extends React.Component {
       }
     
       items = await this.dataGet(this.props.asset.id)
-      console.log(items)
       if (items.status && items.status !== 200 ) {
         this.props.dispatch(err(items))
         await this.setState({loading: false})
@@ -403,8 +396,6 @@ class ItemsView extends React.Component {
   }
 
   dataGet = async (assetId, entities) => {
-    console.log(assetId)
-    console.log(entities)
     let endpoint
     let r
 
@@ -511,12 +502,14 @@ class ItemsView extends React.Component {
 
   set = async (key, value, el, father) => {
     let elements = JSON.parse(JSON.stringify(this.state.items))
-    //console.log(key)
-    //console.log(value)
-    //console.log(el)
+    console.log(key)
+    console.log(value)
+    console.log(el)
+    console.log(father)
 
     if (father) {
-      let e = father.elements.find(e => e.id === el.id)
+      let e = elements.find(e => e.id === father.id)
+      let m = e.members.find(m => m.id === el.id)
       if (el) {
         if (key === 'address'){
           let start = 0
@@ -529,12 +522,12 @@ class ItemsView extends React.Component {
           }
   
           if (value) {
-            e[key] = value
-            delete e[`${key}Error`]
+            m[key] = value
+            delete m[`${key}Error`]
           }
           else {
             //blank value while typing.
-            e[key] = ''
+            m[key] = ''
           }
   
           await this.setState({items: elements})
@@ -546,6 +539,18 @@ class ItemsView extends React.Component {
           }
     
           ref.focus()
+        }
+        if (key === 'routeDomain') {
+          value = value.toString()
+          if (value) {
+            m[key] = value
+            delete m[`${key}Error`]
+          }
+          else {
+            //blank value while typing.
+            m[key] = ''
+          }
+          await this.setState({items: elements})
         }
       }
     }
@@ -968,15 +973,16 @@ class ItemsView extends React.Component {
           el.membersError = true
           ++errors
         }
-        /*else {
+        else {
           el.members.forEach(e => {
-            if (!validators.ipv4(e.address)) {
-              errors.addressError = true
+            if (!e.address) {
+              e.addressError = true
+              ++errors
               this.setState({errors: errors})
             }
             
           });
-        }*/
+        }
       }
       await this.setState({items: elements})
       return errors
@@ -1105,6 +1111,35 @@ class ItemsView extends React.Component {
       }
     }
 
+    if (toDelete.length > 0) {
+      for (const el of toDelete) {
+        el.loading = true
+        await this.setState({items: elements})
+
+        if (this.props.items === 'certificates') {
+          let l = el.name.split('/')
+          el.name  = l[2]
+        }
+
+        if (this.props.items === 'keys') {
+          let l = el.name.split('/')
+          el.name  = l[2]
+        }
+
+        let e = await this.elDelete(el.name, el.type ? el.type : null )
+        if (e.status && e.status !== 200 ) {
+          this.props.dispatch(err(e))
+          el.loading = false
+          await this.setState({items: elements})
+        }
+        else {
+          el.loading = false
+          await this.setState({items: elements})
+        }
+
+      }
+    }
+
     if (toPost.length > 0) {
       for (const el of toPost) {
         let body = {}
@@ -1128,6 +1163,20 @@ class ItemsView extends React.Component {
             "type": el.type,
             "interval": +el.interval,
             "timeout": +el.timeout,
+          }
+        }
+
+        if (this.props.items === 'snatpools') {
+          let members = el.members.map(m => {
+            let str = `/${this.props.partition}/${m.address}`
+            if (m.routeDomain) {
+              str = `${str}%${m.routeDomain}`
+            }
+            return str
+          })
+          body.data = {
+            "name": el.name,
+            "members": members
           }
         }
 
@@ -1172,35 +1221,6 @@ class ItemsView extends React.Component {
           el.loading = false
           await this.setState({items: elements})
         }
-      }
-    }
-
-    if (toDelete.length > 0) {
-      for (const el of toDelete) {
-        el.loading = true
-        await this.setState({items: elements})
-
-        if (this.props.items === 'certificates') {
-          let l = el.name.split('/')
-          el.name  = l[2]
-        }
-
-        if (this.props.items === 'keys') {
-          let l = el.name.split('/')
-          el.name  = l[2]
-        }
-
-        let e = await this.elDelete(el.name, el.type ? el.type : null )
-        if (e.status && e.status !== 200 ) {
-          this.props.dispatch(err(e))
-          el.loading = false
-          await this.setState({items: elements})
-        }
-        else {
-          el.loading = false
-          await this.setState({items: elements})
-        }
-
       }
     }
 
@@ -1365,9 +1385,6 @@ class ItemsView extends React.Component {
           )
         }
         else if (key === 'address') {
-          console.log('subaddress obj ', obj)
-          console.log('subaddress father ', father)
-          console.log('subaddress action', action)
           return (
             <Input
               value={obj[key]}
@@ -1468,7 +1485,7 @@ class ItemsView extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onSelect={event => this.set('routeDomain', event, obj)}
+              onSelect={event => this.set('routeDomain', event, obj, father)}
             >
               <React.Fragment>
                 {choices.map((rd, i) => {
@@ -1602,8 +1619,6 @@ class ItemsView extends React.Component {
     }
 
     const expandedRowRender = (...params) => {
-      //console.log(params[0])
-      //console.log(typeof(params[0]))
       const columns = [
         {
           title: 'Id',
@@ -1635,7 +1650,7 @@ class ItemsView extends React.Component {
             obj.existent ?
               rd(obj.address)
             :
-              createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
+              createElement('select', 'routeDomain', this.state.routeDomains, obj, '', params[0])
           )
         },
         {
