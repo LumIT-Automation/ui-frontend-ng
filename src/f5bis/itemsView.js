@@ -73,6 +73,8 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.routeDomains)
+    console.log(this.state.items)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -85,7 +87,7 @@ class ItemsView extends React.Component {
   }
 
   /*
-    COLUMNS METHODS
+    Antd Table methods for search, filter and order data
   */
 
   getColumnSearchProps = dataIndex => ({
@@ -181,65 +183,73 @@ class ItemsView extends React.Component {
   }
 
   /*
-    MAIN
+    Fetching Data, Rendering in a table, Add/Remove items
   */
 
   main = async () => {
     await this.setState({items: [], originitems: [], expandedKeys: [], loading: true})
     let id = 1
+
+    let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
+    if (routeDomains.status && routeDomains.status !== 200 ) {
+      this.props.dispatch(err(routeDomains))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      await this.setState({routeDomains: routeDomains.data.items})
+    }
     
     if (this.props.items === 'nodes') {
-      let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
-      if (routeDomains.status && routeDomains.status !== 200 ) {
-        this.props.dispatch(err(routeDomains))
-        await this.setState({loading: false})
-        return
-      }
-      else {
-        await this.setState({routeDomains: routeDomains.data.items})
-      }
 
-      let items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = items.data.items.map(el => {
-          el.existent = true
-          el.isModified = {}
-          el.id = id
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
+          if (item.address.includes('%')) {
+            let list = item.address.split('%')
+            item.routeDomain = list[1]
+            item.address = list[0]
+            let rd = this.state.routeDomains.find(r => r.id == item.routeDomain)
+            item.routeDomainName = rd.name
+          }
           id++
-          return el
+          return item
         })
-        await this.setState({items: elements, originitems: elements, loading: false})
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
     else if (this.props.items === 'monitors') {
-      let items = await this.dataGet(this.props.asset.id, 'monitorTypes')
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        await this.setState({monitorTypes: items.data.items})
+        await this.setState({monitorTypes: fetched.data.items})
       }
     
-      items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
         let list = []
   
-        for (let t in items.data) {
+        for (let t in fetched.data) {
           let type = t
-          let values = Object.values(items.data[t])
+          let values = Object.values(fetched.data[t])
   
           values.forEach(mt => {
             mt.forEach(m => {
@@ -261,126 +271,126 @@ class ItemsView extends React.Component {
 
     else if (this.props.items === 'snatpools') {
       
-      let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
-      if (routeDomains.status && routeDomains.status !== 200 ) {
-        this.props.dispatch(err(routeDomains))
+      let fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        await this.setState({routeDomains: routeDomains.data.items})
-      }
-      
-      let items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
-        await this.setState({loading: false})
-        return
-      }
-      else {
-        let elements = items.data.items.map(el => {
+        let items = fetched.data.items.map(item => {
           let mid = 1
-          el.existent = true
-          el.isModified = {}
-          el.id = id
+          item.existent = true
+          item.isModified = {}
+          item.id = id
 
-          el.members = el.members.map(m => {
+          item.members = item.members.map(m => {
             let l = m.split('/')
             let o = {}
+            o.existent = true
             o.address  = l[2]
+            if (o.address.includes('%')) {
+              let list = o.address.split('%')
+              o.routeDomain = list[1]
+              o.address = list[0]
+              let rd = this.state.routeDomains.find(r => r.id == o.routeDomain)
+              o.routeDomainName = rd.name
+            }
             o.id = mid
             mid++
             return o
           })
+
+          
           id++
-          return el
+          return item
         })
-        await this.setState({items: elements, originitems: elements, loading: false})
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
     else if (this.props.items === 'irules') {
-      let items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = items.data.items.map(el => {
-          el.existent = true
-          el.isModified = {}
-          el.id = id
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
           id++
-          return el
+          return item
         })
-        await this.setState({items: elements, originitems: elements, loading: false})
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
     else if (this.props.items === 'certificates') {
-      let items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = items.data.items.map(el => {
-          el.existent = true
-          el.isModified = {}
-          el.id = id
-          el.issuer = el.apiRawValues.issuer
-          el.expiration = el.apiRawValues.expiration
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
+          item.issuer = item.apiRawValues.issuer
+          item.expiration = item.apiRawValues.expiration
           id++
-          return el
+          return item
         })
-        await this.setState({items: elements, originitems: elements, loading: false})
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
     else if (this.props.items === 'keys') {
-      let items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        let elements = items.data.items.map(el => {
-          el.existent = true
-          el.isModified = {}
-          el.id = id
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
           id++
-          return el
+          return item
         })
-        await this.setState({items: elements, originitems: elements, loading: false})
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
     else if (this.props.items === 'profiles') {
-      let items = await this.dataGet(this.props.asset.id, 'profileTypes')
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      let fetched = await this.dataGet(this.props.asset.id, 'profileTypes')
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
-        await this.setState({profileTypes: items.data.items})
+        await this.setState({profileTypes: fetched.data.items})
       }
     
-      items = await this.dataGet(this.props.asset.id)
-      if (items.status && items.status !== 200 ) {
-        this.props.dispatch(err(items))
+      fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
         await this.setState({loading: false})
         return
       }
       else {
         let list = []
   
-        for (let t in items.data) {
+        for (let t in fetched.data) {
           let type = t
-          let values = Object.values(items.data[t])
+          let values = Object.values(fetched.data[t])
   
           values.forEach(o => {
             o.forEach(p => {
@@ -430,61 +440,66 @@ class ItemsView extends React.Component {
     return r
   }
 
-  itemAdd = async (elements, type) => {
+  itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemAdd(elements, type)
+    let list = await commonFunctions.itemAdd(items, type)
     await this.setState({items: list})
   }
 
-  itemRemove = async (el, elements) => {
+  itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemRemove(el, elements)
+    let list = await commonFunctions.itemRemove(item, items)
     await this.setState({items: list})
   }
 
-  subElementAdd = async (obj) => {
-    let elements = JSON.parse(JSON.stringify(this.state.items))
-    let e = elements.find(e => e.id === obj.id)
+  subItemAdd = async (obj) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let item = items.find(item => item.id === obj.id)
 
-    if (e.existent) {
-      e.isModified.members = true
-    }
-
-    if (e.members.length < 1) {
-      e.members.push({id:1})
+    if (item.members.length < 1) {
+      item.members.push({id:1})
     }
     else {
-      let idList = e.members.map(o => {
-        return o.id 
+      let idList = item.members.map(member => {
+        return member.id 
       })
       let n = Math.max(...idList)
       n++
-      let o = {id: n}
-      e.members = [o].concat(e.members)
+      let member = {id: n}
+      item.members = [member].concat(item.members)
     }
-    
-    await this.setState({items: elements})
+
+    if (item.existent) {
+      item.isModified.members = true
+    }
+
+    await this.setState({items: items})
   }
 
-  subElementRemove = async (el, father) => {
-    let elements = JSON.parse(JSON.stringify(this.state.items))
-    let e = elements.find(e => e.id === father.id)
-
-    if (e.existent) {
-      e.isModified.members = true
-    }
-
-    let member = e.members.find(m => m.id === el.id)
-   
+  subItemRemove = async (subItem, father) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let item = items.find(item => item.id === father.id)
+    let member = item.members.find(m => m.id === subItem.id)
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(member, father.members)
-    e.members = list
+    item.members = list
 
-    await this.setState({items: elements})
+    if (item.existent) {
+      let origItems = JSON.parse(JSON.stringify(this.state.originitems))
+      let origItem = origItems.find(item => item.id === father.id)
+      if (JSON.stringify(item.members) === JSON.stringify(origItem.members)) {
+        delete item.isModified.members
+      }
+      else {
+        item.isModified.members = true
+      }
+    }
+    
+    await this.setState({items: items})
   }
 
   /*
-    SET
+    Setting item's values
   */
 
   readFile = (file) => {
@@ -500,69 +515,91 @@ class ItemsView extends React.Component {
     });
   }
 
-  set = async (key, value, el, father) => {
-    let elements = JSON.parse(JSON.stringify(this.state.items))
-    console.log(key)
-    console.log(value)
-    console.log(el)
-    console.log(father)
+  set = async (key, value, record, father) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
 
     if (father) {
-      let e = elements.find(e => e.id === father.id)
-      let m = e.members.find(m => m.id === el.id)
-      if (el) {
-        if (key === 'address'){
-          let start = 0
-          let end = 0
-          let ref = this.myRefs[`${el.id}_${key}`]
-    
-          if (ref && ref.input) {
-            start = ref.input.selectionStart
-            end = ref.input.selectionEnd
-          }
+      let fath = items.find(item => item.id === father.id)
+      let origFather = this.state.originitems.find(item => item.id === father.id)
+      let m = fath.members.find(m => m.id === record.id)
+      if (key === 'address'){
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
   
-          if (value) {
-            m[key] = value
-            delete m[`${key}Error`]
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          m[key] = value
+          delete m[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          m[key] = ''
+        }
+
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+  
+        ref.focus()
+      }
+      if (key === 'routeDomain') {
+        console.log('father route domain')
+        //value could be 0
+        value = value.toString()
+        let rd = this.state.routeDomains.find(r => r.id == value)
+
+        if (fath.existent) {
+          let originM = origFather.members.find(m => m.id === record.id)
+          if (m.existent) {
+            if (originM[key] !== value) {
+              console.log('valore diverso')
+              fath.isModified[m.id] = true
+              //m.isModified = {}
+              //m.isModified[key] = true
+              m[key] = value
+              m.routeDomainName = rd.name
+            }
+            else {
+              //delete m.isModified
+              delete fath.isModified[m.id]
+              m[key] = value
+              m.routeDomainName = rd.name
+            }
           }
           else {
-            //blank value while typing.
-            m[key] = ''
-          }
-  
-          await this.setState({items: elements})
-          ref = this.myRefs[`${el.id}_${key}`]
-    
-          if (ref && ref.input) {
-            ref.input.selectionStart = start
-            ref.input.selectionEnd = end
-          }
-    
-          ref.focus()
-        }
-        if (key === 'routeDomain') {
-          value = value.toString()
-          if (value) {
+            fath.isModified[m.id] = true
             m[key] = value
-            delete m[`${key}Error`]
+            m.routeDomainName = rd.name
           }
-          else {
-            //blank value while typing.
-            m[key] = ''
-          }
-          await this.setState({items: elements})
+          
         }
+        else {
+          m[key] = value
+          m.routeDomainName = rd.name
+        }
+        delete m[`${key}Error`]
+
+        await this.setState({items: items})
       }
     }
 
-    else if (el) {
-      let origEl = this.state.originitems.find(e => e.id === el.id)
-      let e = elements.find(e => e.id === el.id)
+    else if (record) {
+      let origEl = this.state.originitems.find(item => item.id === record.id)
+      let e = items.find(item => item.id === record.id)
 
       if (key === 'name'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${el.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -578,8 +615,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.myRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -592,7 +629,7 @@ class ItemsView extends React.Component {
       if (key === 'address'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${el.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -608,8 +645,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.myRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -622,7 +659,7 @@ class ItemsView extends React.Component {
       if (key === 'interval'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${el.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -650,8 +687,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.myRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -664,7 +701,7 @@ class ItemsView extends React.Component {
       if (key === 'timeout'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${el.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -692,8 +729,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.myRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -704,16 +741,21 @@ class ItemsView extends React.Component {
       }
 
       if (key === 'routeDomain') {
-        value = value.toString()
         if (value) {
+          value = value.toString()
+          let rd = this.state.routeDomains.find(r => r.id == value)
+
           e[key] = value
+          e.routeDomainName = rd.name
+
           delete e[`${key}Error`]
         }
         else {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: elements})
+        console.log(e)
+        await this.setState({items: items})
       }
 
       if (key === 'session') {
@@ -726,7 +768,7 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
 
       if (key === 'state') {
@@ -739,7 +781,7 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
 
       if (key === 'type') {
@@ -752,13 +794,13 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
 
       if (key === 'apiAnonymous') {
         let start = 0
         let end = 0
-        let ref = this.textAreaRefs[`${el.id}_${key}`]
+        let ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -786,8 +828,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.textAreaRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -800,7 +842,7 @@ class ItemsView extends React.Component {
       if (key === 'sourceType') {
         e.sourceType = value
         delete e[`${key}Error`]
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
 
       if (key === 'upload') {
@@ -841,13 +883,13 @@ class ItemsView extends React.Component {
           e.text = ''
         }
 
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
 
       if (key === 'text') {
         let start = 0
         let end = 0
-        let ref = this.textAreaRefs[`${el.id}_${key}`]
+        let ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -875,8 +917,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: elements})
-        ref = this.textAreaRefs[`${el.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -893,88 +935,88 @@ class ItemsView extends React.Component {
         else {
           delete e.toDelete
         }
-        await this.setState({items: elements})
+        await this.setState({items: items})
       }
     }
     
   }
 
   /*
-    VALIDATION
+    Validate data before send them to backend
   */
 
   validationCheck = async () => {
-    let elements = JSON.parse(JSON.stringify(this.state.items))
+    let items = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
 
     if (this.props.items === 'nodes') {
 
-      for (const el of Object.values(elements)) {
-
-        if (!el.name) {
-          el.nameError = true
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
           ++errors
         }
-        if (!el.address) {
-          el.addressError = true
+        if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
+          console.log(item)
+          item.addressError = true
           ++errors
         }
-        if (!el.session) {
-          el.sessionError = true
+        if (!item.session) {
+          item.sessionError = true
           ++errors
         }
-        if (!el.state) {
-          el.stateError = true
+        if (!item.state) {
+          item.stateError = true
           ++errors
         }
 
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'monitors') {
 
-      for (const el of Object.values(elements)) {
+      for (const item of Object.values(items)) {
 
-        if (!el.name) {
-          el.nameError = true
+        if (!item.name) {
+          item.nameError = true
           ++errors
         }
-        if (!el.type) {
-          el.typeError = true
+        if (!item.type) {
+          item.typeError = true
           ++errors
         }
-        if ((el.type === 'inband')) {
+        if ((item.type === 'inband')) {
           continue
         }
-        if (!el.interval) {
-          el.intervalError = true
+        if (!item.interval) {
+          item.intervalError = true
           ++errors
         }
-        if (!el.timeout) {
-          el.timeoutError = true
+        if (!item.timeout) {
+          item.timeoutError = true
           ++errors
         }
 
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'snatpools') {
-      for (const el of Object.values(elements)) {
-        if (!el.name) {
-          el.nameError = true
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
           ++errors
         }
-        if (!el.members || el.members.length < 1) {
-          el.membersError = true
+        if (!item.members || item.members.length < 1) {
+          item.membersError = true
           ++errors
         }
         else {
-          el.members.forEach(e => {
+          item.members.forEach(e => {
             if (!e.address) {
               e.addressError = true
               ++errors
@@ -984,96 +1026,96 @@ class ItemsView extends React.Component {
           });
         }
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'irules') {
 
-      for (const el of Object.values(elements)) {
+      for (const item of Object.values(items)) {
 
-        if (!el.name) {
-          el.nameError = true
+        if (!item.name) {
+          item.nameError = true
           ++errors
         }
-        if (!el.apiAnonymous) {
-          console.log('NO CODE OBJECT N ', el.id )
-          el.apiAnonymousError = true
+        if (!item.apiAnonymous) {
+          console.log('NO CODE OBJECT N ', item.id )
+          item.apiAnonymousError = true
           ++errors
         }
 
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'certificates') {
 
-      for (const el of Object.values(elements)) {
+      for (const item of Object.values(items)) {
 
-        if (el.existent) {
-          if (el.sourceType && !el.text) {
-            el.textError = true
+        if (item.existent) {
+          if (item.sourceType && !item.text) {
+            item.textError = true
             ++errors
           }
         }
         else {
-          if (!el.name) {
-            el.nameError = true
+          if (!item.name) {
+            item.nameError = true
             ++errors
           }
-          if (!el.sourceType && !el.text) {
-            el.sourceTypeError = true
-            el.textError = true
+          if (!item.sourceType && !item.text) {
+            item.sourceTypeError = true
+            item.textError = true
             ++errors
           }
         }
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'keys') {
 
-      for (const el of Object.values(elements)) {
+      for (const item of Object.values(items)) {
 
-        if (el.existent) {
-          if (el.sourceType && !el.text) {
-            el.textError = true
+        if (item.existent) {
+          if (item.sourceType && !item.text) {
+            item.textError = true
             ++errors
           }
         }
         else {
-          if (!el.name) {
-            el.nameError = true
+          if (!item.name) {
+            item.nameError = true
             ++errors
           }
-          if (!el.sourceType && !el.text) {
-            el.sourceTypeError = true
-            el.textError = true
+          if (!item.sourceType && !item.text) {
+            item.sourceTypeError = true
+            item.textError = true
             ++errors
           }
         }
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
 
     else if (this.props.items === 'profiles') {
 
-      for (const el of Object.values(elements)) {
+      for (const item of Object.values(items)) {
 
-        if (!el.name) {
-          el.nameError = true
+        if (!item.name) {
+          item.nameError = true
           ++errors
         }
-        if (!el.type) {
-          el.typeError = true
+        if (!item.type) {
+          item.typeError = true
           ++errors
         }
 
       }
-      await this.setState({items: elements})
+      await this.setState({items: items})
       return errors
     }
   }
@@ -1090,84 +1132,84 @@ class ItemsView extends React.Component {
   }
 
   /*
-    CREATE, UPDATE, DELETE
+    Send Data to backend
   */
  
   cudManager = async () => {
-    let elements = JSON.parse(JSON.stringify(this.state.items))
+    let items = JSON.parse(JSON.stringify(this.state.items))
     let toPost = []
     let toDelete = []
     let toPatch = []
 
-    for (const el of Object.values(elements)) {
-      if (!el.existent) {
-        toPost.push(el)
+    for (const item of Object.values(items)) {
+      if (!item.existent) {
+        toPost.push(item)
       }
-      if (el.toDelete) {
-        toDelete.push(el)
+      if (item.toDelete) {
+        toDelete.push(item)
       }
-      if (el.isModified && Object.keys(el.isModified).length > 0) {
-        toPatch.push(el)
+      if (item.isModified && Object.keys(item.isModified).length > 0) {
+        toPatch.push(item)
       }
     }
 
     if (toDelete.length > 0) {
-      for (const el of toDelete) {
-        el.loading = true
-        await this.setState({items: elements})
+      for (const item of toDelete) {
+        item.loading = true
+        await this.setState({items: items})
 
         if (this.props.items === 'certificates') {
-          let l = el.name.split('/')
-          el.name  = l[2]
+          let l = item.name.split('/')
+          item.name  = l[2]
         }
 
         if (this.props.items === 'keys') {
-          let l = el.name.split('/')
-          el.name  = l[2]
+          let l = item.name.split('/')
+          item.name  = l[2]
         }
 
-        let e = await this.elDelete(el.name, el.type ? el.type : null )
+        let e = await this.itemDelete(item.name, item.type ? item.type : null )
         if (e.status && e.status !== 200 ) {
           this.props.dispatch(err(e))
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
         else {
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
 
       }
     }
 
     if (toPost.length > 0) {
-      for (const el of toPost) {
+      for (const item of toPost) {
         let body = {}
 
         if (this.props.items === 'nodes') {
           body.data = {
-            "address": el.address,
-            "name": el.name,
-            "session": el.session,
-            "state": el.state
+            "address": item.address,
+            "name": item.name,
+            "session": item.session,
+            "state": item.state
           }
 
-          if(el.routeDomain) {
-            body.data.address = `${el.address}%${el.routeDomain}`
+          if(item.routeDomain) {
+            body.data.address = `${item.address}%${item.routeDomain}`
           }
         }
 
         if (this.props.items === 'monitors') {
           body.data = {
-            "name": el.name,
-            "type": el.type,
-            "interval": +el.interval,
-            "timeout": +el.timeout,
+            "name": item.name,
+            "type": item.type,
+            "interval": +item.interval,
+            "timeout": +item.timeout,
           }
         }
 
         if (this.props.items === 'snatpools') {
-          let members = el.members.map(m => {
+          let members = item.members.map(m => {
             let str = `/${this.props.partition}/${m.address}`
             if (m.routeDomain) {
               str = `${str}%${m.routeDomain}`
@@ -1175,116 +1217,128 @@ class ItemsView extends React.Component {
             return str
           })
           body.data = {
-            "name": el.name,
+            "name": item.name,
             "members": members
           }
         }
 
         if (this.props.items === 'irules') {
           body.data = {
-            "name": el.name,
-            "apiAnonymous": el.apiAnonymous
+            "name": item.name,
+            "apiAnonymous": item.apiAnonymous
           }
         }
         
         if (this.props.items === 'certificates') {
           body.certificate = {
-            "name": el.name,
-            "content_base64": btoa(el.text)
+            "name": item.name,
+            "content_base64": btoa(item.text)
           }
         }
 
         if (this.props.items === 'keys') {
           body.key = {
-            "name": el.name,
-            "content_base64": btoa(el.text)
+            "name": item.name,
+            "content_base64": btoa(item.text)
           }
         }
 
         if (this.props.items === 'profiles') {
           body.data = {
-            "name": el.name,
-            "type": el.type
+            "name": item.name,
+            "type": item.type
           }
         }
 
-        el.loading = true
-        await this.setState({items: elements})
+        item.loading = true
+        await this.setState({items: items})
 
-        let e = await this.elPost(body)
+        let e = await this.itemPost(body)
         if (e.status && e.status !== 201 ) {
           this.props.dispatch(err(e))
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
         else {
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
       }
     }
 
     if (toPatch.length > 0) {
-      for (const el of toPatch) {
+      for (const item of toPatch) {
         let body = {}
 
         if (this.props.items === 'monitors') {
           body.data = {
             "destination": "*:*",
-            "interval": +el.interval,
+            "interval": +item.interval,
             "manualResume": "disabled",
             "timeUntilUp": 0,
-            "timeout": +el.timeout,
+            "timeout": +item.timeout,
             "transparent": "disabled",
             "upInterval": 0
           }
         }
 
+        if (this.props.items === 'snatpools') {
+          let members = item.members.map(m => {
+            let str = `/${this.props.partition}/${m.address}`
+            if (m.routeDomain) {
+              str = `${str}%${m.routeDomain}`
+            }
+            return str
+          })
+          body.data = {
+            "members": members
+          }
+        }
+
         if (this.props.items === 'irules') {
           body.data = {
-            "name": el.name,
-            "apiAnonymous": el.apiAnonymous
+            "name": item.name,
+            "apiAnonymous": item.apiAnonymous
           }
         }
 
         if (this.props.items === 'certificates') {
-          let l = el.name.split('/')
-          el.name = l[2]
+          let l = item.name.split('/')
+          item.name = l[2]
           body.certificate = {
-            "content_base64": btoa(el.text)
+            "content_base64": btoa(item.text)
           }
         }
 
         if (this.props.items === 'keys') {
-          let l = el.name.split('/')
-          el.name = l[2]
+          let l = item.name.split('/')
+          item.name = l[2]
           body.key = {
-            "content_base64": btoa(el.text)
+            "content_base64": btoa(item.text)
           }
         }
 
-        el.loading = true
-        await this.setState({items: elements})
+        item.loading = true
+        await this.setState({items: items})
 
-        let e = await this.elPatch(el.name, el.type ? el.type : null, body)
+        let e = await this.itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {
           this.props.dispatch(err(e))
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
         else {
-          el.loading = false
-          await this.setState({items: elements})
+          item.loading = false
+          await this.setState({items: items})
         }
       }
     }
-
 
     this.setState({disableCommit: false})
     this.main()
   }
 
-  elPost = async (body) => {
+  itemPost = async (body) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1308,7 +1362,7 @@ class ItemsView extends React.Component {
     return r
   }
 
-  elDelete = async (name, type) => {
+  itemDelete = async (name, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1319,7 +1373,7 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    //@todo: element as a prop
+    //@todo: items as a prop
     if (this.props.items === 'monitors') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
     }
@@ -1327,12 +1381,13 @@ class ItemsView extends React.Component {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items.slice(0, -1)}/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token )
     }
     return r
   }
 
-  elPatch = async (name, type, body) => {
+  itemPatch = async (name, type, body) => {
+
     let r
     let rest = new Rest(
       "PATCH",
@@ -1343,25 +1398,29 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    //@todo: element as a prop
+
     if (this.props.items === 'monitors') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
     else if (this.props.items === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token, body )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items.slice(0, -1)}/${name}/`, this.props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token, body )
     }
     return r
   }
 
+  /*
+    Render Data in DOM
+  */
 
   render() {
 
     let today = new Date().getTime();
     let thirtyDays = 2592000000
     let inThirtyDays = new Date(today + thirtyDays);
+
 
     let randomKey = () => {
       return Math.random().toString()
@@ -1475,7 +1534,7 @@ class ItemsView extends React.Component {
         if (key === 'routeDomain') {
           return (
             <Select
-              value={obj.routeDomain}
+              value={obj.routeDomainName}
               showSearch
               style={{width: 150}}
               optionFilterProp="children"
@@ -1553,11 +1612,11 @@ class ItemsView extends React.Component {
             </Button>
           )
         }
-        else if (action === 'subElementRemove') {
+        else if (action === 'subItemRemove') {
           return (
             <Button
               type='danger'
-              onClick={() => this.subElementRemove(obj, choices)}
+              onClick={() => this.subItemRemove(obj, choices)}
             >
               -
             </Button>
@@ -1602,22 +1661,6 @@ class ItemsView extends React.Component {
       }
     }
 
-    let rd = (address) => {
-      try {
-        let val = address.split('%')
-        if (val.length > 1) {
-          return val[1]
-        }
-        else {
-          return null
-        }
-      }
-      catch (error) {
-
-      }
-      
-    }
-
     const expandedRowRender = (...params) => {
       const columns = [
         {
@@ -1647,10 +1690,7 @@ class ItemsView extends React.Component {
           key: 'routeDomain',
           ...this.getColumnSearchProps('routeDomain'),
           render: (val, obj)  => (
-            obj.existent ?
-              rd(obj.address)
-            :
-              createElement('select', 'routeDomain', this.state.routeDomains, obj, '', params[0])
+            createElement('select', 'routeDomain', this.state.routeDomains, obj, '', params[0])
           )
         },
         {
@@ -1659,7 +1699,7 @@ class ItemsView extends React.Component {
           dataIndex: 'delete',
           key: 'delete',
           render: (val, obj)  => (
-            createElement('button', 'subElementRemove', params[0], obj, 'subElementRemove')
+            createElement('button', 'subItemRemove', params[0], obj, 'subItemRemove')
           ),
         }
       ];
@@ -1669,7 +1709,7 @@ class ItemsView extends React.Component {
           <br/>
           <Button
             type="primary"
-            onClick={() => this.subElementAdd(params[0])}
+            onClick={() => this.subItemAdd(params[0])}
           >
             +
           </Button>
@@ -1738,10 +1778,7 @@ class ItemsView extends React.Component {
         key: 'routeDomain',
         ...this.getColumnSearchProps('routeDomain'),
         render: (val, obj)  => (
-          obj.existent ?
-            rd(obj.address)
-          :
-            createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
+          createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
         )
       },
       {

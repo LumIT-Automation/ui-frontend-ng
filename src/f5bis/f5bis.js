@@ -86,7 +86,7 @@ class Manager extends React.Component {
         
               {
                 this.state.items ?
-                  <ItemsView vendor='f5' items={this.state.items}/>
+                  <ItemsView vendor='f5' items={this.state.items} item={this.state.items.slice(0, -1)}/>
                 :
                   null
               }
