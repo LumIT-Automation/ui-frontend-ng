@@ -76,6 +76,7 @@ class Manager extends React.Component {
                 <Radio.Button value={'nodes'}>nodes</Radio.Button>
                 <Radio.Button value={'monitors'}>monitors</Radio.Button>
                 <Radio.Button value={'snatpools'}>snatpools</Radio.Button>
+                <Radio.Button value={'pools'}>pools</Radio.Button>
                 <Radio.Button value={'irules'}>irules</Radio.Button>
                 <Radio.Button value={'certificates'}>certificates</Radio.Button>
                 <Radio.Button value={'keys'}>keys</Radio.Button>

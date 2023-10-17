@@ -53,6 +53,7 @@ class ItemsView extends React.Component {
       originitems: [],
       items: [],
       monitorTypes: [],
+      loadBalancingModes: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       profileTypes: [],
       items: [],
       expandedKeys: [],
@@ -309,6 +310,36 @@ class ItemsView extends React.Component {
       }
     }
 
+    else if (this.props.items === 'pools') {
+      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        await this.setState({monitorTypes: fetched.data.items})
+      }
+
+      fetched = await this.dataGet(this.props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        this.props.dispatch(err(fetched))
+        await this.setState({loading: false})
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          let mid = 1
+          item.existent = true
+          item.isModified = {}
+          item.id = id          
+          id++
+          return item
+        })
+        await this.setState({items: items, originitems: items, loading: false})
+      }
+    }
+
     else if (this.props.items === 'irules') {
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
@@ -438,6 +469,81 @@ class ItemsView extends React.Component {
     )
     await rest.doXHR(endpoint, this.props.token)
     return r
+  }
+
+  getPoolmembers = async(pool) => {
+    await this.setState({poolmembersloading: true})
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let p = items.find(item => item.id === pool.id)
+    let endpoint = `${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${pool.name}/members/`
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(endpoint, this.props.token)
+    if (r.status && r.status !== 200 ) {
+      this.props.dispatch(err(r))
+      await this.setState({poolmembersloading: false})
+      return
+    }
+    else {
+      let mid = 1 
+      p.members = r.data.items
+
+      p.members = p.members.map(m => {
+        let o = {}
+        o.existent = true
+        o.id = mid
+        mid++
+        o.name = m.name
+        o.state = m.state
+        o.session = m.session
+        o.parentState = m.parentState
+
+        o.connections = 0
+        o.isMonitored= false
+        o.isLoading = false
+        o.intervalId = null
+
+        if (m.state === 'up' && m.session === 'monitor-enabled' && m.parentState === 'enabled') {
+          o.status = 'enabled'
+          o.color = '#90ee90'
+        }
+        else if (m.state === 'up' && m.session === 'user-disabled') {
+          o.status = 'disabled', 
+          o.status = 'color'
+        }
+        else if (m.state === 'checking' && m.session === 'user-disabled') {
+          o.status = 'checking'
+          o.color = 'blue'
+        }
+        else if (m.state === 'down' && m.session === 'monitor-enabled') {
+          o.status = 'checking' 
+          o.color = 'red'
+        }
+        else if (m.state === 'down' && m.session === 'user-enabled') {
+          o.status = 'rechecking'
+          o.color = 'blue'
+        }
+        else if (m.state === 'user-down' && m.session === 'user-disabled') {
+          o.status = 'Force offline'
+          o.color = 'black'
+        }
+        else {
+          o.status = 'other'
+          o.color = 'grey'
+        }
+        return o
+      })
+
+    }
+    await this.setState({items: items, poolmembersloading: false})
   }
 
   itemAdd = async (items, type) => {
@@ -1403,7 +1509,7 @@ class ItemsView extends React.Component {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
     else if (this.props.items === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token, body )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token, body  )
     }
     else {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token, body )
@@ -1647,6 +1753,9 @@ class ItemsView extends React.Component {
       if (this.props.items === 'snatpools') {
         return snatpoolsColumns
       }
+      if (this.props.items === 'pools') {
+        return poolsColumns
+      }
       if (this.props.items === 'irules') {
         return irulesColumns
       }
@@ -1704,6 +1813,92 @@ class ItemsView extends React.Component {
         }
       ];
 
+      const poolmembersColumn = [
+        {
+          title: 'Loading',
+          align: 'center',
+          dataIndex: 'loading',
+          key: 'loading',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.isLoading ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
+        {
+          title: 'Id',
+          align: 'center',
+          dataIndex: 'id',
+          key: 'id',
+          ...this.getColumnSearchProps('id'),
+        },
+        {
+          title: 'Member',
+          align: 'center',
+          dataIndex: 'name',
+          key: 'name',
+        },
+        {
+          title: 'State',
+          align: 'center',
+          dataIndex: 'state',
+          key: 'state',
+        },
+        {
+          title: 'Session',
+          align: 'center',
+          dataIndex: 'session',
+          key: 'session',
+        },
+        {
+          title: 'Member State',
+          align: 'center',
+          dataIndex: 'parentState',
+          key: 'parentState',
+        },
+        {
+          title: 'Status',
+          align: 'center',
+          dataIndex: 'status',
+          key: 'status',
+          render(name, record) {
+            return {
+              props: {
+                style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+              },
+              children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+            };
+          }
+        },
+          
+        {
+          title: 'Connections',
+          align: 'center',
+          dataIndex: 'connections',
+          key: 'connections',
+        },
+        {
+          title: '',
+          align: 'center',
+          dataIndex: 'monitoring',
+          key: 'monitoring',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
+        {
+          title: 'Delete',
+          align: 'center',
+          dataIndex: 'delete',
+          key: 'delete',
+          render: (val, obj)  => (
+            createElement('button', 'subItemRemove', params[0], obj, 'subItemRemove')
+          ),
+        }
+      ]
+
       return (
         <React.Fragment>
           <br/>
@@ -1711,17 +1906,33 @@ class ItemsView extends React.Component {
             type="primary"
             onClick={() => this.subItemAdd(params[0])}
           >
-            +
+            Add member
           </Button>
+          { this.props.items === 'pools' ? 
+              <Button
+                type="primary"
+                onClick={() => this.getPoolmembers(params[0])}
+              >
+                Get members
+              </Button>
+            :
+              null
+          }
+          
           <br/>
           <br/>
-          <Table
-            columns={columns}
-            rowKey={record => record.id}
-            //style={{backgroundColor:'black'}}
-            dataSource={params[0].members}
-            pagination={{pageSize: 10}}
-          />
+          { this.state.poolmembersloading ?
+            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+          :
+            <Table
+              columns={this.props.items === 'pools' ? poolmembersColumn : columns}
+              rowKey={record => record.id}
+              //style={{backgroundColor:'black'}}
+              dataSource={params[0].members}
+              pagination={{pageSize: 10}}
+            />
+          }
+          
         </React.Fragment>
       )
     };
@@ -1943,6 +2154,81 @@ class ItemsView extends React.Component {
             val
           :
             createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const poolsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id',
+        ...this.getColumnSearchProps('id'),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Monitor',
+        align: 'center',
+        dataIndex: 'monitor',
+        key: 'monitor',
+        ...this.getColumnSearchProps('monitor'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.monitorTypes, obj, '')
+        )
+      },
+      {
+        title: 'Load Balancing Mode',
+        align: 'center',
+        dataIndex: 'loadBalancingMode',
+        key: 'loadBalancingMode',
+        ...this.getColumnSearchProps('loadBalancingMode'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.loadBalancingModes, obj, '')
         )
       },
       {
@@ -2332,7 +2618,7 @@ class ItemsView extends React.Component {
 
             <br/>
             <br/>
-            { this.props.items === 'snatpools' ?
+            { this.props.items === 'snatpools' || this.props.items === 'pools' ?
               <Table
                 columns={returnCol()}
                 dataSource={this.state.items}
