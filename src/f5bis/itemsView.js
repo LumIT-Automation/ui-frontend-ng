@@ -17,6 +17,8 @@ import {
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+
 
 /*
 @todo:
@@ -516,7 +518,7 @@ class ItemsView extends React.Component {
           o.color = '#90ee90'
         }
         else if (m.state === 'up' && m.session === 'user-disabled') {
-          o.status = 'disabled', 
+          o.status = 'disabled' 
           o.status = 'color'
         }
         else if (m.state === 'checking' && m.session === 'user-disabled') {

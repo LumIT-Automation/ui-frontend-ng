@@ -275,11 +275,19 @@ class CloudNetwork extends React.Component {
     }
 
     if (entities === 'newAccount') {
-      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name']})
+      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name'], ITSM: this.state['New ITSM']})
       data = await this.dataGet('getNetworks', assetId)
       if (data.status && data.status !== 200 ) {
         this.props.dispatch(err(data))
-        await this.setState({loading: false, ['Account ID']: '', ['Account Name']: '',['New Account ID']: '', ['New Account Name']: ''})
+        await this.setState({
+          loading: false, 
+          ['Account ID']: '', 
+          ['Account Name']: '', 
+          ITSM: '',
+          ['New Account ID']: '', 
+          ['New Account Name']: '',
+          ['New ITSM']: '',
+        })
         return
       }
       else {
@@ -311,7 +319,14 @@ class CloudNetwork extends React.Component {
             }
           }
         });
-        await this.setState({loading: false, originCloudNetworks: data.data, cloudNetworks: data.data, ['New Account ID']: '', ['New Account Name']: ''})
+        await this.setState({
+          loading: false, 
+          originCloudNetworks: data.data, 
+          cloudNetworks: data.data, 
+          ['New Account ID']: '', 
+          ['New Account Name']: '', 
+          ['New ITSM']: ''
+        })
 
         this.dataGetHandler('accountsAndProviders', this.props.asset.id)
       }
@@ -874,7 +889,7 @@ class CloudNetwork extends React.Component {
 
         case 'input':
 
-          if (key === 'New Account ID' || key === 'New Account Name') {
+          if (key === 'New Account ID' || key === 'New Account Name' || key === 'New ITSM') {
             return (
               <Input
                 value={this.state[key]}
@@ -906,6 +921,10 @@ class CloudNetwork extends React.Component {
           else {
             return (
               <Input
+                value={this.state[key]}
+                onChange={event => this.set(key, event.target.value)}
+              />
+              /*<Input
                 style=
                 {obj[`${key}Error`] && key === 'ITSM' ?
                   {borderColor: 'red', width: 200}
@@ -928,7 +947,7 @@ class CloudNetwork extends React.Component {
                 value={obj[key]}
                 ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
                 onChange={event => this.set(key, event.target.value, obj)}
-              />
+              />*/
             )
           }
 
@@ -951,7 +970,7 @@ class CloudNetwork extends React.Component {
             return (
               <Button
                 type="primary"
-                disabled={(this.state['New Account ID'] && this.state['New Account Name']) ? false : true}
+                disabled={(this.state['New Account ID'] && this.state['New Account Name'] && this.state['New ITSM']) ? false : true}
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
                 Set new Account
@@ -1277,7 +1296,7 @@ class CloudNetwork extends React.Component {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
                   </Col>
                   <Col span={4}>
-                    {createElement('input', 'ITSM', '', '', '')}
+                    {createElement('input', 'New ITSM', '', '', '')}
                   </Col>
                   <Col offset={1} span={2}>
                     {createElement('button', '', '', '', 'newAccount')}
@@ -1287,7 +1306,7 @@ class CloudNetwork extends React.Component {
                 <Divider/>
 
                 {
-                (this.state.provider && this.state['Account ID'] && this.state['Account Name']) ?
+                (this.state.provider && this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ?
                   <React.Fragment>
                     <Button
                       type="primary"
