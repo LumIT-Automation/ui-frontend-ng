@@ -167,7 +167,6 @@ class CloudNetwork extends React.Component {
 
   /* 
   @ todo
-  - new tripla con itsm
   - cancellazione reti di un account id e, quindi cancellazione tripla
   - AZURE REGIONS
 
