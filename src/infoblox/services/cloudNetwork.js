@@ -330,6 +330,27 @@ class CloudNetwork extends React.Component {
         this.dataGetHandler('accountsAndProviders', this.props.asset.id)
       }
     }
+
+    if (entities === 'delAccount') {
+      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name'], ITSM: this.state['New ITSM']})
+      let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+      for (const cloudNet of cloudNetworks) {
+        cloudNet.loading = true
+        let net = cloudNet.network.split('/')
+        console.log(net)
+        let n = await this.cloudNetworkDelete(net[0])
+        if (n.status && n.status !== 200 ) {
+          this.props.dispatch(err(n))
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+        else {
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+      }
+      this.dataGetHandler('accountsAndProviders', this.props.asset.id)
+    }
     
   }
 
@@ -965,7 +986,7 @@ class CloudNetwork extends React.Component {
             )
           }
 
-          if (action === 'newAccount') {
+          else if (action === 'newAccount') {
             return (
               <Button
                 type="primary"
@@ -973,6 +994,18 @@ class CloudNetwork extends React.Component {
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
                 Set new Account
+              </Button>
+            )
+          }
+
+          else if (action === 'delAccount') {
+            return (
+              <Button
+                type="danger"
+                disabled={(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? false : true}
+                onClick={() => this.dataGetHandler(action, this.props.asset.id)}
+              >
+                Delete Account
               </Button>
             )
           }
@@ -1276,6 +1309,9 @@ class CloudNetwork extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5}}>{this.state.ITSM}</p>
                     </Col>
                   }
+                  <Col offset={1} span={2}>
+                    {createElement('button', '', '', '', 'delAccount')}
+                  </Col>
                 </Row>
 
                 <Row>
