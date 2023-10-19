@@ -26,7 +26,8 @@ import {
   assignCloudNetworkError,
   cloudNetworkDeleteError,
 
-  genericError
+  genericError,
+  err
 
 } from './store'
 
@@ -111,6 +112,10 @@ class Error extends Component {
           break;
         case 'cloudNetworkDeleteError':
           this.props.dispatch(cloudNetworkDeleteError(null))
+          break;
+
+        case 'err':
+          this.props.dispatch(err(null))
           break;
 
 

@@ -7,12 +7,7 @@ import Error from '../error'
 import ConcertoError from '../../concerto/error'
 
 import {
-  accountsAndProvidersError,
-  cloudNetworksError,
-
-
-  assignCloudNetworkError,
-  cloudNetworkDeleteError,
+  err
 } from '../store'
 
 import {
@@ -52,6 +47,7 @@ class CloudNetwork extends React.Component {
       accounts: [],
       ['Account ID']: '',
       ['Account Name']: '',
+      ITSM: '',
       cloudNetworks: [],
       originCloudNetworks: [],
     };
@@ -65,11 +61,12 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.accounts)
 
     console.log('cloudNetworks', this.state.cloudNetworks)
 
     if (this.state.provider !== prevState.provider) {
-      this.setState({['Account ID']: '', ['Account Name']: ''})
+      this.setState({['Account ID']: '', ['Account Name']: '', ITSM: '',})
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     } 
 
@@ -168,6 +165,14 @@ class CloudNetwork extends React.Component {
     }
   }
 
+  /* 
+  @ todo
+  - new tripla con itsm
+  - cancellazione reti di un account id e, quindi cancellazione tripla
+  - AZURE REGIONS
+
+  - modifica id/name/itsm
+  */
   main = async () => {
     await this.setState({loading: true})
     let conf = []
@@ -207,14 +212,15 @@ class CloudNetwork extends React.Component {
       await this.setState({accountsLoading: true})
       data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(accountsAndProvidersError(data))
+        this.props.dispatch(err(data))
         await this.setState({accountsLoading: false})
         return
       }
       else {
-        let list = []
-        data.data.forEach((item, i) => {
-          list.push(item)
+        let list = data.data.map(item => {
+          console.log(item)
+          item.ITSM = item.Reference
+          return item
         })
         await this.setState({accountsLoading: false, accounts: list})
       }
@@ -224,7 +230,7 @@ class CloudNetwork extends React.Component {
       await this.setState({loading: true})
       data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(cloudNetworksError(data))
+        this.props.dispatch(err(data))
         await this.setState({loading: false})
         return
       }
@@ -272,7 +278,7 @@ class CloudNetwork extends React.Component {
       await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name']})
       data = await this.dataGet('getNetworks', assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(cloudNetworksError(data))
+        this.props.dispatch(err(data))
         await this.setState({loading: false, ['Account ID']: '', ['Account Name']: '',['New Account ID']: '', ['New Account Name']: ''})
         return
       }
@@ -388,6 +394,7 @@ class CloudNetwork extends React.Component {
     await this.setState({cloudNetworks: newList})
   }
 
+  /* SET */
   set = async (key, value, cloudNetwork) => {
     console.log('key', key)
     console.log('value', value)
@@ -404,7 +411,7 @@ class CloudNetwork extends React.Component {
     if (key === 'Account ID') {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account ID'] === value )
-      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name']})
+      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
 
       /*
       let start = 0
@@ -452,7 +459,7 @@ class CloudNetwork extends React.Component {
     if (key === 'Account Name') {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account Name'] === value )
-      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name']})
+      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
       /*
       let start = 0
       let end = 0
@@ -502,6 +509,10 @@ class CloudNetwork extends React.Component {
 
     if (key === 'New Account Name') {
       await this.setState({['New Account Name']: value})
+    }
+
+    if (key === 'New ITSM') {
+      await this.setState({['New ITSM']: value})
     }
 
     if (cloudNetwork) {
@@ -630,6 +641,8 @@ class CloudNetwork extends React.Component {
 
   }
 
+  /* VALIDATION */
+
   validation = async () => {
     let errors = await this.validationCheck()
     if (errors === 0) {
@@ -647,14 +660,12 @@ class CloudNetwork extends React.Component {
         ++errors
         cloudNet.RegionError = true
       }
-      if (!cloudNet['ITSM']) {
-        ++errors
-        cloudNet['ITSMError'] = true
-      }
     }
     await this.setState({cloudNetworks: cloudNetworks})
     return errors
   }
+
+  /* DISPOSITION */
 
   cudManager = async () => {
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
@@ -687,7 +698,7 @@ class CloudNetwork extends React.Component {
         let net = cloudNet.network.split('/')
         let n = await this.cloudNetworkDelete(net[0])
         if (n.status && n.status !== 200 ) {
-          this.props.dispatch(cloudNetworkDeleteError(n))
+          this.props.dispatch(err(n))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -715,7 +726,7 @@ class CloudNetwork extends React.Component {
                 "value": this.state['Account Name']
               },
               "Reference": {
-                "value": cloudNet.ITSM
+                "value": this.state.ITSM
               }
             }
           }
@@ -730,7 +741,7 @@ class CloudNetwork extends React.Component {
 
         let cn = await this.cloudNetworkAssign(body)
         if (cn.status && cn.status !== 201 ) {
-          this.props.dispatch(assignCloudNetworkError(cn))
+          this.props.dispatch(err(cn))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -757,7 +768,7 @@ class CloudNetwork extends React.Component {
                 "value": this.state['Account Name']
               },
               "Reference": {
-                "value": cloudNet.ITSM
+                "value": this.state.ITSM
               }
             }
           }
@@ -773,7 +784,7 @@ class CloudNetwork extends React.Component {
         let cn = await this.cloudNetworkModify(net[0], body)
         
         if (cn.status && cn.status !== 200 ) {
-          this.props.dispatch(assignCloudNetworkError(cn))
+          this.props.dispatch(err(cn))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -799,7 +810,7 @@ class CloudNetwork extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/network/${net}/`, this.props.token )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/delete-cloud-network/${net}/`, this.props.token )
     return r
   }
 
@@ -849,100 +860,14 @@ class CloudNetwork extends React.Component {
       originCloudNetworks: [],
     })
   }
-
+  
+  /* RENDER */
 
   render() {
 
     let randomKey = () => {
       return Math.random().toString()
     }
-
-    let columns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'Network',
-        align: 'center',
-        dataIndex: 'network',
-        key: 'network',
-        ...this.getColumnSearchProps('network'),
-      },
-      {
-        title: 'Network_container',
-        align: 'center',
-        dataIndex: 'network_container',
-        key: 'network_container',
-        ...this.getColumnSearchProps('network_container'),
-      },
-      {
-        title: 'Region',
-        align: 'center',
-        dataIndex: 'region',
-        key: 'region',
-        ...this.getColumnSearchProps('region'),
-        render: (name, cloudNet)  => (
-          createElement('select', 'Region', '', cloudNet, '')
-        )
-      },
-      {
-        title: 'IT Service Manager',
-        align: 'center',
-        dataIndex: 'ITSM',
-        key: 'reference',
-        ...this.getColumnSearchProps('ITSM'),
-        render: (name, cloudNet)  => (
-          createElement('input', 'ITSM', '', cloudNet, '')
-        )
-      },
-      {
-        title: 'Comment',
-        align: 'center',
-        dataIndex: 'comment',
-        key: 'comment',
-        ...this.getColumnSearchProps('comment'),
-        render: (name, cloudNet)  => (
-          createElement('textArea', 'comment', '', cloudNet, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.cloudNetworkRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
 
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {
@@ -1177,6 +1102,88 @@ class CloudNetwork extends React.Component {
 
     }
 
+    let columns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'Network',
+        align: 'center',
+        dataIndex: 'network',
+        key: 'network',
+        ...this.getColumnSearchProps('network'),
+      },
+      {
+        title: 'Network_container',
+        align: 'center',
+        dataIndex: 'network_container',
+        key: 'network_container',
+        ...this.getColumnSearchProps('network_container'),
+      },
+      {
+        title: 'Region',
+        align: 'center',
+        dataIndex: 'region',
+        key: 'region',
+        ...this.getColumnSearchProps('region'),
+        render: (name, cloudNet)  => (
+          cloudNet.existent ? 
+            cloudNet.Region
+          :
+            createElement('select', 'Region', '', cloudNet, '')
+        )
+      },
+      {
+        title: 'Comment',
+        align: 'center',
+        dataIndex: 'comment',
+        key: 'comment',
+        ...this.getColumnSearchProps('comment'),
+        render: (name, cloudNet)  => (
+          createElement('textArea', 'comment', '', cloudNet, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.cloudNetworkRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    
+
     return (
       <React.Fragment>
 
@@ -1241,6 +1248,16 @@ class CloudNetwork extends React.Component {
                       {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
                     </Col>
                   }
+                  <Col span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                  </Col>
+                  {this.state.accountsLoading ?
+                    <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                  :
+                    <Col span={4}>
+                      <p style={{marginRight: 10, marginTop: 5}}>{this.state.ITSM}</p>
+                    </Col>
+                  }
                 </Row>
 
                 <Row>
@@ -1256,7 +1273,13 @@ class CloudNetwork extends React.Component {
                   <Col span={4}>
                     {createElement('input', 'New Account Name', '', '', '')}
                   </Col>
-                  <Col offset={1} span={4}>
+                  <Col span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                  </Col>
+                  <Col span={4}>
+                    {createElement('input', 'ITSM', '', '', '')}
+                  </Col>
+                  <Col offset={1} span={2}>
                     {createElement('button', '', '', '', 'newAccount')}
                   </Col>
                 </Row>
@@ -1308,10 +1331,7 @@ class CloudNetwork extends React.Component {
           <React.Fragment>
             { this.props.configurationsError ? <ConcertoError component={'assignCloudNetwork'} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
             
-            { this.props.accountsAndProvidersError ? <Error component={'assignCloudNetwork'} error={[this.props.accountsAndProvidersError]} visible={true} type={'accountsAndProvidersError'} /> : null }
-            { this.props.cloudNetworksError ? <Error component={'cloudNetworksError'} error={[this.props.cloudNetworksError]} visible={true} type={'cloudNetworksError'} /> : null }
-            { this.props.assignCloudNetworkError ? <Error component={'assignCloudNetwork'} error={[this.props.assignCloudNetworkError]} visible={true} type={'assignCloudNetworkError'} /> : null }
-            { this.props.cloudNetworkDeleteError ? <Error component={'cloudNetworkDeleteError'} error={[this.props.cloudNetworkDeleteError]} visible={true} type={'cloudNetworkDeleteError'} /> : null }
+            { this.props.err ? <Error component={'assignCloudNetwork'} error={[this.props.err]} visible={true} type={'err'} /> : null }
           </React.Fragment>
         :
           null
@@ -1330,8 +1350,5 @@ export default connect((state) => ({
 
   configurationsError: state.concerto.configurationsError,
 
-  accountsAndProvidersError : state.infoblox.accountsAndProvidersError,
-  cloudNetworksError: state.infoblox.cloudNetworksError,
-  assignCloudNetworkError: state.infoblox.assignCloudNetworkError,
-  cloudNetworkDeleteError: state.infoblox.cloudNetworkDeleteError
+  err : state.infoblox.err,
 }))(CloudNetwork);

@@ -85,6 +85,10 @@ const infobloxSlice = createSlice({
         state.genericError = action.payload
       },
 
+      err: (state, action) => {
+        state.err = action.payload
+      },
+
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -129,7 +133,8 @@ export const {
 
   genericError,
 
-  cleanUp
+  cleanUp,
+  err
 } = actions
 
 export default reducer
