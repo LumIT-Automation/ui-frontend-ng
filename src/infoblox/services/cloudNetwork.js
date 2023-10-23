@@ -61,16 +61,16 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.accounts)
+    
 
-    console.log('cloudNetworks', this.state.cloudNetworks)
+    //console.log('cloudNetworks', this.state.cloudNetworks)
 
     if (this.state.provider !== prevState.provider) {
       this.setState({['Account ID']: '', ['Account Name']: '', ITSM: '',})
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     } 
 
-    if ((this.state.provider === prevState.provider) && (this.state['Account ID'] !== prevState['Account ID']) ) {
+    if ((this.state.provider === prevState.provider) && (this.state['Account ID'] && this.state['Account ID'] !== prevState['Account ID']) ) {
       this.dataGetHandler('getNetworks', this.props.asset.id)
     } 
   }
@@ -202,10 +202,13 @@ class CloudNetwork extends React.Component {
       await this.setState({loading: false})
       console.log(error)
     }
+
   }
 
   dataGetHandler = async (entities, assetId) => {
     let data
+    console.log('entities', entities)
+    console.log('assetId', assetId)
 
     if (entities === 'accountsAndProviders') {
       await this.setState({accountsLoading: true})
@@ -217,7 +220,6 @@ class CloudNetwork extends React.Component {
       }
       else {
         let list = data.data.map(item => {
-          console.log(item)
           item.ITSM = item.Reference
           return item
         })
@@ -330,27 +332,6 @@ class CloudNetwork extends React.Component {
         this.dataGetHandler('accountsAndProviders', this.props.asset.id)
       }
     }
-
-    if (entities === 'delAccount') {
-      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name'], ITSM: this.state['New ITSM']})
-      let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
-      for (const cloudNet of cloudNetworks) {
-        cloudNet.loading = true
-        let net = cloudNet.network.split('/')
-        console.log(net)
-        let n = await this.cloudNetworkDelete(net[0])
-        if (n.status && n.status !== 200 ) {
-          this.props.dispatch(err(n))
-          cloudNet.loading = false
-          await this.setState({cloudNetworks: cloudNetworks})
-        }
-        else {
-          cloudNet.loading = false
-          await this.setState({cloudNetworks: cloudNetworks})
-        }
-      }
-      this.dataGetHandler('accountsAndProviders', this.props.asset.id)
-    }
     
   }
 
@@ -361,10 +342,6 @@ class CloudNetwork extends React.Component {
     if (entities === 'configuration') {
       endpoint = `${this.props.vendor}/${entities}/global/`
     }
-
-   /* if (assetId) {
-      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
-    }*/
 
     if (entities === 'getNetworks') {
       if (this.state['Account ID']) {
@@ -379,8 +356,6 @@ class CloudNetwork extends React.Component {
       endpoint = `${this.props.vendor}/${assetId}/list-cloud-extattrs/account+provider/?fby=*Country&fval=Cloud-${this.state.provider}`
     }
 
-
-
     let rest = new Rest(
       "GET",
       resp => {
@@ -392,6 +367,36 @@ class CloudNetwork extends React.Component {
     )
     await rest.doXHR(endpoint, this.props.token)
     return r
+  }
+
+  accountDel = async() => {
+    await this.setState({loading: true})
+      let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+      for (const cloudNet of cloudNetworks) {
+        cloudNet.loading = true
+        let net = cloudNet.network.split('/')
+        let n = await this.cloudNetworkDelete(net[0])
+        if (n.status && n.status !== 200 ) {
+          this.props.dispatch(err(n))
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+        else {
+          cloudNet.loading = false
+          await this.setState({cloudNetworks: cloudNetworks})
+        }
+      }
+    
+    await this.setState({
+      loading: false, 
+      ['Account ID']: '',
+      ['Account Name']: '',
+      ITSM: '',
+      cloudNetworks: [],
+      originCloudNetworks: [],
+    
+    })
+    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
   }
 
   cloudNetworkAdd = async () => {
@@ -431,9 +436,9 @@ class CloudNetwork extends React.Component {
 
   /* SET */
   set = async (key, value, cloudNetwork) => {
-    console.log('key', key)
-    console.log('value', value)
-    console.log('cloudNetwork', cloudNetwork)
+    //console.log('key', key)
+    //console.log('value', value)
+    //console.log('cloudNetwork', cloudNetwork)
 
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let origCloudNet
@@ -703,6 +708,7 @@ class CloudNetwork extends React.Component {
   /* DISPOSITION */
 
   cudManager = async () => {
+    console.log('cudManager')
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let toDelete = []
     let toPatch = []
@@ -720,9 +726,9 @@ class CloudNetwork extends React.Component {
       }
     }
 
-    console.log('toDelete', toDelete)
-    console.log('toPatch', toPatch)
-    console.log('toPost', toPost)
+    //console.log('toDelete', toDelete)
+    //console.log('toPatch', toPatch)
+    //console.log('toPost', toPost)
 
 
     if (toDelete.length > 0) {
@@ -830,8 +836,9 @@ class CloudNetwork extends React.Component {
       }
     }
 
-    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     this.dataGetHandler('getNetworks', this.props.asset.id)
+    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
+    
   }
 
   cloudNetworkDelete = async (net) => {
@@ -1003,7 +1010,7 @@ class CloudNetwork extends React.Component {
               <Button
                 type="danger"
                 disabled={(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? false : true}
-                onClick={() => this.dataGetHandler(action, this.props.asset.id)}
+                onClick={() => this.accountDel()}
               >
                 Delete Account
               </Button>
@@ -1348,7 +1355,7 @@ class CloudNetwork extends React.Component {
                       style={{marginLeft: 16 }}
                       onClick={() => this.cloudNetworkAdd()}
                     >
-                      Add Cloud Network
+                      Request a Cloud Network
                     </Button>
                     <Table
                       columns={columns}
