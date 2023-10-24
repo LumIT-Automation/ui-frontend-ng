@@ -41,7 +41,7 @@ class CloudNetwork extends React.Component {
       visible: false,
       providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
       provider: '',
-      ['AWS Regions']: [],
+      regions: [],
       loading: false,
       accountsLoading: false,
       accounts: [],
@@ -61,12 +61,11 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    
-
-    //console.log('cloudNetworks', this.state.cloudNetworks)
-
+    console.log(this.state.provider)
+    console.log(this.state.regions)
     if (this.state.provider !== prevState.provider) {
       this.setState({['Account ID']: '', ['Account Name']: '', ITSM: '',})
+      this.dataGetHandler('configuration')
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     } 
 
@@ -160,55 +159,56 @@ class CloudNetwork extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    if (!this.props.configurationsError) {
-      this.main()
-    }
   }
 
   /* 
   @ todo
-  - cancellazione reti di un account id e, quindi cancellazione tripla
   - AZURE REGIONS
-
   - modifica id/name/itsm
   */
-  main = async () => {
-    await this.setState({loading: true})
-    let conf = []
-    let configurationsFetched = await this.dataGet('configuration')
-
-    try {
-      if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-        this.props.dispatch(configurationsError(configurationsFetched))
-        await this.setState({loading: false})
-      }
-      else {
-        if (configurationsFetched.data.configuration.length > 0) {
-          conf = configurationsFetched.data.configuration
-          conf.forEach((item, i) => {
-            if (item.key === 'AWS Regions') {
-              let list = JSON.parse(item.value)
-              let list2 = []
-              list.forEach((item, i) => {
-                list2.push(item)
-              });
-              this.setState({['AWS Regions']: list2})
-            }
-          });
-        }
-        await this.setState({loading: false})
-      }
-    } catch (error) {
-      await this.setState({loading: false})
-      console.log(error)
-    }
-
-  }
 
   dataGetHandler = async (entities, assetId) => {
     let data
-    console.log('entities', entities)
-    console.log('assetId', assetId)
+
+    if (entities === 'configuration') {
+      await this.setState({loading: true})
+      data = await this.dataGet('configuration')
+      try {
+        if (data.status && data.status !== 200 ) {
+          this.props.dispatch(configurationsError(data))
+          await this.setState({loading: false})
+        }
+        else {
+          if (data.data.configuration.length > 0) {
+            let list2 = []
+            if (this.state.provider === 'AWS') {
+              data.data.configuration.forEach((item, i) => {
+                if (item.key === 'AWS Regions') {
+                  let list = JSON.parse(item.value)
+                  list.forEach((item, i) => {
+                    list2.push(item)
+                  });
+                }
+              });
+            }
+            if (this.state.provider === 'AZURE') {
+              data.data.configuration.forEach((item, i) => {
+                if (item.key === 'AZURE Regions') {
+                  let list = JSON.parse(item.value)
+                  list.forEach((item, i) => {
+                    list2.push(item)
+                  });
+                }
+              });
+            }
+            await this.setState({loading: false, regions: list2})
+          }
+        }
+      } catch (error) {
+        await this.setState({loading: false})
+        console.log(error)
+      }
+    }
 
     if (entities === 'accountsAndProviders') {
       await this.setState({accountsLoading: true})
@@ -436,10 +436,6 @@ class CloudNetwork extends React.Component {
 
   /* SET */
   set = async (key, value, cloudNetwork) => {
-    //console.log('key', key)
-    //console.log('value', value)
-    //console.log('cloudNetwork', cloudNetwork)
-
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let origCloudNet
     let cloudNet
@@ -452,95 +448,12 @@ class CloudNetwork extends React.Component {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account ID'] === value )
       await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
-
-      /*
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${cloudNetwork.id}_Account ID`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
-      if (value) {
-        if (cloudNet.existent) {
-          if (origCloudNet['Account ID'] !== value) {
-            cloudNet.isModified['Account ID'] = true
-            cloudNet['Account ID'] = value
-          }
-          else {
-            delete cloudNet.isModified['Account ID']
-            cloudNet['Account ID'] = value
-          }
-        }
-        else {
-          cloudNet['Account ID'] = value
-        }
-        delete cloudNet['Account IDError']
-      }
-      else {
-        //blank value while typing.
-        cloudNet['Account ID'] = ''
-      }
-
-      await this.setState({cloudNetworks: cloudNetworks})
-      ref = this.myRefs[`${cloudNetwork.id}_Account ID`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
-      */
     }
 
     if (key === 'Account Name') {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account Name'] === value )
       await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
-      /*
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${cloudNetwork.id}_Account Name`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
-      if (value) {
-        if (cloudNet.existent) {
-          if (origCloudNet['Account Name'] !== value) {
-            cloudNet.isModified['Account Name'] = true
-            cloudNet['Account Name'] = value
-          }
-          else {
-            delete cloudNet.isModified['Account Name']
-            cloudNet['Account Name'] = value
-          }
-        }
-        else {
-          cloudNet['Account Name'] = value
-        }
-        delete cloudNet['Account NameError']
-      }
-      else {
-        //blank value while typing.
-        cloudNet['Account Name'] = ''
-      }
-
-      await this.setState({cloudNetworks: cloudNetworks})
-      ref = this.myRefs[`${cloudNetwork.id}_Account Name`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
-      */
     }
 
     if (key === 'New Account ID') {
@@ -574,6 +487,24 @@ class CloudNetwork extends React.Component {
             }
             else {
               cloudNet.Region = 'aws-'+value
+            }
+            delete cloudNet.RegionError
+          }
+        }
+        if (this.state.provider === 'AZURE') {
+          if (value) {
+            if (cloudNet.existent) {
+              if (origCloudNet.Region !== 'azure-'+value) {
+                cloudNet.isModified.Region = true
+                cloudNet.Region = 'azure-'+value
+              }
+              else {
+                delete cloudNet.isModified.Region
+                cloudNet.Region = 'azure-'+value
+              }
+            }
+            else {
+              cloudNet.Region = 'azure-'+value
             }
             delete cloudNet.RegionError
           }
@@ -696,7 +627,7 @@ class CloudNetwork extends React.Component {
 
     for (let cloudNet of Object.values(cloudNetworks)) {
      
-      if (this.state.provider === 'AWS' && !cloudNet.Region) {
+      if ((this.state.provider === 'AWS' || this.state.provider === 'AZURE' ) && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
       }
@@ -773,7 +704,7 @@ class CloudNetwork extends React.Component {
           }
         }
 
-        if (this.state.provider === 'AWS') {
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE') {
           body.data.region = cloudNet.Region
         }
 
@@ -815,7 +746,7 @@ class CloudNetwork extends React.Component {
           }
         }
 
-        if (this.state.provider === 'AWS') {
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE') {
           body.data.region = cloudNet.Region
         }
 
@@ -1065,7 +996,7 @@ class CloudNetwork extends React.Component {
                   :
                     {width: 180}
                 }
-                disabled={(key === 'Region' && this.state.provider !== 'AWS') ? true : false}
+                disabled={(this.state.provider === 'AWS' || this.state.provider === 'AZURE') ? false : true}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1076,8 +1007,8 @@ class CloudNetwork extends React.Component {
                 onSelect={event => this.set(key, event, obj)}
               >
                 <React.Fragment>
-                  { this.state.provider === 'AWS' ?
-                    this.state['AWS Regions'].map((v,i) => {
+                  { this.state.provider === 'AWS' || this.state.provider === 'AZURE' ?
+                    this.state.regions.map((v,i) => {
                       let str = `${v[0].toString()} - ${v[1].toString()}`
                       return (
                         <Select.Option key={i} value={v[1]}>{str}</Select.Option>
