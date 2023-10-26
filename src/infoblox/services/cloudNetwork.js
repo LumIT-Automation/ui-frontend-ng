@@ -45,9 +45,13 @@ class CloudNetwork extends React.Component {
       loading: false,
       accountsLoading: false,
       accounts: [],
+      accountModify: false,
       ['Account ID']: '',
       ['Account Name']: '',
       ITSM: '',
+      ['Modify ID']: '',
+      ['Modify Name']: '',
+      ['Modify ITSM']: '',
       cloudNetworks: [],
       originCloudNetworks: [],
     };
@@ -61,8 +65,7 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.provider)
-    console.log(this.state.regions)
+    
     if (this.state.provider !== prevState.provider) {
       this.setState({['Account ID']: '', ['Account Name']: '', ITSM: '',})
       this.dataGetHandler('configuration')
@@ -163,7 +166,7 @@ class CloudNetwork extends React.Component {
 
   /* 
   @ todo
-  - AZURE REGIONS
+  - permessi lettura reti e scrittura
   - modifica id/name/itsm
   */
 
@@ -456,6 +459,28 @@ class CloudNetwork extends React.Component {
       await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
     }
 
+    if (key === 'accountModify') {
+      console.log(key)
+      console.log(value)
+      await this.setState({accountModify: value})
+      if (!value) {
+        await this.setState({['Modify ID']: '', ['Modify Name']: '', ['Modify ITSM']: '',})
+      }
+      
+    }
+
+    if (key === 'Modify ID') {
+      await this.setState({[key]: value})
+    }
+
+    if (key === 'Modify Name') {
+      await this.setState({[key]: value})
+    }
+
+    if (key === 'Modify ITSM') {
+      await this.setState({[key]: value})
+    }
+
     if (key === 'New Account ID') {
       await this.setState({['New Account ID']: value})
     }
@@ -652,6 +677,9 @@ class CloudNetwork extends React.Component {
       if (cloudNet.isModified && Object.keys(cloudNet.isModified).length > 0) {
         toPatch.push(cloudNet)
       }
+      if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
+        toPatch.push(cloudNet)
+      }
       if (!cloudNet.existent) {
         toPost.push(cloudNet)
       }
@@ -746,6 +774,26 @@ class CloudNetwork extends React.Component {
           }
         }
 
+        if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
+          body.data = {
+            "network_data": {
+              "network": "next-available",
+              "comment": cloudNet.comment,
+              "extattrs": {
+                "Account ID": {
+                  "value": this.state['Modify ID']
+                },
+                "Account Name": {
+                  "value": this.state['Modify Name']
+                },
+                "Reference": {
+                  "value": this.state['Modify ITSM']
+                }
+              }
+            }
+          }
+        }
+
         if (this.state.provider === 'AWS' || this.state.provider === 'AZURE') {
           body.data.region = cloudNet.Region
         }
@@ -765,6 +813,18 @@ class CloudNetwork extends React.Component {
           await this.setState({cloudNetworks: cloudNetworks})
         }
       }
+    }
+
+    if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
+      await this.setState({
+        ['Account ID']: this.state['Modify ID'],
+        ['Account Name']: this.state['Modify Name'],
+        ITSM: this.state['Modify ITSM'],
+        accountModify: false,
+        ['Modify ID']: '',
+        ['Modify Name']: '',
+        ['Modify ITSM']: '',
+      })
     }
 
     this.dataGetHandler('getNetworks', this.props.asset.id)
@@ -882,30 +942,6 @@ class CloudNetwork extends React.Component {
                 value={this.state[key]}
                 onChange={event => this.set(key, event.target.value)}
               />
-              /*<Input
-                style=
-                {obj[`${key}Error`] && key === 'ITSM' ?
-                  {borderColor: 'red', width: 200}
-                :
-                  obj[`${key}Error`] ?
-                    {borderColor: 'red'}
-                  :
-                   key === 'ITSM' ?
-                    {width: 200}
-                   :
-                    {}
-                }
-                disabled={
-                  key === 'Account ID' && this.state['Account ID'] ? true
-                  :
-                  key === 'Account Name' && this.state['Account Name'] ? true
-                  :
-                  false
-                }
-                value={obj[key]}
-                ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-                onChange={event => this.set(key, event.target.value, obj)}
-              />*/
             )
           }
 
@@ -920,6 +956,18 @@ class CloudNetwork extends React.Component {
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
                 Get cloud networks
+              </Button>
+            )
+          }
+
+          else if (action === 'modifyAccount') {
+            return (
+              <Button
+                type="primary"
+                disabled={(this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) ? false : true}
+                onClick={() => this.validation()}
+              >
+                Modify Account
               </Button>
             )
           }
@@ -948,30 +996,6 @@ class CloudNetwork extends React.Component {
             )
           }
 
-      /*  case 'radio':
-          return (
-            <Radio.Group
-              onChange={event => this.set(event.target.value, key)}
-              defaultValue={key === 'environment' ? 'AzureCloud' : null}
-              value={this.state.request[`${key}`]}
-              style={this.state.errors[`${key}Error`] ?
-                {border: `1px solid red`}
-              :
-                {}
-              }
-            >
-              <React.Fragment>
-                {this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Radio.Group>
-          )
-          break;
-*/
         case 'textArea':
           return (
             <Input.TextArea
@@ -1028,10 +1052,11 @@ class CloudNetwork extends React.Component {
                 showSearch
                 style={
                   obj[`${key}Error`] ?
-                    {border: `1px solid red`, width: 180}
+                    {border: `1px solid red`, width: '100%'}
                   :
-                    {width: 180}
+                    {width: '100%'}
                 }
+                disabled={this.state.accountModify ? true : false}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1059,9 +1084,9 @@ class CloudNetwork extends React.Component {
                 showSearch
                 style={
                   obj[`${key}Error`] ?
-                    {border: `1px solid red`, width: 180}
+                    {border: `1px solid red`, width: '100%'}
                   :
-                    {width: 180}
+                    {width: '100%'}
                 }
                 optionFilterProp="children"
                 filterOption={(input, option) =>
@@ -1210,72 +1235,114 @@ class CloudNetwork extends React.Component {
                   <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                   </Col>
-                  <Col span={4}>
+                  <Col span={2}>
                     {createElement('select', 'provider', 'providers', '', '')}
                   </Col>
 
                 </Row>
+                {this.state.provider ?
+                  <React.Fragment>
+                    <Row>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                      </Col>
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={2}>
+                          {createElement('select', 'Account ID', 'accounts', '', 'getNetworks')}
+                        </Col>
+                      }
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                      </Col>
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={2}>
+                          {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
+                        </Col>
+                      }
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                      </Col>
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5}}>{this.state.ITSM}</p>
+                        </Col>
+                      }
+                      <Col offset={1} span={1}>
+                        <Checkbox
+                          checked={this.state.accountModify}
+                          onChange={e => this.set('accountModify', e.target.checked)}
+                        >
+                          Modify:
+                        </Checkbox>
+                      </Col>
+                      <Col offset={1}  span={2}>
+                        {createElement('button', '', '', '', 'delAccount')}
+                      </Col>
+                    </Row>
 
-                <Row>
-                  <Col span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
-                  </Col>
-                  {this.state.accountsLoading ?
-                    <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                  :
-                    <Col span={4}>
-                      {createElement('select', 'Account ID', 'accounts', '', 'getNetworks')}
-                    </Col>
-                  }
-                  <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
-                  </Col>
-                  {this.state.accountsLoading ?
-                    <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                  :
-                    <Col span={4}>
-                      {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
-                    </Col>
-                  }
-                  <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
-                  </Col>
-                  {this.state.accountsLoading ?
-                    <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                  :
-                    <Col span={4}>
-                      <p style={{marginRight: 10, marginTop: 5}}>{this.state.ITSM}</p>
-                    </Col>
-                  }
-                  <Col offset={1} span={2}>
-                    {createElement('button', '', '', '', 'delAccount')}
-                  </Col>
-                </Row>
+                    { this.state.accountModify ?
+                      <Row>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                        </Col>
+                        <Col span={2}>
+                          {createElement('input', 'Modify ID', '', '', '')}
+                        </Col>
+                        <Col span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                        </Col>
+                        <Col span={2}>
+                          {createElement('input', 'Modify Name', '', '', '')}
+                        </Col>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                        </Col>
+                        <Col span={2}>
+                          {createElement('input', 'Modify ITSM', '', '', '')}
+                        </Col>
+                        <Col offset={3} span={2}>
+                          {createElement('button', '', '', '', 'modifyAccount')}
+                        </Col>
+                      </Row>
+                    :
+                      null 
+                    }
 
-                <Row>
-                  <Col span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
-                  </Col>
-                  <Col span={4}>
-                    {createElement('input', 'New Account ID', '', '', '')}
-                  </Col>
-                  <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
-                  </Col>
-                  <Col span={4}>
-                    {createElement('input', 'New Account Name', '', '', '')}
-                  </Col>
-                  <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
-                  </Col>
-                  <Col span={4}>
-                    {createElement('input', 'New ITSM', '', '', '')}
-                  </Col>
-                  <Col offset={1} span={2}>
-                    {createElement('button', '', '', '', 'newAccount')}
-                  </Col>
-                </Row>
+                    <Divider/>
 
+                    <Row>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
+                      </Col>
+                      <Col span={2}>
+                        {createElement('input', 'New Account ID', '', '', '')}
+                      </Col>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
+                      </Col>
+                      <Col span={2}>
+                        {createElement('input', 'New Account Name', '', '', '')}
+                      </Col>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                      </Col>
+                      <Col span={2}>
+                        {createElement('input', 'New ITSM', '', '', '')}
+                      </Col>
+                      <Col offset={3} span={2}>
+                        {createElement('button', '', '', '', 'newAccount')}
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
+                  null
+                }
                 <Divider/>
 
                 {
