@@ -1,2 +1,23 @@
 https://redux-toolkit.js.org/tutorials/quick-start
 https://stackoverflow.com/questions/66277647/how-to-use-redux-toolkit-slicer-with-react-class-components
+
+
+/*
+@todo:
+aggiornamento antd
+axios
+localStorage
+auth component
+foreach --> map
+1 funzione, 1 azione
+service button --> service card
+
+element --> item
+1 get
+1 set
+validation
+del, post, patch
+createElement
+
+
+*/ 

@@ -16,7 +16,7 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Checkbox, Spin, Alert, Result } from 'antd'
+import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Checkbox, Spin, Alert, Result, Popover } from 'antd'
 import Highlighter from 'react-highlight-words';
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
@@ -27,6 +27,12 @@ const cloudNetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 Country = Provider
 City = Region
 Reference = ITSM (IT SERVICE MANAGER)
+*/
+
+/* 
+@ todo
+- permessi lettura reti e scrittura
+- conferma delete
 */
 
 class CloudNetwork extends React.Component {
@@ -54,6 +60,7 @@ class CloudNetwork extends React.Component {
       ['Modify ITSM']: '',
       cloudNetworks: [],
       originCloudNetworks: [],
+      openPopover: false
     };
   }
 
@@ -163,12 +170,6 @@ class CloudNetwork extends React.Component {
   details = () => {
     this.setState({visible: true})
   }
-
-  /* 
-  @ todo
-  - permessi lettura reti e scrittura
-  - modifica id/name/itsm
-  */
 
   dataGetHandler = async (entities, assetId) => {
     let data
@@ -462,7 +463,7 @@ class CloudNetwork extends React.Component {
     if (key === 'accountModify') {
       console.log(key)
       console.log(value)
-      await this.setState({accountModify: value})
+      await this.setState({accountModify: value, ['Modify ID']: this.state['Account ID'], ['Modify Name']: this.state['Account Name'], ['Modify ITSM']: this.state.ITSM})
       if (!value) {
         await this.setState({['Modify ID']: '', ['Modify Name']: '', ['Modify ITSM']: '',})
       }
@@ -887,10 +888,20 @@ class CloudNetwork extends React.Component {
     this.setState({
       visible: false,
       provider: '',
+      regions: [],
+      loading: false,
+      accountsLoading: false,
+      accounts: [],
+      accountModify: false,
       ['Account ID']: '',
       ['Account Name']: '',
+      ITSM: '',
+      ['Modify ID']: '',
+      ['Modify Name']: '',
+      ['Modify ITSM']: '',
       cloudNetworks: [],
       originCloudNetworks: [],
+      openPopover: false
     })
   }
   
@@ -984,7 +995,7 @@ class CloudNetwork extends React.Component {
             )
           }
 
-          else if (action === 'delAccount') {
+          /*else if (action === 'delAccount') {
             return (
               <Button
                 type="danger"
@@ -994,7 +1005,32 @@ class CloudNetwork extends React.Component {
                 Delete Account
               </Button>
             )
+          }*/
+
+        case 'popOver':
+          if (action === 'delAccount') {
+            return (
+              <Popover
+              content={
+                <div>
+                  <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
+                  <a onClick={() => this.accountDel()}>DELETE ACCOUNT</a>
+                </div>
+              }
+              title='Attention!'
+              trigger="click"
+            >
+              <Button 
+                type="danger"
+                disabled={(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? false : true}
+              >
+                Delete Account
+              </Button>
+            </Popover>
+            )
           }
+        break;
+
 
         case 'textArea':
           return (
@@ -1006,7 +1042,7 @@ class CloudNetwork extends React.Component {
               style={{width: 350}}
             />
           )
-          break;
+        break;
 
         case 'select':          
           if (key === 'Region') {
@@ -1235,7 +1271,7 @@ class CloudNetwork extends React.Component {
                   <Col span={2}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                   </Col>
-                  <Col span={2}>
+                  <Col span={4}>
                     {createElement('select', 'provider', 'providers', '', '')}
                   </Col>
 
@@ -1249,7 +1285,7 @@ class CloudNetwork extends React.Component {
                       {this.state.accountsLoading ?
                         <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                       :
-                        <Col span={2}>
+                        <Col span={3}>
                           {createElement('select', 'Account ID', 'accounts', '', 'getNetworks')}
                         </Col>
                       }
@@ -1259,7 +1295,7 @@ class CloudNetwork extends React.Component {
                       {this.state.accountsLoading ?
                         <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                       :
-                        <Col span={2}>
+                        <Col span={4}>
                           {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
                         </Col>
                       }
@@ -1282,7 +1318,7 @@ class CloudNetwork extends React.Component {
                         </Checkbox>
                       </Col>
                       <Col offset={1}  span={2}>
-                        {createElement('button', '', '', '', 'delAccount')}
+                        {createElement('popOver', '', '', '', 'delAccount')}
                       </Col>
                     </Row>
 
@@ -1291,13 +1327,13 @@ class CloudNetwork extends React.Component {
                         <Col span={2}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
                         </Col>
-                        <Col span={2}>
+                        <Col span={3}>
                           {createElement('input', 'Modify ID', '', '', '')}
                         </Col>
                         <Col span={3}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                         </Col>
-                        <Col span={2}>
+                        <Col span={4}>
                           {createElement('input', 'Modify Name', '', '', '')}
                         </Col>
                         <Col span={2}>
@@ -1320,13 +1356,13 @@ class CloudNetwork extends React.Component {
                       <Col span={2}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
                       </Col>
-                      <Col span={2}>
+                      <Col span={3}>
                         {createElement('input', 'New Account ID', '', '', '')}
                       </Col>
                       <Col span={3}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
                       </Col>
-                      <Col span={2}>
+                      <Col span={4}>
                         {createElement('input', 'New Account Name', '', '', '')}
                       </Col>
                       <Col span={2}>

@@ -20,24 +20,6 @@ const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
-/*
-@todo:
-aggiornamento antd
-axios
-localStorage
-auth component
-foreach --> map
-1 funzione, 1 azione
-
-element --> item
-1 get
-1 set
-validation
-del, post, patch
-createElement
-
-
-*/ 
 
 class ItemsView extends React.Component {
 
