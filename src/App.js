@@ -6,7 +6,7 @@ import Login from './Login'
 import Concerto from './Concerto'
 import { Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
-import { login, uiconf } from './_store/store.authentication'
+import { login, uiconf, logout } from './_store/store.authentication'
 import { authorizations, authorizationsError } from './_store/store.authorizations'
 
 import './App.css';
@@ -95,7 +95,21 @@ class App extends Component {
     await this.setState({authorizationsLoading: true})
     let authorizationsFetched = await this.authorizationsGet()
     await this.setState({authorizationsLoading: false})
-    if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
+    //
+    if (authorizationsFetched.status && authorizationsFetched.status === 401 ) {
+      try {
+        localStorage.removeItem('token');
+        localStorage.removeItem('username');
+        await this.props.dispatch( logout() )
+        document.location.href = '/'
+      }
+      catch(e) {
+        console.log(e)
+      }
+      return
+    }
+    //
+    else if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
       this.props.dispatch(authorizationsError(authorizationsFetched))
       return
     }
