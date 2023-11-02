@@ -60,7 +60,6 @@ class CloudNetwork extends React.Component {
       ['Modify ITSM']: '',
       cloudNetworks: [],
       originCloudNetworks: [],
-      openPopover: false
     };
   }
 
@@ -166,6 +165,7 @@ class CloudNetwork extends React.Component {
     confirm();
     this.setState({ searchText: '' });
   };
+
 
   details = () => {
     this.setState({visible: true})
@@ -292,6 +292,7 @@ class CloudNetwork extends React.Component {
           ['New Account ID']: '', 
           ['New Account Name']: '',
           ['New ITSM']: '',
+          accountModify: false,
         })
         return
       }
@@ -330,7 +331,8 @@ class CloudNetwork extends React.Component {
           cloudNetworks: data.data, 
           ['New Account ID']: '', 
           ['New Account Name']: '', 
-          ['New ITSM']: ''
+          ['New ITSM']: '',
+          accountModify: false,
         })
 
         this.dataGetHandler('accountsAndProviders', this.props.asset.id)
@@ -398,7 +400,7 @@ class CloudNetwork extends React.Component {
       ITSM: '',
       cloudNetworks: [],
       originCloudNetworks: [],
-    
+      accountModify: false,
     })
     this.dataGetHandler('accountsAndProviders', this.props.asset.id)
   }
@@ -657,6 +659,7 @@ class CloudNetwork extends React.Component {
         cloudNet.RegionError = true
       }
     }
+
     await this.setState({cloudNetworks: cloudNetworks})
     return errors
   }
@@ -907,8 +910,7 @@ class CloudNetwork extends React.Component {
       ['Modify Name']: '',
       ['Modify ITSM']: '',
       cloudNetworks: [],
-      originCloudNetworks: [],
-      openPopover: false
+      originCloudNetworks: []
     })
   }
   
@@ -921,49 +923,106 @@ class CloudNetwork extends React.Component {
     }
 
     let createElement = (element, key, choices, obj, action) => {
+
+      if (element === 'input') {
+        if (key === 'New Account ID') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'Modify ID') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'New Account Name') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'Modify Name') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'Modify ITSM') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'New ITSM') {
+          console.log('key', key)
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+      }
+
       switch (element) {
-
-        case 'input':
-
-          if (key === 'New Account ID' || key === 'New Account Name' || key === 'New ITSM') {
-            return (
-              <Input
-                value={this.state[key]}
-                onChange={event => this.set(key, event.target.value)}
-              />
-            )
-          }
-
-          if (key === 'Account ID' || key === 'Account Name') {
-            return (
-              <Input
-                style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red'}
-                :
-                  {}
-                }
-                value={this.state[key]}
-                onChange={event => this.set(key, event.target.value)}
-                onPressEnter={event => {
-                    if (event.target.value) {
-                      this.dataGetHandler(action, this.props.asset.id)
-                    }
-                  }
-                }
-              />
-            )
-          }
-          else {
-            return (
-              <Input
-                value={this.state[key]}
-                onChange={event => this.set(key, event.target.value)}
-              />
-            )
-          }
-
-          break;
 
         case 'button':
           if (action === 'getNetworks') {
@@ -982,7 +1041,7 @@ class CloudNetwork extends React.Component {
             return (
               <Button
                 type="primary"
-                disabled={(this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) ? false : true}
+                disabled={(this.state['Modify ID'] && this.state['Modify ID'].length === 12 && this.state['Modify Name'] && this.state['Modify ITSM']) ? false : true}
                 onClick={() => this.validation()}
               >
                 Modify Account
@@ -994,25 +1053,14 @@ class CloudNetwork extends React.Component {
             return (
               <Button
                 type="primary"
-                disabled={(this.state['New Account ID'] && this.state['New Account Name'] && this.state['New ITSM']) ? false : true}
+                disabled={(this.state['New Account ID'] && this.state['New Account ID'].length === 12 && this.state['New Account Name'] && this.state['New ITSM']) ? false : true}
                 onClick={() => this.dataGetHandler(action, this.props.asset.id)}
               >
                 Set new Account
               </Button>
             )
           }
-
-          /*else if (action === 'delAccount') {
-            return (
-              <Button
-                type="danger"
-                disabled={(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? false : true}
-                onClick={() => this.accountDel()}
-              >
-                Delete Account
-              </Button>
-            )
-          }*/
+        break;
 
         case 'popOver':
           if (action === 'delAccount') {
@@ -1037,7 +1085,6 @@ class CloudNetwork extends React.Component {
             )
           }
         break;
-
 
         case 'textArea':
           return (
@@ -1151,7 +1198,7 @@ class CloudNetwork extends React.Component {
             </Select>
             )
           }
-          
+        break;          
 
         default:
 
@@ -1287,7 +1334,7 @@ class CloudNetwork extends React.Component {
                   <React.Fragment>
                     <Row>
                       <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (length 12):</p>
                       </Col>
                       {this.state.accountsLoading ?
                         <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
@@ -1332,7 +1379,7 @@ class CloudNetwork extends React.Component {
                     { this.state.accountModify ?
                       <Row>
                         <Col span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (length 12):</p>
                         </Col>
                         <Col span={3}>
                           {createElement('input', 'Modify ID', '', '', '')}
@@ -1361,7 +1408,7 @@ class CloudNetwork extends React.Component {
 
                     <Row>
                       <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (length 12):</p>
                       </Col>
                       <Col span={3}>
                         {createElement('input', 'New Account ID', '', '', '')}
