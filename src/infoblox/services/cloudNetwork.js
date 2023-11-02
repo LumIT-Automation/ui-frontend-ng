@@ -652,7 +652,6 @@ class CloudNetwork extends React.Component {
     let errors = 0
 
     for (let cloudNet of Object.values(cloudNetworks)) {
-     
       if ((this.state.provider === 'AWS' || this.state.provider === 'AZURE' ) && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
@@ -665,7 +664,6 @@ class CloudNetwork extends React.Component {
   /* DISPOSITION */
 
   cudManager = async () => {
-    console.log('cudManager')
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let toDelete = []
     let toPatch = []
@@ -685,11 +683,6 @@ class CloudNetwork extends React.Component {
         toPost.push(cloudNet)
       }
     }
-
-    //console.log('toDelete', toDelete)
-    //console.log('toPatch', toPatch)
-    //console.log('toPost', toPost)
-
 
     if (toDelete.length > 0) {
       for (const cloudNet of toDelete) {
@@ -816,6 +809,7 @@ class CloudNetwork extends React.Component {
       }
     }
 
+    ///?
     if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
       await this.setState({
         ['Account ID']: this.state['Modify ID'],
@@ -828,7 +822,20 @@ class CloudNetwork extends React.Component {
       })
     }
 
-    this.dataGetHandler('getNetworks', this.props.asset.id)
+    await this.dataGetHandler('getNetworks', this.props.asset.id)
+
+    if (this.state.cloudNetworks.length < 1) {
+      await this.setState({
+        loading: false, 
+        ['Account ID']: '',
+        ['Account Name']: '',
+        ITSM: '',
+        ['Modify ID']: '',
+        ['Modify Name']: '',
+        ['Modify ITSM']: '',      
+      })
+    }
+
     this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     
   }
