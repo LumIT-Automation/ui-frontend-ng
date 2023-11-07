@@ -45,7 +45,7 @@ class CloudNetwork extends React.Component {
 
     this.state = {
       visible: false,
-      providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
+      providers: ['AWS', 'AZURE', 'GCP', 'OCI'],
       subnetMaskCidrs: ['23','24'],
       provider: '',
       regions: [],
@@ -72,6 +72,7 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.regions)
     
     if (this.state.provider !== prevState.provider) {
       this.setState({
@@ -206,9 +207,19 @@ class CloudNetwork extends React.Component {
                 }
               });
             }
-            if (this.state.provider === 'AZURE') {
+            else if (this.state.provider === 'AZURE') {
               data.data.configuration.forEach((item, i) => {
                 if (item.key === 'AZURE Regions') {
+                  let list = JSON.parse(item.value)
+                  list.forEach((item, i) => {
+                    list2.push(item)
+                  });
+                }
+              });
+            }
+            else if (this.state.provider === 'OCI') {
+              data.data.configuration.forEach((item, i) => {
+                if (item.key === 'OCI Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -220,7 +231,7 @@ class CloudNetwork extends React.Component {
           }
         }
       } catch (error) {
-        await this.setState({loading: false})
+        await this.setState({loading: false, regions: []})
         console.log(error)
       }
     }
@@ -253,7 +264,10 @@ class CloudNetwork extends React.Component {
       else {
         try{
           data.data.forEach((item, i) => {
+            console.log(item)
+            let sm = item.network.split('/')
             item.existent = true
+            item.subnetMaskCidr = sm[1]
             item.isModified = {}
             item.id = ++i
             if (item.extattrs) {
@@ -362,10 +376,10 @@ class CloudNetwork extends React.Component {
 
     if (entities === 'getNetworks') {
       if (this.state['Account ID']) {
-        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['Account ID']}&fby=*Environment&fval=Cloud`
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['Account ID']}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${this.state.provider}`
       }
       else if(this.state['Account Name']) {
-        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['Account Name']}&fby=*Environment&fval=Cloud`
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['Account Name']}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${this.state.provider}`
       }
     }
 
@@ -552,6 +566,24 @@ class CloudNetwork extends React.Component {
           }
         }
       }
+      if (this.state.provider === 'OCI') {
+        if (value) {
+          if (cloudNet.existent) {
+            if (origCloudNet.Region !== 'oci-'+value) {
+              cloudNet.isModified.Region = true
+              cloudNet.Region = 'oci-'+value
+            }
+            else {
+              delete cloudNet.isModified.Region
+              cloudNet.Region = 'oci-'+value
+            }
+          }
+          else {
+            cloudNet.Region = 'oci-'+value
+          }
+          delete cloudNet.RegionError
+        }
+      }
 
       if (key === 'ITSM') {
         let start = 0
@@ -674,7 +706,7 @@ class CloudNetwork extends React.Component {
     let errors = 0
 
     for (let cloudNet of Object.values(cloudNetworks)) {
-      if ((this.state.provider === 'AWS' || this.state.provider === 'AZURE' ) && !cloudNet.Region) {
+      if ((this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI' ) && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
       }
@@ -754,7 +786,7 @@ class CloudNetwork extends React.Component {
           }
         }
 
-        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE') {
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') {
           body.data.region = cloudNet.Region
         }
 
@@ -816,7 +848,7 @@ class CloudNetwork extends React.Component {
           }
         }
 
-        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE') {
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') {
           body.data.region = cloudNet.Region
         }
 
@@ -1134,7 +1166,7 @@ class CloudNetwork extends React.Component {
                   :
                     {width: 180}
                 }
-                disabled={(this.state.provider === 'AWS' || this.state.provider === 'AZURE') ? false : true}
+                disabled={(this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') ? false : true}
                 optionFilterProp="children"
                 filterOption={(input, option) =>
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1145,7 +1177,7 @@ class CloudNetwork extends React.Component {
                 onSelect={event => this.set(key, event, obj)}
               >
                 <React.Fragment>
-                  { this.state.provider === 'AWS' || this.state.provider === 'AZURE' ?
+                  { this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI' ?
                     this.state.regions.map((v,i) => {
                       let str = `${v[0].toString()} - ${v[1].toString()}`
                       return (
