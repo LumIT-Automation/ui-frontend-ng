@@ -46,6 +46,7 @@ class CloudNetwork extends React.Component {
     this.state = {
       visible: false,
       providers: ['AWS', 'AZURE', 'GCP', 'ORACLE'],
+      subnetMaskCidrs: ['23','24'],
       provider: '',
       regions: [],
       loading: false,
@@ -73,7 +74,17 @@ class CloudNetwork extends React.Component {
   componentDidUpdate(prevProps, prevState) {
     
     if (this.state.provider !== prevState.provider) {
-      this.setState({['Account ID']: '', ['Account Name']: '', ITSM: '',})
+      this.setState({
+        accountModify: false,
+        ['Account ID']: '',
+        ['Account Name']: '',
+        ITSM: '',
+        ['Modify ID']: '',
+        ['Modify Name']: '',
+        ['Modify ITSM']: '',
+        cloudNetworks: [],
+        originCloudNetworks: [],
+      })
       this.dataGetHandler('configuration')
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     } 
@@ -442,6 +453,9 @@ class CloudNetwork extends React.Component {
 
   /* SET */
   set = async (key, value, cloudNetwork) => {
+    console.log(key)
+    console.log(value)
+    console.log(cloudNetwork)
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let origCloudNet
     let cloudNet
@@ -581,6 +595,12 @@ class CloudNetwork extends React.Component {
         ref.focus()
       }
 
+      if (key === 'subnetMaskCidr') {
+        console.log(value)
+        cloudNet.subnetMaskCidr = value
+        delete cloudNet.subnetMaskCidrError
+      }
+
       if (key === 'comment') {
         let start = 0
         let end = 0
@@ -658,6 +678,10 @@ class CloudNetwork extends React.Component {
         ++errors
         cloudNet.RegionError = true
       }
+      if (!cloudNet.subnetMaskCidr) {
+        ++errors
+        cloudNet.subnetMaskCidrError = true
+      }
     }
 
     await this.setState({cloudNetworks: cloudNetworks})
@@ -714,6 +738,7 @@ class CloudNetwork extends React.Component {
           "provider": this.state.provider,
           "network_data": {
             "network": "next-available",
+            "subnetMaskCidr": cloudNet.subnetMaskCidr,
             "comment": cloudNet.comment,
             "extattrs": {
               "Account ID": {
@@ -926,7 +951,6 @@ class CloudNetwork extends React.Component {
 
       if (element === 'input') {
         if (key === 'New Account ID') {
-          console.log('key', key)
           return (
             <Input
               style=
@@ -1135,6 +1159,37 @@ class CloudNetwork extends React.Component {
               </Select>
             )
           }
+          else if (key === 'subnetMaskCidr') {
+            return (
+              <Select
+                value={obj[key]}
+                showSearch
+                style={
+                  obj[`${key}Error`] ?
+                    {border: `1px solid red`, width: '100%'}
+                  :
+                    {width: '100%'}
+                }
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={event => this.set(key, event, obj)}
+              >
+                <React.Fragment>
+                  {this.state[`${choices}`].map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                  }
+                </React.Fragment>
+              </Select>
+            )
+          }
           else if (key === 'Account ID' || key === 'Account Name') {
             return (
               <Select
@@ -1252,6 +1307,19 @@ class CloudNetwork extends React.Component {
         )
       },
       {
+        title: 'Subnet Mask',
+        align: 'center',
+        dataIndex: 'subnetMaskCidr',
+        key: 'subnetMaskCidr',
+        ...this.getColumnSearchProps('subnetMaskCidr'),
+        render: (name, cloudNet)  => (
+          cloudNet.existent ? 
+            cloudNet.subnetMaskCidr
+          :
+            createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
+        )
+      },
+      {
         title: 'Comment',
         align: 'center',
         dataIndex: 'comment',
@@ -1322,10 +1390,10 @@ class CloudNetwork extends React.Component {
               <React.Fragment>
 
                 <Row>
-                  <Col span={2}>
+                  <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                   </Col>
-                  <Col span={4}>
+                  <Col span={3}>
                     {createElement('select', 'provider', 'providers', '', '')}
                   </Col>
 
@@ -1333,8 +1401,8 @@ class CloudNetwork extends React.Component {
                 {this.state.provider ?
                   <React.Fragment>
                     <Row>
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (length 12):</p>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
                       </Col>
                       {this.state.accountsLoading ?
                         <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
@@ -1378,8 +1446,8 @@ class CloudNetwork extends React.Component {
 
                     { this.state.accountModify ?
                       <Row>
-                        <Col span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (length 12):</p>
+                        <Col span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
                         </Col>
                         <Col span={3}>
                           {createElement('input', 'Modify ID', '', '', '')}
@@ -1407,8 +1475,8 @@ class CloudNetwork extends React.Component {
                     <Divider/>
 
                     <Row>
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (length 12):</p>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
                       </Col>
                       <Col span={3}>
                         {createElement('input', 'New Account ID', '', '', '')}
