@@ -828,6 +828,7 @@ class CloudNetwork extends React.Component {
           }
         }
 
+        /*
         if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
           body.data = {
             "network_data": {
@@ -846,7 +847,7 @@ class CloudNetwork extends React.Component {
               }
             }
           }
-        }
+        }*/
 
         if (this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') {
           body.data.region = cloudNet.Region
@@ -869,7 +870,7 @@ class CloudNetwork extends React.Component {
       }
     }
 
-    ///?
+    /*
     if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
       await this.setState({
         ['Account ID']: this.state['Modify ID'],
@@ -880,10 +881,11 @@ class CloudNetwork extends React.Component {
         ['Modify Name']: '',
         ['Modify ITSM']: '',
       })
-    }
+    }*/
 
     await this.dataGetHandler('getNetworks', this.props.asset.id)
 
+    //if account is deleted
     if (this.state.cloudNetworks.length < 1) {
       await this.setState({
         loading: false, 
@@ -898,6 +900,46 @@ class CloudNetwork extends React.Component {
 
     this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     
+  }
+
+  accountModifyManager = async () => {
+    let body = {}
+
+    body.data = {
+      "Account ID": {
+        "value": this.state['Modify ID']
+      },
+      "Account Name": {
+          "value": this.state['Modify Name']
+      },
+      "Reference": {
+          "value": this.state['Modify ITSM']
+      }
+    }
+
+    await this.setState({loading: true})
+    let data = await this.accountModify(this.state['Account ID'], body)
+    
+    if (data.status && data.status !== 200 ) {
+      this.props.dispatch(err(data))
+      await this.setState({loading: false})
+    }
+    else {
+      await this.setState({
+        loading: false, 
+        ['Account ID']: this.state['Modify ID'],
+        ['Account Name']: this.state['Modify Name'],
+        ITSM: this.state['Modify ITSM'],
+        ['Modify ID']: '',
+        ['Modify Name']: '',
+        ['Modify ITSM']: '',
+        accountModify: false      
+      })
+      await this.dataGetHandler('accountsAndProviders', this.props.asset.id)
+      await this.dataGetHandler('getNetworks', this.props.asset.id)
+      
+    }
+
   }
 
   cloudNetworkDelete = async (net) => {
@@ -942,6 +984,21 @@ class CloudNetwork extends React.Component {
       }
     )
     await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/modify-cloud-network/${net}/`, this.props.token, b )
+    return r
+  }
+
+  accountModify = async (id, b) => {
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/modify-account-cloud-network/${id}/`, this.props.token, b )
     return r
   }
 
@@ -1098,7 +1155,7 @@ class CloudNetwork extends React.Component {
               <Button
                 type="primary"
                 disabled={(this.state['Modify ID'] && this.state['Modify ID'].length === 12 && this.state['Modify Name'] && this.state['Modify ITSM']) ? false : true}
-                onClick={() => this.validation()}
+                onClick={() => this.accountModifyManager()}
               >
                 Modify Account
               </Button>
@@ -1466,9 +1523,11 @@ class CloudNetwork extends React.Component {
                       <Col offset={1} span={1}>
                         <Checkbox
                           checked={this.state.accountModify}
+                          disabled={!(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? true : false}
+                          style={{marginTop: 5}}
                           onChange={e => this.set('accountModify', e.target.checked)}
                         >
-                          Modify:
+                          Modify
                         </Checkbox>
                       </Col>
                       <Col offset={1}  span={2}>
