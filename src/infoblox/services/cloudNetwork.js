@@ -1523,7 +1523,7 @@ class CloudNetwork extends React.Component {
                       <Col offset={1} span={1}>
                         <Checkbox
                           checked={this.state.accountModify}
-                          disabled={!(this.state['Account ID'] && this.state['Account Name']) ? true : false}
+                          disabled={!(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? true : false}
                           style={{marginTop: 5}}
                           onChange={e => this.set('accountModify', e.target.checked)}
                         >
