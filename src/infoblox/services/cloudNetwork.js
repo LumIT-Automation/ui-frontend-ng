@@ -547,7 +547,7 @@ class CloudNetwork extends React.Component {
             delete cloudNet.RegionError
           }
         }
-        if (this.state.provider === 'AZURE') {
+        else if (this.state.provider === 'AZURE') {
           if (value) {
             if (cloudNet.existent) {
               if (origCloudNet.Region !== 'azure-'+value) {
@@ -565,25 +565,26 @@ class CloudNetwork extends React.Component {
             delete cloudNet.RegionError
           }
         }
-      }
-      if (this.state.provider === 'OCI') {
-        if (value) {
-          if (cloudNet.existent) {
-            if (origCloudNet.Region !== 'oci-'+value) {
-              cloudNet.isModified.Region = true
-              cloudNet.Region = 'oci-'+value
+        else if (this.state.provider === 'OCI') {
+          if (value) {
+            if (cloudNet.existent) {
+              if (origCloudNet.Region !== 'oci-'+value) {
+                cloudNet.isModified.Region = true
+                cloudNet.Region = 'oci-'+value
+              }
+              else {
+                delete cloudNet.isModified.Region
+                cloudNet.Region = 'oci-'+value
+              }
             }
             else {
-              delete cloudNet.isModified.Region
               cloudNet.Region = 'oci-'+value
             }
+            delete cloudNet.RegionError
           }
-          else {
-            cloudNet.Region = 'oci-'+value
-          }
-          delete cloudNet.RegionError
         }
       }
+      
 
       if (key === 'ITSM') {
         let start = 0
