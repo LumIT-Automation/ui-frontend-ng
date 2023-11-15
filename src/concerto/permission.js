@@ -502,8 +502,8 @@ class Permission extends React.Component {
     p.identity_group_name = ''
     p[this.state.subAsset] = {}
     p.role = ''
-    list.push(p)
-
+    //list.push(p)
+    list = [p].concat(list)
     //this[`inputTextAreaRef${p.id}`] = React.createRef(null);
 
     await this.setState({permissions: list})

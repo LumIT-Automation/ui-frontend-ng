@@ -467,9 +467,6 @@ class CloudNetwork extends React.Component {
 
   /* SET */
   set = async (key, value, cloudNetwork) => {
-    console.log(key)
-    console.log(value)
-    console.log(cloudNetwork)
     let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let origCloudNet
     let cloudNet
