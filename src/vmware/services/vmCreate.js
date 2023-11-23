@@ -1688,7 +1688,7 @@ class CreateVmService extends React.Component {
                 "__lvName": "lv_swap",
                 "__growSize": 0,
                 "__grow_100": false,
-                "__totSize": swap * 1024//6144
+                "__totSize": swap //6144
               }
             },
             {
