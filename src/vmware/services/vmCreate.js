@@ -73,7 +73,7 @@ class CreateVmService extends React.Component {
             size_gib: ""
           }
         ],
-        ram_mb: "",
+        ram_GiB: "",
         cpu: "",
         sockets: "",
         guestspec: "",
@@ -308,7 +308,6 @@ class CreateVmService extends React.Component {
         templateFetched.data.diskDevices.existent.forEach(n => {
           n.id = i
           n.existent = true
-          //n.originalSizeMB = n.sizeMB
           n.originalSizeMB = n.sizeMB
           n.originalSizeGiB = n.sizeMB / 1024
           n.sizeGiB = n.originalSizeGiB
@@ -535,9 +534,9 @@ class CreateVmService extends React.Component {
       }
     }
 
-    if (json.ram_mb) {
+    if (json.ram_GiB) {
       try {
-        await this.memoryMBSet(json.ram_mb)
+        await this.memoryGiBSet(json.ram_GiB)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
         errors.jsonError = `memory: ${error.message}`
@@ -896,9 +895,10 @@ class CreateVmService extends React.Component {
     await this.setState({request: request})
   }
 
-  memoryMBSet = async mem => {
+  
+  memoryGiBSet = async mem => {
     let request = JSON.parse(JSON.stringify(this.state.request))
-    request.memoryMB = mem
+    request.memoryGiB = mem
     await this.setState({request: request})
     this.firstDiskPartitioning()
   }
@@ -968,11 +968,12 @@ class CreateVmService extends React.Component {
     //let diskDevice = diskDevices[0]
     let swap
 
-    if (this.state.request.memoryMB) {
-      if (this.state.request.memoryMB > 16000) {
+    
+    if (this.state.request.memoryGiB) {
+      if (this.state.request.memoryGiB > 16) {
         swap = 16
       } else {
-        swap = (1.5 * Math.round(this.state.request.memoryMB /1024))
+        swap = (1.5 * Math.round(this.state.request.memoryGiB * 1024))
       }
 
       if (this.state.partitioningType === 'default') {
@@ -1239,12 +1240,12 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!request.memoryMB || isNaN(request.memoryMB) || request.memoryMB < 100 || (request.memoryMB % 4 !== 0)) {
-      errors.memoryMBError = true
+    if (!request.memoryGiB || isNaN(request.memoryGiB) || request.memoryGiB < 0.1 || ((request.memoryGiB * 1024 ) % 4 !== 0)) {
+      errors.memoryGiBError = true
       await this.setState({errors: errors})
     }
     else {
-      delete errors.memoryMBError
+      delete errors.memoryGiBError
       await this.setState({errors: errors})
     }
 
@@ -1645,7 +1646,7 @@ class CreateVmService extends React.Component {
         "powerOn": true,
         "numCpu": this.state.request.numCpu,
         "numCoresPerSocket": this.state.request.numCoresPerSocket,
-        "memoryMB": parseInt(this.state.request.memoryMB),
+        "memoryMB": parseInt(this.state.request.memoryGiB * 1024),
         "notes": this.state.request.notes,
         "networkDevices": networkDevices,
         "diskDevices": diskDevices,
@@ -3165,19 +3166,19 @@ class CreateVmService extends React.Component {
                   }
                   </Col>
                   <Col offset={1} span={2}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (MB):</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Memory (GiB):</p>
                   </Col>
                   <Col span={2}>
-                    {this.state.errors.memoryMBError ?
+                    {this.state.errors.memoryGiBError ?
                       <Input
-                        value={this.state.request.memoryMB}
+                        value={this.state.request.memoryGiB}
                         style={{width: '100%', borderColor: 'red'}}
-                        onChange={e => this.memoryMBSet(e.target.value)} />
+                        onChange={e => this.memoryGiBSet(e.target.value)} />
                     :
                       <Input
-                        value={this.state.request.memoryMB}
+                        value={this.state.request.memoryGiB}
                         style={{width: '100%'}}
-                        onChange={e => this.memoryMBSet(e.target.value)} />
+                        onChange={e => this.memoryGiBSet(e.target.value)} />
                     }
                   </Col>
                 </Row>
