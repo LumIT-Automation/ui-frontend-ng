@@ -973,7 +973,7 @@ class CreateVmService extends React.Component {
       if (this.state.request.memoryGiB > 16) {
         swap = 16
       } else {
-        swap = (1.5 * Math.round(this.state.request.memoryGiB * 1024))
+        swap = (1.5 * Math.round(this.state.request.memoryGiB))
       }
 
       if (this.state.partitioningType === 'default') {
@@ -1688,7 +1688,7 @@ class CreateVmService extends React.Component {
                 "__lvName": "lv_swap",
                 "__growSize": 0,
                 "__grow_100": false,
-                "__totSize": swap //6144
+                "__totSize": swap * 1024//6144
               }
             },
             {
