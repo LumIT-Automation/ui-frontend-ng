@@ -1240,7 +1240,7 @@ class CreateVmService extends React.Component {
       await this.setState({errors: errors})
     }
 
-    if (!request.memoryGiB || isNaN(request.memoryGiB) || request.memoryGiB < 0.1 || ((request.memoryGiB * 1024 ) % 4 !== 0)) {
+    if (!request.memoryGiB || isNaN(request.memoryGiB) || request.memoryGiB < 0.1 ) {
       errors.memoryGiBError = true
       await this.setState({errors: errors})
     }
@@ -1688,7 +1688,7 @@ class CreateVmService extends React.Component {
                 "__lvName": "lv_swap",
                 "__growSize": 0,
                 "__grow_100": false,
-                "__totSize": swap * 1024//6144
+                "__totSize": swap * 1024
               }
             },
             {
@@ -1753,7 +1753,7 @@ class CreateVmService extends React.Component {
                 "__lvName": "lv_swap",
                 "__growSize": 0,
                 "__grow_100": false,
-                "__totSize": swap * 1024//6144
+                "__totSize": swap * 1024
               }
             },
             {
