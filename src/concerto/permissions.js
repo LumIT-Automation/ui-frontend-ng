@@ -86,6 +86,12 @@ class Permissions extends React.Component {
             null
           }
 
+          { this.authorizators(this.props.authorizationsProofpoint) ?
+            <Radio.Button value={'proofpoint'}>proofpoint</Radio.Button>
+          :
+            null
+          }
+
           { this.authorizators(this.props.authorizationsVmware) ?
             <Radio.Button value={'vmware'}>vmware</Radio.Button>
           :
@@ -117,6 +123,7 @@ class Permissions extends React.Component {
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
+  authorizationsProofpoint: state.authorizations.proofpoint,
   authorizationsVmware: state.authorizations.vmware,
   authorizationsFortinetdb: state.authorizations.fortinetdb,
   }))(Permissions);

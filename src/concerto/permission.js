@@ -207,6 +207,10 @@ class Permission extends React.Component {
         subAsset = 'partition'
         subAssets = 'partitions'
         break;
+      case 'proofpoint':
+        subAsset = ''
+        subAssets = ''
+        break;
       case 'vmware':
         subAsset = 'object'
         subAssets = 'objects'
@@ -227,6 +231,7 @@ class Permission extends React.Component {
       if (this.props.vendor === 'infoblox' ||
           this.props.vendor === 'checkpoint' ||
           this.props.vendor === 'f5' ||
+          this.props.vendor === 'proofpoint' ||
           this.props.vendor === 'vmware') {
 
         fetchedAssets = await this.dataGet('assets')
@@ -390,6 +395,8 @@ class Permission extends React.Component {
             subAssetsFetched = []
             break;
           default:
+            subAssetsFetched = []
+            break;
         }
 
         if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
@@ -434,6 +441,19 @@ class Permission extends React.Component {
 
 
   permsWithAsset = async (permissions) => {
+    if (this.props.vendor === 'proofpoint') {
+      try {
+        Object.values(permissions).forEach((perm, i) => {
+          let asset = this.state.assets.find(a => a.id === perm.id_asset)
+          perm.asset = asset
+          perm.assetFqdn = asset.fqdn
+        });
+        return permissions
+      } catch(error) {
+        console.log(error)
+        return permissions
+      }
+    }
     try {
       Object.values(permissions).forEach((perm, i) => {
         let asset = this.state.assets.find(a => a.id === perm[this.state.subAsset].id_asset)
@@ -500,11 +520,17 @@ class Permission extends React.Component {
     p.assetFqdn = ''
     p.identity_group_identifier = ''
     p.identity_group_name = ''
-    p[this.state.subAsset] = {}
+
+    if (this.props.vendor === 'infoblox' ||
+        this.props.vendor === 'checkpoint' ||
+        this.props.vendor === 'f5' ||
+        this.props.vendor === 'vmware') {
+          p[this.state.subAsset] = {}
+        }
+
     p.role = ''
-    //list.push(p)
+
     list = [p].concat(list)
-    //this[`inputTextAreaRef${p.id}`] = React.createRef(null);
 
     await this.setState({permissions: list})
   }
@@ -651,20 +677,27 @@ class Permission extends React.Component {
             perm.isModified.subAsset_name = true
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            perm[this.state.subAsset] = {id_asset: value}
+            if (this.props.vendor != 'proofpoint') {
+              perm[this.state.subAsset] = {id_asset: value}
+            }
+            else {}
           }
           else {
             delete perm.isModified.subAsset_assetId
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            perm[this.state.subAsset] = {id_asset: value}
+            if (this.props.vendor != 'proofpoint') {
+              perm[this.state.subAsset] = {id_asset: value}
+            }
             perm.isModified.subAsset_name = true
           }
         }
         else {
           perm.asset = asset
           perm.assetFqdn = asset.fqdn
-          perm[this.state.subAsset] = {id_asset: value}
+          if (this.props.vendor != 'proofpoint') {
+            perm[this.state.subAsset] = {id_asset: value}
+          }
         }
         delete perm.assetIdError
       }
@@ -877,13 +910,22 @@ class Permission extends React.Component {
         if (this.props.vendor === 'fortinetdb') {
           continue
         }
-        if (!perm[this.state.subAsset].id_asset) {
+        else if (this.props.vendor === 'proofpoint') {
+          if (!perm.asset.id) {
+            perm.assetIdError = true
+            ++errors
+          }
+        }
+        else if (!perm[this.state.subAsset].id_asset) {
           perm.assetIdError = true
           ++errors
         }
-        if (!perm[this.state.subAsset].name) {
+        else if (!perm[this.state.subAsset].name) {
           perm[`${this.state.subAsset}Error`] = true
           ++errors
+        }
+        else {
+          continue
         }
 
       }
@@ -910,9 +952,6 @@ class Permission extends React.Component {
         toPost.push(perm)
       }
     }
-    //console.log('toDelete', toDelete)
-    //console.log('toPatch', toPatch)
-    //console.log('toPost', toPost)
 
     if (toDelete.length > 0) {
       for (const perm of toDelete) {
@@ -941,30 +980,38 @@ class Permission extends React.Component {
         if (this.props.vendor === 'workflow') {
           let details = JSON.parse(perm.details);
           body.data = {
-             "identity_group_identifier": perm.identity_group_identifier,
-             "role": perm.role,
-             "workflow" : {
-               "id": perm.workflow.id
-             },
-             "details" : details
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            "workflow" : {
+              "id": perm.workflow.id
+            },
+            "details" : details
           }
         }
         else if (this.props.vendor === 'fortinetdb') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
-             "identity_group_identifier": perm.identity_group_identifier,
-             "role": perm.role
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role
+          }
+        }
+        else if (this.props.vendor === 'proofpoint') {
+          body.data = {
+            "identity_group_name": perm.identity_group_name,
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            "id_asset": perm.asset.id
           }
         }
         else {
           body.data = {
-             "identity_group_name": perm.identity_group_name,
-             "identity_group_identifier": perm.identity_group_identifier,
-             "role": perm.role,
-             [this.state.subAsset]: {
-                 "name": perm[this.state.subAsset].name,
-                 "id_asset": perm[this.state.subAsset].id_asset
-             }
+            "identity_group_name": perm.identity_group_name,
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            [this.state.subAsset]: {
+              "name": perm[this.state.subAsset].name,
+              "id_asset": perm[this.state.subAsset].id_asset
+            }
           }
           if (this.props.vendor === 'vmware') {
             body.data[this.state.subAsset].moId = "any"
@@ -1006,8 +1053,16 @@ class Permission extends React.Component {
         else if (this.props.vendor === 'fortinetdb') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
-             "identity_group_identifier": perm.identity_group_identifier,
-             "role": perm.role
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role
+          }
+        }
+        else if (this.props.vendor === 'proofpoint') {
+          body.data = {
+            "identity_group_name": perm.identity_group_name,
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            "id_asset": perm.asset.id
           }
         }
         else {
@@ -1092,25 +1147,31 @@ class Permission extends React.Component {
 
 
   render() {
-    //console.log('document.activeElement', document.activeElement)
-    //console.log('document.activeElement.id', document.activeElement.id)
-    //console.log('this', this)
     console.log('identityGroups', this.state.identityGroups)
     console.log('roles', this.state.roles)
     console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
+      let newArray = []
       if (this.props.vendor === 'superAdmin') {
-        return superAdminColumns
+        newArray = superAdminColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray
       }
       else if (this.props.vendor === 'workflow') {
-        return workflowColumns
+        newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray 
       }
       else if (this.props.vendor === 'fortinetdb') {
-        return fortinetdbColumns
+        newArray = fortinetdbColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray 
+      }
+      else if (this.props.vendor === 'proofpoint') {
+        newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray 
       }
       else {
-        return vendorColumns
+        newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray 
       }
     }
 
@@ -1399,6 +1460,160 @@ class Permission extends React.Component {
               {width: 200, border: `1px solid red`}
             :
               {width: 200}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('role', value, obj )}
+          >
+            { (this.state.roles ? this.state.roles.map((role, i) => {
+                return (
+                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+                )
+              })
+            :
+              null
+            )}
+          </Select>
+        ),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.permissionRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const proofpointColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'AD group name',
+        align: 'center',
+        dataIndex: 'identity_group_name',
+        key: 'identity_group_name',
+        ...this.getColumnSearchProps('identity_group_name'),
+      },
+      {
+        title: 'Distinguished name',
+        align: 'center',
+        dataIndex: 'identity_group_identifier',
+        key: 'identity_group_identifier',
+        ...this.getColumnSearchProps('identity_group_identifier'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.identity_group_identifier}
+            showSearch
+            style=
+            { obj.identity_group_identifierError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('identity_group_identifier', value, obj )}
+          >
+            { this.state.identityGroups.map((ig, i) => {
+                return (
+                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'assetFqdn',
+        key: 'assetFqdn',
+        ...this.getColumnSearchProps('assetFqdn'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.assetFqdn}
+            showSearch
+            style=
+            { obj.assetIdError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('assetId', value, obj )}
+          >
+            { this.state.assets.map((ass, i) => {
+                return (
+                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
+        align: 'center',
+        dataIndex: 'role',
+        key: 'role',
+        ...this.getColumnSearchProps('role'),
+        render: (name, obj)  => (
+          <Select
+            value={obj && obj.role ? obj.role : null}
+            showSearch
+            style=
+            { obj.roleError ?
+              {width: 150, border: `1px solid red`}
+            :
+              {width: 150}
             }
             optionFilterProp="children"
             filterOption={(input, option) =>
