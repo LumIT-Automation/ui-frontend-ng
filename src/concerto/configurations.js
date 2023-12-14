@@ -66,6 +66,12 @@ class Configurations extends React.Component {
           :
             null
           }
+
+          { this.authorizators(this.props.authorizationsProofpoint) ?
+            <Radio.Button value={'proofpoint'}>proofpoint</Radio.Button>
+          :
+            null
+          }
         </Radio.Group>
 
         <Divider/>
@@ -86,5 +92,6 @@ export default connect((state) => ({
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
+  authorizationsProofpoint: state.authorizations.proofpoint,
   authorizationsVmware: state.authorizations.vmware,
 }))(Configurations);
