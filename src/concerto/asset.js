@@ -179,7 +179,7 @@ class Permission extends React.Component {
       let uniqueEnvironments = []
       let uniqueDatacenters = []
 
-      fetchedAssets.data.items.forEach((item, i) => {
+      fetchedAssets.data?.items.forEach((item, i) => {
         item.existent = true
         item.isModified = {}
         item.tlsverify = item.tlsverify
@@ -304,6 +304,48 @@ class Permission extends React.Component {
 
       await this.setState({assets: assets})
       ref = this.myRefs[`${asset.id}_fqdn`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    if (key === 'name') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${asset.id}_name`]
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      if (value) {
+        if (ass.existent) {
+          if (origAsset.name !== value) {
+            ass.isModified.name = true
+            ass.name = value
+          }
+          else {
+            delete ass.isModified.name
+            ass.name = value
+          }
+        }
+        else {
+          ass.name = value
+        }
+        delete ass.nameError
+      }
+      else {
+        //blank value while typing.
+        ass.name = ''
+      }
+
+      await this.setState({assets: assets})
+      ref = this.myRefs[`${asset.id}_name`]
 
       if (ref && ref.input) {
         ref.input.selectionStart = start
@@ -760,6 +802,10 @@ class Permission extends React.Component {
         ++errors
         ass.fqdnError = true
       }
+      if (this.props.vendor === 'proofpoint' && !ass.name) {
+        ++errors
+        ass.nameError = true
+      }
       if (!ass.protocol) {
         ass.protocolError = true
         ++errors
@@ -859,6 +905,10 @@ class Permission extends React.Component {
            "password": ass.password
         }
 
+        if (this.props.vendor === 'proofpoint') {
+          body.data.name = ass.name
+        }
+
         ass.loading = true
         await this.setState({assets: assets})
 
@@ -923,6 +973,10 @@ class Permission extends React.Component {
            "environment": ass.environment,
            "datacenter": ass.datacenter,
            "tlsverify": ass.tlsverify
+        }
+
+        if (this.props.vendor === 'proofpoint') {
+          body.data.name = ass.name
         }
 
         if (ass.isModified.username) {
@@ -1094,7 +1148,8 @@ class Permission extends React.Component {
     console.log('this.myRefs', this.myRefs)
 
     let returnCol = () => {
-      return vendorColumns
+      let newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray
     }
 
     const vendorColumns = [
@@ -1108,12 +1163,6 @@ class Permission extends React.Component {
             {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
       },
       {
         title: 'Protocol',
@@ -1198,6 +1247,32 @@ class Permission extends React.Component {
           )
         },
       },
+      (this.props.vendor === 'proofpoint' ?
+        {
+          title: 'Name',
+          align: 'center',
+          dataIndex: 'name',
+          key: 'name',
+          render: (name, obj)  => {
+            return (
+              <React.Fragment>
+              <Input
+                value={obj.name}
+                ref={ref => this.myRefs[`${obj.id}_name`] = ref}
+                style={
+                  obj.nameError ?
+                    {borderColor: 'red', textAlign: 'center', width: 200}
+                  :
+                    {textAlign: 'center', width: 200}
+                }
+                onChange={e => {
+                  this.set('name', e.target.value, obj)}
+                }
+              />
+              </React.Fragment>
+            )
+          },
+        }: {} ),
       {
         title: 'Port',
         align: 'center',

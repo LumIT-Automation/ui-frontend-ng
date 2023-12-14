@@ -11,10 +11,25 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
+import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Card } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
+const { Meta } = Card;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+
+/*
+
+<Card
+  hoverable
+  style={{
+    width: 240,
+  }}
+  cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
+>
+  <Meta title="Europe Street beat" description="www.instagram.com" />
+</Card>
+
+*/
 
 
 class ReleaseIp extends React.Component {

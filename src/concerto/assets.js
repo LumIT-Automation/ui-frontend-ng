@@ -74,6 +74,12 @@ class Assets extends React.Component {
           :
             null
           }
+
+          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsProofpoint)) ?
+            <Radio.Button value={'proofpoint'}>proofpoint</Radio.Button>
+          :
+            null
+          }
         </Radio.Group>
 
         <Divider/>
@@ -96,4 +102,5 @@ class Assets extends React.Component {
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
+  authorizationsProofpoint: state.authorizations.proofpoint,
   }))(Assets);
