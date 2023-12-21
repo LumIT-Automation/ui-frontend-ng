@@ -9,8 +9,7 @@ import {
 } from '../_store/store.authorizations'
 
 import {
-  partitionsError,
-  err,
+  err
 } from './store'
 
 
@@ -41,9 +40,6 @@ class Error extends Component {
         
         case 'authorizationsError':
           this.props.dispatch(authorizationsError(null))
-          break;
-        case 'partitionsError':
-          this.props.dispatch(partitionsError(null))
           break;
   
         default:

@@ -8,7 +8,6 @@ import Rest from '../_helpers/Rest'
 import InfobloxError from '../infoblox/error'
 import CheckpointError from '../checkpoint/error'
 import F5Error from '../f5/error'
-import VmwareError from '../vmware/error'
 
 import { environment as infobloxEnvironment } from '../infoblox/store'
 import { asset as infobloxAsset } from '../infoblox/store'
@@ -25,6 +24,9 @@ import { partitionsError as f5PartitionsError } from '../f5/store'
 
 import { environment as vmwareEnvironment } from '../vmware/store'
 import { asset as vmwareAsset } from '../vmware/store'
+
+import { environment as proofpointEnvironment } from '../proofpoint/store'
+import { asset as proofpointAsset } from '../proofpoint/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -61,6 +63,11 @@ class AssetSelector extends React.Component {
           break;
         case 'vmware':
           if (this.props.vmwareAssets) {
+            this.environmentList()
+          }
+          break;
+        case 'proofpoint':
+          if (this.props.proofpointAssets) {
             this.environmentList()
           }
           break;
@@ -105,6 +112,11 @@ class AssetSelector extends React.Component {
             this.environmentList()
           }
           break;
+        case 'proofpoint':
+          if (this.props.proofpointAssets !== prevProps.proofpointAssets) {
+            this.environmentList()
+          }
+          break;
 
         default:
 
@@ -131,6 +143,9 @@ class AssetSelector extends React.Component {
 
     this.props.dispatch(vmwareEnvironment(null))
     this.props.dispatch(vmwareAsset(null))
+
+    this.props.dispatch(proofpointEnvironment(null))
+    this.props.dispatch(proofpointAsset(null))
   }
 
   environmentList = () => {
@@ -147,6 +162,9 @@ class AssetSelector extends React.Component {
         break;
       case 'vmware':
         items = JSON.parse(JSON.stringify(this.props.vmwareAssets))
+        break;
+      case 'proofpoint':
+        items = JSON.parse(JSON.stringify(this.props.proofpointAssets))
         break;
 
       default:
@@ -177,6 +195,9 @@ class AssetSelector extends React.Component {
       case 'vmware':
         assets = JSON.parse(JSON.stringify(this.props.vmwareAssets))
         break;
+      case 'proofpoint':
+        assets = JSON.parse(JSON.stringify(this.props.proofpointAssets))
+        break;
 
       default:
     }
@@ -205,6 +226,9 @@ class AssetSelector extends React.Component {
       case 'vmware':
           await this.props.dispatch(vmwareAsset(asset))
         break;
+      case 'proofpoint':
+        await this.props.dispatch(proofpointAsset(asset))
+      break;
 
       default:
     }
@@ -431,5 +455,9 @@ export default connect((state) => ({
   vmwareEnvironment: state.vmware.environment,
   vmwareAssets: state.vmware.assets,
   vmwareAsset: state.vmware.asset,
+
+  proofpointEnvironment: state.proofpoint.environment,
+  proofpointAssets: state.proofpoint.assets,
+  proofpointAsset: state.proofpoint.asset,
 
 }))(AssetSelector);

@@ -7,6 +7,7 @@ import CheckpointManager from '../checkpoint/services/manager'
 import InfobloxManager from '../infoblox/services/manager'
 import F5Manager from '../f5/services/manager'
 import VmwareManager from '../vmware/services/manager'
+import ProofpointManager from '../proofpoint/services/manager'
 
 import { Divider } from 'antd'
 
@@ -114,6 +115,20 @@ class Service extends React.Component {
           null
         }
 
+        { this.props.authorizationsProofpoint && this.authorizators(this.props.authorizationsProofpoint) ?
+          <React.Fragment>
+            <Divider orientation="left" plain>
+              PROOFPOINT REPORT
+            </Divider>
+            <br/>
+            <ProofpointManager vendor="proofpoint"/>
+            <br/>
+            <br/>
+          </React.Fragment>
+        :
+          null
+        }
+
       </React.Fragment>
     )
   }
@@ -127,6 +142,7 @@ export default connect((state) => ({
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
-  authorizationsVmware: state.authorizations.vmware
+  authorizationsVmware: state.authorizations.vmware,
+  authorizationsProofpoint: state.authorizations.proofpoint
 
 }))(Service);
