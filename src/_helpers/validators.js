@@ -78,7 +78,6 @@ class Validators {
   }
 
   isSubnet = (subnet) => {
-    console.log(subnet)
     let block
 
     try {

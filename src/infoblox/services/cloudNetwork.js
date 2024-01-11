@@ -488,8 +488,6 @@ class CloudNetwork extends React.Component {
     }
 
     if (key === 'accountModify') {
-      console.log(key)
-      console.log(value)
       await this.setState({accountModify: value, ['Modify ID']: this.state['Account ID'], ['Modify Name']: this.state['Account Name'], ['Modify ITSM']: this.state.ITSM})
       if (!value) {
         await this.setState({['Modify ID']: '', ['Modify Name']: '', ['Modify ITSM']: '',})

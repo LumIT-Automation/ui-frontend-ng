@@ -86,7 +86,6 @@ class App extends Component {
       }
     }
     catch (e) {
-      console.log(e)
       await this.props.dispatch(login({username: undefined, token: undefined}))
     }
   }
@@ -104,7 +103,6 @@ class App extends Component {
         document.location.href = '/'
       }
       catch(e) {
-        console.log(e)
       }
       return
     }

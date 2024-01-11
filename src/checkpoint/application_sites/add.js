@@ -150,7 +150,6 @@ class Add extends React.Component {
     await this.setState({request: request, errors: errors, input: input})
   }
   urlListSet = async () => {
-    console.log('input', this.state.input)
     let input = JSON.parse(JSON.stringify(this.state.input))
     let request = JSON.parse(JSON.stringify(this.state.request))
     let list=[], nlist=[], urlsList=[]
@@ -315,12 +314,7 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
 
-    let cicciput = (obj) => {
-      console.log('obj', obj)
-    }
     const columns = [
       {
         title: 'Url',

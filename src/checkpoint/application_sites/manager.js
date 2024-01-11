@@ -73,7 +73,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(application_sites(resp))
       },
       error => {
@@ -89,7 +88,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(application_site_categorys(resp))
       },
       error => {

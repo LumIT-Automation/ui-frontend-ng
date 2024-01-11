@@ -64,7 +64,7 @@ class Manager extends React.Component {
         <Row>
 
           <Col span={4} offset={2} >
-            <Report type='Report'/>
+            <Report type='Report' vendor="proofpoint"/>
           </Col>
 
         </Row>

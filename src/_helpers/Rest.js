@@ -102,8 +102,6 @@ class Rest {
         }
       }
 
-
-
       else {
         if (this.method === "GET") {
           try {
@@ -122,8 +120,12 @@ class Rest {
             })
 
             if (response.ok) {
-              json = await response.json();
-
+              let content = response.headers.get('content-type')
+              console.log(content)
+              if (content === 'application/json') {
+                json = await response.json();
+              }
+              
               if (json && json.data) {
                 this.onSuccess(json);
               }
@@ -157,6 +159,7 @@ class Rest {
             }
           }
           catch (error) {
+            console.log('error')
             this.onError({
               message: error.message,
               type: error.name
