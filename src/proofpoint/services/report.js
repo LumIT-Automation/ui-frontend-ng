@@ -27,7 +27,6 @@ class RemoveHost extends React.Component {
       errors: {},
       reportTypes: ["report-knowledge-assessment"],
       reports: [],
-      
     };
   }
 
@@ -114,15 +113,18 @@ class RemoveHost extends React.Component {
       await this.setState({reportLoading: false})
       data.blob().then((blob) => {
           // Creating new object of PDF file
-          const fileURL = window.URL.createObjectURL(blob);
+          const fileURL = window.URL.createObjectURL(blob)
                 
           // Setting various property values
-          let alink = document.createElement("a");
-          alink.href = fileURL;
-          
-          alink.download = data;
-          alink.setAttribute('download', this.state.report);
-          alink.click();
+          let link = document.createElement("a")
+          link.title = this.state.report
+          link.href = fileURL
+          link.target = "_blank"
+          link.click()
+
+          //alink.download = data;
+          //alink.setAttribute('download', this.state.report);
+          //alink.click();
       });
     }
   }
@@ -155,7 +157,11 @@ class RemoveHost extends React.Component {
   closeModal = () => {
     this.setState({
       visible: false,
-      errors: {}
+      errors: {},
+      reportTypes: [],
+      reportType: "",
+      reports: [],
+      report: ""
     })
   }
 
