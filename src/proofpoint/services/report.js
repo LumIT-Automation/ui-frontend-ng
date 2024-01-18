@@ -132,12 +132,16 @@ class RemoveHost extends React.Component {
   dataGet = async (resource) => {
     let endpoint 
     let r
+    let additionalHeaders
+
+    
 
     if (resource == 'report-knowledge-assessment') {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
     }
     if (resource == 'report') {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`
+      additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
     }
 
     let rest = new Rest(
@@ -149,7 +153,7 @@ class RemoveHost extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token )
+    await rest.doXHR(endpoint, this.props.token, null, additionalHeaders )
     return r
   }
 

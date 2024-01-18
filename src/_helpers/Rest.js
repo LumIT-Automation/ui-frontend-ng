@@ -9,9 +9,11 @@ class Rest {
   }
 
 
-  async doXHR(resource, token = "", payload = null) {
+  async doXHR(resource, token = "", payload = null, additionalHeaders) {
     resource = encodeURI(resource)
     let json;
+
+    console.log(additionalHeaders)
 
     if (resource) {
       if (resource === "login") {
@@ -112,7 +114,13 @@ class Rest {
               headers = {
                 'Authorization': 'Bearer ' + token
               }
+              if (additionalHeaders) {
+                additionalHeaders.forEach(element => {
+                  Object.assign(headers, element)
+                });
+              }
             }
+            console.log(headers)
 
             const response = await fetch(CONFIG.BACKEND_URL + resource, {
               method: 'GET',

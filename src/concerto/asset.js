@@ -7,7 +7,7 @@ import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from './error'
 
-import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin, Divider } from 'antd';
+import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin, Divider, Card } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 
@@ -265,6 +265,19 @@ class Permission extends React.Component {
     await this.setState({assets: newList})
   }
 
+  readFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onload = res => {
+        resolve(res.target.result);
+      };
+      reader.onerror = err => reject(err);
+  
+      reader.readAsBinaryString(file);
+    });
+  }
+
   set = async (key, value, asset) => {
 
     let assets = JSON.parse(JSON.stringify(this.state.assets))
@@ -450,7 +463,7 @@ class Permission extends React.Component {
 
       ref.focus()
     }
-
+    
     if (key === 'ports') {
       let ref = this.myRefs[`${asset.id}_port`]
 
@@ -773,6 +786,47 @@ class Permission extends React.Component {
       ref.focus()
     }
 
+    if (key === 'upload') {
+
+      if (value) {
+        if (ass.existent) {
+          if (origAsset[key] !== value) {
+            ass.isModified[key] = true
+            ass.file = value
+            ass.fileName = value.name
+            ass.size = value.size
+            ass.type = value.type
+            let t = await this.readFile(value)
+            ass.binaryString = t
+          }
+          else {
+            delete ass.isModified[key]
+            ass.file = value
+            ass.fileName = value.name
+            ass.size = value.size
+            ass.type = value.type
+            let t = await this.readFile(value)
+            ass.binaryString = t
+          }
+        }
+        else {
+          ass.file = value
+          ass.fileName = value.name
+          ass.size = value.size
+          ass.type = value.type
+          let t = await this.readFile(value)
+          ass.binaryString = t
+        }
+        delete ass[`binaryStringError`]
+      }
+      else {
+        //blank value while typing.
+        ass.binaryString = ''
+      }
+
+      await this.setState({assets: assets})
+    }
+
     if (key === 'toDelete') {
       if (value) {
         ass.toDelete = true
@@ -787,7 +841,9 @@ class Permission extends React.Component {
 
   validation = async () => {
     let errors = await this.validationCheck()
+    console.log(errors)
     if (errors === 0) {
+      
       this.cudManager()
     }
   }
@@ -826,26 +882,29 @@ class Permission extends React.Component {
         ass.datacenterError = true
         ++errors
       }
-      if (!ass.existent) {
-        if (!ass.username) {
-          ass.usernameError = true
-          ++errors
+      if (this.props.vendor !== 'proofpoint') {
+        if (!ass.existent) {
+          if (!ass.username) {
+            ass.usernameError = true
+            ++errors
+          }
+          if (!ass.password) {
+            ass.passwordError = true
+            ++errors
+          }
         }
-        if (!ass.password) {
-          ass.passwordError = true
-          ++errors
+        else {
+          if (ass.isModified.username && !ass.username) {
+            ass.usernameError = true
+            ++errors
+          }
+          if (ass.isModified.password && !ass.password) {
+            ass.passwordError = true
+            ++errors
+          }
         }
       }
-      else {
-        if (ass.isModified.username && !ass.username) {
-          ass.usernameError = true
-          ++errors
-        }
-        if (ass.isModified.password && !ass.password) {
-          ass.passwordError = true
-          ++errors
-        }
-      }
+      
 
     }
     await this.setState({assets: assets})
@@ -907,6 +966,7 @@ class Permission extends React.Component {
 
         if (this.props.vendor === 'proofpoint') {
           body.data.name = ass.name
+          body.data["logo_base64"] = btoa(ass.binaryString)
         }
 
         ass.loading = true
@@ -977,6 +1037,7 @@ class Permission extends React.Component {
 
         if (this.props.vendor === 'proofpoint') {
           body.data.name = ass.name
+          body.data["logo_base64"] = btoa(ass.binaryString)
         }
 
         if (ass.isModified.username) {
@@ -1148,9 +1209,16 @@ class Permission extends React.Component {
     console.log('this.myRefs', this.myRefs)
 
     let returnCol = () => {
-      let newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
+      let newArray
+      newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
+      
+      if (this.props.vendor === 'proofpoint') {
+        newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
+      }
       return newArray
     }
+
+    const Example = ({ data }) => <img src={`data:image/jpeg;base64,${data}`} width="200" />
 
     const vendorColumns = [
       {
@@ -1247,32 +1315,6 @@ class Permission extends React.Component {
           )
         },
       },
-      (this.props.vendor === 'proofpoint' ?
-        {
-          title: 'Name',
-          align: 'center',
-          dataIndex: 'name',
-          key: 'name',
-          render: (name, obj)  => {
-            return (
-              <React.Fragment>
-              <Input
-                value={obj.name}
-                ref={ref => this.myRefs[`${obj.id}_name`] = ref}
-                style={
-                  obj.nameError ?
-                    {borderColor: 'red', textAlign: 'center', width: 200}
-                  :
-                    {textAlign: 'center', width: 200}
-                }
-                onChange={e => {
-                  this.set('name', e.target.value, obj)}
-                }
-              />
-              </React.Fragment>
-            )
-          },
-        }: {} ),
       {
         title: 'Port',
         align: 'center',
@@ -1645,6 +1687,485 @@ class Permission extends React.Component {
       }
     ];
 
+    const proofpointColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Logo',
+        align: 'center',
+        dataIndex: '',
+        key: 'logo_base64',
+        render: (val, obj)  => (
+          
+
+          <React.Fragment>
+            <Example data={obj.logo_base64} />
+          </React.Fragment>    
+        )
+      },
+      {
+        title: 'Upload Logo',
+        align: 'center',
+        dataIndex: '',
+        key: 'upload',
+        render: (val, obj)  => (
+          <React.Fragment>
+            <Input 
+              type="file"
+              style=
+                { 
+                  obj[`binaryStringError`] ?
+                  {borderColor: `red`, width: 350}
+                :
+                  {width: 350}
+                }
+              onChange={e => this.set('upload', e.target.files[0], obj)} 
+            />
+            <Card>
+              <p>Name: {obj.fileName}</p>
+              <p>Type: {obj.type}</p>
+              <p>Size: {obj.size} Bytes</p>
+            </Card>    
+          </React.Fragment>    
+        )
+      },
+      {
+        title: 'Protocol',
+        align: 'center',
+        dataIndex: 'protocol',
+        key: 'protocol',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.protocolError ?
+                    {border: `1px solid red`, width: 120}
+                  :
+                    {width: 120}
+                }
+                value={obj.protocol}
+                onChange={e => {
+                  this.set('protocol', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_protocol`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('protocols', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.protocols ? this.state.protocols.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Fqdn',
+        align: 'center',
+        dataIndex: 'fqdn',
+        key: 'fqdn',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+            <Input
+              value={obj.fqdn}
+              ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
+              style={
+                obj.fqdnError ?
+                  {borderColor: 'red', textAlign: 'center', width: 200}
+                :
+                  {textAlign: 'center', width: 200}
+              }
+              onChange={e => {
+                this.set('fqdn', e.target.value, obj)}
+              }
+            />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+            <Input
+              value={obj.name}
+              ref={ref => this.myRefs[`${obj.id}_name`] = ref}
+              style={
+                obj.nameError ?
+                  {borderColor: 'red', textAlign: 'center', width: 200}
+                :
+                  {textAlign: 'center', width: 200}
+              }
+              onChange={e => {
+                this.set('name', e.target.value, obj)}
+              }
+            />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Port',
+        align: 'center',
+        dataIndex: 'port',
+        key: 'port',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.portError ?
+                    {border: `1px solid red`, width: 100}
+                  :
+                    {width: 100}
+                }
+                value={obj.port}
+                onChange={e => {
+                  this.set('port', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_port`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('ports', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.ports ? this.state.ports.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Path',
+        align: 'center',
+        dataIndex: 'path',
+        key: 'path',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.pathError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.path}
+                onChange={e => {
+                  this.set('path', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_path`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('paths', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.paths ? this.state.paths.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Environment',
+        align: 'center',
+        dataIndex: 'environment',
+        key: 'environment',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.environmentError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.environment}
+                onChange={e => {
+                  this.set('environment', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('environments', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.environments ? this.state.environments.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Datacenter',
+        align: 'center',
+        dataIndex: 'datacenter',
+        key: 'datacenter',
+        render: (name, obj)  => {
+          let s = '';
+
+          return (
+            <React.Fragment>
+              <Select
+                style={
+                  obj.datacenterError ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                value={obj.datacenter}
+                onChange={e => {
+                  this.set('datacenter', e, obj)}
+                }
+                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
+                dropdownRender={(menu) => (
+                  <>
+                    {menu}
+                    <Divider
+                      style={{
+                        margin: '8px 0',
+                      }}
+                    />
+                    <Space
+                      style={{
+                        padding: '0 8px 4px',
+                      }}
+                    >
+                      <Input
+                        placeholder="Type new"
+                        onChange={e => s = e.target.value}
+                      />
+                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('datacenters', s, obj)} }
+                      >
+                      </Button>
+
+                    </Space>
+                  </>
+                )}
+                options={this.state.datacenters ? this.state.datacenters.map((item) => ({
+                  label: item,
+                  value: item,
+                }))
+                :
+                null
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'TLSverify',
+        align: 'center',
+        dataIndex: 'tlsverify',
+        key: 'tlsverify',
+        render: (name, obj)  => {
+          return (
+              <Radio.Group
+                style={
+                  obj.tlsverifyError ?
+                    {marginTop: 5, backgroundColor: 'red'}
+                  :
+                    {marginTop: 5}
+                }
+                value={obj.tlsverify}
+                onChange={e => {this.set('tlsverify', e.target.value, obj)}
+                }
+              >
+                <Space direction="vertical">
+                  <Radio value={true}>Yes</Radio>
+                  <Radio value={false}>No </Radio>
+                </Space>
+              </Radio.Group>
+          )
+        },
+      },
+      ...(
+        this.props.vendor === 'f5' ?
+          [
+            {
+              title: 'DR',
+              align: 'center',
+              width: 250,
+              dataIndex: 'assetsDrList',
+              key: 'assetsDrList',
+              render: (name, obj)  => (
+                <React.Fragment>
+                  {obj.drLoading ?
+                    <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
+                  :
+                    <Space>
+                      <Select
+                        value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
+                        key={obj.id}
+                        style={{ width: '200px'}}
+                        onChange={e => {this.set('assetDr', e, obj)} }
+                      >
+                        { this.state.assets.map((dr,i) => {
+                          return (
+                            <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
+                          )
+                        })
+                        }
+                      </Select>
+                      <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => this.set('assetDr', '', obj)}/>
+                    </Space>
+                  }
+                </React.Fragment>
+              )
+            },
+          ]
+        :
+          []
+        ),
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.assetRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
+    ];
     let randomKey = () => {
       return Math.random().toString()
     }
