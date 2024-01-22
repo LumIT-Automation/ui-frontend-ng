@@ -111,7 +111,6 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request[key] = e
     await this.setState({request: request})
-    console.log(this.state.request)
   }
 
   //VALIDATION
@@ -395,7 +394,6 @@ class Add extends React.Component {
       }
     }
 
-    console.log(b)
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -428,10 +426,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.errors)
-    console.log(this.props.configurationsError)
-
-
 
     let createComponent = (component, key, choices) => {
 

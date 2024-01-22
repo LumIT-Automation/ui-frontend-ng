@@ -546,9 +546,6 @@ class Permission extends React.Component {
   }
 
   set = async (key, value, permission) => {
-    //console.log('key', key)
-    //console.log('value', value)
-    //console.log('permission', permission)
 
     let assets = JSON.parse(JSON.stringify(this.state.assets))
     let workflows = JSON.parse(JSON.stringify(this.state.workflows))
@@ -1147,9 +1144,6 @@ class Permission extends React.Component {
 
 
   render() {
-    console.log('identityGroups', this.state.identityGroups)
-    console.log('roles', this.state.roles)
-    console.log('permissions', this.state.permissions)
 
     let returnCol = () => {
       let newArray = []

@@ -177,7 +177,6 @@ class VpnToServices extends React.Component {
       list.push(item)
       //Object.getOwnPropertyNames(object1)
     });
-    console.log(list)
 
     await this.setState({vpnToServices: list})
   }
@@ -191,7 +190,6 @@ class VpnToServices extends React.Component {
     }
 
 
-    console.log(b)
     let rest = new Rest(
       "PUT",
       resp => {
@@ -200,9 +198,7 @@ class VpnToServices extends React.Component {
         //this.flatProperty(resp.data.items)
         let list = []
         let list2 = []
-        console.log(resp.data.items)
         resp.data.items.forEach((item, i) => {
-          //console.log(item)
 
           item.ipv4s.forEach((ip, i) => {
             list2.push({ip: ip})
@@ -236,7 +232,6 @@ class VpnToServices extends React.Component {
 
 
   render() {
-    console.log(this.state.vpnToServices)
     const ipValueColumns = [
       {
         title: 'ipValue',

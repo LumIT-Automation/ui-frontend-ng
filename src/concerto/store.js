@@ -113,6 +113,10 @@ const concertoSlice = createSlice({
         state.conditionDeleteError = action.payload
       },
 
+      err: ( state, action) => {
+        state.err = action.payload
+      },
+
     }
 })
 
@@ -161,7 +165,9 @@ export const {
   triggerModifyError,
   triggerDeleteError,
   conditionAddError,
-  conditionDeleteError
+  conditionDeleteError,
+
+  err
 
 } = actions
 

@@ -58,8 +58,6 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.routeDomains)
-    console.log(this.state.items)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -642,7 +640,6 @@ class ItemsView extends React.Component {
         ref.focus()
       }
       if (key === 'routeDomain') {
-        console.log('father route domain')
         //value could be 0
         value = value.toString()
         let rd = this.state.routeDomains.find(r => r.id == value)
@@ -651,7 +648,6 @@ class ItemsView extends React.Component {
           let originM = origFather.members.find(m => m.id === record.id)
           if (m.existent) {
             if (originM[key] !== value) {
-              console.log('valore diverso')
               fath.isModified[m.id] = true
               //m.isModified = {}
               //m.isModified[key] = true
@@ -1048,7 +1044,6 @@ class ItemsView extends React.Component {
           ++errors
         }
         if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
-          console.log(item)
           item.addressError = true
           ++errors
         }
@@ -1129,7 +1124,6 @@ class ItemsView extends React.Component {
           ++errors
         }
         if (!item.apiAnonymous) {
-          console.log('NO CODE OBJECT N ', item.id )
           item.apiAnonymousError = true
           ++errors
         }

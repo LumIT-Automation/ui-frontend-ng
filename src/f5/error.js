@@ -145,7 +145,6 @@ class Error extends Component {
           break;
 
         case 'f5objectsError':
-          console.log('f5objectsError')
           this.props.dispatch(f5objectsError(null))
           break;
         case 'f5objectAddError':
@@ -156,7 +155,6 @@ class Error extends Component {
           break;
 
         case 'nodesError':
-          console.log('nodesError')
           this.props.dispatch(nodesError(null))
           break;
         case 'nodeAddError':

@@ -128,7 +128,6 @@ class Modify extends React.Component {
 
   details = async () => {
     await this.setState({visible: true})
-    console.log('this.props.obj', this.props.obj)
     let request = JSON.parse(JSON.stringify(this.state.request))
     //request.name = this.props.obj
     request.name = this.props.obj.name
@@ -150,7 +149,6 @@ class Modify extends React.Component {
     await this.setState({request: request, errors: errors, input: input})
   }
   urlListSet = async () => {
-    console.log('input', this.state.input)
     let input = JSON.parse(JSON.stringify(this.state.input))
     let request = JSON.parse(JSON.stringify(this.state.request))
     let list=[], nlist=[], urlsList=[], actualUrls=[]
@@ -185,13 +183,9 @@ class Modify extends React.Component {
         actualUrls.push(item.url)
       });
 
-      console.log('actualUrls', actualUrls)
-      console.log('nlist', nlist)
       urlsList = actualUrls.concat(nlist)
-      console.log('urlsList', urlsList)
 
       let unique = [...new Set(urlsList)];
-      console.log('unique', unique)
 
       urlsList = []
       unique.sort().forEach((item, i) => {
@@ -320,13 +314,7 @@ class Modify extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.url)
-    console.log(this.state.errors)
 
-    let cicciput = (obj) => {
-      console.log('obj', obj)
-    }
     const columns = [
       {
         title: 'Url',

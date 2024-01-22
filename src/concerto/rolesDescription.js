@@ -56,7 +56,6 @@ class RolesDescription extends React.Component {
       return
     }
     else {
-      console.log(fetchedRoles.data.items)
       await this.setState({rolesAndPrivileges: fetchedRoles.data.items})
       await this.setState({loading: false})
     }

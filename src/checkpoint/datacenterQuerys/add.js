@@ -77,7 +77,6 @@ class Add extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         let list = []
         resp.data.items.forEach((item, i) => {
           list.push(item.name)
@@ -97,7 +96,6 @@ class Add extends React.Component {
     let request = JSON.parse(JSON.stringify(this.state.request))
     request[key] = e
     await this.setState({request: request})
-    console.log(this.state.request)
   }
   //VALIDATION
   validationCheck = async () => {
@@ -219,7 +217,6 @@ class Add extends React.Component {
       b.data["data-centers"] = this.state.checkedList
     }
 
-    console.log(b)
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -252,8 +249,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.errors)
-    console.log(this.state.checkedList)
 
     const onChange = (list) => {
       this.setState({checkedList: list});

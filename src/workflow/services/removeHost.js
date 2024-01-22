@@ -218,7 +218,6 @@ class RemoveHost extends React.Component {
       this.setState({requests: requests})
       try {
         const resp = await this.removeHost(request)
-        console.log(resp)
         request.isLoading = false
         if (resp.status === 200) {
           request.isReleased = 'REMOVED'
@@ -255,7 +254,6 @@ class RemoveHost extends React.Component {
        },
       "ipv4-address": `${request.ip}`
     }
-    console.log(b)
 
     let rest = new Rest(
       "PUT",

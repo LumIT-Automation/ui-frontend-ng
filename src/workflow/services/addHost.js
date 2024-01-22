@@ -304,7 +304,6 @@ class AddHost extends React.Component {
        "ipv4-address": request.ip,
        "domain": request.cpDomain
     }
-    console.log(b)
 
     let rest = new Rest(
       "PUT",

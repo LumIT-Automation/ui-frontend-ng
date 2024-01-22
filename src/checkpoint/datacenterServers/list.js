@@ -118,7 +118,6 @@ class List extends React.Component {
   };
 
   render() {
-    console.log(this.props.datacenterServers)
     const columns = [
       {
         title: 'Name',

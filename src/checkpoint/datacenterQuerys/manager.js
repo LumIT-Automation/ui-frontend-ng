@@ -64,7 +64,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(datacenterQuerys(resp))
       },
       error => {
@@ -77,7 +76,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.props.datacenterQuerys)
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>

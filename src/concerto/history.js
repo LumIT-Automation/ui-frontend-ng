@@ -256,8 +256,6 @@ class Manager extends React.Component {
   }
 
   render() {
-    console.log(this.props.vendor)
-    console.log(this.props.historys)
 
     let returnCol = () => {
       switch (this.props.vendor) {

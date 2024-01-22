@@ -88,8 +88,6 @@ class CustomSider extends Component {
   }
 
   render(){
-    console.log(this.props.authorizations)
-    console.log(this.props.authorizationsInfoblox)
     return (
       <Sider width={200} style={{backgroundColor: 'white'}} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
         <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>

@@ -516,8 +516,6 @@ class RequestIp extends React.Component {
       ]
     }
 
-    console.log(b)
-
     let rest = new Rest(
       "POST",
       resp => {
@@ -593,7 +591,6 @@ class RequestIp extends React.Component {
 */
 
   render() {
-    console.log(this.state.requests)
     let referenceRangeList = []
     let list = []
 
@@ -748,7 +745,6 @@ class RequestIp extends React.Component {
                 onChange={e => this.choosedRangeSet(e, obj.id)}
               >
                 { obj.ranges ? obj.ranges.map((r, i) => {
-                  console.log(r)
                   let range = ''
                     if (r.extattrs && r.extattrs.Reference && r.extattrs.Reference.value) {
                       referenceRangeList.push(r.extattrs.Reference.value)
@@ -762,7 +758,6 @@ class RequestIp extends React.Component {
                 }
                 {
                   list ? list.map((r, i) => {
-                    console.log(r)
                     return (
                       <Select.Option key={i} value={r}>{r}</Select.Option>
                       )

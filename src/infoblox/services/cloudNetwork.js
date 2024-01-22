@@ -72,7 +72,6 @@ class CloudNetwork extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.regions)
     
     if (this.state.provider !== prevState.provider) {
       this.setState({
@@ -264,7 +263,6 @@ class CloudNetwork extends React.Component {
       else {
         try{
           data.data.forEach((item, i) => {
-            console.log(item)
             let sm = item.network.split('/')
             item.existent = true
             item.subnetMaskCidr = sm[1]
@@ -624,7 +622,6 @@ class CloudNetwork extends React.Component {
       }
 
       if (key === 'subnetMaskCidr') {
-        console.log(value)
         cloudNet.subnetMaskCidr = value
         delete cloudNet.subnetMaskCidrError
       }
@@ -1051,7 +1048,6 @@ class CloudNetwork extends React.Component {
         }
 
         else if (key === 'Modify ID') {
-          console.log('key', key)
           return (
             <Input
               style=
@@ -1067,7 +1063,6 @@ class CloudNetwork extends React.Component {
         }
 
         else if (key === 'New Account Name') {
-          console.log('key', key)
           return (
             <Input
               style=
@@ -1083,7 +1078,6 @@ class CloudNetwork extends React.Component {
         }
 
         else if (key === 'Modify Name') {
-          console.log('key', key)
           return (
             <Input
               style=
@@ -1099,7 +1093,6 @@ class CloudNetwork extends React.Component {
         }
 
         else if (key === 'Modify ITSM') {
-          console.log('key', key)
           return (
             <Input
               style=
@@ -1115,7 +1108,6 @@ class CloudNetwork extends React.Component {
         }
 
         else if (key === 'New ITSM') {
-          console.log('key', key)
           return (
             <Input
               style=

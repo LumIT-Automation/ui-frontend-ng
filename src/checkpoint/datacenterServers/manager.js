@@ -64,7 +64,6 @@ class Manager extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.props.dispatch(datacenterServers(resp))
       },
       error => {

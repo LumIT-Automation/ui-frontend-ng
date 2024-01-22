@@ -39,7 +39,9 @@ import {
   triggerModifyError,
   triggerDeleteError,
   conditionAddError,
-  conditionDeleteError
+  conditionDeleteError, 
+
+  err
 } from './store'
 
 import { Modal, Table, Result } from 'antd';
@@ -52,7 +54,6 @@ import { Modal, Table, Result } from 'antd';
 class Error extends Component {
 
   componentDidMount() {
-    console.log('this.props.type', this.props.type)
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -60,7 +61,6 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('this.props.type', this.props.type)
   }
 
   componentWillUnmount() {
@@ -166,6 +166,8 @@ class Error extends Component {
           break;
 
         default:
+          this.props.dispatch(err(null))
+          break;
 
       }
     }

@@ -215,9 +215,6 @@ class Manager extends React.Component {
   }
 
   set = async (key, value, configuration) => {
-    console.log('key', key)
-    console.log('value', value)
-    console.log('configuration', configuration)
 
     let configurations = JSON.parse(JSON.stringify(this.state.configurations))
     let conf
@@ -329,8 +326,6 @@ class Manager extends React.Component {
         return !conf.toDelete
       })
 
-      console.log(newList)
-
       this.modifyConfiguration(newList)
     }
   }
@@ -362,8 +357,6 @@ class Manager extends React.Component {
 
 
   render() {
-    console.log(this.state.configurations)
-    console.log(this.state.errors)
 
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {

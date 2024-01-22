@@ -41,7 +41,6 @@ class Historys extends React.Component {
 
 
   render() {
-    console.log(this.state.vendor)
     return (
       <React.Fragment>
         <Radio.Group

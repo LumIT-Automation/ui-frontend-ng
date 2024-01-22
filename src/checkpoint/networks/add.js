@@ -148,7 +148,6 @@ class Add extends React.Component {
 
   validation = async () => {
     let netsOk = await this.validationCheck()
-    console.log(netsOk)
 
     if ((Object.keys(this.state.errors).length === 0) && netsOk) {
       this.sendRequests()
@@ -192,8 +191,6 @@ class Add extends React.Component {
       "mask-length6": net.mask_length6
     }
 
-    console.log(b)
-
     let rest = new Rest(
       "POST",
       resp => {
@@ -226,7 +223,6 @@ class Add extends React.Component {
 
 
   render() {
-    console.log(this.state.nets)
     const columns = [
       {
         title: 'id',

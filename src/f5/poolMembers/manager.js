@@ -56,7 +56,6 @@ class PoolDetails extends React.Component {
 
   details = () => {
     this.setState({visible: true})
-    console.log(this.props.obj)
     this.main(this.props.obj)
   }
 
@@ -113,7 +112,6 @@ class PoolDetails extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log('resp', resp.data.items)
         r = resp.data.items
       },
       error => {
@@ -128,10 +126,6 @@ class PoolDetails extends React.Component {
 
 
   statusAndSession = async (member, state, session, parentState) => {
-    console.log(member)
-    console.log(state)
-    console.log(session)
-    console.log(parentState)
     let members = JSON.parse(JSON.stringify(this.state.members))
 
     const index = this.state.members.findIndex(m => {
@@ -212,7 +206,6 @@ class PoolDetails extends React.Component {
     await this.refreshStats(member, memberStats)
 
     let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
-    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -255,7 +248,6 @@ class PoolDetails extends React.Component {
     await this.refreshStats(member, memberStats)
 
     let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
-    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -298,7 +290,6 @@ class PoolDetails extends React.Component {
     await this.refreshStats(member, memberStats)
 
     let sas = await this.statusAndSession(member, fetchedMember.state, fetchedMember.session, memberStats.parentState)
-    console.log(sas)
 
     members = JSON.parse(JSON.stringify(this.state.members))
     members[index].isLoading = false
@@ -463,8 +454,6 @@ class PoolDetails extends React.Component {
   }
 
   refreshStats = async (memb, data ) => {
-    console.log(memb)
-    console.log(data)
     const index = this.state.members.findIndex(m => {
       return m.name === memb.name
     })

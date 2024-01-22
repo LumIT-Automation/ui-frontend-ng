@@ -39,8 +39,6 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.reportType)
-    console.log(this.state.report)
     if (this.state.reportType != prevState.reportType) {
       this.main()
     } 
@@ -57,7 +55,6 @@ class RemoveHost extends React.Component {
     if (this.props.vendor && this.props.asset) {
       this.setState({reportsLoading: true})
       let data = await this.dataGet('report-knowledge-assessment')
-      console.log(data)
       if (data.status && data.status !== 200 ) {
         this.props.dispatch(err(data))
         await this.setState({reportsLoading: false})
@@ -66,7 +63,6 @@ class RemoveHost extends React.Component {
       else {
         await this.setState({reportsLoading: false, reports: data.data.items})
       }
-      console.log(this.state.reports)
     }
     
   }

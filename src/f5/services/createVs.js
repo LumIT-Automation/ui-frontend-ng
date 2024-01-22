@@ -96,7 +96,6 @@ class CreateF5Service extends React.Component {
     try {
       await this.setState({routeDomainsLoading: true})
       let routeDomainsFetched = await this.routeDomainsFetch()
-      console.log(routeDomainsFetched)
       await this.setState({routeDomainsLoading: false})
       if (routeDomainsFetched.status && routeDomainsFetched.status !== 200 ) {
         this.props.dispatch(routeDomainsError(routeDomainsFetched))
@@ -298,8 +297,7 @@ class CreateF5Service extends React.Component {
     let validators = new Validators()
 
     for (const [key, value] of Object.entries(request)) {
-      console.log(key)
-      console.log(value)
+      
       if (key === 'nodes' || key === 'source' || key === 'routeDomain') {
         continue
       }
@@ -571,9 +569,7 @@ class CreateF5Service extends React.Component {
 
 
   render() {
-    console.log(this.state.request)
-    console.log(this.state.errors)
-
+    
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {
 

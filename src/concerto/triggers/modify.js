@@ -54,14 +54,12 @@ class Modify extends React.Component {
   }
 
   details = async () => {
-    console.log(this.props.obj)
     await this.setState({visible: true})
     if (this.props.assets) {
       let assets = JSON.parse(JSON.stringify(this.props.assets))
       await this.setState({assets: assets})
     }
     let request = JSON.parse(JSON.stringify(this.props.obj))
-    console.log(request)
     if (request.enabled) {
       request.enabled = true
     }

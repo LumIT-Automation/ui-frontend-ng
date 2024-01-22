@@ -13,8 +13,6 @@ class Rest {
     resource = encodeURI(resource)
     let json;
 
-    console.log(additionalHeaders)
-
     if (resource) {
       if (resource === "login") {
         if (this.method === "POST") {
@@ -120,7 +118,6 @@ class Rest {
                 });
               }
             }
-            console.log(headers)
 
             const response = await fetch(CONFIG.BACKEND_URL + resource, {
               method: 'GET',
@@ -129,7 +126,7 @@ class Rest {
 
             if (response.ok) {
               let content = response.headers.get('content-type')
-              console.log(content)
+              
               if (content === 'application/json') {
                 json = await response.json();
               }
@@ -167,7 +164,7 @@ class Rest {
             }
           }
           catch (error) {
-            console.log('error')
+            console.log('GET error')
             this.onError({
               message: error.message,
               type: error.name

@@ -1206,7 +1206,6 @@ class Permission extends React.Component {
 
 
   render() {
-    console.log('this.myRefs', this.myRefs)
 
     let returnCol = () => {
       let newArray
