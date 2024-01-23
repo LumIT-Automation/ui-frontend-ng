@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit' // https://redux-toolkit.js.org/tutorials/quick-start
 
-const f5Slice = createSlice({
-    name: 'f5',
+const proofpointSlice = createSlice({
+    name: 'proofpoint',
     initialState: {},
     reducers: {
         environment: (state, action) => {
@@ -18,13 +18,18 @@ const f5Slice = createSlice({
           state.asset = action.payload
         },
 
+        assetToken: (state, action) => {
+          console.log(action)
+          state.assetToken = action.payload
+        },
+
         err: (state, action) => {
           state.err = action.payload
         },       
     }
 })
 
-const { actions, reducer } = f5Slice;
+const { actions, reducer } = proofpointSlice;
 
 export const {
   environment,
@@ -32,6 +37,7 @@ export const {
 
   assets,
   asset,
+  assetToken,
 
   err,
   

@@ -39,6 +39,7 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.props.assetToken)
     if (this.state.reportType != prevState.reportType) {
       this.main()
     } 
@@ -130,14 +131,12 @@ class RemoveHost extends React.Component {
     let r
     let additionalHeaders
 
-    
-
     if (resource == 'report-knowledge-assessment') {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
     }
     if (resource == 'report') {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`
-      additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
+      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
     }
 
     let rest = new Rest(
@@ -317,6 +316,7 @@ export default connect((state) => ({
   authorizations: state.authorizations.checkpoint,
 
   asset: state.proofpoint.asset,
+  assetToken: state.proofpoint.assetToken,
   err: state.proofpoint.err,
   
 }))(RemoveHost);

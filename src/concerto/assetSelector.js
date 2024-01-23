@@ -1,11 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Select, Row, Col, Spin } from 'antd'
+import { Select, Row, Col, Spin, Input } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
+
+
 
 import { asset as infobloxAsset } from '../infoblox/store'
 import { asset as checkpointAsset } from '../checkpoint/store'
@@ -14,6 +16,8 @@ import { asset as f5Asset } from '../f5/store'
 import { partition as f5Partition } from '../f5/store'
 import { asset as vmwareAsset } from '../vmware/store'
 import { asset as proofpointAsset } from '../proofpoint/store'
+
+import { assetToken } from '../proofpoint/store'
 
 import {
   err
@@ -55,7 +59,6 @@ class AssetSelector extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount')
     this.setState({
       environments: [],
       environment: ''
@@ -75,7 +78,7 @@ class AssetSelector extends React.Component {
     await this.assetsGet()
 
     let envList = await this.environmentList()
-    console.log(envList)
+
     await this.setState({environments: envList})
     
     this.setState({envloading: false})
@@ -85,7 +88,6 @@ class AssetSelector extends React.Component {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp)
         this.setState({assets: resp.data.items})
       },
       error => {
@@ -97,14 +99,9 @@ class AssetSelector extends React.Component {
   }
 
   environmentList = async () => {
-    console.log('environmentList')
-
     const list = this.state.assets.map( e => { return e.environment })
-    console.log(list)
     const newList = list.filter((v, i, a) => a.indexOf(v) === i);
-    console.log(newList)
     return newList
-
   }
 
   environmentSet = async e => {
@@ -116,9 +113,13 @@ class AssetSelector extends React.Component {
     await this.setState({ environment: e, envAssets: envAssets, partitions: '' })
   }
 
-  assetSet = async fqdn => {
+  assetSet = async val => {
     let assets = JSON.parse(JSON.stringify(this.state.envAssets))
-    let asset = assets.find( a => a.fqdn === fqdn )
+    let asset = assets.find( a => a.fqdn === val )
+
+    if (this.props.vendor === 'proofpoint') {
+      asset = assets.find( a => a.name ===  val)
+    }
 
     switch (this.props.vendor) {
       case 'infoblox':
@@ -141,6 +142,18 @@ class AssetSelector extends React.Component {
     }
 
     await this.setState({ asset: asset})
+  }
+
+  setToken = async val => {
+    await this.setState({assetToken: val})
+
+    try {
+      await this.props.dispatch(assetToken(val))
+    } 
+    catch(e) {
+      console.log(e)
+    }
+    
   }
 
   domainsGet = async () => {
@@ -220,34 +233,85 @@ class AssetSelector extends React.Component {
             
           </Col>
 
-          <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 1, span: 1}}>
-            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Asset:</p>
-          </Col>
-          <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
-            {this.state.envAssets ?
-              <Select
-                style={{width: '100%'}}
-                showSearch
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          { (this.props.vendor && this.props.vendor === 'proofpoint')  ?
+            <React.Fragment>
+              <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 1, span: 1}}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Cliente:</p>
+              </Col>
+              <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
+                {this.state.envAssets ?
+                  <Select
+                    style={{width: '100%'}}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toString().toLowerCase().localeCompare(optionB.children.toString().toLowerCase())
+                    }
+                    onChange={n => this.assetSet(n)}
+                  >
+                    {this.state.envAssets.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                      )
+                    })}
+                  </Select>
+                :
+                  <Select disabled value={null} onChange={null} style={{width: '100%'}}>
+                  </Select>
                 }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toString().toLowerCase().localeCompare(optionB.children.toString().toLowerCase())
+              </Col>
+            </React.Fragment>
+          :
+            <React.Fragment>
+              <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 1, span: 1}}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Asset:</p>
+              </Col>
+              <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
+                {this.state.envAssets ?
+                  <Select
+                    style={{width: '100%'}}
+                    showSearch
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toString().toLowerCase().localeCompare(optionB.children.toString().toLowerCase())
+                    }
+                    onChange={n => this.assetSet(n)}
+                  >
+                    {this.state.envAssets.map((n, i) => {
+                      return (
+                        <Select.Option key={i} value={n.fqdn}>{n.fqdn}</Select.Option>
+                      )
+                    })}
+                  </Select>
+                :
+                  <Select disabled value={null} onChange={null} style={{width: '100%'}}>
+                  </Select>
                 }
-                onChange={n => this.assetSet(n)}
-              >
-                {this.state.envAssets.map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n.fqdn}>{n.fqdn}</Select.Option>
-                  )
-                })}
-              </Select>
-            :
-              <Select disabled value={null} onChange={null} style={{width: '100%'}}>
-              </Select>
-            }
-          </Col>
+              </Col>
+            </React.Fragment>
+          }
+
+          { (this.props.vendor && this.props.vendor === 'proofpoint') ?
+            <React.Fragment>
+              <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 2, span: 1}}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Token:</p>
+              </Col>
+              <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
+                <Input
+                  value={this.state.assetToken}
+                  onChange={event => this.setToken(event.target.value)}
+                />              
+              </Col>
+            </React.Fragment>
+          :
+            null
+          }
 
           { ((this.props.vendor && this.props.vendor === 'checkpoint') && !this.props.domain) ?
             <React.Fragment>
@@ -364,5 +428,6 @@ export default connect((state) => ({
 
   proofpointAssets: state.proofpoint.assets,
   proofpointAsset: state.proofpoint.asset,
+  assetToken: state.proofpoint.assetToken
 
 }))(AssetSelector);
