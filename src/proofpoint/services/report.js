@@ -40,7 +40,10 @@ class RemoveHost extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     console.log(this.props.assetToken)
-    if (this.state.reportType != prevState.reportType) {
+    if (this.props.asset !== prevState.asset) {
+      this.main()
+    } 
+    if (this.state.reportType !== prevState.reportType) {
       this.main()
     } 
   }
