@@ -136,7 +136,11 @@ class RemoveHost extends React.Component {
     }
     if (resource == 'report') {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`
-      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
+
+      if (this.props.assetToken) {
+        additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
+      }
+     
     }
 
     let rest = new Rest(
