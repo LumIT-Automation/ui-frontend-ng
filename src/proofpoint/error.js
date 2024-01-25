@@ -143,7 +143,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>F5 element: {this.props.object}</p>}
+        title={<p style={{textAlign: 'center'}}>Error</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}
