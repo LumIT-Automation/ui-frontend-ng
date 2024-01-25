@@ -1,7 +1,4 @@
 class JsonHelper {
-  constructor() {
-
-  }
 
   jsonPretty = json => {
     let str = ''

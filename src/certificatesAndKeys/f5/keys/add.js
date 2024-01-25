@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import { Input, Button, Card, Radio, Alert, Spin, Result, Modal, Row, Col } from 'antd'
+import { Input, Button, Card, Radio, Spin, Result, Modal, Row, Col } from 'antd'
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'

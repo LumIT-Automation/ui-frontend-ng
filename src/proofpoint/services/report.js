@@ -249,7 +249,7 @@ class RemoveHost extends React.Component {
           { (this.props.asset && this.props.asset.id) ?
             <React.Fragment>
               {this.state.loading ?
-                <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> 
+                <Spin indicator={spinIcon25} style={{margin: 'auto 48%'}}/> 
               :
                <React.Fragment>
                 <br/>

@@ -6,7 +6,6 @@ import './App.css'
 import 'antd/dist/antd.css'
 import { Layout } from 'antd'
 
-import Rest from './_helpers/Rest'
 import Error from './ConcertoError'
 import Authorizators from './_helpers/authorizators'
 import HeaderCustom from './header'
