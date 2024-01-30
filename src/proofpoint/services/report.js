@@ -25,13 +25,12 @@ class RemoveHost extends React.Component {
     this.state = {
       visible: false,
       errors: {},
-      reportTypes: ["report-knowledge-assessment"],
+      reportTypes: ["report-knowledge-assessment", "report-training", "report-phishing"],
       reports: [],
     };
   }
 
   componentDidMount() {
-    //this.checkedTheOnlyAsset()
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -39,14 +38,14 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.props.assetToken)
+    console.log('reporrrrrrrt', this.props.assetToken)
     if (this.props.assetToken !== prevProps.assetToken) {
-      this.main()
+      this.setState({reportType: '', reports: [], report: '' })
     } 
     if (this.props.asset !== prevProps.asset) {
-      this.main()
+      this.setState({reportType: '', reports: [], report: '' })
     } 
-    if (this.state.reportType !== prevState.reportType) {
+    if (this.state.reportType && (this.state.reportType !== prevState.reportType)) {
       this.main()
     } 
   }
@@ -59,9 +58,10 @@ class RemoveHost extends React.Component {
   }
 
   main = async() => {
-    if (this.props.vendor && this.props.asset) {
+    if (this.props.vendor && this.props.asset && this.state.reportType) {
       this.setState({reportsLoading: true})
-      let data = await this.dataGet('report-knowledge-assessment')
+      let data = await this.dataGet(this.state.reportType)
+      console.log(data)
       if (data.status && data.status !== 200 ) {
         this.props.dispatch(err(data))
         await this.setState({reportsLoading: false})
@@ -106,7 +106,7 @@ class RemoveHost extends React.Component {
 
   getReport = async () => {
     this.setState({reportLoading: true})
-    let data = await this.dataGet('report')
+    let data = await this.dataGet(this.state.report)
     if (data.status && data.status !== 200 ) {
       this.props.dispatch(err(data))
       await this.setState({reportLoading: false})
@@ -137,16 +137,20 @@ class RemoveHost extends React.Component {
     let r
     let additionalHeaders
 
-    if (resource == 'report-knowledge-assessment') {
+    if (resource == this.state.reportType) {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
     }
-    if (resource == 'report') {
-      endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`
+    if (resource == this.state.report) {
+      endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`     
+    }
 
-      if (this.props.assetToken) {
-        additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
-      }
-     
+    if (this.props.assetToken) {
+      console.log('assetToken cè')
+      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
+    }
+    else {
+      console.log('assetToken NON cè')
+      additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
     }
 
     let rest = new Rest(
@@ -267,9 +271,9 @@ class RemoveHost extends React.Component {
                   <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Report Type:</p>
                   </Col>
-                  <Col span={5}>
-                    {createElement('select', 'reportType', 'reportTypes', '', '')}
-                  </Col>
+                    <Col span={5}>
+                      {createElement('select', 'reportType', 'reportTypes', '', '')}
+                    </Col>
                 </Row>
 
                 <Row>

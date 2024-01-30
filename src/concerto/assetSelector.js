@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Select, Row, Col, Spin, Input } from 'antd'
+import { Select, Row, Col, Spin, Input, Button } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
@@ -145,10 +145,9 @@ class AssetSelector extends React.Component {
   }
 
   setToken = async val => {
-    await this.setState({assetToken: val})
 
     try {
-      await this.props.dispatch(assetToken(val))
+      await this.props.dispatch(assetToken(this.state.assetToken))
     } 
     catch(e) {
       console.log(e)
@@ -205,7 +204,7 @@ class AssetSelector extends React.Component {
           <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 1, span: 2}} >
             <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Environment:</p>
           </Col>
-          <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
+          <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 3}} xxl={{offset: 0, span: 3}}>
             <React.Fragment>
               {this.state.envloading ?
                 <Spin indicator={spinIcon} style={{margin: '0 10%'}}/>
@@ -305,9 +304,24 @@ class AssetSelector extends React.Component {
               <Col xs={{offset: 1, span: 18}} sm={{offset: 1, span: 18}} md={{offset: 1, span: 18}} lg={{offset: 1, span: 18}} xl={{offset: 0, span: 4}} xxl={{offset: 0, span: 4}}>
                 <Input
                   value={this.state.assetToken}
-                  onChange={event => this.setToken(event.target.value)}
+                  onChange={event => this.setState({assetToken: event.target.value})}
                 />              
               </Col>
+
+              <Col xs={{offset: 1}} sm={{offset: 1}} md={{offset: 1}} lg={{offset: 1}} xl={{offset: 1}} xxl={{offset: 1}}>
+              </Col>
+
+              <Col xs={{offset: 4, span: 18}} sm={{offset: 4, span: 18}} md={{offset: 4, span: 18}} lg={{offset: 4, span: 2}} xl={{offset: 0, span: 2}} xxl={{offset: 0, span: 2}}>
+                <Button
+                  type="primary"
+                  disabled={(this.state.assetToken) ? false : true}
+                  onClick={() => this.setToken()}
+                >
+                  Set Asset Token
+                </Button>
+              </Col>
+
+             
             </React.Fragment>
           :
             null
