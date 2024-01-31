@@ -38,7 +38,6 @@ class RemoveHost extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('reporrrrrrrt', this.props.assetToken)
     if (this.props.assetToken !== prevProps.assetToken) {
       this.setState({reportType: '', reports: [], report: '' })
     } 
@@ -107,6 +106,7 @@ class RemoveHost extends React.Component {
   getReport = async () => {
     this.setState({reportLoading: true})
     let data = await this.dataGet(this.state.report)
+    console.log(data)
     if (data.status && data.status !== 200 ) {
       this.props.dispatch(err(data))
       await this.setState({reportLoading: false})
@@ -114,7 +114,8 @@ class RemoveHost extends React.Component {
     }
     else {
       await this.setState({reportLoading: false})
-      data.blob().then((blob) => {
+      try {
+        data.blob().then((blob) => {
           // Creating new object of PDF file
           const fileURL = window.URL.createObjectURL(blob)
                 
@@ -124,11 +125,11 @@ class RemoveHost extends React.Component {
           link.href = fileURL
           link.target = "_blank"
           link.click()
-
-          //alink.download = data;
-          //alink.setAttribute('download', this.state.report);
-          //alink.click();
-      });
+        });
+      }
+      catch (err) {
+        console.log(err)
+      }
     }
   }
 
@@ -145,13 +146,11 @@ class RemoveHost extends React.Component {
     }
 
     if (this.props.assetToken) {
-      console.log('assetToken cè')
       additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
     }
-    else {
-      console.log('assetToken NON cè')
-      additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
-    }
+    //else {
+      //additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
+    //}
 
     let rest = new Rest(
       "GET",
