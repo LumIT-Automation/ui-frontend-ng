@@ -270,7 +270,7 @@ class RemoveHost extends React.Component {
                   <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Report Type:</p>
                   </Col>
-                    <Col span={5}>
+                    <Col span={6}>
                       {createElement('select', 'reportType', 'reportTypes', '', '')}
                     </Col>
                 </Row>
@@ -279,7 +279,7 @@ class RemoveHost extends React.Component {
                   <Col span={3}>
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Report:</p>
                   </Col>
-                  <Col span={5}>
+                  <Col span={6}>
                     {this.state.reportsLoading ?
                       <Spin indicator={spinIcon25} style={{margin: '0 50px', display: 'inline'}}/>
                     :

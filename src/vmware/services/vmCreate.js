@@ -70,7 +70,7 @@ class CreateVmService extends React.Component {
           {
             datastoreName: "MainDatastore",
             device_type: "thin",
-            size_gib: ""
+            size_GiB: ""
           }
         ],
         ram_GiB: "",
@@ -600,13 +600,13 @@ class CreateVmService extends React.Component {
       }
 
       try {
-        //let size_gib = {target: {value: json.disk_devices[0].size_gib}}
-        let size_gib = parseInt(json.disk_devices[0].size_gib)
-        //l = [size_gib, diskDevice.id]
-        await this.diskSizeGiBSet(size_gib, diskDevice.id)
+        //let size_GiB = {target: {value: json.disk_devices[0].size_GiB}}
+        let size_GiB = parseInt(json.disk_devices[0].size_GiB)
+        //l = [size_GiB, diskDevice.id]
+        await this.diskSizeGiBSet(size_GiB, diskDevice.id)
       } catch (error) {
         errors = JSON.parse(JSON.stringify(this.state.errors))
-        errors.jsonError = `diskDevice size_gib: ${error.message}`
+        errors.jsonError = `diskDevice size_GiB: ${error.message}`
         await this.setState({errors: errors})
       }
     }
