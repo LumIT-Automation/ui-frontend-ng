@@ -19,6 +19,7 @@ import { Modal, Table, Result } from 'antd';
 class Error extends Component {
 
   componentDidMount() {
+    console.log('concertoError')
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -26,6 +27,7 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('concertoError', this.props)
   }
 
   componentWillUnmount() {

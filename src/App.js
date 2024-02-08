@@ -7,7 +7,11 @@ import Concerto from './Concerto'
 import { Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 import { login, uiconf, logout } from './_store/store.authentication'
-import { authorizations, authorizationsError } from './_store/store.authorizations'
+import { authorizations } from './_store/store.authorizations'
+
+import {
+  err
+} from './concerto/store'
 
 import './App.css';
 import 'antd/dist/antd.css';
@@ -21,6 +25,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      loading: false
     };
   }
 
@@ -47,9 +52,9 @@ class App extends Component {
 
   
   uiConfSet = async () => {
-    let conf = await this.uiConfGet()
+    let conf = await this.dataGet('ui-config/')
     if (conf.status && conf.status !== 200 ) {
-      //this.props.dispatch(authorizationsError(authorizationsFetched))
+      //
     }
     else {
       try {
@@ -91,11 +96,10 @@ class App extends Component {
   }
 
   authorizations = async () => {
-    await this.setState({authorizationsLoading: true})
-    let authorizationsFetched = await this.authorizationsGet()
-    await this.setState({authorizationsLoading: false})
-    //
-    if (authorizationsFetched.status && authorizationsFetched.status === 401 ) {
+    await this.setState({loading: true})
+    let data = await this.dataGet('authorizations/')
+    await this.setState({loading: false})
+    if (data.status && data.status === 401 ) {
       try {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
@@ -106,18 +110,22 @@ class App extends Component {
       }
       return
     }
-    //
-    else if (authorizationsFetched.status && authorizationsFetched.status !== 200 ) {
-      this.props.dispatch(authorizationsError(authorizationsFetched))
+    
+    else if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
+        component: 'App.js',
+        vendor: 'concerto',
+        errorType: 'authorizationsError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
-      this.props.dispatch(authorizations( authorizationsFetched ))
+      this.props.dispatch(authorizations( data ))
     }
   }
 
-
-  uiConfGet = async () => {
+  dataGet = async (resource) => {
     let r
     let rest = new Rest(
       "GET",
@@ -128,29 +136,21 @@ class App extends Component {
         r = error
       }
     )
-    await rest.doXHR(`ui-config/`)
-    return r
-  }
 
-  authorizationsGet = async () => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`authorizations/`, this.props.token)
+    if (resource === 'authorizations/') {
+      await rest.doXHR(`${resource}`, this.props.token)
+    }
+    else {
+      await rest.doXHR(`${resource}`)
+    }
+    
     return r
   }
 
 
   render() {
     if (localStorage.getItem('token') && localStorage.getItem('username')) {
-      if (this.state.authorizationsLoading) {
+      if (this.state.loading) {
         return <Spin indicator={spinIcon} style={{margin: '20% 48%'}}/>
       } else {
         return <Concerto/>

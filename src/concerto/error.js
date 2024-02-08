@@ -2,45 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import { Component } from "react";
 
-import { authorizationsError } from '../_store/store.authorizations'
-
 import {
-  assetsError,
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-  drAddError,
-  drModifyError,
-  drDeleteError,
-
-  subAssetsError,
-  networksError,
-  containersError,
-  workflowsError,
-
-  rolesError,
-
-  identityGroupsError,
-  newIdentityGroupAddError,
-  identityGroupDeleteError,
-
-  permissionsError,
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
-
-  configurationsError,
-
-  historysError,
-
-  triggersError,
-
-  triggerAddError,
-  triggerModifyError,
-  triggerDeleteError,
-  conditionAddError,
-  conditionDeleteError, 
-
   err
 } from './store'
 
@@ -53,7 +15,25 @@ import { Modal, Table, Result } from 'antd';
 
 class Error extends Component {
 
+  constructor(props) {
+    super(props);
+    this.state = {
+      component: '',
+      vendor: '',
+      errorType: ''
+    };
+  }
+
   componentDidMount() {
+    if (this.props && this.props.error && this.props.error[0]) {
+      this.setState(
+        {
+          component: this.props.error[0].component,
+          vendor: this.props.error[0].vendor,
+          errorType: this.props.error[0].errorType
+        }
+      )
+    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -61,116 +41,25 @@ class Error extends Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    if (prevProps !== this.props) {
+      if (this.props && this.props.error && this.props.error[0]) {
+        this.setState(
+          {
+            component: this.props.error[0].component,
+            vendor: this.props.error[0].vendor,
+            errorType: this.props.error[0].errorType
+          }
+        )
+      }
+    }
   }
 
   componentWillUnmount() {
+    console.log('unmount', this.props)
   }
 
-
   onCancel = async () => {
-    if ( this.props.type ) {
-      switch(this.props.type) {
-
-        case 'assetsError':
-          this.props.dispatch(assetsError(null))
-          break;
-        case 'assetAddError':
-          this.props.dispatch(assetAddError(null))
-          break;
-        case 'assetModifyError':
-          this.props.dispatch(assetModifyError(null))
-          break;
-        case 'assetDeleteError':
-          this.props.dispatch(assetDeleteError(null))
-          break;
-        case 'drAddError':
-          this.props.dispatch(drAddError(null))
-          break;
-        case 'drModifyError':
-          this.props.dispatch(drModifyError(null))
-          break;
-        case 'drDeleteError':
-          this.props.dispatch(drDeleteError(null))
-          break;
-
-        case 'subAssetsError':
-          this.props.dispatch(subAssetsError(null))
-          break;
-        case 'networksError':
-          this.props.dispatch(networksError(null))
-          break;
-        case 'containersError':
-          this.props.dispatch(containersError(null))
-          break;
-        case 'workflowsError':
-          this.props.dispatch(workflowsError(null))
-          break;
-
-        case 'rolesError':
-          this.props.dispatch(rolesError(null))
-          break;
-
-        case 'identityGroupsError':
-          this.props.dispatch(identityGroupsError(null))
-          break;
-        case 'newIdentityGroupAddError':
-          this.props.dispatch(newIdentityGroupAddError(null))
-          break;
-        case 'identityGroupDeleteError':
-          this.props.dispatch(identityGroupDeleteError(null))
-          break;
-
-        case 'permissionsError':
-          this.props.dispatch(permissionsError(null))
-          break;
-        case 'permissionAddError':
-          this.props.dispatch(permissionAddError(null))
-          break;
-        case 'permissionModifyError':
-          this.props.dispatch(permissionModifyError(null))
-          break;
-        case 'permissionDeleteError':
-          this.props.dispatch(permissionDeleteError(null))
-          break;
-
-        case 'configurationsError':
-          this.props.dispatch(configurationsError(null))
-          break;
-
-        case 'historysError':
-          this.props.dispatch(historysError(null))
-          break;
-
-        case 'triggersError':
-          this.props.dispatch(triggersError(null))
-          break;
-
-        case 'triggerAddError':
-          this.props.dispatch(triggerAddError(null))
-          break;
-
-        case 'triggerModifyError':
-          this.props.dispatch(triggerModifyError(null))
-          break;
-
-        case 'triggerDeleteError':
-          this.props.dispatch(triggerDeleteError(null))
-          break;
-
-        case 'conditionAddError':
-          this.props.dispatch(conditionAddError(null))
-          break;
-
-        case 'conditionDeleteError':
-          this.props.dispatch(conditionDeleteError(null))
-          break;
-
-        default:
-          this.props.dispatch(err(null))
-          break;
-
-      }
-    }
+    this.props.dispatch(err(null))
   }
 
   logout = () => {
@@ -185,7 +74,7 @@ class Error extends Component {
 
 
   render(){
-
+    console.log('error', this.props)
     const columns = [
       {
         title: 'FROM',
@@ -269,7 +158,7 @@ class Error extends Component {
 
     return (
       <Modal
-        title={<p style={{textAlign: 'center'}}>{this.props.vendor} - {this.props.type}</p>}
+        title={<p style={{textAlign: 'center'}}>{this.state.vendor} - {this.state.component} - {this.state.errorType}</p>}
         centered
         destroyOnClose={true}
         visible= {this.props.visible}
@@ -298,5 +187,4 @@ class Error extends Component {
 }
 
 export default connect((state) => ({
-
 }))(Error);

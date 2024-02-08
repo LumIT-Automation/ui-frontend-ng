@@ -6,7 +6,7 @@ import './App.css'
 import 'antd/dist/antd.css'
 import { Layout } from 'antd'
 
-import Error from './ConcertoError'
+import Error from './concerto/error'
 import Authorizators from './_helpers/authorizators'
 import HeaderCustom from './header'
 
@@ -68,6 +68,7 @@ class Concerto extends Component {
   }
 
   render() {
+    console.log(this.props.error)
     return (
       <Layout style={{overflow: 'initial'}}>
         <HeaderCustom/>
@@ -152,7 +153,13 @@ class Concerto extends Component {
           </Layout>
         </BrowserRouter>
 
-        { this.props.authorizationsError ? <Error error={[this.props.authorizationsError]} visible={true} type={'authorizationsError'} /> : null }
+        { 
+          (this.props.error && 
+            this.props.error.errorType === 'authorizationsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null        
+        }
 
       </Layout>
     )
@@ -165,6 +172,8 @@ export default connect((state) => ({
   token: state.authentication.token,
   logoWhite: state.authentication.logoWhite,
 
+  error: state.concerto.err,
+
   authorizations: state.authorizations,
   authorizationsWorkflow: state.authorizations.workflow,
   authorizationsInfoblox: state.authorizations.infoblox,
@@ -172,5 +181,5 @@ export default connect((state) => ({
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsFortinetdb: state.authorizations.fortinetdb,
 
-  authorizationsError: state.authorizations.authorizationsError
+  
 }))(Concerto);

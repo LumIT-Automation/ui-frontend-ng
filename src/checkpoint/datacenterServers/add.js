@@ -2,17 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
-import ConcertoError from '../../concerto/error'
+import Error from '../../concerto/error'
 import Validators from '../../_helpers/validators'
 
 import {
-  datacenterServersFetch,
-  datacenterServerAddError
+  datacenterServersFetch
 } from '../store'
 
 import {
-  configurationsError
+  err
 } from '../../concerto/store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox } from 'antd';
@@ -43,7 +41,7 @@ class Add extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.configurationsError) {
+    if (!this.props.error) {
       this.main()
     }
   }
@@ -69,7 +67,12 @@ class Add extends React.Component {
     let conf = []
     let configurationsFetched = await this.configurationGet()
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-      this.props.dispatch(configurationsError(configurationsFetched))
+      let error = Object.assign(configurationsFetched, {
+        component: 'add datacenter server',
+        vendor: 'checkpoint',
+        errorType: 'configurationsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -402,7 +405,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(datacenterServerAddError(error))
+        error = Object.assign(error, {
+          component: 'add datacenter server',
+          vendor: 'checkpoint',
+          errorType: 'datacenterServerAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -839,14 +847,21 @@ class Add extends React.Component {
         </Modal>
 
         {this.state.visible ?
-          <React.Fragment>
-            { this.props.datacenterServerAddError ? <Error component={'add datacenterServer'} error={[this.props.datacenterServerAddError]} visible={true} type={'datacenterServerAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
 
-        { this.props.configurationsError ? <ConcertoError vendor={this.props.vendor} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
+          (this.props.error && 
+            this.props.error.errorType === 'configurationsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null
+
+          (this.props.error && 
+            this.props.error.errorType === 'datacenterServerAddError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null
+        :
+          null          
+        }
 
       </Space>
 
@@ -857,7 +872,8 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   asset: state.checkpoint.asset,
+
+  error: state.concerto.err,
+
   domain: state.checkpoint.domain,
-  datacenterServerAddError: state.checkpoint.datacenterServerAddError,
-  configurationsError: state.concerto.configurationsError,
 }))(Add);

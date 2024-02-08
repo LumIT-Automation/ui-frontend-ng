@@ -6,7 +6,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import { Tabs, Space, Spin, Divider } from 'antd'
 
 import Rest from '../_helpers/Rest'
-import Error from '../f5/error'
+import Error from '../concerto/error'
 
 import AssetSelector from '../concerto/assetSelector'
 import CertificatesManager from './f5/certificates/manager'
@@ -14,10 +14,13 @@ import KeysManager from './f5/keys/manager'
 
 import {
   assets,
-  assetsError,
   certificatesFetch,
   keysFetch
 } from '../f5/store'
+
+import {
+  err
+} from '../concerto/store'
 
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -34,6 +37,7 @@ class CertificatesAndKeys extends React.Component {
   }
 
   componentDidMount() {
+    console.log('certif MOUNT', this.props.error)
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.assetsGet()
     }
@@ -58,7 +62,12 @@ class CertificatesAndKeys extends React.Component {
         this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
       },
       error => {
-        this.props.dispatch(assetsError(error))
+        error = Object.assign(error, {
+          component: 'certKey manager f5',
+          vendor: 'f5',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
       }
     )
@@ -124,7 +133,13 @@ class CertificatesAndKeys extends React.Component {
           </TabPane>
         </Tabs>
 
-        { this.props.assetsError ? <Error component={'certKey manager f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        { 
+          (this.props.error && 
+            this.props.error.component === 'certKey manager f5') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null        
+        }
 
       </Space>
     )
@@ -136,7 +151,7 @@ export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
 
-  assetsError: state.f5.assetsError,
+  error: state.concerto.err,
 
   certificatesLoading: state.f5.certificatesLoading,
   keysLoading: state.f5.keysLoading,

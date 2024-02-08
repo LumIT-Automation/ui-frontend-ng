@@ -3,15 +3,10 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
-import ConcertoError from '../../concerto/error'
+import Error from '../../concerto/error'
 
 import {
   err
-} from '../store'
-
-import {
-  configurationsError,
 } from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
@@ -190,7 +185,12 @@ class CloudNetwork extends React.Component {
       data = await this.dataGet('configuration')
       try {
         if (data.status && data.status !== 200 ) {
-          this.props.dispatch(configurationsError(data))
+          let error = Object.assign(data, {
+            component: 'assignCloudNetwork',
+            vendor: 'infoblox',
+            errorType: 'configurationsError'
+          })
+          this.props.dispatch(err(error))
           await this.setState({loading: false})
         }
         else {
@@ -239,7 +239,12 @@ class CloudNetwork extends React.Component {
       await this.setState({accountsLoading: true})
       data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(err(data))
+        let error = Object.assign(data, {
+          component: 'assignCloudNetwork',
+          vendor: 'infoblox',
+          errorType: 'accountsAndProviders'
+        })
+        this.props.dispatch(err(error))
         await this.setState({accountsLoading: false})
         return
       }
@@ -256,7 +261,12 @@ class CloudNetwork extends React.Component {
       await this.setState({loading: true})
       data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(err(data))
+        let error = Object.assign(data, {
+          component: 'assignCloudNetwork',
+          vendor: 'infoblox',
+          errorType: 'accountsAndProviders'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -306,7 +316,12 @@ class CloudNetwork extends React.Component {
       await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name'], ITSM: this.state['New ITSM']})
       data = await this.dataGet('getNetworks', assetId)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(err(data))
+        let error = Object.assign(data, {
+          component: 'assignCloudNetwork',
+          vendor: 'infoblox',
+          errorType: 'accountsAndProviders'
+        })
+        this.props.dispatch(err(error))
         await this.setState({
           loading: false, 
           ['Account ID']: '', 
@@ -406,7 +421,12 @@ class CloudNetwork extends React.Component {
         let net = cloudNet.network.split('/')
         let n = await this.cloudNetworkDelete(net[0])
         if (n.status && n.status !== 200 ) {
-          this.props.dispatch(err(n))
+          let error = Object.assign(n, {
+            component: 'assignCloudNetwork',
+            vendor: 'infoblox',
+            errorType: 'accountsAndProviders'
+          })
+          this.props.dispatch(err(error))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -744,7 +764,12 @@ class CloudNetwork extends React.Component {
         let net = cloudNet.network.split('/')
         let n = await this.cloudNetworkDelete(net[0])
         if (n.status && n.status !== 200 ) {
-          this.props.dispatch(err(n))
+          let error = Object.assign(n, {
+            component: 'assignCloudNetwork',
+            vendor: 'infoblox',
+            errorType: 'accountsAndProviders'
+          })
+          this.props.dispatch(err(error))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -788,7 +813,12 @@ class CloudNetwork extends React.Component {
 
         let cn = await this.cloudNetworkAssign(body)
         if (cn.status && cn.status !== 201 ) {
-          this.props.dispatch(err(cn))
+          let error = Object.assign(cn, {
+            component: 'assignCloudNetwork',
+            vendor: 'infoblox',
+            errorType: 'accountsAndProviders'
+          })
+          this.props.dispatch(err(error))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -852,7 +882,12 @@ class CloudNetwork extends React.Component {
         let cn = await this.cloudNetworkModify(net[0], body)
         
         if (cn.status && cn.status !== 200 ) {
-          this.props.dispatch(err(cn))
+          let error = Object.assign(cn, {
+            component: 'assignCloudNetwork',
+            vendor: 'infoblox',
+            errorType: 'accountsAndProviders'
+          })
+          this.props.dispatch(err(error))
           cloudNet.loading = false
           await this.setState({cloudNetworks: cloudNetworks})
         }
@@ -914,7 +949,12 @@ class CloudNetwork extends React.Component {
     let data = await this.accountModify(this.state['Account ID'], body)
     
     if (data.status && data.status !== 200 ) {
-      this.props.dispatch(err(data))
+      let error = Object.assign(data, {
+        component: 'assignCloudNetwork',
+        vendor: 'infoblox',
+        errorType: 'accountsAndProviders'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
     }
     else {
@@ -1624,13 +1664,15 @@ class CloudNetwork extends React.Component {
         </Modal>
 
         {this.state.visible ?
-          <React.Fragment>
-            { this.props.configurationsError ? <ConcertoError component={'assignCloudNetwork'} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
-            
-            { this.props.err ? <Error component={'assignCloudNetwork'} error={[this.props.err]} visible={true} type={'err'} /> : null }
-          </React.Fragment>
+
+          (this.props.error && 
+            this.props.error.component === 'assignCloudNetwork') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null
+
         :
-          null
+          null          
         }
 
       </React.Fragment>
@@ -1644,7 +1686,5 @@ export default connect((state) => ({
   authorizations: state.authorizations.infoblox,
   asset: state.infoblox.asset,
 
-  configurationsError: state.concerto.configurationsError,
-
-  err : state.infoblox.err,
+  error: state.concerto.err
 }))(CloudNetwork);

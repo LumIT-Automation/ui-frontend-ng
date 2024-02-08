@@ -7,8 +7,6 @@ import { LoadingOutlined } from '@ant-design/icons'
 import Rest from '../_helpers/Rest'
 import Error from './error'
 
-
-
 import { asset as infobloxAsset } from '../infoblox/store'
 import { asset as checkpointAsset } from '../checkpoint/store'
 import { domain as checkpointDomain } from '../checkpoint/store'
@@ -40,6 +38,7 @@ class AssetSelector extends React.Component {
   }
 
   componentDidMount() {
+    console.log('ASSET SELECTOR MOUNT', this.props.error)
     this.main()
   }
 
@@ -91,6 +90,12 @@ class AssetSelector extends React.Component {
         this.setState({assets: resp.data.items})
       },
       error => {
+        console.log('assetGet error')
+        error = Object.assign(error, {
+          component: 'asset selector',
+          vendor: this.props.vendor,
+          errorType: 'assetsError'
+        })
         this.props.dispatch(err(error))
       }
     )
@@ -164,6 +169,11 @@ class AssetSelector extends React.Component {
           this.setState({ domains: resp.data.items })
         },
         error => {
+          error = Object.assign(error, {
+            component: 'asset selector',
+            vendor: this.props.vendor,
+            errorType: 'domainsError'
+          })
           this.props.dispatch(err(error))
         }
       )
@@ -180,6 +190,11 @@ class AssetSelector extends React.Component {
         this.setState({ partitions: resp.data.items })
       },
       error => {
+        error = Object.assign(error, {
+          component: 'asset selector',
+          vendor: this.props.vendor,
+          errorType: 'partitionsError'
+        })
         this.props.dispatch(err(error))
       }
     )
@@ -410,8 +425,12 @@ class AssetSelector extends React.Component {
           }
         </Row>
 
-        {
-          this.props.error ? <Error component={'asset selector'} error={[this.props.error]} visible={true} type={'err'} /> : null
+        { 
+          (this.props.error && 
+            this.props.error.component === 'asset selector') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null        
         }
 
       </React.Fragment>
