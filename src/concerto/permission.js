@@ -14,29 +14,11 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } 
 
 
 import {
-  assetsError,
-  subAssetsError,
-  networksError,
-  containersError,
-  workflowsError,
-
-  rolesError,
-  identityGroupsError,
-  newIdentityGroupAddError,
-  identityGroupDeleteError,
-
-  permissionsError,
-  permissionAddError,
-  permissionModifyError,
-  permissionDeleteError,
+  err
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-
-
-
-//import List from './list'
 
 
 
@@ -65,7 +47,7 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assetsError && !this.props.identityGroupsError && !this.props.permissionsError) {
+    if (!this.props.error) {
       this.setState({permissionsRefresh: false})
       this.main()
     }
@@ -236,7 +218,12 @@ class Permission extends React.Component {
 
         fetchedAssets = await this.dataGet('assets')
         if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-          this.props.dispatch(assetsError(fetchedAssets))
+          let error = Object.assign(fetchedAssets, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'assetsError'
+          })
+          this.props.dispatch(err(error))
           await this.setState({loading: false})
           return
         }
@@ -253,7 +240,12 @@ class Permission extends React.Component {
       else if (this.props.vendor === 'workflow' ){
         fetchedWorkflows = await this.dataGet('workflows')
         if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
-          this.props.dispatch(workflowsError(fetchedWorkflows))
+          let error = Object.assign(fetchedWorkflows, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'workflowsError'
+          })
+          this.props.dispatch(err(error))
           await this.setState({loading: false})
           return
         }
@@ -267,7 +259,12 @@ class Permission extends React.Component {
 
       fetchedRoles = await this.dataGet('roles')
       if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
-        this.props.dispatch(rolesError(fetchedRoles))
+        let error = Object.assign(fetchedRoles, {
+          component: 'permission',
+          vendor: 'concerto',
+          errorType: 'rolesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -278,7 +275,12 @@ class Permission extends React.Component {
 
       fetchedIdentityGroups = await this.dataGet('identity-groups')
       if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
-        this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+        let error = Object.assign(fetchedIdentityGroups, {
+          component: 'permission',
+          vendor: 'concerto',
+          errorType: 'identityGroupsError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -291,7 +293,12 @@ class Permission extends React.Component {
 
     fetchedPermissions = await this.dataGet('permissions')
     if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
-      this.props.dispatch(permissionsError(fetchedPermissions))
+      let error = Object.assign(fetchedPermissions, {
+        component: 'permission',
+        vendor: 'concerto',
+        errorType: 'permissionsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -400,7 +407,12 @@ class Permission extends React.Component {
         }
 
         if (subAssetsFetched.status && subAssetsFetched.status !== 200 ) {
-          this.props.dispatch(subAssetsError(subAssetsFetched))
+          let error = Object.assign(subAssetsFetched, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'subAssetsError'
+          })
+          this.props.dispatch(err(error))
           await this.setState({assets: assets})
           return
         }
@@ -425,13 +437,23 @@ class Permission extends React.Component {
   networksGet = async (assetId) => {
     let nets = await this.dataGet('networks', assetId)
     if (nets.status && nets.status !== 200) {
-      this.props.dispatch(networksError( nets ))
+      let error = Object.assign(nets, {
+        component: 'permission',
+        vendor: 'concerto',
+        errorType: 'networksError'
+      })
+      this.props.dispatch(err(error))
       return
     }
 
     let containers = await this.dataGet('network-containers', assetId)
     if (containers.status && containers.status !== 200) {
-      this.props.dispatch(containersError( containers ))
+      let error = Object.assign(containers, {
+        component: 'permission',
+        vendor: 'concerto',
+        errorType: 'containersError'
+      })
+      this.props.dispatch(err(error))
       return
     }
 
@@ -782,13 +804,23 @@ class Permission extends React.Component {
           await this.setState({newIgLoading: false})
 
           if (newIg.status && newIg.status !== 201) {
-            this.props.dispatch(newIdentityGroupAddError(newIg))
+            let error = Object.assign(newIg, {
+              component: 'permission',
+              vendor: 'concerto',
+              errorType: 'newIdentityGroupAddError'
+            })
+            this.props.dispatch(err(error))
             return
           }
           else {
             let fetchedIdentityGroups = await this.dataGet('identity-groups')
             if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
-              this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+              let error = Object.assign(fetchedIdentityGroups, {
+                component: 'permission',
+                vendor: 'concerto',
+                errorType: 'identityGroupsError'
+              })
+              this.props.dispatch(err(error))
               await this.setState({loading: false})
               return
             }
@@ -829,13 +861,23 @@ class Permission extends React.Component {
 
 
     if (delIg.status && delIg.status !== 200 ) {
-      this.props.dispatch(identityGroupDeleteError(delIg))
+      let error = Object.assign(delIg, {
+        component: 'permission',
+        vendor: 'concerto',
+        errorType: 'identityGroupDeleteError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
       let fetchedIdentityGroups = await this.dataGet('identity-groups')
       if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
-        this.props.dispatch(identityGroupsError(fetchedIdentityGroups))
+        let error = Object.assign(fetchedIdentityGroups, {
+          component: 'permission',
+          vendor: 'concerto',
+          errorType: 'identityGroupsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -958,7 +1000,12 @@ class Permission extends React.Component {
 
         let p = await this.permissionDelete(perm.id)
         if (p.status && p.status !== 200 ) {
-          this.props.dispatch(permissionDeleteError(p))
+          let error = Object.assign(p, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'permissionDeleteError'
+          })
+          this.props.dispatch(err(error))
           perm.loading = false
           await this.setState({permissions: permissions})
         }
@@ -1020,7 +1067,12 @@ class Permission extends React.Component {
 
         let p = await this.permModify(perm.id, body)
         if (p.status && p.status !== 200 ) {
-          this.props.dispatch(permissionModifyError(p))
+          let error = Object.assign(p, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'permissionModifyError'
+          })
+          this.props.dispatch(err(error))
           perm.loading = false
           await this.setState({permissions: permissions})
         }
@@ -1082,7 +1134,12 @@ class Permission extends React.Component {
 
         let p = await this.permAdd(body)
         if (p.status && p.status !== 201 ) {
-          this.props.dispatch(permissionAddError(p))
+          let error = Object.assign(p, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'permissionAddError'
+          })
+          this.props.dispatch(err(error))
           perm.loading = false
           await this.setState({permissions: permissions})
         }
@@ -2082,21 +2139,112 @@ class Permission extends React.Component {
           </React.Fragment>
           //</Space>
         }
-        { this.props.assetsError ? <Error vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
-        { this.props.subAssetsError ? <Error vendor={this.props.vendor} error={[this.props.subAssetsError]} visible={true} type={'subAssetsError'} /> : null }
-        { this.props.networksError ? <Error vendor={this.props.vendor} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
-        { this.props.containersError ? <Error vendor={this.props.vendor} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
-        { this.props.workflowsError ? <Error vendor={this.props.vendor} error={[this.props.workflowsError]} visible={true} type={'workflowsError'} /> : null }
 
-        { this.props.rolesError ? <Error vendor={this.props.vendor} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
-        { this.props.identityGroupsError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupsError]} visible={true} type={'identityGroupsError'} /> : null }
-        { this.props.newIdentityGroupAddError ? <Error vendor={this.props.vendor} error={[this.props.newIdentityGroupAddError]} visible={true} type={'newIdentityGroupAddError'} /> : null }
-        { this.props.identityGroupDeleteError ? <Error vendor={this.props.vendor} error={[this.props.identityGroupDeleteError]} visible={true} type={'identityGroupDeleteError'} /> : null }
+        { 
+          (this.props.error && 
+            this.props.error.errorType === 'permissionsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null   
+        }
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'assetsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
 
-        { this.props.permissionsError ? <Error vendor={this.props.vendor} error={[this.props.permissionsError]} visible={true} type={'permissionsError'} /> : null }
-        { this.props.permissionAddError ? <Error vendor={this.props.vendor} error={[this.props.permissionAddError]} visible={true} type={'permissionAddError'} /> : null }
-        { this.props.permissionModifyError ? <Error vendor={this.props.vendor} error={[this.props.permissionModifyError]} visible={true} type={'permissionModifyError'} /> : null }
-        { this.props.permissionDeleteError ? <Error vendor={this.props.vendor} error={[this.props.permissionDeleteError]} visible={true} type={'permissionDeleteError'} /> : null }
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'subAssetsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'networksError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'containersError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'workflowsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'rolesError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'identityGroupsError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'newIdentityGroupAddError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'identityGroupDeleteError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'permissionAddError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'permissionModifyError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        {
+          (this.props.error && 
+            this.props.error.errorType === 'permissionDeleteError') ? 
+            <Error error={[this.props.error]} visible={true}/> 
+          : 
+            null 
+        }
+
+        
+
       </React.Fragment>
     )
   }
@@ -2104,21 +2252,6 @@ class Permission extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
-  assetsError: state.concerto.assetsError,
-  subAssetsError: state.concerto.subAssetsError,
-  networksError: state.concerto.networksError,
-  containersError: state.concerto.containersError,
-  workflowsError: state.concerto.workflowsError,
-
-  rolesError: state.concerto.rolesError,
-
-  identityGroupsError: state.concerto.identityGroupsError,
-  newIdentityGroupAddError: state.concerto.newIdentityGroupAddError,
-  identityGroupDeleteError: state.concerto.identityGroupDeleteError,
-
-  permissionsError: state.concerto.permissionsError,
-  permissionAddError: state.concerto.permissionAddError,
-  permissionModifyError: state.concerto.permissionModifyError,
-  permissionDeleteError: state.concerto.permissionDeleteError,
 }))(Permission);
