@@ -25,6 +25,7 @@ const f5Slice = createSlice({
         },
 
         asset: (state, action) => {
+          console.log('------------', action)
           state.asset = action.payload
         },
 

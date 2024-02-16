@@ -63,6 +63,7 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.props.asset)
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
@@ -563,6 +564,7 @@ class CreateF5Service extends React.Component {
       request: {},
       dgChoices: null,
       dgName: null,
+      dr: false,
       errors: {}
     })
   }
@@ -647,6 +649,8 @@ class CreateF5Service extends React.Component {
       }
     }
 
+    console.log(this.props.asset)
+
     return (
       <React.Fragment>
 
@@ -694,7 +698,7 @@ class CreateF5Service extends React.Component {
                     <Col offset={8} span={6}>
                       <Checkbox
                         onChange={e => this.writeDrSet(e.target.checked)}
-                        disabled={(this.props.asset.assetsDr && this.props.asset.assetsDr.length > 0) ? false : true}
+                        disabled={(this.props.asset && this.props.asset.assetsDr && this.props.asset.assetsDr.length > 0) ? false : true}
                         checked={this.state.dr}
                       >
                         Write in dr

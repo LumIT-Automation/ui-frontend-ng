@@ -13,13 +13,8 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, U
 
 
 import {
-  assetsError,
+  err,
 
-  assetAddError,
-  assetModifyError,
-  assetDeleteError,
-  drAddError,
-  drDeleteError
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -53,7 +48,7 @@ class Permission extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.assetsError) {
+    if (!this.props.error) {
       this.setState({assetsRefresh: false})
       this.main()
     }
@@ -64,6 +59,7 @@ class Permission extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    
     if (prevProps.vendor !== this.props.vendor) {
       this.setState({assetsRefresh: false})
       this.main()
@@ -163,7 +159,12 @@ class Permission extends React.Component {
 
     let fetchedAssets = await this.dataGet('assets')
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-      this.props.dispatch(assetsError(fetchedAssets))
+      let error = Object.assign(fetchedAssets, {
+        component: 'asset',
+        vendor: 'concerto',
+        errorType: 'assetsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -936,7 +937,12 @@ class Permission extends React.Component {
 
         let a = await this.assetDelete(ass.id)
         if (a.status && a.status !== 200 ) {
-          this.props.dispatch(assetDeleteError(a))
+          let error = Object.assign(a, {
+            component: 'asset',
+            vendor: 'concerto',
+            errorType: 'assetDeleteError'
+          })
+          this.props.dispatch(err(error))
           ass.loading = false
           await this.setState({assets: assets})
         }
@@ -974,7 +980,12 @@ class Permission extends React.Component {
 
         let a = await this.assAdd(body)
         if (a.status && a.status !== 201 ) {
-          this.props.dispatch(assetAddError(a))
+          let error = Object.assign(a, {
+            component: 'asset',
+            vendor: 'concerto',
+            errorType: 'assetAddError'
+          })
+          this.props.dispatch(err(error))
           ass.loading = false
           await this.setState({assets: assets})
         }
@@ -990,7 +1001,12 @@ class Permission extends React.Component {
       let tempAssets = []
       let fetchedAssets = await this.dataGet('assets')
       if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-        this.props.dispatch(assetsError(fetchedAssets))
+        let error = Object.assign(fetchedAssets, {
+          component: 'asset',
+          vendor: 'concerto',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -1008,7 +1024,12 @@ class Permission extends React.Component {
             await this.setState({assets: assets})
             let drAdd = await this.drAdd(as.id, b)
             if (drAdd.status && drAdd.status !== 201 ) {
-              this.props.dispatch(drAddError(drAdd))
+              let error = Object.assign(drAdd, {
+                component: 'asset',
+                vendor: 'concerto',
+                errorType: 'drAddError'
+              })
+              this.props.dispatch(err(error))
               ass.drLoading = false
               await this.setState({assets: assets})
             }
@@ -1052,7 +1073,12 @@ class Permission extends React.Component {
 
         let a = await this.assModify(ass.id, body)
         if (a.status && a.status !== 200 ) {
-          this.props.dispatch(assetModifyError(a))
+          let error = Object.assign(a, {
+            component: 'asset',
+            vendor: 'concerto',
+            errorType: 'assetModifyError'
+          })
+          this.props.dispatch(err(error))
           ass.loading = false
           await this.setState({assets: assets})
         }
@@ -1071,7 +1097,12 @@ class Permission extends React.Component {
 
             let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
             if (drDelete.status && drDelete.status !== 200 ) {
-              this.props.dispatch(drDeleteError(drDelete))
+              let error = Object.assign(drDelete, {
+                component: 'asset',
+                vendor: 'concerto',
+                errorType: 'drDeleteError'
+              })
+              this.props.dispatch(err(error))
               ass.drLoading = false
               await this.setState({assets: assets})
             }
@@ -1090,7 +1121,12 @@ class Permission extends React.Component {
 
               let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
               if (drDelete.status && drDelete.status !== 200 ) {
-                this.props.dispatch(drDeleteError(drDelete))
+                let error = Object.assign(drDelete, {
+                  component: 'asset',
+                  vendor: 'concerto',
+                  errorType: 'drDeleteError'
+                })
+                this.props.dispatch(err(error))
                 ass.drLoading = false
                 await this.setState({assets: assets})
               }
@@ -1111,7 +1147,12 @@ class Permission extends React.Component {
             await this.setState({assets: assets})
             let drAdd = await this.drAdd(ass.id, b)
             if (drAdd.status && drAdd.status !== 201 ) {
-              this.props.dispatch(drAddError(drAdd))
+              let error = Object.assign(drAdd, {
+                component: 'asset',
+                vendor: 'concerto',
+                errorType: 'drAddError'
+              })
+              this.props.dispatch(err(error))
               ass.drLoading = false
               await this.setState({assets: assets})
             }
@@ -2169,6 +2210,12 @@ class Permission extends React.Component {
       return Math.random().toString()
     }
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'asset') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -2222,12 +2269,7 @@ class Permission extends React.Component {
           //</Space>
         }
 
-        { this.props.assetsError ? <Error vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
-        { this.props.assetAddError ? <Error vendor={this.props.vendor} error={[this.props.assetAddError]} visible={true} type={'assetAddError'} /> : null }
-        { this.props.assetModifyError ? <Error vendor={this.props.vendor} error={[this.props.assetModifyError]} visible={true} type={'assetModifyError'} /> : null }
-        { this.props.assetDeleteError ? <Error vendor={this.props.vendor} error={[this.props.assetDeleteError]} visible={true} type={'assetDeleteError'} /> : null }
-        { this.props.drAddError ? <Error vendor={this.props.vendor} error={[this.props.drAddError]} visible={true} type={'drAddError'} /> : null }
-        { this.props.drDeleteError ? <Error vendor={this.props.vendor} error={[this.props.drDeleteError]} visible={true} type={'drDeleteError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -2236,11 +2278,6 @@ class Permission extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
-  assetsError: state.concerto.assetsError,
-  assetAddError: state.concerto.assetAddError,
-  assetModifyError: state.concerto.assetModifyError,
-  assetDeleteError: state.concerto.assetDeleteError,
-  drAddError: state.concerto.drAddError,
-  drDeleteError: state.concerto.drDeleteError,
 }))(Permission);

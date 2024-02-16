@@ -33,12 +33,12 @@ class AssetSelector extends React.Component {
       environments: [],
       environment: '',
       assets: [],
+      asset: '',
       error: null,
     };
   }
 
   componentDidMount() {
-    console.log('ASSET SELECTOR MOUNT', this.props.error)
     this.main()
   }
 
@@ -47,11 +47,11 @@ class AssetSelector extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ((this.props.vendor === 'checkpoint') && (this.state.asset !== prevState.asset)) {
+    if ((this.props.vendor === 'checkpoint') && this.state.asset && (this.state.asset !== prevState.asset)) {
       this.domainsGet()
     }
 
-    if ((this.props.vendor === 'f5') && (this.state.asset !== prevState.asset)) {
+    if ((this.props.vendor === 'f5') && this.state.asset && (this.state.asset !== prevState.asset)) {
       this.partitionsGet()
     }
 
@@ -90,7 +90,6 @@ class AssetSelector extends React.Component {
         this.setState({assets: resp.data.items})
       },
       error => {
-        console.log('assetGet error')
         error = Object.assign(error, {
           component: 'asset selector',
           vendor: this.props.vendor,
@@ -99,7 +98,12 @@ class AssetSelector extends React.Component {
         this.props.dispatch(err(error))
       }
     )
-    await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token)
+    if (this.props.vendor === 'f5') {
+      await rest.doXHR(`${this.props.vendor}/assets/?includeDr`, this.props.token)
+    }
+    else {
+      await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token)
+    }
     
   }
 
@@ -115,7 +119,21 @@ class AssetSelector extends React.Component {
       return a.environment === e
     })
 
-    await this.setState({ environment: e, envAssets: envAssets, partitions: '' })
+    await this.setState({ 
+      environment: e, 
+      envAssets: envAssets,
+      asset: '', 
+      partitions: '',
+      domains: ''
+    })
+
+    await this.props.dispatch(infobloxAsset(null))
+    await this.props.dispatch(checkpointAsset(null))
+    await this.props.dispatch(checkpointDomain(null))
+    await this.props.dispatch(f5Asset(null))
+    await this.props.dispatch(f5Partition(null))
+    await this.props.dispatch(vmwareAsset(null))
+    await this.props.dispatch(proofpointAsset(null))
   }
 
   assetSet = async val => {
