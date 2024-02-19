@@ -79,7 +79,7 @@ const concertoSlice = createSlice({
         state.historysLoading = action.payload
       },
       historys: ( state, action) => {
-        state.historys = action.payload.data.items
+        state.historys = action.payload
       },
       historysError: ( state, action) => {
         state.historysError = action.payload

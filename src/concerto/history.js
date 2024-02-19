@@ -159,6 +159,21 @@ class Manager extends React.Component {
   main = async () => {
     await this.setState({loading: true})
 
+    let fetchedAssets = await this.assetGet()
+    if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
+      let error = Object.assign(fetchedAssets, {
+        component: 'history',
+        vendor: 'concerto',
+        errorType: 'assetsError'
+      })
+      this.props.dispatch(err(error))
+      await this.setState({loading: false})
+      return
+    }
+    else {
+      await this.setState({assets: fetchedAssets.data.items})
+    }
+
     let fetchedHistorys = await this.historyGet()
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
       let error = Object.assign(fetchedHistorys, {
@@ -170,21 +185,39 @@ class Manager extends React.Component {
       await this.setState({loading: false})
       return
     }
-    else if (this.props.vendor === 'vmware'){
-      let list = []
-      await this.setState({loading: false})
-      fetchedHistorys.data.items.forEach((item, i) => {
-        let ts = item.task_startTime.split('.');
-        item.task_startTime = ts[0]
-        list.push(item)
+    else {
+      let hists = []
+      let asset
+      fetchedHistorys.data.items.forEach((hist, i) => {
+        if (this.props.vendor === 'vmware') {
+          asset = this.state.assets.find(a => a.id === hist.id_asset)
+        }
+        else {
+          asset = this.state.assets.find(a => a.id === hist.asset_id)
+        }
+        
+        hist.fqdn = asset.fqdn
+
+        hists.push(hist)
       });
 
-      this.props.dispatch(historys({data: {items:list}}))
+      if (this.props.vendor === 'vmware'){
+        let list = []
+        await this.setState({loading: false})
+        hists.forEach((item, i) => {
+          let ts = item.task_startTime.split('.');
+          item.task_startTime = ts[0]
+          list.push(item)
+        });
+  
+        this.props.dispatch(historys(list))
+      }
+      else {
+        await this.setState({loading: false})
+        this.props.dispatch(historys(hists))
+      }
     }
-    else {
-      await this.setState({loading: false})
-      this.props.dispatch(historys(fetchedHistorys))
-    }
+
   }
 
   refresh = async () => {
@@ -238,6 +271,25 @@ class Manager extends React.Component {
 
   historysRefresh = async () => {
     await this.setState({historysRefresh: true})
+  }
+
+  assetGet = async () => {
+    let endpoint = `${this.props.vendor}/assets/`
+
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+
+    await rest.doXHR(`${endpoint}`, this.props.token)
+
+    return r
   }
 
   historyGet = async () => {
@@ -323,6 +375,13 @@ class Manager extends React.Component {
         ...this.getColumnSearchProps('type'),
       },
       {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'fqdn',
+        key: 'fqdn',
+        ...this.getColumnSearchProps('fqdn'),
+      },
+      {
         title: 'Action',
         align: 'center',
         width: 500,
@@ -385,6 +444,13 @@ class Manager extends React.Component {
         ...this.getColumnSearchProps('config_object_type'),
       },
       {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'fqdn',
+        key: 'fqdn',
+        ...this.getColumnSearchProps('fqdn'),
+      },
+      {
         title: 'Name',
         align: 'center',
         width: 500,
@@ -442,6 +508,13 @@ class Manager extends React.Component {
         ...this.getColumnSearchProps('config_object_type'),
       },
       {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'fqdn',
+        key: 'fqdn',
+        ...this.getColumnSearchProps('fqdn'),
+      },
+      {
         title: 'Status',
         align: 'center',
         dataIndex: 'status',
@@ -488,6 +561,13 @@ class Manager extends React.Component {
         dataIndex: 'vm_name',
         key: 'vm_name',
         ...this.getColumnSearchProps('vm_name'),
+      },
+      {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'fqdn',
+        key: 'fqdn',
+        ...this.getColumnSearchProps('fqdn'),
       },
       {
         title: 'Start time',
