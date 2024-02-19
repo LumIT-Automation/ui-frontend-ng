@@ -6,7 +6,6 @@ import '../../App.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../error'
-import InfobloxError from '../../infoblox/error'
 
 import { Space, Table, Input, Button, Spin, Select, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words';
@@ -18,20 +17,12 @@ import Delete from './delete'
 
 import {
   triggersFetch,
-  triggersError,
-  conditionAddError,
-  conditionDeleteError,
+  err,
 } from '../store'
 
-import {
-  assetsError,
-} from '../../infoblox/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const loadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
-
-//import List from './list'
 
 
 
@@ -50,7 +41,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.triggersError) {
+    if (!this.props.error) {
       this.props.dispatch(triggersFetch(false))
       this.main()
     }
@@ -173,7 +164,12 @@ class Manager extends React.Component {
 
     let fetchedAssets = await this.assetGet()
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
-      this.props.dispatch(assetsError(fetchedAssets))
+      let error = Object.assign(fetchedAssets, {
+        component: 'trigger',
+        vendor: 'concerto',
+        errorType: 'assetsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -183,7 +179,12 @@ class Manager extends React.Component {
 
     let fetchedTriggers = await this.triggerGet()
     if (fetchedTriggers.status && fetchedTriggers.status !== 200 ) {
-      this.props.dispatch(triggersError(fetchedTriggers))
+      let error = Object.assign(fetchedTriggers, {
+        component: 'trigger',
+        vendor: 'concerto',
+        errorType: 'triggersError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -277,7 +278,6 @@ class Manager extends React.Component {
 
     let triggers = JSON.parse(JSON.stringify(this.state.triggers))
     let trig = triggers.find(t => t.id === trigger.id)
-    let cond = trig.conditions.find(c => c.id === condition_id)
 
     let newConditions = trig.conditions.filter(c => {
       return condition_id.condition_id !== c.condition_id
@@ -357,7 +357,12 @@ class Manager extends React.Component {
 
           let condDel = await this.condDel(cond.condition_id, trig.id)
           if (condDel.status && condDel.status !== 200 ) {
-            this.props.dispatch(conditionDeleteError(condDel))
+            let error = Object.assign(condDel, {
+              component: 'trigger',
+              vendor: 'concerto',
+              errorType: 'conditionDeleteError'
+            })
+            this.props.dispatch(err(error))
             cond.loading = false
             this.setState({triggers: triggers})
           }
@@ -372,7 +377,12 @@ class Manager extends React.Component {
 
           let condAdd = await this.condAdd(cond, trig.id)
           if (condAdd.status && condAdd.status !== 201 ) {
-            this.props.dispatch(conditionAddError(condAdd))
+            let error = Object.assign(condAdd, {
+              component: 'trigger',
+              vendor: 'concerto',
+              errorType: 'conditionAddError'
+            })
+            this.props.dispatch(err(error))
             cond.loading = false
             this.setState({triggers: triggers})
           }
@@ -429,12 +439,7 @@ class Manager extends React.Component {
   render() {
 
     let returnCol = () => {
-      switch (this.props.vendor) {
-        case 'infoblox':
-          return infobloxColumns
-          break;
-        default:
-      }
+      return infobloxColumns
     }
 
     const expandedRowRender = (...params) => {
@@ -636,8 +641,10 @@ class Manager extends React.Component {
       }
     ];
 
-    let randomKey = () => {
-      return Math.random().toString()
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'trigger') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
     }
 
     return (
@@ -673,10 +680,9 @@ class Manager extends React.Component {
             />
           </Space>
         }
-        { this.props.triggersError ? <Error vendor={this.props.vendor} error={[this.props.triggersError]} visible={true} type={'triggersError'} /> : null }
-        { this.props.assetsError ? <InfobloxError vendor={this.props.vendor} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
-        { this.props.conditionAddError ? <Error vendor={this.props.vendor} error={[this.props.conditionAddError]} visible={true} type={'conditionAddError'} /> : null }
-        { this.props.conditionDeleteError ? <Error vendor={this.props.vendor} error={[this.props.conditionDeleteError]} visible={true} type={'conditionDeleteError'} /> : null }
+        
+        {errors()}
+
       </React.Fragment>
     )
   }
@@ -684,12 +690,8 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   triggersFetch: state.concerto.triggersFetch,
-
-  triggersError: state.concerto.triggersError,
-  assetsError: state.infoblox.assetsError,
-  conditionAddError: state.concerto.conditionAddError,
-  conditionDeleteError:state.concerto.conditionDeleteError,
 
 }))(Manager);

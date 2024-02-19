@@ -11,10 +11,8 @@ import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin, Divider, Ca
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 
-
 import {
   err,
-
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -2206,6 +2204,7 @@ class Permission extends React.Component {
         ),
       }
     ];
+    
     let randomKey = () => {
       return Math.random().toString()
     }

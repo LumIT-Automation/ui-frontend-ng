@@ -8,7 +8,7 @@ import Error from '../error'
 
 import {
   triggersFetch,
-  triggerDeleteError
+  err,
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -50,7 +50,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () =>  this.props.dispatch(triggersFetch(true)) )
       },
       error => {
-        this.props.dispatch(triggerDeleteError(error))
+        error = Object.assign(error, {
+          component: 'triggerDelete',
+          vendor: 'concerto',
+          errorType: 'triggerDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -67,6 +72,13 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'triggerDelete') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
 
@@ -117,7 +129,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.triggerDeleteError ? <Error component={'trigger delete f5'} error={[this.props.triggerDeleteError]} visible={true} type={'triggerDeleteError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -131,5 +143,5 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	triggerDeleteError: state.concerto.triggerDeleteError,
+  error: state.concerto.err,
 }))(Delete);

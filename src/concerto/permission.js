@@ -696,7 +696,7 @@ class Permission extends React.Component {
             perm.isModified.subAsset_name = true
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            if (this.props.vendor != 'proofpoint') {
+            if (this.props.vendor !== 'proofpoint') {
               perm[this.state.subAsset] = {id_asset: value}
             }
             else {}
@@ -705,7 +705,7 @@ class Permission extends React.Component {
             delete perm.isModified.subAsset_assetId
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            if (this.props.vendor != 'proofpoint') {
+            if (this.props.vendor !== 'proofpoint') {
               perm[this.state.subAsset] = {id_asset: value}
             }
             perm.isModified.subAsset_name = true
@@ -714,7 +714,7 @@ class Permission extends React.Component {
         else {
           perm.asset = asset
           perm.assetFqdn = asset.fqdn
-          if (this.props.vendor != 'proofpoint') {
+          if (this.props.vendor !== 'proofpoint') {
             perm[this.state.subAsset] = {id_asset: value}
           }
         }
@@ -1967,6 +1967,12 @@ class Permission extends React.Component {
       return Math.random().toString()
     }
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'permission') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -2140,110 +2146,7 @@ class Permission extends React.Component {
           //</Space>
         }
 
-        { 
-          (this.props.error && 
-            this.props.error.errorType === 'permissionsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null   
-        }
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'assetsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'subAssetsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'networksError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'containersError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'workflowsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'rolesError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'identityGroupsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'newIdentityGroupAddError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'identityGroupDeleteError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'permissionAddError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'permissionModifyError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        {
-          (this.props.error && 
-            this.props.error.errorType === 'permissionDeleteError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null 
-        }
-
-        
+        {errors()}
 
       </React.Fragment>
     )

@@ -7,9 +7,6 @@ import Trigger from './trigger'
 
 import 'antd/dist/antd.css';
 import '../../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 

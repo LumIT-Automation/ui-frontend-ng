@@ -13,7 +13,7 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 import {
   historys,
-  historysError,
+  err,
   taskProgressLoading,
   secondStageProgressLoading,
 } from './store'
@@ -36,7 +36,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.vendor === 'vmware') {
-      if (!this.props.historysError) {
+      if (!this.props.error) {
         this.setState({historysRefresh: false})
         if (!this.props.historys) {
           this.main()
@@ -47,7 +47,7 @@ class Manager extends React.Component {
         clearInterval(this.interval)
       }
     }
-    if (!this.props.historysError && !this.props.historys) {
+    if (!this.props.error && !this.props.historys) {
       this.setState({historysRefresh: false})
       this.main()
     }
@@ -161,7 +161,12 @@ class Manager extends React.Component {
 
     let fetchedHistorys = await this.historyGet()
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
-      this.props.dispatch(historysError(fetchedHistorys))
+      let error = Object.assign(fetchedHistorys, {
+        component: 'history',
+        vendor: 'concerto',
+        errorType: 'historysError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -213,7 +218,12 @@ class Manager extends React.Component {
     this.props.dispatch(secondStageProgressLoading(false))
 
     if (fetchedHistorys.status && fetchedHistorys.status !== 200 ) {
-      this.props.dispatch(historysError(fetchedHistorys))
+      let error = Object.assign(fetchedHistorys, {
+        component: 'history',
+        vendor: 'concerto',
+        errorType: 'historysError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -258,22 +268,23 @@ class Manager extends React.Component {
   render() {
 
     let returnCol = () => {
-      switch (this.props.vendor) {
-        case 'infoblox':
-          return infobloxColumns
-          break;
-        case 'checkpoint':
-          return checkpointColumns
-          break;
-        case 'f5':
-          return f5Columns
-          break;
-        case 'vmware':
-          return vmwareColumns
-          break;
-        default:
 
+      if (this.props.vendor === 'infoblox') {
+        return infobloxColumns
       }
+      else if (this.props.vendor === 'checkpoint') {
+        return checkpointColumns
+      }
+      else if (this.props.vendor === 'f5') {
+        return f5Columns
+      }
+      else if (this.props.vendor === 'vmware') {
+        return vmwareColumns
+      }
+      else {
+        return f5Columns
+      }
+
     }
 
     const execCommands = [
@@ -560,6 +571,12 @@ class Manager extends React.Component {
       return Math.random().toString()
     }
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'history') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -579,7 +596,9 @@ class Manager extends React.Component {
             />
           </Space>
         }
-        { this.props.historysError ? <Error vendor={this.props.vendor} error={[this.props.historysError]} visible={true} type={'historyError'} /> : null }
+        
+        {errors()}
+
       </React.Fragment>
     )
   }
@@ -587,9 +606,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   historys: state.concerto.historys,
-  historysError: state.concerto.historysError,
   taskProgressLoading: state.concerto.taskProgressLoading,
   secondStageProgressLoading: state.concerto.secondStageProgressLoading,
 }))(Manager);

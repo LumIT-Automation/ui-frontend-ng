@@ -1,22 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Modal, Spin, Result, Input, Row, Col, Radio, Select, Checkbox } from 'antd'
+import { Button, Modal, Spin, Result, Input, Row, Col, Select, Checkbox } from 'antd'
 import { LoadingOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
-import Validators from '../../_helpers/validators'
 
 import {
   triggersFetch,
-
-  triggerAddError,
+  err,
 } from '../store'
 
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const loadingIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
@@ -117,7 +114,12 @@ class Add extends React.Component {
     await this.setState({loading: true})
     let triggerAdd = await this.triggerAdd(b)
     if (triggerAdd.status && triggerAdd.status !== 201 ) {
-      this.props.dispatch(triggerAddError(triggerAdd))
+      let error = Object.assign(triggerAdd, {
+        component: 'triggerAdd',
+        vendor: 'concerto',
+        errorType: 'triggerAddError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       //return
     }
@@ -179,7 +181,6 @@ class Add extends React.Component {
               onPressEnter={() => this.validation(action)}
             />
           )
-          break;
 
         case 'checkbox':
           return (
@@ -228,6 +229,12 @@ class Add extends React.Component {
           )
 
         default:
+      }
+    }
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'triggerAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
       }
     }
 
@@ -306,7 +313,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.triggerAddError ? <Error component={`trigger add ${this.props.vendor}`} error={[this.props.triggerAddError]} visible={true} type={'triggerAddError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -319,5 +326,5 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	triggerAddError: state.concerto.triggerAddError,
+  error: state.concerto.err,
 }))(Add);

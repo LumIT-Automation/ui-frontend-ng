@@ -1,16 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Space, Modal, Table, List, Spin, Input, Select, Button } from 'antd'
-import Highlighter from 'react-highlight-words';
-import { QuestionCircleOutlined, SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { Modal, Table, List, Spin} from 'antd'
+
+import { QuestionCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
 
 import {
-  rolesError
+  err,
 } from './store'
 
 
@@ -51,7 +51,12 @@ class RolesDescription extends React.Component {
 
     fetchedRoles = await this.dataGet('/roles/?related=privileges')
     if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
-      this.props.dispatch(rolesError(fetchedRoles))
+      let error = Object.assign(fetchedRoles, {
+        component: 'rolesDescription',
+        vendor: 'concerto',
+        errorType: 'rolesError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -115,6 +120,12 @@ class RolesDescription extends React.Component {
       },
     ];
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'rolesDescription') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
 
     return (
       <React.Fragment>
@@ -151,7 +162,7 @@ class RolesDescription extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-          { this.props.rolesError ? <Error component={`roledescription ${this.props.vendor}`} error={[this.props.rolesError]} visible={true} type={'rolesError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -164,5 +175,5 @@ class RolesDescription extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  rolesError: state.concerto.rolesError,
+  error: state.concerto.err,
 }))(RolesDescription);

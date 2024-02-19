@@ -12,7 +12,7 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 
 import {
-  configurationsError,
+  err,
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -38,7 +38,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (!this.props.configurationsError && !this.props.configurations) {
+    if (!this.props.error && !this.props.configurations) {
       this.main()
     }
   }
@@ -143,7 +143,12 @@ class Manager extends React.Component {
     let confs = []
     let configurationsFetched = await this.dataGet('/configuration/global/')
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-      this.props.dispatch(configurationsError(configurationsFetched))
+      let error = Object.assign(configurationsFetched, {
+        component: 'configuration',
+        vendor: 'concerto',
+        errorType: 'configurationsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -347,7 +352,12 @@ class Manager extends React.Component {
       },
       error => {
         this.setState({loading: false})
-        this.props.dispatch(configurationsError(error))
+        error = Object.assign(error, {
+          component: 'configuration',
+          vendor: 'concerto',
+          errorType: 'modifyConfigurationError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`${this.props.vendor}/configuration/global/`, this.props.token, b )
@@ -453,6 +463,12 @@ class Manager extends React.Component {
       return Math.random().toString()
     }
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'configuration') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -492,7 +508,9 @@ class Manager extends React.Component {
             </Button>
           </Space>
         }
-        { this.props.configurationsError ? <Error vendor={this.props.vendor} error={[this.props.configurationsError]} visible={true} type={'configurationsError'} /> : null }
+
+        {errors()}
+
       </React.Fragment>
     )
   }
@@ -500,6 +518,5 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
-  configurationsError: state.concerto.configurationsError,
+  error: state.concerto.err,
 }))(Manager);

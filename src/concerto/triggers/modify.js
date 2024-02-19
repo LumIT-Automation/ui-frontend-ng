@@ -1,22 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Button, Modal, Spin, Result, Input, Row, Col, Radio, Select, Checkbox } from 'antd'
+import { Button, Modal, Spin, Result, Input, Row, Col, Select, Checkbox } from 'antd'
 import { LoadingOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../error'
-import Validators from '../../_helpers/validators'
 
 import {
   triggersFetch,
-
-  triggerModifyError,
+  err,
 } from '../store'
 
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const loadingIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 
@@ -126,7 +123,12 @@ class Modify extends React.Component {
     await this.setState({loading: true})
     let triggerModify = await this.triggerModify(b)
     if (triggerModify.status && triggerModify.status !== 200 ) {
-      this.props.dispatch(triggerModifyError(triggerModify))
+      let error = Object.assign(triggerModify, {
+        component: 'triggerModify',
+        vendor: 'concerto',
+        errorType: 'triggerModifyError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       //return
     }
@@ -188,7 +190,6 @@ class Modify extends React.Component {
               onPressEnter={() => this.validation(action)}
             />
           )
-          break;
 
         case 'checkbox':
           return (
@@ -237,6 +238,12 @@ class Modify extends React.Component {
           )
 
         default:
+      }
+    }
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'triggerModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
       }
     }
 
@@ -315,7 +322,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.triggerModifyError ? <Error component={`trigger add ${this.props.vendor}`} error={[this.props.triggerModifyError]} visible={true} type={'triggerModifyError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -328,5 +335,5 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	triggerModifyError: state.concerto.triggerModifyError,
+  error: state.concerto.err,
 }))(Modify);

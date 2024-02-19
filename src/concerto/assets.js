@@ -1,13 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { Radio, Divider, Space, Spin } from 'antd'
+import { Radio, Divider } from 'antd'
 import 'antd/dist/antd.css'
 import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 import Authorizators from '../_helpers/authorizators'
 import Asset from './asset'
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 class Assets extends React.Component {
 

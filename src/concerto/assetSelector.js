@@ -228,8 +228,15 @@ class AssetSelector extends React.Component {
     await this.props.dispatch(f5Partition(p))
   }
 
-
+  
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'asset selector') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <br/>
@@ -443,13 +450,7 @@ class AssetSelector extends React.Component {
           }
         </Row>
 
-        { 
-          (this.props.error && 
-            this.props.error.component === 'asset selector') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null        
-        }
+        {errors()}
 
       </React.Fragment>
     )
