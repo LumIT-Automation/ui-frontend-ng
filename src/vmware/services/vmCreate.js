@@ -6,21 +6,11 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  datacentersError,
-  clustersError,
-  clusterError,
-  foldersError,
-  templatesError,
-  templateError,
-  customSpecsError,
-  customSpecError,
-  bootstrapkeysError,
-  finalpubkeysError,
-  vmCreateError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -126,7 +116,12 @@ class CreateVmService extends React.Component {
       let datacentersFetched = await this.getData('datacenters/?quick')
       await this.setState({datacentersLoading: false})
       if (datacentersFetched.status && datacentersFetched.status !== 200 ) {
-        this.props.dispatch(datacentersError(datacentersFetched))
+        let error = Object.assign(datacentersFetched, {
+          component: 'vmCreate',
+          vendor: 'vmware',
+          errorType: 'datacentersError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -137,7 +132,12 @@ class CreateVmService extends React.Component {
       let foldersFetched = await this.getData('vmFolders/tree/')
       await this.setState({foldersLoading: false})
       if (foldersFetched.status && foldersFetched.status !== 200 ) {
-        this.props.dispatch(foldersError(foldersFetched))
+        let error = Object.assign(foldersFetched, {
+          component: 'vmCreate',
+          vendor: 'vmware',
+          errorType: 'foldersError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -148,7 +148,12 @@ class CreateVmService extends React.Component {
       let customSpecsFetched = await this.getData('customSpecs/')
       await this.setState({customSpecsLoading: false})
       if (customSpecsFetched.status && customSpecsFetched.status !== 200 ) {
-        this.props.dispatch(customSpecsError(customSpecsFetched))
+        let error = Object.assign(customSpecsFetched, {
+          component: 'vmCreate',
+          vendor: 'vmware',
+          errorType: 'customSpecsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -159,7 +164,12 @@ class CreateVmService extends React.Component {
       let bootstrapkeysFetched = await this.getStage2Data('bootstrapkeys/')
       await this.setState({bootstrapkeysLoading: false})
       if (bootstrapkeysFetched.status && bootstrapkeysFetched.status !== 200 ) {
-        this.props.dispatch(bootstrapkeysError(bootstrapkeysFetched))
+        let error = Object.assign(bootstrapkeysFetched, {
+          component: 'vmCreate',
+          vendor: 'vmware',
+          errorType: 'bootstrapkeysError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -173,7 +183,12 @@ class CreateVmService extends React.Component {
       let finalpubkeysFetched = await this.getStage2Data('finalpubkeys/')
       await this.setState({finalpubkeysLoading: false})
       if (finalpubkeysFetched.status && finalpubkeysFetched.status !== 200 ) {
-        this.props.dispatch(finalpubkeysError(finalpubkeysFetched))
+        let error = Object.assign(finalpubkeysFetched, {
+          component: 'vmCreate',
+          vendor: 'vmware',
+          errorType: 'finalpubkeysError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -228,7 +243,12 @@ class CreateVmService extends React.Component {
     let clustersFetched = await this.getData(`datacenter/${datacenterMoId}/`)
     await this.setState({clustersLoading: false})
     if (clustersFetched.status && clustersFetched.status !== 200 ) {
-      this.props.dispatch(clustersError(clustersFetched))
+      let error = Object.assign(clustersFetched, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'clustersError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -241,7 +261,12 @@ class CreateVmService extends React.Component {
     let clusterFetched = await this.getData(`cluster/${clusterMoId}/`)
     if (clusterFetched.status && clusterFetched.status !== 200 ) {
       this.setState({networksLoading: false, datastoresLoading: false, hostsLoading: false})
-      this.props.dispatch(clusterError(clusterFetched))
+      let error = Object.assign(clusterFetched, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'clusterError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -266,7 +291,12 @@ class CreateVmService extends React.Component {
 
     await this.setState({templatesLoading: false})
     if (templatesFetched.status && templatesFetched.status !== 200 ) {
-      this.props.dispatch(templatesError(templatesFetched))
+      let error = Object.assign(templatesFetched, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'templatesError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -280,7 +310,12 @@ class CreateVmService extends React.Component {
 
     if (templateFetched.status && templateFetched.status !== 200 ) {
       await this.setState({networkDevicesLoading: false, diskDevicesLoading: false})
-      this.props.dispatch(templateError(templateFetched))
+      let error = Object.assign(templateFetched, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'templateError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -1603,7 +1638,12 @@ class CreateVmService extends React.Component {
     this.setState({customSpecLoading: false})
     if (csAdd.status && csAdd.status !== 201 ) {
       this.setState({loading: false})
-      this.props.dispatch(customSpecError(csAdd))
+      let error = Object.assign(csAdd, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'customSpecError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -1885,7 +1925,12 @@ class CreateVmService extends React.Component {
     this.setState({loading: false})
     if (vmC.status && vmC.status !== 202 ) {
       this.setState({loading: false, response: false, disableCreateButton: false})
-      this.props.dispatch(vmCreateError(vmC))
+      let error = Object.assign(vmC, {
+        component: 'vmCreate',
+        vendor: 'vmware',
+        errorType: 'vmCreateError'
+      })
+      this.props.dispatch(err(error))
     }
     else {
       this.setState({loading: false, response: true})
@@ -2680,6 +2725,12 @@ class CreateVmService extends React.Component {
 
     let jsonPretty = () => {
       return JSON.stringify(this.state.json, null, 2)
+    }
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'vmCreate') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
     }
 
     return (
@@ -3790,17 +3841,7 @@ class CreateVmService extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.datacentersError ? <Error component={'create vm'} error={[this.props.datacentersError]} visible={true} type={'datacentersError'} /> : null }
-            { this.props.clustersError ? <Error component={'create vm'} error={[this.props.clustersError]} visible={true} type={'clustersError'} /> : null }
-            { this.props.clusterError ? <Error component={'create vm'} error={[this.props.clusterError]} visible={true} type={'clusterError'} /> : null }
-            { this.props.foldersError ? <Error component={'create vm'} error={[this.props.foldersError]} visible={true} type={'foldersError'} /> : null }
-            { this.props.templatesError ? <Error component={'create vm'} error={[this.props.templatesError]} visible={true} type={'templatesError'} /> : null }
-            { this.props.templateError ? <Error component={'create vm'} error={[this.props.templateError]} visible={true} type={'templateError'} /> : null }
-            { this.props.customSpecsError ? <Error component={'create vm'} error={[this.props.customSpecsError]} visible={true} type={'customSpecsError'} /> : null }
-            { this.props.customSpecError ? <Error component={'create vm'} error={[this.props.customSpecError]} visible={true} type={'customSpecError'} /> : null }
-            { this.props.bootstrapkeysError ? <Error component={'create vm'} error={[this.props.bootstrapkeysError]} visible={true} type={'bootstrapkeysError'} /> : null }
-            { this.props.finalpubkeysError ? <Error component={'create vm'} error={[this.props.finalpubkeysError]} visible={true} type={'finalpubkeysError'} /> : null }
-            { this.props.vmCreateError ? <Error component={'create vm'} error={[this.props.vmCreateError]} visible={true} type={'vmCreateError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -3815,17 +3856,7 @@ class CreateVmService extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.vmware,
+  error: state.concerto.err,
 
   asset: state.vmware.asset,
-  datacentersError: state.vmware.datacentersError,
-  clustersError: state.vmware.clustersError,
-  clusterError: state.vmware.clusterError,
-  foldersError: state.vmware.foldersError,
-  templatesError: state.vmware.templatesError,
-  templateError: state.vmware.templateError,
-  customSpecsError: state.vmware.customSpecsError,
-  customSpecError: state.vmware.customSpecError,
-  bootstrapkeysError: state.vmware.bootstrapkeysError,
-  finalpubkeysError: state.vmware.finalpubkeysError,
-  vmCreateError: state.vmware.vmCreateError,
 }))(CreateVmService);
