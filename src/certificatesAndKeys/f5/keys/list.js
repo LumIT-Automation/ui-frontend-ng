@@ -118,8 +118,6 @@ class List extends React.Component {
 
 
   render() {
-    let today = new Date().getTime();
-    let thirtyDays = 2592000000
 
     const columns = [
       {

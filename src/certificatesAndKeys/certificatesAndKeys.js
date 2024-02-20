@@ -37,7 +37,6 @@ class CertificatesAndKeys extends React.Component {
   }
 
   componentDidMount() {
-    console.log('certif MOUNT', this.props.error)
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
       this.assetsGet()
     }
@@ -85,6 +84,13 @@ class CertificatesAndKeys extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'certKey manager f5') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
         <Tabs type="card">
@@ -133,13 +139,7 @@ class CertificatesAndKeys extends React.Component {
           </TabPane>
         </Tabs>
 
-        { 
-          (this.props.error && 
-            this.props.error.component === 'certKey manager f5') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null        
-        }
+        {errors()}
 
       </Space>
     )

@@ -5,12 +5,13 @@ import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
-import Error from '../../../f5/error'
+import Error from '../../../concerto/error'
 
 import {
-  certificatesFetch,
-  certificateDeleteError
-} from '../../../f5/store'
+  err
+} from '../../../concerto/store'
+
+import { certificatesFetch } from '../../../f5/store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
@@ -58,7 +59,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(certificatesFetch(true)) )
       },
       error => {
-        this.props.dispatch(certificateDeleteError(error))
+        error = Object.assign(error, {
+          component: 'certDel',
+          vendor: 'f5',
+          errorType: 'certificateDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -74,6 +80,12 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'certDel') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -123,7 +135,7 @@ class Delete extends React.Component {
 
           {this.state.visible ?
             <React.Fragment>
-              { this.props.certificateDeleteError ? <Error component={'certificates add'} error={[this.props.certificateDeleteError]} visible={true} type={'certificateDeleteError'} /> : null }
+              {errors()}
             </React.Fragment>
           :
             null
@@ -137,6 +149,7 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	certificateDeleteError: state.f5.certificateDeleteError,
+  error: state.concerto.err,
+  
   asset: state.f5.asset,
 }))(Delete);

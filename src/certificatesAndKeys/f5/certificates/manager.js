@@ -4,13 +4,16 @@ import 'antd/dist/antd.css'
 import { Alert } from 'antd'
 
 import Rest from '../../../_helpers/Rest'
-import Error from '../../../f5/error'
+import Error from '../../../concerto/error'
+
+import {
+  err
+} from '../../../concerto/store'
 
 import {
   certificatesLoading,
   certificates,
   certificatesFetch,
-  certificatesError
 } from '../../../f5/store'
 
 import List from './list'
@@ -28,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.certificatesError) {
+      if (!this.props.error) {
         this.props.dispatch(certificatesFetch(false))
         if (!this.props.certificates) {
           this.certificatesGet()
@@ -42,16 +45,17 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition) ) {
-      if (!this.props.certificates) {
-        this.certificatesGet()
-      }
-      if (this.props.certificatesFetch) {
-        this.certificatesGet()
+    if (!this.props.error) {
+
+      if (this.props.asset && this.props.partition && this.props.certificatesFetch) {
         this.props.dispatch(certificatesFetch(false))
+        this.certificatesGet()        
       }
-      if ( ((prevProps.partition !== this.props.partition) && (this.props.partition !== null)) ) {
-        this.certificatesGet()
+
+      if ( this.props.asset && (this.props.partition && (this.props.partition !== prevProps.partition)) && (this.props.partition !== null) ) {
+        if (!this.props.certificates) {
+          this.certificatesGet()
+        }
       }
     }
   }
@@ -69,7 +73,12 @@ class Manager extends React.Component {
         this.props.dispatch(certificates( resp ))
       },
       error => {
-        this.props.dispatch(certificatesError(error))
+        error = Object.assign(error, {
+          component: 'certManager',
+          vendor: 'f5',
+          errorType: 'certificatesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificates/`, this.props.token)
@@ -78,6 +87,12 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'certManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -99,7 +114,7 @@ class Manager extends React.Component {
           <Alert message="Asset and Partition not set" type="error" />
         }
 
-        { this.props.certificatesError ? <Error component={'certificates manager f5'} error={[this.props.certificatesError]} visible={true} type={'certificatesError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -109,10 +124,11 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   certificates: state.f5.certificates,
   certificatesFetch: state.f5.certificatesFetch,
-  certificatesError:  state.f5.certificatesError
 }))(Manager);

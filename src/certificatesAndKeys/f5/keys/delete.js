@@ -1,16 +1,21 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from "../../../_helpers/Rest"
-import Error from "../../../f5/error"
-
-import { keysFetch, keyDeleteError } from '../../../f5/store'
-
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
 
+import Rest from '../../../_helpers/Rest'
+import Error from '../../../concerto/error'
+
+import {
+  err
+} from '../../../concerto/store'
+
+import { keysFetch } from '../../../f5/store'
+
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
+
 
 
 class Delete extends React.Component {
@@ -54,7 +59,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(keysFetch(true)) )
       },
       error => {
-        this.props.dispatch(keyDeleteError(error))
+        error = Object.assign(error, {
+          component: 'keyDel',
+          vendor: 'f5',
+          errorType: 'keyDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -70,6 +80,12 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'keyDel') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -119,7 +135,7 @@ class Delete extends React.Component {
 
           {this.state.visible ?
             <React.Fragment>
-              { this.props.keyDeleteError ? <Error component={'keys add'} error={[this.props.keyDeleteError]} visible={true} type={'keyDeleteError'} /> : null }
+              {errors()}
             </React.Fragment>
           :
             null
@@ -133,6 +149,7 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  keyDeleteError: state.f5.keyDeleteError,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
 }))(Delete);

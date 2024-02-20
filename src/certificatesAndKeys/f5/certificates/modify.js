@@ -6,9 +6,13 @@ import { Input, Button, Card, Radio, Spin, Result, Modal, Row, Col } from 'antd'
 import { LoadingOutlined, EditOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
-import Error from '../../../f5/error'
+import Error from '../../../concerto/error'
 
-import { certificatesFetch, certificateModifyError } from '../../../f5/store'
+import {
+  err
+} from '../../../concerto/store'
+
+import { certificatesFetch } from '../../../f5/store'
 
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -138,7 +142,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response() )
       },
       error => {
-        this.props.dispatch(certificateModifyError(error))
+        error = Object.assign(error, {
+          component: 'certModify',
+          vendor: 'f5',
+          errorType: 'certificateModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -163,6 +172,13 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'certModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
 
@@ -299,7 +315,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.certificateModifyError ? <Error component={'certificates add'} error={[this.props.certificateModifyError]} visible={true} type={'certificateModifyError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -314,8 +330,8 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-
-  certificateModifyError: state.f5.certificateModifyError,
 }))(Modify);
