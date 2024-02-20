@@ -1,17 +1,20 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Row, Col } from 'antd'
 
-import Rest from "../../_helpers/Rest"
-import Error from '../error'
+import Rest from '../../_helpers/Rest'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   assets,
-  err
 } from '../store'
 
 import Report from './report'
+import { Row, Col } from 'antd'
 
 
 
@@ -51,6 +54,11 @@ class Manager extends React.Component {
         this.props.dispatch(assets( resp ))
       },
       error => {
+        error = Object.assign(error, {
+          component: 'servicesManager',
+          vendor: 'proofpoint',
+          errorType: 'assetsError'
+        })
         this.props.dispatch(err(error))
       }
     )
@@ -58,7 +66,15 @@ class Manager extends React.Component {
   }
 
 
+
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'servicesManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Row>
@@ -69,7 +85,7 @@ class Manager extends React.Component {
 
         </Row>
 
-        { this.props.err ? <Error component={'services manager proofpoint'} error={[this.props.err]} visible={true} type={'assetsError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -79,7 +95,7 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   assets: state.proofpoint.assets,
-  err: state.proofpoint.err,
 }))(Manager);

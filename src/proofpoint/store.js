@@ -7,9 +7,6 @@ const proofpointSlice = createSlice({
         environment: (state, action) => {
           state.environment = action.payload
         },
-        environmentError: (state, action) => {
-          state.environmentError = action.payload
-        },
 
         assets: (state, action) => {
           state.assets = action.payload.data.items
@@ -23,9 +20,6 @@ const proofpointSlice = createSlice({
           state.assetToken = action.payload
         },
 
-        err: (state, action) => {
-          state.err = action.payload
-        },       
     }
 })
 
@@ -33,13 +27,10 @@ const { actions, reducer } = proofpointSlice;
 
 export const {
   environment,
-  environmentError,
 
   assets,
   asset,
   assetToken,
-
-  err,
   
 } = actions
 

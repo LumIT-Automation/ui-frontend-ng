@@ -67,7 +67,6 @@ class Manager extends React.Component {
 
 
 
-
   render() {
 
     let errors = () => {

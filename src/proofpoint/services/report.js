@@ -5,12 +5,11 @@ import { Modal, Alert, Select, Button, Divider, Spin, Row, Col } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  err,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -62,7 +61,12 @@ class RemoveHost extends React.Component {
       let data = await this.dataGet(this.state.reportType)
       console.log(data)
       if (data.status && data.status !== 200 ) {
-        this.props.dispatch(err(data))
+        let error = Object.assign(data, {
+          component: 'report',
+          vendor: 'proofpoint',
+          errorType: 'reportsError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({reportsLoading: false})
         return
       }
@@ -108,7 +112,12 @@ class RemoveHost extends React.Component {
     let data = await this.dataGet(this.state.report)
     console.log(data)
     if (data.status && data.status !== 200 ) {
-      this.props.dispatch(err(data))
+      let error = Object.assign(data, {
+        component: 'report',
+        vendor: 'proofpoint',
+        errorType: 'reportError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({reportLoading: false})
       return
     }
@@ -138,10 +147,10 @@ class RemoveHost extends React.Component {
     let r
     let additionalHeaders
 
-    if (resource == this.state.reportType) {
+    if (resource === this.state.reportType) {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
     }
-    if (resource == this.state.report) {
+    if (resource === this.state.report) {
       endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`     
     }
 
@@ -180,12 +189,13 @@ class RemoveHost extends React.Component {
 
   render() {
 
-    let randomKey = () => {
-      return Math.random().toString()
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'report') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
     }
 
-    let createElement = (element, key, choices, obj, action) => {
-      
+    let createElement = (element, key, choices, obj, action) => {  
 
       switch (element) {
 
@@ -199,7 +209,6 @@ class RemoveHost extends React.Component {
               Get Your Report
             </Button>
           )
-        break;   
 
         case 'select':         
           return (
@@ -231,8 +240,7 @@ class RemoveHost extends React.Component {
               </React.Fragment>
           </Select>
           )
-        break;          
-
+                
         default:
 
       }
@@ -315,7 +323,7 @@ class RemoveHost extends React.Component {
           }
         </Modal>
 
-        { this.props.err ? <Error component={'services manager proofpoint'} error={[this.props.err]} visible={true} type={'err'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -327,9 +335,8 @@ class RemoveHost extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
   asset: state.proofpoint.asset,
-  assetToken: state.proofpoint.assetToken,
-  err: state.proofpoint.err,
-  
+  assetToken: state.proofpoint.assetToken,  
 }))(RemoveHost);
