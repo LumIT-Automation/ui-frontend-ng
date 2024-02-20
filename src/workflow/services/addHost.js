@@ -1,18 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
-import CPError from '../../checkpoint/error'
+import Error from '../../concerto/error'
 
 import {
-  hostAddError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import { assets as checkpointAssets } from '../../checkpoint/store'
-import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
-import { domainsError as checkpointDomainsError } from '../../checkpoint/store'
 
 import { Modal, Input, Button, Spin, Table, Space, Radio, Select } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -71,7 +69,12 @@ class AddHost extends React.Component {
     try {
       let cpAssets = await this.cpAssetsGet()
       if (cpAssets.status && cpAssets.status !== 200 ) {
-        this.props.dispatch(checkpointAssetsError(cpAssets))
+        let error = Object.assign(cpAssets, {
+          component: 'addHost',
+          vendor: 'workflow',
+          errorType: 'checkpointAssetsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -129,7 +132,12 @@ class AddHost extends React.Component {
         await this.setState({cpDomains: doms})
       }
       else {
-        this.props.dispatch(checkpointDomainsError(domains))
+        let error = Object.assign(domains, {
+          component: 'addHost',
+          vendor: 'workflow',
+          errorType: 'checkpointDomainsError'
+        })
+        this.props.dispatch(err(error))
       }
     } catch(error) {
       console.log(error)
@@ -281,13 +289,18 @@ class AddHost extends React.Component {
         }
         else {
           request.created = `${resp.status} ${resp.message}`
-          this.props.dispatch(hostAddError(resp))
+          let error = Object.assign(resp, {
+            component: 'addHost',
+            vendor: 'workflow',
+            errorType: 'hostAddError'
+          })
+          this.props.dispatch(err(error))
           this.setState({requests: requests})
         }
       } catch(error) {
         request.isLoading = false
         request.created = false
-        this.props.dispatch(hostAddError(error))
+        console.log(error)
         this.setState({requests: requests})
       }
     }
@@ -331,6 +344,13 @@ class AddHost extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'addHost') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const requests = [
       {
         title: 'Loading',
@@ -622,9 +642,7 @@ class AddHost extends React.Component {
 
       {this.state.visible ?
         <React.Fragment>
-          { this.props.hostAddError ? <Error component={'hostAdd'} error={[this.props.hostAddError]} visible={true} type={'hostAddError'} /> : null }
-          { this.props.checkpointAssetsError ? <CPError component={'hostAdd'} error={[this.props.checkpointAssetsError]} visible={true} type={'assetsError'} /> : null }
-          { this.props.checkpointDomainsError ? <CPError component={'hostAdd'} error={[this.props.checkpointDomainsError]} visible={true} type={'domainsError'} /> : null }
+          {errors()}
         </React.Fragment>
       :
         null
@@ -638,11 +656,8 @@ class AddHost extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations.checkpoint,
-  checkpointAssets: state.checkpoint.assets,
+  error: state.concerto.err,
 
-  checkpointAssetsError: state.checkpoint.assetsError,
-  checkpointDomainsError: state.checkpoint.domainsError,
-  hostAddError: state.workflow.hostAddError,
+  checkpointAssets: state.checkpoint.assets,
 }))(AddHost);

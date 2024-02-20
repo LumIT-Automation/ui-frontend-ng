@@ -150,7 +150,6 @@ class CertificatesAndKeys extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
-
   error: state.concerto.err,
 
   certificatesLoading: state.f5.certificatesLoading,

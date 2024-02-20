@@ -1,17 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
-import CPError from '../../checkpoint/error'
+import Error from '../../concerto/error'
 
 import {
-  hostRemoveError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import { assets as checkpointAssets } from '../../checkpoint/store'
-import { assetsError as checkpointAssetsError } from '../../checkpoint/store'
 
 import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
@@ -70,7 +69,12 @@ class RemoveHost extends React.Component {
     try {
       let cpAssets = await this.cpAssetsGet()
       if (cpAssets.status && cpAssets.status !== 200 ) {
-        this.props.dispatch(checkpointAssetsError(cpAssets))
+        let error = Object.assign(cpAssets, {
+          component: 'removeHost',
+          vendor: 'workflow',
+          errorType: 'checkpointAssetsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -233,13 +237,18 @@ class RemoveHost extends React.Component {
         }
         else {
           request.isReleased = `${resp.status} ${resp.message}`
-          this.props.dispatch(hostRemoveError(resp))
+          let error = Object.assign(resp, {
+            component: 'addHost',
+            vendor: 'workflow',
+            errorType: 'hostRemoveError'
+          })
+          this.props.dispatch(err(error))
           this.setState({requests: requests})
         }
       } catch(error) {
         delete request.isLoading
         delete request.isReleased
-        this.props.dispatch(hostRemoveError(error))
+        console.log(error)
         this.setState({requests: requests})
       }
     }
@@ -280,6 +289,13 @@ class RemoveHost extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'removeHost') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const requests = [
       {
         title: 'Loading',
@@ -450,8 +466,7 @@ class RemoveHost extends React.Component {
 
       {this.state.visible ?
         <React.Fragment>
-          { this.props.hostRemoveError ? <Error component={'hostRemove'} error={[this.props.hostRemoveError]} visible={true} type={'hostRemoveError'} /> : null }
-          { this.props.checkpointAssetsError ? <CPError component={'hostAdd'} error={[this.props.checkpointAssetsError]} visible={true} type={'assetsError'} /> : null }
+          {errors()}
         </React.Fragment>
       :
         null
@@ -465,10 +480,8 @@ class RemoveHost extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations.checkpoint,
-  checkpointAssets: state.checkpoint.assets,
+  error: state.concerto.err,
 
-  checkpointAssetsError: state.checkpoint.assetsError,
-  hostRemoveError: state.workflow.hostRemoveError,
+  checkpointAssets: state.checkpoint.assets,
 }))(RemoveHost);
