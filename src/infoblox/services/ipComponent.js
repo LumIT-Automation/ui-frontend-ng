@@ -233,7 +233,6 @@ class IpComponent extends React.Component {
               onPressEnter={() => this.validation(action)}
             />
           )
-          break;
 
         default:
 

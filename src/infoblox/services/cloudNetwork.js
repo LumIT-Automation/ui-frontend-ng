@@ -48,12 +48,12 @@ class CloudNetwork extends React.Component {
       accountsLoading: false,
       accounts: [],
       accountModify: false,
-      ['Account ID']: '',
-      ['Account Name']: '',
+      'Account ID': '',
+      'Account Name': '',
       ITSM: '',
-      ['Modify ID']: '',
-      ['Modify Name']: '',
-      ['Modify ITSM']: '',
+      'Modify ID': '',
+      'Modify Name': '',
+      'Modify ITSM': '',
       cloudNetworks: [],
       originCloudNetworks: [],
     };
@@ -71,12 +71,12 @@ class CloudNetwork extends React.Component {
     if (this.state.provider !== prevState.provider) {
       this.setState({
         accountModify: false,
-        ['Account ID']: '',
-        ['Account Name']: '',
+        'Account ID': '',
+        'Account Name': '',
         ITSM: '',
-        ['Modify ID']: '',
-        ['Modify Name']: '',
-        ['Modify ITSM']: '',
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',
         cloudNetworks: [],
         originCloudNetworks: [],
       })
@@ -313,7 +313,7 @@ class CloudNetwork extends React.Component {
     }
 
     if (entities === 'newAccount') {
-      await this.setState({loading: true, ['Account ID']: this.state['New Account ID'], ['Account Name']: this.state['New Account Name'], ITSM: this.state['New ITSM']})
+      await this.setState({loading: true, 'Account ID': this.state['New Account ID'], 'Account Name': this.state['New Account Name'], ITSM: this.state['New ITSM']})
       data = await this.dataGet('getNetworks', assetId)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
@@ -324,12 +324,12 @@ class CloudNetwork extends React.Component {
         this.props.dispatch(err(error))
         await this.setState({
           loading: false, 
-          ['Account ID']: '', 
-          ['Account Name']: '', 
+          'Account ID': '', 
+          'Account Name': '', 
           ITSM: '',
-          ['New Account ID']: '', 
-          ['New Account Name']: '',
-          ['New ITSM']: '',
+          'New Account ID': '', 
+          'New Account Name': '',
+          'New ITSM': '',
           accountModify: false,
         })
         return
@@ -367,9 +367,9 @@ class CloudNetwork extends React.Component {
           loading: false, 
           originCloudNetworks: data.data, 
           cloudNetworks: data.data, 
-          ['New Account ID']: '', 
-          ['New Account Name']: '', 
-          ['New ITSM']: '',
+          'New Account ID': '', 
+          'New Account Name': '', 
+          'New ITSM': '',
           accountModify: false,
         })
 
@@ -380,7 +380,6 @@ class CloudNetwork extends React.Component {
   }
 
   dataGet = async (entities, assetId) => {
-    console.log(entities)
     let endpoint
     let r
 
@@ -439,8 +438,8 @@ class CloudNetwork extends React.Component {
     
     await this.setState({
       loading: false, 
-      ['Account ID']: '',
-      ['Account Name']: '',
+      'Account ID': '',
+      'Account Name': '',
       ITSM: '',
       cloudNetworks: [],
       originCloudNetworks: [],
@@ -497,19 +496,19 @@ class CloudNetwork extends React.Component {
     if (key === 'Account ID') {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account ID'] === value )
-      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
+      await this.setState({'Account ID': account['Account ID'], 'Account Name': account['Account Name'], ITSM: account.ITSM})
     }
 
     if (key === 'Account Name') {
       let accounts = JSON.parse(JSON.stringify(this.state.accounts))
       let account = accounts.find( a => a['Account Name'] === value )
-      await this.setState({['Account ID']: account['Account ID'], ['Account Name']: account['Account Name'], ITSM: account.ITSM})
+      await this.setState({'Account ID': account['Account ID'], 'Account Name': account['Account Name'], ITSM: account.ITSM})
     }
 
     if (key === 'accountModify') {
-      await this.setState({accountModify: value, ['Modify ID']: this.state['Account ID'], ['Modify Name']: this.state['Account Name'], ['Modify ITSM']: this.state.ITSM})
+      await this.setState({accountModify: value, 'Modify ID': this.state['Account ID'], 'Modify Name': this.state['Account Name'], 'Modify ITSM': this.state.ITSM})
       if (!value) {
-        await this.setState({['Modify ID']: '', ['Modify Name']: '', ['Modify ITSM']: '',})
+        await this.setState({'Modify ID': '', 'Modify Name': '', 'Modify ITSM': '',})
       }
       
     }
@@ -527,15 +526,15 @@ class CloudNetwork extends React.Component {
     }
 
     if (key === 'New Account ID') {
-      await this.setState({['New Account ID']: value})
+      await this.setState({'New Account ID': value})
     }
 
     if (key === 'New Account Name') {
-      await this.setState({['New Account Name']: value})
+      await this.setState({'New Account Name': value})
     }
 
     if (key === 'New ITSM') {
-      await this.setState({['New ITSM']: value})
+      await this.setState({'New ITSM': value})
     }
 
     if (cloudNetwork) {
@@ -918,12 +917,12 @@ class CloudNetwork extends React.Component {
     if (this.state.cloudNetworks.length < 1) {
       await this.setState({
         loading: false, 
-        ['Account ID']: '',
-        ['Account Name']: '',
+        'Account ID': '',
+        'Account Name': '',
         ITSM: '',
-        ['Modify ID']: '',
-        ['Modify Name']: '',
-        ['Modify ITSM']: '',      
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',      
       })
     }
 
@@ -961,12 +960,12 @@ class CloudNetwork extends React.Component {
     else {
       await this.setState({
         loading: false, 
-        ['Account ID']: this.state['Modify ID'],
-        ['Account Name']: this.state['Modify Name'],
+        'Account ID': this.state['Modify ID'],
+        'Account Name': this.state['Modify Name'],
         ITSM: this.state['Modify ITSM'],
-        ['Modify ID']: '',
-        ['Modify Name']: '',
-        ['Modify ITSM']: '',
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',
         accountModify: false      
       })
       await this.dataGetHandler('accountsAndProviders', this.props.asset.id)
@@ -1051,12 +1050,12 @@ class CloudNetwork extends React.Component {
       accountsLoading: false,
       accounts: [],
       accountModify: false,
-      ['Account ID']: '',
-      ['Account Name']: '',
+      'Account ID': '',
+      'Account Name': '',
       ITSM: '',
-      ['Modify ID']: '',
-      ['Modify Name']: '',
-      ['Modify ITSM']: '',
+      'Modify ID': '',
+      'Modify Name': '',
+      'Modify ITSM': '',
       cloudNetworks: [],
       originCloudNetworks: []
     })
@@ -1238,7 +1237,6 @@ class CloudNetwork extends React.Component {
               style={{width: 350}}
             />
           )
-        break;
 
         case 'select':          
           if (key === 'Region') {
@@ -1370,8 +1368,7 @@ class CloudNetwork extends React.Component {
                 </React.Fragment>
             </Select>
             )
-          }
-        break;          
+          }        
 
         default:
 

@@ -11,7 +11,6 @@ import {
 
 import {
   assets,
-  assetsError
 } from '../store'
 
 import IpComponent from './ipComponent'
