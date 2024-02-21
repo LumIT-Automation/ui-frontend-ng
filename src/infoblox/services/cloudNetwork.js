@@ -1,8 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 
 import {
@@ -11,7 +11,7 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Space, Modal, Row, Col, Divider, Table, Input, Radio, Select, Button, Checkbox, Spin, Alert, Result, Popover } from 'antd'
+import { Space, Modal, Row, Col, Divider, Table, Input, Select, Button, Checkbox, Spin, Alert, Result, Popover } from 'antd'
 import Highlighter from 'react-highlight-words';
 import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
@@ -245,7 +245,7 @@ class CloudNetwork extends React.Component {
           errorType: 'accountsAndProviders'
         })
         this.props.dispatch(err(error))
-        await this.setState({accountsLoading: false})
+        await this.setState({accounts: [], accountsLoading: false, loading: false})
         return
       }
       else {
@@ -253,7 +253,7 @@ class CloudNetwork extends React.Component {
           item.ITSM = item.Reference
           return item
         })
-        await this.setState({accountsLoading: false, accounts: list})
+        await this.setState({accounts: list, accountsLoading: false, loading: false})
       }
     }
     
@@ -264,7 +264,7 @@ class CloudNetwork extends React.Component {
         let error = Object.assign(data, {
           component: 'assignCloudNetwork',
           vendor: 'infoblox',
-          errorType: 'accountsAndProviders'
+          errorType: 'getNetworks'
         })
         this.props.dispatch(err(error))
         await this.setState({loading: false})
@@ -380,6 +380,7 @@ class CloudNetwork extends React.Component {
   }
 
   dataGet = async (entities, assetId) => {
+    console.log(entities)
     let endpoint
     let r
 
@@ -1471,7 +1472,11 @@ class CloudNetwork extends React.Component {
       }
     ];
 
-    
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'assignCloudNetwork') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -1665,11 +1670,7 @@ class CloudNetwork extends React.Component {
 
         {this.state.visible ?
 
-          (this.props.error && 
-            this.props.error.component === 'assignCloudNetwork') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null
+          errors()
 
         :
           null          
@@ -1684,7 +1685,7 @@ class CloudNetwork extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
-  asset: state.infoblox.asset,
+  error: state.concerto.err,
 
-  error: state.concerto.err
+  asset: state.infoblox.asset,
 }))(CloudNetwork);

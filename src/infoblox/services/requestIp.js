@@ -3,12 +3,14 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  networksError,
-  containersError,
-  networkError,
+  err
+} from '../../concerto/store'
+
+import {
+
   nextAvailableIpError,
 } from '../store'
 
@@ -101,7 +103,12 @@ class RequestIp extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(networksError(error))
+        error = Object.assign(error, {
+          component: 'requestIp',
+          vendor: 'infoblox',
+          errorType: 'networksError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
       }
     )
@@ -117,7 +124,12 @@ class RequestIp extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(containersError(error))
+        error = Object.assign(error, {
+          component: 'requestIp',
+          vendor: 'infoblox',
+          errorType: 'containersError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
       }
     )
@@ -189,7 +201,12 @@ class RequestIp extends React.Component {
         r = resp.data
       },
       error => {
-        this.props.dispatch(networkError(error))
+        error = Object.assign(error, {
+          component: 'requestIp',
+          vendor: 'infoblox',
+          errorType: 'networkError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/network/${network}/?related=range`, this.props.token)
@@ -522,7 +539,12 @@ class RequestIp extends React.Component {
         re = resp
       },
       error => {
-        this.props.dispatch(nextAvailableIpError(error))
+        error = Object.assign(error, {
+          component: 'requestIp',
+          vendor: 'infoblox',
+          errorType: 'nextAvailableIpError'
+        })
+        this.props.dispatch(err(error))
         re = error
       }
     )
@@ -1123,6 +1145,12 @@ class RequestIp extends React.Component {
       },
     ];
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'requestIp') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Button type="primary" onClick={() => this.details()}>REQUEST IP</Button>
@@ -1198,11 +1226,7 @@ class RequestIp extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.networksError ? <Error component={'ipRequest'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
-            { this.props.containersError ? <Error component={'ipRequest'} error={[this.props.containersError]} visible={true} type={'containersError'} /> : null }
-            { this.props.networkError ? <Error component={'ipRequest'} error={[this.props.networkError]} visible={true} type={'networkError'} /> : null }
-            { this.props.containerError ? <Error component={'ipRequest'} error={[this.props.containerError]} visible={true} type={'containerError'} /> : null }
-            { this.props.nextAvailableIpError ? <Error component={'ipRequest'} error={[this.props.nextAvailableIpError]} visible={true} type={'nextAvailableIpError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -1216,13 +1240,8 @@ class RequestIp extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
+  error: state.concerto.err,
+
   assets: state.infoblox.assets,
   asset: state.infoblox.asset,
-
-  networksError: state.infoblox.networksError,
-  containersError: state.infoblox.containersError,
-
-  networkError: state.infoblox.networkError,
-  containerError: state.infoblox.containerError,
-  nextAvailableIpError: state.infoblox.nextAvailableIpError,
 }))(RequestIp);

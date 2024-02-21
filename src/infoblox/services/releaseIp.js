@@ -3,11 +3,11 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  ipReleaseError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -142,16 +142,21 @@ class ReleaseIp extends React.Component {
         if (resp.status !== 200) {
           request.isReleased = 'NOT RELEASED'
           this.setState({requests: requests})
-          this.props.dispatch(ipReleaseError(resp))
+          let error = Object.assign(resp, {
+            component: 'releaseIp',
+            vendor: 'infoblox',
+            errorType: 'ipReleaseError'
+          })
+          this.props.dispatch(err(error))
         }
         else {
           request.isReleased = 'RELEASED'
           this.setState({requests: requests})
         }
-      } catch(resp) {
+      } catch(error) {
+        console.log(error)
         request.isLoading = false
         request.isReleased = false
-        this.props.dispatch(ipReleaseError(resp))
         this.setState({requests: requests})
       }
     }
@@ -184,6 +189,12 @@ class ReleaseIp extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'releaseIp') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const requests = [
       {
@@ -343,7 +354,7 @@ class ReleaseIp extends React.Component {
 
       {this.state.visible ?
         <React.Fragment>
-          { this.props.ipReleaseError ? <Error component={'ipRelease'} error={[this.props.ipReleaseError]} visible={true} type={'ipReleaseError'} /> : null }
+          {errors()}
         </React.Fragment>
       :
         null
@@ -357,9 +368,8 @@ class ReleaseIp extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations.infoblox,
-  asset: state.infoblox.asset,
+  error: state.concerto.err,
 
-  ipReleaseError: state.infoblox.ipReleaseError,
+  asset: state.infoblox.asset,
 }))(ReleaseIp);

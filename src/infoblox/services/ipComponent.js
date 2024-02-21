@@ -3,12 +3,11 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  ipDetailError,
-  ipModifyError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -155,7 +154,12 @@ class IpComponent extends React.Component {
         this.setState({ipDetailsResponse: list, request: request})
       },
       error => {
-        this.props.dispatch(ipDetailError(error))
+        error = Object.assign(error, {
+          component: 'ipComponent',
+          vendor: 'infoblox',
+          errorType: 'ipDetailError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${this.state.request.ip}/`, this.props.token)
@@ -188,7 +192,13 @@ class IpComponent extends React.Component {
         this.ipDetail()
       },
       error => {
-        this.setState({ipModifyLoading: false}, () => this.props.dispatch(ipModifyError(error)) )
+        error = Object.assign(error, {
+          component: 'ipComponent',
+          vendor: 'infoblox',
+          errorType: 'ipModifyError'
+        })
+        this.props.dispatch(err(error))
+        this.setState({ipModifyLoading: false})
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${request.ip}/`, this.props.token, b )
@@ -357,6 +367,12 @@ class IpComponent extends React.Component {
 
     ];
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'ipComponent') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
 
@@ -454,8 +470,7 @@ class IpComponent extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.ipDetailError ? <Error component={'ipDetail'} error={[this.props.ipDetailError]} visible={true} type={'ipDetailError'} /> : null }
-            { this.props.ipModifyError ? <Error component={'ipModify'} error={[this.props.ipModifyError]} visible={true} type={'ipModifyError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -470,8 +485,7 @@ class IpComponent extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
-  asset: state.infoblox.asset,
+  error: state.concerto.err,
 
-  ipDetailError: state.infoblox.ipDetailError,
-  ipModifyError: state.infoblox.ipModifyError,
+  asset: state.infoblox.asset,
 }))(IpComponent);

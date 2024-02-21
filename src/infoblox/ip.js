@@ -1,17 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { DownOutlined } from '@ant-design/icons';
 
-//import Modify from './modify'
-
-import { Table, Input, Button, Space, Spin, Collapse, Badge, Menu, Modal } from 'antd';
+import { Table, Input, Button, Space, Modal } from 'antd';
 
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-
-const { Panel } = Collapse
-
 
 
 

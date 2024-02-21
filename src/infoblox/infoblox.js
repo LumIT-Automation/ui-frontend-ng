@@ -6,14 +6,17 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-import Error from './error'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
 
 import AssetSelector from '../concerto/assetSelector'
 import Tree from './tree/manager'
 
 import {
   assets,
-  assetsError,
   treeFetch
 } from '../infoblox/store'
 
@@ -55,7 +58,13 @@ class Infoblox extends React.Component {
         this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
       },
       error => {
-        this.setState( {loading: false}, () => this.props.dispatch(assetsError(error)) )
+        error = Object.assign(error, {
+          component: 'infobloxMGMT',
+          vendor: 'infoblox',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
+        this.setState({loading: false})
       }
     )
     await rest.doXHR("infoblox/assets/", this.props.token)
@@ -67,6 +76,13 @@ class Infoblox extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'infobloxMGMT') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <AssetSelector vendor='infoblox'/>
@@ -76,7 +92,7 @@ class Infoblox extends React.Component {
           <Tabs type="card">
             { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
               <React.Fragment>
-                {this.props.treeLoading ?
+                {this.state.loading ?
                   <TabPane tab='Network Tree'>
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
@@ -92,7 +108,7 @@ class Infoblox extends React.Component {
           </Tabs>
         </Space>
 
-        { this.props.assetsError ? <Error component={'infoblox'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -103,8 +119,5 @@ class Infoblox extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.infoblox,
-
-  treeLoading: state.infoblox.treeLoading,
-
-  assetsError: state.infoblox.assetsError,
+  error: state.concerto.err,
 }))(Infoblox);
