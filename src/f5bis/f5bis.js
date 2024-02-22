@@ -3,16 +3,19 @@ import { connect } from 'react-redux'
 import { Space, Radio, Alert, Divider } from 'antd'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
 
 import AssetSelector from '../concerto/assetSelector'
 import ItemsView from './itemsView'
 
 import {
   assets,
-  err,
 } from '../f5bis/store'
 
 
@@ -50,13 +53,26 @@ class Manager extends React.Component {
         this.setState( {loading: false}, () => this.props.dispatch(assets(resp)) )
       },
       error => {
-        this.setState( {loading: false}, () => this.props.dispatch(err(error)) )
+        error = Object.assign(error, {
+          component: 'f5bis',
+          vendor: 'f5',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
+        this.setState( {loading: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'f5bis') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -96,6 +112,8 @@ class Manager extends React.Component {
           
         </Space>
 
+        {errors()}
+
       </React.Fragment>
     )
   }
@@ -104,10 +122,9 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.f5bis,
+  error: state.concerto.err,
 
   asset: state.f5bis.asset,
   partition: state.f5bis.partition,
-
-  err: state.f5bis.err,
 }))(Manager);

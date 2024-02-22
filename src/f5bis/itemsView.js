@@ -7,13 +7,13 @@ import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import Rest from '../_helpers/Rest'
-import Error from './error'
 import Validators from '../_helpers/validators'
 import CommonFunctions from '../_helpers/commonFunctions';
+import Error from '../concerto/error'
 
 import {
-  err,
-} from './store'
+  err
+} from '../concerto/store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -175,7 +175,12 @@ class ItemsView extends React.Component {
 
     let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
     if (routeDomains.status && routeDomains.status !== 200 ) {
-      this.props.dispatch(err(routeDomains))
+      let error = Object.assign(routeDomains, {
+        component: 'itemsView',
+        vendor: 'f5',
+        errorType: 'routeDomainsError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({loading: false})
       return
     }
@@ -187,7 +192,12 @@ class ItemsView extends React.Component {
 
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'nodesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -213,7 +223,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'monitors') {
       let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'monitorTypesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -223,7 +238,12 @@ class ItemsView extends React.Component {
     
       fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'monitorsError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -256,7 +276,12 @@ class ItemsView extends React.Component {
       
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'snatpoolsError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -295,7 +320,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'pools') {
       let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'monitorTypesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -305,7 +335,12 @@ class ItemsView extends React.Component {
 
       fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'poolsError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -325,7 +360,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'irules') {
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'irulesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -344,7 +384,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'certificates') {
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'certificatesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -365,7 +410,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'keys') {
       let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'keysError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -384,7 +434,12 @@ class ItemsView extends React.Component {
     else if (this.props.items === 'profiles') {
       let fetched = await this.dataGet(this.props.asset.id, 'profileTypes')
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'profileTypesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -394,7 +449,12 @@ class ItemsView extends React.Component {
     
       fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
-        this.props.dispatch(err(fetched))
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'f5',
+          errorType: 'profilesError'
+        })
+        this.props.dispatch(err(error))
         await this.setState({loading: false})
         return
       }
@@ -470,7 +530,12 @@ class ItemsView extends React.Component {
     )
     await rest.doXHR(endpoint, this.props.token)
     if (r.status && r.status !== 200 ) {
-      this.props.dispatch(err(r))
+      let error = Object.assign(r, {
+        component: 'itemsView',
+        vendor: 'f5',
+        errorType: 'getPoolmembersError'
+      })
+      this.props.dispatch(err(error))
       await this.setState({poolmembersloading: false})
       return
     }
@@ -1254,7 +1319,12 @@ class ItemsView extends React.Component {
 
         let e = await this.itemDelete(item.name, item.type ? item.type : null )
         if (e.status && e.status !== 200 ) {
-          this.props.dispatch(err(e))
+          let error = Object.assign(e, {
+            component: 'itemsView',
+            vendor: 'f5',
+            errorType: 'deleteError'
+          })
+          this.props.dispatch(err(error))
           item.loading = false
           await this.setState({items: items})
         }
@@ -1339,7 +1409,12 @@ class ItemsView extends React.Component {
 
         let e = await this.itemPost(body)
         if (e.status && e.status !== 201 ) {
-          this.props.dispatch(err(e))
+          let error = Object.assign(e, {
+            component: 'itemsView',
+            vendor: 'f5',
+            errorType: 'postError'
+          })
+          this.props.dispatch(err(error))
           item.loading = false
           await this.setState({items: items})
         }
@@ -1407,7 +1482,12 @@ class ItemsView extends React.Component {
 
         let e = await this.itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {
-          this.props.dispatch(err(e))
+          let error = Object.assign(e, {
+            component: 'itemsView',
+            vendor: 'f5',
+            errorType: 'patchError'
+          })
+          this.props.dispatch(err(error))
           item.loading = false
           await this.setState({items: items})
         }
@@ -2566,6 +2646,12 @@ class ItemsView extends React.Component {
       }
     ];
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'itemsView') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         {this.state.loading ?
@@ -2627,7 +2713,7 @@ class ItemsView extends React.Component {
           </React.Fragment>
         }
 
-        { this.props.err ? <Error object={this.props.items} error={[this.props.err]} visible={true} type={'err'} /> : null }
+        {errors()}
   
       </React.Fragment>
     )
@@ -2637,12 +2723,10 @@ class ItemsView extends React.Component {
 
 export default connect((state) => ({
 token: state.authentication.token,
+error: state.concerto.err,
 
 asset: state.f5bis.asset,
 partition: state.f5bis.partition,
-
-err: state.f5bis.err,
-
 }))(ItemsView);
   
   
