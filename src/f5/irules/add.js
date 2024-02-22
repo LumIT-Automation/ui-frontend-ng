@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   irulesFetch,
-  iruleAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd'
@@ -119,7 +123,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(iruleAddError(error))
+        error = Object.assign(error, {
+          component: 'iruleAdd',
+          vendor: 'f5',
+          errorType: 'iruleAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -143,6 +152,13 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'iruleAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -224,7 +240,7 @@ class Add extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.iruleAddError ? <Error component={'add irule'} error={[this.props.iruleAddError]} visible={true} type={'iruleAddError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -238,9 +254,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-
-  iruleAddError: state.f5.iruleAddError
 }))(Add);

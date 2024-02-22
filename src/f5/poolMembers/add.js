@@ -1,16 +1,20 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from '../../_helpers/Rest'
-import Error from '../error'
+
 import Validators from '../../_helpers/validators'
+import Rest from '../../_helpers/Rest'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
+
 
 import {
   nodes,
-  nodesError,
   poolMembersLoading,
   poolMembersFetch,
-  poolMemberAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -41,17 +45,7 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    /*
-    if (this.state.visible) {
-      if (this.props.asset && this.props.partition) {
-        if (!this.props.nodesError) {
-          if (!this.props.nodes) {
-            this.main()
-          }
-        }
-      }
-    }
-    */
+
   }
 
   componentWillUnmount() {
@@ -68,7 +62,12 @@ class Add extends React.Component {
     let nodesFetched = await this.nodesGet()
     await this.setState({nodesLoading: false})
     if (nodesFetched.status && nodesFetched.status !== 200 ) {
-      this.props.dispatch(nodesError(nodesFetched))
+      let error = Object.assign(nodesFetched, {
+        component: 'poolMembersAdd',
+        vendor: 'f5',
+        errorType: 'nodesError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -174,7 +173,12 @@ class Add extends React.Component {
         },
         error => {
           this.props.dispatch(poolMembersLoading(false))
-          this.props.dispatch(poolMemberAddError(error))
+          error = Object.assign(error, {
+            component: 'poolMembersAdd',
+            vendor: 'f5',
+            errorType: 'poolMemberAddError'
+          })
+          this.props.dispatch(err(error))
         }
       )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
@@ -195,6 +199,13 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolMembersAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -314,14 +325,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.nodesError ? <Error component={'add poolMember'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
-            { this.props.poolMemberAddError ? <Error component={'add poolMember'} error={[this.props.poolMemberAddError]} visible={true} type={'poolMemberAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -332,12 +336,11 @@ class Add extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   nodes: state.f5.nodes,
-  nodesError: state.f5.nodesError,
   poolMembersLoading: state.f5.poolMembersLoading,
-  poolMemberAddError: state.f5.poolMemberAddError
 }))(Add);

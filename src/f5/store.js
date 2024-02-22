@@ -7,9 +7,6 @@ const f5Slice = createSlice({
         environment: (state, action) => {
           state.environment = action.payload
         },
-        environmentError: (state, action) => {
-          state.environmentError = action.payload
-        },
 
         assetsLoading: (state, action) => {
           state.assetsLoading = action.payload
@@ -25,7 +22,6 @@ const f5Slice = createSlice({
         },
 
         asset: (state, action) => {
-          console.log('------------', action)
           state.asset = action.payload
         },
 
@@ -85,13 +81,12 @@ const f5Slice = createSlice({
           state.f5objectsError = action.payload
         },
 
-        f5objectAddError: (state, action) => {
-          state.f5objectAddError = action.payload
-        },
         f5objectDeleteError: (state, action) => {
           state.f5objectDeleteError = action.payload
         },
 
+
+        
 
         nodesLoading: (state, action) => {
           state.nodesLoading = action.payload
@@ -405,7 +400,6 @@ const { actions, reducer } = f5Slice;
 
 export const {
   environment,
-  environmentError,
 
   assetsLoading,
   assets,
@@ -435,7 +429,6 @@ export const {
   f5objects,
   f5objectsFetch,
   f5objectsError,
-  f5objectAddError,
   f5objectDeleteError,
 
   nodesLoading,

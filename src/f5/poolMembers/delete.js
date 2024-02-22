@@ -2,11 +2,14 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   poolMembersFetch,
-  poolMemberDeleteError
 } from '../store'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd';
@@ -52,7 +55,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(poolMemberDeleteError(error))
+        error = Object.assign(error, {
+          component: 'poolMembersDelete',
+          vendor: 'f5',
+          errorType: 'poolMemberDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -75,6 +83,13 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolMembersDelete') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -123,14 +138,7 @@ class Delete extends React.Component {
 
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.poolMemberDeleteError ? <Error component={'delete poolMember'} error={[this.props.poolMemberDeleteError]} visible={true} type={'poolMemberDeleteError'} /> : null }
-
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -140,8 +148,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+ 	error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  poolMemberDeleteError: state.f5.poolMemberDeleteError
 }))(Delete);

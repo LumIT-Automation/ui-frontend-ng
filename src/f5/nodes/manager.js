@@ -4,13 +4,16 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   nodesLoading,
   nodes,
   nodesFetch,
-  nodesError
 } from '../store'
 
 import List from './list'
@@ -28,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.nodesError) {
+      if (!this.props.error) {
         this.props.dispatch(nodesFetch(false))
         if (!this.props.nodes) {
           this.nodesGet()
@@ -42,7 +45,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition && !prevProps.nodesError && !this.props.nodesError) ) {
+    if ( (this.props.asset && this.props.partition && !prevProps.error && !this.props.error) ) {
       if (!this.props.nodes) {
         this.nodesGet()
       }
@@ -68,7 +71,12 @@ class Manager extends React.Component {
         this.props.dispatch(nodes(resp))
       },
       error => {
-        this.props.dispatch(nodesError(error))
+        error = Object.assign(error, {
+          component: 'node',
+          vendor: 'f5',
+          errorType: 'nodesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
@@ -77,6 +85,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'node') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -94,7 +109,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.nodesError ? <Error component={'node manager'} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
+          {errors()}
         </React.Fragment>
       </Space>
     )
@@ -104,11 +119,11 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   nodes: state.f5.nodes,
   nodesFetch: state.f5.nodesFetch,
-  nodesError: state.f5.nodesError
 }))(Manager);

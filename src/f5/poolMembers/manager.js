@@ -4,19 +4,18 @@ import { Modal, Button, Space, Table, Spin} from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
+
 import Add from './add'
 import Delete from './delete'
 
 import {
   poolMembersLoading,
   poolMembersFetch,
-  poolMembersError,
-
-  poolMemberEnableError,
-  poolMemberDisableError,
-  poolMemberForceOfflineError,
-  poolMemberStatsError
 } from '../store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -41,7 +40,7 @@ class PoolDetails extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if (this.state.visible) {
-      if (!this.props.poolMembersError) {
+      if (!this.props.error) {
         if (this.props.poolMembersFetch) {
           this.props.dispatch(poolMembersFetch(false))
           this.main(this.props.obj)
@@ -63,8 +62,14 @@ class PoolDetails extends React.Component {
     this.props.dispatch(poolMembersLoading(true))
     let members = await this.poolMembersGet(pool)
     this.props.dispatch(poolMembersLoading(false))
+    console.log(members)
     if (members.status && members.status !== 200) {
-      this.props.dispatch(poolMembersError(members))
+      let error = Object.assign(members, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMembersError'
+      })
+      this.props.dispatch(err(error))
     }
     else {
       const membersConn = members.map( m => {
@@ -121,8 +126,6 @@ class PoolDetails extends React.Component {
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${pool.name}/members/`, this.props.token)
     return r
   }
-
-
 
 
   statusAndSession = async (member, state, session, parentState) => {
@@ -184,7 +187,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(enable))
+      let error = Object.assign(enable, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberEnableError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let fetchedMember = await this.poolMemberGet(member)
@@ -192,7 +200,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchedMember))
+      let error = Object.assign(fetchedMember, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberGetError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let memberStats = await this.poolMemberStats(member)
@@ -200,7 +213,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(memberStats))
+      let error = Object.assign(memberStats, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberStatsError'
+      })
+      this.props.dispatch(err(error))
     }
 
     await this.refreshStats(member, memberStats)
@@ -226,7 +244,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberDisableError(disable))
+      let error = Object.assign(disable, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberDisableError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let fetchedMember = await this.poolMemberGet(member)
@@ -234,7 +257,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchedMember))
+      let error = Object.assign(fetchedMember, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberGetError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let memberStats = await this.poolMemberStats(member)
@@ -242,7 +270,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(memberStats))
+      let error = Object.assign(memberStats, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberStatsError'
+      })
+      this.props.dispatch(err(error))
     }
 
     await this.refreshStats(member, memberStats)
@@ -268,7 +301,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberForceOfflineError(forceOffline))
+      let error = Object.assign(forceOffline, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberForceOfflineError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let fetchedMember = await this.poolMemberGet(member)
@@ -276,7 +314,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberEnableError(fetchedMember))
+      let error = Object.assign(fetchedMember, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberGetError'
+      })
+      this.props.dispatch(err(error))
     }
 
     let memberStats = await this.poolMemberStats(member)
@@ -284,7 +327,12 @@ class PoolDetails extends React.Component {
       members = JSON.parse(JSON.stringify(this.state.members))
       members[index].isLoading = false
       await this.setState({members: members})
-      this.props.dispatch(poolMemberStatsError(memberStats))
+      let error = Object.assign(memberStats, {
+        component: 'poolmembers',
+        vendor: 'f5',
+        errorType: 'poolMemberStatsError'
+      })
+      this.props.dispatch(err(error))
     }
 
     await this.refreshStats(member, memberStats)
@@ -429,11 +477,9 @@ class PoolDetails extends React.Component {
       'GET',
       resp => {
         r = resp.data
-        //this.refreshStats(member, resp.data)
       },
       error => {
         r = error
-        //this.props.dispatch(poolMemberStatsError(error))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
@@ -447,7 +493,12 @@ class PoolDetails extends React.Component {
         this.refreshStats(member, resp.data)
       },
       error => {
-        this.props.dispatch(poolMemberStatsError(error))
+        error = Object.assign(error, {
+          component: 'poolmembers',
+          vendor: 'f5',
+          errorType: 'poolMemberStatsIntervalError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR( `f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/member/${member.name}/stats/`, this.props.token)
@@ -663,6 +714,12 @@ class PoolDetails extends React.Component {
       }
     ];
 
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolmembers') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
 
@@ -708,19 +765,7 @@ class PoolDetails extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.nodesError ? <Error component={'poolList '} error={[this.props.nodesError]} visible={true} type={'nodesError'} /> : null }
-            { this.props.poolMembersError ? <Error component={'poolList '} error={[this.props.poolMembersError]} visible={true} type={'poolMembersError'} /> : null }
-            { this.props.poolMemberEnableError ? <Error component={'poolList '} error={[this.props.poolMemberEnableError]} visible={true} type={'poolMemberEnableError'} /> : null }
-            { this.props.poolMemberDisableError ? <Error component={'poolList '} error={[this.props.poolMemberDisableError]} visible={true} type={'poolMemberDisableError'} /> : null }
-            { this.props.poolMemberForceOfflineError ? <Error component={'poolList '} error={[this.props.poolMemberForceOfflineError]} visible={true} type={'poolMemberForceOfflineError'} /> : null }
-            { this.props.poolMemberStatsError ? <Error component={'poolList '} error={[this.props.poolMemberStatsError]} visible={true} type={'poolMemberStatsError'} /> : null }
-
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
     );
@@ -730,6 +775,7 @@ class PoolDetails extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
@@ -737,11 +783,4 @@ export default connect((state) => ({
   poolMembers: state.f5.poolMembers,
   poolMembersLoading: state.f5.poolMembersLoading,
   poolMembersFetch: state.f5.poolMembersFetch,
-  poolMembersError: state.f5.poolMembersError,
-
-  poolMemberEnableError: state.f5.poolMemberEnableError,
-  poolMemberDisableError: state.f5.poolMemberDisableError,
-  poolMemberForceOfflineError: state.f5.poolMemberForceOfflineError,
-  poolMemberStatsError: state.f5.poolMemberStatsError,
-
 }))(PoolDetails);

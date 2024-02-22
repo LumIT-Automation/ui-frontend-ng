@@ -68,7 +68,6 @@ class Concerto extends Component {
   }
 
   render() {
-    console.log(this.props.error)
     return (
       <Layout style={{overflow: 'initial'}}>
         <HeaderCustom/>

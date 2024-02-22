@@ -2,11 +2,14 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   irulesFetch,
-  iruleModifyError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd'
@@ -100,7 +103,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(iruleModifyError(error))
+        error = Object.assign(error, {
+          component: 'iruleModify',
+          vendor: 'f5',
+          errorType: 'iruleModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -124,6 +132,13 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'iruleModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -177,7 +192,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.iruleModifyError ? <Error component={'modify irule'} error={[this.props.iruleModifyError]} visible={true} type={'iruleModifyError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -191,9 +206,8 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-
-  iruleModifyError: state.f5.iruleModifyError
 }))(Modify);

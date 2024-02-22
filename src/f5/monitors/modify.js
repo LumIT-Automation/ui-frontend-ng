@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   monitorsFetch,
-  monitorModifyError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
@@ -118,7 +122,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(monitorModifyError(error))
+        error = Object.assign(error, {
+          component: 'monitorModify',
+          vendor: 'f5',
+          errorType: 'monitorModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -144,6 +153,13 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'monitorModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -211,7 +227,7 @@ class Modify extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.monitorModifyError ? <Error component={'modify monitor'} error={[this.props.monitorModifyError]} visible={true} type={'monitorModifyError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -225,8 +241,8 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorModifyError: state.f5.monitorModifyError
 }))(Modify);

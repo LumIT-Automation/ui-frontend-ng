@@ -1,8 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import { monitorsFetch, monitorDeleteError } from '../store'
 
@@ -50,7 +55,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () =>  this.props.dispatch(monitorsFetch(true)) )
       },
       error => {
-        this.props.dispatch(monitorDeleteError(error))
+        error = Object.assign(error, {
+          component: 'monitorDelete',
+          vendor: 'f5',
+          errorType: 'monitorDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -67,6 +77,12 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'monitorDelete') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <Space direction='vertical'>
@@ -118,7 +134,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.monitorDeleteError ? <Error component={'delete monitor'} error={[this.props.monitorDeleteError]} visible={true} type={'monitorDeleteError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -132,8 +148,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  monitorDeleteError: state.f5.monitorDeleteError
 }))(Delete);

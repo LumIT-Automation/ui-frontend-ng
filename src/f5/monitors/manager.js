@@ -4,15 +4,17 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   monitorTypes,
-  monitorTypesError,
   monitorsLoading,
   monitors,
   monitorsFetch,
-  monitorsError
 } from '../store'
 
 import List from './list'
@@ -30,7 +32,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.monitorsError) {
+      if (!this.props.error) {
         this.props.dispatch(monitorsFetch(false))
         if (!this.props.monitors) {
           this.monitorsGet()
@@ -44,7 +46,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition && !prevProps.monitorsError && !this.props.monitorsError) ) {
+    if ( (this.props.asset && this.props.partition && !prevProps.error && !this.props.error) ) {
       if (!this.props.monitors) {
         this.monitorsGet()
       }
@@ -67,7 +69,12 @@ class Manager extends React.Component {
     let monTypes = await this.monitorsGetTypeList()
 
     if (monTypes.status && monTypes.status !== 200 ) {
-      this.props.dispatch(monitorTypesError(monTypes))
+      let error = Object.assign(monTypes, {
+        component: 'monitor',
+        vendor: 'f5',
+        errorType: 'monitorTypesError'
+      })
+      this.props.dispatch(err(error))
     }
     else {
       this.props.dispatch(monitorTypes(monTypes.data.items))
@@ -77,7 +84,12 @@ class Manager extends React.Component {
     let mons = await this.monitorsGetAny()
 
     if (mons.status && mons.status !== 200 ) {
-      this.props.dispatch(monitorsError(mons))
+      let error = Object.assign(mons, {
+        component: 'monitor',
+        vendor: 'f5',
+        errorType: 'monitorsError'
+      })
+      this.props.dispatch(err(error))
       this.props.dispatch(monitorsLoading(false))
     }
     else {
@@ -133,6 +145,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'monitor') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -150,8 +169,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.monitorTypesError ? <Error component={'manager monitors'} error={[this.props.monitorTypesError]} visible={true} type={'monitorTypesError'} /> : null }
-          { this.props.monitorsError ? <Error component={'manager monitors'} error={[this.props.monitorsError]} visible={true} type={'monitorsError'} /> : null }
+          {errors()}
         </React.Fragment>
       </Space>
 
@@ -162,12 +180,11 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   monitors: state.f5.monitors,
   monitorsFetch: state.f5.monitorsFetch,
-  monitorsError: state.f5.monitorsError,
-  monitorTypesError: state.f5.monitorTypesError
 }))(Manager);

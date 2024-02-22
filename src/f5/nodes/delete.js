@@ -1,10 +1,15 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from "../../_helpers/Rest"
-import Error from '../error'
 
-import { nodesFetch, nodeDeleteError } from '../store'
+import Rest from '../../_helpers/Rest'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
+
+import { nodesFetch } from '../store'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -48,7 +53,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(nodeDeleteError(error))
+        error = Object.assign(error, {
+          component: 'nodeDelete',
+          vendor: 'f5',
+          errorType: 'nodeDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -70,6 +80,12 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'nodeDelete') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <Space direction='vertical'>
@@ -121,7 +137,7 @@ class Delete extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-            { this.props.nodeDeleteError ? <Error component={'delete node'} error={[this.props.nodeDeleteError]} visible={true} type={'nodeDeleteError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -135,8 +151,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  nodeDeleteError: state.f5.nodeDeleteError
 }))(Delete);

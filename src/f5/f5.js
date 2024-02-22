@@ -6,7 +6,11 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-import Error from './error'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
 
 import AssetSelector from '../concerto/assetSelector'
 import Nodes from './nodes/manager'
@@ -19,7 +23,6 @@ import VirtualServers from './virtualServers/manager'
 
 import {
   assets,
-  assetsError,
   nodesFetch,
   monitorsFetch,
   poolsFetch,
@@ -72,7 +75,13 @@ class F5 extends React.Component {
         this.setState( {loading: false}, () => this.props.dispatch(assets(resp)) )
       },
       error => {
-        this.setState( {loading: false}, () => this.props.dispatch(assetsError(error)) )
+        error = Object.assign(error, {
+          component: 'f5',
+          vendor: 'f5',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
+        this.setState( {loading: false})
       }
     )
     await rest.doXHR("f5/assets/", this.props.token)
@@ -108,6 +117,13 @@ class F5 extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'f5') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <AssetSelector vendor='f5'/>
@@ -229,7 +245,8 @@ class F5 extends React.Component {
 
           </Tabs>
 
-          { this.props.assetsError ? <Error component={'f5'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+          {errors()}
+
         </Space>
       </React.Fragment>
     )
@@ -240,6 +257,7 @@ class F5 extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   nodesLoading: state.f5.nodesLoading,
   monitorsLoading: state.f5.monitorsLoading,
@@ -248,8 +266,6 @@ export default connect((state) => ({
   irulesLoading: state.f5.irulesLoading,
   profilesLoading: state.f5.profilesLoading,
   virtualServersLoading: state.f5.virtualServersLoading,
-
-  assetsError: state.f5.assetsError,
 
   asset: state.f5.asset,
   partition: state.f5.partition
