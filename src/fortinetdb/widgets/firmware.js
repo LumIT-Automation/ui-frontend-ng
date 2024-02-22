@@ -6,13 +6,15 @@ import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
 import ColorScale from '../../_helpers/colorScale'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   firmwares,
   firmwaresLoading,
-  firmwaresError,
-  firmwareError,
 } from '../store'
 
 import List from '../devices/list'
@@ -46,7 +48,7 @@ class Firmware extends React.Component {
     if (this.props.vendor !== prevProps.vendor) {
       this.props.dispatch(firmwares(null))
     }
-    if (!this.props.modelloError) {
+    if (!this.props.error) {
       if (this.props.modello && prevProps.modello !== this.props.modello) {
         this.firmwaresGet()
       }
@@ -68,7 +70,12 @@ class Firmware extends React.Component {
         this.props.dispatch(firmwares(f))
       },
       error => {
-        this.props.dispatch(firmwaresError(error))
+        error = Object.assign(error, {
+          component: 'firmware',
+          vendor: 'fortinetdb',
+          errorType: 'firmwaresError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.props.modello}&fieldValues=FIRMWARE`, this.props.token)
@@ -83,7 +90,12 @@ class Firmware extends React.Component {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(firmwareError(error))
+        error = Object.assign(error, {
+          component: 'firmware',
+          vendor: 'fortinetdb',
+          errorType: 'firmwareError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=FIRMWARE&fval=${this.state.firmware}&fby=MODELLO&fval=${this.props.modello}`, this.props.token)
@@ -95,6 +107,13 @@ class Firmware extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'firmware') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         { this.props.firmwaresLoading ?
@@ -171,9 +190,6 @@ class Firmware extends React.Component {
                   }
                 </Modal>
 
-                { this.props.firmwaresError ? <Error component={'FIRMWARE'} error={[this.props.firmwaresError]} visible={true} type={'firmwaresError'} /> : null }
-                { this.props.firmwareError ? <Error component={'FIRMWARE'} error={[this.props.firmwareError]} visible={true} type={'firmwareError'} /> : null }
-
               </React.Fragment>
             :
               null
@@ -181,6 +197,9 @@ class Firmware extends React.Component {
 
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -189,7 +208,8 @@ class Firmware extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   categoria: state.fortinetdb.categoria,
   vendor: state.fortinetdb.vendor,
@@ -197,8 +217,5 @@ export default connect((state) => ({
 
   firmwares: state.fortinetdb.firmwares,
   firmwaresLoading: state.fortinetdb.firmwaresLoading,
-  firmwaresError: state.fortinetdb.firmwaresError,
-
   firmware: state.fortinetdb.firmware,
-  firmwareError: state.fortinetdb.firmwareError,
 }))(Firmware);

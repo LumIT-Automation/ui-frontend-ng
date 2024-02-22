@@ -2,11 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  deviceError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import { Input, Button, Space, Modal, Table, Spin } from 'antd'
 
@@ -135,7 +135,12 @@ class Device extends React.Component {
         this.setState({loading: false, device: device, extraData: resp.data.EXTRA_DATA})
       },
       error => {
-        this.props.dispatch(deviceError(error))
+        error = Object.assign(error, {
+          component: 'device',
+          vendor: 'fortinetdb',
+          errorType: 'deviceError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
       }
     )
@@ -162,7 +167,12 @@ class Device extends React.Component {
           this.fetchDevice()
         },
         error => {
-          this.props.dispatch(deviceError(error))
+          error = Object.assign(error, {
+            component: 'device',
+            vendor: 'fortinetdb',
+            errorType: 'modifyExtraDataError'
+          })
+          this.props.dispatch(err(error))
           this.setState({extraLoading: false})
         }
       )
@@ -180,6 +190,13 @@ class Device extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'device') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const columns = [
       {
         title: "SERIALE",
@@ -361,7 +378,7 @@ class Device extends React.Component {
         {this.state.visible ?
           <React.Fragment>
 
-            { this.props.deviceError ? <Error component={'fortinetdb device'} error={[this.props.deviceError]} visible={true} type={'deviceError'} /> : null }
+            {errors()}
 
           </React.Fragment>
         :
@@ -375,5 +392,5 @@ class Device extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	deviceError: state.fortinetdb.deviceError
+  error: state.concerto.err,
 }))(Device);

@@ -5,18 +5,19 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   eolAnnos,
   eolAnnosLoading,
-  eolAnnosError,
   eolAnno,
 
   eolMeses,
   eolMesesLoading,
-  eolMesesError,
-
 } from '../store'
 
 import { Spin, Row, Col } from 'antd'
@@ -65,7 +66,12 @@ class EolAnno extends React.Component {
         this.props.dispatch(eolAnnos(resp.data.items ))
       },
       error => {
-        this.props.dispatch(eolAnnosError(error))
+        error = Object.assign(error, {
+          component: 'eolAnno',
+          vendor: 'fortinetdb',
+          errorType: 'eolAnnosError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=EOL_ANNO`, this.props.token)
@@ -80,7 +86,12 @@ class EolAnno extends React.Component {
         this.props.dispatch(eolMeses(resp.data.items))
       },
       error => {
-        this.props.dispatch(eolMesesError(error ))
+        error = Object.assign(error, {
+          component: 'eolAnno',
+          vendor: 'fortinetdb',
+          errorType: 'eolMesesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=EOL_ANNO&fval=${anno}&fieldValues=EOL_MESE`, this.props.token)
@@ -92,6 +103,13 @@ class EolAnno extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'eolAnno') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         { this.props.eolAnnosLoading ?
@@ -139,11 +157,11 @@ class EolAnno extends React.Component {
               </VictoryChart>
             </Row>
 
-            { this.props.eolAnnosError ? <Error component={'EOL_ANNO'} error={[this.props.eolAnnosError]} visible={true} type={'eolAnnosError'} /> : null }
-            { this.props.eolMesesError ? <Error component={'EOL_MESE'} error={[this.props.eolMesesError]} visible={true} type={'eolMesesError'} /> : null }
-
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -152,14 +170,12 @@ class EolAnno extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   eolAnnos: state.fortinetdb.eolAnnos,
   eolAnnosLoading: state.fortinetdb.eolAnnosLoading,
-  eolAnnosError: state.fortinetdb.eolAnnosError,
 
   eolMeses: state.fortinetdb.eolMeses,
   eolMesesLoading: state.fortinetdb.eolMesesLoading,
-  eolMesesError: state.fortinetdb.eolMesesError,
-
 }))(EolAnno);

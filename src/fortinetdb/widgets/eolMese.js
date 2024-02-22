@@ -5,11 +5,11 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  valueError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import List from '../devices/list'
 
@@ -56,7 +56,12 @@ class EolMese extends React.Component {
         this.setState({devices: resp.data.items })
       },
       error => {
-        this.props.dispatch(valueError(error))
+        error = Object.assign(error, {
+          component: 'eolMese',
+          vendor: 'fortinetdb',
+          errorType: 'valueError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=EOL_ANNO&fval=${this.props.eolAnno}&fby=EOL_MESE&fval=${this.state.value}`, this.props.token)
@@ -68,6 +73,12 @@ class EolMese extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'eolMese') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -155,17 +166,16 @@ class EolMese extends React.Component {
                   }
                 </Modal>
 
-                { this.props.valueError ? <Error component={'EOL_MESE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
-
               </React.Fragment>
             :
               null
             }
 
-            { this.props.eolMesesError ? <Error component={'EOL_MESE'} error={[this.props.eolMesesError]} visible={true} type={'eolMesesError'} /> : null }
-
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -174,16 +184,13 @@ class EolMese extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   eolAnno: state.fortinetdb.eolAnno,
 
   eolMeses: state.fortinetdb.eolMeses,
   eolMesesLoading: state.fortinetdb.eolMesesLoading,
-  eolMesesError: state.fortinetdb.eolMesesError,
 
   eolMese: state.fortinetdb.eolMese,
-  eolMeseError: state.fortinetdb.eolMeseError,
-
-  valueError: state.fortinetdb.valueError,
 }))(EolMese);

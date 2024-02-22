@@ -5,18 +5,19 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   attivazioneAnnos,
   attivazioneAnnosLoading,
-  attivazioneAnnosError,
   attivazioneAnno,
 
   attivazioneMeses,
   attivazioneMesesLoading,
-  attivazioneMesesError,
-
 } from '../store'
 
 import { Spin, Row, Col } from 'antd'
@@ -65,7 +66,12 @@ class AttivazioneAnno extends React.Component {
         this.props.dispatch(attivazioneAnnos(resp.data.items ))
       },
       error => {
-        this.props.dispatch(attivazioneAnnosError(error))
+        error = Object.assign(error, {
+          component: 'attivazioneAnno',
+          vendor: 'fortinetdb',
+          errorType: 'attivazioneAnnosError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=ATTIVAZIONE_ANNO`, this.props.token)
@@ -80,7 +86,12 @@ class AttivazioneAnno extends React.Component {
         this.props.dispatch(attivazioneMeses(resp.data.items))
       },
       error => {
-        this.props.dispatch(attivazioneMesesError(error ))
+        error = Object.assign(error, {
+          component: 'attivazioneAnno',
+          vendor: 'fortinetdb',
+          errorType: 'attivazioneMesesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ATTIVAZIONE_ANNO&fval=${anno}&fieldValues=ATTIVAZIONE_MESE`, this.props.token)
@@ -92,6 +103,13 @@ class AttivazioneAnno extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'attivazioneAnno') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         { this.props.attivazioneAnnosLoading ?
@@ -138,11 +156,11 @@ class AttivazioneAnno extends React.Component {
               </VictoryChart>
             </Row>
 
-            { this.props.attivazioneAnnosError ? <Error component={'ATTIVAZIONE_ANNO'} error={[this.props.attivazioneAnnosError]} visible={true} type={'attivazioneAnnosError'} /> : null }
-            { this.props.attivazioneMesesError ? <Error component={'ATTIVAZIONE_MESE'} error={[this.props.attivazioneMesesError]} visible={true} type={'attivazioneMesesError'} /> : null }
-
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -151,14 +169,12 @@ class AttivazioneAnno extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   attivazioneAnnos: state.fortinetdb.attivazioneAnnos,
   attivazioneAnnosLoading: state.fortinetdb.attivazioneAnnosLoading,
-  attivazioneAnnosError: state.fortinetdb.attivazioneAnnosError,
 
   attivazioneMeses: state.fortinetdb.attivazioneMeses,
   attivazioneMesesLoading: state.fortinetdb.attivazioneMesesLoading,
-  attivazioneMesesError: state.fortinetdb.attivazioneMesesError,
-
 }))(AttivazioneAnno);

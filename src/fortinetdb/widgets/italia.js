@@ -4,12 +4,11 @@ import { VectorMap } from '@south-paw/react-vector-maps'
 import italyJSON from './italyJSON.json'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  regionesError,
-  regioneError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import List from '../devices/list'
 
@@ -38,7 +37,12 @@ const Map = props => {
     setRegionesLoading(true)
     let rs = await regionesGet()
     if (rs.status && rs.status !== 200) {
-      props.dispatch(regionesError(rs))
+      let error = Object.assign(rs, {
+        component: 'italia',
+        vendor: 'fortinetdb',
+        errorType: 'regionesError'
+      })
+      props.dispatch(err(error))
       setRegionesLoading(false)
     }
     else {
@@ -46,18 +50,15 @@ const Map = props => {
     }
   }, [])
 
-
-
   const regionesGet = async () => {
     let r
     let rest = new Rest(
       "GET",
       resp => {
         r = resp
-        //setRegiones(resp.data.items)
       },
       error => {
-        r = error //props.dispatch(regionesError(error))
+        r = error
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fieldValues=regione`, props.token)
@@ -129,7 +130,12 @@ const Map = props => {
         setDevices(resp.data.items)
       },
       error => {
-        props.dispatch(regioneError(error))
+        error = Object.assign(error, {
+          component: 'italia',
+          vendor: 'fortinetdb',
+          errorType: 'regioneError'
+        })
+        props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=regione&fval=${regione}`, props.token)
@@ -159,6 +165,12 @@ const Map = props => {
       fetchValues(target.attributes.name.value)
     }
   };
+
+  let errors = () => {
+    if (props.error && props.error.component === 'italia') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
 
 
   return (
@@ -203,9 +215,7 @@ const Map = props => {
           }
         </Modal>
 
-
-      { props.regionesError ? <Error component={'Italia'} error={[props.regionesError]} visible={true} type={'regionesError'} /> : null }
-      { props.regioneError ? <Error component={'Italia'} error={[props.regioneError]} visible={true} type={'regioneError'} /> : null }
+        {errors()}  
 
     </div>
   );
@@ -216,6 +226,5 @@ const Map = props => {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  regionesError: state.fortinetdb.regionesError,
-  regioneError: state.fortinetdb.regioneError,
+  error: state.concerto.err,
 }))(Map);

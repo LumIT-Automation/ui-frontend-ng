@@ -1,15 +1,21 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
-import Rest from '../_helpers/Rest'
-import Error from './error'
+import 'antd/dist/antd.css'
+import '../App.css'
 
-import { projects, projectsLoading, projectsError, projectsFetch } from './store'
+import Rest from '../_helpers/Rest'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
+
+import { projects, projectsLoading, projectsFetch } from './store'
 
 import List from './projects/list'
 
-import 'antd/dist/antd.css'
-import '../App.css'
+
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -53,7 +59,12 @@ class Projects extends React.Component {
         this.props.dispatch(projects(resp))
       },
       error => {
-        this.props.dispatch(projectsError(error))
+        error = Object.assign(error, {
+          component: 'projects',
+          vendor: 'fortinetdb',
+          errorType: 'projectsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/`, this.props.token)
@@ -66,6 +77,13 @@ class Projects extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'projects') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -83,7 +101,7 @@ class Projects extends React.Component {
 
         </Space>
 
-          { this.props.projectsError ? <Error component={'fortinetdb projects'} error={[this.props.projectsError]} visible={true} type={'projectsError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -93,11 +111,10 @@ class Projects extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   fortinetdbauth: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   projectsLoading: state.fortinetdb.projectsLoading,
   projects: state.fortinetdb.projects,
-  projectsError: state.fortinetdb.projectsError,
   projectsFetch: state.fortinetdb.projectsFetch
 }))(Projects);

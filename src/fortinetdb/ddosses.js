@@ -1,15 +1,21 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
-import Rest from '../_helpers/Rest'
-import Error from './error'
+import 'antd/dist/antd.css'
+import '../App.css'
 
-import { ddosses, ddossesLoading, ddossesError, ddossesFetch } from './store'
+import Rest from '../_helpers/Rest'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
+
+import { ddosses, ddossesLoading, ddossesFetch } from './store'
 
 import List from './ddosses/list'
 
-import 'antd/dist/antd.css'
-import '../App.css'
+
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -53,7 +59,12 @@ class Ddosses extends React.Component {
         this.props.dispatch(ddosses(resp))
       },
       error => {
-        this.props.dispatch(ddossesError(error))
+        error = Object.assign(error, {
+          component: 'ddosses',
+          vendor: 'fortinetdb',
+          errorType: 'ddossesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/ddosses/`, this.props.token)
@@ -66,6 +77,13 @@ class Ddosses extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'ddosses') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -83,7 +101,7 @@ class Ddosses extends React.Component {
 
         </Space>
 
-        { this.props.ddossesError ? <Error component={'fortinetdb ddosses'} error={[this.props.ddossesError]} visible={true} type={'ddossesError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -93,11 +111,10 @@ class Ddosses extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   fortinetdbauth: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   ddossesLoading: state.fortinetdb.ddossesLoading,
   ddosses: state.fortinetdb.ddosses,
-  ddossesError: state.fortinetdb.ddossesError,
   ddossesFetch: state.fortinetdb.ddossesFetch
 }))(Ddosses);

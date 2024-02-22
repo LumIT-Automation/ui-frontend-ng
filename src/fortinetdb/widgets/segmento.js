@@ -6,12 +6,11 @@ import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
 import ColorScale from '../../_helpers/colorScale'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  fieldError,
-  valueError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import List from '../projects/list'
 
@@ -52,7 +51,12 @@ class Segmento extends React.Component {
         this.setState({field: resp.data.items})
       },
       error => {
-        this.props.dispatch(fieldError(error))
+        error = Object.assign(error, {
+          component: 'segmento',
+          vendor: 'fortinetdb',
+          errorType: 'fieldError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fieldValues=SEGMENTO`, this.props.token)
@@ -67,7 +71,12 @@ class Segmento extends React.Component {
         this.setState({projects: resp.data.items})
       },
       error => {
-        this.props.dispatch(valueError(error))
+        error = Object.assign(error, {
+          component: 'segmento',
+          vendor: 'fortinetdb',
+          errorType: 'valueError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fby=SEGMENTO&fval=${this.state.value}`, this.props.token)
@@ -79,6 +88,13 @@ class Segmento extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'segmento') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         { this.state.fieldLoading ?
@@ -147,12 +163,15 @@ class Segmento extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.fieldError ? <Error component={'Segmento'} error={[this.props.fieldError]} visible={true} type={'fieldError'} /> : null }
-              { this.props.valueError ? <Error component={'Segmento'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
+              
+              
+
             </React.Fragment>
           :
             null
           }
+
+          {errors()}  
 
           </React.Fragment>
         }
@@ -164,8 +183,6 @@ class Segmento extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
-
-  fieldError: state.fortinetdb.fieldError,
-  valueError: state.fortinetdb.valueError,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 }))(Segmento);

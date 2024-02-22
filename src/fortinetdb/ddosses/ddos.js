@@ -2,11 +2,11 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  ddosError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import { Input, Button, Space, Modal, Table, Spin } from 'antd'
 
@@ -134,7 +134,12 @@ class Ddos extends React.Component {
         this.setState({loading: false, ddos: ddos, extraData: resp.data.MO_EXTRA_DATA})
       },
       error => {
-        this.props.dispatch(ddosError(error))
+        error = Object.assign(error, {
+          component: 'ddos',
+          vendor: 'fortinetdb',
+          errorType: 'ddosError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
       }
     )
@@ -161,7 +166,12 @@ class Ddos extends React.Component {
           this.fetchDdos()
         },
         error => {
-          this.props.dispatch(ddosError(error))
+          error = Object.assign(error, {
+            component: 'ddos',
+            vendor: 'fortinetdb',
+            errorType: 'modifyExtraDataError'
+          })
+          this.props.dispatch(err(error))
           this.setState({extraLoading: false})
         }
       )
@@ -179,6 +189,13 @@ class Ddos extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'ddos') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const columns = [
       {
         title: "MANAGED_OBJECT",
@@ -295,7 +312,7 @@ class Ddos extends React.Component {
         {this.state.visible ?
           <React.Fragment>
 
-            { this.props.ddosError ? <Error component={'fortinetdb ddos'} error={[this.props.ddosError]} visible={true} type={'ddosError'} /> : null }
+            {errors()}
 
           </React.Fragment>
         :
@@ -309,5 +326,5 @@ class Ddos extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	ddosError: state.fortinetdb.ddosError
+  error: state.concerto.err,
 }))(Ddos);

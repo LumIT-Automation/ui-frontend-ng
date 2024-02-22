@@ -6,13 +6,15 @@ import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
 import ColorScale from '../../_helpers/colorScale'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   backupStatuss,
   backupStatussLoading,
-  backupStatussError,
-  backupStatusError,
 } from '../store'
 
 import List from '../devices/list'
@@ -46,7 +48,7 @@ class BackupStatus extends React.Component {
     if (this.props.vendor !== prevProps.vendor) {
       this.props.dispatch(backupStatuss(null))
     }
-    if (!this.props.modelloError) {
+    if (!this.props.error) {
       if (this.props.modello && prevProps.modello !== this.props.modello) {
         this.backupStatussGet()
       }
@@ -68,7 +70,12 @@ class BackupStatus extends React.Component {
         this.props.dispatch(backupStatuss(f))
       },
       error => {
-        this.props.dispatch(backupStatussError(error))
+        error = Object.assign(error, {
+          component: 'backupStatus',
+          vendor: 'fortinetdb',
+          errorType: 'backupStatussError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.props.modello}&fieldValues=BACKUP_STATUS`, this.props.token)
@@ -83,7 +90,12 @@ class BackupStatus extends React.Component {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(backupStatusError(error))
+        error = Object.assign(error, {
+          component: 'backupStatus',
+          vendor: 'fortinetdb',
+          errorType: 'backupStatusError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=BACKUP_STATUS&fval=${this.state.backupStatus}&fby=MODELLO&fval=${this.props.modello}`, this.props.token)
@@ -95,6 +107,12 @@ class BackupStatus extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'backupStatus') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -172,9 +190,6 @@ class BackupStatus extends React.Component {
                   }
                 </Modal>
 
-                { this.props.backupStatussError ? <Error component={'BACKUP_STATUS'} error={[this.props.backupStatussError]} visible={true} type={'backupStatussError'} /> : null }
-                { this.props.backupStatusError ? <Error component={'BACKUP_STATUS'} error={[this.props.backupStatusError]} visible={true} type={'backupStatusError'} /> : null }
-
               </React.Fragment>
             :
               null
@@ -182,6 +197,9 @@ class BackupStatus extends React.Component {
 
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -190,7 +208,8 @@ class BackupStatus extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   categoria: state.fortinetdb.categoria,
   vendor: state.fortinetdb.vendor,
@@ -198,8 +217,6 @@ export default connect((state) => ({
 
   backupStatuss: state.fortinetdb.backupStatuss,
   backupStatussLoading: state.fortinetdb.backupStatussLoading,
-  backupStatussError: state.fortinetdb.backupStatussError,
 
   backupStatus: state.fortinetdb.backupStatus,
-  backupStatusError: state.fortinetdb.backupStatusError,
 }))(BackupStatus);

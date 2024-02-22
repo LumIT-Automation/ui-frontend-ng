@@ -5,11 +5,11 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  valueError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import List from '../devices/list'
 
@@ -56,7 +56,12 @@ class AttivazioneMese extends React.Component {
         this.setState({devices: resp.data.items })
       },
       error => {
-        this.props.dispatch(valueError(error))
+        error = Object.assign(error, {
+          component: 'attivazioneMese',
+          vendor: 'fortinetdb',
+          errorType: 'valueError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ATTIVAZIONE_ANNO&fval=${this.props.attivazioneAnno}&fby=ATTIVAZIONE_MESE&fval=${this.state.value}`, this.props.token)
@@ -68,6 +73,12 @@ class AttivazioneMese extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'attivazioneMese') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
@@ -154,17 +165,16 @@ class AttivazioneMese extends React.Component {
                   }
                 </Modal>
 
-                { this.props.valueError ? <Error component={'ATTIVAZIONE_MESE'} error={[this.props.valueError]} visible={true} type={'valueError'} /> : null }
-
               </React.Fragment>
             :
               null
             }
 
-            { this.props.attivazioneMesesError ? <Error component={'ATTIVAZIONE_MESE'} error={[this.props.attivazioneMesesError]} visible={true} type={'attivazioneMesesError'} /> : null }
-
           </React.Fragment>
         }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -173,16 +183,13 @@ class AttivazioneMese extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   attivazioneAnno: state.fortinetdb.attivazioneAnno,
 
   attivazioneMeses: state.fortinetdb.attivazioneMeses,
   attivazioneMesesLoading: state.fortinetdb.attivazioneMesesLoading,
-  attivazioneMesesError: state.fortinetdb.attivazioneMesesError,
 
   attivazioneMese: state.fortinetdb.attivazioneMese,
-  attivazioneMeseError: state.fortinetdb.attivazioneMeseError,
-
-  valueError: state.fortinetdb.valueError,
 }))(AttivazioneMese);

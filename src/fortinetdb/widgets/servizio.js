@@ -4,15 +4,17 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   servizios,
   serviziosLoading,
-  serviziosError,
   servizio,
   servizioLoading,
-  servizioError,
 } from '../store'
 
 import List from '../projects/list'
@@ -143,7 +145,12 @@ class Servizio extends React.Component {
         this.props.dispatch(servizios(resp.data.items))
       },
       error => {
-        this.props.dispatch(serviziosError(error))
+        error = Object.assign(error, {
+          component: 'servizio',
+          vendor: 'fortinetdb',
+          errorType: 'serviziosError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fieldValues=SERVIZIO`, this.props.token)
@@ -158,7 +165,12 @@ class Servizio extends React.Component {
         this.setState({projects: resp.data.items})
       },
       error => {
-        this.props.dispatch(servizioError(error))
+        error = Object.assign(error, {
+          component: 'servizio',
+          vendor: 'fortinetdb',
+          errorType: 'servizioError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fby=SERVIZIO&fval=${this.props.servizio}`, this.props.token)
@@ -170,6 +182,12 @@ class Servizio extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'servizio') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const columns = [
       {
@@ -240,13 +258,12 @@ class Servizio extends React.Component {
                   </React.Fragment>
                 }
               </Modal>
-              { this.props.serviziosError ? <Error component={'SERVIZIO'} error={[this.props.serviziosError]} visible={true} type={'serviziosError'} /> : null }
-              { this.props.servizioError ? <Error component={'SERVIZIO'} error={[this.props.servizioError]} visible={true} type={'servizioError'} /> : null }
+              
             </React.Fragment>
           :
             null
           }
-
+          {errors()}
           </React.Fragment>
         }
       </React.Fragment>
@@ -257,14 +274,12 @@ class Servizio extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   servizios: state.fortinetdb.servizios,
   serviziosLoading: state.fortinetdb.serviziosLoading,
-  serviziosError: state.fortinetdb.serviziosError,
 
   servizio: state.fortinetdb.servizio,
   servizioLoading: state.fortinetdb.servizioLoading,
-  servizioError: state.fortinetdb.servizioError,
-
 }))(Servizio);

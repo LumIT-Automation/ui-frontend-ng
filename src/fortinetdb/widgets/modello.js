@@ -6,13 +6,15 @@ import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
 import ColorScale from '../../_helpers/colorScale'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   modellos20,
   modellos20Loading,
-  modellos20Error,
-  modelloError
 } from '../store'
 
 import List from '../devices/list'
@@ -46,7 +48,7 @@ class Modello extends React.Component {
     if (this.props.vendor !== prevProps.vendor) {
       this.props.dispatch(modellos20(null))
     }
-    if (!this.props.vendorError) {
+    if (!this.props.error) {
       if (this.props.vendor && prevProps.vendor !== this.props.vendor) {
         this.modellosGet()
       }
@@ -80,7 +82,12 @@ class Modello extends React.Component {
         this.split20(resp.data.items)
       },
       error => {
-        this.props.dispatch(modellos20Error(error))
+        error = Object.assign(error, {
+          component: 'modello',
+          vendor: 'fortinetdb',
+          errorType: 'modellos20Error'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=CATEGORIA&fval=${this.props.categoria}&fby=VENDOR&fval=${this.props.vendor}&fieldValues=MODELLO`, this.props.token)
@@ -95,7 +102,12 @@ class Modello extends React.Component {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(modelloError(error))
+        error = Object.assign(error, {
+          component: 'modello',
+          vendor: 'fortinetdb',
+          errorType: 'modelloError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=MODELLO&fval=${this.state.modello}`, this.props.token)
@@ -107,6 +119,13 @@ class Modello extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'modello') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         { this.props.modellos20Loading ?
@@ -182,9 +201,6 @@ class Modello extends React.Component {
                 }
               </Modal>
 
-              { this.props.modellos20Error ? <Error component={'modello'} error={[this.props.modellos20Error]} visible={true} type={'modellos20Error'} /> : null }
-              { this.props.modelloError ? <Error component={'MODELLO'} error={[this.props.modelloError]} visible={true} type={'modelloError'} /> : null }
-
             </React.Fragment>
           :
             null
@@ -192,6 +208,9 @@ class Modello extends React.Component {
 
           </React.Fragment>
         }
+
+        {errors()}  
+
       </React.Fragment>
     );
 
@@ -200,15 +219,13 @@ class Modello extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   categoria: state.fortinetdb.categoria,
   vendor: state.fortinetdb.vendor,
 
   modellos20: state.fortinetdb.modellos20,
   modellos20Loading: state.fortinetdb.modellos20Loading,
-  modellos20Error: state.fortinetdb.modellos20Error,
-
   modello: state.fortinetdb.modello,
-  modelloError: state.fortinetdb.modelloError,
 }))(Modello);

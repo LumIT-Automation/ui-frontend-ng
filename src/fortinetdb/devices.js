@@ -1,15 +1,21 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import { Tabs, Space, Spin } from 'antd'
-import Rest from '../_helpers/Rest'
-import Error from './error'
+import 'antd/dist/antd.css'
+import '../App.css'
 
-import { devices, devicesLoading, devicesError, devicesFetch } from './store'
+import Rest from '../_helpers/Rest'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
+
+import { devices, devicesLoading, devicesFetch } from './store'
 
 import List from './devices/list'
 
-import 'antd/dist/antd.css'
-import '../App.css'
+
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 const { TabPane } = Tabs;
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -53,7 +59,12 @@ class Devices extends React.Component {
         this.props.dispatch(devices(resp))
       },
       error => {
-        this.props.dispatch(devicesError(error))
+        error = Object.assign(error, {
+          component: 'devices',
+          vendor: 'fortinetdb',
+          errorType: 'devicesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/`, this.props.token)
@@ -66,6 +77,13 @@ class Devices extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'devices') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
@@ -83,7 +101,7 @@ class Devices extends React.Component {
 
         </Space>
 
-        { this.props.devicesError ? <Error component={'fortinetdb devices'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -93,11 +111,10 @@ class Devices extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   fortinetdbauth: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   devicesLoading: state.fortinetdb.devicesLoading,
   devices: state.fortinetdb.devices,
-  devicesError: state.fortinetdb.devicesError,
   devicesFetch: state.fortinetdb.devicesFetch
 }))(Devices);

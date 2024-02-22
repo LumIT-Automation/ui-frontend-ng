@@ -2,16 +2,15 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  projectError,
+  err
+} from '../../concerto/store'
 
+import {
   devices,
-  devicesError,
-
   ddosses,
-  ddossesError,
 } from '../store'
 
 import Devices from '../devices/list'
@@ -173,8 +172,13 @@ class Project extends React.Component {
         this.setState({loading: false, project: project, extraData: resp.data.extra_data})
       },
       error => {
+        error = Object.assign(error, {
+          component: 'project',
+          vendor: 'fortinetdb',
+          errorType: 'projectError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
-        this.props.dispatch(projectError(error))
       }
     )
     await rest.doXHR(`fortinetdb/project/${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -190,7 +194,12 @@ class Project extends React.Component {
         this.setState({devices: resp.data.items})
       },
       error => {
-        this.props.dispatch(devicesError(error))
+        error = Object.assign(error, {
+          component: 'project',
+          vendor: 'fortinetdb',
+          errorType: 'devicesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/devices/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -205,7 +214,12 @@ class Project extends React.Component {
         this.setState({ddosses: resp.data.items})
       },
       error => {
-        this.props.dispatch(ddossesError(error))
+        error = Object.assign(error, {
+          component: 'project',
+          vendor: 'fortinetdb',
+          errorType: 'ddossesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/ddosses/?fby=ID_PROGETTO&fval=${this.props.obj.ID_PROGETTO}/`, this.props.token)
@@ -232,8 +246,13 @@ class Project extends React.Component {
           this.fetchProject()
         },
         error => {
+          error = Object.assign(error, {
+            component: 'project',
+            vendor: 'fortinetdb',
+            errorType: 'modifyExtraDataError'
+          })
+          this.props.dispatch(err(error))
           this.setState({extraLoading: false, response: false, error: error})
-          this.props.dispatch(projectError(error))
         }
       )
       await rest.doXHR(`/fortinetdb/project/${this.props.obj.ID_PROGETTO}/`, this.props.token, b )
@@ -258,6 +277,13 @@ class Project extends React.Component {
 //NOME, ACCOUNT, RAGIONE SOCIALE, SEGMENTO, SERVIZIO
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'project') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const columns = [
       {
         title: "NOME",
@@ -366,12 +392,7 @@ class Project extends React.Component {
 
         {this.state.visible ?
           <React.Fragment>
-
-            { this.props.projectError ? <Error component={'fortinetdb project'} error={[this.props.projectError]} visible={true} type={'projectError'} /> : null }
-            { this.props.devicesError ? <Error component={'fortinetdb project'} error={[this.props.devicesError]} visible={true} type={'devicesError'} /> : null }
-            { this.props.ddossesError ? <Error component={'fortinetdb project'} error={[this.props.ddossesError]} visible={true} type={'ddossesError'} /> : null }
-            { this.props.deviceError ? <Error component={'fortinetdb device'} error={[this.props.deviceError]} visible={true} type={'deviceError'} /> : null }
-            { this.props.ddosError ? <Error component={'fortinetdb ddos'} error={[this.props.ddosError]} visible={true} type={'ddosError'} /> : null }
+            {errors()}
           </React.Fragment>
         :
           null
@@ -385,15 +406,9 @@ class Project extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  authorizations: state.authorizations.fortinetdb,
+  error: state.concerto.err,
 
   devices: state.fortinetdb.devices,
   ddosses: state.fortinetdb.ddosses,
-
-  projectError: state.fortinetdb.projectError,
-  devicesError: state.fortinetdb.devicesError,
-  ddossesError: state.fortinetdb.ddossesError,
-
-  deviceError: state.fortinetdb.deviceError,
-  ddosError: state.fortinetdb.ddosError
 }))(Project);

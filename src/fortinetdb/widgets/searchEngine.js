@@ -4,14 +4,15 @@ import 'antd/dist/antd.css'
 import '../../App.css'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  projectsError,
+  err
+} from '../../concerto/store'
 
+import {
   accounts,
   accountsLoading,
-  accountsError,
 } from '../store'
 
 import List from '../projects/list'
@@ -54,7 +55,12 @@ class SearchEngine extends React.Component {
         this.searchingListSet(resp.data.items)
       },
       error => {
-        this.props.dispatch(accountsError(error))
+        error = Object.assign(error, {
+          component: 'searchEngine',
+          vendor: 'fortinetdb',
+          errorType: 'accountsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/accounts/`, this.props.token)
@@ -103,7 +109,12 @@ class SearchEngine extends React.Component {
         this.setState({projects: resp.data.items, visible: true})
       },
       error => {
-        this.props.dispatch(projectsError(error))
+        error = Object.assign(error, {
+          component: 'searchEngine',
+          vendor: 'fortinetdb',
+          errorType: 'projectsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`fortinetdb/projects/?fby=${vals[0]}&fval=${vals[1]}`, this.props.token)
@@ -116,6 +127,13 @@ class SearchEngine extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'searchEngine') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const Logo = ({ data }) => {
       return <img
         src={`data:${data}`}
@@ -219,8 +237,9 @@ class SearchEngine extends React.Component {
         :
           null
         }
-        { this.props.accountsError ? <Error component={'SearchEngine'} error={[this.props.accountsError]} visible={true} type={'accountsError'} /> : null }
-        { this.props.projectsError ? <Error component={'Project'} error={[this.props.projectsError]} visible={true} type={'projectsError'} /> : null }
+
+        {errors()}
+
       </React.Fragment>
     );
 
@@ -229,21 +248,15 @@ class SearchEngine extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations.fortinetdb,
   image: state.authentication.image,
+  error: state.concerto.err,
 
   projects: state.fortinetdb.projects,
   projectsLoading: state.fortinetdb.projectsLoading,
-  projectsError: state.fortinetdb.projectsError,
-
   project: state.fortinetdb.project,
-  projectError: state.fortinetdb.projectError,
 
   accounts: state.fortinetdb.accounts,
   accountsLoading: state.fortinetdb.accountsLoading,
-  accountsError: state.fortinetdb.accountsError,
-
   account: state.fortinetdb.account,
-  accountError: state.fortinetdb.accountError,
-
 }))(SearchEngine);
