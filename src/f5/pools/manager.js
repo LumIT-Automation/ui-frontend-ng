@@ -4,20 +4,20 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   poolsLoading,
   pools,
   poolsFetch,
-  poolsError,
-
-  monitorTypes,
-  monitorTypesError,
 
   monitorsLoading,
+  monitorTypes,  
   monitors,
-  monitorsError
 } from '../store'
 
 import List from './list'
@@ -35,7 +35,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.poolsError) {
+      if (!this.props.error) {
         this.props.dispatch(poolsFetch(false))
         if (!this.props.pools) {
           this.poolsGet()
@@ -50,7 +50,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset && this.props.partition && !prevProps.poolsError && !this.props.poolsError) {
+    if (this.props.asset && this.props.partition && !prevProps.error && !this.props.error) {
       if (!this.props.pools) {
         this.poolsGet()
         this.monitorsGet()
@@ -76,7 +76,12 @@ class Manager extends React.Component {
     let monTypes = await this.monitorsTypeListGet()
 
     if (monTypes.status && monTypes.status !== 200 ) {
-      this.props.dispatch(monitorTypesError(monTypes))
+      let error = Object.assign(monTypes, {
+        component: 'poolManager',
+        vendor: 'f5',
+        errorType: 'monitorTypesError'
+      })
+      this.props.dispatch(err(error))
     }
     else {
       this.props.dispatch(monitorTypes(monTypes.data.items))
@@ -86,7 +91,12 @@ class Manager extends React.Component {
     let mons = await this.monitorsAnyGet()
 
     if (mons.status && mons.status !== 200 ) {
-      this.props.dispatch(monitorsError(mons))
+      let error = Object.assign(mons, {
+        component: 'poolManager',
+        vendor: 'f5',
+        errorType: 'monitorsError'
+      })
+      this.props.dispatch(err(error))
       this.props.dispatch(monitorsLoading(false))
     }
     else {
@@ -149,7 +159,12 @@ class Manager extends React.Component {
         this.props.dispatch(pools(resp))
       },
       error => {
-        this.props.dispatch(poolsError(error))
+        error = Object.assign(error, {
+          component: 'poolManager',
+          vendor: 'f5',
+          errorType: 'poolsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
@@ -157,6 +172,13 @@ class Manager extends React.Component {
   }
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -174,9 +196,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.poolsError ? <Error component={'pools manager'} error={[this.props.poolsError]} visible={true} type={'poolsError'} /> : null }
-          { this.props.monitorTypesError ? <Error component={'pools manager'} error={[this.props.monitorTypesError]} visible={true} type={'monitorTypesError'} /> : null }
-          { this.props.monitorsError ? <Error component={'pools manager'} error={[this.props.monitorsError]} visible={true} type={'monitorsError'} /> : null }
+          {errors()}
         </React.Fragment>
       </Space>
 
@@ -187,14 +207,12 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   pools: state.f5.pools,
   poolsFetch: state.f5.poolsFetch,
-  poolsError: state.f5.poolsError,
   monitorTypes: state.f5.monitorTypes,
-  monitorTypesError: state.f5.monitorTypesError,
-  monitorsError: state.f5.monitorsError
 }))(Manager);

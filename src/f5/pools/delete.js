@@ -1,10 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from '../../_helpers/Rest'
-import Error from '../error'
 
-import { poolsFetch, poolDeleteError } from '../store'
+import Rest from '../../_helpers/Rest'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
+
+import { 
+  poolsFetch 
+} from '../store'
 
 import { Button, Space, Modal, Col, Row, Spin, Result } from 'antd'
 import { LoadingOutlined, DeleteOutlined } from '@ant-design/icons'
@@ -49,7 +56,12 @@ class Delete extends React.Component {
         this.setState({loading: false, response: true}, () => this.props.dispatch(poolsFetch(true)))
       },
       error => {
-        this.props.dispatch(poolDeleteError(error))
+        error = Object.assign(error, {
+          component: 'poolDelete',
+          vendor: 'f5',
+          errorType: 'poolDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -65,6 +77,12 @@ class Delete extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolDelete') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <Space direction='vertical'>
@@ -114,14 +132,8 @@ class Delete extends React.Component {
 
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.poolDeleteError ? <Error component={'delete pool'} error={[this.props.poolDeleteError]} visible={true} type={'poolDeleteError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
-
+        {errors()}
+        
       </Space>
 
     )
@@ -130,8 +142,8 @@ class Delete extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
-  poolDeleteError: state.f5.poolDeleteError
 }))(Delete);

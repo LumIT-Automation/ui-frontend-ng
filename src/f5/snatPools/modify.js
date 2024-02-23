@@ -1,15 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   snatPoolsFetch,
   routeDomains,
-  routeDomainsError,
-  snatPoolModifyError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Table, Row, Col } from 'antd';
@@ -74,7 +77,12 @@ class Modify extends React.Component {
       let fetchedRouteDomains = await this.routeDomainsGet()
       await this.setState({routeDomainsLoading: false})
       if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
-        this.props.dispatch(routeDomainsError(fetchedRouteDomains))
+        let error = Object.assign(fetchedRouteDomains, {
+          component: 'snatPoolModify',
+          vendor: 'f5',
+          errorType: 'routeDomainsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -235,7 +243,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(snatPoolModifyError(error))
+        error = Object.assign(error, {
+          component: 'snatPoolModify',
+          vendor: 'f5',
+          errorType: 'snatPoolModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -261,6 +274,12 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'snatPoolModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const membersCol = [
       {
@@ -415,14 +434,7 @@ class Modify extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.routeDomainsError ? <Error component={'modify SnatPool'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-            { this.props.snatPoolModifyError ? <Error component={'modify snatPool'} error={[this.props.snatPoolModifyError]} visible={true} type={'snatPoolModifyError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -432,10 +444,9 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
-  routeDomainsError: state.f5.routeDomainsError,
-  snatPoolModifyError: state.f5.snatPoolModifyError
 }))(Modify);

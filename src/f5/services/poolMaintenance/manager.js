@@ -5,11 +5,14 @@ import { Modal, Alert, Button, Divider, Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
-import Error from '../../error'
+import Error from '../../../concerto/error'
+
+import {
+  err
+} from '../../../concerto/store'
 
 import {
   pools,
-  poolsError
 } from '../../store'
 
 import AssetSelector from '../../../concerto/assetSelector'
@@ -69,8 +72,14 @@ class Manager extends React.Component {
         this.props.dispatch(pools( resp ))
       },
       error => {
+        error = Object.assign(error, {
+          component: 'poolMaintenanceManager',
+          vendor: 'f5',
+          errorType: 'poolsError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false})
-        this.props.dispatch(poolsError(error))
+
       }
     )
     await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
@@ -84,6 +93,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolMaintenanceManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
 
@@ -115,13 +131,7 @@ class Manager extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.poolsError ? <Error component={'poolMaint manager'} error={[this.props.poolsError]} visible={true} type={'poolsError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </React.Fragment>
     )
@@ -130,10 +140,10 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   pools: state.f5.pools,
-  poolsError: state.f5.poolsError
 }))(Manager);

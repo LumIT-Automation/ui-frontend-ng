@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   poolsFetch,
-  poolModifyError
 } from '../store'
 
 import { Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -113,7 +117,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(poolModifyError(error))
+        error = Object.assign(error, {
+          component: 'poolModify',
+          vendor: 'f5',
+          errorType: 'poolModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -138,6 +147,12 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
 
@@ -312,13 +327,7 @@ class Modify extends React.Component {
 
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.poolModifyError ? <Error component={'modify pool'} error={[this.props.poolModifyError]} visible={true} type={'poolModifyError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -328,12 +337,11 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
-
   monitors: state.f5.monitors,
   monitorsLoading: state.f5.monitorsLoading,
-  poolModifyError: state.f5.poolModifyError,
 }))(Modify);

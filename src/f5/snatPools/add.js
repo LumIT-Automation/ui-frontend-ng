@@ -1,14 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   snatPoolsFetch,
   routeDomains,
-  routeDomainsError,
   snatPoolAddError
 } from '../store'
 
@@ -63,7 +67,12 @@ class Add extends React.Component {
     let fetchedRouteDomains = await this.routeDomainsGet()
     await this.setState({routeDomainsLoading: false})
     if (fetchedRouteDomains.status && fetchedRouteDomains.status !== 200 ) {
-      this.props.dispatch(routeDomainsError(fetchedRouteDomains))
+      let error = Object.assign(fetchedRouteDomains, {
+        component: 'snatPoolAdd',
+        vendor: 'f5',
+        errorType: 'routeDomainsError'
+      })
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -233,7 +242,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(snatPoolAddError(error))
+        error = Object.assign(error, {
+          component: 'snatPoolAdd',
+          vendor: 'f5',
+          errorType: 'snatPoolAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -259,6 +273,12 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'snatPoolAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const membersCol = [
       {
@@ -423,14 +443,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.routeDomainsError ? <Error component={'add SnatPool'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-            { this.props.snatPoolAddError ? <Error component={'add snatPool'} error={[this.props.snatPoolAddError]} visible={true} type={'snatPoolAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -440,10 +453,9 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
   routeDomains: state.f5.routeDomains,
-  routeDomainsError: state.f5.routeDomainsError,
-  snatPoolAddError: state.f5.snatPoolAddError
 }))(Add);

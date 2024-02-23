@@ -4,13 +4,16 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   profilesLoading,
   profiles,
   profilesFetch,
-  profilesError
 } from '../store'
 
 import List from './list'
@@ -28,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.partition) {
-      if (!this.props.profilesError) {
+      if (!this.props.error) {
         this.props.dispatch(profilesFetch(false))
         if (!this.props.profiles) {
           this.profilesGet()
@@ -42,7 +45,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.partition && !prevProps.profilesError && !this.props.profilesError) ) {
+    if ( (this.props.asset && this.props.partition && !prevProps.error && !this.props.error) ) {
       if (!this.props.profiles) {
         this.profilesGet()
       }
@@ -65,7 +68,12 @@ class Manager extends React.Component {
     let profs = await this.profilesAnyGet()
 
     if (profs.status && profs.status !== 200 ) {
-      this.props.dispatch(profilesError(profs))
+      let error = Object.assign(profs, {
+        component: 'profileManager',
+        vendor: 'f5',
+        errorType: 'profilesError'
+      })
+      this.props.dispatch(err(error))
       this.props.dispatch(profilesLoading(false))
     }
     else {
@@ -106,6 +114,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'profileManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -125,7 +140,7 @@ class Manager extends React.Component {
         }
 
         <React.Fragment>
-          { this.props.profilesError ? <Error component={'profiles manager'} error={[this.props.profilesError]} visible={true} type={'profilesError'} /> : null }
+          {errors()}
         </React.Fragment>
 
       </Space>
@@ -136,11 +151,12 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
- 	error: state.error.error,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
+
   asset: state.f5.asset,
   partition: state.f5.partition,
+
   profiles: state.f5.profiles,
   profilesFetch: state.f5.profilesFetch,
-  profilesError: state.f5.profilesError,
 }))(Manager);

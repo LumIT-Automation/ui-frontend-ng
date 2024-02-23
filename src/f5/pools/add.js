@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   poolsFetch,
-  poolAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -125,7 +129,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true, error: false}, () => this.response())
       },
       error => {
-        this.props.dispatch(poolAddError(error))
+        error = Object.assign(error, {
+          component: 'poolAdd',
+          vendor: 'f5',
+          errorType: 'poolAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -149,6 +158,13 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'poolAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -331,13 +347,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.poolAddError ? <Error component={'add pool'} error={[this.props.poolAddError]} visible={true} type={'poolAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -347,11 +357,11 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   monitors: state.f5.monitors,
   monitorsLoading: state.f5.monitorsLoading,
-  poolAddError: state.f5.poolAddError,
 }))(Add);

@@ -1,14 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   f5objects,
   f5objectsLoading,
-  f5objectsError,
-  f5objectDeleteError
 } from '../store'
 
 import AssetSelector from '../../concerto/assetSelector'
@@ -69,7 +72,12 @@ class DeleteF5Node extends React.Component {
         this.props.dispatch(f5objects(resp))
       },
       error => {
-        this.props.dispatch(f5objectsError(error))
+        error = Object.assign(error, {
+          component: 'f5deleteObject',
+          vendor: 'f5',
+          errorType: 'f5objectsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${f5object}s/`, this.props.token)
@@ -118,7 +126,12 @@ class DeleteF5Node extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(f5objectDeleteError(error))
+        error = Object.assign(error, {
+          component: 'f5deleteObject',
+          vendor: 'f5',
+          errorType: 'f5objectDeleteError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -142,6 +155,13 @@ class DeleteF5Node extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'f5deleteObject') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     let f5object = this.props.f5object
     return (
       <React.Fragment>
@@ -241,14 +261,7 @@ class DeleteF5Node extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.f5objectsError ? <Error component={`delete ${f5object}`} error={[this.props.f5objectsError]} visible={true} type={'f5objectsError'} /> : null }
-            { this.props.f5objectDeleteError ? <Error component={`delete ${f5object}`} error={[this.props.f5objectDeleteError]} visible={true} type={'f5objectDeleteError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </React.Fragment>
 
@@ -259,13 +272,11 @@ class DeleteF5Node extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
 
   f5objects: state.f5.f5objects,
   f5objectsLoading: state.f5.f5objectsLoading,
-
-  f5objectsError: state.f5.f5objectsError,
-  f5objectDeleteError: state.f5.f5objectDeleteError
 }))(DeleteF5Node);

@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   profilesFetch,
-  profileAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
@@ -53,7 +57,12 @@ class Add extends React.Component {
 
     if (profTypes.status && profTypes.status !== 200 ) {
       this.setState({profileTypesLoading: false})
-      this.props.dispatch(profileAddError(profTypes))
+      let error = Object.assign(profTypes, {
+        component: 'profileAdd',
+        vendor: 'f5',
+        errorType: 'profileTypesError'
+      })
+      this.props.dispatch(err(error))
     }
     else {
       this.setState({profileTypesLoading: false})
@@ -141,7 +150,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(profileAddError(error))
+        error = Object.assign(error, {
+          component: 'profileAdd',
+          vendor: 'f5',
+          errorType: 'profileAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -166,6 +180,12 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'profileAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <Space direction='vertical'>
@@ -285,13 +305,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.profileAddError ? <Error component={'add profile'} error={[this.props.profileAddError]} visible={true} type={'profileAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -301,9 +315,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
-
-  profileAddError: state.f5.profileAddError
 }))(Add);

@@ -6,17 +6,11 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  //routeDomains,
-  routeDomainsError,
-
-  dataGroupsError,
-
-  l4ServiceCreateError,
-  l7ServiceCreateError
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -63,7 +57,6 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.props.asset)
     let request = JSON.parse(JSON.stringify(this.state.request))
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
@@ -99,7 +92,12 @@ class CreateF5Service extends React.Component {
       let routeDomainsFetched = await this.routeDomainsFetch()
       await this.setState({routeDomainsLoading: false})
       if (routeDomainsFetched.status && routeDomainsFetched.status !== 200 ) {
-        this.props.dispatch(routeDomainsError(routeDomainsFetched))
+        let error = Object.assign(routeDomainsFetched, {
+          component: 'createVs',
+          vendor: 'f5',
+          errorType: 'routeDomainsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -111,7 +109,12 @@ class CreateF5Service extends React.Component {
       let dataGroupsCommon = await this.dataGroupsFetch('Common')
       await this.setState({dataGroupsLoading: false})
       if (dataGroupsCommon.status && dataGroupsCommon.status !== 200 ) {
-        this.props.dispatch(dataGroupsError(dataGroupsCommon))
+        let error = Object.assign(dataGroupsCommon, {
+          component: 'createVs',
+          vendor: 'f5',
+          errorType: 'dataGroupsError'
+        })
+        this.props.dispatch(err(error))
         return
       }
       else {
@@ -125,7 +128,12 @@ class CreateF5Service extends React.Component {
         let dataGroupsPartition = await this.dataGroupsFetch(this.props.partition)
         await this.setState({dataGroupsLoading: false})
         if (dataGroupsPartition.status && dataGroupsPartition.status !== 200 ) {
-          this.props.dispatch(dataGroupsError(dataGroupsPartition))
+          let error = Object.assign(dataGroupsPartition, {
+            component: 'createVs',
+            vendor: 'f5',
+            errorType: 'dataGroupsError'
+          })
+          this.props.dispatch(err(error))
           return
         }
         else {
@@ -544,7 +552,12 @@ class CreateF5Service extends React.Component {
         this.response()
       },
       error => {
-        this.props.dispatch(l4ServiceCreateError(error))
+        error = Object.assign(error, {
+          component: 'createVs',
+          vendor: 'f5',
+          errorType: 'l4ServiceCreateError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -571,6 +584,12 @@ class CreateF5Service extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'createVs') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
     
     let createElement = (element, key, choices, obj, action) => {
       switch (element) {
@@ -648,8 +667,6 @@ class CreateF5Service extends React.Component {
         default:
       }
     }
-
-    console.log(this.props.asset)
 
     return (
       <React.Fragment>
@@ -1069,16 +1086,7 @@ class CreateF5Service extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.routeDomainsError ? <Error component={'create loadbalancer'} error={[this.props.routeDomainsError]} visible={true} type={'routeDomainsError'} /> : null }
-            { this.props.dataGroupsError ? <Error component={'create loadbalancer'} error={[this.props.dataGroupsError]} visible={true} type={'dataGroupsError'} /> : null }
-            { this.props.l4ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l4ServiceCreateError]} visible={true} type={'l4ServiceCreateError'} /> : null }
-            { this.props.l7ServiceCreateError ? <Error component={'create loadbalancer'} error={[this.props.l7ServiceCreateError]} visible={true} type={'l7ServiceCreateError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </React.Fragment>
 
@@ -1089,13 +1097,9 @@ class CreateF5Service extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.f5,
+  error: state.concerto.err,
 
   asset: state.f5.asset,
   partition: state.f5.partition,
   dataGroups: state.f5.dataGroups,
-
-  routeDomainsError: state.f5.routeDomainsError,
-  dataGroupsError: state.f5.dataGroupsError,
-  l4ServiceCreateError: state.f5.l4ServiceCreateError,
-  l7ServiceCreateError: state.f5.l7ServiceCreateError,
 }))(CreateF5Service);
