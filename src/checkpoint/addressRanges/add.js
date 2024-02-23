@@ -2,15 +2,18 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   addressRangesFetch,
-  addressRangeAddError
 } from '../store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
@@ -126,7 +129,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(addressRangeAddError(error))
+        error = Object.assign(error, {
+          component: 'addressRangesAdd',
+          vendor: 'checkpoint',
+          errorType: 'addressRangeAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -150,6 +158,13 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'addressRangesAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical'>
 
@@ -228,13 +243,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.addressRangeAddError ? <Error component={'add addressRange'} error={[this.props.addressRangeAddError]} visible={true} type={'addressRangeAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -244,7 +253,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
+  
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  addressRangeAddError: state.checkpoint.addressRangeAddError
 }))(Add);

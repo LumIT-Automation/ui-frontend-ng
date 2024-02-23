@@ -2,13 +2,17 @@ import React from 'react'
 import {useRef} from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   application_sitesFetch,
-  application_siteModifyError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
@@ -278,9 +282,6 @@ class Modify extends React.Component {
       "url-list": list,
     }
 
-
-
-
     this.setState({loading: true})
 
     let rest = new Rest(
@@ -289,7 +290,12 @@ class Modify extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(application_siteModifyError(error))
+        error = Object.assign(error, {
+          component: 'application_sitesModify',
+          vendor: 'checkpoint',
+          errorType: 'application_siteModifyError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -314,6 +320,12 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'application_sitesModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const columns = [
       {
@@ -459,13 +471,7 @@ class Modify extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.application_siteModifyError ? <Error component={'add application_site'} error={[this.props.application_siteModifyError]} visible={true} type={'application_siteModifyError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -475,7 +481,8 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
+
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  application_siteModifyError: state.checkpoint.application_siteModifyError,
 }))(Modify);

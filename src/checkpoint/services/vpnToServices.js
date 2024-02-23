@@ -1,13 +1,13 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  vpnToServiceError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -213,7 +213,12 @@ class VpnToServices extends React.Component {
         this.setState({vpnToServices: list, base64: base64})
       },
       error => {
-        this.props.dispatch(vpnToServiceError(error))
+        error = Object.assign(error, {
+          component: 'vpnToService',
+          vendor: 'checkpoint',
+          errorType: 'vpnToServiceError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.state.domain}/vpn-to-services/`, this.props.token, b)
@@ -232,6 +237,13 @@ class VpnToServices extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'vpnToService') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const ipValueColumns = [
       {
         title: 'ipValue',
@@ -390,13 +402,7 @@ class VpnToServices extends React.Component {
 
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.vpnToServiceError ? <Error component={'vpnToService'} error={[this.props.vpnToServiceError]} visible={true} type={'vpnToServiceError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </React.Fragment>
 
@@ -407,7 +413,7 @@ class VpnToServices extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
-  asset: state.checkpoint.asset,
+  error: state.concerto.err,
 
-  vpnToServiceError: state.checkpoint.vpnToServiceError,
+  asset: state.checkpoint.asset,
 }))(VpnToServices);

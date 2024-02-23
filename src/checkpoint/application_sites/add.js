@@ -1,13 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   application_sitesFetch,
-  application_siteAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
@@ -290,7 +294,12 @@ class Add extends React.Component {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
-        this.props.dispatch(application_siteAddError(error))
+        error = Object.assign(error, {
+          component: 'application_sitesAdd',
+          vendor: 'checkpoint',
+          errorType: 'application_siteAddError'
+        })
+        this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
@@ -314,6 +323,12 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'application_sitesAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const columns = [
       {
@@ -457,13 +472,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.application_siteAddError ? <Error component={'add application_site'} error={[this.props.application_siteAddError]} visible={true} type={'application_siteAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -473,7 +482,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
+
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  application_siteAddError: state.checkpoint.application_siteAddError,
 }))(Add);

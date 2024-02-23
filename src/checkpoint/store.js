@@ -7,9 +7,6 @@ const checkpointSlice = createSlice({
       environment: (state, action) => {
         state.environment = action.payload
       },
-      environmentError: (state, action) => {
-        state.environmentError = action.payload
-      },
 
       assetsLoading: (state, action) => {
         state.assetsLoading = action.payload
@@ -19,9 +16,6 @@ const checkpointSlice = createSlice({
       },
       assetsFetch: (state, action) => {
         state.assetsFetch = action.payload
-      },
-      assetsError: (state, action) => {
-        state.assetsError = action.payload
       },
 
       asset: (state, action) => {
@@ -37,16 +31,9 @@ const checkpointSlice = createSlice({
       domainsFetch: (state, action) => {
         state.domainsFetch = action.payload
       },
-      domainsError: (state, action) => {
-        state.domainsError = action.payload
-      },
 
       domain: (state, action) => {
         state.domain = action.payload
-      },
-
-      itemTypesError: (state, action) => {
-        state.itemTypesError = action.payload
       },
 
       hostsLoading: (state, action) => {
@@ -58,21 +45,6 @@ const checkpointSlice = createSlice({
       hostsFetch: (state, action) => {
         state.hostsFetch = action.payload
       },
-      hostsError: (state, action) => {
-        state.hostsError = action.payload
-      },
-
-      hostAddError: (state, action) => {
-        state.hostAddError = action.payload
-      },
-      hostModifyError: (state, action) => {
-        state.hostModifyError = action.payload
-      },
-      hostDeleteError: (state, action) => {
-        state.hostDeleteError = action.payload
-      },
-
-
 
       groupsLoading: (state, action) => {
         state.groupsLoading = action.payload
@@ -82,19 +54,6 @@ const checkpointSlice = createSlice({
       },
       groupsFetch: (state, action) => {
         state.groupsFetch = action.payload
-      },
-      groupsError: (state, action) => {
-        state.groupsError = action.payload
-      },
-
-      groupAddError: (state, action) => {
-        state.groupAddError = action.payload
-      },
-      groupModifyError: (state, action) => {
-        state.groupModifyError = action.payload
-      },
-      groupDeleteError: (state, action) => {
-        state.groupDeleteError = action.payload
       },
 
       networksLoading: (state, action) => {
@@ -106,19 +65,6 @@ const checkpointSlice = createSlice({
       networksFetch: (state, action) => {
         state.networksFetch = action.payload
       },
-      networksError: (state, action) => {
-        state.networksError = action.payload
-      },
-
-      networkAddError: (state, action) => {
-        state.networkAddError = action.payload
-      },
-      networkModifyError: (state, action) => {
-        state.networkModifyError = action.payload
-      },
-      networkDeleteError: (state, action) => {
-        state.networkDeleteError = action.payload
-      },
 
       addressRangesLoading: (state, action) => {
         state.addressRangesLoading = action.payload
@@ -128,19 +74,6 @@ const checkpointSlice = createSlice({
       },
       addressRangesFetch: (state, action) => {
         state.addressRangesFetch = action.payload
-      },
-      addressRangesError: (state, action) => {
-        state.addressRangesError = action.payload
-      },
-
-      addressRangeAddError: (state, action) => {
-        state.addressRangeAddError = action.payload
-      },
-      addressRangeModifyError: (state, action) => {
-        state.addressRangeModifyError = action.payload
-      },
-      addressRangeDeleteError: (state, action) => {
-        state.addressRangeDeleteError = action.payload
       },
 
       datacenterServersLoading: (state, action) => {
@@ -152,19 +85,6 @@ const checkpointSlice = createSlice({
       datacenterServersFetch: (state, action) => {
         state.datacenterServersFetch = action.payload
       },
-      datacenterServersError: (state, action) => {
-        state.datacenterServersError = action.payload
-      },
-
-      datacenterServerAddError: (state, action) => {
-        state.datacenterServerAddError = action.payload
-      },
-      datacenterServerModifyError: (state, action) => {
-        state.datacenterServerModifyError = action.payload
-      },
-      datacenterServerDeleteError: (state, action) => {
-        state.datacenterServerDeleteError = action.payload
-      },
 
       datacenterQuerysLoading: (state, action) => {
         state.datacenterQuerysLoading = action.payload
@@ -174,19 +94,6 @@ const checkpointSlice = createSlice({
       },
       datacenterQuerysFetch: (state, action) => {
         state.datacenterQuerysFetch = action.payload
-      },
-      datacenterQuerysError: (state, action) => {
-        state.datacenterQuerysError = action.payload
-      },
-
-      datacenterQueryAddError: (state, action) => {
-        state.datacenterQueryAddError = action.payload
-      },
-      datacenterQueryModifyError: (state, action) => {
-        state.datacenterQueryModifyError = action.payload
-      },
-      datacenterQueryDeleteError: (state, action) => {
-        state.datacenterQueryDeleteError = action.payload
       },
 
       application_sitesLoading: (state, action) => {
@@ -198,19 +105,6 @@ const checkpointSlice = createSlice({
       application_sitesFetch: (state, action) => {
         state.application_sitesFetch = action.payload
       },
-      application_sitesError: (state, action) => {
-        state.application_sitesError = action.payload
-      },
-
-      application_siteAddError: (state, action) => {
-        state.application_siteAddError = action.payload
-      },
-      application_siteModifyError: (state, action) => {
-        state.application_siteModifyError = action.payload
-      },
-      application_siteDeleteError: (state, action) => {
-        state.application_siteDeleteError = action.payload
-      },
 
       application_site_categorysLoading: (state, action) => {
         state.application_site_categorysLoading = action.payload
@@ -221,34 +115,6 @@ const checkpointSlice = createSlice({
       application_site_categorysFetch: (state, action) => {
         state.application_site_categorysFetch = action.payload
       },
-      application_site_categorysError: (state, action) => {
-        state.application_site_categorysError = action.payload
-      },
-
-      application_site_categoryAddError: (state, action) => {
-        state.application_site_categoryAddError = action.payload
-      },
-      application_site_categoryModifyError: (state, action) => {
-        state.application_site_categoryModifyError = action.payload
-      },
-      application_site_categoryDeleteError: (state, action) => {
-        state.application_site_categoryDeleteError = action.payload
-      },
-
-      hostRemoveError: (state, action) => {
-        state.hostRemoveError = action.payload
-      },
-      vpnToServiceError: (state, action) => {
-        state.vpnToServiceError = action.payload
-      },
-      vpnToHostError: (state, action) => {
-        state.vpnToHostError = action.payload
-      },
-
-      genericError: (state, action) => {
-        state.genericError = action.payload
-      },
-
 
       cleanUp: (state, action) => {
         for (const l in state) {
@@ -262,93 +128,50 @@ const { actions, reducer } = checkpointSlice;
 
 export const {
   environment,
-  environmentError,
 
   assetsLoading,
   assets,
   assetsFetch,
-  assetsError,
 
   asset,
 
   domainsLoading,
   domains,
   domainsFetch,
-  domainsError,
 
   domain,
-
-  itemTypesError,
 
   hostsLoading,
   hosts,
   hostsFetch,
-  hostsError,
-  hostAddError,
-  hostModifyError,
-  hostDeleteError,
 
   groupsLoading,
   groups,
   groupsFetch,
-  groupsError,
-  groupAddError,
-  groupModifyError,
-  groupDeleteError,
 
   networksLoading,
   networks,
   networksFetch,
-  networksError,
-  networkAddError,
-  networkModifyError,
-  networkDeleteError,
 
   addressRangesLoading,
   addressRanges,
   addressRangesFetch,
-  addressRangesError,
-  addressRangeAddError,
-  addressRangeModifyError,
-  addressRangeDeleteError,
 
   datacenterServersLoading,
   datacenterServers,
   datacenterServersFetch,
-  datacenterServersError,
-  datacenterServerAddError,
-  datacenterServerModifyError,
-  datacenterServerDeleteError,
 
   datacenterQuerysLoading,
   datacenterQuerys,
   datacenterQuerysFetch,
-  datacenterQuerysError,
-  datacenterQueryAddError,
-  datacenterQueryModifyError,
-  datacenterQueryDeleteError,
 
   application_sitesLoading,
   application_sites,
   application_sitesFetch,
-  application_sitesError,
-  application_siteAddError,
-  application_siteModifyError,
-  application_siteDeleteError,
 
   application_site_categorysLoading,
   application_site_categorys,
   application_site_categorysFetch,
-  application_site_categorysError,
-  application_site_categoryAddError,
-  application_site_categoryModifyError,
-  application_site_categoryDeleteError,
-
-  hostRemoveError,
-  vpnToServiceError,
-  vpnToHostError,
-
-  genericError,
 
   cleanUp
 } = actions

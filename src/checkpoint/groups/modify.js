@@ -1,24 +1,19 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
-import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
 
 import {
-  groupsFetch,
-  groupModifyError,
-  itemTypesError,
+  err
+} from '../../concerto/store'
 
+import {
   hosts,
   groups,
   networks,
   addressRanges,
-
-  hostsError,
-  groupsError,
-  networksError,
-  addressRangesError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Divider, Table, Checkbox } from 'antd';
@@ -160,7 +155,12 @@ class Modify extends React.Component {
 
     let groupData = await this.groupDataGet()
     if (groupData.status && groupData.status !== 200 ) {
-      this.props.dispatch(itemTypesError(groupData))
+      let error = Object.assign(groupData, {
+        component: 'groupsModify',
+        vendor: 'checkpoint',
+        errorType: 'itemTypesError'
+      })
+      this.props.dispatch(err(error))
       this.setState({dataLoading: false})
     }
     else {
@@ -189,18 +189,39 @@ class Modify extends React.Component {
 
     let domainData = await this.domainDataGet()
     if (domainData.status && domainData.status !== 200 ) {
+      let error
       switch(this.state.itemTypes) {
         case 'hosts':
-          this.props.dispatch(hostsError(domainData))
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'hostsError'
+          })
+          this.props.dispatch(err(error))
           break;
         case 'groups':
-          this.props.dispatch(groupsError(domainData))
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'groupsError'
+          })
+          this.props.dispatch(err(error))
           break;
         case 'networks':
-          this.props.dispatch(networksError(domainData))
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'networksError'
+          })
+          this.props.dispatch(err(error))
           break;
         case 'address-ranges':
-          this.props.dispatch(addressRangesError(domainData))
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'addressRangesError'
+          })
+          this.props.dispatch(err(error))
           break;
       }
       this.setState({dataLoading: false})
@@ -357,7 +378,12 @@ class Modify extends React.Component {
         r = resp
       },
       error => {
-      this.props.dispatch(itemTypesError(error))
+        error = Object.assign(error, {
+          component: 'groupsModify',
+          vendor: 'checkpoint',
+          errorType: 'itemTypesError'
+        })
+        this.props.dispatch(err(error))
         r = error
       }
     )
@@ -378,7 +404,12 @@ class Modify extends React.Component {
         r = resp
       },
       error => {
-        this.props.dispatch(itemTypesError(error))
+        error = Object.assign(error, {
+          component: 'groupsModify',
+          vendor: 'checkpoint',
+          errorType: 'itemTypesError'
+        })
+        this.props.dispatch(err(error))
         r = error
       }
     )
@@ -398,6 +429,12 @@ class Modify extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'groupsModify') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     let columns = [
       {
@@ -599,18 +636,7 @@ class Modify extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.itemTypesError ? <Error component={'modify group'} error={[this.props.itemTypesError]} visible={true} type={'itemTypesError'} /> : null }
-            { this.props.hostsError ? <Error component={'modify group'} error={[this.props.hostsError]} visible={true} type={'hostsError'} /> : null }
-            { this.props.groupsError ? <Error component={'modify group'} error={[this.props.groupsError]} visible={true} type={'groupsError'} /> : null }
-            { this.props.networksError ? <Error component={'modify group'} error={[this.props.networksError]} visible={true} type={'networksError'} /> : null }
-            { this.props.addressRangesError ? <Error component={'modify group'} error={[this.props.addressRangesError]} visible={true} type={'addressRangesError'} /> : null }
-            { this.props.groupModifyError ? <Error component={'modify group'} error={[this.props.groupModifyError]} visible={true} type={'groupModifyError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -620,6 +646,8 @@ class Modify extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  error: state.concerto.err,
+
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
@@ -627,12 +655,4 @@ export default connect((state) => ({
   groups: state.checkpoint.groups,
   networks: state.checkpoint.networks,
   addressRanges: state.checkpoint.addressRanges,
-
-  hostsError: state.checkpoint.hostsError,
-  groupsError: state.checkpoint.groupsError,
-  networksError: state.checkpoint.networksError,
-  addressRangesError: state.checkpoint.addressRangesError,
-
-  itemTypesError: state.checkpoint.itemTypesError,
-  groupModifyError: state.checkpoint.groupModifyError
 }))(Modify);

@@ -1,12 +1,16 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from "../../_helpers/Rest"
-import Error from '../error'
+
+import Rest from '../../_helpers/Rest'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   assets,
-  assetsError
 } from '../store'
 
 import VpnToServices from './vpnToServices'
@@ -25,7 +29,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      if (!this.props.assetsError) {
+      if (!this.props.error) {
         if (!this.props.assets) {
           this.assetsGet()
         }
@@ -51,7 +55,12 @@ class Manager extends React.Component {
         this.props.dispatch(assets( resp ))
       },
       error => {
-        this.props.dispatch(assetsError(error))
+        error = Object.assign(error, {
+          component: 'cpServiceManager',
+          vendor: 'checkpoint',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR("checkpoint/assets/", this.props.token)
@@ -59,8 +68,14 @@ class Manager extends React.Component {
 
 
 
-
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'cpServiceManager') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <Row>
@@ -72,7 +87,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        { this.props.assetsError ? <Error component={'services manager checkpoint'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+        {errors()}
 
       </React.Fragment>
     )
@@ -81,9 +96,8 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
   assets: state.checkpoint.assets,
-  assetsError: state.checkpoint.assetsError,
 }))(Manager);

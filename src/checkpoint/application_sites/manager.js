@@ -4,17 +4,18 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   application_sitesLoading,
   application_sites,
   application_sitesFetch,
-  application_sitesError,
   application_site_categorysLoading,
   application_site_categorys,
-  application_site_categorysFetch,
-  application_site_categorysError
 } from '../store'
 
 import List from './list'
@@ -32,7 +33,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.domain) {
-      if (!this.props.application_sitesError) {
+      if (!this.props.error) {
         this.props.dispatch(application_sitesFetch(false))
         if (!this.props.application_sites) {
           this.application_sitesGet()
@@ -47,7 +48,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.application_sitesError) ) {
+    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
       if (!this.props.application_sites) {
         this.application_sitesGet()
         this.application_site_categorysGet()
@@ -76,7 +77,12 @@ class Manager extends React.Component {
         this.props.dispatch(application_sites(resp))
       },
       error => {
-        this.props.dispatch(application_sitesError(error))
+        error = Object.assign(error, {
+          component: 'application_sites',
+          vendor: 'checkpoint',
+          errorType: 'application_sitesError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/?custom&local`, this.props.token)
@@ -91,7 +97,12 @@ class Manager extends React.Component {
         this.props.dispatch(application_site_categorys(resp))
       },
       error => {
-        this.props.dispatch(application_site_categorysError(error))
+        error = Object.assign(error, {
+          component: 'application_sites',
+          vendor: 'checkpoint',
+          errorType: 'application_site_categorysError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-site-categories/`, this.props.token)
@@ -100,6 +111,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'application_sites') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -116,10 +134,8 @@ class Manager extends React.Component {
           <Alert message="Asset and Domain not set" type="error" />
         }
 
-        <React.Fragment>
-          { this.props.application_sitesError ? <Error component={'application_site manager'} error={[this.props.application_sitesError]} visible={true} type={'application_sitesError'} /> : null }
-          { this.props.application_site_categorysError ? <Error component={'application_site_category manager'} error={[this.props.application_site_categorysError]} visible={true} type={'application_site_categorysError'} /> : null }
-        </React.Fragment>
+        {errors()}
+
       </Space>
     )
   }
@@ -128,14 +144,12 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
   application_sites: state.checkpoint.application_sites,
   application_sitesFetch: state.checkpoint.application_sitesFetch,
-  application_sitesError: state.checkpoint.application_sitesError,
   application_site_categorys: state.checkpoint.application_site_categorys,
-  application_site_categorysFetch: state.checkpoint.application_site_categorysFetch,
-  application_site_categorysError: state.checkpoint.application_site_categorysError,
 }))(Manager);

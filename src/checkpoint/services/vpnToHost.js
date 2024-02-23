@@ -1,13 +1,14 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
-import Error from '../error'
+import Error from '../../concerto/error'
 
 import {
-  vpnToHostError,
-} from '../store'
+  err
+} from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
 
@@ -185,7 +186,12 @@ class VpnToHost extends React.Component {
         this.setState({vpnToHosts: resp.data.items, base64: base64})
       },
       error => {
-        this.props.dispatch(vpnToHostError(error))
+        error = Object.assign(error, {
+          component: 'vpnToHost',
+          vendor: 'checkpoint',
+          errorType: 'vpnToHostError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.state.domain}/vpn-to-host/`, this.props.token, b)
@@ -205,6 +211,13 @@ class VpnToHost extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'vpnToHost') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const expandedRowRender = (...params) => {
       const columns = [
         {
@@ -333,13 +346,7 @@ class VpnToHost extends React.Component {
 
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.vpnToHostError ? <Error component={'vpnToHost'} error={[this.props.vpnToHostError]} visible={true} type={'vpnToHostError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </React.Fragment>
 
@@ -350,7 +357,7 @@ class VpnToHost extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
-  asset: state.checkpoint.asset,
+  error: state.concerto.err,
 
-  vpnToHostError: state.checkpoint.vpnToHostError,
+  asset: state.checkpoint.asset,
 }))(VpnToHost);

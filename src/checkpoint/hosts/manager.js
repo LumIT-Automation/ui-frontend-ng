@@ -4,13 +4,16 @@ import 'antd/dist/antd.css'
 import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   hostsLoading,
   hosts,
   hostsFetch,
-  hostsError
 } from '../store'
 
 import List from './list'
@@ -28,7 +31,7 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.asset && this.props.domain) {
-      if (!this.props.hostsError) {
+      if (!this.props.error) {
         this.props.dispatch(hostsFetch(false))
         if (!this.props.hosts) {
           this.hostsGet()
@@ -42,7 +45,7 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.hostsError) ) {
+    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
       if (!this.props.hosts) {
         this.hostsGet()
       }
@@ -68,7 +71,12 @@ class Manager extends React.Component {
         this.props.dispatch(hosts(resp))
       },
       error => {
-        this.props.dispatch(hostsError(error))
+        error = Object.assign(error, {
+          component: 'hosts',
+          vendor: 'checkpoint',
+          errorType: 'hostsError'
+        })
+        this.props.dispatch(err(error))
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/hosts/?local`, this.props.token)
@@ -77,6 +85,13 @@ class Manager extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'hosts') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
@@ -93,9 +108,8 @@ class Manager extends React.Component {
           <Alert message="Asset and Domain not set" type="error" />
         }
 
-        <React.Fragment>
-          { this.props.hostsError ? <Error component={'host manager'} error={[this.props.hostsError]} visible={true} type={'hostsError'} /> : null }
-        </React.Fragment>
+        {errors()}
+
       </Space>
     )
   }
@@ -104,11 +118,11 @@ class Manager extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 
   hosts: state.checkpoint.hosts,
   hostsFetch: state.checkpoint.hostsFetch,
-  hostsError: state.checkpoint.hostsError
 }))(Manager);

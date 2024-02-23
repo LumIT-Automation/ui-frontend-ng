@@ -6,7 +6,11 @@ import '../App.css'
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
-import Error from './error'
+import Error from '../concerto/error'
+
+import {
+  err
+} from '../concerto/store'
 
 import AssetSelector from '../concerto/assetSelector'
 import Hosts from './hosts/manager'
@@ -19,7 +23,6 @@ import DatacenterQuerys from './datacenterQuerys/manager'
 
 import {
   assets,
-  assetsError,
 
   hostsFetch,
   groupsFetch,
@@ -28,7 +31,6 @@ import {
   datacenterServersFetch,
   datacenterQuerysFetch,
   application_sitesFetch,
-
 } from '../checkpoint/store'
 
 
@@ -70,7 +72,13 @@ class Checkpoint extends React.Component {
         this.setState( {loading: false}, () => this.props.dispatch(assets(resp)) )
       },
       error => {
-        this.setState( {loading: false}, () => this.props.dispatch(assetsError(error)) )
+        error = Object.assign(error, {
+          component: 'checkpoint',
+          vendor: 'checkpoint',
+          errorType: 'assetsError'
+        })
+        this.props.dispatch(err(error))
+        this.setState( {loading: false})
       }
     )
     await rest.doXHR("checkpoint/assets/", this.props.token)
@@ -100,6 +108,13 @@ class Checkpoint extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'checkpoint') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     return (
       <React.Fragment>
         <AssetSelector vendor='checkpoint'/>
@@ -290,7 +305,8 @@ class Checkpoint extends React.Component {
 
           </Tabs>
 
-          { this.props.assetsError ? <Error component={'checkpoint'} error={[this.props.assetsError]} visible={true} type={'assetsError'} /> : null }
+          {errors()}
+
         </Space>
       </React.Fragment>
     )
@@ -301,6 +317,7 @@ class Checkpoint extends React.Component {
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
   hostsLoading: state.checkpoint.hostsLoading,
   groupsLoading: state.checkpoint.groupsLoading,
@@ -309,8 +326,6 @@ export default connect((state) => ({
   datacenterServersLoading: state.checkpoint.datacenterServersLoading,
   datacenterQuerysLoading: state.checkpoint.datacenterQuerysLoading,
   application_sitesLoading: state.checkpoint.application_sitesLoading,
-
-  assetsError: state.checkpoint.assetsError,
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain

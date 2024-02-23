@@ -1,17 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from '../../_helpers/Rest'
-import Error from '../../concerto/error'
-import Validators from '../../_helpers/validators'
 
-import {
-  datacenterServersFetch
-} from '../store'
+import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
 
 import {
   err
 } from '../../concerto/store'
+
+import {
+  datacenterServersFetch
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox } from 'antd';
 
@@ -68,7 +69,7 @@ class Add extends React.Component {
     let configurationsFetched = await this.configurationGet()
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       let error = Object.assign(configurationsFetched, {
-        component: 'add datacenter server',
+        component: 'datacenterServersAdd',
         vendor: 'checkpoint',
         errorType: 'configurationsError'
       })
@@ -406,7 +407,7 @@ class Add extends React.Component {
       },
       error => {
         error = Object.assign(error, {
-          component: 'add datacenter server',
+          component: 'datacenterServersAdd',
           vendor: 'checkpoint',
           errorType: 'datacenterServerAddError'
         })
@@ -434,6 +435,12 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'datacenterServersAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     let createComponent = (component, key, choices) => {
 
@@ -846,22 +853,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-
-          (this.props.error && 
-            this.props.error.errorType === 'configurationsError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null
-
-          (this.props.error && 
-            this.props.error.errorType === 'datacenterServerAddError') ? 
-            <Error error={[this.props.error]} visible={true}/> 
-          : 
-            null
-        :
-          null          
-        }
+        {errors()}
 
       </Space>
 
@@ -871,9 +863,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  asset: state.checkpoint.asset,
-
   error: state.concerto.err,
 
+  asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
 }))(Add);

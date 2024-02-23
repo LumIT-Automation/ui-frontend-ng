@@ -1,17 +1,18 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import Rest from '../../_helpers/Rest'
-import Error from '../../concerto/error'
-import Validators from '../../_helpers/validators'
 
-import {
-  datacenterQuerysFetch,
-} from '../store'
+import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
 
 import {
   err
 } from '../../concerto/store'
+
+import {
+  datacenterQuerysFetch,
+} from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox, Divider } from 'antd';
 
@@ -86,9 +87,9 @@ class Add extends React.Component {
       },
       error => {
         error = Object.assign(error, {
-          component: 'add datacenter query',
+          component: 'datacenterQuerysAdd',
           vendor: 'checkpoint',
-          errorType: 'datacenterServersError'
+          errorType: 'datacenterQuerysError'
         })
         this.props.dispatch(err(error))
         this.setState({datacenterServersLoading: false})
@@ -232,7 +233,7 @@ class Add extends React.Component {
       },
       error => {
         error = Object.assign(error, {
-          component: 'add datacenter query',
+          component: 'datacenterQuerysAdd',
           vendor: 'checkpoint',
           errorType: 'datacenterQueryAddError'
         })
@@ -260,6 +261,12 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'datacenterQuerysAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     const onChange = (list) => {
       this.setState({checkedList: list});
@@ -554,22 +561,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-           
-            (this.props.error && 
-              this.props.error.errorType === 'datacenterServersError') ? 
-              <Error error={[this.props.error]} visible={true}/> 
-            : 
-              null        
-            
-            (this.props.error && 
-              this.props.error.errorType === 'datacenterQueryAddError') ? 
-              <Error error={[this.props.error]} visible={true}/> 
-            : 
-              null  
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -579,9 +571,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  asset: state.checkpoint.asset,
-
   error: state.concerto.err,
 
+  asset: state.checkpoint.asset,
   domain: state.checkpoint.domain
 }))(Add);

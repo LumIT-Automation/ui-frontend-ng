@@ -1,13 +1,17 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
-import Error from '../error'
 import Validators from '../../_helpers/validators'
+import Error from '../../concerto/error'
+
+import {
+  err
+} from '../../concerto/store'
 
 import {
   networksFetch,
-  networkAddError
 } from '../store'
 
 import { Input, Button, Space, Modal, Spin, Result, Table, Row, Col } from 'antd';
@@ -197,7 +201,12 @@ class Add extends React.Component {
         r = resp
       },
       error => {
-        this.props.dispatch(networkAddError(error))
+        error = Object.assign(error, {
+          component: 'networksAdd',
+          vendor: 'checkpoint',
+          errorType: 'networkAddError'
+        })
+        this.props.dispatch(err(error))
         r = error
       }
     )
@@ -223,6 +232,13 @@ class Add extends React.Component {
 
 
   render() {
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'networksAdd') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
     const columns = [
       {
         title: 'id',
@@ -402,6 +418,7 @@ class Add extends React.Component {
         ),
       }
     ]
+
     return (
       <Space direction='vertical'>
 
@@ -457,13 +474,7 @@ class Add extends React.Component {
           }
         </Modal>
 
-        {this.state.visible ?
-          <React.Fragment>
-            { this.props.networkAddError ? <Error component={'add network'} error={[this.props.networkAddError]} visible={true} type={'networkAddError'} /> : null }
-          </React.Fragment>
-        :
-          null
-        }
+        {errors()}
 
       </Space>
 
@@ -473,7 +484,8 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
+  rror: state.concerto.err,
+
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  networkAddError: state.checkpoint.networkAddError
 }))(Add);
