@@ -55,7 +55,6 @@ class Error extends Component {
   }
 
   componentWillUnmount() {
-    console.log('unmount', this.props)
   }
 
   onCancel = async () => {
@@ -74,7 +73,6 @@ class Error extends Component {
 
 
   render(){
-    console.log('error', this.props)
     const columns = [
       {
         title: 'FROM',

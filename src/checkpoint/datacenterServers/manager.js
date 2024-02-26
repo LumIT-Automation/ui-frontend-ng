@@ -30,14 +30,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.domain) {
-      if (!this.props.error) {
-        this.props.dispatch(datacenterServersFetch(false))
-        if (!this.props.datacenterServers) {
-          this.datacenterServersGet()
-        }
-      }
-    }
+    this.setState({moun: true})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,24 +38,26 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
+    if (this.props.asset && this.props.domain && this.props.datacenterServersFetch) {
+      this.datacenterServersGet()
+    }
+    else if (this.props.asset && this.props.domain && (prevProps.domain !== this.props.domain)) {
+      this.datacenterServersGet()
+    }
+    else if (this.props.asset && this.props.domain && !prevProps.error && !this.props.error) {
       if (!this.props.datacenterServers) {
         this.datacenterServersGet()
       }
-      if (this.props.datacenterServersFetch) {
-        this.datacenterServersGet()
-        this.props.dispatch(datacenterServersFetch(false))
-      }
-      if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
-        this.datacenterServersGet()
-      }
     }
+    else {}
   }
 
   componentWillUnmount() {
+    this.setState({moun: false})
   }
 
   datacenterServersGet = async () => {
+    this.props.dispatch(datacenterServersFetch(false))
     this.props.dispatch(datacenterServersLoading(true))
     let rest = new Rest(
       "GET",

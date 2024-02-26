@@ -162,6 +162,7 @@ class Modify extends React.Component {
       })
       this.props.dispatch(err(error))
       this.setState({dataLoading: false})
+      return
     }
     else {
       switch(this.state.itemTypes) {
@@ -188,6 +189,7 @@ class Modify extends React.Component {
     }
 
     let domainData = await this.domainDataGet()
+    let l
     if (domainData.status && domainData.status !== 200 ) {
       let error
       switch(this.state.itemTypes) {
@@ -225,6 +227,7 @@ class Modify extends React.Component {
           break;
       }
       this.setState({dataLoading: false})
+      return
     }
     else {
       switch(this.state.itemTypes) {
@@ -241,9 +244,10 @@ class Modify extends React.Component {
           this.props.dispatch(addressRanges(domainData))
           break;
       }
-    }
 
-    let l = domainData.data.items.filter(dm => !this.state.groupData.find(gr => (gr.uid === dm.uid ) ))
+      l = domainData.data.items.filter(dm => !this.state.groupData.find(gr => (gr.uid === dm.uid ) ))
+
+    }
 
     await this.setState({domainDataPurged: l, dataLoading: false})
   }

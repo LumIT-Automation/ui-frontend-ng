@@ -29,10 +29,8 @@ class Manager extends React.Component {
 
   componentDidMount() {
     if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      if (!this.props.error) {
-        if (!this.props.assets) {
-          this.assetsGet()
-        }
+      if (!this.props.error && !this.props.assets) {
+        this.assetsGet()
       }
     }
   }

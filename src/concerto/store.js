@@ -114,7 +114,6 @@ const concertoSlice = createSlice({
       },
 
       err: ( state, action) => {
-        console.log('Concerto store', action.payload)
         state.err = action.payload
       },
 

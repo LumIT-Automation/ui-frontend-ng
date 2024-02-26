@@ -162,8 +162,6 @@ class Manager extends React.Component {
         //conf = JSON.parse(configurationsFetched.data.configuration)
       }
 
-
-
       await this.setState({loading: false, configurations: confs})
     }
   }

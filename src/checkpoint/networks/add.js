@@ -168,6 +168,12 @@ class Add extends React.Component {
         const resp = await this.networkAdd(net)
         if (resp.status && resp.status !== 201 ) {
           net.status = resp.status
+          let error = Object.assign(resp, {
+            component: 'networksAdd',
+            vendor: 'checkpoint',
+            errorType: 'networkAddError'
+          })
+          this.props.dispatch(err(error))
         }
         else {
           net.status = '201'
@@ -201,12 +207,6 @@ class Add extends React.Component {
         r = resp
       },
       error => {
-        error = Object.assign(error, {
-          component: 'networksAdd',
-          vendor: 'checkpoint',
-          errorType: 'networkAddError'
-        })
-        this.props.dispatch(err(error))
         r = error
       }
     )
@@ -484,7 +484,7 @@ class Add extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  rror: state.concerto.err,
+  error: state.concerto.err,
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,

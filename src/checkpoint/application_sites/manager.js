@@ -32,15 +32,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.domain) {
-      if (!this.props.error) {
-        this.props.dispatch(application_sitesFetch(false))
-        if (!this.props.application_sites) {
-          this.application_sitesGet()
-          this.application_site_categorysGet()
-        }
-      }
-    }
+    this.setState({moun: true})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -48,65 +40,93 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
+    if (this.props.asset && this.props.domain && this.props.application_sitesFetch) {
+      this.main()
+    }
+    else if (this.props.asset && this.props.domain && ((prevProps.domain !== this.props.domain)) ) {
+      this.main()
+    }
+    else if (this.props.asset && this.props.domain && !prevProps.error && !this.props.error) {
       if (!this.props.application_sites) {
-        this.application_sitesGet()
-        this.application_site_categorysGet()
-      }
-      if (this.props.application_sitesFetch) {
-        this.application_sitesGet()
-        this.application_site_categorysGet()
-        this.props.dispatch(application_sitesFetch(false))
-      }
-      if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
-        this.application_sitesGet()
-        this.application_site_categorysGet()
+        this.main()
       }
     }
+    else {}
   }
 
   componentWillUnmount() {
+    this.setState({moun: false})
+  }
+
+
+  main = async () => {
+    await this.props.dispatch(application_sitesFetch(false))
+    await this.props.dispatch(application_sitesLoading(true))
+    let appSites = await this.application_sitesGet()
+    if (appSites.status && appSites.status !== 200 ) {
+      let error = Object.assign(appSites, {
+        component: 'application_sites',
+        vendor: 'checkpoint',
+        errorType: 'application_sitesError'
+      })
+      await this.props.dispatch(application_sitesLoading(false))
+      this.props.dispatch(err(error))
+      return
+    }
+    else {
+      await this.props.dispatch(application_sites(appSites))
+      await this.props.dispatch(application_sitesLoading(false))
+    }
+
+
+    await this.props.dispatch(application_site_categorysLoading(true))
+    let appCategs = await this.application_site_categorysGet()
+    if (appCategs.status && appCategs.status !== 200 ) {
+      let error = Object.assign(appCategs, {
+        component: 'application_sites',
+        vendor: 'checkpoint',
+        errorType: 'application_site_categorysError'
+      })
+      this.props.dispatch(err(error))
+      this.props.dispatch(application_site_categorysLoading(false))
+      return
+    }
+    else {
+      this.props.dispatch(application_site_categorys(appCategs))
+      await this.props.dispatch(application_site_categorysLoading(false))
+    }
+
   }
 
 
   application_sitesGet = async () => {
-    this.props.dispatch(application_sitesLoading(true))
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(application_sites(resp))
+        r = resp
       },
       error => {
-        error = Object.assign(error, {
-          component: 'application_sites',
-          vendor: 'checkpoint',
-          errorType: 'application_sitesError'
-        })
-        this.props.dispatch(err(error))
+        r = error
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/?custom&local`, this.props.token)
-    this.props.dispatch(application_sitesLoading(false))
+    return r
   }
 
   application_site_categorysGet = async () => {
-    this.props.dispatch(application_site_categorysLoading(true))
+    let r
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(application_site_categorys(resp))
+        r = resp
       },
       error => {
-        error = Object.assign(error, {
-          component: 'application_sites',
-          vendor: 'checkpoint',
-          errorType: 'application_site_categorysError'
-        })
-        this.props.dispatch(err(error))
+        r = error
       }
     )
     await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-site-categories/`, this.props.token)
-    this.props.dispatch(application_site_categorysLoading(false))
+    return r
   }
 
 

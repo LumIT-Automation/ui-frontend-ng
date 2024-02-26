@@ -30,14 +30,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.domain) {
-      if (!this.props.error) {
-        this.props.dispatch(addressRangesFetch(false))
-        if (!this.props.addressRanges) {
-          this.addressRangesGet()
-        }
-      }
-    }
+    this.setState({moun: true})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,21 +38,25 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
+    if (this.props.asset && this.props.domain && !prevProps.error && !this.props.error) {
       if (!this.props.addressRanges) {
         this.addressRangesGet()
       }
-      if (this.props.addressRangesFetch) {
+      else if (this.props.addressRangesFetch) {
         this.addressRangesGet()
         this.props.dispatch(addressRangesFetch(false))
       }
-      if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
+      else if ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) {
         this.addressRangesGet()
+      }
+      else {
+
       }
     }
   }
 
   componentWillUnmount() {
+    this.setState({moun: false})
   }
 
 

@@ -30,14 +30,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.asset && this.props.domain) {
-      if (!this.props.error) {
-        this.props.dispatch(groupsFetch(false))
-        if (!this.props.groups) {
-          this.groupsGet()
-        }
-      }
-    }
+    this.setState({moun: true})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -45,21 +38,24 @@ class Manager extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    if ( (this.props.asset && this.props.domain && !this.props.error) ) {
+    if (this.props.asset && this.props.domain && !prevProps.error && !this.props.error) {
       if (!this.props.groups) {
         this.groupsGet()
       }
-      if (this.props.groupsFetch) {
+      else if (this.props.groupsFetch) {
         this.groupsGet()
         this.props.dispatch(groupsFetch(false))
       }
-      if ( ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) ) {
+      else if ((prevProps.domain !== this.props.domain) && (this.props.domain !== null)) {
         this.groupsGet()
+      }
+      else {
       }
     }
   }
 
   componentWillUnmount() {
+    this.setState({moun: false})
   }
 
 
