@@ -339,29 +339,43 @@ class Rest {
 
         else if (this.method === "PUT") {
           try {
+
+            let headers = {}
+
+            if (token) {
+
+              headers = {
+                'Authorization': 'Bearer ' + token
+              }
+
+              headers['Content-Type'] = 'application/json'
+
+              if (additionalHeaders) {
+                additionalHeaders.forEach(element => {
+                  Object.assign(headers, element)
+                });
+              }
+            }
+            
             const response = await fetch(CONFIG.BACKEND_URL + resource, {
               method: 'PUT',
-              headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
-              },
+              headers: headers,
               body: JSON.stringify(payload)
             })
 
             if (response.ok) {
+              let content = response.headers.get('content-type')
+
               try {
-                json = await response.json();
+                if (content === 'application/json') {
+                  json = await response.json();
+                }
 
                 if (json && json.data) {
                   this.onSuccess(json);
                 }
                 else {
-                  this.onSuccess({
-                    status: response.status,
-                    message: response.statusText,
-                    type: response.type,
-                    url: response.url
-                  });
+                  this.onSuccess(response);
                 }
               }
               catch (error) {

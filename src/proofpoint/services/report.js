@@ -109,7 +109,7 @@ class RemoveHost extends React.Component {
 
   getReport = async () => {
     this.setState({reportLoading: true})
-    let data = await this.dataGet(this.state.report)
+    let data = await this.dataPut(this.state.report)
     console.log(data)
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
@@ -147,19 +147,11 @@ class RemoveHost extends React.Component {
     let r
     let additionalHeaders
 
-    if (resource === this.state.reportType) {
-      endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
-    }
-    if (resource === this.state.report) {
-      endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/${this.state.report}/`     
-    }
+    endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
 
     if (this.props.assetToken) {
       additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
     }
-    //else {
-      //additionalHeaders = [{'X-User-Defined-Remote-API-Token': ''}]
-    //}
 
     let rest = new Rest(
       "GET",
@@ -171,6 +163,33 @@ class RemoveHost extends React.Component {
       }
     )
     await rest.doXHR(endpoint, this.props.token, null, additionalHeaders )
+    return r
+  }
+
+  dataPut = async (resource) => {
+    let r
+    let additionalHeaders
+    let endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/`     
+
+    let body = {}
+    body.data = {
+      "assignmentname" : this.state.report
+    }
+
+    if (this.props.assetToken) {
+      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
+    }
+
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(endpoint, this.props.token, body, additionalHeaders )
     return r
   }
 
