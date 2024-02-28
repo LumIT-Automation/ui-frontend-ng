@@ -1,10 +1,11 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Select, Button, Divider, Spin, Row, Col } from 'antd'
+import { Modal, Alert, Input, Select, Button, Divider, Spin, Row, Col, Card } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 
 import {
@@ -26,6 +27,11 @@ class RemoveHost extends React.Component {
       errors: {},
       reportTypes: ["report-knowledge-assessment", "report-training", "report-phishing"],
       reports: [],
+      file: '',
+      fileName: '',
+      size: '',
+      type: '',
+      binaryString: '',
     };
   }
 
@@ -77,12 +83,47 @@ class RemoveHost extends React.Component {
     
   }
 
+  readFile = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+  
+      reader.onload = res => {
+        resolve(res.target.result);
+      };
+      reader.onerror = err => reject(err);
+  
+      reader.readAsBinaryString(file);
+    });
+  }
+
   set = async (key, value) => {
     if (key === 'reportType') {
       await this.setState({reportType: value, reportTypeError: false})
     }
     if (key === 'report') {
       await this.setState({report: value, reportError: false})
+    }
+    if (key === 'mailFrom') {
+      await this.setState({mailFrom: value, mailFromError: false})
+    }
+    if (key === 'upload') {
+
+      if (value) {
+          this.setState({
+            file: value,
+            fileName: value.name,
+            size: value.size,
+            type: value.type
+          })
+          let t = await this.readFile(value)
+          this.setState({binaryString: t})
+      }
+      else {
+        //blank value while typing.
+        this.setState({binaryString: ''})
+      }
+
+      await this.setState({binaryStringError: ''})
     }
   }
 
@@ -95,6 +136,7 @@ class RemoveHost extends React.Component {
 
   validationCheck = async () => {
     let errors = 0
+    let validators = new Validators()
 
     if (!this.state.reportType) {
       ++errors
@@ -104,6 +146,21 @@ class RemoveHost extends React.Component {
       ++errors
       await this.setState({reportError: true})
     }
+    if (this.state.reportType === "report-phishing") {
+      if (!this.state.mailFrom) {
+        ++errors
+        await this.setState({mailFromError: true})
+      }
+      if (!validators.mailAddress(this.state.mailFrom)) {
+        ++errors
+        await this.setState({mailFromError: true})
+      }
+      if (!this.state.binaryString) {
+        ++errors
+        await this.setState({binaryStringError: true})
+      }
+    }
+
     return errors
   }
 
@@ -176,6 +233,11 @@ class RemoveHost extends React.Component {
       "assignmentname" : this.state.report
     }
 
+    if (this.state.reportType === "report-phishing") {
+      body.data.mailFrom = this.state.mailFrom
+      body.data.emailScreenshot = btoa(this.state.binaryString)
+    }
+
     if (this.props.assetToken) {
       additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
     }
@@ -207,6 +269,8 @@ class RemoveHost extends React.Component {
 
 
   render() {
+    console.log(this.state.mailFrom)
+    console.log(this.state.mailFromError)
 
     let errors = () => {
       if (this.props.error && this.props.error.component === 'report') {
@@ -227,6 +291,43 @@ class RemoveHost extends React.Component {
             >
               Get Your Report
             </Button>
+          )
+
+        case 'input':
+          return (
+            <Input
+              value={this.state[key]}
+              style=
+                {this.state[`${key}Error`] ?
+                  {borderColor: 'red', width: 200}
+                :
+                  {width: 200}
+                }
+              //ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value)}
+            />          
+          )
+
+        case 'upload' :
+          return (
+            <React.Fragment>
+              <Input 
+                type="file"
+                style=
+                  { 
+                    this.state[`binaryStringError`] ?
+                    {borderColor: `red`, width: 350}
+                  :
+                    {width: 350}
+                  }
+                onChange={e => this.set('upload', e.target.files[0])} 
+              />
+              <Card>
+                <p>Name: {this.state.fileName}</p>
+                <p>Type: {this.state.type}</p>
+                <p>Size: {this.state.size} Bytes</p>
+              </Card>    
+          </React.Fragment>    
           )
 
         case 'select':         
@@ -301,6 +402,30 @@ class RemoveHost extends React.Component {
                       {createElement('select', 'reportType', 'reportTypes', '', '')}
                     </Col>
                 </Row>
+
+                { this.state.reportType && this.state.reportType === "report-phishing" ?
+                  <React.Fragment>
+                    <Row>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>mailFrom:</p>
+                      </Col>
+                      <Col span={6}>
+                        {createElement('input', 'mailFrom', '', '', '')}
+                      </Col>
+                    </Row>
+
+                    <Row>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>upload:</p>
+                      </Col>
+                      <Col span={6}>
+                        {createElement('upload', 'upload', '', '', '')}
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
+                  null
+                }
 
                 <Row>
                   <Col span={3}>
