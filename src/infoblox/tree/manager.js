@@ -1,7 +1,8 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Space, Alert } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons';
+import { Space, Alert, Spin } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
@@ -16,6 +17,8 @@ import {
 } from '../store'
 
 import NetworksTree from './networksTree'
+
+const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
 
@@ -82,7 +85,7 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
-    this.setState({loading: true})
+    this.setState({loading: false})
   }
 
 
@@ -98,8 +101,15 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
-          { this.props.tree ?
-            <NetworksTree/>
+          { this.props.asset ?
+            <React.Fragment>
+              {this.state.loading ?
+                <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+              :
+                <NetworksTree/>
+              }
+              
+            </React.Fragment>
           :
             <Alert message="Asset not set" type="error" />
           }
