@@ -231,7 +231,7 @@ class Manager extends React.Component {
     let taskProgress = false
     let secondStage = false
 
-    this.props.historys.forEach((item, i) => {
+    this.props.historys.forEach((item) => {
       if (item.second_stage_state === 'running') {
         secondStage = true
       }
@@ -266,7 +266,7 @@ class Manager extends React.Component {
       return
     }
     else {
-      fetchedHistorys.data.items.forEach((item, i) => {
+      fetchedHistorys.data.items.forEach((item) => {
         let ts = item.task_startTime.split('.');
         item.task_startTime = ts[0]
         list.push(item)
