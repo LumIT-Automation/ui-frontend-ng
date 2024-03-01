@@ -210,7 +210,7 @@ class Manager extends React.Component {
       if (this.props.vendor === 'vmware'){
         let list = []
         await this.setState({loading: false})
-        hists.forEach((item, i) => {
+        hists.forEach((item) => {
           let ts = item.task_startTime.split('.');
           item.task_startTime = ts[0]
           list.push(item)
