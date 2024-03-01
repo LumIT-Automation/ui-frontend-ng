@@ -48,32 +48,32 @@ class Assets extends React.Component {
           style={{padding: 15, paddingTop: 40 }}
         >
 
-          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsInfoblox)) ?
+          {this.authorizators(this.props.authorizationsInfoblox) ?
             <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
           :
             null
           }
 
-          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsCheckpoint)) ?
+          { this.authorizators(this.props.authorizationsCheckpoint) ?
             <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
           :
             null
           }
 
-          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsF5)) ?
+          { this.authorizators(this.props.authorizationsF5) ?
             <Radio.Button value={'f5'}>f5</Radio.Button>
           :
             null
           }
 
-          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsVmware)) ?
-            <Radio.Button value={'vmware'}>vmware</Radio.Button>
+          { this.authorizators(this.props.authorizationsProofpoint) ?
+            <Radio.Button value={'proofpoint'}>proofpoint</Radio.Button>
           :
             null
           }
 
-          { (this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsProofpoint)) ?
-            <Radio.Button value={'proofpoint'}>proofpoint</Radio.Button>
+          { this.authorizators(this.props.authorizationsVmware) ?
+            <Radio.Button value={'vmware'}>vmware</Radio.Button>
           :
             null
           }
