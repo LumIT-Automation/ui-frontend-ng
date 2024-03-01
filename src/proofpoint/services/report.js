@@ -65,7 +65,6 @@ class RemoveHost extends React.Component {
     if (this.props.vendor && this.props.asset && this.state.reportType) {
       this.setState({reportsLoading: true})
       let data = await this.dataGet(this.state.reportType)
-      console.log(data)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'report',
@@ -98,7 +97,7 @@ class RemoveHost extends React.Component {
 
   set = async (key, value) => {
     if (key === 'reportType') {
-      await this.setState({reportType: value, reportTypeError: false})
+      await this.setState({reportType: value, reportTypeError: false, report: '', reportError: false})
     }
     if (key === 'report') {
       await this.setState({report: value, reportError: false})
@@ -167,7 +166,6 @@ class RemoveHost extends React.Component {
   getReport = async () => {
     this.setState({reportLoading: true})
     let data = await this.dataPut(this.state.report)
-    console.log(data)
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
         component: 'report',
@@ -229,13 +227,15 @@ class RemoveHost extends React.Component {
     let endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/`     
 
     let body = {}
-    body.data = {
-      "assignmentname" : this.state.report
-    }
+    body.data = {}
 
     if (this.state.reportType === "report-phishing") {
       body.data.mailFrom = this.state.mailFrom
       body.data.emailScreenshot = btoa(this.state.binaryString)
+      body.data.campaignname = this.state.report
+    }
+    else {
+      body.data.assignmentname = this.state.report
     }
 
     if (this.props.assetToken) {
@@ -269,9 +269,6 @@ class RemoveHost extends React.Component {
 
 
   render() {
-    console.log(this.state.mailFrom)
-    console.log(this.state.mailFromError)
-
     let errors = () => {
       if (this.props.error && this.props.error.component === 'report') {
         return <Error error={[this.props.error]} visible={true}/> 
@@ -286,7 +283,7 @@ class RemoveHost extends React.Component {
           return (
             <Button
               type="primary"
-              disabled={(this.state.reportType && this.state.report) ? false : true}
+              disabled={(!(this.state.reportType && this.state.report) || this.state.reportLoading) ? true : false}
               onClick={() => this.validation()}
             >
               Get Your Report
@@ -407,7 +404,7 @@ class RemoveHost extends React.Component {
                   <React.Fragment>
                     <Row>
                       <Col span={3}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>mailFrom:</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Mail From:</p>
                       </Col>
                       <Col span={6}>
                         {createElement('input', 'mailFrom', '', '', '')}
@@ -416,12 +413,13 @@ class RemoveHost extends React.Component {
 
                     <Row>
                       <Col span={3}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>upload:</p>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Upload:</p>
                       </Col>
                       <Col span={6}>
                         {createElement('upload', 'upload', '', '', '')}
                       </Col>
                     </Row>
+                    <br/>
                   </React.Fragment>
                 :
                   null
@@ -454,7 +452,7 @@ class RemoveHost extends React.Component {
                 <Divider/>
 
                 {this.state.reportLoading ?
-                  <Spin indicator={spinIcon50} style={{margin: '49% 49%', display: 'inline'}}/>
+                  <Spin indicator={spinIcon50} style={{margin: '0 48%', display: 'inline'}}/>
                 :
                   null
                 }

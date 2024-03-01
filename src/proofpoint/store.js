@@ -16,7 +16,6 @@ const proofpointSlice = createSlice({
         },
 
         assetToken: (state, action) => {
-          console.log(action)
           state.assetToken = action.payload
         },
 
