@@ -188,17 +188,23 @@ class Manager extends React.Component {
     else {
       let hists = []
       let asset
-      fetchedHistorys.data.items.forEach((hist, i) => {
-        if (this.props.vendor === 'vmware') {
-          asset = this.state.assets.find(a => a.id === hist.id_asset)
+      fetchedHistorys.data.items.forEach((hist) => {
+        try {
+          if (this.props.vendor === 'vmware') {
+            asset = this.state.assets.find(a => a.id === hist.id_asset)
+          }
+          else {
+            asset = this.state.assets.find(a => a.id === hist.asset_id)
+          }
+          
+          hist.fqdn = asset.fqdn
+  
+          hists.push(hist)
         }
-        else {
-          asset = this.state.assets.find(a => a.id === hist.asset_id)
+        catch(error) {
+          console.log(error)
         }
         
-        hist.fqdn = asset.fqdn
-
-        hists.push(hist)
       });
 
       if (this.props.vendor === 'vmware'){
