@@ -12,12 +12,7 @@ import HeaderCustom from './header'
 
 import CustomSider from './concerto/sider'
 
-import Homepage from './concerto/homepage'
 import Historys from './concerto/historys'
-
-import Devices from './fortinetdb/devices'
-import Ddosses from './fortinetdb/ddosses'
-import Projects from './fortinetdb/projects'
 
 import Infoblox from './infoblox/infoblox'
 import Checkpoint from './checkpoint/checkpoint'
@@ -83,17 +78,8 @@ class Concerto extends Component {
                 }}
               >
                 <Switch>
-                  {this.props.authorizationsFortinetdb ?
-                    <Route exact path='/' component={Homepage}/>
-                  :
-                    null
-                  }
 
                   <Route exact path='/historys/' component={Historys}/>
-
-                  <Route path='/projects/' component={Projects}/>
-                  <Route path='/devices/' component={Devices}/>
-                  <Route path='/ddosses/' component={Ddosses}/>
 
                   { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
                     <Route path='/infoblox/' component={Infoblox}/>
@@ -178,7 +164,5 @@ export default connect((state) => ({
   authorizationsInfoblox: state.authorizations.infoblox,
   authorizationsF5: state.authorizations.f5,
   authorizationsCheckpoint: state.authorizations.checkpoint,
-  authorizationsFortinetdb: state.authorizations.fortinetdb,
-
   
 }))(Concerto);

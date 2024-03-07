@@ -95,11 +95,6 @@ class Permissions extends React.Component {
           :
             null
           }
-          { this.authorizators(this.props.authorizationsFortinetdb) ?
-            <Radio.Button value={'fortinetdb'}>fortinetdb</Radio.Button>
-          :
-            null
-          }
         </Radio.Group>
 
         <Divider/>
@@ -123,5 +118,4 @@ class Permissions extends React.Component {
   authorizationsF5: state.authorizations.f5,
   authorizationsProofpoint: state.authorizations.proofpoint,
   authorizationsVmware: state.authorizations.vmware,
-  authorizationsFortinetdb: state.authorizations.fortinetdb,
   }))(Permissions);

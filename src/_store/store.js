@@ -12,7 +12,6 @@ import f5Reducer from '../f5/store'
 import f5bisReducer from '../f5bis/store'
 import vmwareReducer from '../vmware/store'
 import proofpointReducer from '../proofpoint/store'
-import fortinetdbReducer from '../fortinetdb/store'
 
 
 export default configureStore({
@@ -28,6 +27,5 @@ export default configureStore({
     f5bis: f5bisReducer,
     vmware: vmwareReducer,
     proofpoint: proofpointReducer,
-    fortinetdb: fortinetdbReducer,
   }
 })

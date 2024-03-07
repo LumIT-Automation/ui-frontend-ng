@@ -99,13 +99,6 @@ class CustomSider extends Component {
           style={{ borderRight: 0 }}
         >
 
-        {!this.props.authorizationsFortinetdb ?
-          null
-        :
-          <Menu.Item key="homepage" icon={<HomeOutlined style={{fontSize:'20px'}} />} ><Link to="/">HOME</Link></Menu.Item>
-        }
-
-
           { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
             (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
             (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
@@ -117,19 +110,6 @@ class CustomSider extends Component {
           :
             null
           }
-
-          <React.Fragment>
-            {this.props.authorizationsFortinetdb && (this.authorizatorsSA(this.props.authorizations) || this.props.authorizationsFortinetdb.view_interface_tables) ?
-              <React.Fragment>
-                <Menu.Item key="projects" icon={this.itemsIcon()}><Link to="/projects/">PROJECT</Link></Menu.Item>
-                <Menu.Item key="devices" icon={this.itemsIcon()}><Link to="/devices/">DEVICE</Link></Menu.Item>
-                <Menu.Item key="ddosses" icon={this.itemsIcon()}><Link to="/ddosses/">DDOS</Link></Menu.Item>
-                <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-              </React.Fragment>
-              :
-                null
-            }
-          </React.Fragment>
 
           { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.full_visibility) ?
             <React.Fragment>
@@ -219,8 +199,7 @@ class CustomSider extends Component {
             (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
             (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.permission_identityGroups_post) ||
             (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
-            (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ||
-            (this.props.authorizationsFortinetdb && this.props.authorizationsFortinetdb.permission_identityGroups_post) ?
+            (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={this.permissionsIcon()}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
@@ -260,5 +239,4 @@ export default connect((state) => ({
   authorizationsCheckpoint: state.authorizations.checkpoint,
   authorizationsF5: state.authorizations.f5,
   authorizationsVmware: state.authorizations.vmware,
-  authorizationsFortinetdb: state.authorizations.fortinetdb,
 }))(CustomSider);

@@ -198,10 +198,6 @@ class Permission extends React.Component {
         subAssets = 'objects'
         break;
 
-      case 'fortinetdb':
-        subAsset = ''
-        subAssets = ''
-        break;
       default:
 
     }
@@ -334,16 +330,6 @@ class Permission extends React.Component {
         });
         await this.setState({permissions: permissionsWithWorkflows, originPermissions: permissionsWithWorkflows})
       }
-      else if (this.props.vendor === 'fortinetdb') {
-        let list = []
-        fetchedPermissions.data.items.forEach((item, i) => {
-          item.existent = true
-          item.isModified = {}
-          list.push(item)
-        });
-        await this.setState({permissions: list, originPermissions: list})
-      }
-
       else {
         permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
         permissionsWithAssets.forEach((item, i) => {
@@ -946,10 +932,7 @@ class Permission extends React.Component {
         }
       }
       else {
-        if (this.props.vendor === 'fortinetdb') {
-          continue
-        }
-        else if (this.props.vendor === 'proofpoint') {
+        if (this.props.vendor === 'proofpoint') {
           if (!perm.asset.id) {
             perm.assetIdError = true
             ++errors
@@ -1032,13 +1015,6 @@ class Permission extends React.Component {
             "details" : details
           }
         }
-        else if (this.props.vendor === 'fortinetdb') {
-          body.data = {
-            "identity_group_name": perm.identity_group_name,
-            "identity_group_identifier": perm.identity_group_identifier,
-            "role": perm.role
-          }
-        }
         else if (this.props.vendor === 'proofpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
@@ -1097,13 +1073,6 @@ class Permission extends React.Component {
                "id": perm.workflow.id
              },
              "details" : details
-          }
-        }
-        else if (this.props.vendor === 'fortinetdb') {
-          body.data = {
-            "identity_group_name": perm.identity_group_name,
-            "identity_group_identifier": perm.identity_group_identifier,
-            "role": perm.role
           }
         }
         else if (this.props.vendor === 'proofpoint') {
@@ -1210,10 +1179,6 @@ class Permission extends React.Component {
       }
       else if (this.props.vendor === 'workflow') {
         newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray 
-      }
-      else if (this.props.vendor === 'fortinetdb') {
-        newArray = fortinetdbColumns.filter(value => Object.keys(value).length !== 0);
         return newArray 
       }
       else if (this.props.vendor === 'proofpoint') {
@@ -1391,126 +1356,6 @@ class Permission extends React.Component {
               {width: 75, border: `1px solid red`}
             :
               {width: 75}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('role', value, obj )}
-          >
-            { (this.state.roles ? this.state.roles.map((role, i) => {
-                return (
-                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-                )
-              })
-            :
-              null
-            )}
-          </Select>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.permissionRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const fortinetdbColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-        ...this.getColumnSearchProps('identity_group_name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-        ...this.getColumnSearchProps('identity_group_identifier'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.identity_group_identifier}
-            showSearch
-            style=
-            { obj.identity_group_identifierError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('identity_group_identifier', value, obj )}
-          >
-            { this.state.identityGroups.map((ig, i) => {
-                return (
-                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-        ...this.getColumnSearchProps('role'),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.role ? obj.role : null}
-            showSearch
-            style=
-            { obj.roleError ?
-              {width: 200, border: `1px solid red`}
-            :
-              {width: 200}
             }
             optionFilterProp="children"
             filterOption={(input, option) =>
