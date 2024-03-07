@@ -57,12 +57,13 @@ class Concerto extends Component {
   componentWillUnmount() {
   }
 
-  authorizators = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isObjectEmpty(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
   render() {
+    
     return (
       <Layout style={{overflow: 'initial'}}>
         <HeaderCustom/>
@@ -81,55 +82,39 @@ class Concerto extends Component {
 
                   <Route exact path='/historys/' component={Historys}/>
 
-                  { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
+                  { this.isAuthorized(this.props.authorizations, 'infoblox') ?
                     <Route path='/infoblox/' component={Infoblox}/>
                   :
                     null
                   }
 
-                  { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+                  { this.isAuthorized(this.props.authorizations, 'checkpoint') ?
                     <Route path='/checkpoint/' component={Checkpoint}/>
                   :
                     null
                   }
 
-                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+                  { this.isAuthorized(this.props.authorizations, 'f5') ?
                     <Route path='/f5/' component={F5}/>
                   :
                     null
                   }
-                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+                  { this.isAuthorized(this.props.authorizations, 'f5') ?
                     <Route path='/f5bis/' component={F5bis}/>
                   :
                     null
                   }
-                  { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+                  { this.isAuthorized(this.props.authorizations, 'f5') ?
                     <Route path='/certificatesandkeys/' component={CertificatesAndKeys}/>
                   :
                     null
                   }
+
                   <Route path='/services/' component={Service}/>
-
-                  { this.props.authorizationsWorkflow && this.authorizators(this.props.authorizationsWorkflow) ?
-                    <Route path='/workflows/' component={Workflow}/>
-                  :
-                    null
-                  }
-
+                  <Route path='/workflows/' component={Workflow}/>
                   <Route path='/assets/' component={Assets}/>
-
-                  { this.props.authorizations && this.authorizators(this.props.authorizations) ?
-                    <Route path='/permissions/' component={Permissions}/>
-                  :
-                    null
-                  }
-
-                  { this.props.authorizations && this.authorizators(this.props.authorizations) ?
-                    <Route path='/triggers/' component={Triggers}/>
-                  :
-                    null
-                  }
-
+                  <Route path='/permissions/' component={Permissions}/>
+                  <Route path='/triggers/' component={Triggers}/>
                   <Route path='/configurations/' component={Configurations}/>
 
                 </Switch>
@@ -159,10 +144,5 @@ export default connect((state) => ({
 
   error: state.concerto.err,
 
-  authorizations: state.authorizations,
-  authorizationsWorkflow: state.authorizations.workflow,
-  authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsF5: state.authorizations.f5,
-  authorizationsCheckpoint: state.authorizations.checkpoint,
-  
+  authorizations: state.authorizations,  
 }))(Concerto);

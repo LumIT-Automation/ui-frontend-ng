@@ -2,6 +2,38 @@
 
 class Authorizators {
 
+  isAuthorized = (authorizations, vendor, key) => {
+    console.log('helper - authorizations: ', authorizations)
+
+    try {
+      let obj = Object.assign({}, authorizations[vendor])
+      console.log('!!!!!!!!!', obj)
+
+      if (authorizations && vendor && key) {
+        if (key in obj || 'any' in obj) {
+          return true
+        }
+        else {
+          return false
+        }
+      }
+      else if (authorizations && vendor) {
+        if (vendor in authorizations) {
+          return true
+        }
+        else {
+          return false
+        }
+      }
+      else {
+        return false
+      }
+    }
+    catch (error){
+      console.log(error)
+    }
+  }
+
   isSuperAdmin = a => {
     if (a) {
       try {

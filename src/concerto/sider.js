@@ -8,7 +8,6 @@ import '../sider.css';
 import { Menu } from 'antd';
 import { Layout, Divider, Button } from 'antd';
 import {
-  HomeOutlined,
   ClockCircleOutlined,
   SettingOutlined,
   MenuUnfoldOutlined,
@@ -77,9 +76,9 @@ class CustomSider extends Component {
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
 
-  authorizators = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isObjectEmpty(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
   authorizatorsSA = a => {
@@ -99,10 +98,10 @@ class CustomSider extends Component {
           style={{ borderRight: 0 }}
         >
 
-          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
-            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
-            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
+            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
+            this.isAuthorized(this.props.authorizations, 'f5') ||
+            this.isAuthorized(this.props.authorizations, 'vmware') ?
             <React.Fragment>
               <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
               <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
@@ -111,7 +110,7 @@ class CustomSider extends Component {
             null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.full_visibility) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
               <Menu.Divider/>
@@ -119,7 +118,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.full_visibility) ?
+          { this.isAuthorized(this.props.authorizations, 'checkpoint', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="checkpoint" icon={this.firewallIcon()}><Link to="/checkpoint/">CHECKPOINT</Link></Menu.Item>
               <Menu.Divider/>
@@ -127,7 +126,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsF5 && this.props.authorizationsF5.full_visibility) ?
+          { this.isAuthorized(this.props.authorizations, 'f5', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
               <Menu.Divider/>
@@ -135,7 +134,7 @@ class CustomSider extends Component {
             : null
           }
 
-          {/* (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsF5 && this.props.authorizationsF5.full_visibility) ?
+          {/* this.isAuthorized(this.props.authorizations, 'f5', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="f5bis" icon={this.loadbalancerIcon()}><Link to="/f5bis/">F5bis</Link></Menu.Item>
               <Menu.Divider/>
@@ -143,7 +142,7 @@ class CustomSider extends Component {
             : null
         */}
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsVmware && this.props.authorizationsVmware.full_visibility) ?
+          { this.isAuthorized(this.props.authorizations, 'vmware', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="vmware" icon={this.vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
               <Menu.Divider/>
@@ -151,7 +150,7 @@ class CustomSider extends Component {
             : null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) || (this.props.authorizationsF5 && this.props.authorizationsF5.full_visibility) ?
+          { this.isAuthorized(this.props.authorizations, 'f5', 'full_visibility') ?
             <React.Fragment>
               <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
               <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
@@ -161,10 +160,10 @@ class CustomSider extends Component {
           }
 
 
-          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
-            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
-            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
+            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
+            this.isAuthorized(this.props.authorizations, 'f5') ||
+            this.isAuthorized(this.props.authorizations, 'vmware') ?
             <React.Fragment>
               <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
               <Menu.Divider/>
@@ -173,7 +172,7 @@ class CustomSider extends Component {
             null
           }
 
-          { this.authorizatorsSA(this.props.authorizations) || this.authorizators(this.props.authorizationsWorkflow) ?
+          { this.isAuthorized(this.props.authorizations, 'workflow') ?
             <React.Fragment>
               <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
               <Menu.Divider/>
@@ -183,10 +182,10 @@ class CustomSider extends Component {
           }
 
           <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { (this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox)) ||
-            (this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint)) ||
-            (this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5)) ||
-            (this.props.authorizationsVmware && this.authorizators(this.props.authorizationsVmware)) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
+            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
+            this.isAuthorized(this.props.authorizations, 'f5') ||
+            this.isAuthorized(this.props.authorizations, 'vmware') ?
             <React.Fragment>
               <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
               <Menu.Divider/>
@@ -195,11 +194,10 @@ class CustomSider extends Component {
             null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ||
-            (this.props.authorizationsInfoblox && this.props.authorizationsInfoblox.permission_identityGroups_post) ||
-            (this.props.authorizationsCheckpoint && this.props.authorizationsCheckpoint.permission_identityGroups_post) ||
-            (this.props.authorizationsF5 && this.props.authorizationsF5.permission_identityGroups_post) ||
-            (this.props.authorizationsVmware && this.props.authorizationsVmware.permission_identityGroups_post) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox', 'permission_identityGroups_post') ||
+            this.isAuthorized(this.props.authorizations, 'checkpoint', 'permission_identityGroups_post') ||
+            this.isAuthorized(this.props.authorizations, 'f5', 'permission_identityGroups_post') ||
+            this.isAuthorized(this.props.authorizations, 'vmware', 'permission_identityGroups_post') ?
             <React.Fragment>
               <Menu.Item key="permissions" icon={this.permissionsIcon()}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
               <Menu.Divider/>
@@ -208,7 +206,7 @@ class CustomSider extends Component {
              null
           }
 
-          { (this.props.authorizations && this.authorizatorsSA(this.props.authorizations)) ?
+          { this.authorizatorsSA(this.props.authorizations) ?
             <React.Fragment>
               <Menu.Item key="triggers" icon={this.triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>
               <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
@@ -233,10 +231,5 @@ class CustomSider extends Component {
 }
 
 export default connect((state) => ({
-  authorizations: state.authorizations,
-  authorizationsWorkflow: state.authorizations.workflow,
-  authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsCheckpoint: state.authorizations.checkpoint,
-  authorizationsF5: state.authorizations.f5,
-  authorizationsVmware: state.authorizations.vmware,
+  authorizations: state.authorizations
 }))(CustomSider);

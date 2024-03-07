@@ -33,16 +33,16 @@ class Workflow extends React.Component {
   componentWillUnmount() {
   }
 
-  authorizatorsSA = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isSuperAdmin(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
   render() {
     return (
       <React.Fragment>
 
-        { this.authorizatorsSA(this.props.authorizations) || this.props.authorizationsWorkflow ?
+        { this.isAuthorized(this.props.authorizations, 'workflow') ?
           <React.Fragment>
             <Divider orientation="left" plain>
               CHECKPOINT AND INFOBLOX
@@ -63,8 +63,5 @@ class Workflow extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations,
-  authorizationsWorkflow: state.authorizations.workflow,
-
 }))(Workflow);
