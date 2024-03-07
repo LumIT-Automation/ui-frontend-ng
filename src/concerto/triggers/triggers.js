@@ -31,9 +31,9 @@ class Historys extends React.Component {
   componentWillUnmount() {
   }
 
-  authorizators = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isObjectEmpty(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
 
@@ -45,7 +45,7 @@ class Historys extends React.Component {
           value={this.state.vendor}
           style={{padding: 15, paddingTop: 40 }}
         >
-          {this.authorizators(this.props.authorizationsInfoblox) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox') ?
             <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
           :
             null
@@ -68,5 +68,5 @@ class Historys extends React.Component {
 
 
 export default connect((state) => ({
-  authorizationsInfoblox: state.authorizations.infoblox,
+  authorizations: state.authorizations,
 }))(Historys);

@@ -31,9 +31,9 @@ class Historys extends React.Component {
   componentWillUnmount() {
   }
 
-  authorizators = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isObjectEmpty(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
 
@@ -45,25 +45,25 @@ class Historys extends React.Component {
           value={this.state.vendor}
           style={{padding: 15, paddingTop: 40 }}
         >
-          {this.authorizators(this.props.authorizationsInfoblox) ?
+          { this.isAuthorized(this.props.authorizations, 'infoblox') ?
             <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
           :
             null
           }
 
-          { this.authorizators(this.props.authorizationsCheckpoint) ?
+          { this.isAuthorized(this.props.authorizations, 'checkpoint') ?
             <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
           :
             null
           }
 
-          { this.authorizators(this.props.authorizationsF5) ?
+          { this.isAuthorized(this.props.authorizations, 'f5') ?
             <Radio.Button value={'f5'}>f5</Radio.Button>
           :
             null
           }
 
-          { this.authorizators(this.props.authorizationsVmware) ?
+          { this.isAuthorized(this.props.authorizations, 'vmware') ?
             <Radio.Button value={'vmware'}>vmware</Radio.Button>
           :
             null
@@ -85,8 +85,5 @@ class Historys extends React.Component {
 
 
 export default connect((state) => ({
-  authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsCheckpoint: state.authorizations.checkpoint,
-  authorizationsF5: state.authorizations.f5,
-  authorizationsVmware: state.authorizations.vmware,
+  authorizations: state.authorizations,
 }))(Historys);

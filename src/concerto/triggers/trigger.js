@@ -693,5 +693,4 @@ export default connect((state) => ({
   error: state.concerto.err,
 
   triggersFetch: state.concerto.triggersFetch,
-
 }))(Manager);

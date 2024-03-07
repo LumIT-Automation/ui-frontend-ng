@@ -37,27 +37,16 @@ class Service extends React.Component {
   componentWillUnmount() {
   }
 
-  authorizatorsSA = a => {
+  isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
-    return author.isSuperAdmin(a)
+    return author.isAuthorized(authorizations, vendor, key)
   }
-
-  authorizators = a => {
-    let author = new Authorizators()
-    return author.isObjectEmpty(a)
-  }
-
-  workflowsAuthorizator = a => {
-    let author = new Authorizators()
-    return author.workflow(a)
-  }
-
 
   render() {
     return (
       <React.Fragment>
 
-        { this.props.authorizationsInfoblox && this.authorizators(this.props.authorizationsInfoblox) ?
+        { this.isAuthorized(this.props.authorizations, 'infoblox') ?
           <React.Fragment>
             <Divider orientation="left" plain >
               IPAM
@@ -71,7 +60,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsCheckpoint && this.authorizators(this.props.authorizationsCheckpoint) ?
+        { this.isAuthorized(this.props.authorizations, 'checkpoint') ?
           <React.Fragment>
             <Divider orientation="left" plain >
               FIREWALL
@@ -85,7 +74,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsF5 && this.authorizators(this.props.authorizationsF5) ?
+        { this.isAuthorized(this.props.authorizations, 'f5') ?
           <React.Fragment>
             <Divider orientation="left" plain>
               LOAD BALANCER
@@ -99,9 +88,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsVmware &&
-          (this.props.authorizationsVmware.any ||
-          (this.props.authorizationsVmware.template_post && this.authorizators(this.props.authorizationsVmware.template_post)) ) ?
+        { this.isAuthorized(this.props.authorizations, 'vmware', 'template_post') ?
           <React.Fragment>
             <Divider orientation="left" plain>
               VIRTUAL MACHINE
@@ -115,7 +102,7 @@ class Service extends React.Component {
           null
         }
 
-        { this.props.authorizationsProofpoint && this.authorizators(this.props.authorizationsProofpoint) ?
+        { this.isAuthorized(this.props.authorizations, 'proofpoint') ?
           <React.Fragment>
             <Divider orientation="left" plain>
               PROOFPOINT REPORT
@@ -136,13 +123,5 @@ class Service extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-
   authorizations: state.authorizations,
-  authorizationsWorkflow: state.authorizations.workflow,
-  authorizationsInfoblox: state.authorizations.infoblox,
-  authorizationsCheckpoint: state.authorizations.checkpoint,
-  authorizationsF5: state.authorizations.f5,
-  authorizationsVmware: state.authorizations.vmware,
-  authorizationsProofpoint: state.authorizations.proofpoint
-
 }))(Service);
