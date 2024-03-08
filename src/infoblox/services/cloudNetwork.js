@@ -319,7 +319,7 @@ class CloudNetwork extends React.Component {
         let error = Object.assign(data, {
           component: 'assignCloudNetwork',
           vendor: 'infoblox',
-          errorType: 'accountsAndProviders'
+          errorType: 'getNetworksError'
         })
         this.props.dispatch(err(error))
         await this.setState({
@@ -424,7 +424,7 @@ class CloudNetwork extends React.Component {
           let error = Object.assign(n, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
-            errorType: 'accountsAndProviders'
+            errorType: 'NetworkDeleteError'
           })
           this.props.dispatch(err(error))
           cloudNet.loading = false
@@ -767,7 +767,7 @@ class CloudNetwork extends React.Component {
           let error = Object.assign(n, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
-            errorType: 'accountsAndProviders'
+            errorType: 'networkDeleteError'
           })
           this.props.dispatch(err(error))
           cloudNet.loading = false
@@ -812,11 +812,11 @@ class CloudNetwork extends React.Component {
         await this.setState({cloudNetworks: cloudNetworks})
 
         let cn = await this.cloudNetworkAssign(body)
-        if (cn.status && cn.status !== 201 ) {
+        if (cn.status && cn.status !== 200 ) {
           let error = Object.assign(cn, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
-            errorType: 'accountsAndProviders'
+            errorType: 'networkAssignError'
           })
           this.props.dispatch(err(error))
           cloudNet.loading = false
@@ -885,7 +885,7 @@ class CloudNetwork extends React.Component {
           let error = Object.assign(cn, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
-            errorType: 'accountsAndProviders'
+            errorType: 'networkModifyError'
           })
           this.props.dispatch(err(error))
           cloudNet.loading = false
@@ -952,7 +952,7 @@ class CloudNetwork extends React.Component {
       let error = Object.assign(data, {
         component: 'assignCloudNetwork',
         vendor: 'infoblox',
-        errorType: 'accountsAndProviders'
+        errorType: 'accountModifyError'
       })
       this.props.dispatch(err(error))
       await this.setState({loading: false})
