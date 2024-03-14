@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
+import Authorizators from '../../_helpers/authorizators'
 import Modify from './modify'
 import PoolMembers from '../poolMembers/manager'
 import Delete from './delete'
@@ -117,6 +118,16 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
 
 
   render() {
@@ -150,7 +161,7 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_patch || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'pool_patch')) ?
               <Modify name={name} obj={obj} />
             :
               '-'
@@ -165,7 +176,7 @@ class List extends React.Component {
         key: 'members',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.poolMembers_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'poolMembers_get')) ?
               <PoolMembers name={name} obj={obj} />
             :
               '-'
@@ -180,7 +191,7 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.pool_delete || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'pool_delete')) ?
             <Delete name={name} obj={obj} />
             :
             '-'
@@ -213,6 +224,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   pools: state.f5.pools
 }))(List);

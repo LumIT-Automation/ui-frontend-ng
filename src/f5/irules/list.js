@@ -2,6 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
+import Authorizators from '../../_helpers/authorizators'
 //import Modify from './modify'
 import Irule from './detail'
 import Modify from './modify'
@@ -10,9 +11,6 @@ import Delete from './delete'
 import { Table, Input, Button, Space } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined } from '@ant-design/icons';
-
-
-
 
 
 class List extends React.Component {
@@ -119,6 +117,15 @@ class List extends React.Component {
     this.setState({ searchText: '' });
   };
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
 
 
   render() {
@@ -148,11 +155,11 @@ class List extends React.Component {
         key: 'modify',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.irule_modify || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'irule_patch')) ?
+              <Modify name={name} obj={obj} />
             :
-            '-'
-          }
+              '-'
+            }
           </Space>
         ),
       },
@@ -163,12 +170,12 @@ class List extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.irule_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'irule_delete')) ?
+              <Delete name={name} obj={obj} />
             :
-            '-'
-          }
-          </Space>
+              '-'
+            }
+            </Space>
         ),
       }
     ];
@@ -192,6 +199,6 @@ class List extends React.Component {
 }
 
 export default connect((state) => ({
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   irules: state.f5.irules,
 }))(List);

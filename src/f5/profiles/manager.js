@@ -5,6 +5,7 @@ import { Space, Alert } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import Authorizators from '../../_helpers/authorizators'
 
 import {
   err
@@ -112,6 +113,16 @@ class Manager extends React.Component {
     return r
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
 
   render() {
 
@@ -125,11 +136,11 @@ class Manager extends React.Component {
       <Space direction='vertical' style={{width: '100%', justifyContent: 'center'}}>
         <br/>
         { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-           this.props.authorizations && (this.props.authorizations.profiles_post || this.props.authorizations.any) ?
+          (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'profiles_post')) ? 
             <Add/>
-            :
-            null
           :
+            null
+        :
           null
         }
 
@@ -151,7 +162,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
   asset: state.f5.asset,

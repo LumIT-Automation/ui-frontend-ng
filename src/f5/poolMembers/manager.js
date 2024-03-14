@@ -5,6 +5,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import Authorizators from '../../_helpers/authorizators'
 
 import {
   err
@@ -525,6 +526,16 @@ class PoolDetails extends React.Component {
     await this.setState({members: list})
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
 
   //Close and Error
   closeModal = () => {
@@ -704,7 +715,7 @@ class PoolDetails extends React.Component {
         key: 'delete',
         render: (name, obj)  => (
           <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.poolMember_delete || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'poolMember_delete')) ? 
               <Delete name={name} obj={obj} poolName={this.props.obj.name} />
             :
               '-'
@@ -739,7 +750,7 @@ class PoolDetails extends React.Component {
           maskClosable={false}
         >
           { ((this.props.asset) && (this.props.asset.id && this.props.partition) ) ?
-             this.props.authorizations && (this.props.authorizations.poolMembers_post || this.props.authorizations.any) ?
+             (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'poolMembers_post')) ? 
               <React.Fragment>
                 <br/>
                 <Add obj={this.props.obj}/>
@@ -774,7 +785,7 @@ class PoolDetails extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
   asset: state.f5.asset,

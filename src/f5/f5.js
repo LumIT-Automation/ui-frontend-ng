@@ -7,6 +7,7 @@ import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
 
 import Rest from '../_helpers/Rest'
 import Error from '../concerto/error'
+import Authorizators from '../_helpers/authorizators'
 
 import {
   err
@@ -50,8 +51,12 @@ class F5 extends React.Component {
   componentDidMount() {
 
     this.props.dispatch(resetObjects())
-    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.assetsGet()
+    if (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'assets_get')) {
+      if (!this.props.error) {
+        if (!this.props.assets) {
+          this.assetsGet()
+        }
+      }
     }
   }
 
@@ -116,6 +121,16 @@ class F5 extends React.Component {
     this.props.dispatch(virtualServersFetch(true))
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
   render() {
 
     let errors = () => {
@@ -131,7 +146,7 @@ class F5 extends React.Component {
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           <Tabs type="card">
-            { this.props.authorizations && (this.props.authorizations.nodes_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'nodes_get')) ? 
               <React.Fragment>
                 {this.props.nodesLoading ?
                   <TabPane key="Nodes" tab="Nodes">
@@ -147,7 +162,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.monitors_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'monitors_get')) ? 
               <React.Fragment>
                 {this.props.monitorsLoading ?
                   <TabPane key="Monitors" tab="Monitors">
@@ -163,7 +178,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.pools_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'pools_get')) ? 
               <React.Fragment>
                 {this.props.poolsLoading ?
                   <TabPane key="Pools" tab="Pools">
@@ -179,7 +194,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.snatPools_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'snatPools_get')) ? 
               <React.Fragment>
                 {this.props.snatPoolsLoading ?
                   <TabPane key="SnatPools" tab="SnatPools">
@@ -195,7 +210,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.irules_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'irules_get')) ? 
               <React.Fragment>
                 {this.props.irulesLoading ?
                   <TabPane key="Irules" tab="Irules">
@@ -211,7 +226,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.profiles_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'profiles_get')) ? 
               <React.Fragment>
                 {this.props.profilesLoading ?
                   <TabPane key="Profiles" tab="Profiles">
@@ -227,7 +242,7 @@ class F5 extends React.Component {
               null
             }
 
-            { this.props.authorizations && (this.props.authorizations.virtualServers_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'virtualServers_get')) ? 
               <React.Fragment>
                 {this.props.virtualServersLoading ?
                   <TabPane key="Virtual Servers" tab="Virtual Servers">
@@ -256,7 +271,7 @@ class F5 extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
   nodesLoading: state.f5.nodesLoading,
