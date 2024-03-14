@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import Authorizators from '../../_helpers/authorizators'
 
 import {
   err
@@ -27,7 +28,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
+    if (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'proofpoint', 'assets_get')) {
       if (!this.props.err) {
         if (!this.props.assets) {
           this.assetsGet()
@@ -65,6 +66,16 @@ class Manager extends React.Component {
     await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token)
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
 
 
   render() {
@@ -94,7 +105,7 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
   assets: state.proofpoint.assets,

@@ -3855,7 +3855,6 @@ class CreateVmService extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.vmware,
   error: state.concerto.err,
 
   asset: state.vmware.asset,

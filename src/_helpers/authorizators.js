@@ -3,12 +3,10 @@
 class Authorizators {
 
   isAuthorized = (authorizations, vendor, key) => {
-    console.log('helper - authorizations: ', authorizations)
-
+    
     try {
       let obj = Object.assign({}, authorizations[vendor])
-      console.log('!!!!!!!!!', obj)
-
+      console.log(obj)
       if (authorizations && vendor && key) {
         if (key in obj || 'any' in obj) {
           return true
@@ -18,7 +16,7 @@ class Authorizators {
         }
       }
       else if (authorizations && vendor) {
-        if (vendor in authorizations) {
+        if (vendor in authorizations && Object.keys(obj).length > 0) {
           return true
         }
         else {

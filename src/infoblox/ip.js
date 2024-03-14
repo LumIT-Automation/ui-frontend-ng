@@ -128,25 +128,7 @@ class Ip extends React.Component {
         dataIndex: 'network',
         key: 'network',
         ...this.getColumnSearchProps('network'),
-      },
-
-/*
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.node_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),
       }
-      */
     ];
 
 
@@ -185,7 +167,6 @@ class Ip extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.infoblox,
 
   containers: state.infoblox.containers
 }))(Ip);

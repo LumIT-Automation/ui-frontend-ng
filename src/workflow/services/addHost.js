@@ -656,7 +656,6 @@ class AddHost extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.checkpoint,
   error: state.concerto.err,
 
   checkpointAssets: state.checkpoint.assets,
