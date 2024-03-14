@@ -125,7 +125,6 @@ class Manager extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.infoblox,
   error: state.concerto.err,
 
   asset: state.infoblox.asset,

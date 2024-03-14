@@ -152,30 +152,12 @@ class List extends React.Component {
         align: 'center',
         dataIndex: 'modify',
         key: 'modify',
-        /*render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.ipv4_patch || this.props.authorizations.any) ?
-              <Modify name={name} obj={obj} />
-            :
-              '-'
-            }
-          </Space>
-        ),*/
       },
       {
         title: 'release',
         align: 'center',
         dataIndex: 'release',
         key: 'release',
-        /*render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.ipv4_delete || this.props.authorizations.any) ?
-              <Delete name={name} obj={obj} />
-            :
-              '-'
-            }
-          </Space>
-        ),*/
       },
     ];
 
@@ -203,5 +185,4 @@ class List extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.infoblox,
 }))(List);

@@ -1,7 +1,9 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
+import Authorizators from '../../_helpers/authorizators'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 
@@ -588,6 +590,16 @@ class RequestIp extends React.Component {
     //this.setState({response: response})
   }
 
+  authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
   //Close and Error
   closeModal = () => {
     this.setState({
@@ -703,7 +715,7 @@ class RequestIp extends React.Component {
         ),
       },
       ...(
-           (this.props.authorizations && (this.props.authorizations.ranges_get || this.props.authorizations.any) ) ?
+          (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'infoblox', 'ranges_get')) ?
           [
             {
               title: 'Range',
@@ -1234,7 +1246,7 @@ class RequestIp extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.infoblox,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
   assets: state.infoblox.assets,

@@ -97,9 +97,7 @@ class NetworksTree extends React.Component {
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
 
   asset: state.infoblox.asset,
-
   tree: state.infoblox.tree
 }))(NetworksTree);
