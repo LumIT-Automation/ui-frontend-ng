@@ -477,6 +477,21 @@ class CreateF5Service extends React.Component {
           "defaultsFrom": "/Common/http"
         }
       )
+      if (this.state.certificate && this.state.key) {
+        b.data.profiles.push(
+          {
+            "name": `client-ssl_${serviceName}`,
+            "type": "client-ssl",
+            "certName": `cert_${serviceName}`,
+            "cert": btoa(this.state.certificate),
+            "keyName": `key_${serviceName}`,
+            "key":  btoa(this.state.key),
+            "chain": "",
+            "chainName": "",
+            "context": "clientside"
+          }
+        )
+      }
     }
 
     if ((this.state.monitorType === 'http') || (this.state.monitorType === 'https')) {
@@ -522,7 +537,7 @@ class CreateF5Service extends React.Component {
         error = Object.assign(error, {
           component: 'createVs',
           vendor: 'f5',
-          errorType: 'l4ServiceCreateError'
+          errorType: 'ServiceCreateError'
         })
         this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
