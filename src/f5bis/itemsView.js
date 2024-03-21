@@ -8,7 +8,7 @@ import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/ico
 
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
-import CommonFunctions from '../_helpers/commonFunctions';
+import CommonFunctions from '../_helpers/commonFunctions'
 import Error from '../concerto/error'
 
 import {

@@ -36,7 +36,7 @@ class Validators {
   }
 
   port = port => {
-    if (!isNaN(port) && port >= 0 && port < 65536) {
+    if (port !== '' && !isNaN(port) && port >= 0 && port < 65536) {
       return true
     }
     else {

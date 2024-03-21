@@ -6,6 +6,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
+import CommonFunctions from '../../_helpers/commonFunctions'
 import Error from '../../concerto/error'
 
 import {
@@ -30,26 +31,21 @@ class CreateF5Service extends React.Component {
       snats: ['automap', 'none', 'snat'],
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypes: ['tcp-half-open', 'http', 'https'],
-      request: {
-        serviceName: '',
-        snat: '',
-        destination: '',
-        destinationPort: '',
-        lbMethod: '',
-        monitorType: ''
-      },
+
+      serviceName: '',
+      routeDomain: '',
+      source: '0.0.0.0/0',
+      snat: '',
+      destination: '',
+      destinationPort: '',
+      lbMethod: '',
+      monitorType: '',
+      nodes: [{id:1}],
       errors: {},
     };
   }
 
   componentDidMount() {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let list = []
-    list.push({id: 1})
-    request.nodes = list
-    request.routeDomain = ''
-    request.source = '0.0.0.0/0'
-    this.setState({request: request})
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -57,25 +53,16 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+    console.log('PROPS', this.props)
+    console.log('STATE', this.state)
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
       }
     }
-    if ( (this.state.request && !this.state.request.nodes) || this.state.request.nodes.length <= 0) {
-      let list = []
-      list.push({id: 1})
-      request.nodes = list
-      this.setState({request: request})
-    }
-    if (!('routeDomain' in request)) {
-      request.routeDomain = ''
-      this.setState({request: request})
-    }
-    if (!('source' in request)) {
-      request.source = '0.0.0.0/0'
-      this.setState({request: request})
+    if ( !this.state.nodes || this.state.nodes.length <= 0) {
+      let list = [{id: 1}]
+      this.setState({nodes: list})
     }
   }
 
@@ -89,7 +76,7 @@ class CreateF5Service extends React.Component {
   main = async () => {
     try {
       await this.setState({routeDomainsLoading: true})
-      let routeDomainsFetched = await this.routeDomainsFetch()
+      let routeDomainsFetched = await this.dataGet('routedomains', this.props.partition)
       await this.setState({routeDomainsLoading: false})
       if (routeDomainsFetched.status && routeDomainsFetched.status !== 200 ) {
         let error = Object.assign(routeDomainsFetched, {
@@ -102,11 +89,10 @@ class CreateF5Service extends React.Component {
       }
       else {
         await this.setState({routeDomains: routeDomainsFetched.data.items})
-        //this.props.dispatch(routeDomains( routeDomainsFetched ))
       }
 
       await this.setState({dataGroupsLoading: true})
-      let dataGroupsCommon = await this.dataGroupsFetch('Common')
+      let dataGroupsCommon = await this.dataGet('datagroups', 'Common')
       await this.setState({dataGroupsLoading: false})
       if (dataGroupsCommon.status && dataGroupsCommon.status !== 200 ) {
         let error = Object.assign(dataGroupsCommon, {
@@ -125,7 +111,7 @@ class CreateF5Service extends React.Component {
 
       if (this.props.partition !== 'Common') {
         await this.setState({dataGroupsLoading: true})
-        let dataGroupsPartition = await this.dataGroupsFetch(this.props.partition)
+        let dataGroupsPartition = await this.dataGet('datagroups', this.props.partition)
         await this.setState({dataGroupsLoading: false})
         if (dataGroupsPartition.status && dataGroupsPartition.status !== 200 ) {
           let error = Object.assign(dataGroupsPartition, {
@@ -153,7 +139,7 @@ class CreateF5Service extends React.Component {
 
 
   //FETCH
-  routeDomainsFetch = async () => {
+  dataGet = async (entity, partition) => {
     let r
     let rest = new Rest(
       "GET",
@@ -164,22 +150,12 @@ class CreateF5Service extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/routedomains/`, this.props.token)
-    return r
-  }
-
-  dataGroupsFetch = async partition => {
-    let r
-    let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`f5/${this.props.asset.id}/${partition}/datagroups/internal/`, this.props.token)
+    if (entity = 'datagroups') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/datagroups/internal/`, this.props.token)
+    }
+    else {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${entity}/`, this.props.token)
+    }
     return r
   }
 
@@ -187,22 +163,19 @@ class CreateF5Service extends React.Component {
   //SETTERS
 
   set = async (value, key) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request[key] = value
-    await this.setState({request: request})
-
+    try {
+      await this.setState({[key]: value})
+    }
+    catch (error) {
+      console.log(error)
+    }
+    
     if (key === 'snat' && value !== 'snat') {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      delete request.code
-      delete request.snatPoolAddress
-      await this.setState({dgChoices: [], dgName: null, request: request})
+      await this.setState({dgChoices: [], dgName: null, code: '', snatPoolAddress: ''})
     }
 
     if (key === 'monitorType' && value === 'tcp-half-open') {
-      request = JSON.parse(JSON.stringify(this.state.request))
-      delete request.monitorSendString
-      delete request.monitorReceiveString
-      await this.setState({request: request})
+      await this.setState({monitorSendString: '', monitorReceiveString: ''})
     }
 
   }
@@ -214,129 +187,87 @@ class CreateF5Service extends React.Component {
   dgNameSet = async e => {
     await this.setState({dgName: e})
     let irule = `when CLIENT_ACCEPTED {\n\tif {[findclass [IP::client_addr] ${this.state.dgName}] eq "" } {\n\tsnat none\n}\n}`
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.code = irule
-    await this.setState({request: request})
+    await this.setState({code: irule})
   }
 
   codeSet = async e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    if (e.target.value === '') {
-      delete request.code
-    }
-    else {
-      request.code = e.target.value
-    }
-    await this.setState({request: request})
+    await this.setState({code: e.target.value})
   }
 
   nodeAdd = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = request.nodes
-    let id = 0
-    let n = 0
-
-    if (nodes) {
-      nodes.forEach(node => {
-        if (node.id > id) {
-          id = node.id
-        }
-      });
-      n = id + 1
-
-      let node = {id: n}
-      nodes.push(node)
-      request.nodes = nodes
-
-      await this.setState({request: request})
-    }
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.itemAdd(nodes)
+    await this.setState({nodes: list})
   }
 
-  nodeRemove = async r => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
-
-    let list = nodes.filter(n => {
-      return r !== n.id
-    })
-
-    request.nodes = list
-    await this.setState({request: request})
+  nodeRemove = async node => {
+    console.log(node)
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.itemRemove(node, nodes)
+    await this.setState({nodes: list})
   }
 
+
+  
   nodeAddressSet = async (nodeId, e) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
 
     let index = nodes.findIndex((obj => obj.id === nodeId))
     nodes[index].address = e.target.value
 
-    request.nodes = nodes
-    await this.setState({request: request})
+    await this.setState({nodes: nodes})
   }
 
   nodeNameSet = async (nodeId, e) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
 
     let index = nodes.findIndex((obj => obj.id === nodeId))
     nodes[index].name = e.target.value
 
-    request.nodes = nodes
-    await this.setState({request: request})
+   await this.setState({nodes: nodes})
   }
 
   nodePortSet = async (nodeId, p) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
-
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
     let index = nodes.findIndex((obj => obj.id === nodeId))
     nodes[index].port = p.target.value
 
-    request.nodes = nodes
-    await this.setState({request: request})
+    await this.setState({nodes: nodes})
   }
+
 
 
   //VALIDATION
   validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let nodes = JSON.parse(JSON.stringify(this.state.request.nodes))
+    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
 
-    for (const [key, value] of Object.entries(request)) {
-      
-      if (key === 'nodes' || key === 'source' || key === 'routeDomain') {
-        continue
-      }
-      else {
-        if (value !== '') {
-          if (key === 'destination' && !validators.ipv4(request.destination)) {
-            errors[`${key}Error`] = true
-            this.setState({errors: errors})
-          }
-          else if (key === 'destinationPort' && !validators.port(request.destinationPort)) {
-            errors[`${key}Error`] = true
-            this.setState({errors: errors})
-          }
-          else {
-            delete errors[`${key}Error`]
-            this.setState({errors: errors})
-          }
-        }
-        else {
-          errors[`${key}Error`] = true
-          this.setState({errors: errors})
-        }
-      }
+
+    if (!this.state.serviceName) {
+      errors.serviceNameError = true
+      await this.setState({errors: errors})
+    } 
+    else {
+      delete errors.serviceNameError
+      this.setState({errors: errors})
     }
 
+    if (!this.state.snat) {
+      errors.snatError = true
+      await this.setState({errors: errors})
+    } 
+    else {
+      delete errors.snatError
+      this.setState({errors: errors})
+    }
 
-    if (request.snat && request.snat === 'snat') {
-      if (!request.snatPoolAddress || !validators.ipv4(request.snatPoolAddress)) {
+    if (this.state.snat === 'snat') {
+      if (!this.state.snatPoolAddress || !validators.ipv4(this.state.snatPoolAddress)) {
         errors.snatPoolAddressError = true
-        this.setState({errors: errors})
+        await this.setState({errors: errors})
       }
       else {
         delete errors.snatPoolAddressError
@@ -347,8 +278,8 @@ class CreateF5Service extends React.Component {
         let ips = []
         let list = []
 
-        ips.push(this.state.request.destination)
-        this.state.request.nodes.forEach((node, i) => {
+        ips.push(this.state.destination)
+        this.state.nodes.forEach((node, i) => {
           ips.push(node.address)
         })
 
@@ -377,7 +308,7 @@ class CreateF5Service extends React.Component {
           this.setState({errors: errors})
         }
 
-        if (!this.state.request.code){
+        if (!this.state.code){
           errors.codeError = true
           this.setState({errors: errors})
         }
@@ -388,7 +319,43 @@ class CreateF5Service extends React.Component {
       }
     }
 
-    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorSendString) {
+    if (!validators.ipv4(this.state.destination)) {
+      errors.destinationError = true
+      await this.setState({errors: errors})
+    } 
+    else {
+      delete errors.destinationError
+      this.setState({errors: errors})
+    }
+
+    if (!validators.port(this.state.destinationPort)) {
+      errors.destinationPortError = true
+      await this.setState({errors: errors})
+    }
+    else {
+      delete errors.destinationPortError
+      this.setState({errors: errors})
+    }
+
+    if (!this.state.lbMethod) {
+      errors.lbMethodError = true
+      await this.setState({errors: errors})
+    } 
+    else {
+      delete errors.lbMethodError
+      this.setState({errors: errors})
+    }
+
+    if (!this.state.monitorType) {
+      errors.monitorTypeError = true
+      await this.setState({errors: errors})
+    } 
+    else {
+      delete errors.monitorTypeError
+      this.setState({errors: errors})
+    }
+
+    if ((this.state.monitorType === 'http' || this.state.monitorType === 'https') && !this.state.monitorSendString) {
       errors.monitorSendStringError = true
       this.setState({errors: errors})
     }
@@ -397,7 +364,7 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if ((request.monitorType === 'http' || request.monitorType === 'https') && !request.monitorReceiveString) {
+    if ((this.state.monitorType === 'http' || this.state.monitorType === 'https') && !this.state.monitorReceiveString) {
       errors.monitorReceiveStringError = true
       this.setState({errors: errors})
     }
@@ -456,28 +423,28 @@ class CreateF5Service extends React.Component {
 
   //DISPOSAL ACTION
   createService = async () => {
-    let serviceName = this.state.request.serviceName
+    let serviceName = this.state.serviceName
 
     let b = {}
     b.data = {
       "virtualServer": {
         "name": `vs_${serviceName}`,
         "type": this.props.type,
-        "snat": this.state.request.snat,
-        "routeDomainId": this.state.request.routeDomain,
-        "destination": `${this.state.request.destination}:${this.state.request.destinationPort}`,
+        "snat": this.state.snat,
+        "routeDomainId": this.state.routeDomain,
+        "destination": `${this.state.destination}:${this.state.destinationPort}`,
         "mask": '255.255.255.255',
-        "source": this.state.request.source
+        "source": this.state.source
       },
       "profiles": [],
       "pool": {
         "name": `pool_${serviceName}`,
-        "loadBalancingMode": this.state.request.lbMethod,
-        "nodes": this.state.request.nodes
+        "loadBalancingMode": this.state.lbMethod,
+        "nodes": this.state.nodes
       },
       "monitor": {
         "name": `mon_${serviceName}`,
-        "type": this.state.request.monitorType
+        "type": this.state.monitorType
       }
     }
 
@@ -512,26 +479,26 @@ class CreateF5Service extends React.Component {
       )
     }
 
-    if ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) {
-      b.data.monitor.send = this.state.request.monitorSendString
-      b.data.monitor.recv = this.state.request.monitorReceiveString
+    if ((this.state.monitorType === 'http') || (this.state.monitorType === 'https')) {
+      b.data.monitor.send = this.state.monitorSendString
+      b.data.monitor.recv = this.state.monitorReceiveString
     }
 
-    if (this.state.request.snat === 'snat') {
+    if (this.state.snat === 'snat') {
       b.data.snatPool = {
         "name": `snat_${serviceName}`,
         "members": [
-          this.state.request.snatPoolAddress
+          this.state.snatPoolAddress
         ]
       }
     }
 
-    if (this.state.request.code) {
-      if ( (this.state.request.code !== '') || (this.state.request.code !== undefined) ) {
+    if (this.state.code) {
+      if ( (this.state.code !== '') || (this.state.code !== undefined) ) {
         b.data.irules = [
           {
             "name": `irule_${serviceName}`,
-            "code": this.state.request.code
+            "code": this.state.code
           }
         ]
       }
@@ -574,7 +541,6 @@ class CreateF5Service extends React.Component {
     this.setState({
       visible: false,
       response: false,
-      request: {},
       dgChoices: null,
       dgName: null,
       dr: false,
@@ -597,7 +563,7 @@ class CreateF5Service extends React.Component {
         case 'input':
           return (
             <Input
-              defaultValue={obj ? obj[key] : this.state.request ? this.state.request[key] : ''}
+              defaultValue={obj ? obj[key] : ''}
               style=
               {this.state.errors[`${key}Error`] ?
                 {borderColor: 'red'}
@@ -605,7 +571,6 @@ class CreateF5Service extends React.Component {
                 {}
               }
               onChange={event => this.set(event.target.value, key)}
-              onPressEnter={() => this.validation(action)}
             />
           )
           break;
@@ -614,7 +579,7 @@ class CreateF5Service extends React.Component {
           return (
             <Input.TextArea
               rows={7}
-              value={this.state.request[`${key}`]}
+              value={this.state[`${key}`]}
               onChange={event => this.set(event.target.value, key)}
               style=
               { this.state.errors[`${key}Error`] ?
@@ -629,7 +594,7 @@ class CreateF5Service extends React.Component {
         case 'select':
           return (
             <Select
-              value={this.state.request[`${key}`]}
+              value={this.state[`${key}`]}
               showSearch
               style=
               { this.state.errors[`${key}Error`] ?
@@ -751,7 +716,7 @@ class CreateF5Service extends React.Component {
                     </Row>
                     <br/>
 
-                    { this.state.request.snat === 'snat' ?
+                    { this.state.snat === 'snat' ?
                       <React.Fragment>
                         <Row>
                           <Col offset={6} span={3}>
@@ -767,7 +732,7 @@ class CreateF5Service extends React.Component {
                       null
                     }
 
-                    { (this.state.request.snat === 'snat' && this.state.dgChoices && this.state.dgChoices.length > 0) ?
+                    { (this.state.snat === 'snat' && this.state.dgChoices && this.state.dgChoices.length > 0) ?
                       <React.Fragment>
                         <Row>
                           <Col offset={3} span={6}>
@@ -840,7 +805,7 @@ class CreateF5Service extends React.Component {
                             { this.state.errors.codeError ?
                               <TextArea
                                 rows={5}
-                                value={this.state.request.code}
+                                value={this.state.code}
                                 style={{width: '100%', border: `1px solid red`}}
                                 name="code"
                                 id='code'
@@ -849,7 +814,7 @@ class CreateF5Service extends React.Component {
                             :
                               <TextArea
                                 rows={5}
-                                value={this.state.request.code}
+                                value={this.state.code}
                                 style={{width: '100%'}}
                                 name="code"
                                 id='code'
@@ -933,7 +898,7 @@ class CreateF5Service extends React.Component {
                   </Row>
                   <br/>
 
-                { ((this.state.request.monitorType === 'http') || (this.state.request.monitorType === 'https')) ?
+                { ((this.state.monitorType === 'http') || (this.state.monitorType === 'https')) ?
                   <React.Fragment>
                     <br/>
                     <Row>
@@ -975,8 +940,8 @@ class CreateF5Service extends React.Component {
                 </Row>
                 <br/>
 
-                { this.state.request.nodes ?
-                  this.state.request.nodes.map((n, i) => {
+                { this.state.nodes ?
+                  this.state.nodes.map((n, i) => {
 
                   return (
                     <React.Fragment>
@@ -1054,7 +1019,7 @@ class CreateF5Service extends React.Component {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
                         </Col>
                         <Col span={16}>
-                          <Button type="danger" shape='round' onClick={() => this.nodeRemove(n.id)}>
+                          <Button type="danger" shape='round' onClick={() => this.nodeRemove(n)}>
                             -
                           </Button>
                         </Col>
@@ -1071,7 +1036,12 @@ class CreateF5Service extends React.Component {
 
                 <Row>
                   <Col offset={8} span={16}>
-                    <Button type="primary" shape='round' onClick={() => this.validation()} >
+                    <Button 
+                      type="primary" 
+                      shape='round'
+                      disabled = {this.state.loading ? true : false} 
+                      onClick={() => this.validation()} 
+                    >
                       Create {this.props.type} Load Balancer
                     </Button>
                   </Col>

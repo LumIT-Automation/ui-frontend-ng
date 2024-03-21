@@ -10,7 +10,6 @@ const authorizationsSlice = createSlice({
     reducers: {
 
       authorizations: (state, action) => {
-        console.log('store - authorizations: ', action.payload)
         for (const l in action.payload.data) {
           state[l] = action.payload.data[l].data.items
         }

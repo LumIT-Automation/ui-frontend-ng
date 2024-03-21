@@ -92,19 +92,19 @@ class Manager extends React.Component {
         <Row>
 
           <Col span={4} offset={2} >
-            <CreateVs type='L7'/>
+            <CreateVs vendor='f5' type='L7'/>
           </Col>
 
           <Col span={4} offset={2} >
-            <CreateVs type='L4'/>
+            <CreateVs vendor='f5' type='L4'/>
           </Col>
 
           <Col span={4} offset={2}>
-            <F5ObjectDelete f5object='virtualserver'/>
+            <F5ObjectDelete vendor='f5' f5object='virtualserver'/>
           </Col>
 
           <Col span={4} offset={2}>
-            <F5ObjectDelete f5object='node'/>
+            <F5ObjectDelete vendor='f5' f5object='node'/>
           </Col>
         </Row>
 

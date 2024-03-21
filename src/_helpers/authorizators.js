@@ -6,7 +6,6 @@ class Authorizators {
     
     try {
       let obj = Object.assign({}, authorizations[vendor])
-      console.log(obj)
       if (authorizations && vendor && key) {
         if (key in obj || 'any' in obj) {
           return true
