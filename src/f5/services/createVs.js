@@ -28,6 +28,7 @@ class CreateF5Service extends React.Component {
       visible: false,
       dr: false,
       routeDomains: [],
+      existentNodes: [],
       snats: ['automap', 'none', 'snat'],
       lbMethods: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       monitorTypes: ['tcp-half-open', 'http', 'https'],
@@ -108,7 +109,6 @@ class CreateF5Service extends React.Component {
         await this.setState({dataGroupsTypeIp: list})
       }
 
-
       if (this.props.partition !== 'Common') {
         await this.setState({dataGroupsLoading: true})
         let dataGroupsPartition = await this.dataGet('datagroups', this.props.partition)
@@ -131,6 +131,24 @@ class CreateF5Service extends React.Component {
           await this.setState({dataGroupsTypeIp: dgCommon})
         }
       }
+
+      await this.setState({nodesLoading: true})
+      let nodesFetched = await this.dataGet('nodes', this.props.partition)
+      await this.setState({nodesLoading: false})
+      if (nodesFetched.status && nodesFetched.status !== 200 ) {
+        let error = Object.assign(nodesFetched, {
+          component: 'createVs',
+          vendor: 'f5',
+          errorType: 'nodesError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+      else {
+        await this.setState({existentNodes: nodesFetched.data.items})
+      }
+
+
     }
     catch (error) {
       console.log(error)
@@ -140,6 +158,7 @@ class CreateF5Service extends React.Component {
 
   //FETCH
   dataGet = async (entity, partition) => {
+    console.log(entity)
     let r
     let rest = new Rest(
       "GET",
@@ -150,8 +169,11 @@ class CreateF5Service extends React.Component {
         r = error
       }
     )
-    if (entity = 'datagroups') {
+    if (entity === 'datagroups') {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/datagroups/internal/`, this.props.token)
+    }
+    else if (entity === 'nodes') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/${entity}/`, this.props.token)
     }
     else {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${entity}/`, this.props.token)
@@ -588,7 +610,6 @@ class CreateF5Service extends React.Component {
               onChange={event => this.set(event.target.value, key)}
             />
           )
-          break;
 
         case 'textArea':
           return (
