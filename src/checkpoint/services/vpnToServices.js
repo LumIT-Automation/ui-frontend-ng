@@ -186,7 +186,7 @@ class VpnToServices extends React.Component {
     let b = {}
 
     b.data = {
-      "name": this.state.name + ' Access Role',
+      "name": this.state.name,
     }
 
 
