@@ -1,7 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Checkbox } from 'antd'
+import { Modal, Alert, Row, Col, Input, Result, Space, Radio, Button, Select, Spin, Divider, Checkbox, Table } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
@@ -24,6 +24,9 @@ class CreateF5Service extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.myRefs = {};
+
     this.state = {
       visible: false,
       dr: false,
@@ -54,8 +57,9 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('PROPS', this.props)
-    console.log('STATE', this.state)
+    console.log(this.myRefs)
+    console.log(this.state.nodes)
+    console.log('update')
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
@@ -69,6 +73,86 @@ class CreateF5Service extends React.Component {
 
   componentWillUnmount() {
   }
+
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
+      }
+      catch (error){
+
+      }
+    },
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
+    },
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
+    }
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
+
+  handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    this.setState({ searchText: '' });
+  };
 
   details = () => {
     this.setState({visible: true})
@@ -184,20 +268,110 @@ class CreateF5Service extends React.Component {
 
   //SETTERS
 
-  set = async (value, key) => {
-    try {
-      await this.setState({[key]: value})
+  set = async (value, key, obj) => {
+
+    if (key === 'routeDomain') {
+      await this.setState({routeDomain: value})
     }
-    catch (error) {
-      console.log(error)
+
+    else if (key === 'snat') {
+      console.log('ddddd')
+      await this.setState({snat: value})
     }
     
-    if (key === 'snat' && value !== 'snat') {
+    else if (key === 'snat' && value !== 'snat') {
       await this.setState({dgChoices: [], dgName: null, code: '', snatPoolAddress: ''})
     }
 
-    if (key === 'monitorType' && value === 'tcp-half-open') {
+    else if (key === 'monitorType') {
+      await this.setState({monitorType: value})
+    }
+
+    else if (key === 'monitorType' && value === 'tcp-half-open') {
       await this.setState({monitorSendString: '', monitorReceiveString: ''})
+    }
+
+    if (key === 'address') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${obj.id}_address`]
+      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+      console.log(nodes)
+      let node = nodes.find(n => n.id === obj.id)
+      console.log(node)
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      node.address = value
+      console.log(node)
+      console.log(this.state.nodes)
+
+      await this.setState({nodes: nodes})
+      ref = this.myRefs[`${obj.id}_address`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    else if (key === 'name') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${obj.id}_name`]
+      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+      let node = nodes.find(n => n.id === obj.id)
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      node.name = value
+
+      await this.setState({nodes: nodes})
+      ref = this.myRefs[`${obj.id}_name`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    else if (key === 'port') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`${obj.id}_port`]
+      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+      let node = nodes.find(n => n.id === obj.id)
+
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      node.port = value
+
+      await this.setState({nodes: nodes})
+      ref = this.myRefs[`${obj.id}_port`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    else {
+      await this.setState({[key]: value})
     }
 
   }
@@ -230,36 +404,6 @@ class CreateF5Service extends React.Component {
     let list = await commonFunctions.itemRemove(node, nodes)
     await this.setState({nodes: list})
   }
-
-
-  
-  nodeAddressSet = async (nodeId, e) => {
-    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
-
-    let index = nodes.findIndex((obj => obj.id === nodeId))
-    nodes[index].address = e.target.value
-
-    await this.setState({nodes: nodes})
-  }
-
-  nodeNameSet = async (nodeId, e) => {
-    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
-
-    let index = nodes.findIndex((obj => obj.id === nodeId))
-    nodes[index].name = e.target.value
-
-   await this.setState({nodes: nodes})
-  }
-
-  nodePortSet = async (nodeId, p) => {
-    let nodes = JSON.parse(JSON.stringify(this.state.nodes))
-    let index = nodes.findIndex((obj => obj.id === nodeId))
-    nodes[index].port = p.target.value
-
-    await this.setState({nodes: nodes})
-  }
-
-
 
   //VALIDATION
   validationCheck = async () => {
@@ -581,6 +725,7 @@ class CreateF5Service extends React.Component {
       dgChoices: null,
       dgName: null,
       dr: false,
+      nodes: [],
       errors: {}
     })
   }
@@ -592,6 +737,14 @@ class CreateF5Service extends React.Component {
       if (this.props.error && this.props.error.component === 'createVs') {
         return <Error error={[this.props.error]} visible={true}/> 
       }
+    }
+
+    let randomKey = () => {
+      return Math.random().toString()
+    }
+
+    let returnCol = () => {
+      return columns
     }
     
     let createElement = (element, key, choices, obj, action) => {
@@ -668,6 +821,100 @@ class CreateF5Service extends React.Component {
         default:
       }
     }
+
+    const columns = [
+      {
+        title: 'Address',
+        align: 'center',
+        dataIndex: 'address',
+        key: 'address',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+              <Input
+                value={obj.address}
+                ref={ref => this.myRefs[`${obj.id}_address`] = ref}
+                style={
+                  obj.addressError ?
+                    {borderColor: 'red', textAlign: 'center', width: 200}
+                  :
+                    {textAlign: 'center', width: 200}
+                }
+                onChange={e => {
+                  this.set(e.target.value, 'address', obj)}
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+              <Input
+                value={obj.name}
+                ref={ref => this.myRefs[`${obj.id}_name`] = ref}
+                style={
+                  obj.nameError ?
+                    {borderColor: 'red', textAlign: 'center', width: 200}
+                  :
+                    {textAlign: 'center', width: 200}
+                }
+                onChange={e => {
+                  this.set(e.target.value, 'name', obj)}
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Port',
+        align: 'center',
+        dataIndex: 'port',
+        key: 'port',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+              <Input
+                value={obj.port}
+                ref={ref => this.myRefs[`${obj.id}_port`] = ref}
+                style={
+                  obj.portError ?
+                    {borderColor: 'red', textAlign: 'center', width: 200}
+                  :
+                    {textAlign: 'center', width: 200}
+                }
+                onChange={e => {
+                  this.set(e.target.value, 'port', obj)}
+                }
+              />
+            </React.Fragment>
+          )
+        },
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            <Button
+              type='danger'
+              onClick={(e) => this.nodeRemove(obj)}
+            >
+              -
+            </Button>
+          </Space>
+        ),
+      }
+    ];
 
     return (
       <React.Fragment>
@@ -913,7 +1160,6 @@ class CreateF5Service extends React.Component {
                     null
                   }
 
-
                   <Row>
                     <Col offset={5} span={3}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Load Balancing Methods:</p>
@@ -962,113 +1208,33 @@ class CreateF5Service extends React.Component {
                   null
                 }
 
-                <br/>
+                <Divider/>
 
                 <Row>
-                  <Col offset={2} span={6}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Add a node:</p>
-                  </Col>
-                  <Col span={16}>
-                    <Button type="primary" shape='round' onClick={() => this.nodeAdd()}>
-                      +
-                    </Button>
+                <Col offset={3} span={18}>
+                  <Radio.Group
+                    buttonStyle="solid"
+                  >
+                    <Radio.Button
+                      buttonStyle="solid"
+                      style={{marginLeft: 16 }}
+                      onClick={() => this.nodeAdd()}
+                    >
+                      Add node
+                    </Radio.Button>
+                  </Radio.Group>
+
+                  <Table
+                    columns={returnCol()}
+                    style={{width: '100%', padding: 15}}
+                    dataSource={this.state.nodes}
+                    bordered
+                    rowKey={randomKey}
+                    scroll={{x: 'auto'}}
+                    pagination={{ pageSize: 10 }}
+                  />
                   </Col>
                 </Row>
-                <br/>
-
-                { this.state.nodes ?
-                  this.state.nodes.map((n, i) => {
-
-                  return (
-                    <React.Fragment>
-                      <Row>
-                        <Col offset={6} span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                        </Col>
-                        <Col span={8}>
-                          { this.state.errors[n.id] && this.state.errors[n.id].addressError ?
-                            <Input
-                              key={i}
-                              defaultValue={n.address}
-                              style={{display: 'block', borderColor: 'red'}}
-                              onChange={e => this.nodeAddressSet(n.id, e)}
-                            />
-                          :
-                            <Input
-                              key={i}
-                              defaultValue={n.address}
-                              style={{display: 'block'}}
-                              onChange={e => this.nodeAddressSet(n.id, e)}
-                            />
-                          }
-                        </Col>
-                      </Row>
-
-                      <Row>
-                        <Col offset={6} span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                        </Col>
-                        <Col span={8}>
-                          { this.state.errors[n.id] && this.state.errors[n.id].nameError ?
-                            <Input
-                              key={i}
-                              defaultValue={n.name}
-                              style={{display: 'block', borderColor: 'red'}}
-                              onChange={e => this.nodeNameSet(n.id, e)}
-                            />
-                          :
-                            <Input
-                              key={i}
-                              defaultValue={n.name}
-                              style={{display: 'block'}}
-                              onChange={e => this.nodeNameSet(n.id, e)}
-                            />
-                          }
-                        </Col>
-                      </Row>
-
-                      <Row>
-                        <Col offset={6} span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
-                        </Col>
-                        <Col span={8}>
-                          { this.state.errors[n.id] && this.state.errors[n.id].portError ?
-                            <Input
-                              key={i}
-                              defaultValue={n.port}
-                              style={{display: 'block', borderColor: 'red'}}
-                              onChange={e => this.nodePortSet(n.id, e)}
-                            />
-                          :
-                            <Input
-                              key={i}
-                              defaultValue={n.port}
-                              style={{display: 'block'}}
-                              onChange={e => this.nodePortSet(n.id, e)}
-                            />
-                          }
-                        </Col>
-                      </Row>
-
-                      <Row>
-                        <Col offset={2} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove node:</p>
-                        </Col>
-                        <Col span={16}>
-                          <Button type="danger" shape='round' onClick={() => this.nodeRemove(n)}>
-                            -
-                          </Button>
-                        </Col>
-                      </Row>
-
-                      <br/>
-
-                    </React.Fragment>
-                  )
-                  })
-                  :
-                  null
-                }
 
                 <Row>
                   <Col offset={8} span={16}>
