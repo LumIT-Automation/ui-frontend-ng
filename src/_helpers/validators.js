@@ -5,6 +5,10 @@ class Validators {
   ipv4 = ipv4 => {
     const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
+    if (ipv4.includes('%')) {
+      ipv4 = ipv4.split('%')
+      ipv4 = ipv4[0] 
+    }
     if (validIpAddressRegex.test(ipv4)) {
       return true
     }

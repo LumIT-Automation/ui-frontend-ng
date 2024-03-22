@@ -57,9 +57,6 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.myRefs)
-    console.log(this.state.nodes)
-    console.log('update')
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
@@ -160,6 +157,23 @@ class CreateF5Service extends React.Component {
 
   main = async () => {
     try {
+
+      await this.setState({nodesLoading: true})
+      let nodesFetched = await this.dataGet('nodes', this.props.partition)
+      await this.setState({nodesLoading: false})
+      if (nodesFetched.status && nodesFetched.status !== 200 ) {
+        let error = Object.assign(nodesFetched, {
+          component: 'createVs',
+          vendor: 'f5',
+          errorType: 'nodesError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+      else {
+        await this.setState({existentNodes: nodesFetched.data.items})
+      }
+
       await this.setState({routeDomainsLoading: true})
       let routeDomainsFetched = await this.dataGet('routedomains', this.props.partition)
       await this.setState({routeDomainsLoading: false})
@@ -216,23 +230,6 @@ class CreateF5Service extends React.Component {
         }
       }
 
-      await this.setState({nodesLoading: true})
-      let nodesFetched = await this.dataGet('nodes', this.props.partition)
-      await this.setState({nodesLoading: false})
-      if (nodesFetched.status && nodesFetched.status !== 200 ) {
-        let error = Object.assign(nodesFetched, {
-          component: 'createVs',
-          vendor: 'f5',
-          errorType: 'nodesError'
-        })
-        this.props.dispatch(err(error))
-        return
-      }
-      else {
-        await this.setState({existentNodes: nodesFetched.data.items})
-      }
-
-
     }
     catch (error) {
       console.log(error)
@@ -242,7 +239,6 @@ class CreateF5Service extends React.Component {
 
   //FETCH
   dataGet = async (entity, partition) => {
-    console.log(entity)
     let r
     let rest = new Rest(
       "GET",
@@ -275,7 +271,6 @@ class CreateF5Service extends React.Component {
     }
 
     else if (key === 'snat') {
-      console.log('ddddd')
       await this.setState({snat: value})
     }
     
@@ -296,9 +291,7 @@ class CreateF5Service extends React.Component {
       let end = 0
       let ref = this.myRefs[`${obj.id}_address`]
       let nodes = JSON.parse(JSON.stringify(this.state.nodes))
-      console.log(nodes)
       let node = nodes.find(n => n.id === obj.id)
-      console.log(node)
 
       if (ref && ref.input) {
         start = ref.input.selectionStart
@@ -306,8 +299,7 @@ class CreateF5Service extends React.Component {
       }
 
       node.address = value
-      console.log(node)
-      console.log(this.state.nodes)
+      delete node.addressError
 
       await this.setState({nodes: nodes})
       ref = this.myRefs[`${obj.id}_address`]
@@ -333,6 +325,7 @@ class CreateF5Service extends React.Component {
       }
 
       node.name = value
+      delete node.nameError
 
       await this.setState({nodes: nodes})
       ref = this.myRefs[`${obj.id}_name`]
@@ -358,6 +351,7 @@ class CreateF5Service extends React.Component {
       }
 
       node.port = value
+      delete node.portError
 
       await this.setState({nodes: nodes})
       ref = this.myRefs[`${obj.id}_port`]
@@ -368,6 +362,15 @@ class CreateF5Service extends React.Component {
       }
 
       ref.focus()
+    }
+    else if (key === 'selectedNode') {
+      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+      let node = nodes.find(n => n.id === obj.id)
+      let existentNodes = JSON.parse(JSON.stringify(this.state.existentNodes))
+      let existentNode = existentNodes.find(n => n.address === value)
+      node.address = existentNode.address
+      node.name = existentNode.name
+      await this.setState({nodes: nodes})
     }
 
     else {
@@ -398,7 +401,6 @@ class CreateF5Service extends React.Component {
   }
 
   nodeRemove = async node => {
-    console.log(node)
     let nodes = JSON.parse(JSON.stringify(this.state.nodes))
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(node, nodes)
@@ -539,43 +541,45 @@ class CreateF5Service extends React.Component {
       this.setState({errors: errors})
     }
 
-    if (nodes.length > 0) {
-      nodes.forEach((node, i) => {
-        errors[node.id] = {}
+    nodes.forEach((node, i) => {
 
-        if (node.address && validators.ipv4(node.address)) {
-          delete errors[node.id].addressError
-          this.setState({errors: errors})
-        }
-        else {
-          errors[node.id].addressError = true
-          this.setState({errors: errors})
-        }
+      if (!node.address) {
+        node.addressError = true
+        this.setState({nodes: nodes})
+      }
+      else if (!validators.ipv4(node.address)) {
+        node.addressError = true
+        this.setState({nodes: nodes})
+      }
+      else {
+        delete node.addressError
+        this.setState({nodes: nodes})
+      }
 
-        if (!node.name) {
-          errors[node.id].nameError = true
-          this.setState({errors: errors})
-        }
-        else {
-          delete errors[node.id].nameError
-          this.setState({errors: errors})
-        }
+      if (!node.name) {
+        node.nameError = true
+        this.setState({nodes: nodes})
+      }
+      else {
+        delete node.nameError
+        this.setState({nodes: nodes})
+      }
 
-        if (node.port && validators.port(node.port) ) {
-          delete errors[node.id].portError
-          this.setState({errors: errors})
-        }
-        else {
-          errors[node.id].portError = true
-          this.setState({errors: errors})
-        }
-        if (Object.keys(errors[node.id]).length === 0) {
-          delete errors[node.id]
-          this.setState({errors: errors})
-        }
-      })
-    }
-
+      if (!node.port) {
+        node.portError = true
+        this.setState({nodes: nodes})
+      }
+      else if (!validators.port(node.port)) {
+        node.portError = true
+        this.setState({nodes: nodes})
+      }
+      else {
+        delete node.portError
+        this.setState({nodes: nodes})
+      }
+    })
+    
+    console.log(errors)
     return errors
   }
 
@@ -886,9 +890,9 @@ class CreateF5Service extends React.Component {
                 ref={ref => this.myRefs[`${obj.id}_port`] = ref}
                 style={
                   obj.portError ?
-                    {borderColor: 'red', textAlign: 'center', width: 200}
+                    {borderColor: 'red', textAlign: 'center', width: 80}
                   :
-                    {textAlign: 'center', width: 200}
+                    {textAlign: 'center', width: 80}
                 }
                 onChange={e => {
                   this.set(e.target.value, 'port', obj)}
@@ -898,6 +902,46 @@ class CreateF5Service extends React.Component {
           )
         },
       },
+      {
+        title: 'Existent Node',
+        align: 'center',
+        dataIndex: 'selectedNode',
+        key: 'selectedNode',
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+              { this.state.nodesLoading ?
+                <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+              :
+                <Select
+                  value={this.state.selectedNode}
+                  showSearch
+                  style={{width: 300}}
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onSelect={n => this.set(n, 'selectedNode', obj)}
+                >
+                  <React.Fragment>
+                    {this.state.existentNodes.map((n, i) => {
+                      let str = `${n.address} - ${n.name}`
+                      return (
+                        <Select.Option key={i} value={n.address}>{str}</Select.Option>
+                      )
+                    })
+                    }
+                  </React.Fragment>
+                </Select>
+              }
+            </React.Fragment>
+            
+          )
+        }
+      },     
       {
         title: 'Delete',
         align: 'center',
@@ -1118,17 +1162,13 @@ class CreateF5Service extends React.Component {
                     <Col offset={6} span={2}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Destination IP:</p>
                     </Col>
-                    <Col span={8}>
+                    <Col span={3}>
                       {createElement('input', 'destination')}
                     </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col offset={6} span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Destination Port:</p>
+                    <Col offset={1} span={2}>
+                      <p style={{marginRight: 10, marginTop: 5}}>Destination Port:</p>
                     </Col>
-                    <Col span={8}>
+                    <Col span={2}>
                       {createElement('input', 'destinationPort')}
                     </Col>
                   </Row>
@@ -1211,7 +1251,7 @@ class CreateF5Service extends React.Component {
                 <Divider/>
 
                 <Row>
-                <Col offset={3} span={18}>
+                <Col offset={2} span={20}>
                   <Radio.Group
                     buttonStyle="solid"
                   >
