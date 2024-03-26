@@ -1,6 +1,7 @@
 import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+import {Divider } from 'antd'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
@@ -16,6 +17,7 @@ import {
 
 import CreateVs from './createVs'
 import F5ObjectDelete from './deleteObject'
+import UpdateCert from './updateCert'
 import PoolMaintenance from './poolMaintenance/manager'
 import { Row, Col } from 'antd'
 
@@ -90,7 +92,6 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
         <Row>
-
           <Col span={4} offset={2} >
             <CreateVs vendor='f5' type='L7'/>
           </Col>
@@ -99,21 +100,28 @@ class Manager extends React.Component {
             <CreateVs vendor='f5' type='L4'/>
           </Col>
 
+          <Col span={4} offset={2} >
+            <UpdateCert vendor='f5'/>
+          </Col>
+        </Row>
+
+        <Divider/>
+
+        <Row>
+          <Col span={4} offset={2}>
+            <PoolMaintenance/>
+          </Col>
+        </Row>
+
+        <Divider/>
+        
+        <Row>
           <Col span={4} offset={2}>
             <F5ObjectDelete vendor='f5' f5object='virtualserver'/>
           </Col>
 
           <Col span={4} offset={2}>
             <F5ObjectDelete vendor='f5' f5object='node'/>
-          </Col>
-        </Row>
-
-        <br/>
-        <br/>
-
-        <Row>
-          <Col span={4} offset={2}>
-            <PoolMaintenance/>
           </Col>
         </Row>
 
