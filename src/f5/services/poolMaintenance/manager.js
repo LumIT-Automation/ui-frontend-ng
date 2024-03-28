@@ -103,10 +103,10 @@ class Manager extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>POOL MAINTENANCE</Button>
+        <Button type="primary" onClick={() => this.details()}>POOL MANAGEMENT</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>POOL MAINTENANCE</p>}
+          title={<p style={{textAlign: 'center'}}>POOL MANAGEMENT</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}

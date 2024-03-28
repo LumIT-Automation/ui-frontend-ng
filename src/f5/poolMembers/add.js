@@ -12,7 +12,6 @@ import {
 
 
 import {
-  nodes,
   poolMembersLoading,
   poolMembersFetch,
 } from '../store'
@@ -20,7 +19,7 @@ import {
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
@@ -30,10 +29,13 @@ class Add extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.myRefs = {};
+
     this.state = {
       visible: false,
+      states: ['enabled', 'disabled', 'forced offline'],
       errors: {},
-      request: {}
     };
   }
 
@@ -71,7 +73,7 @@ class Add extends React.Component {
       return
     }
     else {
-      this.props.dispatch(nodes( nodesFetched ))
+      await this.setState({nodes: nodesFetched.data.items})
     }
   }
 
@@ -94,41 +96,78 @@ class Add extends React.Component {
 
 
   //SETTERS
-  poolMemberSet = id => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.poolMember = id.toString()
-    this.setState({request: request})
-  }
+  set = async (value, key, obj) => {
+    console.log(value)
+    console.log(key)
 
-  portSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.port = e.target.value
-    this.setState({request: request})
+    if (key === 'existentNode') {
+      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
+      let node = nodes.find(n => n.name === value)
+      console.log(node)
+      await this.setState({node: node, existentNode: node, address: node.address, addressError: ''})
+    }
+
+    if (key === 'address') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`address`]
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      await this.setState({address: value, addressError: ''})
+      ref = this.myRefs[`address`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    if (key === 'port') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`port`]
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      await this.setState({port: value, portError: ''})
+      ref = this.myRefs[`port`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
+    }
+
+    if (key === 'status') {
+      if (value === 'enabled') {
+        await this.setState({status: value, session: 'user-enabled', state: 'user-up'})
+      }
+      else if (value === 'disabled') {
+        await this.setState({status: value, session: 'user-disabled', state: 'user-down'})
+      }
+      else if (value === 'forced offline') {
+        await this.setState({status: value, session: 'user-disabled'})
+      }
+      else {}
+      
+    }
+
   }
 
   //VALIDATION
   validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+
     let errors = JSON.parse(JSON.stringify(this.state.errors))
     let validators = new Validators()
-
-    if (!request.poolMember) {
-      errors.poolMemberError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.poolMemberError
-      this.setState({errors: errors})
-    }
-
-    if (!request.port || !validators.port(request.port)) {
-      errors.portError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.portError
-      this.setState({errors: errors})
-    }
 
     return errors
   }
@@ -146,7 +185,7 @@ class Add extends React.Component {
   poolMemberAdd = async () => {
     let b = {}
     b.data = {
-        "name": `${this.state.request.poolMember}:${this.state.request.port}`,
+        "name": `/${this.props.partition}/${this.state.address}:${this.state.port}`,
         "connectionLimit": 0,
         "dynamicRatio": 1,
         "ephemeral": "false",
@@ -156,7 +195,8 @@ class Add extends React.Component {
         "priorityGroup": 0,
         "rateLimit": "disabled",
         "ratio": 1,
-        "state": "up",
+        "state": this.state.state,
+        "session": this.state.session, 
         "fqdn": {
             "autopopulate": "disabled"
         }
@@ -205,11 +245,151 @@ class Add extends React.Component {
         return <Error error={[this.props.error]} visible={true}/> 
       }
     }
+    
+    let createElement = (element, key, choices, obj, action) => {
+      switch (element) {
+
+        case 'input':
+          if (key === 'address') {
+            return (
+              <Input
+                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
+                ref={ref => this.myRefs[`address`] = ref}
+                style=
+                {this.state.errors[`${key}Error`] ?
+                  {borderColor: 'red'}
+                :
+                  {}
+                }
+                onChange={event => this.set(event.target.value, key)}
+              />
+            )
+          }
+          else if (key === 'port') {
+            return (
+              <Input
+                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
+                ref={ref => this.myRefs[`port`] = ref}
+                style=
+                {this.state.errors[`${key}Error`] ?
+                  {borderColor: 'red'}
+                :
+                  {}
+                }
+                onChange={event => this.set(event.target.value, key)}
+              />
+            )
+          }
+          else {
+            return (
+              <Input
+                value={this.state[`${key}`] ? this.state[`${key}`].name : ''}
+                style=
+                {this.state.errors[`${key}Error`] ?
+                  {borderColor: 'red'}
+                :
+                  {}
+                }
+                onChange={event => this.set(event.target.value, key)}
+              />
+            )
+          }
+
+        case 'textArea':
+          return (
+            <Input.TextArea
+              rows={7}
+              value={this.state[`${key}`]}
+              onChange={event => this.set(event.target.value, key)}
+              style=
+              { this.state.errors[`${key}Error`] ?
+                {borderColor: `red`}
+              :
+                {}
+              }
+            />
+          )
+
+        case 'select':
+          if (key === 'status') {
+            return (
+              <Select
+                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
+                showSearch
+                style=
+                { this.state.errors[`${key}Error`] ?
+                  {width: "100%", border: `1px solid red`}
+                :
+                  {width: "100%"}
+                }
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={n => this.set(n, key, obj)}
+              >
+                <React.Fragment>
+                  
+                { this.state[`${choices}`] ?
+                  this.state[`${choices}`].map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                  :
+                  null
+                }
+                </React.Fragment>
+              </Select>
+            )
+          }
+          else {
+            return (
+              <Select
+                value={this.state[`${key}`] ? this.state[`${key}`].name : ''}
+                showSearch
+                style=
+                { this.state.errors[`${key}Error`] ?
+                  {width: "100%", border: `1px solid red`}
+                :
+                  {width: "100%"}
+                }
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={n => this.set(n, key, obj)}
+              >
+                <React.Fragment>
+                  
+                { this.state[`${choices}`] ?
+                  this.state[`${choices}`].map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                    )
+                  })
+                  :
+                  null
+                }
+                </React.Fragment>
+              </Select>
+            )
+          }
+
+        default:
+      }
+    }
 
     return (
       <Space direction='vertical'>
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button type="primary" onClick={() => this.details()}>Add Member</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>Add Pool Member</p>}
@@ -233,83 +413,47 @@ class Add extends React.Component {
             <React.Fragment>
 
               <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Nodes:</p>
+                <Col offset={4} span={4}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Existent Node:</p>
                 </Col>
-                <Col span={16}>
+                <Col span={8}>
                   { this.state.nodesLoading ?
-                    <Spin indicator={rdIcon} style={{ margin: '0 10%'}}/>
+                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
                   :
-                    <React.Fragment>
-                      { this.props.nodes && this.props.nodes.length > 0 ?
-                        <React.Fragment>
-                          {this.state.errors.poolMemberError ?
-                            <Select
-                              value={this.state.request.poolMember}
-                              showSearch
-                              style={{width: 250, border: `1px solid red`}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.poolMemberSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.props.nodes.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          :
-                            <Select
-                              value={this.state.request.poolMember}
-                              showSearch
-                              style={{width: 250}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.poolMemberSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.props.nodes.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.fullPath}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          }
-                        </React.Fragment>
-                      :
-                        null
-                      }
-                    </React.Fragment>
+                    <Col span={24}>
+                      {createElement('select', 'existentNode', 'nodes')}
+                    </Col>
                   }
                 </Col>
               </Row>
               <br/>
 
               <Row>
-                <Col offset={2} span={6}>
+                <Col offset={5} span={3}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                </Col>
+                <Col span={8}>
+                  {createElement('input', 'address', '')}
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={5} span={3}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
                 </Col>
-                <Col span={16}>
-                  {this.state.errors.portError ?
-                    <Input style={{width: 250, borderColor: 'red'}} name="port" id='port' onChange={e => this.portSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.port} style={{width: 250}} name="port" id='port' onChange={e => this.portSet(e)} />
-                  }
+                <Col span={8}>
+                  {createElement('input', 'port', '')}
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={5} span={3}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>State:</p>
+                </Col>
+                <Col span={8}>
+                  {createElement('select', 'status', 'states')}
                 </Col>
               </Row>
               <br/>
