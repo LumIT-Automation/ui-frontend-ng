@@ -43,10 +43,6 @@ class UpdateCert extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    //console.log(this.state.virtualServers)
-    //console.log(this.state.virtualServer)
-    console.log(this.state.profiles)
-    console.log(this.state.profile)
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()

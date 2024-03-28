@@ -97,13 +97,10 @@ class Add extends React.Component {
 
   //SETTERS
   set = async (value, key, obj) => {
-    console.log(value)
-    console.log(key)
 
     if (key === 'existentNode') {
       let nodes = JSON.parse(JSON.stringify(this.state.nodes))
       let node = nodes.find(n => n.name === value)
-      console.log(node)
       await this.setState({node: node, existentNode: node, address: node.address, addressError: ''})
     }
 
