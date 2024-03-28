@@ -113,7 +113,7 @@ class Add extends React.Component {
         end = ref.input.selectionEnd
       }
 
-      await this.setState({address: value, addressError: ''})
+      await this.setState({address: value, addressError: '', existentNode: null})
       ref = this.myRefs[`address`]
 
       if (ref && ref.input) {
