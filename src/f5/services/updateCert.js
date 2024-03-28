@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import { Modal, Alert, Row, Col, Input, Result, Space, Radio, Button, Select, Spin, Divider, Checkbox, Table } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
 
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
@@ -14,6 +14,7 @@ import {
 } from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
+import Highlighter from 'react-highlight-words';
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
@@ -399,14 +400,6 @@ class UpdateCert extends React.Component {
       if (this.props.error && this.props.error.component === 'updateCert') {
         return <Error error={[this.props.error]} visible={true}/> 
       }
-    }
-
-    let randomKey = () => {
-      return Math.random().toString()
-    }
-
-    let returnCol = () => {
-      return columns
     }
     
     let createElement = (element, key, choices, obj, action) => {
