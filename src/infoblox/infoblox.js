@@ -35,9 +35,6 @@ class Infoblox extends React.Component {
   }
 
   componentDidMount() {
-    if (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'infoblox', 'assets_get')) {
-      this.assetsGet()
-    }
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -48,27 +45,6 @@ class Infoblox extends React.Component {
   }
 
   componentWillUnmount() {
-  }
-
-
-  assetsGet = async () => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
-      },
-      error => {
-        error = Object.assign(error, {
-          component: 'infobloxMGMT',
-          vendor: 'infoblox',
-          errorType: 'assetsError'
-        })
-        this.props.dispatch(err(error))
-        this.setState({loading: false})
-      }
-    )
-    await rest.doXHR("infoblox/assets/", this.props.token)
   }
 
   treeRefresh = () => {
@@ -101,14 +77,14 @@ class Infoblox extends React.Component {
 
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           <Tabs type="card">
-            { this.props.authorizations && (this.props.authorizations.networks_get || this.props.authorizations.any) ?
+            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'infoblox', 'networks_get')) ? 
               <React.Fragment>
                 {this.state.loading ?
                   <TabPane tab='Network Tree'>
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane tab=<span>Network Tree <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.treeRefresh()}/></span> >
+                  <TabPane tab={<span>Network Tree <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.treeRefresh()}/></span>} >
                     <Tree/>
                   </TabPane>
                 }

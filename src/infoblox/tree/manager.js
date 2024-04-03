@@ -33,6 +33,7 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
+    console.log('mount')
     if (this.props.asset) {
       if (!this.props.error) {
         this.props.dispatch(treeFetch(false))
@@ -55,8 +56,8 @@ class Manager extends React.Component {
     }
     if (this.props.asset) {
       if (this.props.treeFetch) {
-        this.treeGet()
         this.props.dispatch(treeFetch(false))
+        this.treeGet()
       }
     }
   }
@@ -66,6 +67,7 @@ class Manager extends React.Component {
   }
 
   treeGet = async () => {
+    console.log('ppppppp')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
