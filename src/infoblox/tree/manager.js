@@ -67,14 +67,11 @@ class Manager extends React.Component {
   }
 
   treeGet = async () => {
-    console.log('ppppppp')
     this.setState({loading: true})
     let rest = new Rest(
       "GET",
       resp => {
-        let l = []
-        l.push(resp.data['/'])
-        this.props.dispatch(tree(l))
+        this.editTree(resp.data['/'])
       },
       error => {
         error = Object.assign(error, {
@@ -88,6 +85,37 @@ class Manager extends React.Component {
     )
     await rest.doXHR(`infoblox/${this.props.asset.id}/tree/`, this.props.token)
     this.setState({loading: false})
+  }
+
+  editTree = async t => {
+    console.log(t)
+    await this.editTitle(t) 
+    console.log(t)
+    
+    this.props.dispatch(tree([t]))
+  }
+
+  editTitle = net => {
+    try {
+      if (net.extattrs && (net.extattrs.Environment || net.extattrs['Object Type'])) {
+        let str
+        if (net.extattrs && net.extattrs.Environment) {
+          str = net.extattrs.Environment.value
+        }
+        else {
+          str = net.extattrs['Object Type'].value
+        }
+        net.title = `${net.title} - ${str}`
+      }
+  
+      net.children.forEach(child => {
+        this.editTitle(child)
+      });
+    }
+    catch(error) {
+      console.log(error)
+    }
+
   }
 
 
