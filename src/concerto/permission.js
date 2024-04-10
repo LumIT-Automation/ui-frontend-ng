@@ -21,6 +21,12 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
+/*
+any case (input)
+patch permission
+fetch all tags for domain
+*/
+
 
 class Permission extends React.Component {
 
@@ -35,6 +41,7 @@ class Permission extends React.Component {
       assets: [],
       subAssets: '',
       subAsset: '',
+      tags: [],
       workflows: [],
       identityGroups: [],
       roles: [],
@@ -344,7 +351,7 @@ class Permission extends React.Component {
     await this.setState({loading: false})
   }
 
-  dataGet = async (entities, assetId) => {
+  dataGet = async (entities, assetId, subAsset) => {
     let endpoint = `${this.props.vendor}/${entities}/`
     let r
     if (this.props.vendor === 'superAdmin') {
@@ -352,6 +359,9 @@ class Permission extends React.Component {
     }
     if (assetId) {
       endpoint = `${this.props.vendor}/${assetId}/${entities}/`
+    }
+    if (entities === 'tags') {
+      endpoint = `${this.props.vendor}/${assetId}/${subAsset}/${entities}/`
     }
     let rest = new Rest(
       "GET",
@@ -364,6 +374,22 @@ class Permission extends React.Component {
     )
     await rest.doXHR(endpoint, this.props.token)
     return r
+  }
+
+  getTags = async (entities, assetId, subAsset) => {
+    let fetchedTags = await this.dataGet(entities, assetId, subAsset)
+    if (fetchedTags.status && fetchedTags.status !== 200 ) {
+      let error = Object.assign(fetchedTags, {
+        component: 'permission',
+        vendor: 'concerto',
+        errorType: 'tagsError'
+      })
+      this.props.dispatch(err(error))
+      return
+    }
+    else {
+      return fetchedTags.data.items
+    }
   }
 
   assetWithSubAssets = async () => {
@@ -561,6 +587,7 @@ class Permission extends React.Component {
     let permissions = JSON.parse(JSON.stringify(this.state.permissions))
     let origPerm = this.state.originPermissions.find(p => p.id === permission.id)
     let perm = permissions.find(p => p.id === permission.id)
+    
 
     if (key === 'workflowName') {
       if (value) {
@@ -724,6 +751,36 @@ class Permission extends React.Component {
           perm[this.state.subAsset].name = value
         }
         delete perm[`${this.state.subAsset}Error`]
+        await this.setState({permissions: permissions})
+
+        if (this.props.vendor === 'checkpoint' && value !== 'any') {
+          perm.tagsLoading = true
+          await this.setState({permissions: permissions})
+          let tags = await this.getTags('tags', perm.asset.id, perm.domain.name)
+          perm.domain.tags = tags 
+          delete perm.tag
+          perm.tagsLoading = false
+          await this.setState({permissions: permissions})
+        }
+      }
+    }
+
+    if (key === 'tag') {
+      if (value) {
+        if (perm.existent) {
+          if (value !== origPerm.tag) {
+            perm.isModified.tag = true
+            perm.tag = value
+          }
+          else {
+            delete perm.isModified.tag
+            perm.tag = value
+          }
+        }
+        else {
+          perm.tag = value
+        }
+        delete perm.tagError
       }
     }
 
@@ -739,6 +796,7 @@ class Permission extends React.Component {
     if (key !== 'details') {
       await this.setState({permissions: permissions})
     }
+    console.log(perm)
 
   }
 
@@ -946,6 +1004,10 @@ class Permission extends React.Component {
           perm[`${this.state.subAsset}Error`] = true
           ++errors
         }
+        else if (this.props.vendor === 'checkpoint' && !perm.tag) {
+          perm.tagError = true
+          ++errors
+        }
         else {
           continue
         }
@@ -1023,6 +1085,18 @@ class Permission extends React.Component {
             "id_asset": perm.asset.id
           }
         }
+        else if (this.props.vendor === 'checkpoint') {
+          body.data = {
+            "identity_group_name": perm.identity_group_name,
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            [this.state.subAsset]: {
+              "name": perm[this.state.subAsset].name,
+              "id_asset": perm[this.state.subAsset].id_asset
+            },
+            "tag": perm.tag
+          }
+        }
         else {
           body.data = {
             "identity_group_name": perm.identity_group_name,
@@ -1081,6 +1155,18 @@ class Permission extends React.Component {
             "identity_group_identifier": perm.identity_group_identifier,
             "role": perm.role,
             "id_asset": perm.asset.id
+          }
+        }
+        else if (this.props.vendor === 'checkpoint') {
+          body.data = {
+            "identity_group_name": perm.identity_group_name,
+            "identity_group_identifier": perm.identity_group_identifier,
+            "role": perm.role,
+            [this.state.subAsset]: {
+              "name": perm[this.state.subAsset].name,
+              "id_asset": perm[this.state.subAsset].id_asset
+            },
+            "tag": perm.tag
           }
         }
         else {
@@ -1171,6 +1257,22 @@ class Permission extends React.Component {
 
   render() {
 
+    /*let localTags = []
+
+    let tagsForDomain = async (obj) => {
+      console.log(obj)
+      let tags = this.state.domainsTags.find(dt => dt.domain === obj[this.state.subAsset].name)
+      console.log(tags)
+      if (tags && tags.tags && tags.tags.length > 0) {
+        localTags = tags.tags
+        return true
+      }
+      else {
+        return false
+      }
+      
+    }*/
+
     let returnCol = () => {
       let newArray = []
       if (this.props.vendor === 'superAdmin') {
@@ -1179,6 +1281,10 @@ class Permission extends React.Component {
       }
       else if (this.props.vendor === 'workflow') {
         newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
+        return newArray 
+      }
+      else if (this.props.vendor === 'checkpoint') {
+        newArray = checkpointColumns.filter(value => Object.keys(value).length !== 0);
         return newArray 
       }
       else if (this.props.vendor === 'proofpoint') {
@@ -1493,6 +1599,253 @@ class Permission extends React.Component {
               })
             }
           </Select>
+        ),
+      },
+      {
+        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
+        align: 'center',
+        dataIndex: 'role',
+        key: 'role',
+        ...this.getColumnSearchProps('role'),
+        render: (name, obj)  => (
+          <Select
+            value={obj && obj.role ? obj.role : null}
+            showSearch
+            style=
+            { obj.roleError ?
+              {width: 150, border: `1px solid red`}
+            :
+              {width: 150}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('role', value, obj )}
+          >
+            { (this.state.roles ? this.state.roles.map((role, i) => {
+                return (
+                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+                )
+              })
+            :
+              null
+            )}
+          </Select>
+        ),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.permissionRemove(obj)}
+              >
+                -
+              </Button>
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    
+
+    const checkpointColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'AD group name',
+        align: 'center',
+        dataIndex: 'identity_group_name',
+        key: 'identity_group_name',
+        ...this.getColumnSearchProps('identity_group_name'),
+      },
+      {
+        title: 'Distinguished name',
+        align: 'center',
+        dataIndex: 'identity_group_identifier',
+        key: 'identity_group_identifier',
+        ...this.getColumnSearchProps('identity_group_identifier'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.identity_group_identifier}
+            showSearch
+            style=
+            { obj.identity_group_identifierError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('identity_group_identifier', value, obj )}
+          >
+            { this.state.identityGroups.map((ig, i) => {
+                return (
+                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: 'Asset',
+        align: 'center',
+        dataIndex: 'assetFqdn',
+        key: 'assetFqdn',
+        ...this.getColumnSearchProps('assetFqdn'),
+        render: (name, obj)  => (
+          <Select
+            value={obj.assetFqdn}
+            showSearch
+            style=
+            { obj.assetIdError ?
+              {width: '100%', border: `1px solid red`}
+            :
+              {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={value => this.set('assetId', value, obj )}
+          >
+            { this.state.assets.map((ass, i) => {
+                return (
+                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+                )
+              })
+            }
+          </Select>
+        ),
+      },
+      {
+        title: this.state.subAsset,
+        align: 'center',
+        dataIndex: [this.state.subAsset, 'name' ],
+        key: this.state.subAsset,
+        ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
+        render: (name, obj)  => (
+            <Select
+              value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
+              disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
+              showSearch
+              style=
+              { obj[`${this.state.subAsset}Error`] ?
+                {width: 150, border: `1px solid red`}
+              :
+                {width: 150}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={value => this.set('subAsset', value, obj )}
+            >
+              {obj && obj.role && obj.role === 'admin' ?
+                <Select.Option key={'any'} value={'any'}>any</Select.Option>
+              :
+                <React.Fragment>
+                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
+                      return (
+                        <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                      )
+                    })
+                  :
+                    null
+                  }
+                </React.Fragment>
+              }
+
+            </Select>
+        ),
+      },
+      {
+        title: 'Tags',
+        align: 'center',
+        //dataIndex: [this.state.domainsTags, 'tags', 'name'],
+        key: 'tag',
+        //...this.getColumnSearchProps([this.state.domainsTags, 'tags', 'name']),
+        render: (name, obj)  => (
+          <React.Fragment>
+          {obj.tagsLoading ? 
+            <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
+          :
+            <Select
+              value={obj && obj.tag ? obj.tag : null}
+              disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
+              showSearch
+              style=
+              { obj[`tagError`] ?
+                {width: 150, border: `1px solid red`}
+              :
+                {width: 150}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={value => this.set('tag', value, obj )}
+            >
+              <React.Fragment>
+                { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
+                    return (
+                      <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
+                    )
+                  })
+                :
+                  null
+                }
+              </React.Fragment>
+            </Select>
+           
+          }
+           </React.Fragment>
         ),
       },
       {
