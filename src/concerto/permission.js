@@ -34,6 +34,7 @@ class Permission extends React.Component {
     super(props);
 
     this.textAreaRefs = {};
+    this.myRefs = {};
 
     this.state = {
       searchText: '',
@@ -41,7 +42,6 @@ class Permission extends React.Component {
       assets: [],
       subAssets: '',
       subAsset: '',
-      tags: [],
       workflows: [],
       identityGroups: [],
       roles: [],
@@ -766,6 +766,16 @@ class Permission extends React.Component {
     }
 
     if (key === 'tag') {
+      //let start = 0
+      //let end = 0
+      //let ref = this.myRefs[`${permission.id}_tag`]
+      //console.log(ref)
+
+      //if (ref && ref.input) {
+        //start = ref.input.selectionStart
+        //end = ref.input.selectionEnd
+      //}
+
       if (value) {
         if (perm.existent) {
           if (value !== origPerm.tag) {
@@ -782,6 +792,15 @@ class Permission extends React.Component {
         }
         delete perm.tagError
       }
+      await this.setState({permissions: permissions})
+      //ref = this.myRefs[`${permission.id}_tag`]
+      //console.log(ref)
+      /*if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }*/
+
+      //ref.focus()
     }
 
     if (key === 'toDelete') {
@@ -1662,8 +1681,6 @@ class Permission extends React.Component {
       }
     ];
 
-    
-
     const checkpointColumns = [
       {
         title: 'Loading',
@@ -1805,48 +1822,69 @@ class Permission extends React.Component {
       {
         title: 'Tags',
         align: 'center',
-        //dataIndex: [this.state.domainsTags, 'tags', 'name'],
         key: 'tag',
-        //...this.getColumnSearchProps([this.state.domainsTags, 'tags', 'name']),
-        render: (name, obj)  => (
-          <React.Fragment>
-          {obj.tagsLoading ? 
-            <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
-          :
-            <Select
-              value={obj && obj.tag ? obj.tag : null}
-              disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
-              showSearch
-              style=
-              { obj[`tagError`] ?
-                {width: 150, border: `1px solid red`}
+        render: (name, obj)  => {
+          return (
+            <React.Fragment>
+              {obj && obj.domain && obj.domain.name === 'any' ?
+                <Input
+                  defaultValue={obj && obj.tag ? obj.tag : null}
+                  //ref={ref => this.myRefs[obj.id] = ref}
+                  //ref={ref => this.myRefs[`${obj.id}_tag`] = ref}
+                  style={
+                    obj.tagError ?
+                      {borderColor: 'red', textAlign: 'center', width: 150}
+                    :
+                      {textAlign: 'center', width: 150}
+                  }
+                  onBlur={e => {
+                    //console.log(e.target.value)
+                    this.set('tag', e.target.value, obj)
+                  }
+                  }
+                />
               :
-                {width: 150}
+                <React.Fragment>
+                  {obj.tagsLoading ? 
+                    <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
+                  :
+                    <Select
+                      value={obj && obj.tag ? obj.tag : null}
+                      disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
+                      showSearch
+                      style=
+                      { obj[`tagError`] ?
+                        {width: 150, border: `1px solid red`}
+                      :
+                        {width: 150}
+                      }
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      onSelect={value => this.set('tag', value, obj )}
+                    >
+                      <React.Fragment>
+                        { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
+                            return (
+                              <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    </Select>
+                  
+                  }
+                </React.Fragment>
               }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={value => this.set('tag', value, obj )}
-            >
-              <React.Fragment>
-                { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
-                    return (
-                      <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
-                    )
-                  })
-                :
-                  null
-                }
-              </React.Fragment>
-            </Select>
-           
-          }
-           </React.Fragment>
-        ),
+            </React.Fragment>
+           )
+        },
       },
       {
         title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
