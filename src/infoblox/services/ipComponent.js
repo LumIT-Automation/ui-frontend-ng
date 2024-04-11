@@ -332,7 +332,7 @@ class IpComponent extends React.Component {
         ),
       },
       {
-        title: 'Parent Reference',
+        title: 'Assignee',
         align: 'center',
         width: 200,
         //dataIndex: ['extattrs', 'Reference', 'value'],
@@ -348,7 +348,7 @@ class IpComponent extends React.Component {
         ),
       },
       {
-        title: 'Object Reference',
+        title: 'Requester',
         align: 'center',
         width: 200,
         //dataIndex: ['objects', 'extattrs', 'Reference', 'value'],
