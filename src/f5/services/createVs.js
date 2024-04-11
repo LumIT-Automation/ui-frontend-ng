@@ -653,9 +653,9 @@ class CreateF5Service extends React.Component {
           {
             "name": `client-ssl_${serviceName}`,
             "type": "client-ssl",
-            "certName": `cert_${serviceName}`,
+            "certName": serviceName,
             "cert": btoa(this.state.certificate),
-            "keyName": `key_${serviceName}`,
+            "keyName": serviceName,
             "key":  btoa(this.state.key),
             "chain": "",
             "chainName": "",
