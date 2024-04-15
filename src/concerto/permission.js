@@ -772,22 +772,19 @@ class Permission extends React.Component {
         let tags = await this.getTags('tags', perm.asset.id, perm.domain.name)
         perm.domain.tags = tags 
         delete perm.tag
+
+        permissions.forEach(p => {
+          if(p.domain && p.domain.name === perm.domain.name) {
+            p.domain.tags = tags 
+          }
+        });
+
         perm.tagsLoading = false
         await this.setState({permissions: permissions})
       }
     }
 
     if (key === 'tag') {
-      //let start = 0
-      //let end = 0
-      //let ref = this.myRefs[`${permission.id}_tag`]
-      //console.log(ref)
-
-      //if (ref && ref.input) {
-        //start = ref.input.selectionStart
-        //end = ref.input.selectionEnd
-      //}
-
       if (value) {
         if (perm.existent) {
           if (value !== origPerm.tag) {
@@ -805,14 +802,6 @@ class Permission extends React.Component {
         delete perm.tagError
       }
       await this.setState({permissions: permissions})
-      //ref = this.myRefs[`${permission.id}_tag`]
-      //console.log(ref)
-      /*if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }*/
-
-      //ref.focus()
     }
 
     if (key === 'toDelete') {
@@ -1857,7 +1846,7 @@ class Permission extends React.Component {
                   {obj.tagsLoading ? 
                     <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
                   :
-                    <React.Fragment
+                    <div
                       style={{display: 'flex', alignItems: 'center'}}
                     >
                       <Select
@@ -1892,7 +1881,7 @@ class Permission extends React.Component {
                       </Select>
 
                       <Radio.Group
-                      style={{marginLeft: 20}}
+                        style={{marginLeft: 20}}
                       >
                         <Radio.Button
                           disabled={obj && obj.domain && !obj.domain.name ? true : false}
@@ -1901,7 +1890,7 @@ class Permission extends React.Component {
                           <ReloadOutlined/>
                         </Radio.Button>
                       </Radio.Group>
-                    </React.Fragment>
+                    </div>
                   
                   }
 
