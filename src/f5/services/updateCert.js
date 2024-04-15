@@ -167,7 +167,7 @@ class UpdateCert extends React.Component {
   }
 
   getProfiles = async () => {
-    await this.setState({profLoading: true})
+    await this.setState({profLoading: true, profile: ''})
     let profilesFetched = await this.dataGet('profiles', this.props.partition)
     await this.setState({profLoading: false})
     if (profilesFetched.status && profilesFetched.status !== 200 ) {
@@ -199,7 +199,7 @@ class UpdateCert extends React.Component {
     )
 
     if (entity === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/virtualserver/${this.state.virtualServer.name}/?related=policies,profiles`, this.props.token)
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/virtualserver/${this.state.virtualServer.name}/?related=policies,profiles&profileType=client-ssl`, this.props.token)
     }
     else {
       await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${partition}/${entity}/`, this.props.token)

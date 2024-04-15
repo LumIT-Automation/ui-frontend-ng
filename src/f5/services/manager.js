@@ -105,7 +105,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        <Divider/>
+        <br/>
 
         <Row>
           <Col span={4} offset={2}>
@@ -113,7 +113,7 @@ class Manager extends React.Component {
           </Col>
         </Row>
 
-        <Divider/>
+        <br/>
         
         <Row>
           <Col span={4} offset={2}>

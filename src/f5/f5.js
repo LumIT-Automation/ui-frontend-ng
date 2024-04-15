@@ -153,7 +153,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Nodes" tab=<span>Nodes <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.nodesRefresh()}/></span>>
+                  <TabPane key="Nodes" tab={<span>Nodes <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.nodesRefresh()}/></span>}>
                     <Nodes/>
                   </TabPane>
                 }
@@ -169,7 +169,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Monitors" tab=<span>Monitors <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.monitorsRefresh()}/></span>>
+                  <TabPane key="Monitors" tab={<span>Monitors <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.monitorsRefresh()}/></span>}>
                     <Monitors/>
                   </TabPane>
                 }
@@ -185,7 +185,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Pools" tab=<span>Pools <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.poolsRefresh()}/></span>>
+                  <TabPane key="Pools" tab={<span>Pools <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.poolsRefresh()}/></span>}>
                     <Pools/>
                   </TabPane>
                 }
@@ -201,7 +201,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="SnatPools" tab=<span>SnatPools <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.snatPoolsRefresh()}/></span>>
+                  <TabPane key="SnatPools" tab={<span>SnatPools <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.snatPoolsRefresh()}/></span>}>
                     <SnatPools/>
                   </TabPane>
                 }
@@ -217,7 +217,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Irules" tab=<span>Irules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.irulesRefresh()}/></span>>
+                  <TabPane key="Irules" tab={<span>Irules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.irulesRefresh()}/></span>}>
                     <Irules/>
                   </TabPane>
                 }
@@ -233,7 +233,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Profiles" tab=<span>Profiles <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.profilesRefresh()}/></span>>
+                  <TabPane key="Profiles" tab={<span>Profiles <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.profilesRefresh()}/></span>}>
                     <Profiles/>
                   </TabPane>
                 }
@@ -249,7 +249,7 @@ class F5 extends React.Component {
                     <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                   </TabPane>
                 :
-                  <TabPane key="Virtual Servers" tab=<span>Virtual Servers <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.virtualServersRefresh()}/></span>>
+                  <TabPane key="Virtual Servers" tab={<span>Virtual Servers <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.virtualServersRefresh()}/></span>}>
                     <VirtualServers/>
                   </TabPane>
                 }
