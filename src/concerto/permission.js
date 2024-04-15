@@ -765,6 +765,18 @@ class Permission extends React.Component {
       }
     }
 
+    if (key === 'refreshTags') {
+      if (this.props.vendor === 'checkpoint' && value !== 'any') {
+        perm.tagsLoading = true
+        await this.setState({permissions: permissions})
+        let tags = await this.getTags('tags', perm.asset.id, perm.domain.name)
+        perm.domain.tags = tags 
+        delete perm.tag
+        perm.tagsLoading = false
+        await this.setState({permissions: permissions})
+      }
+    }
+
     if (key === 'tag') {
       //let start = 0
       //let end = 0
@@ -1829,8 +1841,6 @@ class Permission extends React.Component {
               {obj && obj.domain && obj.domain.name === 'any' ?
                 <Input
                   defaultValue={obj && obj.tag ? obj.tag : null}
-                  //ref={ref => this.myRefs[obj.id] = ref}
-                  //ref={ref => this.myRefs[`${obj.id}_tag`] = ref}
                   style={
                     obj.tagError ?
                       {borderColor: 'red', textAlign: 'center', width: 150}
@@ -1838,7 +1848,6 @@ class Permission extends React.Component {
                       {textAlign: 'center', width: 150}
                   }
                   onBlur={e => {
-                    //console.log(e.target.value)
                     this.set('tag', e.target.value, obj)
                   }
                   }
@@ -1848,40 +1857,57 @@ class Permission extends React.Component {
                   {obj.tagsLoading ? 
                     <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
                   :
-                    <Select
-                      value={obj && obj.tag ? obj.tag : null}
-                      disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
-                      showSearch
-                      style=
-                      { obj[`tagError`] ?
-                        {width: 150, border: `1px solid red`}
-                      :
-                        {width: 150}
-                      }
-                      optionFilterProp="children"
-                      filterOption={(input, option) =>
-                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                      }
-                      filterSort={(optionA, optionB) =>
-                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                      }
-                      onSelect={value => this.set('tag', value, obj )}
+                    <React.Fragment
+                      style={{display: 'flex', alignItems: 'center'}}
                     >
-                      <React.Fragment>
-                        { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
-                            return (
-                              <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
-                            )
-                          })
+                      <Select
+                        value={obj && obj.tag ? obj.tag : null}
+                        disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
+                        showSearch
+                        style=
+                        { obj[`tagError`] ?
+                          {width: '65%', border: `1px solid red`}
                         :
-                          null
+                          {width: '65%'}
                         }
-                      </React.Fragment>
-                    </Select>
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                        }
+                        onSelect={value => this.set('tag', value, obj )}
+                      >
+                        <React.Fragment>
+                          { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
+                              return (
+                                <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
+                              )
+                            })
+                          :
+                            null
+                          }
+                        </React.Fragment>
+                      </Select>
+
+                      <Radio.Group
+                      style={{marginLeft: 20}}
+                      >
+                        <Radio.Button
+                          disabled={obj && obj.domain && !obj.domain.name ? true : false}
+                          onClick={() => this.set('refreshTags', true, obj )}
+                        >
+                          <ReloadOutlined/>
+                        </Radio.Button>
+                      </Radio.Group>
+                    </React.Fragment>
                   
                   }
+
                 </React.Fragment>
               }
+
             </React.Fragment>
            )
         },
