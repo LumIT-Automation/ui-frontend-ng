@@ -12,7 +12,6 @@ import {
 
 
 import {
-  poolMembersLoading,
   poolMembersFetch,
 } from '../store'
 
@@ -199,17 +198,15 @@ class Add extends React.Component {
         }
       }
 
-
-    this.props.dispatch(poolMembersLoading(true))
+    await this.setState({poolMembersLoading: true})
 
     let rest = new Rest(
         "POST",
         resp => {
-          this.props.dispatch(poolMembersLoading(false))
-          this.setState({response: true}, () => this.response())
+          this.setState({poolMembersLoading: false, response: true}, () => this.response())
         },
         error => {
-          this.props.dispatch(poolMembersLoading(false))
+          this.setState({poolMembersLoading: false})
           error = Object.assign(error, {
             component: 'poolMembersAdd',
             vendor: 'f5',
@@ -399,14 +396,14 @@ class Add extends React.Component {
           width={750}
           maskClosable={false}
         >
-          { this.props.poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.props.poolMembersLoading && this.state.response &&
+          { this.state.poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+          { !this.state.poolMembersLoading && this.state.response &&
             <Result
                status="success"
                title="Member Added"
              />
           }
-          { !this.props.poolMembersLoading && !this.state.response &&
+          { !this.state.poolMembersLoading && !this.state.response &&
             <React.Fragment>
 
               <Row>
@@ -482,5 +479,4 @@ export default connect((state) => ({
   partition: state.f5.partition,
 
   nodes: state.f5.nodes,
-  poolMembersLoading: state.f5.poolMembersLoading,
 }))(Add);

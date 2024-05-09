@@ -57,32 +57,43 @@ class Manager extends React.Component {
   }
 
 
-  getPools = () => {
+  getPools = async () => {
     if (this.props.asset.id) {
-      this.poolsGet(this.props.asset.id, this.props.partition)
-    }
-  }
 
-  poolsGet = async (id, partition) => {
-    this.setState({loading: true})
-    let rest = new Rest(
-      "GET",
-      resp => {
-        this.setState({loading: false})
-        this.props.dispatch(pools( resp ))
-      },
-      error => {
-        error = Object.assign(error, {
+      await this.setState({loading: true})
+      let data = await this.poolsGet()
+      console.log(data)
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
           component: 'poolMaintenanceManager',
           vendor: 'f5',
           errorType: 'poolsError'
         })
         this.props.dispatch(err(error))
-        this.setState({loading: false})
+        await this.setState({loading: false})
+      }
+      else {
+        this.props.dispatch(pools( data.data.items ))
+        await this.setState({loading: false})
+      }
 
+    }
+
+  }
+
+  poolsGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
       }
     )
-    await rest.doXHR(`f5/${id}/${partition}/pools/`, this.props.token)
+    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
+    return r
   }
 
   closeModal = () => {

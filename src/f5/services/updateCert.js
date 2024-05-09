@@ -321,7 +321,7 @@ class UpdateCert extends React.Component {
     if (file === 'certificate') {
       body = {
         "certificate": {
-          "name": `${this.state.certName}.crt`,
+          "name": this.state.certName,
           "content_base64": btoa(this.state.certificate)
         }
       }
@@ -329,7 +329,7 @@ class UpdateCert extends React.Component {
     else {
       body = {
         "key": {
-          "name": `${this.state.certName}.key`,
+          "name": this.state.certName,
           "content_base64": btoa(this.state.key)
         }
       }
@@ -354,8 +354,8 @@ class UpdateCert extends React.Component {
 
     body = {
       "data": {
-        "cert": `/${this.props.partition}/${this.state.certName}.crt`,
-        "key": `/${this.props.partition}/${this.state.certName}.key`,
+        "cert": `/${this.props.partition}/${this.state.certName}`,
+        "key": `/${this.props.partition}/${this.state.certName}`,
       }
     }
 

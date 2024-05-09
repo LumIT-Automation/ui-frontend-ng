@@ -11,7 +11,6 @@ import {
 
 import {
   f5objects,
-  f5objectsLoading,
 } from '../store'
 
 import AssetSelector from '../../concerto/assetSelector'
@@ -65,7 +64,7 @@ class DeleteF5Node extends React.Component {
 
   f5objectsGet = async () => {
     let f5object = this.props.f5object
-    this.props.dispatch(f5objectsLoading(true))
+    this.setState({f5objectsLoading: true})
     let rest = new Rest(
       "GET",
       resp => {
@@ -81,7 +80,7 @@ class DeleteF5Node extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${f5object}s/`, this.props.token)
-    this.props.dispatch(f5objectsLoading(false))
+    this.setState({f5objectsLoading: false})
   }
 
   f5objectNameSet = async e => {
@@ -200,7 +199,7 @@ class DeleteF5Node extends React.Component {
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>{f5object} Name:</p>
                     </Col>
                     <Col span={16}>
-                      { this.props.f5objectsLoading ?
+                      { this.state.f5objectsLoading ?
                         <Spin indicator={spinGetIcon} style={{ margin: '0 10%'}}/>
                       :
                         <React.Fragment>
@@ -277,5 +276,4 @@ export default connect((state) => ({
   partition: state.f5.partition,
 
   f5objects: state.f5.f5objects,
-  f5objectsLoading: state.f5.f5objectsLoading,
 }))(DeleteF5Node);

@@ -15,7 +15,6 @@ import Add from './add'
 import Delete from './delete'
 
 import {
-  poolMembersLoading,
   poolMembersFetch,
 } from '../store'
 
@@ -60,9 +59,9 @@ class PoolDetails extends React.Component {
   }
 
   main = async(pool) => {
-    this.props.dispatch(poolMembersLoading(true))
+    await this.setState({poolMembersLoading: true})
     let members = await this.poolMembersGet(pool)
-    this.props.dispatch(poolMembersLoading(false))
+    await this.setState({poolMembersLoading: false})
     console.log(members)
     if (members.status && members.status !== 200) {
       let error = Object.assign(members, {
@@ -763,7 +762,7 @@ class PoolDetails extends React.Component {
             null
           }
 
-          { this.props.poolMembersLoading ?
+          { this.state.poolMembersLoading ?
               <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/>
             :
               <Table
@@ -792,6 +791,5 @@ export default connect((state) => ({
   partition: state.f5.partition,
 
   poolMembers: state.f5.poolMembers,
-  poolMembersLoading: state.f5.poolMembersLoading,
   poolMembersFetch: state.f5.poolMembersFetch,
 }))(PoolDetails);
