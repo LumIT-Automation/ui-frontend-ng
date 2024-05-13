@@ -9,7 +9,7 @@ import Error from '../error'
 
 import { Space, Table, Input, Button, Spin, Select, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import Add from './add'
 import Modify from './modify'

@@ -58,6 +58,7 @@ class CreateF5Service extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
     if (this.state.visible) {
       if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
         this.main()
@@ -730,8 +731,16 @@ class CreateF5Service extends React.Component {
       dgChoices: null,
       dgName: null,
       dr: false,
-      nodes: [],
-      errors: {}
+      serviceName: '',
+      routeDomain: '',
+      source: '0.0.0.0/0',
+      snat: '',
+      destination: '',
+      destinationPort: '',
+      lbMethod: '',
+      monitorType: '',
+      nodes: [{id:1}],
+      errors: {},
     })
   }
 
