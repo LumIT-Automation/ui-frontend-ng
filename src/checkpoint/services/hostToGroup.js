@@ -43,6 +43,7 @@ class Modify extends React.Component {
       this.setState({group: '', groups: ''})
       this.dataGet()
     }
+    console.log('hosts', this.state.hosts)
     console.log('group', this.state.group)
   }
 
@@ -185,10 +186,12 @@ class Modify extends React.Component {
     }
     else {
       group.members = data.data.items
-
+      let id = 1
       group.members.forEach((item, i) => {
         item.groupMember = true
         item.flagged = true
+        item.id = id 
+        id++
       });
       await this.setState({group: group, ghLoading: false})
     }
@@ -238,8 +241,13 @@ class Modify extends React.Component {
   set = async (value, key, obj) => {
     console.log(value)
     console.log(key)
+    console.log(obj)
     let groups = Object.assign([], this.state.groups);
     let group = groups.find(g => g.name === value)
+    let hosts = Object.assign([], this.state.hosts);
+    console.log(hosts)
+    let host
+    let member
 
     if (key === 'group') {
       await this.setState({group: group, groupError: ''})
@@ -251,6 +259,24 @@ class Modify extends React.Component {
       host.flagged = !host.flagged
       await this.setState({group: group})
     }
+    if (key === 'hostname') {
+      group = Object.assign([], this.state.group);
+      host = hosts.find(h => h.name === value)
+      member = group.members.find(m => m.id === obj.id)
+      member = Object.assign(member, host);
+      delete member.nameError
+      await this.setState({group: group})
+    }
+    if (key === 'ipv4-address') {
+      group = Object.assign([], this.state.group);
+      host = hosts.find(h => h['ipv4-address'] === value)
+      member = group.members.find(m => m.id === obj.id)
+      member = Object.assign(member, host);
+      delete member.ipError
+      await this.setState({group: group})
+    }
+
+    
   }
 
 
@@ -279,6 +305,36 @@ class Modify extends React.Component {
         dataIndex: 'name',
         key: 'name',
         ...this.getColumnSearchProps('name'),
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.groupMember ? 
+              name
+            :
+              <Select
+                value={obj.name}
+                showSearch
+                style={obj.nameError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={n => this.set(n, 'hostname', obj)}
+              >
+                <React.Fragment>
+                  {this.state.hosts.map((h, i) => {
+                    return (
+                      <Select.Option key={i} value={h.name}>{h.name}</Select.Option>
+                    )
+                  })
+                  }
+                </React.Fragment>
+              </Select>
+            }
+          </React.Fragment>
+        )
       },
       {
         title: 'IPv4-address',
@@ -286,6 +342,36 @@ class Modify extends React.Component {
         dataIndex: 'ipv4-address',
         key: 'ipv4-address',
        ...this.getColumnSearchProps('ipv4-address'),
+       render: (name, obj)  => (
+        <React.Fragment>
+          {obj.groupMember ? 
+            name
+          :
+            <Select
+              value={obj['ipv4-address']}
+              showSearch
+              style={obj.ipError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={n => this.set(n, 'ipv4-address', obj)}
+            >
+              <React.Fragment>
+                {this.state.hosts.map((h, i) => {
+                  return (
+                    <Select.Option key={i} value={h['ipv4-address']}>{h['ipv4-address']}</Select.Option>
+                  )
+                })
+                }
+              </React.Fragment>
+            </Select>
+          }
+        </React.Fragment>
+      )
       },
       {
         title: 'Domain',
