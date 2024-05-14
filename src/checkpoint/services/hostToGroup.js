@@ -4,6 +4,7 @@ import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import CommonFunctions from '../../_helpers/commonFunctions'
 
 import {
   err
@@ -11,9 +12,9 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Input, Button, Space, Modal, Spin, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
+import { Input, Button, Space, Modal, Spin, Radio, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
@@ -184,6 +185,11 @@ class Modify extends React.Component {
     }
     else {
       group.members = data.data.items
+
+      group.members.forEach((item, i) => {
+        item.groupMember = true
+        item.flagged = true
+      });
       await this.setState({group: group, ghLoading: false})
     }
 
@@ -213,6 +219,22 @@ class Modify extends React.Component {
     return r
   }
 
+  itemAdd = async (items, type) => {
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.itemAdd(items, type)
+    let group = Object.assign([], this.state.group);
+    group.members = list
+    await this.setState({group: group})
+  }
+
+  itemRemove = async (item, items) => {
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.itemRemove(item, items)
+    let group = Object.assign([], this.state.group);
+    group.members = list
+    await this.setState({group: group})
+  }
+
   set = async (value, key, obj) => {
     console.log(value)
     console.log(key)
@@ -222,6 +244,12 @@ class Modify extends React.Component {
     if (key === 'group') {
       await this.setState({group: group, groupError: ''})
       this.getGroupHosts()
+    }
+    if (key === 'flag') {
+      group = Object.assign([], this.state.group);
+      let host = group.members.find(h => h.name === obj.name)
+      host.flagged = !host.flagged
+      await this.setState({group: group})
     }
   }
 
@@ -246,17 +274,6 @@ class Modify extends React.Component {
 
     let columns = [
       {
-        title: 'Group member',
-        align: 'center',
-        dataIndex: 'groupMember',
-        key: 'groupMember',
-        render: (name, obj)  => (
-          <React.Fragment>
-            <Checkbox checked={obj.flagged} onChange={e => this.flagSet(e, obj)}/>
-          </React.Fragment>
-        ),
-      },
-      {
         title: 'Name',
         align: 'center',
         dataIndex: 'name',
@@ -276,7 +293,27 @@ class Modify extends React.Component {
         dataIndex: ['domain', 'name'],
         key: 'domain',
         ...this.getColumnSearchProps(['domain', 'name']),
-      }
+      },
+      {
+        title: 'Group member',
+        align: 'center',
+        dataIndex: 'groupMember',
+        key: 'groupMember',
+        render: (name, obj)  => (
+          <React.Fragment>
+            {obj.groupMember ? 
+              <Checkbox checked={obj.flagged} onChange={e => this.set(e, 'flag', obj)}/>
+            :
+              <Button
+                type='danger'
+                onClick={() => this.itemRemove(obj, this.state.group.members)}
+              >
+                -
+              </Button>
+            }
+          </React.Fragment>
+        ),
+      },
     ]
 
     let returnColumns = () => {
@@ -351,15 +388,41 @@ class Modify extends React.Component {
                         {this.state.ghLoading ?
                           <Spin indicator={spinIcon} style={{margin: 'auto 50%'}}/>
                         :
-                          <Table
-                            columns={returnColumns()}
-                            style={{width: '100%', padding: 15}}
-                            dataSource={this.state.group.members}
-                            bordered
-                            rowKey={r => r.id}
-                            scroll={{x: 'auto'}}
-                            pagination={{ pageSize: 10 }}
-                          />
+                          <React.Fragment>
+                            {/*to do: createElement()*/} 
+                            <Radio.Group>
+                              <Radio.Button
+                                style={{marginLeft: 10 }}
+                                onClick={() => this.getGroupHosts()}
+                              >
+                                <ReloadOutlined/>
+                              </Radio.Button>
+                            </Radio.Group>
+                
+                            <Radio.Group
+                              buttonStyle="solid"
+                            >
+                              <Radio.Button
+                                buttonStyle="solid"
+                                style={{marginLeft: 10 }}
+                                onClick={() => this.itemAdd(this.state.group.members)}
+                              >
+                                +
+                              </Radio.Button>
+                            </Radio.Group>
+                
+                            <br/>
+                            <br/>
+                            <Table
+                              columns={returnColumns()}
+                              style={{width: '100%', padding: 15}}
+                              dataSource={this.state.group.members}
+                              bordered
+                              rowKey={r => r.id}
+                              scroll={{x: 'auto'}}
+                              pagination={{ pageSize: 10 }}
+                            />
+                          </React.Fragment>  
                         }
                         
                       </Col>
