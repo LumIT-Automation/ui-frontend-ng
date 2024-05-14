@@ -39,10 +39,9 @@ class Modify extends React.Component {
 
   componentDidUpdate(prevProps, prevState) {
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
+      this.setState({group: '', groups: ''})
       this.dataGet()
     }
-    console.log(this.state.groups)
-    console.log(this.state.hosts)
     console.log('group', this.state.group)
   }
 
@@ -166,6 +165,27 @@ class Modify extends React.Component {
     else {
       await this.setState({hosts: data.data.items, loading: false})
     }
+  }
+
+  getGroupHosts = async () => {
+    let group = Object.assign([], this.state.group);
+    this.setState({ghLoading: true})
+
+    let data = await this.getData('group-hosts', group.uid)
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
+        component: 'hostToGroup',
+        vendor: 'checkpoint',
+        errorType: 'groupHostsError'
+      })
+      this.props.dispatch(err(error))
+      this.setState({ghLoading: false})
+      return
+    }
+    else {
+      group.members = data.data.items
+      await this.setState({group: group, ghLoading: false})
+    }
 
   }
 
@@ -201,6 +221,7 @@ class Modify extends React.Component {
 
     if (key === 'group') {
       await this.setState({group: group, groupError: ''})
+      this.getGroupHosts()
     }
   }
 
@@ -250,41 +271,6 @@ class Modify extends React.Component {
        ...this.getColumnSearchProps('ipv4-address'),
       },
       {
-        title: 'Subnet4',
-        align: 'center',
-        dataIndex: 'subnet4',
-        key: 'subnet4',
-        ...this.getColumnSearchProps('subnet4'),
-      },
-      {
-        title: 'Mask-length4',
-        align: 'center',
-        dataIndex: 'mask-length4',
-        key: 'mask-length4',
-        ...this.getColumnSearchProps('mask-length4'),
-      },
-      {
-        title: 'Subnet-mask',
-        align: 'center',
-        dataIndex: 'subnet-mask',
-        key: 'subnet-mask',
-        ...this.getColumnSearchProps('subnet-mask'),
-      },
-      {
-        title: 'IPv4-address-first',
-        align: 'center',
-        dataIndex: 'ipv4-address-first',
-        key: 'ipv4-address-first',
-        ...this.getColumnSearchProps('ipv4-address-first'),
-      },
-      {
-        title: 'IPv4-address-last',
-        align: 'center',
-        dataIndex: 'ipv4-address-last',
-        key: 'ipv4-address-last',
-        ...this.getColumnSearchProps('ipv4-address-last'),
-      },
-      {
         title: 'Domain',
         align: 'center',
         dataIndex: ['domain', 'name'],
@@ -294,17 +280,7 @@ class Modify extends React.Component {
     ]
 
     let returnColumns = () => {
-        columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
-        columns = columns.filter(col => col.dataIndex !== 'subnet4')
-        columns = columns.filter(col => col.dataIndex !== 'mask-length4')
-        columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
-        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
-        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
       return columns
-    }
-
-    let randomKey = () => {
-      return Math.random().toString()
     }
 
     return (
@@ -366,6 +342,33 @@ class Modify extends React.Component {
                       </Select>
                     </Col>
                   </Row>
+
+                  <br/>
+                  
+                  {this.state.group ?
+                    <Row>
+                      <Col span={24}>
+                        {this.state.ghLoading ?
+                          <Spin indicator={spinIcon} style={{margin: 'auto 50%'}}/>
+                        :
+                          <Table
+                            columns={returnColumns()}
+                            style={{width: '100%', padding: 15}}
+                            dataSource={this.state.group.members}
+                            bordered
+                            rowKey={r => r.id}
+                            scroll={{x: 'auto'}}
+                            pagination={{ pageSize: 10 }}
+                          />
+                        }
+                        
+                      </Col>
+                    </Row>
+                  :
+                    null
+                  }
+
+                  <br/>
 
                   <Row>
                     <Col offset={11} span={2}>
