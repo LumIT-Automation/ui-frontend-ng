@@ -45,8 +45,6 @@ class Modify extends React.Component {
       this.setState({group: '', groups: ''})
       this.dataGet()
     }
-    console.log('hosts', this.state.hosts)
-    console.log('group', this.state.group)
   }
 
   componentWillUnmount() {
@@ -241,13 +239,9 @@ class Modify extends React.Component {
   }
 
   set = async (value, key, obj) => {
-    console.log(value)
-    console.log(key)
-    console.log(obj)
     let groups = Object.assign([], this.state.groups);
     let group = groups.find(g => g.name === value)
     let hosts = Object.assign([], this.state.hosts);
-    console.log(hosts)
     let host
     let member
 
