@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
+import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 import CommonFunctions from '../../_helpers/commonFunctions'
 
@@ -25,6 +26,7 @@ class Modify extends React.Component {
     super(props);
     this.state = {
       visible: false,
+      'change-request-id': 'ITIO-',
       groups: [],
       errors: {},
       groupError: ''
@@ -265,6 +267,7 @@ class Modify extends React.Component {
       member = group.members.find(m => m.id === obj.id)
       member = Object.assign(member, host);
       delete member.nameError
+      delete member.ipError
       await this.setState({group: group})
     }
     if (key === 'ipv4-address') {
@@ -273,10 +276,149 @@ class Modify extends React.Component {
       member = group.members.find(m => m.id === obj.id)
       member = Object.assign(member, host);
       delete member.ipError
+      delete member.nameError
       await this.setState({group: group})
     }
 
-    
+    if (key === 'change-request-id') {
+      await this.setState({['change-request-id']: value, ['change-request-idError']: false})
+    }
+
+  }
+
+
+  validationCheck = async () => {
+    let validators = new Validators()
+    let group = Object.assign([], this.state.group);
+    let ok = true
+
+    if (!this.state['change-request-id']) {
+      await this.setState({['change-request-idError']: true})
+    }
+
+    if (!this.state.group) {
+      await this.setState({groupError: true})
+    }
+
+    group.members.forEach(element => {
+      if (!element.name) {
+        element.nameError = true
+        ok = false
+      }
+      if (!validators.ipv4(element['ipv4-address'])) {
+        element.ipError = true
+        ok = false
+      }
+    });
+
+    this.setState({group: group})
+    return ok
+  }
+
+  validation = async () => {
+    await this.validationCheck()
+
+    let valid = await this.validationCheck()
+    if (valid) {
+      this.reqHandler()
+    }
+  }
+
+  reqHandler = async () => {
+    let group = Object.assign([], this.state.group);
+    let toRemove = []
+    let toAdd = []
+
+    group.members.forEach(element => {
+      if (element.groupMember && !element.flagged) {
+        toRemove.push(element.uid)
+      }
+      if (!element.groupMember) {
+        toAdd.push(element.uid)
+      }
+    })
+
+    if (toRemove.length > 0) {
+      await this.setState({loading: true})
+      let data = await this.toDel(toRemove)
+      await this.setState({loading: false})
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'hostToGroup',
+          vendor: 'checkpoint',
+          errorType: 'deleteHostsError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+    }
+
+    if (toAdd.length > 0) {
+      await this.setState({loading: true})
+      let data = await this.toAdd(toAdd)
+      await this.setState({loading: false})
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'hostToGroup',
+          vendor: 'checkpoint',
+          errorType: 'addHostsError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+    }
+
+    else {
+      await this.getGroupHosts()
+    }
+
+  }
+
+  toDel = async (list) => {
+
+    let body = {}
+
+    body.data = {
+      "host-list": list,
+      "change-request-id": this.state['change-request-id']
+    }
+
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group-hosts/${this.state.group.uid}/`, this.props.token, body )
+    return r
+  }
+
+
+  toAdd = async (list) => {
+
+    let body = {}
+
+    body.data = {
+      "host-list": list,
+      "change-request-id": this.state['change-request-id']
+    }
+
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group-hosts/${this.state.group.uid}/`, this.props.token, body )
+    return r
   }
 
 
@@ -440,7 +582,27 @@ class Modify extends React.Component {
                 <React.Fragment>
 
                   <Row>
-                    <Col offset={8} span={8}>
+                    <Col offset={6} span={3}>
+                      Change request id
+                    </Col>
+
+                    <Col span={6}>
+                      <Input
+                        defaultValue={this.state['change-request-id']}
+                        placeholder='ITIO-6 to 18 numbers'
+                        style={this.state['change-request-idError'] ? {borderColor: 'red'} : null}
+                        onBlur={e => this.set(e.target.value, 'change-request-id')}
+                      />
+                    </Col>
+                  </Row>
+
+                  <br/>
+
+                  <Row>
+                    <Col offset={6} span={3}>
+                      Group
+                    </Col>
+                    <Col span={6}>
                       <Select
                         value={this.state.group ? this.state.group.name : ''}
                         showSearch
@@ -521,12 +683,12 @@ class Modify extends React.Component {
 
                   <Row>
                     <Col offset={11} span={2}>
-                      {(this.state.loading || this.state.itemTypes === undefined) ?
+                      {(this.state.loading || !this.state.group || !this.state['change-request-id']) ?
                         <Button type="primary" shape='round' disabled>
                           Modify Group
                         </Button>
                       :
-                        <Button type="primary" shape='round' onClick={() => this.createBody()} >
+                        <Button type="primary" shape='round' onClick={() => this.validation()} >
                           Modify Group
                         </Button>
                       }
