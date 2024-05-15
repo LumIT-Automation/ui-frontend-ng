@@ -11,7 +11,6 @@ import {
 } from '../../../concerto/store'
 
 import {
-  certificatesLoading,
   certificates,
   certificatesFetch,
 } from '../../../f5/store'
@@ -66,7 +65,6 @@ class Manager extends React.Component {
 
 
   certificatesGet = async () => {
-    this.props.dispatch(certificatesLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -82,7 +80,6 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/certificates/`, this.props.token)
-    this.props.dispatch(certificatesLoading(false))
   }
 
 

@@ -44,6 +44,22 @@ const f5Slice = createSlice({
           state.poolMembersFetch = action.payload
         },
 
+
+        certificates: (state, action) => {
+          state.certificates = action.payload
+        },
+        certificatesFetch: (state, action) => {
+          state.certificatesFetch = action.payload
+        },
+        keys: (state, action) => {
+          state.keys = action.payload
+        },
+        keysFetch: (state, action) => {
+          state.keysFetch = action.payload
+        },
+
+        
+
         f5objects: (state, action) => {
           state.f5objects = action.payload.data.items
         },
@@ -74,6 +90,11 @@ export const {
 
   pools,
   poolMembersFetch,
+
+  certificates,
+  certificatesFetch,
+  keys,
+  keysFetch,
 
   f5objects,
 

@@ -11,7 +11,6 @@ import {
 } from '../../../concerto/store'
 
 import {
-  keysLoading,
   keys,
   keysFetch,
 } from '../../../f5/store'
@@ -68,7 +67,6 @@ class Manager extends React.Component {
 
 
   keysGet = async () => {
-    this.props.dispatch(keysLoading(true))
     let rest = new Rest(
       "GET",
       resp => {
@@ -84,7 +82,6 @@ class Manager extends React.Component {
       }
     )
     await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/keys/`, this.props.token)
-    this.props.dispatch(keysLoading(false))
   }
 
 
