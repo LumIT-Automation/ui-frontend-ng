@@ -41,9 +41,10 @@ class Modify extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    //
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
       this.setState({group: '', groups: ''})
-      this.dataGet()
+      this.dataGet() 
     }
   }
 
