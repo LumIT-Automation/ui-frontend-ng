@@ -162,7 +162,6 @@ class Error extends Component {
         visible= {this.props.visible}
         footer={''}
         onOk={null}
-        //onCancel={() => this.props.dispatch(setError(null))}
         onCancel={this.onCancel}
         width={1500}
         maskClosable={false}

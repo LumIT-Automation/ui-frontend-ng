@@ -14,7 +14,6 @@ import {
   application_sitesLoading,
   application_sites,
   application_sitesFetch,
-  application_site_categorysLoading,
   application_site_categorys,
 } from '../store'
 
@@ -61,25 +60,24 @@ class Manager extends React.Component {
 
   main = async () => {
     await this.props.dispatch(application_sitesFetch(false))
-    await this.props.dispatch(application_sitesLoading(true))
+
+    await this.props.dispatch(application_sitesLoading())
     let appSites = await this.application_sitesGet()
+    await this.props.dispatch(application_sitesLoading())
+
     if (appSites.status && appSites.status !== 200 ) {
       let error = Object.assign(appSites, {
         component: 'application_sites',
         vendor: 'checkpoint',
         errorType: 'application_sitesError'
       })
-      await this.props.dispatch(application_sitesLoading(false))
-      this.props.dispatch(err(error))
+      await this.props.dispatch(err(error))
       return
     }
     else {
-      await this.props.dispatch(application_sites(appSites.data.items))
-      await this.props.dispatch(application_sitesLoading(false))
+      await this.props.dispatch(application_sites(appSites))
     }
 
-
-    await this.props.dispatch(application_site_categorysLoading(true))
     let appCategs = await this.application_site_categorysGet()
     if (appCategs.status && appCategs.status !== 200 ) {
       let error = Object.assign(appCategs, {
@@ -88,14 +86,11 @@ class Manager extends React.Component {
         errorType: 'application_site_categorysError'
       })
       this.props.dispatch(err(error))
-      this.props.dispatch(application_site_categorysLoading(false))
       return
     }
     else {
       this.props.dispatch(application_site_categorys(appCategs))
-      await this.props.dispatch(application_site_categorysLoading(false))
     }
-
   }
 
 

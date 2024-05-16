@@ -97,18 +97,15 @@ const checkpointSlice = createSlice({
       },
 
       application_sitesLoading: (state, action) => {
-        state.application_sitesLoading = action.payload
+        state.application_sitesLoading = !state.application_sitesLoading
       },
       application_sites: (state, action) => {
-        state.application_sites = action.payload
+        state.application_sites = action.payload.data.items
       },
       application_sitesFetch: (state, action) => {
         state.application_sitesFetch = action.payload
       },
 
-      application_site_categorysLoading: (state, action) => {
-        state.application_site_categorysLoading = action.payload
-      },
       application_site_categorys: (state, action) => {
         state.application_site_categorys = action.payload.data.items
       },
@@ -169,7 +166,6 @@ export const {
   application_sites,
   application_sitesFetch,
 
-  application_site_categorysLoading,
   application_site_categorys,
   application_site_categorysFetch,
 
