@@ -3,179 +3,221 @@ let Netmask = require('netmask').Netmask  //https://www.npmjs.com/package/netmas
 class Validators {
 
   ipv4 = ipv4 => {
-    const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
+    try {
+      const validIpAddressRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
     
-    if (!ipv4) {
-      return false
-    }
+      if (!ipv4) {
+        return false
+      }
 
-    if (ipv4.includes('%')) {
-      ipv4 = ipv4.split('%')
-      ipv4 = ipv4[0] 
+      if (ipv4.includes('%')) {
+        ipv4 = ipv4.split('%')
+        ipv4 = ipv4[0] 
+      }
+      if (validIpAddressRegex.test(ipv4)) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-    if (validIpAddressRegex.test(ipv4)) {
-      return true
-    }
-    else {
-      return false
-    }
+    
   }
 
   ipv6 = ipv6 => {
-    const validIpAddressRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
+    try {
+      const validIpAddressRegex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
 
-    if (!ipv6) {
-      return false
-    }
+      if (!ipv6) {
+        return false
+      }
 
-    if (validIpAddressRegex.test(ipv6)) {
-      return true
+      if (validIpAddressRegex.test(ipv6)) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-    else {
-      return false
-    }
+    
   }
 
   macAddress = mac => {
-    const validMacAddressRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
+    try {
+      const validMacAddressRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
 
-    if (!mac) {
-      return false
-    }
+      if (!mac) {
+        return false
+      }
 
-    if (validMacAddressRegex.test(mac)) {
-      return true
+      if (validMacAddressRegex.test(mac)) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-    else {
-      return false
-    }
+    
   }
 
   port = port => {
-
-    if (!port) {
-      return false
+    try {
+      if (!port) {
+        return false
+      }
+  
+      if (port !== '' && !isNaN(port) && port >= 0 && port < 65536) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-
-    if (port !== '' && !isNaN(port) && port >= 0 && port < 65536) {
-      return true
-    }
-    else {
-      return false
-    }
+    
   }
 
   mask_length4 = mask_length4 => {
-
-    if (!mask_length4) {
-      return false
-    }
-
-    if (!isNaN(mask_length4) && mask_length4 >= 0 && mask_length4 <= 32) {
-      return true
-    }
-    else {
-      return false
+    try {
+      if (!mask_length4) {
+        return false
+      }
+  
+      if (!isNaN(mask_length4) && mask_length4 >= 0 && mask_length4 <= 32) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
   }
 
   mask_length6 = mask_length6 => {
-
-    if (!mask_length6) {
-      return false
+    try {
+      if (!mask_length6) {
+        return false
+      }
+  
+      if (!isNaN(mask_length6) && mask_length6 >= 1 && mask_length6 <= 128) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-
-    if (!isNaN(mask_length6) && mask_length6 >= 1 && mask_length6 <= 128) {
-      return true
-    }
-    else {
-      return false
-    }
+    
   }
 
   fqdn = fqdn => {
-
-    if (!fqdn) {
-      return false
+    try {
+      if (!fqdn) {
+        return false
+      }
+  
+      const validFqdnRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
+  
+      if (!fqdn) {
+        return false
+      }
+  
+      if (validFqdnRegex.test(fqdn)) {
+        return true
+      }
+      else {
+        return false
+      }
+    } catch (error) {
+      console.log(error)
     }
-
-    const validFqdnRegex = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9-]*[A-Za-z0-9])$/;
-
-    if (!fqdn) {
-      return false
-    }
-
-    if (validFqdnRegex.test(fqdn)) {
-      return true
-    }
-    else {
-      return false
-    }
+    
   }
 
   isSubnet = (subnet) => {
-
-    if (!subnet) {
-      return false
-    }
-
-    let block
-
     try {
-      block = new Netmask(subnet)
-      return true
-
-    } catch(error) {
+      if (!subnet) {
+        return false
+      }
+  
+      let block
+  
+      try {
+        block = new Netmask(subnet)
+        return true
+  
+      } catch(error) {
+        console.log(error)
+      }
+  
+      return false
+    } catch (error) {
       console.log(error)
     }
-
-    return false
+    
   }
 
   ipInSubnet = (subnet, ips) => {
-
-    if (!subnet) {
-      return false
-    }
-
-    if (subnet.includes('%')) {
-      let sub = subnet.split('%')
-      let m = sub[1]
-      let mask = m.split('/')
-      subnet = `${sub[0]}/${mask[1]}`
-    }
-
-    let block = new Netmask(subnet)
-    let ok = 1
-
-    ips.forEach((ip, i) => {
-      if (block.contains(ip)) {
-        ok *= 1
+    try {
+      if (!subnet) {
+        return false
+      }
+  
+      if (subnet.includes('%')) {
+        let sub = subnet.split('%')
+        let m = sub[1]
+        let mask = m.split('/')
+        subnet = `${sub[0]}/${mask[1]}`
+      }
+  
+      let block = new Netmask(subnet)
+      let ok = 1
+  
+      ips.forEach((ip, i) => {
+        if (block.contains(ip)) {
+          ok *= 1
+        }
+        else {
+          ok *= 0
+        }
+      });
+  
+      if (ok) {
+        return true
       }
       else {
-        ok *= 0
+        return false
       }
-    });
-
-    if (ok) {
-      return true
+    } catch (error) {
+      console.log(error)
     }
-    else {
-      return false
-    }
+    
   }
 
   mailAddress = (email) => {
-
-    if (!email) {
-      return false
+    try {
+      if (!email) {
+        return false
+      }
+  
+      return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+    } catch (error) {
+      console.log(error)
     }
-
-    return String(email)
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
+    
   }
 
 }
