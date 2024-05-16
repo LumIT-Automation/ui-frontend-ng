@@ -100,7 +100,7 @@ const checkpointSlice = createSlice({
         state.application_sitesLoading = action.payload
       },
       application_sites: (state, action) => {
-        state.application_sites = action.payload.data.items
+        state.application_sites = action.payload
       },
       application_sitesFetch: (state, action) => {
         state.application_sitesFetch = action.payload

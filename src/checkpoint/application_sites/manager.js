@@ -74,7 +74,7 @@ class Manager extends React.Component {
       return
     }
     else {
-      await this.props.dispatch(application_sites(appSites))
+      await this.props.dispatch(application_sites(appSites.data.items))
       await this.props.dispatch(application_sitesLoading(false))
     }
 

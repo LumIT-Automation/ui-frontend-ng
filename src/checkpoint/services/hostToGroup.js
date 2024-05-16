@@ -332,40 +332,40 @@ class Modify extends React.Component {
       }
     })
 
-    if (toRemove.length > 0) {
-      await this.setState({loading: true})
-      let data = await this.toDel(toRemove)
-      await this.setState({loading: false})
-      if (data.status && data.status !== 200 ) {
-        let error = Object.assign(data, {
-          component: 'hostToGroup',
-          vendor: 'checkpoint',
-          errorType: 'deleteHostsError'
-        })
-        this.props.dispatch(err(error))
-        return
+    if (toRemove.length > 0 || toAdd.length > 0) {
+      if (toRemove.length > 0) {
+        await this.setState({loading: true})
+        let data = await this.toDel(toRemove)
+        await this.setState({loading: false})
+        if (data.status && data.status !== 200 ) {
+          let error = Object.assign(data, {
+            component: 'hostToGroup',
+            vendor: 'checkpoint',
+            errorType: 'deleteHostsError'
+          })
+          this.props.dispatch(err(error))
+          return
+        }
       }
-    }
-
-    if (toAdd.length > 0) {
-      await this.setState({loading: true})
-      let data = await this.toAdd(toAdd)
-      await this.setState({loading: false})
-      if (data.status && data.status !== 200 ) {
-        let error = Object.assign(data, {
-          component: 'hostToGroup',
-          vendor: 'checkpoint',
-          errorType: 'addHostsError'
-        })
-        this.props.dispatch(err(error))
-        return
+  
+      if (toAdd.length > 0) {
+        await this.setState({loading: true})
+        let data = await this.toAdd(toAdd)
+        await this.setState({loading: false})
+        if (data.status && data.status !== 200 ) {
+          let error = Object.assign(data, {
+            component: 'hostToGroup',
+            vendor: 'checkpoint',
+            errorType: 'addHostsError'
+          })
+          this.props.dispatch(err(error))
+          return
+        }
       }
-    }
-
-    else {
+      
       await this.getGroupHosts()
     }
-
+    
   }
 
   toDel = async (list) => {
