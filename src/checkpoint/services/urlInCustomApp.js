@@ -20,7 +20,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
-class Modify extends React.Component {
+class UrlInCustomApp extends React.Component {
 
   constructor(props) {
     super(props);
@@ -141,7 +141,7 @@ class Modify extends React.Component {
     let data = await this.getData('groups')
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostToGroup',
+        component: 'hostInGroup',
         vendor: 'checkpoint',
         errorType: 'groupsError'
       })
@@ -156,7 +156,7 @@ class Modify extends React.Component {
     data = await this.getData('hosts')
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostToGroup',
+        component: 'hostInGroup',
         vendor: 'checkpoint',
         errorType: 'hostsError'
       })
@@ -176,7 +176,7 @@ class Modify extends React.Component {
     let data = await this.getData('group-hosts', group.uid)
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostToGroup',
+        component: 'hostInGroup',
         vendor: 'checkpoint',
         errorType: 'groupHostsError'
       })
@@ -339,7 +339,7 @@ class Modify extends React.Component {
         await this.setState({loading: false})
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
-            component: 'hostToGroup',
+            component: 'hostInGroup',
             vendor: 'checkpoint',
             errorType: 'deleteHostsError'
           })
@@ -354,7 +354,7 @@ class Modify extends React.Component {
         await this.setState({loading: false})
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
-            component: 'hostToGroup',
+            component: 'hostInGroup',
             vendor: 'checkpoint',
             errorType: 'addHostsError'
           })
@@ -429,7 +429,7 @@ class Modify extends React.Component {
   render() {
 
     let errors = () => {
-      if (this.props.error && this.props.error.component === 'hostToGroup') {
+      if (this.props.error && this.props.error.component === 'hostInGroup') {
         return <Error error={[this.props.error]} visible={true}/> 
       }
     }
@@ -546,7 +546,7 @@ class Modify extends React.Component {
 
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>Add remove host to Group</Button>
+        <Button type="primary" onClick={() => this.details()}>Host in Group</Button>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>Add remove host to Group</p>}
@@ -712,4 +712,4 @@ export default connect((state) => ({
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-}))(Modify);
+}))(UrlInCustomApp);

@@ -129,7 +129,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Hosts" tab=<span>Hosts <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.hostsRefresh()}/></span>>
+                <TabPane key="Hosts" tab=
+                  {<span>Hosts <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.hostsRefresh()}/></span>}
+                >
                   <Hosts/>
                 </TabPane>
               }
@@ -144,7 +146,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Groups" tab=<span>Groups <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.groupsRefresh()}/></span>>
+                <TabPane key="Groups" tab=
+                  {<span>Groups <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.groupsRefresh()}/></span>}
+                >
                   <Groups/>
                 </TabPane>
               }
@@ -159,7 +163,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Networks" tab=<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                <TabPane key="Networks" tab=
+                  {<span>Networks <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>}
+                >
                   <Networks/>
                 </TabPane>
               }
@@ -174,7 +180,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Address Ranges" tab=<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.addressRangesRefresh()}/></span>>
+                <TabPane key="Address Ranges" tab=
+                  {<span>Address Ranges <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.addressRangesRefresh()}/></span>}
+                >
                   <AddressRanges/>
                 </TabPane>
               }
@@ -189,7 +197,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Custom Application Sites" tab=<span>Custom Application Sites <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.application_sitesRefresh()}/></span>>
+                <TabPane key="Custom Application Sites" tab=
+                  {<span>Custom Application Sites <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.application_sitesRefresh()}/></span>}
+                >
                   <ApplicationSites/>
                 </TabPane>
               }
@@ -204,7 +214,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Datacenter Servers" tab=<span>Datacenter Servers<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterServersRefresh()}/></span>>
+                <TabPane key="Datacenter Servers" tab=
+                  {<span>Datacenter Servers<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterServersRefresh()}/></span>}
+                >
                   <DatacenterServers/>
                 </TabPane>
               }
@@ -219,7 +231,9 @@ class Checkpoint extends React.Component {
                   <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                 </TabPane>
               :
-                <TabPane key="Datacenter Queries" tab=<span>Datacenter Queries<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterQuerysRefresh()}/></span>>
+                <TabPane key="Datacenter Queries" tab=
+                  {<span>Datacenter Queries<ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.datacenterQuerysRefresh()}/></span>}
+                >
                   <DatacenterQuerys/>
                 </TabPane>
               }
@@ -237,7 +251,9 @@ class Checkpoint extends React.Component {
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="Access Rules" tab=<span>Access Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                      <TabPane key="Access Rules" tab=
+                        {<span>Access Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>}
+                      >
                         {<React.Fragment>
                           <p>Search:</p>
                           <p>hosts</p>
@@ -260,7 +276,9 @@ class Checkpoint extends React.Component {
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="Threat Rules" tab=<span>Threat Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                      <TabPane key="Threat Rules" tab=
+                        {<span>Threat Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>}
+                        >
 
                       </TabPane>
                     }
@@ -275,7 +293,9 @@ class Checkpoint extends React.Component {
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="Https Rules" tab=<span>Https Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                      <TabPane key="Https Rules" tab=
+                        {<span>Https Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>}
+                      >
 
                       </TabPane>
                     }
@@ -290,7 +310,9 @@ class Checkpoint extends React.Component {
                         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
                       </TabPane>
                     :
-                      <TabPane key="NAT Rules" tab=<span>NAT Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>>
+                      <TabPane key="NAT Rules" tab=
+                        {<span>NAT Rules <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.networksRefresh()}/></span>}
+                      >
 
                       </TabPane>
                     }

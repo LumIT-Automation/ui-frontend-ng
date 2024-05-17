@@ -15,7 +15,8 @@ import {
 
 import VpnToServices from './vpnToServices'
 import VpnToHost from './vpnToHost'
-import HostToGroup from './hostToGroup'
+import HostInGroup from './hostInGroup'
+import UrlInCustomApp from './urlInCustomApp'
 import { Row, Col } from 'antd'
 
 
@@ -85,7 +86,10 @@ class Manager extends React.Component {
             <VpnToHost/>
           </Col>
           <Col span={4} offset={2}>
-            <HostToGroup/>
+            <HostInGroup/>
+          </Col>
+          <Col span={4} offset={2}>
+            <UrlInCustomApp/>
           </Col>
         </Row>
 
