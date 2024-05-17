@@ -139,7 +139,6 @@ class UrlInApplicationSite extends React.Component {
   };
 
   dataGet = async () => {
-    let list = JSON.parse(JSON.stringify(this.state.applicationSites))
     this.setState({loading: true})
 
     let data = await this.getData('application-sites')
@@ -154,23 +153,17 @@ class UrlInApplicationSite extends React.Component {
       return
     }
     else {
-      await this.setState({applicationSites: data.data.items})
-    }
-
-    /*
-    data = await this.getData('application-site-categories')
-    if (data.status && data.status !== 200 ) {
-      let error = Object.assign(data, {
-        component: 'urlInApplicationSite',
-        vendor: 'checkpoint',
-        errorType: 'applicationSitesCategoriesError'
+      let list = data.data.items.map(a => {
+        if (a['meta-info'] && a['meta-info']['creation-time'] && a['meta-info']['creation-time']['iso-8601']) {
+          a['creation-time'] = a['meta-info']['creation-time']['iso-8601']
+          return a
+        }
+        else {
+          a['creation-time'] = ''
+          return a
+        }
       })
-      this.props.dispatch(err(error))
-      this.setState({loading: false})
-      return
-    }
-    else {
-      await this.setState({applicationSitesCategories: data.data.items})
+      await this.setState({applicationSites: list})
     }
 
 /*
@@ -251,7 +244,7 @@ class UrlInApplicationSite extends React.Component {
   itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemAdd(items, type)
-    let applicationSite = Object.assign([], this.state.applicationSite);
+    let applicationSite = Object.assign({}, this.state.applicationSite);
     applicationSite.members = list
     await this.setState({applicationSite: applicationSite})
   }
@@ -259,7 +252,7 @@ class UrlInApplicationSite extends React.Component {
   itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(item, items)
-    let applicationSite = Object.assign([], this.state.applicationSite);
+    let applicationSite = Object.assign({}, this.state.applicationSite);
     applicationSite.members = list
     await this.setState({applicationSite: applicationSite})
   }
@@ -273,7 +266,7 @@ class UrlInApplicationSite extends React.Component {
 
     if (key === 'applicationSite') {
       await this.setState({applicationSite: applicationSite, applicationSiteError: ''})
-      this.getApplicationSiteUrls()
+      //this.getApplicationSiteUrls()
     }
     if (key === 'flag') {
       applicationSite = Object.assign([], this.state.applicationSite);
@@ -460,6 +453,117 @@ class UrlInApplicationSite extends React.Component {
       }
     }
 
+    const columns = [
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+      },
+      {
+        title: 'Domain',
+        align: 'center',
+        width: 'auto',
+        dataIndex: ['domain', 'name'],
+        key: 'domain',
+        ...this.getColumnSearchProps(['domain', 'name']),
+      },
+      {
+        title: 'Primary-category',
+        align: 'center',
+        width: 500,
+        dataIndex: 'primary-category',
+        key: 'primary-category',
+        ...this.getColumnSearchProps('primary-category'),
+      },
+      {
+        title: 'Risk',
+        align: 'center',
+        dataIndex: 'risk',
+        key: 'risk',
+        ...this.getColumnSearchProps('risk'),
+      },
+      {
+        title: 'Comments',
+        align: 'center',
+        width: 'auto',
+        dataIndex: 'comments',
+        key: 'comments',
+        ...this.getColumnSearchProps('comments'),
+      },
+      {
+        title: 'Description',
+        align: 'center',
+        dataIndex: 'description',
+        key: 'description',
+        ...this.getColumnSearchProps('description'),
+      },
+      {
+        title: 'Creation-time',
+        align: 'center',
+        width: 500,
+        dataIndex: 'creation-time',
+        key: 'creation-time',
+        defaultSortOrder: 'descend',
+        sorter: (a, b) => new Date(a) - new Date(b),
+        ...this.getColumnSearchProps('creation-time'),
+      },
+      {
+        title: 'Last-modify-time',
+        align: 'center',
+        width: 500,
+        dataIndex: ['meta-info', 'last-modify-time', 'iso-8601'],
+        key: 'last-modify-time'
+      },
+      {
+        title: 'Lock',
+        align: 'center',
+        width: 'auto',
+        dataIndex: ['meta-info', 'lock'],
+        key: 'lock',
+        ...this.getColumnSearchProps(['meta-info', 'lock']),
+      },
+      {
+        title: 'Url-list',
+        align: 'center',
+        dataIndex: 'url-list',
+        key: 'url-list',/*
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.application_site_modify || this.props.authorizations.any) ?
+            <Modify name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),*/
+      },
+      {
+        title: 'Validation-state',
+        align: 'center',
+        width: 500,
+        dataIndex: ['meta-info', 'validation-state'],
+        key: 'validation-state',
+        ...this.getColumnSearchProps(['meta-info', 'validation-state']),
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',/*
+        render: (name, obj)  => (
+          <Space size="small">
+            { this.props.authorizations && (this.props.authorizations.application_site_delete || this.props.authorizations.any) ?
+            <Delete name={name} obj={obj} />
+            :
+            '-'
+          }
+          </Space>
+        ),*/
+      }
+    ];
+
 
     return (
 
@@ -475,7 +579,7 @@ class UrlInApplicationSite extends React.Component {
           footer={''}
           onOk={() => this.setState({visible: true})}
           onCancel={() => this.closeModal()}
-          width={1500}
+          width={'100%'}
           maskClosable={false}
         >
 
@@ -512,32 +616,18 @@ class UrlInApplicationSite extends React.Component {
                   <br/>
 
                   <Row>
-                    <Col offset={6} span={3}>
-                      ApplicationSite
-                    </Col>
-                    <Col span={6}>
-                      <Select
-                        value={this.state.applicationSite ? this.state.applicationSite.name : ''}
-                        showSearch
-                        style={this.state.applicationSiteError ? {width: '100%', border: `1px solid red`} : {width: '100%'} }
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                        }
-                        onSelect={g => this.set(g, 'applicationSite')}
-                      >
-                        <React.Fragment>
-                          {this.state.applicationSites.map((g, i) => {
-                            return (
-                              <Select.Option key={i} value={g.name}>{g.name}</Select.Option>
-                            )
-                          })
-                          }
-                        </React.Fragment>
-                      </Select>
+                    <Col span={24}>
+                    <Table
+                      columns={columns}
+                      tableLayout='auto'
+                      dataSource={this.state.applicationSites}
+                      bordered
+                      scroll={{x: 'auto'}}
+                      //scroll={{ x: 'max-content' }}
+                      pagination={{ pageSize: 10 }}
+                      rowKey={record => record.uid}
+                      style={{marginBottom: 10}}
+                    />
                     </Col>
                   </Row>
 
