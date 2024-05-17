@@ -20,16 +20,18 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 
-class UrlInCustomApp extends React.Component {
+class UrlInApplicationSite extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
       visible: false,
       'change-request-id': 'ITIO-',
-      groups: [],
+      applicationSites: [],
+      applicationSitesCategories: [],
+      applicationSite: {},
       errors: {},
-      groupError: ''
+      applicationSiteError: ''
     };
   }
 
@@ -41,8 +43,10 @@ class UrlInCustomApp extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('applicationSites', this.state.applicationSites)
+    console.log('applicationSitesCategories', this.state.applicationSitesCategories)
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
-      this.setState({group: '', groups: ''})
+      this.setState({applicationSite: '', applicationSitesCategories: ''})
       this.dataGet() 
     }
   }
@@ -135,65 +139,84 @@ class UrlInCustomApp extends React.Component {
   };
 
   dataGet = async () => {
-    let list = JSON.parse(JSON.stringify(this.state.groups))
+    let list = JSON.parse(JSON.stringify(this.state.applicationSites))
     this.setState({loading: true})
 
-    let data = await this.getData('groups')
+    let data = await this.getData('application-sites')
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostInGroup',
+        component: 'urlInApplicationSite',
         vendor: 'checkpoint',
-        errorType: 'groupsError'
+        errorType: 'applicationSitesError'
       })
       this.props.dispatch(err(error))
       this.setState({loading: false})
       return
     }
     else {
-      await this.setState({groups: data.data.items})
+      await this.setState({applicationSites: data.data.items})
     }
 
-    data = await this.getData('hosts')
+    /*
+    data = await this.getData('application-site-categories')
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostInGroup',
+        component: 'urlInApplicationSite',
         vendor: 'checkpoint',
-        errorType: 'hostsError'
+        errorType: 'applicationSitesCategoriesError'
       })
       this.props.dispatch(err(error))
       this.setState({loading: false})
       return
     }
     else {
-      await this.setState({hosts: data.data.items, loading: false})
+      await this.setState({applicationSitesCategories: data.data.items})
     }
+
+/*
+    data = await this.getData('urls')
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
+        component: 'urlInApplicationSite',
+        vendor: 'checkpoint',
+        errorType: 'urlsError'
+      })
+      this.props.dispatch(err(error))
+      this.setState({loading: false})
+      return
+    }
+    else {
+      await this.setState({urls: data.data.items, loading: false})
+    }*/
+
+    this.setState({loading: false})
   }
 
-  getGroupHosts = async () => {
-    let group = Object.assign([], this.state.group);
+  getApplicationSiteUrls = async () => {
+    let applicationSite = Object.assign([], this.state.applicationSite);
     this.setState({ghLoading: true})
 
-    let data = await this.getData('group-hosts', group.uid)
+    let data = await this.getData('applicationSite-urls', applicationSite.uid)
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
-        component: 'hostInGroup',
+        component: 'urlInApplicationSite',
         vendor: 'checkpoint',
-        errorType: 'groupHostsError'
+        errorType: 'applicationSiteUrlsError'
       })
       this.props.dispatch(err(error))
       this.setState({ghLoading: false})
       return
     }
     else {
-      group.members = data.data.items
+      applicationSite.members = data.data.items
       let id = 1
-      group.members.forEach((item, i) => {
-        item.groupMember = true
+      applicationSite.members.forEach((item, i) => {
+        item.applicationSiteMember = true
         item.flagged = true
         item.id = id 
         id++
       });
-      await this.setState({group: group, ghLoading: false})
+      await this.setState({applicationSite: applicationSite, ghLoading: false})
     }
 
   }
@@ -202,8 +225,11 @@ class UrlInCustomApp extends React.Component {
     let r
     let endpoint = ''
 
-    if (id) {
-      endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/${id}/`
+    if (entity === 'application-sites') {
+      endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/?custom&local`
+    }
+    if (entity === 'application-site-categories') {
+      endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/`
     }
     else {
       endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/`
@@ -225,53 +251,53 @@ class UrlInCustomApp extends React.Component {
   itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemAdd(items, type)
-    let group = Object.assign([], this.state.group);
-    group.members = list
-    await this.setState({group: group})
+    let applicationSite = Object.assign([], this.state.applicationSite);
+    applicationSite.members = list
+    await this.setState({applicationSite: applicationSite})
   }
 
   itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(item, items)
-    let group = Object.assign([], this.state.group);
-    group.members = list
-    await this.setState({group: group})
+    let applicationSite = Object.assign([], this.state.applicationSite);
+    applicationSite.members = list
+    await this.setState({applicationSite: applicationSite})
   }
 
   set = async (value, key, obj) => {
-    let groups = Object.assign([], this.state.groups);
-    let group = groups.find(g => g.name === value)
-    let hosts = Object.assign([], this.state.hosts);
-    let host
+    let applicationSites = Object.assign([], this.state.applicationSites);
+    let applicationSite = applicationSites.find(g => g.name === value)
+    let urls = Object.assign([], this.state.urls);
+    let url
     let member
 
-    if (key === 'group') {
-      await this.setState({group: group, groupError: ''})
-      this.getGroupHosts()
+    if (key === 'applicationSite') {
+      await this.setState({applicationSite: applicationSite, applicationSiteError: ''})
+      this.getApplicationSiteUrls()
     }
     if (key === 'flag') {
-      group = Object.assign([], this.state.group);
-      let host = group.members.find(h => h.name === obj.name)
-      host.flagged = !host.flagged
-      await this.setState({group: group})
+      applicationSite = Object.assign([], this.state.applicationSite);
+      let url = applicationSite.members.find(h => h.name === obj.name)
+      url.flagged = !url.flagged
+      await this.setState({applicationSite: applicationSite})
     }
-    if (key === 'hostname') {
-      group = Object.assign([], this.state.group);
-      host = hosts.find(h => h.name === value)
-      member = group.members.find(m => m.id === obj.id)
-      member = Object.assign(member, host);
+    if (key === 'urlname') {
+      applicationSite = Object.assign([], this.state.applicationSite);
+      url = urls.find(h => h.name === value)
+      member = applicationSite.members.find(m => m.id === obj.id)
+      member = Object.assign(member, url);
       delete member.nameError
       delete member.ipError
-      await this.setState({group: group})
+      await this.setState({applicationSite: applicationSite})
     }
     if (key === 'ipv4-address') {
-      group = Object.assign([], this.state.group);
-      host = hosts.find(h => h['ipv4-address'] === value)
-      member = group.members.find(m => m.id === obj.id)
-      member = Object.assign(member, host);
+      applicationSite = Object.assign([], this.state.applicationSite);
+      url = urls.find(h => h['ipv4-address'] === value)
+      member = applicationSite.members.find(m => m.id === obj.id)
+      member = Object.assign(member, url);
       delete member.ipError
       delete member.nameError
-      await this.setState({group: group})
+      await this.setState({applicationSite: applicationSite})
     }
 
     if (key === 'change-request-id') {
@@ -283,18 +309,18 @@ class UrlInCustomApp extends React.Component {
 
   validationCheck = async () => {
     let validators = new Validators()
-    let group = Object.assign([], this.state.group);
+    let applicationSite = Object.assign([], this.state.applicationSite);
     let ok = true
 
     if (!this.state['change-request-id']) {
       await this.setState({['change-request-idError']: true})
     }
 
-    if (!this.state.group) {
-      await this.setState({groupError: true})
+    if (!this.state.applicationSite) {
+      await this.setState({applicationSiteError: true})
     }
 
-    group.members.forEach(element => {
+    applicationSite.members.forEach(element => {
       if (!element.name) {
         element.nameError = true
         ok = false
@@ -305,7 +331,7 @@ class UrlInCustomApp extends React.Component {
       }
     });
 
-    this.setState({group: group})
+    this.setState({applicationSite: applicationSite})
     return ok
   }
 
@@ -319,15 +345,15 @@ class UrlInCustomApp extends React.Component {
   }
 
   reqHandler = async () => {
-    let group = Object.assign([], this.state.group);
+    let applicationSite = Object.assign([], this.state.applicationSite);
     let toRemove = []
     let toAdd = []
 
-    group.members.forEach(element => {
-      if (element.groupMember && !element.flagged) {
+    applicationSite.members.forEach(element => {
+      if (element.applicationSiteMember && !element.flagged) {
         toRemove.push(element.uid)
       }
-      if (!element.groupMember) {
+      if (!element.applicationSiteMember) {
         toAdd.push(element.uid)
       }
     })
@@ -339,9 +365,9 @@ class UrlInCustomApp extends React.Component {
         await this.setState({loading: false})
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
-            component: 'hostInGroup',
+            component: 'urlInApplicationSite',
             vendor: 'checkpoint',
-            errorType: 'deleteHostsError'
+            errorType: 'deleteUrlsError'
           })
           this.props.dispatch(err(error))
           return
@@ -354,16 +380,16 @@ class UrlInCustomApp extends React.Component {
         await this.setState({loading: false})
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
-            component: 'hostInGroup',
+            component: 'urlInApplicationSite',
             vendor: 'checkpoint',
-            errorType: 'addHostsError'
+            errorType: 'addUrlsError'
           })
           this.props.dispatch(err(error))
           return
         }
       }
       
-      await this.getGroupHosts()
+      await this.getApplicationSiteUrls()
     }
     
   }
@@ -373,7 +399,7 @@ class UrlInCustomApp extends React.Component {
     let body = {}
 
     body.data = {
-      "host-list": list,
+      "url-list": list,
       "change-request-id": this.state['change-request-id']
     }
 
@@ -387,7 +413,7 @@ class UrlInCustomApp extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group-hosts/${this.state.group.uid}/`, this.props.token, body )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/applicationsite-urls/${this.state.applicationSite.uid}/`, this.props.token, body )
     return r
   }
 
@@ -397,7 +423,7 @@ class UrlInCustomApp extends React.Component {
     let body = {}
 
     body.data = {
-      "host-list": list,
+      "url-list": list,
       "change-request-id": this.state['change-request-id']
     }
 
@@ -411,7 +437,7 @@ class UrlInCustomApp extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/group-hosts/${this.state.group.uid}/`, this.props.token, body )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/applicationSite-urls/${this.state.applicationSite.uid}/`, this.props.token, body )
     return r
   }
 
@@ -429,127 +455,20 @@ class UrlInCustomApp extends React.Component {
   render() {
 
     let errors = () => {
-      if (this.props.error && this.props.error.component === 'hostInGroup') {
+      if (this.props.error && this.props.error.component === 'urlInApplicationSite') {
         return <Error error={[this.props.error]} visible={true}/> 
       }
     }
 
-    let columns = [
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (name, obj)  => (
-          <React.Fragment>
-            {obj.groupMember ? 
-              name
-            :
-              <Select
-                value={obj.name}
-                showSearch
-                style={obj.nameError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                onSelect={n => this.set(n, 'hostname', obj)}
-              >
-                <React.Fragment>
-                  {this.state.hosts.map((h, i) => {
-                    return (
-                      <Select.Option key={i} value={h.name}>{h.name}</Select.Option>
-                    )
-                  })
-                  }
-                </React.Fragment>
-              </Select>
-            }
-          </React.Fragment>
-        )
-      },
-      {
-        title: 'IPv4-address',
-        align: 'center',
-        dataIndex: 'ipv4-address',
-        key: 'ipv4-address',
-       ...this.getColumnSearchProps('ipv4-address'),
-       render: (name, obj)  => (
-        <React.Fragment>
-          {obj.groupMember ? 
-            name
-          :
-            <Select
-              value={obj['ipv4-address']}
-              showSearch
-              style={obj.ipError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={n => this.set(n, 'ipv4-address', obj)}
-            >
-              <React.Fragment>
-                {this.state.hosts.map((h, i) => {
-                  return (
-                    <Select.Option key={i} value={h['ipv4-address']}>{h['ipv4-address']}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-            </Select>
-          }
-        </React.Fragment>
-      )
-      },
-      {
-        title: 'Domain',
-        align: 'center',
-        dataIndex: ['domain', 'name'],
-        key: 'domain',
-        ...this.getColumnSearchProps(['domain', 'name']),
-      },
-      {
-        title: 'Group member',
-        align: 'center',
-        dataIndex: 'groupMember',
-        key: 'groupMember',
-        render: (name, obj)  => (
-          <React.Fragment>
-            {obj.groupMember ? 
-              <Checkbox checked={obj.flagged} onChange={e => this.set(e, 'flag', obj)}/>
-            :
-              <Button
-                type='danger'
-                onClick={() => this.itemRemove(obj, this.state.group.members)}
-              >
-                -
-              </Button>
-            }
-          </React.Fragment>
-        ),
-      },
-    ]
-
-    let returnColumns = () => {
-      return columns
-    }
 
     return (
 
       <Space direction='vertical'>
 
-        <Button type="primary" onClick={() => this.details()}>Host in Group</Button>
+        <Button type="primary" onClick={() => this.details()}>Url In ApplicationSite</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>Add remove host to Group</p>}
+          title={<p style={{textAlign: 'center'}}>Url In ApplicationSite</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -594,13 +513,13 @@ class UrlInCustomApp extends React.Component {
 
                   <Row>
                     <Col offset={6} span={3}>
-                      Group
+                      ApplicationSite
                     </Col>
                     <Col span={6}>
                       <Select
-                        value={this.state.group ? this.state.group.name : ''}
+                        value={this.state.applicationSite ? this.state.applicationSite.name : ''}
                         showSearch
-                        style={this.state.groupError ? {width: '100%', border: `1px solid red`} : {width: '100%'} }
+                        style={this.state.applicationSiteError ? {width: '100%', border: `1px solid red`} : {width: '100%'} }
                         optionFilterProp="children"
                         filterOption={(input, option) =>
                           option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -608,10 +527,10 @@ class UrlInCustomApp extends React.Component {
                         filterSort={(optionA, optionB) =>
                           optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
                         }
-                        onSelect={g => this.set(g, 'group')}
+                        onSelect={g => this.set(g, 'applicationSite')}
                       >
                         <React.Fragment>
-                          {this.state.groups.map((g, i) => {
+                          {this.state.applicationSites.map((g, i) => {
                             return (
                               <Select.Option key={i} value={g.name}>{g.name}</Select.Option>
                             )
@@ -624,66 +543,22 @@ class UrlInCustomApp extends React.Component {
 
                   <br/>
                   
-                  {this.state.group ?
-                    <Row>
-                      <Col span={24}>
-                        {this.state.ghLoading ?
-                          <Spin indicator={spinIcon} style={{margin: 'auto 50%'}}/>
-                        :
-                          <React.Fragment>
-                            {/*to do: createElement()*/} 
-                            <Radio.Group>
-                              <Radio.Button
-                                style={{marginLeft: 10 }}
-                                onClick={() => this.getGroupHosts()}
-                              >
-                                <ReloadOutlined/>
-                              </Radio.Button>
-                            </Radio.Group>
-                
-                            <Radio.Group
-                              buttonStyle="solid"
-                            >
-                              <Radio.Button
-                                buttonStyle="solid"
-                                style={{marginLeft: 10 }}
-                                onClick={() => this.itemAdd(this.state.group.members)}
-                              >
-                                +
-                              </Radio.Button>
-                            </Radio.Group>
-                
-                            <br/>
-                            <br/>
-                            <Table
-                              columns={returnColumns()}
-                              style={{width: '100%', padding: 15}}
-                              dataSource={this.state.group.members}
-                              bordered
-                              rowKey={r => r.id}
-                              scroll={{x: 'auto'}}
-                              pagination={{ pageSize: 10 }}
-                            />
-                          </React.Fragment>  
-                        }
-                        
-                      </Col>
-                    </Row>
+                  {/*this.state.applicationSite ?
                   :
                     null
-                  }
+                  */}
 
                   <br/>
 
                   <Row>
                     <Col offset={11} span={2}>
-                      {(this.state.loading || !this.state.group || !this.state['change-request-id']) ?
+                      {(this.state.loading || !this.state.applicationSite || !this.state['change-request-id']) ?
                         <Button type="primary" shape='round' disabled>
-                          Modify Group
+                          Modify ApplicationSite
                         </Button>
                       :
                         <Button type="primary" shape='round' onClick={() => this.validation()} >
-                          Modify Group
+                          Modify ApplicationSite
                         </Button>
                       }
                     </Col>
@@ -712,4 +587,4 @@ export default connect((state) => ({
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-}))(UrlInCustomApp);
+}))(UrlInApplicationSite);

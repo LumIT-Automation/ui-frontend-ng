@@ -549,7 +549,7 @@ class HostInGroup extends React.Component {
         <Button type="primary" onClick={() => this.details()}>Host in Group</Button>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>Add remove host to Group</p>}
+          title={<p style={{textAlign: 'center'}}>Host in Group</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
