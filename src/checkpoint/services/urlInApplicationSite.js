@@ -15,7 +15,8 @@ import AssetSelector from '../../concerto/assetSelector'
 
 import { Input, Button, Space, Modal, Spin, Radio, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { LoadingOutlined, ReloadOutlined, SearchOutlined, FormOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import Modify from './modify'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
@@ -28,7 +29,6 @@ class UrlInApplicationSite extends React.Component {
       visible: false,
       'change-request-id': 'ITIO-',
       applicationSites: [],
-      applicationSitesCategories: [],
       applicationSite: {},
       errors: {},
       applicationSiteError: ''
@@ -43,10 +43,8 @@ class UrlInApplicationSite extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('applicationSites', this.state.applicationSites)
-    console.log('applicationSitesCategories', this.state.applicationSitesCategories)
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
-      this.setState({applicationSite: '', applicationSitesCategories: ''})
+      this.setState({applicationSite: ''})
       this.dataGet() 
     }
   }
@@ -163,55 +161,19 @@ class UrlInApplicationSite extends React.Component {
           return a
         }
       })
-      await this.setState({applicationSites: list})
-    }
 
-/*
-    data = await this.getData('urls')
-    if (data.status && data.status !== 200 ) {
-      let error = Object.assign(data, {
-        component: 'urlInApplicationSite',
-        vendor: 'checkpoint',
-        errorType: 'urlsError'
+      list = list.map(a => {
+        if (a['url-list']) {
+          a['url-list'] = a['url-list'].map(url => {
+            return {url: url}
+          })
+        }
+        return a
       })
-      this.props.dispatch(err(error))
-      this.setState({loading: false})
-      return
+      await this.setState({applicationSites: list, originApplicationSites: list})
     }
-    else {
-      await this.setState({urls: data.data.items, loading: false})
-    }*/
 
     this.setState({loading: false})
-  }
-
-  getApplicationSiteUrls = async () => {
-    let applicationSite = Object.assign([], this.state.applicationSite);
-    this.setState({ghLoading: true})
-
-    let data = await this.getData('applicationSite-urls', applicationSite.uid)
-    if (data.status && data.status !== 200 ) {
-      let error = Object.assign(data, {
-        component: 'urlInApplicationSite',
-        vendor: 'checkpoint',
-        errorType: 'applicationSiteUrlsError'
-      })
-      this.props.dispatch(err(error))
-      this.setState({ghLoading: false})
-      return
-    }
-    else {
-      applicationSite.members = data.data.items
-      let id = 1
-      applicationSite.members.forEach((item, i) => {
-        item.applicationSiteMember = true
-        item.flagged = true
-        item.id = id 
-        id++
-      });
-      await this.setState({applicationSite: applicationSite, ghLoading: false})
-    }
-
   }
 
   getData = async (entity, id) => {
@@ -220,9 +182,6 @@ class UrlInApplicationSite extends React.Component {
 
     if (entity === 'application-sites') {
       endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/?custom&local`
-    }
-    if (entity === 'application-site-categories') {
-      endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/`
     }
     else {
       endpoint = `checkpoint/${this.props.asset.id}/${this.props.domain}/${entity}/`
@@ -241,65 +200,109 @@ class UrlInApplicationSite extends React.Component {
     return r
   }
 
-  itemAdd = async (items, type) => {
-    let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemAdd(items, type)
-    let applicationSite = Object.assign({}, this.state.applicationSite);
-    applicationSite.members = list
-    await this.setState({applicationSite: applicationSite})
-  }
-
-  itemRemove = async (item, items) => {
-    let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemRemove(item, items)
-    let applicationSite = Object.assign({}, this.state.applicationSite);
-    applicationSite.members = list
-    await this.setState({applicationSite: applicationSite})
-  }
-
   set = async (value, key, obj) => {
-    let applicationSites = Object.assign([], this.state.applicationSites);
-    let applicationSite = applicationSites.find(g => g.name === value)
-    let urls = Object.assign([], this.state.urls);
-    let url
-    let member
+    console.log(value)
+    console.log(key)
+    console.log(obj)
+    try {
+      let applicationSites = Object.assign([], this.state.applicationSites);
+      let applicationSite
 
-    if (key === 'applicationSite') {
-      await this.setState({applicationSite: applicationSite, applicationSiteError: ''})
-      //this.getApplicationSiteUrls()
-    }
-    if (key === 'flag') {
-      applicationSite = Object.assign([], this.state.applicationSite);
-      let url = applicationSite.members.find(h => h.name === obj.name)
-      url.flagged = !url.flagged
-      await this.setState({applicationSite: applicationSite})
-    }
-    if (key === 'urlname') {
-      applicationSite = Object.assign([], this.state.applicationSite);
-      url = urls.find(h => h.name === value)
-      member = applicationSite.members.find(m => m.id === obj.id)
-      member = Object.assign(member, url);
-      delete member.nameError
-      delete member.ipError
-      await this.setState({applicationSite: applicationSite})
-    }
-    if (key === 'ipv4-address') {
-      applicationSite = Object.assign([], this.state.applicationSite);
-      url = urls.find(h => h['ipv4-address'] === value)
-      member = applicationSite.members.find(m => m.id === obj.id)
-      member = Object.assign(member, url);
-      delete member.ipError
-      delete member.nameError
-      await this.setState({applicationSite: applicationSite})
-    }
+      if (key === 'applicationSite') {
+        applicationSite = applicationSites.find(as => as.name === value)
+        await this.setState({applicationSite: applicationSite, urlInputList: ''})
+      }
 
-    if (key === 'change-request-id') {
-      await this.setState({['change-request-id']: value, ['change-request-idError']: false})
+      if (key === 'change-request-id') {
+        await this.setState({['change-request-id']: value, ['change-request-idError']: false})
+      }
+
+      if (key === 'urlInputList') {
+        await this.setState({urlInputList: value})
+      }
+
+      if (key === 'actualUrl') {
+        this.setState({actualUrl: value})
+      }
+
+      if (key === 'replaceUrl') {
+        applicationSite = Object.assign({}, this.state.applicationSite);
+        let url = applicationSite['url-list'].find( url => url.url === this.state.actualUrl )
+        url.url = value
+
+        console.log(applicationSite)
+        await this.setState({applicationSite: applicationSite, actualUrl: value})
+      }
+
+      if (key === 'removeUrl') {
+        applicationSite = Object.assign({}, this.state.applicationSite);
+        console.log(applicationSite['url-list'])
+        applicationSite['url-list'] = applicationSite['url-list'].filter( url => url.url !== value)
+        console.log(applicationSite['url-list'])
+        await this.setState({applicationSite: applicationSite})
+      }
+    }
+    catch (error) {
+      console.log(error)
+    }
+    
+
+  }
+
+  urlListSet = async () => {
+    let urlInputList = JSON.parse(JSON.stringify(this.state.urlInputList))
+    let applicationSite = Object.assign({}, this.state.applicationSite);
+    let list=[], nlist=[], urlsList=[], actualUrls=[]
+    let regexp = new RegExp(/^[*]/g);
+
+    try {
+      urlInputList = urlInputList.replaceAll('http://','');
+      urlInputList = urlInputList.replaceAll('https://','');
+      urlInputList = urlInputList.replaceAll(/[\/\\]/g,'');
+      urlInputList = urlInputList.replaceAll(/[/\t]/g,' ');
+      urlInputList = urlInputList.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,'');
+      urlInputList = urlInputList.replaceAll(/[/\r\n]/g,' ');
+      urlInputList = urlInputList.replaceAll(/[/\n]/g,' ');
+      urlInputList = urlInputList.replace(/[/\s]{1,}/g, ',' )
+
+      list = urlInputList.split(',')
+      list = list.forEach(x => {
+        if (x.length !== 0) {
+          nlist.push(x)
+        }
+      });
+
+      nlist.forEach(x => {
+        if (regexp.test(x)) {
+          let father = x.replace('*.', '')
+          nlist.push(father)
+        }
+      });
+
+
+      applicationSite['url-list'].forEach((item, i) => {
+        actualUrls.push(item.url)
+      });
+
+      urlsList = actualUrls.concat(nlist)
+
+      let unique = [...new Set(urlsList)];
+
+      urlsList = []
+      unique.sort().forEach((item, i) => {
+        urlsList.push({url: item})
+      });
+
+
+      applicationSite['url-list'] = urlsList
+      await this.setState({applicationSite: applicationSite})
+    } catch (error) {
+      console.log(error)
     }
 
   }
 
-
+/*
   validationCheck = async () => {
     let validators = new Validators()
     let applicationSite = Object.assign([], this.state.applicationSite);
@@ -333,108 +336,9 @@ class UrlInApplicationSite extends React.Component {
 
     let valid = await this.validationCheck()
     if (valid) {
-      this.reqHandler()
+      //this.reqHandler()
     }
-  }
-
-  reqHandler = async () => {
-    let applicationSite = Object.assign([], this.state.applicationSite);
-    let toRemove = []
-    let toAdd = []
-
-    applicationSite.members.forEach(element => {
-      if (element.applicationSiteMember && !element.flagged) {
-        toRemove.push(element.uid)
-      }
-      if (!element.applicationSiteMember) {
-        toAdd.push(element.uid)
-      }
-    })
-
-    if (toRemove.length > 0 || toAdd.length > 0) {
-      if (toRemove.length > 0) {
-        await this.setState({loading: true})
-        let data = await this.toDel(toRemove)
-        await this.setState({loading: false})
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'urlInApplicationSite',
-            vendor: 'checkpoint',
-            errorType: 'deleteUrlsError'
-          })
-          this.props.dispatch(err(error))
-          return
-        }
-      }
-  
-      if (toAdd.length > 0) {
-        await this.setState({loading: true})
-        let data = await this.toAdd(toAdd)
-        await this.setState({loading: false})
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'urlInApplicationSite',
-            vendor: 'checkpoint',
-            errorType: 'addUrlsError'
-          })
-          this.props.dispatch(err(error))
-          return
-        }
-      }
-      
-      await this.getApplicationSiteUrls()
-    }
-    
-  }
-
-  toDel = async (list) => {
-
-    let body = {}
-
-    body.data = {
-      "url-list": list,
-      "change-request-id": this.state['change-request-id']
-    }
-
-    let r
-    let rest = new Rest(
-      "DELETE",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/applicationsite-urls/${this.state.applicationSite.uid}/`, this.props.token, body )
-    return r
-  }
-
-
-  toAdd = async (list) => {
-
-    let body = {}
-
-    body.data = {
-      "url-list": list,
-      "change-request-id": this.state['change-request-id']
-    }
-
-    let r
-    let rest = new Rest(
-      "PUT",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/applicationSite-urls/${this.state.applicationSite.uid}/`, this.props.token, body )
-    return r
-  }
-
-
+  }*/
 
   //Close and Error
   closeModal = () => {
@@ -453,116 +357,37 @@ class UrlInApplicationSite extends React.Component {
       }
     }
 
-    const columns = [
+    const urlColumns = [
       {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-      },
-      {
-        title: 'Domain',
+        title: 'Url',
         align: 'center',
         width: 'auto',
-        dataIndex: ['domain', 'name'],
-        key: 'domain',
-        ...this.getColumnSearchProps(['domain', 'name']),
-      },
-      {
-        title: 'Primary-category',
-        align: 'center',
-        width: 500,
-        dataIndex: 'primary-category',
-        key: 'primary-category',
-        ...this.getColumnSearchProps('primary-category'),
-      },
-      {
-        title: 'Risk',
-        align: 'center',
-        dataIndex: 'risk',
-        key: 'risk',
-        ...this.getColumnSearchProps('risk'),
-      },
-      {
-        title: 'Comments',
-        align: 'center',
-        width: 'auto',
-        dataIndex: 'comments',
-        key: 'comments',
-        ...this.getColumnSearchProps('comments'),
-      },
-      {
-        title: 'Description',
-        align: 'center',
-        dataIndex: 'description',
-        key: 'description',
-        ...this.getColumnSearchProps('description'),
-      },
-      {
-        title: 'Creation-time',
-        align: 'center',
-        width: 500,
-        dataIndex: 'creation-time',
-        key: 'creation-time',
-        defaultSortOrder: 'descend',
-        sorter: (a, b) => new Date(a) - new Date(b),
-        ...this.getColumnSearchProps('creation-time'),
-      },
-      {
-        title: 'Last-modify-time',
-        align: 'center',
-        width: 500,
-        dataIndex: ['meta-info', 'last-modify-time', 'iso-8601'],
-        key: 'last-modify-time'
-      },
-      {
-        title: 'Lock',
-        align: 'center',
-        width: 'auto',
-        dataIndex: ['meta-info', 'lock'],
-        key: 'lock',
-        ...this.getColumnSearchProps(['meta-info', 'lock']),
-      },
-      {
-        title: 'Url-list',
-        align: 'center',
-        dataIndex: 'url-list',
-        key: 'url-list',/*
+        dataIndex: 'url',
+        key: 'url',
+        ...this.getColumnSearchProps('url'),
         render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.application_site_modify || this.props.authorizations.any) ?
-            <Modify name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),*/
+          <Input
+            //defaultValue={obj.url}
+            value={obj.url}
+            style={{ width: '150px' }}
+            onFocus={() => this.set(obj.url, 'actualUrl')}
+            //onBlur={e => this.set(e.target.value, 'replaceUrl')}
+            onChange={e => this.set(e.target.value, 'replaceUrl')}
+          />
+        ),
       },
       {
-        title: 'Validation-state',
-        align: 'center',
-        width: 500,
-        dataIndex: ['meta-info', 'validation-state'],
-        key: 'validation-state',
-        ...this.getColumnSearchProps(['meta-info', 'validation-state']),
-      },
-      {
-        title: 'Delete',
+        title: 'Remove',
         align: 'center',
         dataIndex: 'delete',
-        key: 'delete',/*
+        key: 'delete',
         render: (name, obj)  => (
-          <Space size="small">
-            { this.props.authorizations && (this.props.authorizations.application_site_delete || this.props.authorizations.any) ?
-            <Delete name={name} obj={obj} />
-            :
-            '-'
-          }
-          </Space>
-        ),*/
+          <CloseCircleOutlined 
+            onClick={() => this.set(obj.url, 'removeUrl', obj)}
+          />
+        ),
       }
-    ];
+    ]
 
 
     return (
@@ -616,27 +441,77 @@ class UrlInApplicationSite extends React.Component {
                   <br/>
 
                   <Row>
-                    <Col span={24}>
-                    <Table
-                      columns={columns}
-                      tableLayout='auto'
-                      dataSource={this.state.applicationSites}
-                      bordered
-                      scroll={{x: 'auto'}}
-                      //scroll={{ x: 'max-content' }}
-                      pagination={{ pageSize: 10 }}
-                      rowKey={record => record.uid}
-                      style={{marginBottom: 10}}
-                    />
+                    <Col offset={6} span={3}>
+                      AppSite
+                    </Col>
+                    <Col span={6}>
+                      <Select
+                        value={this.state.applicationSite ? this.state.applicationSite.name : ''}
+                        showSearch
+                        style={this.state.applicationSiteError ? {width: '100%', border: `1px solid red`} : {width: '100%'} }
+                        optionFilterProp="children"
+                        filterOption={(input, option) =>
+                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                        }
+                        filterSort={(optionA, optionB) =>
+                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                        }
+                        onSelect={g => this.set(g, 'applicationSite')}
+                      >
+                        <React.Fragment>
+                          {this.state.applicationSites.map((as, i) => {
+                            return (
+                              <Select.Option key={i} value={as.name}>{as.name}</Select.Option>
+                            )
+                          })
+                          }
+                        </React.Fragment>
+                      </Select>
                     </Col>
                   </Row>
 
                   <br/>
-                  
-                  {/*this.state.applicationSite ?
+                  <br/>
+
+                  {this.state.applicationSite ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={1} span={9}>
+                          <Input.TextArea
+                            rows={7}
+                            placeholder="Insert your url's list"
+                            defaultValue={this.state.urlInputList}
+                            onBlur={e => this.set(e.target.value, 'urlInputList')}
+                          />
+                        </Col>
+
+                        <Col offset={1} span={2}>
+                          <Button type="primary" shape='round' onClick={() => this.urlListSet()} >
+                            Normalize
+                          </Button>
+                        </Col>
+
+                        <Col offset={1} span={9}>
+                          <Table
+                            columns={urlColumns}
+                            dataSource={
+                              this.state.applicationSite && this.state.applicationSite['url-list'] ? 
+                              this.state.applicationSite['url-list']
+                              :
+                              []
+                            }
+                            bordered
+                            rowKey="name"
+                            scroll={{x: 'auto'}}
+                            pagination={{ pageSize: 30 }}
+                            style={{marginBottom: 10}}
+                          />
+                        </Col>
+                      </Row>
+                    </React.Fragment>
                   :
                     null
-                  */}
+                  }
 
                   <br/>
 
