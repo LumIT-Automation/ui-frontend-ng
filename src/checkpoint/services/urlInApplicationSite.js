@@ -33,6 +33,7 @@ class UrlInApplicationSite extends React.Component {
       'change-request-id': 'ITIO-',
       applicationSites: [],
       applicationSite: {},
+      toRemove: [],
       errors: {},
       applicationSiteError: ''
     };
@@ -46,6 +47,8 @@ class UrlInApplicationSite extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state.toRemove)
+    console.log(this.state.errors)
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
       this.setState({applicationSite: ''})
       this.dataGet() 
@@ -241,6 +244,7 @@ class UrlInApplicationSite extends React.Component {
         applicationSite = Object.assign({}, this.state.applicationSite);
         let url = applicationSite['url-list'].find( url => url.id === obj.id )
         url.url = value
+        delete url.urlError
         await this.setState({applicationSite: applicationSite})
         ref = this.myRefs[`${obj.id}_url`]
         console.log(ref)
@@ -253,8 +257,11 @@ class UrlInApplicationSite extends React.Component {
 
       if (key === 'removeUrl') {
         applicationSite = Object.assign({}, this.state.applicationSite);
+        let url = applicationSite['url-list'].find( url => url.id === obj.id )
+        let list = Object.assign([], this.state.toRemove);
+        list.push(url)
         applicationSite['url-list'] = applicationSite['url-list'].filter( url => url.id !== obj.id)
-        await this.setState({applicationSite: applicationSite})
+        await this.setState({applicationSite: applicationSite, toRemove: list})
       }
     }
     catch (error) {
@@ -267,7 +274,12 @@ class UrlInApplicationSite extends React.Component {
   urlListSet = async () => {
     let urlInputList = JSON.parse(JSON.stringify(this.state.urlInputList))
     let applicationSite = Object.assign({}, this.state.applicationSite);
-    let list=[], nlist=[], urlsList=[], actualUrls=[]
+    let n = Math.max(...applicationSite['url-list'].map(o => o.id))
+    
+    let urlList = []
+    let list = []
+    let id = n +1 
+    
     let regexp = new RegExp(/^[*]/g);
 
     try {
@@ -280,80 +292,103 @@ class UrlInApplicationSite extends React.Component {
       urlInputList = urlInputList.replaceAll(/[/\n]/g,' ');
       urlInputList = urlInputList.replace(/[/\s]{1,}/g, ',' )
 
-      list = urlInputList.split(',')
-      list = list.forEach(x => {
-        if (x.length !== 0) {
-          nlist.push(x)
-        }
-      });
+      urlList = urlInputList.split(',')
 
-      nlist.forEach(x => {
+      urlList = urlList.filter(url => {
+        if (url.length > 0) {
+          return url
+        }
+      })
+
+      urlList.forEach(x => {
         if (regexp.test(x)) {
           let father = x.replace('*.', '')
-          nlist.push(father)
+          list.push(father)
         }
       });
 
+      urlList = urlList.concat(list)
+      list = []
 
-      applicationSite['url-list'].forEach((item, i) => {
-        actualUrls.push(item.url)
+      urlList = [...new Set(urlList)];
+
+      urlList.forEach(url => {        
+        let obj = applicationSite['url-list'].find(u => u.url === url);
+
+        if (!obj) {
+          let o = {
+            id: id,
+            url: url,
+            toAdd: true            
+          }
+          list.push(o)
+        }
+        id++
+        
       });
 
-      urlsList = actualUrls.concat(nlist)
+      urlList = [];
+      urlList = applicationSite['url-list'].concat(list)
 
-      let unique = [...new Set(urlsList)];
-
-      urlsList = []
-      unique.sort().forEach((item, i) => {
-        urlsList.push({url: item})
-      });
-
-
-      applicationSite['url-list'] = urlsList
+      applicationSite['url-list'] = urlList
       await this.setState({applicationSite: applicationSite})
+
     } catch (error) {
       console.log(error)
     }
 
   }
 
-/*
-  validationCheck = async () => {
+
+   //VALIDATION
+   validationCheck = async () => {
+    let applicationSite = JSON.parse(JSON.stringify(this.state.applicationSite))
+    await this.setState({errors: {}})
     let validators = new Validators()
-    let applicationSite = Object.assign([], this.state.applicationSite);
+    let regexp = new RegExp(/^[*]/g);
+    let errors = {}
+
     let ok = true
 
     if (!this.state['change-request-id']) {
       await this.setState({['change-request-idError']: true})
     }
 
-    if (!this.state.applicationSite) {
-      await this.setState({applicationSiteError: true})
-    }
-
-    applicationSite.members.forEach(element => {
-      if (!element.name) {
-        element.nameError = true
-        ok = false
+    for await (let url of applicationSite['url-list']) {
+      if (regexp.test(url.url)) {
+        continue
       }
-      if (!validators.ipv4(element['ipv4-address'])) {
-        element.ipError = true
+      if (!url.url) {
+        url.urlError = true
         ok = false
+        errors.urlListError = url.url
+        await this.setState({errors: errors})
       }
-    });
+      if (!validators.fqdn(url.url)) {
+        url.urlError = true
+        ok = false
+        errors.urlListError = url.url
+        await this.setState({errors: errors})
+      }
+    };
 
     this.setState({applicationSite: applicationSite})
     return ok
+
   }
+
 
   validation = async () => {
     await this.validationCheck()
 
-    let valid = await this.validationCheck()
-    if (valid) {
-      //this.reqHandler()
+    if (Object.keys(this.state.errors).length === 0) {
+      this.reqHandler()
     }
-  }*/
+  }
+
+  reqHandler = async () => {
+    
+  }
 
   //Close and Error
   closeModal = () => {
@@ -526,6 +561,14 @@ class UrlInApplicationSite extends React.Component {
                             pagination={{ pageSize: 30 }}
                             style={{marginBottom: 10}}
                           />
+
+                          {this.state.errors.urlListError && (this.state.errors.urlListError.length > 0) ?
+                            <React.Fragment>
+                              <p>Seems there are invalid fqdn. Check <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
+                            </React.Fragment>
+                          :
+                            null
+                          }
                         </Col>
                       </Row>
                     </React.Fragment>
