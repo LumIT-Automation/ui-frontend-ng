@@ -25,6 +25,9 @@ class UrlInApplicationSite extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.myRefs = {};
+
     this.state = {
       visible: false,
       'change-request-id': 'ITIO-',
@@ -163,9 +166,12 @@ class UrlInApplicationSite extends React.Component {
       })
 
       list = list.map(a => {
+        let id = 1
         if (a['url-list']) {
           a['url-list'] = a['url-list'].map(url => {
-            return {url: url}
+            let o = {id: id, url: url}
+            id++
+            return o
           })
         }
         return a
@@ -201,8 +207,6 @@ class UrlInApplicationSite extends React.Component {
   }
 
   set = async (value, key, obj) => {
-    console.log(value)
-    console.log(key)
     console.log(obj)
     try {
       let applicationSites = Object.assign([], this.state.applicationSites);
@@ -221,24 +225,35 @@ class UrlInApplicationSite extends React.Component {
         await this.setState({urlInputList: value})
       }
 
-      if (key === 'actualUrl') {
-        this.setState({actualUrl: value})
-      }
-
       if (key === 'replaceUrl') {
-        applicationSite = Object.assign({}, this.state.applicationSite);
-        let url = applicationSite['url-list'].find( url => url.url === this.state.actualUrl )
-        url.url = value
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${obj.id}_url`]
 
-        console.log(applicationSite)
-        await this.setState({applicationSite: applicationSite, actualUrl: value})
+        console.log(this.myRefs[`${obj.id}_url`])
+        console.log(ref)
+
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+      
+        applicationSite = Object.assign({}, this.state.applicationSite);
+        let url = applicationSite['url-list'].find( url => url.id === obj.id )
+        url.url = value
+        await this.setState({applicationSite: applicationSite})
+        ref = this.myRefs[`${obj.id}_url`]
+        console.log(ref)
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+        ref.focus()
       }
 
       if (key === 'removeUrl') {
         applicationSite = Object.assign({}, this.state.applicationSite);
-        console.log(applicationSite['url-list'])
-        applicationSite['url-list'] = applicationSite['url-list'].filter( url => url.url !== value)
-        console.log(applicationSite['url-list'])
+        applicationSite['url-list'] = applicationSite['url-list'].filter( url => url.id !== obj.id)
         await this.setState({applicationSite: applicationSite})
       }
     }
@@ -369,10 +384,15 @@ class UrlInApplicationSite extends React.Component {
           <Input
             //defaultValue={obj.url}
             value={obj.url}
-            style={{ width: '150px' }}
-            onFocus={() => this.set(obj.url, 'actualUrl')}
+            ref={ref => this.myRefs[`${obj.id}_url`] = ref}
+            style={
+              obj.urlError ?
+                {borderColor: 'red', textAlign: 'center', width: 200}
+              :
+                {textAlign: 'center', width: 200}
+            }
             //onBlur={e => this.set(e.target.value, 'replaceUrl')}
-            onChange={e => this.set(e.target.value, 'replaceUrl')}
+            onChange={e => this.set(e.target.value, 'replaceUrl', obj)}
           />
         ),
       },
@@ -501,7 +521,7 @@ class UrlInApplicationSite extends React.Component {
                               []
                             }
                             bordered
-                            rowKey="name"
+                            rowKey={record => record.url}
                             scroll={{x: 'auto'}}
                             pagination={{ pageSize: 30 }}
                             style={{marginBottom: 10}}

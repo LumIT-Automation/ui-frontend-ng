@@ -124,9 +124,9 @@ class HeaderCustom extends Component {
               <div>
                 <Dropdown overlay={menu} trigger={['click']}>
                   <Avatar
-                  style={{float: "right", marginTop: '15px'}}
-                  icon={<UserOutlined/>}
-                  //onClick={() => this.logout()}
+                    style={{float: "right", marginTop: '15px'}}
+                    icon={<UserOutlined/>}
+                    //onClick={() => this.logout()}
                   >
                   </Avatar>
                 </Dropdown>
