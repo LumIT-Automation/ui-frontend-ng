@@ -16,7 +16,6 @@ import AssetSelector from '../../concerto/assetSelector'
 import { Input, Button, Space, Modal, Spin, Radio, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
 import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, ReloadOutlined, SearchOutlined, FormOutlined, CloseCircleOutlined } from '@ant-design/icons';
-import Modify from './modify'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
@@ -47,8 +46,6 @@ class UrlInApplicationSite extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state.toRemove)
-    console.log(this.state.errors)
     if ( this.state.visible && (this.props.asset && this.props.domain) && (prevProps.domain !== this.props.domain) ) {
       this.setState({applicationSite: ''})
       this.dataGet() 
@@ -210,7 +207,8 @@ class UrlInApplicationSite extends React.Component {
   }
 
   set = async (value, key, obj) => {
-    console.log(obj)
+    let errors = Object.assign({}, this.state.errors);
+
     try {
       let applicationSites = Object.assign([], this.state.applicationSites);
       let applicationSite
@@ -221,7 +219,8 @@ class UrlInApplicationSite extends React.Component {
       }
 
       if (key === 'change-request-id') {
-        await this.setState({['change-request-id']: value, ['change-request-idError']: false})
+        delete errors['change-request-idError']
+        await this.setState({['change-request-id']: value, errors: errors})
       }
 
       if (key === 'urlInputList') {
@@ -232,9 +231,6 @@ class UrlInApplicationSite extends React.Component {
         let start = 0
         let end = 0
         let ref = this.myRefs[`${obj.id}_url`]
-
-        console.log(this.myRefs[`${obj.id}_url`])
-        console.log(ref)
 
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -247,7 +243,6 @@ class UrlInApplicationSite extends React.Component {
         delete url.urlError
         await this.setState({applicationSite: applicationSite})
         ref = this.myRefs[`${obj.id}_url`]
-        console.log(ref)
         if (ref && ref.input) {
           ref.input.selectionStart = start
           ref.input.selectionEnd = end
@@ -351,7 +346,15 @@ class UrlInApplicationSite extends React.Component {
     let ok = true
 
     if (!this.state['change-request-id']) {
-      await this.setState({['change-request-idError']: true})
+      ok = false
+      errors['change-request-idError'] = true
+      await this.setState({errors: errors})
+    }
+
+    if (this.state['change-request-id'].length < 11) {
+      ok = false
+      errors['change-request-idError'] = true
+      await this.setState({errors: errors})
     }
 
     for await (let url of applicationSite['url-list']) {
@@ -387,14 +390,100 @@ class UrlInApplicationSite extends React.Component {
   }
 
   reqHandler = async () => {
-    
+    let applicationSite = Object.assign([], this.state.applicationSite);
+    let toRemove = Object.assign([], this.state.toRemove);
+    let toAdd = applicationSite['url-list'].filter(url => url.toAdd)
+
+    if (toRemove.length > 0) {
+      await this.setState({loading: true})
+      let data = await this.toDel(toRemove)
+      await this.setState({loading: false})
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'urlInApplicationSite',
+          vendor: 'checkpoint',
+          errorType: 'deleteUrlError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+    }
+
+    if (toAdd.length > 0) {
+      await this.setState({loading: true})
+      let data = await this.toAdd(toAdd)
+      await this.setState({loading: false})
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'urlInApplicationSite',
+          vendor: 'checkpoint',
+          errorType: 'addUrlError'
+        })
+        this.props.dispatch(err(error))
+        return
+      }
+    }
+
+    await this.setState({urlInputList: ''})
+    this.dataGet()
+  }
+
+  toDel = async (list) => {
+
+    let body = {}
+    list = list.map(url => url.url)
+    body.data = {
+      "url-list": list,
+      "change-request-id": this.state['change-request-id']
+    }
+
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/custom-application-site/${this.state.applicationSite.uid}/urls/`, this.props.token, body )
+    return r
+  }
+
+  toAdd = async (list) => {
+
+    let body = {}
+    list = list.map(url => url.url)
+    body.data = {
+      "url-list": list,
+      "change-request-id": this.state['change-request-id']
+    }
+
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/custom-application-site/${this.state.applicationSite.uid}/urls/`, this.props.token, body )
+    return r
   }
 
   //Close and Error
   closeModal = () => {
     this.setState({
       visible: false,
+      'change-request-id': 'ITIO-',
+      applicationSites: [],
+      applicationSite: {},
+      toRemove: [],
       errors: {},
+      applicationSiteError: ''
     })
   }
 
@@ -487,7 +576,7 @@ class UrlInApplicationSite extends React.Component {
                       <Input
                         defaultValue={this.state['change-request-id']}
                         placeholder='ITIO-6 to 18 numbers'
-                        style={this.state['change-request-idError'] ? {borderColor: 'red'} : null}
+                        style={this.state.errors['change-request-idError'] ? {borderColor: 'red'} : null}
                         onBlur={e => this.set(e.target.value, 'change-request-id')}
                       />
                     </Col>
