@@ -18,8 +18,6 @@ import {
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-
 
 
 class ItemsView extends React.Component {
@@ -52,6 +50,8 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log('item', this.props.item)
+    console.log('errors', this.state.errors)
     if (this.props.asset !== prevProps.asset || this.props.domain !== prevProps.domain) {
       this.main()
     }
@@ -184,6 +184,7 @@ class ItemsView extends React.Component {
         let items = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
+          item.address = item['ipv4-address']
           item.id = id
           id++
           return item
@@ -391,260 +392,6 @@ class ItemsView extends React.Component {
   
         ref.focus()
       }
-
-      if (key === 'interval'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-  
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
-      }
-
-      if (key === 'timeout'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-  
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
-      }
-
-      if (key === 'session') {
-        value = value.toString()
-        if (value) {
-          e[key] = value
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-        await this.setState({items: items})
-      }
-
-      if (key === 'state') {
-        value = value.toString()
-        if (value) {
-          e[key] = value
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-        await this.setState({items: items})
-      }
-
-      if (key === 'type') {
-        value = value.toString()
-        if (value) {
-          e[key] = value
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-        await this.setState({items: items})
-      }
-
-      if (key === 'apiAnonymous') {
-        let start = 0
-        let end = 0
-        let ref = this.textAreaRefs[`${record.id}_${key}`]
-
-        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
-          start = ref.resizableTextArea.textArea.selectionStart
-          end = ref.resizableTextArea.textArea.selectionEnd
-        }
-
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.textAreaRefs[`${record.id}_${key}`]
-
-        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
-          ref.resizableTextArea.textArea.selectionStart = start
-          ref.resizableTextArea.textArea.selectionEnd = end
-        }
-
-        ref.focus()
-      }
-
-      if (key === 'sourceType') {
-        e.sourceType = value
-        delete e[`${key}Error`]
-        await this.setState({items: items})
-      }
-
-      if (key === 'upload') {
-
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e.file = value
-              e.fileName = value.name
-              e.size = value.size
-              e.type = value.type
-              let t = await this.readFile(value)
-              e.text = t
-            }
-            else {
-              delete e.isModified[key]
-              e.file = value
-              e.fileName = value.name
-              e.size = value.size
-              e.type = value.type
-              let t = await this.readFile(value)
-              e.text = t
-            }
-          }
-          else {
-            e.file = value
-            e.fileName = value.name
-            e.size = value.size
-            e.type = value.type
-            let t = await this.readFile(value)
-            e.text = t
-          }
-          delete e[`textError`]
-        }
-        else {
-          //blank value while typing.
-          e.text = ''
-        }
-
-        await this.setState({items: items})
-      }
-
-      if (key === 'text') {
-        let start = 0
-        let end = 0
-        let ref = this.textAreaRefs[`${record.id}_${key}`]
-
-        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
-          start = ref.resizableTextArea.textArea.selectionStart
-          end = ref.resizableTextArea.textArea.selectionEnd
-        }
-
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.textAreaRefs[`${record.id}_${key}`]
-
-        if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
-          ref.resizableTextArea.textArea.selectionStart = start
-          ref.resizableTextArea.textArea.selectionEnd = end
-        }
-
-        ref.focus()
-      }
   
       if (key === 'toDelete') {
         if (value) {
@@ -664,6 +411,7 @@ class ItemsView extends React.Component {
   */
 
   validationCheck = async () => {
+    console.log('èèèèèèè')
     let items = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
@@ -672,16 +420,20 @@ class ItemsView extends React.Component {
 
       for (const item of Object.values(items)) {
         if (!item.name) {
+          console.log('name')
           item.nameError = true
           ++errors
         }
         if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
+          console.log('address')
           item.addressError = true
           ++errors
         }
 
       }
       await this.setState({items: items})
+      console.log('items', this.state.items)
+      console.log('errors', errors)
       return errors
     }
 
@@ -713,6 +465,7 @@ class ItemsView extends React.Component {
         toPost.push(item)
       }
       if (item.toDelete) {
+        console.log('èèèèè')
         toDelete.push(item)
       }
       if (item.isModified && Object.keys(item.isModified).length > 0) {
@@ -721,6 +474,7 @@ class ItemsView extends React.Component {
     }
 
     if (toDelete.length > 0) {
+      console.log(toDelete)
       for (const item of toDelete) {
         item.loading = true
         await this.setState({items: items})
@@ -730,7 +484,7 @@ class ItemsView extends React.Component {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: 'deleteError'
+            errorType: `delete${this.props.item}Error`
           })
           this.props.dispatch(err(error))
           item.loading = false
@@ -765,7 +519,7 @@ class ItemsView extends React.Component {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: 'postError'
+            errorType: `add${this.props.items}Error`
           })
           this.props.dispatch(err(error))
           item.loading = false
@@ -790,7 +544,7 @@ class ItemsView extends React.Component {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: 'patchError'
+            errorType: `edit${this.props.item}Error`
           })
           this.props.dispatch(err(error))
           item.loading = false
@@ -911,36 +665,6 @@ class ItemsView extends React.Component {
               ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
               onChange={event => this.set(key, event.target.value, obj, father)}
             />          
-          )
-        }
-        else if (key === 'interval') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 80}
-                :
-                  {width: 80}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />          
-          )
-        }
-        else if (key === 'timeout') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 80}
-                :
-                  {width: 80}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />
           )
         }
       }
@@ -1110,9 +834,9 @@ class ItemsView extends React.Component {
       {
         title: 'IPv4-address',
         align: 'center',
-        dataIndex: 'ipv4-address',
-        key: 'ipv4-address',
-       ...this.getColumnSearchProps('ipv4-address'),
+        dataIndex: 'address',
+        key: 'address',
+       ...this.getColumnSearchProps('address'),
        render: (val, obj)  => (
         obj.existent ?
           val
