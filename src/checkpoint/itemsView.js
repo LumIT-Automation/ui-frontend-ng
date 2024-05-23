@@ -479,7 +479,7 @@ class ItemsView extends React.Component {
         item.loading = true
         await this.setState({items: items})
 
-        let e = await this.itemDelete(item.name, item.type ? item.type : null )
+        let e = await this.itemDelete(item)
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
@@ -578,7 +578,7 @@ class ItemsView extends React.Component {
     return r
   }
 
-  itemDelete = async (name, type) => {
+  itemDelete = async (item, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -589,9 +589,8 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    //@todo: items as a prop
 
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.domain}/${this.props.item}/${name}/`, this.props.token )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.domain}/${this.props.item}/${item.uid}/`, this.props.token )
     
     return r
   }
@@ -890,17 +889,21 @@ class ItemsView extends React.Component {
               </Radio.Button>
             </Radio.Group>
 
-            <Radio.Group
-              buttonStyle="solid"
-            >
-              <Radio.Button
+            {this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'checkpoint', 'hosts_post') ?
+              <Radio.Group
                 buttonStyle="solid"
-                style={{marginLeft: 10 }}
-                onClick={() => this.itemAdd(this.state.items, this.props.items)}
               >
-                +
-              </Radio.Button>
-            </Radio.Group>
+                <Radio.Button
+                  buttonStyle="solid"
+                  style={{marginLeft: 10 }}
+                  onClick={() => this.itemAdd(this.state.items, this.props.items)}
+                >
+                  +
+                </Radio.Button>
+              </Radio.Group>
+            :
+              null
+            }
 
             <br/>
             <br/>
@@ -911,7 +914,7 @@ class ItemsView extends React.Component {
                 bordered
                 rowKey={randomKey}
                 scroll={{x: 'auto'}}
-                pagination={{ pageSize: 10 }}
+                pagination={{pageSize: 10}}
               />
             <br/>
 
