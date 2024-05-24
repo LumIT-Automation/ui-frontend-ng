@@ -12,6 +12,8 @@ import CommonFunctions from '../_helpers/commonFunctions'
 import Error from '../concerto/error'
 import Authorizators from '../_helpers/authorizators'
 
+import AddItem from './addItem'
+
 import {
   err
 } from '../concerto/store'
@@ -880,7 +882,7 @@ class ItemsView extends React.Component {
         :
           <React.Fragment>
             {/*to do: createElement()*/} 
-            <Radio.Group>
+            <Radio.Group style={{marginRight: 5}}>
               <Radio.Button
                 style={{marginLeft: 10 }}
                 onClick={() => this.main()}
@@ -890,17 +892,7 @@ class ItemsView extends React.Component {
             </Radio.Group>
 
             {this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'checkpoint', 'hosts_post') ?
-              <Radio.Group
-                buttonStyle="solid"
-              >
-                <Radio.Button
-                  buttonStyle="solid"
-                  style={{marginLeft: 10 }}
-                  onClick={() => this.itemAdd(this.state.items, this.props.items)}
-                >
-                  +
-                </Radio.Button>
-              </Radio.Group>
+              <AddItem/>
             :
               null
             }
