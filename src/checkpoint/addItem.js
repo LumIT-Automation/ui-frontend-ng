@@ -5,6 +5,7 @@ import 'antd/dist/antd.css'
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from '../concerto/error'
+import CommonFunctions from '../_helpers/commonFunctions'
 
 import {
   err
@@ -26,16 +27,10 @@ function AddItem(props) {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState('');
-  const [errors, setErrors] = useState({
 
-  });
-  const [interfaces, setInterfaces] = useState([
-
-  ]);
-  const [request, setRequest] = useState({
-    name: '',
-    address: ''
-  });
+  const [errors, setErrors] = useState({});
+  const [interfaces, setInterfaces] = useState([]);
+  const [request, setRequest] = useState({name: '', address: ''});
  
 
 
@@ -45,10 +40,12 @@ function AddItem(props) {
     setInterfaces(interfaces)
   }, [] );
 
+  
+
   //UPDATE
   useEffect( () => { 
     if (interfaces && interfaces.length === 0) {
-      interfaces.push({id:2})
+      interfaces.push({id:1})
       setInterfaces(interfaces)
     }
   }, [visible] );
@@ -57,9 +54,15 @@ function AddItem(props) {
     console.log('request', request)
   }, [request] );
 
+  useEffect( () => { 
+    console.log('interfaces', interfaces)
+  }, [interfaces] );
+
+
 
   //SETTER
-  const set = (value, key) => {
+  const setRequestHandler = (key, value) => {
+
     setRequest((prevRequest) => {
       const newRequest = {...prevRequest}
 
@@ -68,16 +71,63 @@ function AddItem(props) {
       } else if (key === 'address') {
         newRequest.address = value
       }
-
       return newRequest
     })
 
   }
 
 
+  const setInterfacesHandler = async (key, value, item) => {
+    let commonFunctions = new CommonFunctions()
+    try {
+
+      if (key === 'itemAdd') {
+        const list = await commonFunctions.itemAdd(interfaces)
+        setInterfaces(list)
+      } else if (key === 'itemRemove') {
+        const list = await commonFunctions.itemRemove(item, interfaces)
+        if (list.length === 0) {
+          setInterfaces([{id:1}])
+        } else {
+          setInterfaces(list)
+        }
+       
+      }
+
+
+    } catch(error) {
+      console.log(error)
+    }
+  }
+ 
+
+  const columns = [
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id',
+      name: 'dable',
+      description: '',
+    },
+    {
+      title: 'Remove request',
+      align: 'center',
+      dataIndex: 'remove',
+      key: 'remove',
+      render: (name, obj)  => (
+        <Button type="danger" onClick={() => setInterfacesHandler('itemRemove', '', obj)}>
+          -
+        </Button>
+      ),
+    }
+  ]
+
   //ONCLOSE
   const closeModal = () => {
     setVisible(false)
+    setInterfaces([])
+    setRequest({})
   }
   
 
@@ -119,7 +169,7 @@ function AddItem(props) {
                       :
                         {width: 250}
                     } 
-                    onChange={e => set(e.target.value, 'name')} 
+                    onChange={e => setRequestHandler('name', e.target.value)} 
                   />
                 </Col>
               </Row>
@@ -138,29 +188,33 @@ function AddItem(props) {
                       :
                         {width: 250}
                     } 
-                    onChange={e => set(e.target.value, 'address')} 
+                    onChange={e => setRequestHandler('address', e.target.value)} 
                   />
-                </Col>
-              </Row>
-              <br/>
-            {/*
-              <Row>
-                <Col span={1}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                </Col>
-                <Col span={4}>
-                  {errors.addressError ?
-                    <Input style={{width: 250, borderColor: 'red'}} name="address" id='address' onChange={e => this.addressSet(e)} />
-                  :
-                    <Input defaultValue={request.address} style={{width: 250}} name="address" id='name' onChange={e => this.addressSet(e)} />
-                  }
                 </Col>
               </Row>
               <br/>
 
               <Divider/>
 
+              <Button type="primary" onClick={() => setInterfacesHandler('itemAdd')}>
+                +
+              </Button>
+              <br/>
+              <br/>
+              <Table
+                columns={columns}
+                dataSource={interfaces}
+                bordered
+                rowKey="id"
+                scroll={{x: 'auto'}}
+                pagination={false}
+                style={{marginBottom: 10}}
+              />
 
+              <br/>
+
+
+            {/*
               <Button type="primary" onClick={() => this.interfaceAdd()}>
                 +
               </Button>

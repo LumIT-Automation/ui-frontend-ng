@@ -1,6 +1,7 @@
 class CommonFunctions {
 
   itemAdd = (items, type) => {
+    console.log(items)
     try {
       let id = 0
       let n = 0
