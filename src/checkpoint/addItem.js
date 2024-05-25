@@ -21,6 +21,27 @@ import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
+/*
+Iterabili in JavaScript: Gli iterabili sono oggetti che implementano il protocollo di iterazione, il quale consente di essere iterati tramite costrutti come for...of. 
+Gli esempi di iterabili includono array, stringhe, mappe, set e oggetti personalizzati che implementano il protocollo di iterazione.
+
+Symbol.iterator: Questo è un simbolo incorporato che rappresenta una funzione che restituisce un iteratore. 
+Un iteratore è un oggetto che implementa il metodo next, che restituisce un oggetto con due proprietà: value e done. 
+La funzione Symbol.iterator è ciò che permette all'oggetto di essere iterato.
+
+Sintassi di Spread: La sintassi di spread, rappresentata da ..., consente di espandere un iterabile in elementi individuali. 
+Ad esempio, [...array] espande un array in elementi individuali, e function(...args) raccoglie gli argomenti passati come un array.
+
+La sintassi ...obj e {...obj} funzionano in contesti diversi e per scopi diversi in JavaScript:
+
+Sintassi di spread per iterabili (...iterable):
+  Utilizzata con array, stringhe e altri oggetti iterabili.
+  Espande gli elementi di un iterabile in un contesto in cui sono attesi più elementi, come negli array literals o nelle chiamate a funzione.
+
+Sintassi di spread per oggetti ({...obj}):
+  Utilizzata per clonare o combinare oggetti.
+  Copia le proprietà di un oggetto in un nuovo oggetto.
+*/
 
 
 function AddItem(props) {
@@ -55,48 +76,97 @@ function AddItem(props) {
   }, [request] );
 
   useEffect( () => { 
-    console.log('interfaces', interfaces)
+    //console.log('interfaces', interfaces)
   }, [interfaces] );
 
 
 
   //SETTER
-  const setRequestHandler = (key, value) => {
-
-    setRequest((prevRequest) => {
-      const newRequest = {...prevRequest}
-
-      if (key === 'name') {
-        newRequest.name = value
-      } else if (key === 'address') {
-        newRequest.address = value
-      }
-      return newRequest
-    })
-
-  }
-
-
-  const setInterfacesHandler = async (key, value, item) => {
+  const set = async (key, value, item) => {
     let commonFunctions = new CommonFunctions()
     try {
-
-      if (key === 'itemAdd') {
+      if (key === 'name') {
+        setRequest((prevRequest) => ({
+          ...prevRequest,
+          name: value
+        }))
+      } 
+      else if (key === 'address') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest.address = value
+          return newRequest
+        })
+      } 
+      else if (key === 'itemAdd') {
         const list = await commonFunctions.itemAdd(interfaces)
         setInterfaces(list)
-      } else if (key === 'itemRemove') {
+      } 
+      else if (key === 'itemRemove') {
         const list = await commonFunctions.itemRemove(item, interfaces)
         if (list.length === 0) {
           setInterfaces([{id:1}])
         } else {
           setInterfaces(list)
         }
-       
       }
-
-
-    } catch(error) {
+    } 
+    catch(error) {
       console.log(error)
+    }
+  }
+
+  const createElement = (element, key, choices, obj, action, father) => {
+    if (element === 'input') {
+      if (key === 'name') {
+        return (
+          <Input 
+            style={
+              errors[`${key}Error`] ?
+                {
+                  width: 250, 
+                  borderColor: 'red'
+                }
+              :
+                {width: 250}
+            } 
+            onChange={e => set(key, e.target.value)} 
+          />        
+        )
+      }
+      else if (key === 'address') {
+        return (
+          <Input 
+            style={
+              errors[`${key}Error`] ?
+                {
+                  width: 250, 
+                  borderColor: 'red'
+                }
+              :
+                {width: 250}
+            } 
+            onChange={e => set(key, e.target.value)} 
+          />        
+        )
+      }
+    }
+
+    else if (element === 'button'){
+      if (action === 'itemRemove') {
+        return (
+          <Button type="danger" onClick={() => set('itemRemove', '', obj)}>
+          -
+          </Button>
+        )
+      }
+      if (action === 'itemAdd') {
+        return (
+          <Button type="primary" onClick={() => set('itemAdd')}>
+            +
+          </Button>
+        )
+      }      
     }
   }
  
@@ -115,13 +185,12 @@ function AddItem(props) {
       align: 'center',
       dataIndex: 'remove',
       key: 'remove',
-      render: (name, obj)  => (
-        <Button type="danger" onClick={() => setInterfacesHandler('itemRemove', '', obj)}>
-          -
-        </Button>
+      render: (name, record)  => (
+        createElement('button', '', '', record, 'itemRemove')
       ),
     }
   ]
+
 
   //ONCLOSE
   const closeModal = () => {
@@ -162,43 +231,26 @@ function AddItem(props) {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={4}>
-                  <Input 
-                    style={
-                      errors.nameError ?
-                        {width: 250, borderColor: 'red'}
-                      :
-                        {width: 250}
-                    } 
-                    onChange={e => setRequestHandler('name', e.target.value)} 
-                  />
+                  {createElement('input', 'name')}
                 </Col>
               </Row>
               <br/>
 
-
+              
               <Row>
                 <Col span={1}>
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
                 </Col>
                 <Col span={4}>
-                  <Input 
-                    style={
-                      errors.addressError ?
-                        {width: 250, borderColor: 'red'}
-                      :
-                        {width: 250}
-                    } 
-                    onChange={e => setRequestHandler('address', e.target.value)} 
-                  />
+                  {createElement('input', 'address')}
                 </Col>
               </Row>
               <br/>
 
               <Divider/>
 
-              <Button type="primary" onClick={() => setInterfacesHandler('itemAdd')}>
-                +
-              </Button>
+              {createElement('button', '', '', '', 'itemAdd')}
+
               <br/>
               <br/>
               <Table
@@ -215,24 +267,6 @@ function AddItem(props) {
 
 
             {/*
-              <Button type="primary" onClick={() => this.interfaceAdd()}>
-                +
-              </Button>
-              <br/>
-              <br/>
-              <Table
-                columns={columns}
-                dataSource={interfaces}
-                bordered
-                rowKey="id"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-
-              <br/>
-
-
               <Row>
                 <Col offset={11} span={2}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
