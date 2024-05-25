@@ -76,13 +76,13 @@ function AddItem(props) {
   }, [request] );
 
   useEffect( () => { 
-    //console.log('interfaces', interfaces)
+    console.log('interfaces', interfaces)
   }, [interfaces] );
 
 
 
   //SETTER
-  const set = async (key, value, item) => {
+  const set = async (key, value, record, father) => {
     let commonFunctions = new CommonFunctions()
     try {
       if (key === 'name') {
@@ -98,17 +98,27 @@ function AddItem(props) {
           return newRequest
         })
       } 
-      else if (key === 'itemAdd') {
+
+      else if (key === 'recordAdd') {
         const list = await commonFunctions.itemAdd(interfaces)
         setInterfaces(list)
       } 
-      else if (key === 'itemRemove') {
-        const list = await commonFunctions.itemRemove(item, interfaces)
+      else if (key === 'recordRemove') {
+        const list = await commonFunctions.itemRemove(record, interfaces)
         if (list.length === 0) {
           setInterfaces([{id:1}])
         } else {
           setInterfaces(list)
         }
+      }
+      else if (father === 'interfaces') {
+        setInterfaces((prevInterfaces) => {
+          const newInterfaces = [...prevInterfaces]
+          let nic = newInterfaces.find( nic => nic.id === record.id )
+          nic[key] = value
+          delete nic[`${key}Error`]
+          return newInterfaces
+        })
       }
     } 
     catch(error) {
@@ -116,9 +126,27 @@ function AddItem(props) {
     }
   }
 
-  const createElement = (element, key, choices, obj, action, father) => {
+
+
+  const createElement = (element, key, choices, record, action, father) => {
     if (element === 'input') {
-      if (key === 'name') {
+      if (father) {
+        return (
+          <Input 
+            style={
+              errors[`${key}Error`] ?
+                {
+                  width: 150, 
+                  borderColor: 'red'
+                }
+              :
+                {width: 150}
+            } 
+            onChange={e => set(key, e.target.value, record, father)} 
+          />        
+        )
+      }
+      else if (key === 'key2') {
         return (
           <Input 
             style={
@@ -134,7 +162,7 @@ function AddItem(props) {
           />        
         )
       }
-      else if (key === 'address') {
+      else {
         return (
           <Input 
             style={
@@ -146,23 +174,23 @@ function AddItem(props) {
               :
                 {width: 250}
             } 
-            onChange={e => set(key, e.target.value)} 
+            onChange={e => set(key, e.target.value, record)} 
           />        
         )
       }
     }
 
     else if (element === 'button'){
-      if (action === 'itemRemove') {
+      if (action === 'recordRemove') {
         return (
-          <Button type="danger" onClick={() => set('itemRemove', '', obj)}>
+          <Button type="danger" onClick={() => set('recordRemove', '', record)}>
           -
           </Button>
         )
       }
-      if (action === 'itemAdd') {
+      if (action === 'recordAdd') {
         return (
-          <Button type="primary" onClick={() => set('itemAdd')}>
+          <Button type="primary" onClick={() => set('recordAdd')}>
             +
           </Button>
         )
@@ -181,12 +209,57 @@ function AddItem(props) {
       description: '',
     },
     {
+      title: 'Interface name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name, record)  => (
+        createElement('input', 'nicName', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Subnet4',
+      align: 'center',
+      dataIndex: 'subnet4',
+      key: 'subnet4',
+      render: (name, record)  => (
+        createElement('input', 'subnet4', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Mask-length4',
+      align: 'center',
+      dataIndex: 'mask-length4',
+      key: 'mask-length4',
+      render: (name, record)  => (
+        createElement('input', 'mask-length4', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Subnet6',
+      align: 'center',
+      dataIndex: 'subnet6',
+      key: 'subnet6',
+      render: (name, record)  => (
+        createElement('input', 'subnet6', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Mask-length6',
+      align: 'center',
+      dataIndex: 'mask-length6',
+      key: 'mask-length6',
+      render: (name, record)  => (
+        createElement('input', 'mask-length6', '', record, '', 'interfaces')
+      ),
+    },
+    {
       title: 'Remove request',
       align: 'center',
       dataIndex: 'remove',
       key: 'remove',
       render: (name, record)  => (
-        createElement('button', '', '', record, 'itemRemove')
+        createElement('button', '', '', record, 'recordRemove')
       ),
     }
   ]
@@ -249,7 +322,7 @@ function AddItem(props) {
 
               <Divider/>
 
-              {createElement('button', '', '', '', 'itemAdd')}
+              {createElement('button', '', '', '', 'recordAdd')}
 
               <br/>
               <br/>
