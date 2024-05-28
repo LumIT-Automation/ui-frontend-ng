@@ -96,7 +96,7 @@ class Manager extends React.Component {
         <Divider style={{borderBottom: '3vh solid #f0f2checkpoint'}}/>
         <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
           {!(this.props.asset && this.props.domain) ?
-            <Alert message="Asset and Partition not set" type="error" />
+            <Alert message="Asset and Domain not set" type="error" />
           :
             <React.Fragment>
 

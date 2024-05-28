@@ -15,6 +15,10 @@ import Authorizators from '../_helpers/authorizators'
 import AddItem from './addItem'
 
 import {
+  fetchItems,
+} from './store'
+
+import {
   err
 } from '../concerto/store'
   
@@ -52,12 +56,16 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('item', this.props.item)
+    console.log('items', this.state.items)
     console.log('errors', this.state.errors)
     if (this.props.asset !== prevProps.asset || this.props.domain !== prevProps.domain) {
       this.main()
     }
     if (this.props.items !== prevProps.items) {
+      this.main()
+    }
+    if (this.props.fetchItems) {
+      this.props.dispatch(fetchItems(false))
       this.main()
     }
   }
@@ -892,7 +900,7 @@ class ItemsView extends React.Component {
             </Radio.Group>
 
             {this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'checkpoint', 'hosts_post') ?
-              <AddItem/>
+              <AddItem items={this.props.items} item={this.props.item}/>
             :
               null
             }
@@ -930,6 +938,7 @@ authorizations: state.authorizations,
 
 asset: state.checkpoint.asset,
 domain: state.checkpoint.domain,
+fetchItems: state.checkpoint.fetchItems
 }))(ItemsView);
   
   

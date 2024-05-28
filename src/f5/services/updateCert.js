@@ -270,35 +270,7 @@ class UpdateCert extends React.Component {
   }
 
   updateHandler = async () => {
-    let install, update 
-    await this.setState({loading: true})
-    install = await this.install('certificate', this.props.partition)
-    if (install.status && install.status !== 201 ) {
-      let error = Object.assign(install, {
-        component: 'updateCert',
-        vendor: 'f5',
-        errorType: 'installError'
-      })
-      await this.setState({loading: false})
-      this.props.dispatch(err(error))
-      return
-    }
-    else {
-      install = await this.install('key', this.props.partition)
-      if (install.status && install.status !== 201 ) {
-        let error = Object.assign(install, {
-          component: 'updateCert',
-          vendor: 'f5',
-          errorType: 'installError'
-        })
-        await this.setState({loading: false})
-        this.props.dispatch(err(error))
-        return
-      }
-
-    }
-
-    update = await this.updateProfile()
+    let update = await this.updateProfile()
       if (update.status && update.status !== 200 ) {
         let error = Object.assign(update, {
           component: 'updateCert',
@@ -314,20 +286,17 @@ class UpdateCert extends React.Component {
       }
   }
 
-  install =  async (file) => {
+  updateProfile =  async (file) => {
     let body
     let r
 
-    if (file === 'certificate') {
-      body = {
+    body = {
+      "data": {
+        "virtualServerName": this.state.virtualServer.name,
         "certificate": {
           "name": this.state.certName,
           "content_base64": btoa(this.state.certificate)
-        }
-      }
-    }
-    else {
-      body = {
+        },
         "key": {
           "name": this.state.certName,
           "content_base64": btoa(this.state.key)
@@ -336,7 +305,7 @@ class UpdateCert extends React.Component {
     }
 
     let rest = new Rest(
-      "POST",
+      "PUT",
       resp => {
         r = resp
       },
@@ -344,31 +313,7 @@ class UpdateCert extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${file}s/`, this.props.token, body )
-    return r
-  }
-
-  updateProfile =  async (file) => {
-    let body
-    let r
-
-    body = {
-      "data": {
-        "cert": `/${this.props.partition}/${this.state.certName}`,
-        "key": `/${this.props.partition}/${this.state.certName}`,
-      }
-    }
-
-    let rest = new Rest(
-      "PATCH",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/client-ssl/${this.state.profile.name}/`, this.props.token, body )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/workflow/client-ssl-profile/${this.state.profile.name}/`, this.props.token, body )
     return r
   }
 

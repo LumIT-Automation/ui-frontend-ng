@@ -12,7 +12,7 @@ import {
 } from '../concerto/store'
 
 import {
-  hostsFetch,
+  fetchItems,
 } from './store'
 
 import { Input, Button, Space, Modal, Spin, Result, Divider, Table, Row, Col } from 'antd';
@@ -47,7 +47,8 @@ Sintassi di spread per oggetti ({...obj}):
 function AddItem(props) {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState('');
+  const [response, setResponse] = useState(false);
+  const [commit, setCommit] = useState(true);
 
   const [errors, setErrors] = useState({});
   const [interfaces, setInterfaces] = useState([]);
@@ -70,15 +71,6 @@ function AddItem(props) {
       setInterfaces(interfaces)
     }
   }, [visible] );
-
-  useEffect( () => { 
-    console.log('request', request)
-  }, [request] );
-
-  useEffect( () => { 
-    console.log('interfaces', interfaces)
-  }, [interfaces] );
-
 
 
   //SETTER
@@ -124,6 +116,95 @@ function AddItem(props) {
     catch(error) {
       console.log(error)
     }
+  }
+
+
+
+  const validationCheck = async () => {
+    setCommit(false)
+    let validators = new Validators()
+    let ok = true
+
+    if (!request.name) {
+      errors.nameError = true
+      await setErrors(errors)
+    }
+    else {
+      delete errors.nameError
+      await setErrors(errors)
+    }
+
+    if (!request.address || !validators.ipv4(request.address)) {
+      errors.addressError = true
+      await setErrors(errors)
+    }
+    else {
+      delete errors.addressError
+      await setErrors(errors)
+    }
+    //await setInterfaces(interfaces)
+
+    setCommit(true)
+    return ok
+  }
+
+  const validation = async () => {
+    let nicsOk = await validationCheck()
+
+    if ((Object.keys(errors).length === 0) && nicsOk) {
+      itemAdd()
+    }
+  }
+
+  const itemAdd = async () => {
+    let b = {}
+    let nics = []
+
+    b.data = {
+      "ipv4-address": request.address,
+      "name": request.name,
+    }
+    if (interfaces.length > 0 && interfaces[0].name) {
+      interfaces.forEach((nic, i) => {
+        let o = {}
+        o.name = nic.nicName
+        o.nic.subnet4 = nic.subnet4
+        o.nic.subnet6 = nic.subnet6
+        o['mask-length4'] = nic.mask_length4
+        o['mask-length6'] = nic.mask_length6
+        nics.push(o)
+      });
+      b.data.interfaces = nics
+    }
+
+    setLoading(true)
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        setLoading(true)
+        setResponse(true)
+        responseF()
+      },
+      error => {
+        error = Object.assign(error, {
+          component: `${props.item}Add`,
+          vendor: 'checkpoint',
+          errorType: `${props.item}AddError`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
+      }
+    )
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/${props.items}/`, props.token, b)
+  }
+
+
+  const responseF = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(fetchItems(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
 
@@ -198,8 +279,13 @@ function AddItem(props) {
     }
   }
  
+  const returnCol = () => {
+    if (props.items === 'hosts') {
+      return hostsCol
+    }
+  }
 
-  const columns = [
+  const hostsCol = [
     {
       title: 'id',
       align: 'center',
@@ -272,6 +358,15 @@ function AddItem(props) {
     setRequest({})
   }
   
+  const capital = (str) => {
+    return str.toUpperCase()
+  }
+
+  const showErrors = () => {
+    if (props.error && props.error.component === `${props.item}Add`) {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
 
   return (
     <Space direction='vertical'>
@@ -279,7 +374,7 @@ function AddItem(props) {
         <Button icon={addIcon} type='primary' onClick={() => setVisible(true)}/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD HOST</p>}
+          title={<p style={{textAlign: 'center'}}>ADD {capital(props.item)}</p>}
           centered
           destroyOnClose={true}
           visible={visible}
@@ -327,7 +422,7 @@ function AddItem(props) {
               <br/>
               <br/>
               <Table
-                columns={columns}
+                columns={returnCol()}
                 dataSource={interfaces}
                 bordered
                 rowKey="id"
@@ -339,18 +434,23 @@ function AddItem(props) {
               <br/>
 
 
-            {/*
-              <Row>
-                <Col offset={11} span={2}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Host
-                  </Button>
-                </Col>
-              </Row>
-          */}
+            <Row>
+              <Col offset={11} span={2}>
+                <Button 
+                  type="primary"
+                  disable={!commit} 
+                  onClick={() => validation()}
+                >
+                  Commit
+                </Button>
+              </Col>
+            </Row>
+          
             </React.Fragment>
           }
         </Modal>
+
+        {showErrors()}
 
 
       </Space>

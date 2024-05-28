@@ -42,8 +42,9 @@ const checkpointSlice = createSlice({
       hosts: (state, action) => {
         state.hosts = action.payload.data.items
       },
-      hostsFetch: (state, action) => {
-        state.hostsFetch = action.payload
+      fetchItems: (state, action) => {
+        console.log('fetchItems', action.payload)
+        state.fetchItems = action.payload
       },
 
       groupsLoading: (state, action) => {
@@ -129,18 +130,18 @@ export const {
   assetsLoading,
   assets,
   assetsFetch,
-
   asset,
 
   domainsLoading,
   domains,
   domainsFetch,
-
   domain,
+
+  fetchItems,
 
   hostsLoading,
   hosts,
-  hostsFetch,
+  
 
   groupsLoading,
   groups,
