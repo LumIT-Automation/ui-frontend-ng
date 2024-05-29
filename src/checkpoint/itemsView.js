@@ -56,8 +56,6 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log('items', this.state.items)
-    console.log('errors', this.state.errors)
     if (this.props.asset !== prevProps.asset || this.props.domain !== prevProps.domain) {
       this.main()
     }
@@ -237,51 +235,6 @@ class ItemsView extends React.Component {
     await this.setState({items: list})
   }
 
-  subItemAdd = async (obj) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let item = items.find(item => item.id === obj.id)
-
-    if (item.members.length < 1) {
-      item.members.push({id:1})
-    }
-    else {
-      let idList = item.members.map(member => {
-        return member.id 
-      })
-      let n = Math.max(...idList)
-      n++
-      let member = {id: n}
-      item.members = [member].concat(item.members)
-    }
-
-    if (item.existent) {
-      item.isModified.members = true
-    }
-
-    await this.setState({items: items})
-  }
-
-  subItemRemove = async (subItem, father) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let item = items.find(item => item.id === father.id)
-    let member = item.members.find(m => m.id === subItem.id)
-    let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemRemove(member, father.members)
-    item.members = list
-
-    if (item.existent) {
-      let origItems = JSON.parse(JSON.stringify(this.state.originitems))
-      let origItem = origItems.find(item => item.id === father.id)
-      if (JSON.stringify(item.members) === JSON.stringify(origItem.members)) {
-        delete item.isModified.members
-      }
-      else {
-        item.isModified.members = true
-      }
-    }
-    
-    await this.setState({items: items})
-  }
 
   /*
     Setting item's values
@@ -421,7 +374,6 @@ class ItemsView extends React.Component {
   */
 
   validationCheck = async () => {
-    console.log('èèèèèèè')
     let items = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
@@ -430,20 +382,16 @@ class ItemsView extends React.Component {
 
       for (const item of Object.values(items)) {
         if (!item.name) {
-          console.log('name')
           item.nameError = true
           ++errors
         }
         if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
-          console.log('address')
           item.addressError = true
           ++errors
         }
 
       }
       await this.setState({items: items})
-      console.log('items', this.state.items)
-      console.log('errors', errors)
       return errors
     }
 
@@ -475,7 +423,6 @@ class ItemsView extends React.Component {
         toPost.push(item)
       }
       if (item.toDelete) {
-        console.log('èèèèè')
         toDelete.push(item)
       }
       if (item.isModified && Object.keys(item.isModified).length > 0) {
@@ -484,7 +431,6 @@ class ItemsView extends React.Component {
     }
 
     if (toDelete.length > 0) {
-      console.log(toDelete)
       for (const item of toDelete) {
         item.loading = true
         await this.setState({items: items})
@@ -765,16 +711,6 @@ class ItemsView extends React.Component {
             <Button
               type='danger'
               onClick={() => this.itemRemove(obj, this.state.items)}
-            >
-              -
-            </Button>
-          )
-        }
-        else if (action === 'subItemRemove') {
-          return (
-            <Button
-              type='danger'
-              onClick={() => this.subItemRemove(obj, choices)}
             >
               -
             </Button>

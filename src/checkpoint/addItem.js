@@ -359,6 +359,7 @@ function AddItem(props) {
   }
   
   const capital = (str) => {
+    console.log(str)
     return str.toUpperCase()
   }
 
