@@ -77,6 +77,7 @@ function AddItem(props) {
   const set = async (key, value, record, father) => {
     let commonFunctions = new CommonFunctions()
     try {
+      //Due modi per settare la proprietà di un oggetto.
       if (key === 'name') {
         setRequest((prevRequest) => ({
           ...prevRequest,

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
 import '../App.css'
@@ -26,79 +26,81 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
-class ItemsView extends React.Component {
+function ItemsView(props) {
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
+  const [disableCommit, setDisableCommit] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [originitems, setOriginitems] = useState([]);
+  const [items, setItems] = useState([]);
+  const [errors, setErrors] = useState({});
+  const myRefs = useRef(null);
+  const textAreaRefs = useRef(null);
 
-  constructor(props) {
-    super(props);
-
-    this.myRefs = {};
-    this.textAreaRefs = {};
-
-    this.state = {
-      searchText: '',
-      searchedColumn: '',
-      disableCommit: false,
-      originitems: [],
-      items: [],
-      expandedKeys: [],
-      errors: {}
-    };
-  }
-
-  componentDidMount() {
-    if (this.props.items) {
-      this.main()
+  //MOUNT
+  useEffect( () => { 
+    if (props.items) {
+      main()
     }
-  }
-  
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
+  }, [] );
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset !== prevProps.asset || this.props.domain !== prevProps.domain) {
-      this.main()
-    }
-    if (this.props.items !== prevProps.items) {
-      this.main()
-    }
-    if (this.props.fetchItems) {
-      this.props.dispatch(fetchItems(false))
-      this.main()
-    }
-  }
 
-  componentWillUnmount() {
-  }
+  //UPDATE
+  useEffect(() => {
+    main();
+  }, [props.asset, props.domain]);
+
+  useEffect(() => {
+    main();
+  }, [props.items]);
+
+  useEffect(() => {
+    if (props.fetchItems) {
+      props.dispatch(fetchItems(false))
+      main()
+    }
+  }, [props.fetchItems]);
+
 
   /*
     Antd Table methods for search, filter and order data
   */
 
-  getColumnSearchProps = dataIndex => ({
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+
+  const handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    setSearchText('');
+  };
+
+  const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
         <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
+          ref={searchInput}
           placeholder={`Search ${dataIndex}`}
           value={selectedKeys[0]}
           onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
         />
         <Space>
           <Button
             type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
             icon={<SearchOutlined />}
             size="small"
             style={{ width: 90 }}
           >
             Search
           </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
             Reset
           </Button>
         </Space>
@@ -124,14 +126,14 @@ class ItemsView extends React.Component {
     },
     onFilterDropdownVisibleChange: visible => {
       if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
+        setTimeout(() => searchInput.current?.select(), 100);
       }
     },
     render: text => {
-      return this.state.searchedColumn === dataIndex ? (
+      return searchedColumn === dataIndex ? (
         <Highlighter
           highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
+          searchWords={[searchText]}
           autoEscape
           textToHighlight={text ? text.toString() : ''}
         />
@@ -141,51 +143,29 @@ class ItemsView extends React.Component {
     }
   });
 
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
 
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  onTableRowExpand = (expanded, record) => {
-    let keys = Object.assign([], this.state.expandedKeys);
-
-    if(expanded){
-      keys.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
-    }
-    else {
-      keys = keys.filter(k => k !== record.id)
-    }
-    this.setState({expandedKeys: keys});
-  }
 
   /*
     Fetching Data, Rendering in a table, Add/Remove items
   */
 
-  main = async () => {
-    await this.setState({items: [], originitems: [], expandedKeys: [], loading: true})
+  const main = async () => {
+    setItems([])
+    setOriginitems([])
+    setLoading(true)
     let id = 1
     
-    if (this.props.items === 'hosts') {
+    if (props.items === 'hosts') {
 
-      let fetched = await this.dataGet(this.props.asset.id)
+      let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'checkpoint',
           errorType: 'hostsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
@@ -197,18 +177,20 @@ class ItemsView extends React.Component {
           id++
           return item
         })
-        await this.setState({items: items, originitems: items, loading: false})
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
       }
     }
 
   }
 
-  dataGet = async (assetId, entities) => {
+  const dataGet = async (assetId, entities) => {
     let endpoint
     let r
 
 
-    endpoint = `${this.props.vendor}/${assetId}/${this.props.domain}/${this.props.items}/`
+    endpoint = `${props.vendor}/${assetId}/${props.domain}/${props.items}/`
 
     let rest = new Rest(
       "GET",
@@ -219,20 +201,14 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token)
+    await rest.doXHR(endpoint, props.token)
     return r
   }
 
-  itemAdd = async (items, type) => {
-    let commonFunctions = new CommonFunctions()
-    let list = await commonFunctions.itemAdd(items, type)
-    await this.setState({items: list})
-  }
-
-  itemRemove = async (item, items) => {
+  const itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(item, items)
-    await this.setState({items: list})
+    setItems(list)
   }
 
 
@@ -240,146 +216,42 @@ class ItemsView extends React.Component {
     Setting item's values
   */
 
-  readFile = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-  
-      reader.onload = res => {
-        resolve(res.target.result);
-      };
-      reader.onerror = err => reject(err);
-  
-      reader.readAsText(file);
-    });
-  }
+  const set = async (key, value, record, father) => {
+    try {
+      //let items = [...items]
+      if (father) {
 
-  set = async (key, value, record, father) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-
-    if (father) {
-      let fath = items.find(item => item.id === father.id)
-      let origFather = this.state.originitems.find(item => item.id === father.id)
-      let m = fath.members.find(m => m.id === record.id)
-      if (key === 'address'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
+      }
+      else {
+        if (key === 'toDelete') {
+          setItems((prevItems) => {
+            const newItems = [...prevItems]
+            let item = newItems.find( i => i.id === record.id )
+            if (value) {
+              item.toDelete = true
+            }
+            else {
+              delete item.toDelete
+            }
+            return newItems
+          })
         }
-
-        if (value) {
-          m[key] = value
-          delete m[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          m[key] = ''
-        }
-
-        delete m[`${key}Error`]
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
       }
     }
-
-    else if (record) {
-      let origEl = this.state.originitems.find(item => item.id === record.id)
-      let e = items.find(item => item.id === record.id)
-
-      if (key === 'name'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-  
-        if (value) {
-          e[key] = value
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
-      }
-
-      if (key === 'address'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-
-        if (value) {
-          e[key] = value
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
-      }
-  
-      if (key === 'toDelete') {
-        if (value) {
-          e.toDelete = true
-        }
-        else {
-          delete e.toDelete
-        }
-        await this.setState({items: items})
-      }
+    catch (error) {
+      console.log(error)
     }
-    
   }
 
   /*
     Validate data before send them to backend
   */
 
-  validationCheck = async () => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
+  const validationCheck = async () => {
     let errors = 0
     let validators = new Validators()
 
-    if (this.props.items === 'hosts') {
-
+    if (props.items === 'hosts') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -389,22 +261,21 @@ class ItemsView extends React.Component {
           item.addressError = true
           ++errors
         }
-
       }
-      await this.setState({items: items})
+      await setItems(items)
       return errors
     }
 
   }
 
-  validation = async () => {
-    this.setState({disableCommit: true})
-    let errors = await this.validationCheck()
+  const validation = async () => {
+    setDisableCommit(true)
+    let errors = await validationCheck()
     
-    this.setState({disableCommit: false})
+    setDisableCommit(false)
     if (errors === 0) {
-      this.setState({disableCommit: true})
-      this.cudManager()
+      setDisableCommit(true)
+      cudManager()
     }
   }
 
@@ -412,8 +283,7 @@ class ItemsView extends React.Component {
     Send Data to backend
   */
  
-  cudManager = async () => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
+  const cudManager = async () => {
     let toPost = []
     let toDelete = []
     let toPatch = []
@@ -432,33 +302,37 @@ class ItemsView extends React.Component {
 
     if (toDelete.length > 0) {
       for (const item of toDelete) {
-        item.loading = true
-        await this.setState({items: items})
-
-        let e = await this.itemDelete(item)
-        if (e.status && e.status !== 200 ) {
+        // Copia dell'elemento da modificare
+        const updatedItem = { ...item, loading: true };
+    
+        // Aggiornamento dello stato
+        await setItems(prevItems => prevItems.map(prevItem => prevItem.id === item.id ? updatedItem : prevItem));
+    
+        // Esecuzione dell'operazione asincrona
+        let e = await itemDelete(updatedItem);
+    
+        // Gestione del risultato dell'operazione asincrona
+        if (e.status && e.status !== 200) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: `delete${this.props.item}Error`
-          })
-          this.props.dispatch(err(error))
-          item.loading = false
-          await this.setState({items: items})
+            errorType: `delete${props.item}Error`
+          });
+          props.dispatch(err(error));
+          updatedItem.loading = false;
+          await setItems(prevItems => prevItems.map(prevItem => prevItem.id === item.id ? updatedItem : prevItem));
+        } else {
+          updatedItem.loading = false;
+          await setItems(prevItems => prevItems.map(prevItem => prevItem.id === item.id ? updatedItem : prevItem));
         }
-        else {
-          item.loading = false
-          await this.setState({items: items})
-        }
-
       }
     }
-
+/*
     if (toPost.length > 0) {
       for (const item of toPost) {
         let body = {}
 
-        if (this.props.items === 'hosts') {
+        if (props.items === 'hosts') {
           body.data = {
             "address": item.address,
             "name": item.name,
@@ -468,22 +342,22 @@ class ItemsView extends React.Component {
         }
 
         item.loading = true
-        await this.setState({items: items})
+        await setItems(items)
 
-        let e = await this.itemPost(body)
+        let e = await itemPost(body)
         if (e.status && e.status !== 201 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: `add${this.props.items}Error`
+            errorType: `add${props.items}Error`
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           item.loading = false
-          await this.setState({items: items})
+          await setItems(items)
         }
         else {
           item.loading = false
-          await this.setState({items: items})
+          await setItems(items)
         }
       }
     }
@@ -493,31 +367,32 @@ class ItemsView extends React.Component {
         let body = {}
 
         item.loading = true
-        await this.setState({items: items})
+        await setItems(items)
 
-        let e = await this.itemPatch(item.name, item.type ? item.type : null, body)
+        let e = await itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'checkpoint',
-            errorType: `edit${this.props.item}Error`
+            errorType: `edit${props.item}Error`
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           item.loading = false
-          await this.setState({items: items})
+          await setItems(items)
         }
         else {
           item.loading = false
-          await this.setState({items: items})
+          await setItems(items)
         }
       }
     }
+    */
 
-    this.setState({disableCommit: false})
-    this.main()
+    setDisableCommit(false)
+    main()
   }
 
-  itemPost = async (body) => {
+  const itemPost = async (body) => {
     let r
     let rest = new Rest(
       "POST",
@@ -529,12 +404,12 @@ class ItemsView extends React.Component {
       }
     )
 
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.domain}/${this.props.items}/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.domain}/${props.items}/`, props.token, body )
     
     return r
   }
 
-  itemDelete = async (item, type) => {
+  const itemDelete = async (item, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -546,12 +421,12 @@ class ItemsView extends React.Component {
       }
     )
 
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.domain}/${this.props.item}/${item.uid}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.domain}/${props.item}/${item.uid}/`, props.token )
     
     return r
   }
 
-  itemPatch = async (name, type, body) => {
+  const itemPatch = async (name, type, body) => {
 
     let r
     let rest = new Rest(
@@ -564,306 +439,296 @@ class ItemsView extends React.Component {
       }
     )
 
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.domain}/${this.props.item}/${name}/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.domain}/${props.item}/${name}/`, props.token, body )
     
     return r
   }
 
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-  authorizatorsSA = a => {
+  const authorizatorsSA = a => {
     let author = new Authorizators()
     return author.isSuperAdmin(a)
   }
 
-  render() {
 
-    let today = new Date().getTime();
-    let thirtyDays = 2592000000
-    let inThirtyDays = new Date(today + thirtyDays);
-
-
-    let randomKey = () => {
-      return Math.random().toString()
-    }
-
-    let createElement = (element, key, choices, obj, action, father) => {
-      if (element === 'input') {
-        if (key === 'name') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 200}
-                :
-                  {width: 200}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />          
-          )
-        }
-        else if (key === 'address') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 200}
-                :
-                  {width: 200}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj, father)}
-            />          
-          )
-        }
-      }
-
-      else if (element === 'file') {
+  let createElement = (element, key, choices, obj, action, father) => {
+    if (element === 'input') {
+      if (key === 'name') {
         return (
-          <React.Fragment>
-            <Input 
-              type="file"
-              style=
-                { 
-                  obj[`textError`] ?
-                  {borderColor: `red`, width: 350}
-                :
-                  {width: 350}
-                }
-              onChange={e => this.set(key, e.target.files[0], obj)} 
-            />
-            <Card>
-              <p>Name: {obj.fileName}</p>
-              <p>Type: {obj.type}</p>
-              <p>Size: {obj.size} Bytes</p>
-            </Card>    
-          </React.Fragment>    
+          <Input
+            value={obj[key]}
+            style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red', width: 200}
+              :
+                {width: 200}
+              }
+            ref={ref => myRefs[`${obj.id}_${key}`] = ref}
+            onChange={event => set(key, event.target.value, obj)}
+          />          
         )
       }
-
-      else if (element === 'textarea') {
+      else if (key === 'address') {
         return (
-          <Input.TextArea
-            rows={12}
+          <Input
             value={obj[key]}
-            ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
-            onChange={event => this.set(key, event.target.value, obj)}
             style=
-              { obj[`${key}Error`] ?
+              {obj[`${key}Error`] ?
+                {borderColor: 'red', width: 200}
+              :
+                {width: 200}
+              }
+            ref={ref => myRefs[`${obj.id}_${key}`] = ref}
+            onChange={event => set(key, event.target.value, obj, father)}
+          />          
+        )
+      }
+    }
+
+    else if (element === 'file') {
+      return (
+        <React.Fragment>
+          <Input 
+            type="file"
+            style=
+              { 
+                obj[`textError`] ?
                 {borderColor: `red`, width: 350}
               :
                 {width: 350}
               }
+            onChange={e => set(key, e.target.files[0], obj)} 
           />
-        )
-      }
+          <Card>
+            <p>Name: {obj.fileName}</p>
+            <p>Type: {obj.type}</p>
+            <p>Size: {obj.size} Bytes</p>
+          </Card>    
+        </React.Fragment>    
+      )
+    }
 
-      else if (element === 'select') {
+    else if (element === 'textarea') {
+      return (
+        <Input.TextArea
+          rows={12}
+          value={obj[key]}
+          ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
+          onChange={event => set(key, event.target.value, obj)}
+          style=
+            { obj[`${key}Error`] ?
+              {borderColor: `red`, width: 350}
+            :
+              {width: 350}
+            }
+        />
+      )
+    }
+
+    else if (element === 'select') {
+      return (
+        <Select
+          value={obj[key]}
+          showSearch
+          style={
+            obj[`${key}Error`] ?
+              {border: `1px solid red`, width: 120}
+            :
+              {width: 120}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={event => set(key, event, obj)}
+        >
+          <React.Fragment>
+            {choices.map((c, i) => {
+              return (
+                <Select.Option key={i} value={c}>{c}</Select.Option>
+              )
+            })
+            }
+          </React.Fragment>
+        </Select>
+      )
+    }
+
+    else if (element === 'checkbox'){
+      return (
+        <Checkbox 
+          checked={obj.toDelete}
+          onChange={event => set(action, event.target.checked, obj)}
+        />
+      )
+    }
+
+    else if (element === 'button'){
+      if (action === 'itemRemove') {
         return (
-          <Select
-            value={obj[key]}
-            showSearch
-            style={
-              obj[`${key}Error`] ?
-                {border: `1px solid red`, width: 120}
-              :
-                {width: 120}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={event => this.set(key, event, obj)}
+          <Button
+            type='danger'
+            onClick={() => itemRemove(obj, items)}
           >
-            <React.Fragment>
-              {choices.map((c, i) => {
-                return (
-                  <Select.Option key={i} value={c}>{c}</Select.Option>
-                )
-              })
-              }
-            </React.Fragment>
-          </Select>
+            -
+          </Button>
         )
       }
-
-      else if (element === 'checkbox'){
+      else if (action === 'commit') {
         return (
-          <Checkbox 
-            checked={obj.toDelete}
-            onChange={event => this.set(action, event.target.checked, obj)}
-          />
+          <Button
+            type="primary"
+            disabled={disableCommit}
+            style={{float: 'right', marginRight: 5, marginBottom: 15}}
+            onClick={() => validation()}
+          >
+            Commit
+          </Button>
         )
       }
-
-      else if (element === 'button'){
-        if (action === 'itemRemove') {
-          return (
-            <Button
-              type='danger'
-              onClick={() => this.itemRemove(obj, this.state.items)}
-            >
-              -
-            </Button>
-          )
-        }
-        else if (action === 'commit') {
-          return (
-            <Button
-              type="primary"
-              disabled={this.state.disableCommit}
-              style={{float: 'right', marginRight: 5, marginBottom: 15}}
-              onClick={() => this.validation()}
-            >
-              Commit
-            </Button>
-          )
-        }
-      }
     }
+  }
 
-    let returnCol = () => {
-      if (this.props.items === 'hosts') {
-        return hostsColumns
-      }
+  let returnCol = () => {
+    if (props.items === 'hosts') {
+      return hostsColumns
     }
+  }
 
-    const hostsColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Domain',
-        align: 'center',
-        width: 'auto',
-        dataIndex: ['domain', 'name'],
-        key: 'domain',
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
-      },
-      {
-        title: 'IPv4-address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-       ...this.getColumnSearchProps('address'),
-       render: (val, obj)  => (
+  const hostsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      render: (val, obj)  => (
         obj.existent ?
           val
         :
-          createElement('input', 'address', '', obj, '')
+          createElement('input', 'name', '', obj, '')
       )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'checkpoint', 'host_delete')) ? 
-              <Space size="small">
-                { obj.existent ? 
-                  createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-                :
-                  createElement('button', 'itemRemove', '', obj, 'itemRemove')
-                }
-              </Space>
-              :
-                '-'
-              
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'itemsView') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
-    }
-
-    return (
-      <React.Fragment>
-        {this.state.loading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-        :
-          <React.Fragment>
-            {/*to do: createElement()*/} 
-            <Radio.Group style={{marginRight: 5}}>
-              <Radio.Button
-                style={{marginLeft: 10 }}
-                onClick={() => this.main()}
-              >
-                <ReloadOutlined/>
-              </Radio.Button>
-            </Radio.Group>
-
-            {this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'checkpoint', 'hosts_post') ?
-              <AddItem items={this.props.items} item={this.props.item}/>
-            :
-              null
-            }
-
-            <br/>
-            <br/>
-              <Table
-                columns={returnCol()}
-                style={{width: '100%', padding: 5}}
-                dataSource={this.state.items}
-                bordered
-                rowKey={randomKey}
-                scroll={{x: 'auto'}}
-                pagination={{pageSize: 10}}
-              />
-            <br/>
-
-            {createElement('button', '', '', '', 'commit')}
-
-          </React.Fragment>
-        }
-
-        {errors()}
-  
-      </React.Fragment>
+    },
+    {
+      title: 'Domain',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['domain', 'name'],
+      key: 'domain',
+    },
+    {
+      title: 'Type',
+      align: 'center',
+      dataIndex: 'type',
+      key: 'type',
+      ...getColumnSearchProps('type'),
+    },
+    {
+      title: 'IPv4-address',
+      align: 'center',
+      dataIndex: 'address',
+      key: 'address',
+      ...getColumnSearchProps('address'),
+      render: (val, obj)  => (
+      obj.existent ?
+        val
+      :
+        createElement('input', 'address', '', obj, '')
     )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'host_delete')) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  const showErrors = () => {
+    if (props.error && props.error.component === 'itemsView') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
   }
+
+  return (
+    <React.Fragment>
+      {loading ?
+        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+      :
+        <React.Fragment>
+          {/*to do: createElement()*/} 
+          <Radio.Group style={{marginRight: 5}}>
+            <Radio.Button
+              style={{marginLeft: 10 }}
+              onClick={() => main()}
+            >
+              <ReloadOutlined/>
+            </Radio.Button>
+          </Radio.Group>
+
+          {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'hosts_post') ?
+            <AddItem items={props.items} item={props.item}/>
+          :
+            null
+          }
+
+          <br/>
+          <br/>
+            <Table
+              columns={returnCol()}
+              style={{width: '100%', padding: 5}}
+              dataSource={items}
+              bordered
+              rowKey={record => record.name}
+              scroll={{x: 'auto'}}
+              pagination={{pageSize: 10}}
+            />
+          <br/>
+
+          {createElement('button', '', '', '', 'commit')}
+
+        </React.Fragment>
+      }
+
+      {showErrors()}
+
+    </React.Fragment>
+  )
+  
 
 }
 
