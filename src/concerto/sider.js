@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { Component, } from "react";
 import { Link } from 'react-router-dom'
 import {connect} from "react-redux";
@@ -28,198 +28,185 @@ import TriggersPNG from '../svg/icons8-priorità-media-50.png'
 const { Sider } = Layout;
 
 
+function CustomSider(props) {
+  const [collapsed, setCollapsed] = useState(false);
 
-class CustomSider extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      collapsed: false
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  toggle = () => {
-    this.setState({collapsed: !this.state.collapsed});
+  const toggle = () => {
+    setCollapsed(!collapsed)
   };
 
-  firewallIcon = () => (
+  const firewallIcon = () => (
     <img src={FirewallSVG} alt="FirewallSVG" width="20" height="20" color="red" />
   );
-  ipIcon = () => (
+  const ipIcon = () => (
     <img src={IpSVG} alt="IpSVG" width="20" height="20"/>
   );
-  networkIcon = () => (
+  const networkIcon = () => (
     <img src={NetworkSVG} alt="NetworkSVG"/>
   );
-  loadbalancerIcon = () => (
+  const loadbalancerIcon = () => (
     <img src={LoadbalancerSVG} alt="LoadbalancerSVG" width="20" height="20"/>
   );
-  certIcon = () => (
+  const certIcon = () => (
       <img src={CertSVG} alt="certificatesSVG" width="20" height="20" />
   );
-  itemsIcon = () => (
+  const itemsIcon = () => (
       <img src={ItemsSVG} alt="certificatesSVG" width="20" height="20" />
   );
-  vmIcon = () => (
+  const vmIcon = () => (
       <img src={VmSVG} alt="VmSVG" width="20" height="20" />
   );
-  permissionsIcon = () => (
+  const permissionsIcon = () => (
       <img src={PermissionsPNG} alt="PermissionsPNG" width="23" height="23" />
   );
-  triggersIcon = () => (
+  const triggersIcon = () => (
       <img src={TriggersPNG} alt="TriggersPNG" width="21" height="21" />
   );
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
 
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-  authorizatorsSA = a => {
+  const authorizatorsSA = a => {
     let author = new Authorizators()
     return author.isSuperAdmin(a)
   }
 
-  render(){
-    return (
-      <Sider width={200} style={{backgroundColor: 'white'}} className="site-layout-background" trigger={null} collapsible collapsed={this.state.collapsed} collapsedWidth={100}>
-        <Button type="primary" onClick={this.toggle} style={{ margin: '20px auto', display: 'block' }}>
-            {React.createElement(this.state.collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
-          </Button>
-        <Divider style={{border: 'vh solid #f0f2f5'}}/>
-        <Menu
-          mode="inline"
-          style={{ borderRight: 0 }}
-        >
+  return (
+    <Sider width={200} style={{backgroundColor: 'white'}} className="site-layout-background" trigger={null} collapsible collapsed={collapsed} collapsedWidth={100}>
+      <Button type="primary" onClick={() => toggle()} style={{ margin: '20px auto', display: 'block' }}>
+          {React.createElement(collapsed ? MenuUnfoldOutlined : MenuFoldOutlined)}
+        </Button>
+      <Divider style={{border: 'vh solid #f0f2f5'}}/>
+      <Menu
+        mode="inline"
+        style={{ borderRight: 0 }}
+      >
 
-          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
-            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
-            this.isAuthorized(this.props.authorizations, 'f5') ||
-            this.isAuthorized(this.props.authorizations, 'vmware') ?
-            <React.Fragment>
-              <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
-              <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-            </React.Fragment>
+        { isAuthorized(props.authorizations, 'infoblox') ||
+          isAuthorized(props.authorizations, 'checkpoint') ||
+          isAuthorized(props.authorizations, 'f5') ||
+          isAuthorized(props.authorizations, 'vmware') ?
+          <React.Fragment>
+            <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
+            <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'infoblox', 'full_visibility') ?
+          <React.Fragment>
+            <Menu.Item key="infoblox" icon={ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+          : null
+        }
+
+        { isAuthorized(props.authorizations, 'checkpoint', 'full_visibility') ?
+          <React.Fragment>
+            <Menu.Item key="checkpoint" icon={firewallIcon()}><Link to="/checkpoint/">CHECKPOINT</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+          : null
+        }
+
+        { isAuthorized(props.authorizations, 'f5', 'full_visibility') ?
+          <React.Fragment>
+            <Menu.Item key="f5" icon={loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+          : null
+        }
+
+        { isAuthorized(props.authorizations, 'vmware', 'full_visibility') ?
+          <React.Fragment>
+            <Menu.Item key="vmware" icon={vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+          : null
+        }
+
+        { isAuthorized(props.authorizations, 'f5', 'full_visibility') ?
+          <React.Fragment>
+            <Menu.Item key="certificates" icon={certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
+            <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+          </React.Fragment>
+          :
+          null
+        }
+
+
+        { isAuthorized(props.authorizations, 'infoblox') ||
+          isAuthorized(props.authorizations, 'checkpoint') ||
+          isAuthorized(props.authorizations, 'f5') ||
+          isAuthorized(props.authorizations, 'vmware') ?
+          <React.Fragment>
+            <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'workflow') ?
+          <React.Fragment>
+            <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+        :
+          null
+        }
+
+        <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+        { isAuthorized(props.authorizations, 'infoblox') ||
+          isAuthorized(props.authorizations, 'checkpoint') ||
+          isAuthorized(props.authorizations, 'f5') ||
+          isAuthorized(props.authorizations, 'vmware') ?
+          <React.Fragment>
+            <Menu.Item key="assets" icon={itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
+          :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'infoblox', 'permission_identityGroups_post') ||
+          isAuthorized(props.authorizations, 'checkpoint', 'permission_identityGroups_post') ||
+          isAuthorized(props.authorizations, 'f5', 'permission_identityGroups_post') ||
+          isAuthorized(props.authorizations, 'vmware', 'permission_identityGroups_post') ?
+          <React.Fragment>
+            <Menu.Item key="permissions" icon={permissionsIcon()}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
           :
             null
-          }
+        }
 
-          { this.isAuthorized(this.props.authorizations, 'infoblox', 'full_visibility') ?
-            <React.Fragment>
-              <Menu.Item key="infoblox" icon={this.ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            : null
-          }
+        { authorizatorsSA(props.authorizations) ?
+          <React.Fragment>
+            <Menu.Item key="triggers" icon={triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>
+            <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+          </React.Fragment>
+        :
+          null
+        }
 
-          { this.isAuthorized(this.props.authorizations, 'checkpoint', 'full_visibility') ?
-            <React.Fragment>
-              <Menu.Item key="checkpoint" icon={this.firewallIcon()}><Link to="/checkpoint/">CHECKPOINT</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            : null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'f5', 'full_visibility') ?
-            <React.Fragment>
-              <Menu.Item key="f5" icon={this.loadbalancerIcon()}><Link to="/f5/">F5</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            : null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'vmware', 'full_visibility') ?
-            <React.Fragment>
-              <Menu.Item key="vmware" icon={this.vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            : null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'f5', 'full_visibility') ?
-            <React.Fragment>
-              <Menu.Item key="certificates" icon={this.certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
-              <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-            </React.Fragment>
-            :
-            null
-          }
-
-
-          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
-            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
-            this.isAuthorized(this.props.authorizations, 'f5') ||
-            this.isAuthorized(this.props.authorizations, 'vmware') ?
-            <React.Fragment>
-              <Menu.Item key="services" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/services/">SERVICES</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
+        { authorizatorsSA(props.authorizations) ?
+          <React.Fragment>
+            <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
+            <Menu.Divider/>
+          </React.Fragment>
           :
-            null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'workflow') ?
-            <React.Fragment>
-              <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-          :
-            null
-          }
-
-          <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-          { this.isAuthorized(this.props.authorizations, 'infoblox') ||
-            this.isAuthorized(this.props.authorizations, 'checkpoint') ||
-            this.isAuthorized(this.props.authorizations, 'f5') ||
-            this.isAuthorized(this.props.authorizations, 'vmware') ?
-            <React.Fragment>
-              <Menu.Item key="assets" icon={this.itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            :
-            null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'infoblox', 'permission_identityGroups_post') ||
-            this.isAuthorized(this.props.authorizations, 'checkpoint', 'permission_identityGroups_post') ||
-            this.isAuthorized(this.props.authorizations, 'f5', 'permission_identityGroups_post') ||
-            this.isAuthorized(this.props.authorizations, 'vmware', 'permission_identityGroups_post') ?
-            <React.Fragment>
-              <Menu.Item key="permissions" icon={this.permissionsIcon()}><Link to="/permissions/">PERMISSIONS</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            :
-             null
-          }
-
-          { this.authorizatorsSA(this.props.authorizations) ?
-            <React.Fragment>
-              <Menu.Item key="triggers" icon={this.triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>
-              <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-            </React.Fragment>
-          :
-            null
-          }
-
-          { this.authorizatorsSA(this.props.authorizations) ?
-            <React.Fragment>
-              <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
-              <Menu.Divider/>
-            </React.Fragment>
-            :
-            null
-          }
-        </Menu>
-      </Sider>
-    )
-  }
-
+          null
+        }
+      </Menu>
+    </Sider>
+  )
 }
 
 export default connect((state) => ({
