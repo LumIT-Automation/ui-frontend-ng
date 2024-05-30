@@ -284,9 +284,77 @@ function AddItem(props) {
     if (props.items === 'hosts') {
       return hostsCol
     }
+    else if (props.items === 'networks') {
+      return networksCol
+    }
   }
 
   const hostsCol = [
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id',
+      name: 'dable',
+      description: '',
+    },
+    {
+      title: 'Interface name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      render: (name, record)  => (
+        createElement('input', 'nicName', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Subnet4',
+      align: 'center',
+      dataIndex: 'subnet4',
+      key: 'subnet4',
+      render: (name, record)  => (
+        createElement('input', 'subnet4', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Mask-length4',
+      align: 'center',
+      dataIndex: 'mask-length4',
+      key: 'mask-length4',
+      render: (name, record)  => (
+        createElement('input', 'mask-length4', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Subnet6',
+      align: 'center',
+      dataIndex: 'subnet6',
+      key: 'subnet6',
+      render: (name, record)  => (
+        createElement('input', 'subnet6', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Mask-length6',
+      align: 'center',
+      dataIndex: 'mask-length6',
+      key: 'mask-length6',
+      render: (name, record)  => (
+        createElement('input', 'mask-length6', '', record, '', 'interfaces')
+      ),
+    },
+    {
+      title: 'Remove request',
+      align: 'center',
+      dataIndex: 'remove',
+      key: 'remove',
+      render: (name, record)  => (
+        createElement('button', '', '', record, 'recordRemove')
+      ),
+    }
+  ]
+
+  const networksCol = [
     {
       title: 'id',
       align: 'center',

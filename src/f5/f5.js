@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import { Space, Radio, Alert, Divider } from 'antd'
 import 'antd/dist/antd.css';
@@ -21,41 +21,29 @@ import {
 
 
 
-class Manager extends React.Component {
+function Manager(props) {
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState('');
 
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  componentDidMount() {
-    if (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'f5', 'assets_get')) {
-      if (!this.props.error) {
-        if (!this.props.assets) {
-          this.assetsGet()
+  //MOUNT
+  useEffect( () => { 
+    if (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'f5', 'assets_get')) {
+      if (!props.error) {
+        if (!props.assets) {
+          assetsGet()
         }
       }
     }
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
+  }, [] );
 
 
-  assetsGet = async () => {
-    this.setState({loading: true})
+  const assetsGet = async () => {
+    setLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState( {loading: false}, () => this.props.dispatch(assets(resp)) )
+        setLoading(true)
+        props.dispatch(assets(resp))
       },
       error => {
         error = Object.assign(error, {
@@ -63,74 +51,78 @@ class Manager extends React.Component {
           vendor: 'f5',
           errorType: 'assetsError'
         })
-        this.props.dispatch(err(error))
-        this.setState( {loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR("f5/assets/", props.token)
   }
 
-  authorizatorsSA = a => {
+  const authorizatorsSA = a => {
     let author = new Authorizators()
     return author.isSuperAdmin(a)
   }
   
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
 
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'f5') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  const showErrors = () => {
+    if (props.error && props.error.component === 'f5') {
+      return <Error error={[props.error]} visible={true}/> 
     }
-
-    return (
-      <React.Fragment>
-        <AssetSelector vendor='f5'/>
-
-        <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
-        <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
-          {!(this.props.asset && this.props.partition) ?
-            <Alert message="Asset and Partition not set" type="error" />
-          :
-            <React.Fragment>
-
-              <Radio.Group
-                onChange={e => this.setState({items: e.target.value})}
-                value={this.state.items}
-                style={{marginLeft: 16}}
-              >
-                <Radio.Button value={'nodes'}>nodes</Radio.Button>
-                <Radio.Button value={'monitors'}>monitors</Radio.Button>
-                <Radio.Button value={'snatpools'}>snatpools</Radio.Button>
-                <Radio.Button value={'pools'}>pools</Radio.Button>
-                <Radio.Button value={'irules'}>irules</Radio.Button>
-                <Radio.Button value={'profiles'}>profiles</Radio.Button>
-              </Radio.Group>
-
-              <Divider/>
-        
-              {
-                this.state.items ?
-                  <ItemsView vendor='f5' items={this.state.items} item={this.state.items.slice(0, -1)}/>
-                :
-                  null
-              }
-            </React.Fragment>
-          }
-          
-        </Space>
-
-        {errors()}
-
-      </React.Fragment>
-    )
   }
+
+  return (
+    <React.Fragment>
+      <AssetSelector vendor='f5'/>
+
+      <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
+      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+        {!(props.asset && props.partition) ?
+          <Alert message="Asset and Partition not set" type="error" />
+        :
+          <React.Fragment>
+
+            <Radio.Group
+              onChange={e => setItems(e.target.value)}
+              value={items}
+              style={{marginLeft: 16}}
+            >
+              {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'f5', 'assets_get') ?
+                <React.Fragment>
+                  <Radio.Button value={'nodes'}>nodes</Radio.Button>
+                  <Radio.Button value={'monitors'}>monitors</Radio.Button>
+                  <Radio.Button value={'snatpools'}>snatpools</Radio.Button>
+                  <Radio.Button value={'pools'}>pools</Radio.Button>
+                  <Radio.Button value={'irules'}>irules</Radio.Button>
+                  <Radio.Button value={'profiles'}>profiles</Radio.Button>
+                </React.Fragment>
+              :
+                null
+              }
+            </Radio.Group>
+
+            <Divider/>
+      
+            {
+              items ?
+                <ItemsView vendor='f5' items={items} item={items ? items.slice(0, -1) : '' }/>
+              :
+                null
+            }
+          </React.Fragment>
+        }
+        
+      </Space>
+
+      {showErrors()}
+
+    </React.Fragment>
+  )
+  
 }
 
 

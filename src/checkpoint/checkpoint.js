@@ -68,7 +68,7 @@ function Manager(props) {
   }
 
 
-  const errors = () => {
+  const showErrors = () => {
     if (props.error && props.error.component === 'checkpoint') {
       return <Error error={[props.error]} visible={true}/> 
     }
@@ -78,7 +78,7 @@ function Manager(props) {
     <React.Fragment>
       <AssetSelector vendor='checkpoint'/>
 
-      <Divider style={{borderBottom: '3vh solid #f0f2checkpoint'}}/>
+      <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
       <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
         {!(props.asset && props.domain) ?
           <Alert message="Asset and Domain not set" type="error" />
@@ -91,7 +91,10 @@ function Manager(props) {
               style={{marginLeft: 16}}
             >
               {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'assets_get') ?
-                <Radio.Button value={'hosts'}>hosts</Radio.Button>
+                <React.Fragment>
+                  <Radio.Button value={'hosts'}>hosts</Radio.Button>
+                  <Radio.Button value={'networks'}>networks</Radio.Button>
+                </React.Fragment>
               :
                 null
               }
@@ -110,7 +113,7 @@ function Manager(props) {
         
       </Space>
 
-      {errors()}
+      {showErrors()}
 
     </React.Fragment>
   )

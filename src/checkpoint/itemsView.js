@@ -156,13 +156,12 @@ function ItemsView(props) {
     let id = 1
     
     if (props.items === 'hosts') {
-
       let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'checkpoint',
-          errorType: 'hostsError'
+          errorType: `${props.items}Error`
         })
         props.dispatch(err(error))
         setLoading(false)
@@ -182,7 +181,32 @@ function ItemsView(props) {
         setLoading(false)
       }
     }
-
+    else if (props.items === 'networks') {
+      let fetched = await dataGet(props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'checkpoint',
+          errorType: `${props.items}Error`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.address = item['ipv4-address']
+          item.id = id
+          id++
+          return item
+        })
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
+      }
+    }
   }
 
   const dataGet = async (assetId, entities) => {
@@ -252,6 +276,20 @@ function ItemsView(props) {
     let validators = new Validators()
 
     if (props.items === 'hosts') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+        if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
+          item.addressError = true
+          ++errors
+        }
+      }
+      await setItems(items)
+      return errors
+    }
+    else if (props.items === 'networks') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -600,6 +638,9 @@ function ItemsView(props) {
     if (props.items === 'hosts') {
       return hostsColumns
     }
+    else if (props.items === 'networks') {
+      return networksColumns
+    }
   }
 
   const hostsColumns = [
@@ -661,7 +702,91 @@ function ItemsView(props) {
       key: 'delete',
       render: (val, obj)  => (
         <Space size="small">
-          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'host_delete')) ? 
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  const networksColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Domain',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['domain', 'name'],
+      key: 'domain',
+    },
+    {
+      title: 'Type',
+      align: 'center',
+      dataIndex: 'type',
+      key: 'type',
+      ...getColumnSearchProps('type'),
+    },
+    {
+      title: 'Subnet4',
+      align: 'center',
+      dataIndex: 'subnet4',
+      key: 'subnet4',
+      ...this.getColumnSearchProps('subnet4'),
+    },
+    {
+      title: 'Mask-length4',
+      align: 'center',
+      dataIndex: 'mask-length4',
+      key: 'mask-length4',
+      ...this.getColumnSearchProps('mask-length4'),
+    },
+    {
+      title: 'Subnet-mask',
+      align: 'center',
+      dataIndex: 'subnet-mask',
+      key: 'subnet-mask',
+      ...this.getColumnSearchProps('subnet-mask'),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
             <Space size="small">
               { obj.existent ? 
                 createElement('checkbox', 'toDelete', '', obj, 'toDelete')
@@ -700,7 +825,7 @@ function ItemsView(props) {
             </Radio.Button>
           </Radio.Group>
 
-          {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'hosts_post') ?
+          {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.items}_post`) ?
             <AddItem items={props.items} item={props.item}/>
           :
             null
