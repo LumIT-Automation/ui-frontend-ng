@@ -1,5 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { Component, } from "react";
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 
 import { Layout, Form, Input, Button, Row, Col, Card } from 'antd';
