@@ -1,187 +1,140 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import { Component } from "react";
-
-import {
-  err
-} from './store'
-
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { err } from './store';
 import { Modal, Table, Result } from 'antd';
 
-//import notFound from './404.gif'
-//import tooMany from './429.gif'
+const Error = (props) => {
+  const dispatch = useDispatch();
+  const [component, setComponent] = useState('');
+  const [vendor, setVendor] = useState('');
+  const [errorType, setErrorType] = useState('');
 
-
-
-class Error extends Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      component: '',
-      vendor: '',
-      errorType: ''
-    };
-  }
-
-  componentDidMount() {
-    if (this.props && this.props.error && this.props.error[0]) {
-      this.setState(
-        {
-          component: this.props.error[0].component,
-          vendor: this.props.error[0].vendor,
-          errorType: this.props.error[0].errorType
-        }
-      )
+  useEffect(() => {
+    console.log(props.error)
+    if (props.error && props.error[0]) {
+      setComponent(props.error[0].component);
+      setVendor(props.error[0].vendor);
+      setErrorType(props.error[0].errorType);
     }
-  }
+  }, []);
 
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps !== this.props) {
-      if (this.props && this.props.error && this.props.error[0]) {
-        this.setState(
-          {
-            component: this.props.error[0].component,
-            vendor: this.props.error[0].vendor,
-            errorType: this.props.error[0].errorType
-          }
-        )
-      }
+  useEffect(() => {
+    console.log(props.error)
+    if (props.error && props.error[0]) {
+      setComponent(props.error[0].component);
+      setVendor(props.error[0].vendor);
+      setErrorType(props.error[0].errorType);
     }
-  }
+  }, [props]);
 
-  componentWillUnmount() {
-  }
+  const onCancel = async () => {
+    dispatch(err(null));
+  };
 
-  onCancel = async () => {
-    this.props.dispatch(err(null))
-  }
-
-  logout = () => {
+  const logout = () => {
     try {
       localStorage.removeItem('token');
       localStorage.removeItem('username');
+    } catch (e) {
+      console.log(e);
     }
-    catch(e) {
-      console.log(e)
-    }
-  }
+  };
 
+  const columns = [
+    {
+      title: 'FROM',
+      align: 'left',
+      dataIndex: 'url',
+      key: 'url',
+    },
+    {
+      title: 'Type',
+      align: 'left',
+      dataIndex: 'type',
+      key: 'type',
+    },
+    {
+      title: 'STATUS',
+      align: 'left',
+      dataIndex: 'status',
+      key: 'status',
+    },
+    {
+      title: 'MESSAGE',
+      align: 'left',
+      dataIndex: 'message',
+      key: 'message',
+    },
+    {
+      title: 'REASON',
+      align: 'left',
+      width: 300,
+      dataIndex: 'reason',
+      key: 'reason',
+    },
+  ];
 
-  render(){
-    const columns = [
-      {
-        title: 'FROM',
-        align: 'left',
-        dataIndex: 'url',
-        key: 'url',
-      },
-      {
-        title: 'Type',
-        align: 'left',
-        dataIndex: 'type',
-        key: 'type',
-      },
-      {
-        title: 'STATUS',
-        align: 'left',
-        dataIndex: 'status',
-        key: 'status',
-      },
-      {
-        title: 'MESSAGE',
-        align: 'left',
-        dataIndex: 'message',
-        key: 'message',
-      },
-      {
-        title: 'REASON',
-        align: 'left',
-        width: 300,
-        dataIndex: 'reason',
-        key: 'reason',
-      },
-    ]
+  const renderError = () => {
+    if (props.error && props.error[0]) {
+      const statusCode = props.error[0].status;
 
-    let e = () => {
-      if (this.props.error && this.props.error[0]) {
-        const statusCode = this.props.error[0].status
-
-        switch(statusCode) {
-          case 400:
-            return <Result title={'400 - Bad Request'} />
-          case 401:
-            this.logout()
-            break;
-          case 403:
-            return <Result status={statusCode} title={'403 - Forbidden'} />
+      switch (statusCode) {
+        case 400:
+          return <Result title={'400 - Bad Request'} />;
+        case 401:
+          logout();
+          break;
+        case 403:
+          return <Result status={'403'} title={'403 - Forbidden'} />;
           case 404:
-            return <Result status={statusCode} title={'404 - Not Found'} />
-            //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
+          return <Result status={'404'} title={'404 - Not Found'} />;
           case 409:
-            return <Result title={'409 - Conflict'} />
-            //return <Result icon=<img src={notFound} alt="loading..." /> title={'404 - Not found'} />
+          return <Result title={'409 - Conflict'} />;
           case 412:
-            return <Result title={'412 - Precondition Failed'} />
-            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
+          return <Result title={'412 - Precondition Failed'} />;
           case 422:
-            return <Result title={'422 - Unprocessable Entity'} />
-            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
+          return <Result title={'422 - Unprocessable Entity'} />;
           case 423:
-            return <Result title={'423 - Locked'} />
-            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
+          return <Result title={'423 - Locked'} />;
           case 429:
-            return <Result title={'429 - Too many requests'} />
-            //return <Result icon=<img src={tooMany} alt="loading..." /> title={'429 - Too many requests'} />
-
+          return <Result title={'429 - Too Many Requests'} />;
           case 500:
-            return <Result title={'500'} />
+          return <Result title={'500'} />;
           case 502:
-            return <Result title={statusCode} />
+          return <Result title={'502'} />;
           case 503:
-            return <Result title={statusCode} />
-
+          return <Result title={'503'} />;
           default:
-            return <Result status='error' />
+          return <Result status="error" />;
         }
-      }
-      else {
-        return null
-      }
+    } else {
+      return null;
     }
-
-    return (
-      <Modal
-        title={<p style={{textAlign: 'center'}}>{this.state.vendor} - {this.state.component} - {this.state.errorType}</p>}
-        centered
-        destroyOnClose={true}
-        visible= {this.props.visible}
-        footer={''}
-        onOk={null}
-        onCancel={this.onCancel}
-        width={1500}
-        maskClosable={false}
-      >
-        <React.Fragment>
-        {e()}
-
+  };
+      
+  return (
+    <Modal
+      title={<p style={{ textAlign: 'center' }}>{vendor} - {component} - {errorType}</p>}
+      centered
+      destroyOnClose
+      visible={props.visible}
+      footer={null}
+      onCancel={onCancel}
+      width={1500}
+      maskClosable={false}
+    >
+      <React.Fragment>
+        {renderError()}
         <Table
-          dataSource={this.props.error}
+          dataSource={props.error}
           columns={columns}
           pagination={false}
           rowKey="message"
-          scroll={{x: 'auto'}}
+          scroll={{ x: 'auto' }}
         />
-          </React.Fragment>
-      </Modal>
-
-    )
-  }
-}
-
-export default connect((state) => ({
-}))(Error);
+      </React.Fragment>
+    </Modal>
+  );
+};
+  
+export default Error;
