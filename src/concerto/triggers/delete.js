@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import { Button, Modal, Col, Row, Spin, Result } from 'antd'
@@ -16,38 +16,19 @@ const deleteIcon = <DeleteOutlined style={{color: 'white' }}  />
 
 
 
-class Delete extends React.Component {
+function Delete(props) {
+  const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(false);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-  }
-
-  triggerDelete = async trigger => {
-    this.setState({loading: true})
+  const triggerDelete = async trigger => {
+    setLoading(true)
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true}, () =>  this.props.dispatch(triggersFetch(true)) )
+        setLoading(false)
+        setResponse(true)
+        props.dispatch(triggersFetch(true))
       },
       error => {
         error = Object.assign(error, {
@@ -55,89 +36,80 @@ class Delete extends React.Component {
           vendor: 'concerto',
           errorType: 'triggerDeleteError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(true)
       }
     )
-    await rest.doXHR(`${this.props.vendor}/trigger/${trigger.id}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/trigger/${trigger.id}/`, props.token )
 
   }
 
-  //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-    })
-  }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'triggerDelete') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  const showErrors = () => {
+    if (props.error && props.error.component === 'triggerDelete') {
+      return <Error error={[props.error]} visible={true}/> 
     }
+  }
 
-    return (
-      <React.Fragment>
+  return (
+    <React.Fragment>
 
-        <Button icon={deleteIcon} type='primary' danger onClick={() => this.details()} shape='round'/>
+      <Button icon={deleteIcon} type='primary' danger onClick={() => setVisible(true)} shape='round'/>
 
-        <Modal
-          title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{this.props.obj.name}</p></div>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={null}
-          onCancel={() => this.closeModal()}
-          width={750}
-          maskClosable={false}
-        >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
-          {!this.state.loading && this.state.response &&
-            <Result
-               status="success"
-               title="Deleted"
-             />
-          }
-          {!this.state.loading && !this.state.response &&
-            <div>
-              <Row>
-                <Col span={5} offset={10}>
-                  <h2>Are you sure?</h2>
-                </Col>
-              </Row>
-              <br/>
-              <Row>
-                <Col span={2} offset={10}>
-                  <Button type="primary" onClick={() => this.triggerDelete(this.props.obj)}>
-                    YES
-                  </Button>
-                </Col>
-                <Col span={2} offset={1}>
-                  <Button type="primary" onClick={() => this.closeModal()}>
-                    NO
-                  </Button>
-                </Col>
-              </Row>
-            </div>
-          }
-
-        </Modal>
-
-        {this.state.visible ?
-          <React.Fragment>
-            {errors()}
-          </React.Fragment>
-        :
-          null
+      <Modal
+        title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{props.obj.name}</p></div>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={null}
+        onCancel={() => setVisible(false)}
+        width={750}
+        maskClosable={false}
+      >
+        { loading && <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/> }
+        {!loading && response &&
+          <Result
+              status="success"
+              title="Deleted"
+            />
+        }
+        {!loading && !response &&
+          <div>
+            <Row>
+              <Col span={5} offset={10}>
+                <h2>Are you sure?</h2>
+              </Col>
+            </Row>
+            <br/>
+            <Row>
+              <Col span={2} offset={10}>
+                <Button type="primary" onClick={() => triggerDelete(props.obj)}>
+                  YES
+                </Button>
+              </Col>
+              <Col span={2} offset={1}>
+                <Button type="primary" onClick={() => setVisible(false)}>
+                  NO
+                </Button>
+              </Col>
+            </Row>
+          </div>
         }
 
-      </React.Fragment>
-    )
-  }
+      </Modal>
+
+      {visible ?
+        <React.Fragment>
+          {showErrors()}
+        </React.Fragment>
+      :
+        null
+      }
+
+    </React.Fragment>
+  )
 }
 
 
