@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import { Radio, Divider } from 'antd';
 
@@ -10,60 +10,40 @@ import '../../App.css'
 
 
 
-class Historys extends React.Component {
+function Historys(props) {
+  const [vendor, setVendor] = useState('');
 
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-
-  render() {
-    return (
-      <React.Fragment>
-        <Radio.Group
-          onChange={e => this.setState({vendor: e.target.value})}
-          value={this.state.vendor}
-          style={{padding: 15, paddingTop: 40 }}
-        >
-          { this.isAuthorized(this.props.authorizations, 'infoblox') ?
-            <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
-          :
-            null
-          }
-
-        </Radio.Group>
-
-        <Divider/>
-
-        {
-          this.state.vendor ?
-            <Trigger vendor={this.state.vendor}/>
-          :
-            null
+  return (
+    <React.Fragment>
+      <Radio.Group
+        onChange={e => setVendor(e.target.value)}
+        value={vendor}
+        style={{padding: 15, paddingTop: 40 }}
+      >
+        { isAuthorized(props.authorizations, 'infoblox') ?
+          <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+        :
+          null
         }
-      </React.Fragment>
-    )
-  }
+
+      </Radio.Group>
+
+      <Divider/>
+
+      {
+        vendor ?
+          <Trigger vendor={vendor}/>
+        :
+          null
+      }
+    </React.Fragment>
+  )
+  
 }
 
 
