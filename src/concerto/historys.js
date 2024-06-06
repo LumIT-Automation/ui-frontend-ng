@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import { Radio, Divider } from 'antd';
 
@@ -10,77 +10,63 @@ import '../App.css'
 
 
 
-class Historys extends React.Component {
+function Historys(props) {
+  const [vendor, setVendor] = useState('');
 
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-
-  render() {
-    return (
-      <React.Fragment>
-        <Radio.Group
-          onChange={e => this.setState({vendor: e.target.value})}
-          value={this.state.vendor}
-          style={{padding: 15, paddingTop: 40 }}
-        >
-          { this.isAuthorized(this.props.authorizations, 'infoblox') ?
-            <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
-          :
-            null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'checkpoint') ?
-            <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
-          :
-            null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'f5') ?
-            <Radio.Button value={'f5'}>f5</Radio.Button>
-          :
-            null
-          }
-
-          { this.isAuthorized(this.props.authorizations, 'vmware') ?
-            <Radio.Button value={'vmware'}>vmware</Radio.Button>
-          :
-            null
-          }
-        </Radio.Group>
-
-        <Divider/>
-
-        {
-          this.state.vendor ?
-            <History vendor={this.state.vendor}/>
-          :
-            null
-        }
-      </React.Fragment>
-    )
+  const authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
   }
+
+
+  return (
+    <React.Fragment>
+      <Radio.Group
+        onChange={e => setVendor(e.target.value)}
+        value={vendor}
+        style={{padding: 15, paddingTop: 40 }}
+      >
+        { isAuthorized(props.authorizations, 'infoblox') ?
+          <Radio.Button value={'infoblox'}>infoblox</Radio.Button>
+        :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'checkpoint') ?
+          <Radio.Button value={'checkpoint'}>checkpoint</Radio.Button>
+        :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'f5') ?
+          <Radio.Button value={'f5'}>f5</Radio.Button>
+        :
+          null
+        }
+
+        { isAuthorized(props.authorizations, 'vmware') ?
+          <Radio.Button value={'vmware'}>vmware</Radio.Button>
+        :
+          null
+        }
+      </Radio.Group>
+
+      <Divider/>
+
+      {
+        vendor ?
+          <History vendor={vendor}/>
+        :
+          null
+      }
+    </React.Fragment>
+  )
+
 }
 
 
