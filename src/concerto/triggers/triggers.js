@@ -10,7 +10,7 @@ import '../../App.css'
 
 
 
-function Historys(props) {
+function Triggers(props) {
   const [vendor, setVendor] = useState('');
 
   const isAuthorized = (authorizations, vendor, key) => {
@@ -49,4 +49,4 @@ function Historys(props) {
 
 export default connect((state) => ({
   authorizations: state.authorizations,
-}))(Historys);
+}))(Triggers);
