@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio, Card } from 'antd';
+import { Space, Table, Input, Select, Button, Spin, List, Checkbox, Radio, Card } from 'antd';
 import Highlighter from 'react-highlight-words';
 import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
@@ -38,22 +38,13 @@ function ItemsView(props) {
   const myRefs = useRef(null);
   const textAreaRefs = useRef(null);
 
-  //MOUNT
-  useEffect( () => { 
-    if (props.items) {
-      main()
-    }
-  }, [] );
-
-
   //UPDATE
   useEffect(() => {
-    main();
-  }, [props.asset, props.domain]);
+    if (props.asset && props.domain && props.items) {
+      main();
+    }
+  }, [props.asset, props.domain, props.items]);
 
-  useEffect(() => {
-    main();
-  }, [props.items]);
 
   useEffect(() => {
     if (props.fetchItems) {
@@ -197,7 +188,15 @@ function ItemsView(props) {
         let items = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
-          item.address = item['ipv4-address']
+          /*if (item.tags.length > 0) {
+            item.tags = item.tags.map(function(tag) {
+              return tag.name;
+            });
+            console.log(item.tags)
+          }
+          else {
+            item.tags = []
+          }*/
           item.id = id
           id++
           return item
@@ -219,6 +218,7 @@ function ItemsView(props) {
     let rest = new Rest(
       "GET",
       resp => {
+        console.log(resp.data.items)
         r = resp
       },
       error => {
@@ -295,10 +295,6 @@ function ItemsView(props) {
           item.nameError = true
           ++errors
         }
-        if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
-          item.addressError = true
-          ++errors
-        }
       }
       await setItems(items)
       return errors
@@ -337,6 +333,8 @@ function ItemsView(props) {
         toPatch.push(item)
       }
     }
+
+    console.log(toDelete)
 
     if (toDelete.length > 0) {
       for (const item of toDelete) {
@@ -669,20 +667,6 @@ function ItemsView(props) {
       )
     },
     {
-      title: 'Domain',
-      align: 'center',
-      width: 'auto',
-      dataIndex: ['domain', 'name'],
-      key: 'domain',
-    },
-    {
-      title: 'Type',
-      align: 'center',
-      dataIndex: 'type',
-      key: 'type',
-      ...getColumnSearchProps('type'),
-    },
-    {
       title: 'IPv4-address',
       align: 'center',
       dataIndex: 'address',
@@ -745,20 +729,6 @@ function ItemsView(props) {
       )
     },
     {
-      title: 'Domain',
-      align: 'center',
-      width: 'auto',
-      dataIndex: ['domain', 'name'],
-      key: 'domain',
-    },
-    {
-      title: 'Type',
-      align: 'center',
-      dataIndex: 'type',
-      key: 'type',
-      ...getColumnSearchProps('type'),
-    },
-    {
       title: 'Subnet4',
       align: 'center',
       dataIndex: 'subnet4',
@@ -778,6 +748,19 @@ function ItemsView(props) {
       dataIndex: 'subnet-mask',
       key: 'subnet-mask',
       ...getColumnSearchProps('subnet-mask'),
+    },
+    {
+      title: 'Tags',
+      align: 'center',
+      dataIndex: 'tags',
+      key: 'tags',
+      render: (name, record)  => (
+        <List
+          size="small"
+          dataSource={record.tags}
+          renderItem={item => <List.Item >{item.name ? item.name : item}</List.Item>}
+        />
+      )
     },
     {
       title: 'Delete',

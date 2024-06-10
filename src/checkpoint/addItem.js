@@ -52,7 +52,11 @@ function AddItem(props) {
 
   const [errors, setErrors] = useState({});
   const [interfaces, setInterfaces] = useState([]);
-  const [request, setRequest] = useState({name: '', address: ''});
+  const [request, setRequest] = useState({
+    name: '', 
+    address: '',
+    tags: ''
+  });
  
 
 
@@ -63,14 +67,23 @@ function AddItem(props) {
   }, [] );
 
   
-
+  
   //UPDATE
   useEffect( () => { 
-    if (interfaces && interfaces.length === 0) {
-      interfaces.push({id:1})
-      setInterfaces(interfaces)
+    if (props.items === 'hosts') {
+      if (interfaces && interfaces.length === 0) {
+        interfaces.push({id:1})
+        setInterfaces(interfaces)
+      }
+    }
+    else if (props.items === 'networks') {
+
     }
   }, [visible] );
+
+  useEffect( () => { 
+    console.log(request)
+  }, [request] );
 
 
   //SETTER
@@ -83,6 +96,11 @@ function AddItem(props) {
           ...prevRequest,
           name: value
         }))
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors.nameError
+          return newErrors
+        })
       } 
       else if (key === 'address') {
         setRequest((prevRequest) => {
@@ -90,7 +108,73 @@ function AddItem(props) {
           newRequest.address = value
           return newRequest
         })
-      } 
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors.addressError
+          return newErrors
+        })
+      }
+      else if (key === 'subnet4') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['subnet4'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors.subnet4Error
+          return newErrors
+        })
+      }
+      else if (key === 'mask-length4') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['mask-length4'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors['mask-length4Error']
+          return newErrors
+        })
+      }
+      else if (key === 'subnet6') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['subnet6'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors.subnet6Error
+          return newErrors
+        })
+      }
+      else if (key === 'mask-length6') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['mask-length6'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors['mask-length6Error']
+          return newErrors
+        })
+      }
+      else if (key === 'tags') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          let tags = value 
+          tags = tags.split(',').map(function(item) {
+            return item.trim();
+          });
+          console.log(tags)
+          newRequest['tags'] = tags
+          return newRequest
+        })
+      }
+
 
       else if (key === 'recordAdd') {
         const list = await commonFunctions.itemAdd(interfaces)
@@ -130,54 +214,75 @@ function AddItem(props) {
       errors.nameError = true
       await setErrors(errors)
     }
-    else {
-      delete errors.nameError
-      await setErrors(errors)
+
+    if (props.items === 'hosts') {
+      if (!request.address || !validators.ipv4(request.address)) {
+        errors.addressError = true
+        await setErrors(errors)
+      }
     }
 
-    if (!request.address || !validators.ipv4(request.address)) {
-      errors.addressError = true
-      await setErrors(errors)
+    else if (props.items === 'networks') {
+      if (!request['subnet4'] || !validators.ipv4(request['subnet4'])) {
+        errors['subnet4Error'] = true
+        await setErrors(errors)
+      }
+  
+      if (!request['mask-length4'] || !validators.mask_length4(request['mask-length4'])) {
+        errors['mask-length4Error'] = true
+        await setErrors(errors)
+      }
     }
-    else {
-      delete errors.addressError
-      await setErrors(errors)
-    }
-    //await setInterfaces(interfaces)
 
     setCommit(true)
     return ok
   }
 
   const validation = async () => {
-    let nicsOk = await validationCheck()
+    let ok = await validationCheck()
+    console.log(ok)
+    console.log(errors)
 
-    if ((Object.keys(errors).length === 0) && nicsOk) {
+    if ((Object.keys(errors).length === 0) && ok) {
       itemAdd()
     }
   }
 
   const itemAdd = async () => {
     let b = {}
-    let nics = []
+    
+    if (props.items === 'hosts') {
+      let nics = []
 
-    b.data = {
-      "ipv4-address": request.address,
-      "name": request.name,
-    }
-    if (interfaces.length > 0 && interfaces[0].name) {
-      interfaces.forEach((nic, i) => {
-        let o = {}
-        o.name = nic.nicName
-        o.nic.subnet4 = nic.subnet4
-        o.nic.subnet6 = nic.subnet6
-        o['mask-length4'] = nic.mask_length4
-        o['mask-length6'] = nic.mask_length6
-        nics.push(o)
-      });
-      b.data.interfaces = nics
+      b.data = {
+        "ipv4-address": request.address,
+        "name": request.name,
+      }
+      if (interfaces.length > 0 && interfaces[0].name) {
+        interfaces.forEach((nic, i) => {
+          let o = {}
+          o.name = nic.nicName
+          o.nic.subnet4 = nic.subnet4
+          o.nic.subnet6 = nic.subnet6
+          o['mask-length4'] = nic.mask_length4
+          o['mask-length6'] = nic.mask_length6
+          nics.push(o)
+        });
+        b.data.interfaces = nics
+      }
     }
 
+    else if (props.items === 'networks') {
+      b.data = {
+        "name": request.name,
+        "subnet4": request.subnet4 || null,
+        "mask-length4": request['mask-length4'] || null,
+        "subnet6": request.subnet6 || null,
+        "mask-length6": request['mask-length6'] || null,
+        "tags": request.tags || []
+      }
+    }
+    
     setLoading(true)
 
     let rest = new Rest(
@@ -200,7 +305,6 @@ function AddItem(props) {
     )
     await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/${props.items}/`, props.token, b)
   }
-
 
   const responseF = () => {
     setTimeout( () => setResponse(false), 2000)
@@ -262,6 +366,23 @@ function AddItem(props) {
       }
     }
 
+    else if (element === 'textArea') {
+      return (
+        <Input.TextArea
+          rows={12}
+          placeholder='tag1, tag2'
+          //ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
+          onBlur={event => set(key, event.target.value)}
+          style=
+            { errors[`${key}Error`] ?
+              {borderColor: `red`, width: 450}
+            :
+              {width: 450}
+            }
+        />
+      )
+    }
+
     else if (element === 'button'){
       if (action === 'recordRemove') {
         return (
@@ -284,77 +405,9 @@ function AddItem(props) {
     if (props.items === 'hosts') {
       return hostsCol
     }
-    else if (props.items === 'networks') {
-      return networksCol
-    }
   }
 
   const hostsCol = [
-    {
-      title: 'id',
-      align: 'center',
-      dataIndex: 'id',
-      key: 'id',
-      name: 'dable',
-      description: '',
-    },
-    {
-      title: 'Interface name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      render: (name, record)  => (
-        createElement('input', 'nicName', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Subnet4',
-      align: 'center',
-      dataIndex: 'subnet4',
-      key: 'subnet4',
-      render: (name, record)  => (
-        createElement('input', 'subnet4', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Mask-length4',
-      align: 'center',
-      dataIndex: 'mask-length4',
-      key: 'mask-length4',
-      render: (name, record)  => (
-        createElement('input', 'mask-length4', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Subnet6',
-      align: 'center',
-      dataIndex: 'subnet6',
-      key: 'subnet6',
-      render: (name, record)  => (
-        createElement('input', 'subnet6', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Mask-length6',
-      align: 'center',
-      dataIndex: 'mask-length6',
-      key: 'mask-length6',
-      render: (name, record)  => (
-        createElement('input', 'mask-length6', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Remove request',
-      align: 'center',
-      dataIndex: 'remove',
-      key: 'remove',
-      render: (name, record)  => (
-        createElement('button', '', '', record, 'recordRemove')
-      ),
-    }
-  ]
-
-  const networksCol = [
     {
       title: 'id',
       align: 'center',
@@ -464,58 +517,137 @@ function AddItem(props) {
 
           { !loading && !response &&
             <React.Fragment>
-              <Row>
-                <Col span={1}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={4}>
-                  {createElement('input', 'name')}
-                </Col>
-              </Row>
-              <br/>
+              {props.items === 'hosts' ?
+                <React.Fragment>
+                  <Row>
+                    <Col span={1}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                    </Col>
+                    <Col span={4}>
+                      {createElement('input', 'name')}
+                    </Col>
+                  </Row>
+                  <br/>
 
+                  <Row>
+                    <Col span={1}>
+                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+                    </Col>
+                    <Col span={4}>
+                      {createElement('input', 'address')}
+                    </Col>
+                  </Row>
+                  <br/>
+
+                  <Divider/>
+
+                  {createElement('button', '', '', '', 'recordAdd')}
+
+                  <br/>
+                  <br/>
+                  <Table
+                    columns={returnCol()}
+                    dataSource={interfaces}
+                    bordered
+                    rowKey="id"
+                    scroll={{x: 'auto'}}
+                    pagination={false}
+                    style={{marginBottom: 10}}
+                  />
+
+                  <br/>
+
+                  <Row>
+                    <Col offset={11} span={2}>
+                      <Button 
+                        type="primary"
+                        disable={!commit} 
+                        onClick={() => validation()}
+                      >
+                        Commit
+                      </Button>
+                    </Col>
+                  </Row>
               
-              <Row>
-                <Col span={1}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                </Col>
-                <Col span={4}>
-                  {createElement('input', 'address')}
-                </Col>
-              </Row>
-              <br/>
+                </React.Fragment>
+              :
+                props.items === 'networks' ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'name')}
+                      </Col>
+                    </Row>
+                    <br/>
 
-              <Divider/>
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Subnet4:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'subnet4')}
+                      </Col>
+                    </Row>
+                    <br/>
 
-              {createElement('button', '', '', '', 'recordAdd')}
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Mask-length4:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'mask-length4')}
+                      </Col>
+                    </Row>
+                    <br/>
 
-              <br/>
-              <br/>
-              <Table
-                columns={returnCol()}
-                dataSource={interfaces}
-                bordered
-                rowKey="id"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Subnet6:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'subnet6')}
+                      </Col>
+                    </Row>
+                    <br/>
 
-              <br/>
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Mask-length:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'mask-length')}
+                      </Col>
+                    </Row>
+                    <br/>
 
+                    <Row>
+                      <Col offset={9} span={1}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
+                      </Col>
+                      <Col span={6}>
+                        {createElement('textArea', 'tags')}
+                      </Col>
+                    </Row>
+                    <br/>
 
-            <Row>
-              <Col offset={11} span={2}>
-                <Button 
-                  type="primary"
-                  disable={!commit} 
-                  onClick={() => validation()}
-                >
-                  Commit
-                </Button>
-              </Col>
-            </Row>
-          
+                    <Row>
+                      <Col offset={11} span={2}>
+                        <Button 
+                          type="primary"
+                          disable={!commit} 
+                          onClick={() => validation()}
+                        >
+                          Commit
+                        </Button>
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
+                  null            
+              }
             </React.Fragment>
           }
         </Modal>
