@@ -174,6 +174,30 @@ function AddItem(props) {
           return newRequest
         })
       }
+      else if (key === 'ipv4-address-first') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['ipv4-address-first'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors['ipv4-address-firstError']
+          return newErrors
+        })
+      }
+      else if (key === 'ipv4-address-last') {
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest['ipv4-address-last'] = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors['ipv4-address-lastError']
+          return newErrors
+        })
+      }
 
 
       else if (key === 'recordAdd') {
@@ -221,7 +245,6 @@ function AddItem(props) {
         await setErrors(errors)
       }
     }
-
     else if (props.items === 'networks') {
       if (!request['subnet4'] || !validators.ipv4(request['subnet4'])) {
         errors['subnet4Error'] = true
@@ -230,6 +253,17 @@ function AddItem(props) {
   
       if (!request['mask-length4'] || !validators.mask_length4(request['mask-length4'])) {
         errors['mask-length4Error'] = true
+        await setErrors(errors)
+      }
+    }
+    else if (props.items === 'addressRanges') {
+      if (!request['ipv4-address-first'] || !validators.ipv4(request['ipv4-address-first'])) {
+        errors['ipv4-address-firstError'] = true
+        await setErrors(errors)
+      }
+  
+      if (!request['ipv4-address-last'] || !validators.ipv4(request['ipv4-address-last'])) {
+        errors['ipv4-address-lastError'] = true
         await setErrors(errors)
       }
     }
@@ -282,8 +316,22 @@ function AddItem(props) {
         "tags": request.tags || []
       }
     }
+
+    else if (props.items === 'addressRanges') {
+      b.data = {
+        "name": request.name,
+        "ipv4-address-first": request['ipv4-address-first'],
+        "ipv4-address-last": request['ipv4-address-last']
+      }
+    }
     
     setLoading(true)
+
+    let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${props.items}/`
+
+    if (props.items === 'addressRanges') {
+      endpoint = `checkpoint/${props.asset.id}/${props.domain}/address-ranges/`
+    }
 
     let rest = new Rest(
       "POST",
@@ -303,7 +351,7 @@ function AddItem(props) {
         setResponse(false)
       }
     )
-    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/${props.items}/`, props.token, b)
+    await rest.doXHR(endpoint, props.token, b)
   }
 
   const responseF = () => {
@@ -375,9 +423,9 @@ function AddItem(props) {
           onBlur={event => set(key, event.target.value)}
           style=
             { errors[`${key}Error`] ?
-              {borderColor: `red`, width: 450}
+              {borderColor: `red`, width: 400}
             :
-              {width: 450}
+              {width: 400}
             }
         />
       )
@@ -646,7 +694,52 @@ function AddItem(props) {
                     </Row>
                   </React.Fragment>
                 :
-                  null            
+                  props.items === 'addressRanges' ?
+                    <React.Fragment>
+                      <Row>
+                        <Col offset={9} span={1}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                        </Col>
+                        <Col span={4}>
+                          {createElement('input', 'name')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={7} span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ipv4-address-first:</p>
+                        </Col>
+                        <Col span={4}>
+                          {createElement('input', 'ipv4-address-first')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={7} span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ipv4-address-last:</p>
+                        </Col>
+                        <Col span={4}>
+                          {createElement('input', 'ipv4-address-last')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
+                        <Col offset={11} span={2}>
+                          <Button 
+                            type="primary"
+                            disable={!commit} 
+                            onClick={() => validation()}
+                          >
+                            Commit
+                          </Button>
+                        </Col>
+                      </Row>
+                    </React.Fragment>
+                  :
+                    null               
               }
             </React.Fragment>
           }

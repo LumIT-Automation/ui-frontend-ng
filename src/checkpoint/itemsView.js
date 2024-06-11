@@ -188,15 +188,31 @@ function ItemsView(props) {
         let items = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
-          /*if (item.tags.length > 0) {
-            item.tags = item.tags.map(function(tag) {
-              return tag.name;
-            });
-            console.log(item.tags)
-          }
-          else {
-            item.tags = []
-          }*/
+          item.id = id
+          id++
+          return item
+        })
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
+      }
+    }
+    else if (props.items === 'addressRanges') {
+      let fetched = await dataGet(props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'checkpoint',
+          errorType: `${props.items}Error`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
           item.id = id
           id++
           return item
@@ -212,8 +228,11 @@ function ItemsView(props) {
     let endpoint
     let r
 
-
     endpoint = `${props.vendor}/${assetId}/${props.domain}/${props.items}/`
+
+    if (props.items === 'addressRanges') {
+      endpoint = `${props.vendor}/${assetId}/${props.domain}/address-ranges/`
+    }
 
     let rest = new Rest(
       "GET",
@@ -248,6 +267,8 @@ function ItemsView(props) {
       }
       else {
         if (key === 'toDelete') {
+          console.log(value)
+
           setItems((prevItems) => {
             const newItems = [...prevItems]
             let item = newItems.find( i => i.id === record.id )
@@ -259,6 +280,12 @@ function ItemsView(props) {
             }
             return newItems
           })
+          items.forEach(item => {
+            if (item.name === 'cicciput') {
+              console.log(item)
+            }
+          });
+          
         }
       }
     }
@@ -290,6 +317,16 @@ function ItemsView(props) {
       return errors
     }
     else if (props.items === 'networks') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+      }
+      await setItems(items)
+      return errors
+    }
+    else if (props.items === 'addressRanges') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -446,6 +483,11 @@ function ItemsView(props) {
   }
 
   const itemDelete = async (item, type) => {
+    let endpoint = `${props.vendor}/${props.asset.id}/${props.domain}/${props.item}/${item.uid}/`
+
+    if (props.items === 'addressRanges') {
+      endpoint = `${props.vendor}/${props.asset.id}/${props.domain}/address-range/${item.uid}/`
+    }
     let r
     let rest = new Rest(
       "DELETE",
@@ -457,7 +499,7 @@ function ItemsView(props) {
       }
     )
 
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.domain}/${props.item}/${item.uid}/`, props.token )
+    await rest.doXHR(endpoint, props.token )
     
     return r
   }
@@ -520,6 +562,19 @@ function ItemsView(props) {
               }
             ref={ref => myRefs[`${obj.id}_${key}`] = ref}
             onChange={event => set(key, event.target.value, obj, father)}
+          />          
+        )
+      }
+      else {
+        return (
+          <Input
+            style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red', width: 200}
+              :
+                {width: 200}
+              }
+            onBlur={event => set(key, event.target.value, obj)}
           />          
         )
       }
@@ -638,6 +693,9 @@ function ItemsView(props) {
     }
     else if (props.items === 'networks') {
       return networksColumns
+    }
+    else if (props.items === 'addressRanges') {
+      return addressRangesColumns
     }
   }
 
@@ -761,6 +819,63 @@ function ItemsView(props) {
           renderItem={item => <List.Item >{item.name ? item.name : item}</List.Item>}
         />
       )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  const addressRangesColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+    },
+    {
+      title: 'IPv4-address-first',
+      align: 'center',
+      dataIndex: 'ipv4-address-first',
+      key: 'ipv4-address-first',
+      ...getColumnSearchProps('ipv4-address-first'),
+    },
+    {
+      title: 'IPv4-address-last',
+      align: 'center',
+      dataIndex: 'ipv4-address-last',
+      key: 'ipv4-address-last',
+      ...getColumnSearchProps('ipv4-address-last'),
     },
     {
       title: 'Delete',
