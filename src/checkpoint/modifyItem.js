@@ -17,9 +17,9 @@ import {
 
 import { Input, Button, Space, Modal, Spin, Result, Divider, Table, Row, Col } from 'antd';
 
-import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 /*
 Iterabili in JavaScript: Gli iterabili sono oggetti che implementano il protocollo di iterazione, il quale consente di essere iterati tramite costrutti come for...of. 
@@ -44,7 +44,7 @@ Sintassi di spread per oggetti ({...obj}):
 */
 
 
-function AddItem(props) {
+function ModifyItem(props) {
   const [visible, setVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(false);
@@ -52,35 +52,25 @@ function AddItem(props) {
 
   const [errors, setErrors] = useState({});
   const [interfaces, setInterfaces] = useState([]);
-  const [request, setRequest] = useState({
-    name: '', 
-    address: '',
-    tags: ''
-  });
+  const [request, setRequest] = useState({});
  
 
 
   //MOUNT
-  useEffect( () => { 
-    if (props.items === 'hosts') {
-      interfaces.push({id:1})
-      setInterfaces(interfaces)
-    }
-  }, [] );
-
-  
   
   //UPDATE
   useEffect( () => { 
-    if (props.items === 'hosts') {
-      if (interfaces && interfaces.length === 0) {
-        interfaces.push({id:1})
-        setInterfaces(interfaces)
-      }
-    }
-    else if (props.items === 'networks') {
+    setRequest({...props.obj})
 
-    }
+    setRequest((prevRequest) => {
+      const newRequest = {...prevRequest}
+      let tags = newRequest.tags 
+      tags = tags.map(function(tag) {
+        return tag.name;
+      });
+      newRequest['tags'] = tags
+      return newRequest
+    })
   }, [visible] );
 
   useEffect( () => { 
@@ -280,37 +270,16 @@ function AddItem(props) {
     console.log(errors)
 
     if ((Object.keys(errors).length === 0) && ok) {
-      itemAdd()
+      itemModify()
     }
   }
 
-  const itemAdd = async () => {
+  const itemModify = async () => {
     let b = {}
     
-    if (props.items === 'hosts') {
-      let nics = []
-
+    if (props.items === 'networks') {
       b.data = {
-        "ipv4-address": request.address,
-        "name": request.name,
-      }
-      if (interfaces.length > 0 && interfaces[0].name) {
-        interfaces.forEach((nic, i) => {
-          let o = {}
-          o.name = nic.nicName
-          o.nic.subnet4 = nic.subnet4
-          o.nic.subnet6 = nic.subnet6
-          o['mask-length4'] = nic.mask_length4
-          o['mask-length6'] = nic.mask_length6
-          nics.push(o)
-        });
-        b.data.interfaces = nics
-      }
-    }
-
-    else if (props.items === 'networks') {
-      b.data = {
-        "name": request.name,
+        "new-name": request.name,
         "subnet4": request.subnet4 || null,
         "mask-length4": request['mask-length4'] || null,
         "subnet6": request.subnet6 || null,
@@ -321,27 +290,27 @@ function AddItem(props) {
 
     else if (props.items === 'addressRanges') {
       b.data = {
-        "name": request.name,
+        "new-name": request.name,
         "ipv4-address-first": request['ipv4-address-first'],
         "ipv4-address-last": request['ipv4-address-last']
       }
     }
     else if (props.items === 'groups') {
       b.data = {
-        "name": request.name,
+        "new-name": request.name,
       }
     }
     
     setLoading(true)
 
-    let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${props.items}/`
+    let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${props.item}/${request.uid}/`
 
     if (props.items === 'addressRanges') {
-      endpoint = `checkpoint/${props.asset.id}/${props.domain}/address-ranges/`
+      endpoint = `checkpoint/${props.asset.id}/${props.domain}/address-range/${request.uid}/`
     }
 
     let rest = new Rest(
-      "POST",
+      "PATCH",
       resp => {
         setLoading(true)
         setResponse(true)
@@ -349,9 +318,9 @@ function AddItem(props) {
       },
       error => {
         error = Object.assign(error, {
-          component: `${props.item}Add`,
+          component: `${props.item}Modify`,
           vendor: 'checkpoint',
-          errorType: `${props.item}AddError`
+          errorType: `${props.item}ModifyError`
         })
         props.dispatch(err(error))
         setLoading(false)
@@ -384,7 +353,7 @@ function AddItem(props) {
                 {width: 250}
             } 
             onChange={e => set(key, e.target.value, record, father)} 
-          />        
+          />       
         )
       }
       else if (key === 'key2') {
@@ -406,6 +375,7 @@ function AddItem(props) {
       else {
         return (
           <Input 
+            value={request[key]}
             style={
               errors[`${key}Error`] ?
                 {
@@ -426,6 +396,7 @@ function AddItem(props) {
         <Input.TextArea
           rows={12}
           placeholder='tag1, tag2'
+          defaultValue={request[key]}
           //ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
           onBlur={event => set(key, event.target.value)}
           style=
@@ -462,71 +433,6 @@ function AddItem(props) {
     }
   }
 
-  const hostsCol = [
-    {
-      title: 'id',
-      align: 'center',
-      dataIndex: 'id',
-      key: 'id',
-      description: '',
-    },
-    {
-      title: 'Interface name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      render: (name, record)  => (
-        createElement('input', 'nicName', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Subnet4',
-      align: 'center',
-      dataIndex: 'subnet4',
-      key: 'subnet4',
-      render: (name, record)  => (
-        createElement('input', 'subnet4', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Mask-length4',
-      align: 'center',
-      dataIndex: 'mask-length4',
-      key: 'mask-length4',
-      render: (name, record)  => (
-        createElement('input', 'mask-length4', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Subnet6',
-      align: 'center',
-      dataIndex: 'subnet6',
-      key: 'subnet6',
-      render: (name, record)  => (
-        createElement('input', 'subnet6', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Mask-length6',
-      align: 'center',
-      dataIndex: 'mask-length6',
-      key: 'mask-length6',
-      render: (name, record)  => (
-        createElement('input', 'mask-length6', '', record, '', 'interfaces')
-      ),
-    },
-    {
-      title: 'Remove request',
-      align: 'center',
-      dataIndex: 'remove',
-      key: 'remove',
-      render: (name, record)  => (
-        createElement('button', '', '', record, 'recordRemove')
-      ),
-    }
-  ]
-
-
   //ONCLOSE
   const closeModal = () => {
     setVisible(false)
@@ -540,7 +446,7 @@ function AddItem(props) {
   }
 
   const showErrors = () => {
-    if (props.error && props.error.component === `${props.item}Add`) {
+    if (props.error && props.error.component === `${props.item}Modify`) {
       return <Error error={[props.error]} visible={true}/> 
     }
   }
@@ -548,7 +454,7 @@ function AddItem(props) {
   return (
     <Space direction='vertical'>
 
-        <Button icon={addIcon} type='primary' onClick={() => setVisible(true)}/>
+        <Button icon={modifyIcon} type='primary' onClick={() => setVisible(true)}/>
 
         <Modal
           title={<p style={{textAlign: 'center'}}>ADD {capital(props.item)}</p>}
@@ -565,7 +471,7 @@ function AddItem(props) {
           { !loading && response &&
             <Result
                status="success"
-               title={`${props.item} Added`}
+               title={`${props.item} Modified`}
              />
           }
 
@@ -681,7 +587,7 @@ function AddItem(props) {
                       <Col offset={9} span={1}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
                       </Col>
-                      <Col span={4}>
+                      <Col span={6}>
                         {createElement('textArea', 'tags')}
                       </Col>
                     </Row>
@@ -790,4 +696,4 @@ export default connect((state) => ({
   
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-  }))(AddItem);
+  }))(ModifyItem);

@@ -13,6 +13,7 @@ import Error from '../concerto/error'
 import Authorizators from '../_helpers/authorizators'
 
 import AddItem from './addItem'
+import ModifyItem from './modifyItem'
 
 import {
   fetchItems,
@@ -859,6 +860,21 @@ function ItemsView(props) {
       )
     },
     {
+      title: 'Modify',
+      align: 'center',
+      dataIndex: 'modify',
+      key: 'modify',
+      render: (name, obj)  => (
+        <Space size="small">
+         { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_patch`)) ? 
+          <ModifyItem name={name} obj={obj} items={props.items} item={props.item}/>
+          :
+          '-'
+        }
+        </Space>
+      ),
+    },
+    {
       title: 'Delete',
       align: 'center',
       dataIndex: 'delete',
@@ -916,6 +932,21 @@ function ItemsView(props) {
       ...getColumnSearchProps('ipv4-address-last'),
     },
     {
+      title: 'Modify',
+      align: 'center',
+      dataIndex: 'modify',
+      key: 'modify',
+      render: (name, obj)  => (
+        <Space size="small">
+         { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_patch`)) ? 
+          <ModifyItem name={name} obj={obj} items={props.items} item={props.item}/>
+          :
+          '-'
+        }
+        </Space>
+      ),
+    },
+    {
       title: 'Delete',
       align: 'center',
       dataIndex: 'delete',
@@ -970,6 +1001,21 @@ function ItemsView(props) {
           renderItem={item => <List.Item >{item.name ? item.name : item}</List.Item>}
         />
       )
+    },
+    {
+      title: 'Modify',
+      align: 'center',
+      dataIndex: 'modify',
+      key: 'modify',
+      render: (name, obj)  => (
+        <Space size="small">
+         { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_patch`)) ? 
+          <ModifyItem name={name} obj={obj} items={props.items} item={props.item}/>
+          :
+          '-'
+        }
+        </Space>
+      ),
     },
     {
       title: 'Delete',
