@@ -324,6 +324,11 @@ function AddItem(props) {
         "ipv4-address-last": request['ipv4-address-last']
       }
     }
+    else if (props.items === 'groups') {
+      b.data = {
+        "name": request.name,
+      }
+    }
     
     setLoading(true)
 
@@ -739,7 +744,32 @@ function AddItem(props) {
                       </Row>
                     </React.Fragment>
                   :
-                    null               
+                    props.items === 'groups' ?
+                      <React.Fragment>
+                        <Row>
+                          <Col offset={9} span={1}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                          </Col>
+                          <Col span={4}>
+                            {createElement('input', 'name')}
+                          </Col>
+                        </Row>
+                        <br/>
+
+                        <Row>
+                          <Col offset={11} span={2}>
+                            <Button 
+                              type="primary"
+                              disable={!commit} 
+                              onClick={() => validation()}
+                            >
+                              Commit
+                            </Button>
+                          </Col>
+                        </Row>
+                      </React.Fragment>
+                    :
+                      null                
               }
             </React.Fragment>
           }

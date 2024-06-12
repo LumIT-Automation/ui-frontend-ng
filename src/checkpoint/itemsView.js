@@ -222,6 +222,31 @@ function ItemsView(props) {
         setLoading(false)
       }
     }
+    else if (props.items === 'groups') {
+      let fetched = await dataGet(props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'checkpoint',
+          errorType: `${props.items}Error`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
+          id++
+          return item
+        })
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
+      }
+    }
   }
 
   const dataGet = async (assetId, entities) => {
@@ -327,6 +352,16 @@ function ItemsView(props) {
       return errors
     }
     else if (props.items === 'addressRanges') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+      }
+      await setItems(items)
+      return errors
+    }
+    else if (props.items === 'groups') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -697,6 +732,9 @@ function ItemsView(props) {
     else if (props.items === 'addressRanges') {
       return addressRangesColumns
     }
+    else if (props.items === 'groups') {
+      return groupsColumns
+    }
   }
 
   const hostsColumns = [
@@ -876,6 +914,62 @@ function ItemsView(props) {
       dataIndex: 'ipv4-address-last',
       key: 'ipv4-address-last',
       ...getColumnSearchProps('ipv4-address-last'),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  const groupsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+    },
+    {
+      title: 'Tags',
+      align: 'center',
+      dataIndex: 'tags',
+      key: 'tags',
+      render: (name, record)  => (
+        <List
+          size="small"
+          dataSource={record.tags}
+          renderItem={item => <List.Item >{item.name ? item.name : item}</List.Item>}
+        />
+      )
     },
     {
       title: 'Delete',
