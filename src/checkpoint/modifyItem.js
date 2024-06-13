@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -15,10 +15,10 @@ import {
   fetchItems,
 } from './store'
 
-import { Input, Button, Space, Modal, Spin, Result, Divider, Table, Row, Col } from 'antd';
-
-import { LoadingOutlined, EditOutlined } from '@ant-design/icons';
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
+import { Input, Button, Space, Modal, Spin, Result, Checkbox, Divider, Table, Row, Col, Radio } from 'antd';
+import Highlighter from 'react-highlight-words'
+import { LoadingOutlined, EditOutlined, SearchOutlined } from '@ant-design/icons';
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
 
 /*
@@ -49,12 +49,94 @@ function ModifyItem(props) {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(false);
   const [commit, setCommit] = useState(true);
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
+
+  const [dataLoading, setDataLoading]  = useState(false);
+  const [itemTypes, setItemTypes] = useState('');
 
   const [errors, setErrors] = useState({});
   const [interfaces, setInterfaces] = useState([]);
+  const [groupData, setGroupData] = useState([]);
+  const [domainDataPurged, setDomainDataPurged] = useState([]);
   const [request, setRequest] = useState({});
  
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
 
+  const handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    setSearchText('');
+  };
+
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
+      }
+      catch (error){
+
+      }
+    },
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    render: text => {
+      return searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
+    }
+  });
 
   //MOUNT
   
@@ -73,6 +155,166 @@ function ModifyItem(props) {
     })
   }, [visible] );
 
+  useEffect( () => { 
+    if (visible && (props.items === 'groups') && itemTypes)  {
+      dataGet()
+    }
+  }, [itemTypes] );
+
+  useEffect( () => { 
+    console.log('domainDataPurged', domainDataPurged)
+    console.log('groupData', groupData)
+    domainDataPurged.forEach(element => {
+      if(element.name === '_blacklist_144.0.0.60') {
+        console.log(element)
+      }
+    });
+  }, [domainDataPurged, groupData] );
+
+  
+
+  const dataGet = async () => {
+    let list = []
+    setDataLoading(true)
+
+    let grData = await groupDataGet()
+    if (grData.status && grData.status !== 200 ) {
+      let error = Object.assign(grData, {
+        component: 'groupsModify',
+        vendor: 'checkpoint',
+        errorType: 'itemTypesError'
+      })
+      props.dispatch(err(error))
+      setDataLoading(false)
+      return
+    }
+    else {
+      list = grData.data.items
+      list.forEach((item, i) => {
+        item.groupMember = true
+        item.flagged = true
+      });
+
+      setGroupData(list)
+    }
+
+    let domainData = await domainDataGet()
+    console.log(domainData)
+    domainData.data.items.forEach(element => {
+      if(element.name === '_blacklist_144.0.0.60') {
+        console.log(element)
+      }
+    });
+    let l
+    if (domainData.status && domainData.status !== 200 ) {
+      let error
+      switch(itemTypes) {
+        case 'hosts':
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'hostsError'
+          })
+          props.dispatch(err(error))
+          break;
+        case 'groups':
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'groupsError'
+          })
+          props.dispatch(err(error))
+          break;
+        case 'networks':
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'networksError'
+          })
+          props.dispatch(err(error))
+          break;
+        case 'address-ranges':
+          error = Object.assign(domainData, {
+            component: 'groupsModify',
+            vendor: 'checkpoint',
+            errorType: 'addressRangesError'
+          })
+          props.dispatch(err(error))
+          break;
+      }
+      setDataLoading(false)
+      return
+    }
+    else {
+      l = domainData.data.items.filter(element => {
+        groupData.forEach(gr => {
+        });(gr => (gr.uid === element.uid ))
+
+
+      })
+      console.log(l)
+    }
+    setDataLoading(false)
+    setDomainDataPurged(l)    
+  }
+
+  const groupDataGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${request.uid}/${itemTypes}/`, props.token)
+    return r
+  }
+
+  const domainDataGet = async () => {
+    let r
+    let rest = new Rest(
+      "GET",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/${itemTypes}/`, props.token)
+    return r
+  }
+
+  const flagSet = async (e, obj) => {
+    //let groupData = JSON.parse(JSON.stringify(groupData))
+    //let domainDataPurged = JSON.parse(JSON.stringify(domainDataPurged))
+    let item
+
+    if (obj.groupMember) {
+      item = groupData.find( o => o.uid === obj.uid )
+      if (e.target.checked) {
+        item.flagged = true
+      }
+      else {
+        delete item.flagged
+      }
+      setGroupData(groupData)
+    }
+    else {
+      item = domainDataPurged.find( o => o.uid === obj.uid )
+      if (e.target.checked) {
+        item.flagged = true
+      }
+      else {
+        delete item.flagged
+      }
+      setDomainDataPurged(domainDataPurged)
+    }
+  }
+
   //SETTER
   const set = async (key, value, record, father) => {
     let commonFunctions = new CommonFunctions()
@@ -86,6 +328,40 @@ function ModifyItem(props) {
         setErrors((prevErrors) => {
           let newErrors = {...prevErrors}
           delete newErrors.nameError
+          return newErrors
+        })
+      }
+      else if (key === 'flagSet') {
+
+        if (record.groupMember) {
+          item = groupData.find( o => o.uid === record.uid )
+          if (e.target.checked) {
+            item.flagged = true
+          }
+          else {
+            delete item.flagged
+          }
+          setGroupData(groupData)
+        }
+        else {
+          item = domainDataPurged.find( o => o.uid === record.uid )
+          if (e.target.checked) {
+            item.flagged = true
+          }
+          else {
+            delete item.flagged
+          }
+          setDomainDataPurged(domainDataPurged)
+        }
+
+        setRequest((prevRequest) => {
+          const newRequest = {...prevRequest}
+          newRequest.address = value
+          return newRequest
+        })
+        setErrors((prevErrors) => {
+          let newErrors = {...prevErrors}
+          delete newErrors.addressError
           return newErrors
         })
       } 
@@ -213,8 +489,6 @@ function ModifyItem(props) {
     }
   }
 
-
-
   const validationCheck = async () => {
     setCommit(false)
     let validators = new Validators()
@@ -328,8 +602,6 @@ function ModifyItem(props) {
     setTimeout( () => closeModal(), 2050)
   }
 
-
-
   const createElement = (element, key, choices, record, action, father) => {
     if (element === 'input') {
       if (father) {
@@ -431,6 +703,120 @@ function ModifyItem(props) {
     setInterfaces([])
     setRequest({})
   }
+
+  let columns = [
+    {
+      title: 'Group member',
+      align: 'center',
+      dataIndex: 'groupMember',
+      key: 'groupMember',
+      render: (name, obj)  => (
+        <React.Fragment>
+          <Checkbox checked={obj.flagged} onChange={e => set('flagSet', e, obj)}/>
+        </React.Fragment>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+    },
+    {
+      title: 'IPv4-address',
+      align: 'center',
+      dataIndex: 'ipv4-address',
+      key: 'ipv4-address',
+     ...getColumnSearchProps('ipv4-address'),
+    },
+    {
+      title: 'Subnet4',
+      align: 'center',
+      dataIndex: 'subnet4',
+      key: 'subnet4',
+      ...getColumnSearchProps('subnet4'),
+    },
+    {
+      title: 'Mask-length4',
+      align: 'center',
+      dataIndex: 'mask-length4',
+      key: 'mask-length4',
+      ...getColumnSearchProps('mask-length4'),
+    },
+    {
+      title: 'Subnet-mask',
+      align: 'center',
+      dataIndex: 'subnet-mask',
+      key: 'subnet-mask',
+      ...getColumnSearchProps('subnet-mask'),
+    },
+    {
+      title: 'IPv4-address-first',
+      align: 'center',
+      dataIndex: 'ipv4-address-first',
+      key: 'ipv4-address-first',
+      ...getColumnSearchProps('ipv4-address-first'),
+    },
+    {
+      title: 'IPv4-address-last',
+      align: 'center',
+      dataIndex: 'ipv4-address-last',
+      key: 'ipv4-address-last',
+      ...getColumnSearchProps('ipv4-address-last'),
+    },
+    {
+      title: 'Domain',
+      align: 'center',
+      dataIndex: ['domain', 'name'],
+      key: 'domain',
+      ...getColumnSearchProps(['domain', 'name']),
+    }
+  ]
+
+  let returnColumns = () => {
+    switch(itemTypes) {
+      case 'hosts':
+        columns = columns.filter(col => col.dataIndex !== 'subnet4')
+        columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+        columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+        return columns
+        break;
+      case 'groups':
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+        columns = columns.filter(col => col.dataIndex !== 'subnet4')
+        columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+        columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+        return columns
+        break;
+      case 'networks':
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-first')
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address-last')
+        return columns
+        break;
+      case 'address-ranges':
+        columns = columns.filter(col => col.dataIndex !== 'ipv4-address')
+        columns = columns.filter(col => col.dataIndex !== 'subnet4')
+        columns = columns.filter(col => col.dataIndex !== 'mask-length4')
+        columns = columns.filter(col => col.dataIndex !== 'subnet-mask')
+        return columns
+        break;
+    }
+    return columns
+  }
+
+  let randomKey = () => {
+    return Math.random().toString()
+  }
+
+  let joinedData = () => {
+    return groupData.concat(domainDataPurged)
+  }
   
   const capital = (str) => {
     return str.toUpperCase()
@@ -448,7 +834,7 @@ function ModifyItem(props) {
         <Button icon={modifyIcon} type='primary' onClick={() => setVisible(true)}/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>ADD {capital(props.item)}</p>}
+          title={<p style={{textAlign: 'center'}}>MODIFY {capital(props.item)}</p>}
           centered
           destroyOnClose={true}
           visible={visible}
@@ -653,6 +1039,44 @@ function ModifyItem(props) {
                           </Col>
                         </Row>
                         <br/>
+
+                        <Row>
+                          <Col offset={1} span={16}>
+                            <Radio.Group 
+                              disabled={dataLoading} 
+                              onChange={e => setItemTypes(e.target.value)} 
+                              value={itemTypes}
+                            >
+                              <Radio value={'hosts'}>hosts</Radio>
+                              <Radio value={'groups'}>groups</Radio>
+                              <Radio value={'networks'}>networks</Radio>
+                              <Radio value={'address-ranges'}>address ranges</Radio>
+                            </Radio.Group>
+                          </Col>
+                        </Row>
+
+                        <Divider/>
+
+                        <Row>
+                          <Col span={24}>
+                          {dataLoading ?
+                            <Spin indicator={spinIcon} style={{margin: '2% 50%'}}/>
+                          :
+                            <Row>
+                              <Col span={24}>
+                                <Table
+                                  columns={itemTypes ? returnColumns() : null}
+                                  dataSource={(groupData && domainDataPurged) ? joinedData() : null}
+                                  bordered
+                                  rowKey={randomKey}
+                                  scroll={{x: 'auto'}}
+                                  pagination={{ pageSize: 10 }}
+                                />
+                              </Col>
+                            </Row>
+                          }
+                          </Col>
+                        </Row>
 
                         <Row>
                           <Col offset={11} span={2}>
