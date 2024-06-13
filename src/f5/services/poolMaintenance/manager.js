@@ -62,7 +62,6 @@ class Manager extends React.Component {
 
       await this.setState({loading: true})
       let data = await this.poolsGet()
-      console.log(data)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'poolMaintenanceManager',

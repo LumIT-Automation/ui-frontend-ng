@@ -83,10 +83,6 @@ function AddItem(props) {
     }
   }, [visible] );
 
-  useEffect( () => { 
-    console.log(request)
-  }, [request] );
-
 
   //SETTER
   const set = async (key, value, record, father) => {
@@ -171,7 +167,6 @@ function AddItem(props) {
           tags = tags.split(',').map(function(item) {
             return item.trim();
           });
-          console.log(tags)
           newRequest['tags'] = tags
           return newRequest
         })
@@ -276,8 +271,6 @@ function AddItem(props) {
 
   const validation = async () => {
     let ok = await validationCheck()
-    console.log(ok)
-    console.log(errors)
 
     if ((Object.keys(errors).length === 0) && ok) {
       itemAdd()
@@ -535,7 +528,6 @@ function AddItem(props) {
   }
   
   const capital = (str) => {
-    console.log(str)
     return str.toUpperCase()
   }
 

@@ -155,7 +155,6 @@ function Manager(props) {
         }
   
         if (key === 'toDelete') {
-          console.log(value)
           if (value) {
             conf.toDelete = true
           }

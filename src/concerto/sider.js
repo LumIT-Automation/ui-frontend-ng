@@ -86,7 +86,6 @@ function CustomSider(props) {
         mode="inline"
         style={{ borderRight: 0 }}
       >
-
         { isAuthorized(props.authorizations, 'infoblox') ||
           isAuthorized(props.authorizations, 'checkpoint') ||
           isAuthorized(props.authorizations, 'f5') ||
@@ -155,6 +154,7 @@ function CustomSider(props) {
 
         { isAuthorized(props.authorizations, 'workflow') ?
           <React.Fragment>
+            
             <Menu.Item key="workflows" icon={<FastForwardOutlined style={{fontSize:'20px'}}/>}><Link to="/workflows/">WORKFLOWS</Link></Menu.Item>
             <Menu.Divider/>
           </React.Fragment>

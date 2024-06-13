@@ -33,7 +33,6 @@ class Manager extends React.Component {
   }
 
   componentDidMount() {
-    console.log('mount')
     if (this.props.asset) {
       if (!this.props.error) {
         this.props.dispatch(treeFetch(false))
@@ -88,9 +87,7 @@ class Manager extends React.Component {
   }
 
   editTree = async t => {
-    console.log(t)
     await this.editTitle(t) 
-    console.log(t)
     
     this.props.dispatch(tree([t]))
   }

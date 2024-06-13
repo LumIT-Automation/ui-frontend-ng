@@ -1,7 +1,6 @@
 class CommonFunctions {
 
   itemAdd = (items, type) => {
-    console.log(items)
     try {
       let id = 0
       let n = 0
@@ -21,7 +20,6 @@ class CommonFunctions {
       }
       //list.push(p)
       list = [e].concat(list)
-      console.log(list)
       return list
     }
     catch(e) {

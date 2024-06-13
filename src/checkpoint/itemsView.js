@@ -263,7 +263,6 @@ function ItemsView(props) {
     let rest = new Rest(
       "GET",
       resp => {
-        console.log(resp.data.items)
         r = resp
       },
       error => {
@@ -293,8 +292,6 @@ function ItemsView(props) {
       }
       else {
         if (key === 'toDelete') {
-          console.log(value)
-
           setItems((prevItems) => {
             const newItems = [...prevItems]
             let item = newItems.find( i => i.id === record.id )
@@ -305,13 +302,7 @@ function ItemsView(props) {
               delete item.toDelete
             }
             return newItems
-          })
-          items.forEach(item => {
-            if (item.name === 'cicciput') {
-              console.log(item)
-            }
-          });
-          
+          })          
         }
       }
     }
@@ -406,8 +397,6 @@ function ItemsView(props) {
         toPatch.push(item)
       }
     }
-
-    console.log(toDelete)
 
     if (toDelete.length > 0) {
       for (const item of toDelete) {

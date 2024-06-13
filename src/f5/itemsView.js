@@ -1118,11 +1118,7 @@ class ItemsView extends React.Component {
         }
         else {
           item.members.forEach(e => {
-            console.log(e)
-            console.log(validators.ipv4(e.address))
-            console.log(validators.ipv6(e.address))
             if (!(validators.ipv4(e.address) || validators.ipv6(e.address)) ) {
-              console.log(e)
               e.addressError = true
               ++errors
               this.setState({errors: errors})

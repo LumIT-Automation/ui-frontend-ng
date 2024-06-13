@@ -62,7 +62,6 @@ class PoolDetails extends React.Component {
     await this.setState({poolMembersLoading: true})
     let members = await this.poolMembersGet(pool)
     await this.setState({poolMembersLoading: false})
-    console.log(members)
     if (members.status && members.status !== 200) {
       let error = Object.assign(members, {
         component: 'poolmembers',

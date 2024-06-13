@@ -43,7 +43,6 @@ const checkpointSlice = createSlice({
         state.hosts = action.payload.data.items
       },
       fetchItems: (state, action) => {
-        console.log('fetchItems', action.payload)
         state.fetchItems = action.payload
       },
 

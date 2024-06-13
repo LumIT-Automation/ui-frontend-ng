@@ -73,11 +73,6 @@ function ModifyItem(props) {
     })
   }, [visible] );
 
-  useEffect( () => { 
-    console.log(request)
-  }, [request] );
-
-
   //SETTER
   const set = async (key, value, record, father) => {
     let commonFunctions = new CommonFunctions()
@@ -161,7 +156,6 @@ function ModifyItem(props) {
           tags = tags.split(',').map(function(item) {
             return item.trim();
           });
-          console.log(tags)
           newRequest['tags'] = tags
           return newRequest
         })
@@ -266,8 +260,6 @@ function ModifyItem(props) {
 
   const validation = async () => {
     let ok = await validationCheck()
-    console.log(ok)
-    console.log(errors)
 
     if ((Object.keys(errors).length === 0) && ok) {
       itemModify()
@@ -441,7 +433,6 @@ function ModifyItem(props) {
   }
   
   const capital = (str) => {
-    console.log(str)
     return str.toUpperCase()
   }
 
