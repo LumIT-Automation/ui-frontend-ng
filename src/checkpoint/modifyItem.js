@@ -248,7 +248,10 @@ function ModifyItem(props) {
     else {
       l = domainData.data.items.filter(element => {
         groupData.forEach(gr => {
-        });(gr => (gr.uid === element.uid ))
+          if (gr.uid === element.uid ) {
+            return 
+          }
+        })
 
 
       })
