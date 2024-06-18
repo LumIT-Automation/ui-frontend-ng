@@ -59,6 +59,7 @@ function ModifyItem(props) {
   const [errors, setErrors] = useState({});
   const [interfaces, setInterfaces] = useState([]);
   const [groupData, setGroupData] = useState([]);
+  const [domainData, setDomainData] = useState([]);
   const [domainDataPurged, setDomainDataPurged] = useState([]);
   const [request, setRequest] = useState({});
  
@@ -164,31 +165,42 @@ function ModifyItem(props) {
   useEffect( () => { 
     console.log('domainDataPurged', domainDataPurged)
     console.log('groupData', groupData)
-    domainDataPurged.forEach(element => {
-      if(element.name === '_blacklist_144.0.0.60') {
-        console.log(element)
-      }
-    });
-  }, [domainDataPurged, groupData] );
-
-  
+    console.log(domainData)
+  }, [domainDataPurged, groupData, domainData] );
 
   const dataGet = async () => {
     let list = []
     setDataLoading(true)
 
-    let grData = await groupDataGet()
-    if (grData.status && grData.status !== 200 ) {
-      let error = Object.assign(grData, {
+    let domData = await domainDataGet()
+    if (domData.status && domData.status !== 200 ) {
+      let error = Object.assign(domData, {
         component: 'groupsModify',
         vendor: 'checkpoint',
-        errorType: 'itemTypesError'
+        errorType: `${itemTypes}Error`
       })
       props.dispatch(err(error))
       setDataLoading(false)
       return
     }
     else {
+      domData = domData.data.items
+    }
+      
+
+    let grData = await groupDataGet()
+    if (grData.status && grData.status !== 200 ) {
+      let error = Object.assign(grData, {
+        component: 'groupsModify',
+        vendor: 'checkpoint',
+        errorType: `${itemTypes}Error`
+      })
+      props.dispatch(err(error))
+      setDataLoading(false)
+      return
+    }
+    else {
+      let domDataPurged = domData.filter(a => !grData.data.items.map(b=>b.uid).includes(a.uid))
       list = grData.data.items
       list.forEach((item, i) => {
         item.groupMember = true
@@ -196,69 +208,10 @@ function ModifyItem(props) {
       });
 
       setGroupData(list)
+      setDomainDataPurged(domDataPurged)  
     }
 
-    let domainData = await domainDataGet()
-    console.log(domainData)
-    domainData.data.items.forEach(element => {
-      if(element.name === '_blacklist_144.0.0.60') {
-        console.log(element)
-      }
-    });
-    let l
-    if (domainData.status && domainData.status !== 200 ) {
-      let error
-      switch(itemTypes) {
-        case 'hosts':
-          error = Object.assign(domainData, {
-            component: 'groupsModify',
-            vendor: 'checkpoint',
-            errorType: 'hostsError'
-          })
-          props.dispatch(err(error))
-          break;
-        case 'groups':
-          error = Object.assign(domainData, {
-            component: 'groupsModify',
-            vendor: 'checkpoint',
-            errorType: 'groupsError'
-          })
-          props.dispatch(err(error))
-          break;
-        case 'networks':
-          error = Object.assign(domainData, {
-            component: 'groupsModify',
-            vendor: 'checkpoint',
-            errorType: 'networksError'
-          })
-          props.dispatch(err(error))
-          break;
-        case 'address-ranges':
-          error = Object.assign(domainData, {
-            component: 'groupsModify',
-            vendor: 'checkpoint',
-            errorType: 'addressRangesError'
-          })
-          props.dispatch(err(error))
-          break;
-      }
-      setDataLoading(false)
-      return
-    }
-    else {
-      l = domainData.data.items.filter(element => {
-        groupData.forEach(gr => {
-          if (gr.uid === element.uid ) {
-            return 
-          }
-        })
-
-
-      })
-      console.log(l)
-    }
     setDataLoading(false)
-    setDomainDataPurged(l)    
   }
 
   const groupDataGet = async () => {
@@ -335,38 +288,33 @@ function ModifyItem(props) {
         })
       }
       else if (key === 'flagSet') {
-
+        let item
         if (record.groupMember) {
-          item = groupData.find( o => o.uid === record.uid )
-          if (e.target.checked) {
-            item.flagged = true
-          }
-          else {
-            delete item.flagged
-          }
-          setGroupData(groupData)
+          setGroupData((prevGroupData) => {
+            let newGroupData = [...prevGroupData]
+            item = newGroupData.find( o => o.uid === record.uid )
+            if (value.target.checked) {
+              item.flagged = true
+            }
+            else {
+              delete item.flagged
+            }
+            return newGroupData
+          })
         }
         else {
-          item = domainDataPurged.find( o => o.uid === record.uid )
-          if (e.target.checked) {
-            item.flagged = true
-          }
-          else {
-            delete item.flagged
-          }
-          setDomainDataPurged(domainDataPurged)
+          setDomainDataPurged((prevDomainDataPurged) => {
+            let newDomainDataPurged = [...prevDomainDataPurged]
+            item = newDomainDataPurged.find( o => o.uid === record.uid )
+            if (value.target.checked) {
+              item.flagged = true
+            }
+            else {
+              delete item.flagged
+            }
+            return newDomainDataPurged
+          })
         }
-
-        setRequest((prevRequest) => {
-          const newRequest = {...prevRequest}
-          newRequest.address = value
-          return newRequest
-        })
-        setErrors((prevErrors) => {
-          let newErrors = {...prevErrors}
-          delete newErrors.addressError
-          return newErrors
-        })
       } 
       else if (key === 'address') {
         setRequest((prevRequest) => {
@@ -826,7 +774,7 @@ function ModifyItem(props) {
   }
 
   const showErrors = () => {
-    if (props.error && props.error.component === `${props.item}Modify`) {
+    if (props.error && props.error.component === 'groupsModify') {
       return <Error error={[props.error]} visible={true}/> 
     }
   }
