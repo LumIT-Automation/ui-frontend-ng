@@ -244,33 +244,6 @@ function ModifyItem(props) {
     return r
   }
 
-  const flagSet = async (e, obj) => {
-    //let groupData = JSON.parse(JSON.stringify(groupData))
-    //let domainDataPurged = JSON.parse(JSON.stringify(domainDataPurged))
-    let item
-
-    if (obj.groupMember) {
-      item = groupData.find( o => o.uid === obj.uid )
-      if (e.target.checked) {
-        item.flagged = true
-      }
-      else {
-        delete item.flagged
-      }
-      setGroupData(groupData)
-    }
-    else {
-      item = domainDataPurged.find( o => o.uid === obj.uid )
-      if (e.target.checked) {
-        item.flagged = true
-      }
-      else {
-        delete item.flagged
-      }
-      setDomainDataPurged(domainDataPurged)
-    }
-  }
-
   //SETTER
   const set = async (key, value, record, father) => {
     let commonFunctions = new CommonFunctions()
@@ -487,7 +460,12 @@ function ModifyItem(props) {
     let ok = await validationCheck()
 
     if ((Object.keys(errors).length === 0) && ok) {
-      itemModify()
+      if (props.items === 'groups') {
+        groupModify()
+      } else {
+        itemModify()
+      }
+      
     }
   }
 
@@ -496,7 +474,7 @@ function ModifyItem(props) {
     
     if (props.items === 'networks') {
       b.data = {
-        "new-name": request.name,
+        "new-name": request.name.trim(),
         "subnet4": request.subnet4 || null,
         "mask-length4": request['mask-length4'] || null,
         "subnet6": request.subnet6 || null,
@@ -535,7 +513,7 @@ function ModifyItem(props) {
       },
       error => {
         error = Object.assign(error, {
-          component: `${props.item}Modify`,
+          component: 'groupsModify',
           vendor: 'checkpoint',
           errorType: `${props.item}ModifyError`
         })
@@ -545,6 +523,114 @@ function ModifyItem(props) {
       }
     )
     await rest.doXHR(endpoint, props.token, b)
+  }
+
+  const groupModify = async() => {
+    let toAdd = []
+    let toRemove = []
+
+    domainDataPurged.forEach((item, i) => {
+      if (item.flagged) {
+        toAdd.push(item.uid)
+      }
+    });
+
+    groupData.forEach((item, i) => {
+      if (!item.flagged) {
+        toRemove.push(item.uid)
+      }
+    });
+
+    if (toRemove.length > 0 || toAdd.length > 0) {
+      setLoading(true)
+
+      if (toRemove.length > 0) {
+        await removeHandler(toRemove)
+      }
+
+      if (toAdd.length > 0) {
+        await addHandler(toAdd)
+      }
+
+      setLoading(false)
+      await dataGet()
+
+    }
+  }
+
+  const removeHandler = async (toRemove) => {
+    let itemType
+    switch(itemTypes) {
+      case 'hosts':
+        itemType = 'host'
+        break;
+      case 'groups':
+        itemType = 'group'
+        break;
+      case 'networks':
+        itemType = 'network'
+        break;
+      case 'address-ranges':
+        itemType = 'address-range'
+        break;
+    }
+
+    for (const item of toRemove) {
+      await removeItem(item, itemType)
+    }
+
+  }
+
+  const addHandler = async (toAdd) => {
+    await addItems(toAdd)
+  }
+
+  const removeItem = async (item, itemType) => {
+    let r
+
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        error = Object.assign(error, {
+          component: 'groupsModify',
+          vendor: 'checkpoint',
+          errorType: `${itemTypes}Error`
+        })
+        props.dispatch(err(error))
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${props.obj.uid}/${itemType}/${item}/`, props.token)
+    return r
+  }
+
+  const addItems = async (toAdd) => {
+    let r
+    let b = {}
+    b.data = {
+      [itemTypes]: toAdd,
+    }
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        error = Object.assign(error, {
+          component: 'groupsModify',
+          vendor: 'checkpoint',
+          errorType: `${itemTypes}Error`
+        })
+        props.dispatch(err(error))
+        r = error
+      }
+    )
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${props.obj.uid}/${itemTypes}/`, props.token, b)
+    return r
   }
 
   const responseF = () => {
