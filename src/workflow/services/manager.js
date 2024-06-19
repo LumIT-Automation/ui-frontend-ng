@@ -17,6 +17,11 @@ function Manager(props) {
     return author.isSuperAdmin(a)
   }
 
+  isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
   const workflowRemoveHost = a => {
     let author = new Authorizators()
     return author.workflowRemoveHost(a)

@@ -727,12 +727,6 @@ function ModifyItem(props) {
       }      
     }
   }
- 
-  const returnCol = () => {
-    if (props.items === 'hosts') {
-      return hostsCol
-    }
-  }
 
   //ONCLOSE
   const closeModal = () => {
@@ -891,61 +885,7 @@ function ModifyItem(props) {
 
           { !loading && !response &&
             <React.Fragment>
-              {props.items === 'hosts' ?
-                <React.Fragment>
-                  <Row>
-                    <Col span={1}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                    </Col>
-                    <Col span={4}>
-                      {createElement('input', 'name')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col span={1}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                    </Col>
-                    <Col span={4}>
-                      {createElement('input', 'address')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Divider/>
-
-                  {createElement('button', '', '', '', 'recordAdd')}
-
-                  <br/>
-                  <br/>
-                  <Table
-                    columns={returnCol()}
-                    dataSource={interfaces}
-                    bordered
-                    rowKey="id"
-                    scroll={{x: 'auto'}}
-                    pagination={false}
-                    style={{marginBottom: 10}}
-                  />
-
-                  <br/>
-
-                  <Row>
-                    <Col offset={11} span={2}>
-                      <Button 
-                        type="primary"
-                        disable={!commit} 
-                        onClick={() => validation()}
-                      >
-                        Commit
-                      </Button>
-                    </Col>
-                  </Row>
-              
-                </React.Fragment>
-              :
-                props.items === 'networks' ?
+              {props.items === 'networks' ?
                   <React.Fragment>
                     <Row>
                       <Col offset={9} span={1}>
