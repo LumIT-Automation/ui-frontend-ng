@@ -17,7 +17,7 @@ function Manager(props) {
     return author.isSuperAdmin(a)
   }
 
-  isAuthorized = (authorizations, vendor, key) => {
+  const isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
