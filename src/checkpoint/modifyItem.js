@@ -461,7 +461,11 @@ function ModifyItem(props) {
 
     if ((Object.keys(errors).length === 0) && ok) {
       if (props.items === 'groups') {
-        groupModify()
+        if ((props.obj.name !== request.name) || (props.obj.tags && (props.obj.tags !== request.tags))) {
+          await itemModify()
+        }
+        childrenModify()
+        
       } else {
         itemModify()
       }
@@ -487,12 +491,14 @@ function ModifyItem(props) {
       b.data = {
         "new-name": request.name,
         "ipv4-address-first": request['ipv4-address-first'],
-        "ipv4-address-last": request['ipv4-address-last']
+        "ipv4-address-last": request['ipv4-address-last'],
+        "tags": request.tags || []
       }
     }
     else if (props.items === 'groups') {
       b.data = {
         "new-name": request.name,
+        "tags": request.tags || []
       }
     }
     
@@ -525,7 +531,7 @@ function ModifyItem(props) {
     await rest.doXHR(endpoint, props.token, b)
   }
 
-  const groupModify = async() => {
+  const childrenModify = async() => {
     let toAdd = []
     let toRemove = []
 
@@ -603,7 +609,7 @@ function ModifyItem(props) {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${props.obj.uid}/${itemType}/${item}/`, props.token)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${request.uid}/${itemType}/${item}/`, props.token)
     return r
   }
 
@@ -611,7 +617,7 @@ function ModifyItem(props) {
     let r
     let b = {}
     b.data = {
-      [itemTypes]: toAdd,
+      [itemTypes]: toAdd
     }
 
     let rest = new Rest(
@@ -629,7 +635,7 @@ function ModifyItem(props) {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${props.obj.uid}/${itemTypes}/`, props.token, b)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/group/${request.uid}/${itemTypes}/`, props.token, b)
     return r
   }
 
@@ -695,7 +701,7 @@ function ModifyItem(props) {
     else if (element === 'textArea') {
       return (
         <Input.TextArea
-          rows={12}
+          rows={6}
           placeholder='tag1, tag2'
           defaultValue={request[key]}
           //ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
@@ -995,6 +1001,16 @@ function ModifyItem(props) {
                       <br/>
 
                       <Row>
+                        <Col offset={9} span={1}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
+                        </Col>
+                        <Col span={6}>
+                          {createElement('textArea', 'tags')}
+                        </Col>
+                      </Row>
+                      <br/>
+
+                      <Row>
                         <Col offset={11} span={2}>
                           <Button 
                             type="primary"
@@ -1015,6 +1031,16 @@ function ModifyItem(props) {
                           </Col>
                           <Col span={4}>
                             {createElement('input', 'name')}
+                          </Col>
+                        </Row>
+                        <br/>
+
+                        <Row>
+                          <Col offset={9} span={1}>
+                            <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
+                          </Col>
+                          <Col span={6}>
+                            {createElement('textArea', 'tags')}
                           </Col>
                         </Row>
                         <br/>
