@@ -55,7 +55,7 @@ function Manager(props) {
         setLoading(false)
       }
     )
-    await rest.doXHR("f5/assets/", props.token)
+    await rest.doXHR("f5/assets/?includeDr", props.token)
   }
 
   const authorizatorsSA = a => {

@@ -36,9 +36,6 @@ const checkpointSlice = createSlice({
         state.domain = action.payload
       },
 
-      hostsLoading: (state, action) => {
-        state.hostsLoading = action.payload
-      },
       hosts: (state, action) => {
         state.hosts = action.payload.data.items
       },
@@ -46,34 +43,16 @@ const checkpointSlice = createSlice({
         state.fetchItems = action.payload
       },
 
-      groupsLoading: (state, action) => {
-        state.groupsLoading = action.payload
-      },
       groups: (state, action) => {
         state.groups = action.payload.data.items
       },
-      groupsFetch: (state, action) => {
-        state.groupsFetch = action.payload
-      },
 
-      networksLoading: (state, action) => {
-        state.networksLoading = action.payload
-      },
       networks: (state, action) => {
         state.networks = action.payload.data.items
       },
-      networksFetch: (state, action) => {
-        state.networksFetch = action.payload
-      },
 
-      addressRangesLoading: (state, action) => {
-        state.addressRangesLoading = action.payload
-      },
       addressRanges: (state, action) => {
         state.addressRanges = action.payload.data.items
-      },
-      addressRangesFetch: (state, action) => {
-        state.addressRangesFetch = action.payload
       },
 
       datacenterServersLoading: (state, action) => {
@@ -138,21 +117,10 @@ export const {
 
   fetchItems,
 
-  hostsLoading,
   hosts,
-  
-
-  groupsLoading,
   groups,
-  groupsFetch,
-
-  networksLoading,
   networks,
-  networksFetch,
-
-  addressRangesLoading,
   addressRanges,
-  addressRangesFetch,
 
   datacenterServersLoading,
   datacenterServers,
