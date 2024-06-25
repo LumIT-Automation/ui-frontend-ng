@@ -1,31 +1,30 @@
 import React from 'react'
-import {useRef} from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../../concerto/error'
+import Rest from '../_helpers/Rest'
+import Validators from '../_helpers/validators'
+import Error from '../concerto/error'
 
 import {
   err
-} from '../../concerto/store'
+} from '../concerto/store'
 
 import {
-  application_sitesFetch,
-} from '../store'
+  fetchItems,
+} from './store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
 
-import { LoadingOutlined, EditOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { LoadingOutlined, PlusOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const modifyIcon = <EditOutlined style={{color: 'white' }}  />
+const addIcon = <PlusOutlined style={{color: 'white' }}  />
 const deleteIcon = <CloseCircleOutlined/>
 
 
 
-class Modify extends React.Component {
+class Add extends React.Component {
 
   constructor(props) {
     super(props);
@@ -132,30 +131,32 @@ class Modify extends React.Component {
 
   details = async () => {
     await this.setState({visible: true})
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    //request.name = this.props.obj
-    request.name = this.props.obj.name
-    request.description = this.props.obj.description
 
-    let list = []
-    this.props.obj['url-list'].forEach( o => {
-      list.push({url: o})
-    })
-    request.urlList = list
-    await this.setState({request: request})
   }
 
   //SETTERS
+  nameSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.name = e.target.value
+    this.setState({request: request})
+  }
+  descriptionSet = e => {
+    let request = JSON.parse(JSON.stringify(this.state.request))
+    request.description = e.target.value
+    this.setState({request: request})
+  }
   urlListInput = async e => {
     let input = e.target.value
     let request = JSON.parse(JSON.stringify(this.state.request))
     let errors = JSON.parse(JSON.stringify(this.state.errors))
+    delete request.urlList
+    delete errors.urlListError
     await this.setState({request: request, errors: errors, input: input})
   }
   urlListSet = async () => {
     let input = JSON.parse(JSON.stringify(this.state.input))
     let request = JSON.parse(JSON.stringify(this.state.request))
-    let list=[], nlist=[], urlsList=[], actualUrls=[]
+    let list=[], nlist=[], urlsList=[]
     let regexp = new RegExp(/^[*]/g);
 
     try {
@@ -182,16 +183,8 @@ class Modify extends React.Component {
         }
       });
 
+      let unique = [...new Set(nlist)];
 
-      request.urlList.forEach((item, i) => {
-        actualUrls.push(item.url)
-      });
-
-      urlsList = actualUrls.concat(nlist)
-
-      let unique = [...new Set(urlsList)];
-
-      urlsList = []
       unique.sort().forEach((item, i) => {
         urlsList.push({url: item})
       });
@@ -203,18 +196,6 @@ class Modify extends React.Component {
     }
 
     await this.setState({request: request})
-  }
-
-  urlSet = async obj => {
-    await this.setState({url: obj.url})
-  }
-
-  urlModify = async value => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let item
-    item = request.urlList.find( o => o.url === this.state.url )
-    item.url = value
-    await this.setState({url: value, request: request})
   }
 
   removeUrl = async obj => {
@@ -238,6 +219,22 @@ class Modify extends React.Component {
     let validators = new Validators()
     let regexp = new RegExp(/^[*]/g);
 
+    if (!request.name) {
+      errors.nameError = true
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.nameError
+      this.setState({errors: errors})
+    }
+    if (!request.description) {
+      errors.descriptionError = true
+      this.setState({errors: errors})
+    }
+    else {
+      delete errors.descriptionError
+      this.setState({errors: errors})
+    }
     if (!request.urlList) {
       errors.urlListError = true
       this.setState({errors: errors})
@@ -257,7 +254,10 @@ class Modify extends React.Component {
           await this.setState({errors: errors})
         }
       }
+
+
     }
+
     return errors
   }
 
@@ -265,46 +265,50 @@ class Modify extends React.Component {
     await this.validationCheck()
 
     if (Object.keys(this.state.errors).length === 0) {
-      this.application_siteModify()
+      this.application_siteAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  application_siteModify = async () => {
+  application_siteAdd = async () => {
     let request = Object.assign({}, this.state.request)
     let list = []
-    request.urlList.forEach( o => {
+    request.urlList.map( o => {
       list.push(o.url)
     })
     let b = {}
     b.data = {
+      "name": this.state.request.name,
+      "description": this.state.request.description,
       "url-list": list,
+      "primary-category": "Custom_Application_Site",
+      "urls-defined-as-regular-expression": false
     }
 
     this.setState({loading: true})
 
     let rest = new Rest(
-      "PATCH",
+      "POST",
       resp => {
         this.setState({loading: false, response: true}, () => this.response())
       },
       error => {
         error = Object.assign(error, {
-          component: 'application_sitesModify',
+          component: 'application_sitesAdd',
           vendor: 'checkpoint',
-          errorType: 'application_siteModifyError'
+          errorType: 'application_siteAddError'
         })
         this.props.dispatch(err(error))
         this.setState({loading: false, response: false})
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-site/${this.props.obj.uid}/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
   }
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(application_sitesFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 
@@ -313,8 +317,7 @@ class Modify extends React.Component {
     this.setState({
       visible: false,
       errors: {},
-      request: {},
-      input: []
+      request: {}
     })
   }
 
@@ -322,7 +325,7 @@ class Modify extends React.Component {
   render() {
 
     let errors = () => {
-      if (this.props.error && this.props.error.component === 'application_sitesModify') {
+      if (this.props.error && this.props.error.component === 'application_sitesAdd') {
         return <Error error={[this.props.error]} visible={true}/> 
       }
     }
@@ -335,16 +338,6 @@ class Modify extends React.Component {
         dataIndex: 'url',
         key: 'url',
         ...this.getColumnSearchProps('url'),
-        render: (name, obj)  => (
-          <Input
-            placeholder={obj.url}
-            value={obj.url}
-            style={{ width: '150px' }}
-            onFocus={() => this.urlSet(obj)}
-            onChange={e => this.urlModify(e.target.value)}
-            onPressEnter={null}
-          />
-        ),
       },
       {
         title: 'Remove',
@@ -359,10 +352,10 @@ class Modify extends React.Component {
     return (
       <Space direction='vertical'>
 
-        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
 
         <Modal
-          title={<p style={{textAlign: 'center'}}>Modify urls</p>}
+          title={<p style={{textAlign: 'center'}}>ADD CUSTOM APPLICATION SITES</p>}
           centered
           destroyOnClose={true}
           visible={this.state.visible}
@@ -376,7 +369,7 @@ class Modify extends React.Component {
           { !this.state.loading && this.state.response &&
             <Result
                status="success"
-               title="Custom application sites modified"
+               title="Custom application sites added"
              />
           }
           { !this.state.loading && !this.state.response &&
@@ -386,7 +379,11 @@ class Modify extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
                 </Col>
                 <Col span={16}>
-                  <Input defaultValue={this.state.request.name} style={{width: 250}} disabled/>
+                  {this.state.errors.nameError ?
+                    <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.nameSet(e)} />
+                  :
+                    <Input defaultValue={this.state.request.name} style={{width: 250}} onChange={e => this.nameSet(e)} />
+                  }
                 </Col>
               </Row>
               <br/>
@@ -396,7 +393,11 @@ class Modify extends React.Component {
                   <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
                 </Col>
                 <Col span={16}>
-                  <Input defaultValue={this.state.request.description} style={{width: 250}} disabled/>
+                  {this.state.errors.descriptionError ?
+                    <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.descriptionSet(e)} />
+                  :
+                    <Input defaultValue={this.state.request.description} style={{width: 250}} onChange={e => this.descriptionSet(e)} />
+                  }
                 </Col>
               </Row>
 
@@ -463,7 +464,7 @@ class Modify extends React.Component {
               <Row>
                 <Col offset={10} span={3}>
                   <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Modify Custom Application Sites
+                    Add Custom Application Sites
                   </Button>
                 </Col>
               </Row>
@@ -485,4 +486,4 @@ export default connect((state) => ({
 
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain,
-}))(Modify);
+}))(Add);

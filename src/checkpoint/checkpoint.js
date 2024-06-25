@@ -92,10 +92,11 @@ function Manager(props) {
             >
               {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'assets_get') ?
                 <React.Fragment>
-                  <Radio.Button value={'hosts'}>hosts</Radio.Button>
-                  <Radio.Button value={'networks'}>networks</Radio.Button>
-                  <Radio.Button value={'addressRanges'}>address ranges</Radio.Button>
-                  <Radio.Button value={'groups'}>groups</Radio.Button>
+                  <Radio.Button value={'hosts'}>Hosts</Radio.Button>
+                  <Radio.Button value={'networks'}>Networks</Radio.Button>
+                  <Radio.Button value={'address-ranges'}>Address ranges</Radio.Button>
+                  <Radio.Button value={'groups'}>Groups</Radio.Button>
+                  <Radio.Button value={'application-sites'}>Application sites</Radio.Button>
                 </React.Fragment>
               :
                 null

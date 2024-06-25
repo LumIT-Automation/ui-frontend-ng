@@ -46,10 +46,9 @@ function AssetSelector(props) {
     assetsGet()
   }, [] );
 
+  //UPDATE
   useEffect( () => { 
     if (assets) {
-      //let envList = await environmentList()
-      console.log(assets)
       const list = assets.map( e => { return e.environment })
       const newList = list.filter((v, i, a) => a.indexOf(v) === i);
       setEnvironments(newList)
@@ -68,6 +67,7 @@ function AssetSelector(props) {
     }
   }, [asset] );
 
+  //UNMOUNT
   useEffect( () => () => {
     console.log("unmount")
     setEnvironments(null)
@@ -82,6 +82,8 @@ function AssetSelector(props) {
     props.dispatch(proofpointAsset(null))
   }, [] );
 
+  
+  //GET
   const assetsGet = async () => {
     let endpoint 
 
@@ -107,6 +109,48 @@ function AssetSelector(props) {
       }
     )
     await rest.doXHR(endpoint, props.token)
+  }
+
+  const domainsGet = async () => {
+    if (!props.domain) {
+      setDomainsLoading(true)
+      let rest = new Rest(
+        "GET",
+        resp => {
+          setDomains(resp.data.items)
+        },
+        error => {
+          error = Object.assign(error, {
+            component: 'asset selector',
+            vendor: props.vendor,
+            errorType: 'domainsError'
+          })
+          props.dispatch(err(error))
+        }
+      )
+      await rest.doXHR(`checkpoint/${asset.id}/domains/`, props.token)
+      setDomainsLoading(false)
+    }
+  }
+
+  const partitionsGet = async () => {
+    setPartitionsLoading(true)
+    let rest = new Rest(
+      "GET",
+      resp => {
+        setPartitions(resp.data.items)
+      },
+      error => {
+        error = Object.assign(error, {
+          component: 'asset selector',
+          vendor: props.vendor,
+          errorType: 'partitionsError'
+        })
+        props.dispatch(err(error))
+      }
+    )
+    await rest.doXHR(`f5/${asset.id}/partitions/`, props.token)
+    setPartitionsLoading(false)
   }
 
   const environmentSet = async e => {
@@ -172,47 +216,7 @@ function AssetSelector(props) {
     
   }
 
-  const domainsGet = async () => {
-    if (!props.domain) {
-      setDomainsLoading(true)
-      let rest = new Rest(
-        "GET",
-        resp => {
-          setDomains(resp.data.items)
-        },
-        error => {
-          error = Object.assign(error, {
-            component: 'asset selector',
-            vendor: props.vendor,
-            errorType: 'domainsError'
-          })
-          props.dispatch(err(error))
-        }
-      )
-      await rest.doXHR(`checkpoint/${asset.id}/domains/`, props.token)
-      setDomainsLoading(false)
-    }
-  }
 
-  const partitionsGet = async () => {
-    setPartitionsLoading(true)
-    let rest = new Rest(
-      "GET",
-      resp => {
-        setPartitions(resp.data.items)
-      },
-      error => {
-        error = Object.assign(error, {
-          component: 'asset selector',
-          vendor: props.vendor,
-          errorType: 'partitionsError'
-        })
-        props.dispatch(err(error))
-      }
-    )
-    await rest.doXHR(`f5/${asset.id}/partitions/`, props.token)
-    setPartitionsLoading(false)
-  }
 
   const domainSet = async d => {
     await props.dispatch(checkpointDomain(d))

@@ -13,7 +13,9 @@ import Error from '../concerto/error'
 import Authorizators from '../_helpers/authorizators'
 
 import AddItem from './addItem'
+import AddASItem from './addApplicationSite'
 import ModifyItem from './modifyItem'
+import ModifyASItem from './modifyApplicationSite'
 
 import {
   fetchItems,
@@ -198,7 +200,7 @@ function ItemsView(props) {
         setLoading(false)
       }
     }
-    else if (props.items === 'addressRanges') {
+    else if (props.items === 'address-ranges') {
       let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
@@ -248,6 +250,32 @@ function ItemsView(props) {
         setLoading(false)
       }
     }
+
+    else if (props.items === 'application-sites') {
+      let fetched = await dataGet(props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'checkpoint',
+          errorType: `${props.items}Error`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
+          id++
+          return item
+        })
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
+      }
+    }
   }
 
   const dataGet = async (assetId, entities) => {
@@ -255,10 +283,6 @@ function ItemsView(props) {
     let r
 
     endpoint = `${props.vendor}/${assetId}/${props.domain}/${props.items}/`
-
-    if (props.items === 'addressRanges') {
-      endpoint = `${props.vendor}/${assetId}/${props.domain}/address-ranges/`
-    }
 
     let rest = new Rest(
       "GET",
@@ -312,6 +336,8 @@ function ItemsView(props) {
   }
 
   /*
+    This component, at the moment, doesn't add or modify so it has non sense validate. 
+
     Validate data before send them to backend
   */
 
@@ -343,7 +369,7 @@ function ItemsView(props) {
       await setItems(items)
       return errors
     }
-    else if (props.items === 'addressRanges') {
+    else if (props.items === 'address-ranges') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -354,6 +380,16 @@ function ItemsView(props) {
       return errors
     }
     else if (props.items === 'groups') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+      }
+      await setItems(items)
+      return errors
+    }
+    else if (props.items === 'application-sites') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -510,9 +546,6 @@ function ItemsView(props) {
   const itemDelete = async (item, type) => {
     let endpoint = `${props.vendor}/${props.asset.id}/${props.domain}/${props.item}/${item.uid}/`
 
-    if (props.items === 'addressRanges') {
-      endpoint = `${props.vendor}/${props.asset.id}/${props.domain}/address-range/${item.uid}/`
-    }
     let r
     let rest = new Rest(
       "DELETE",
@@ -719,12 +752,15 @@ function ItemsView(props) {
     else if (props.items === 'networks') {
       return networksColumns
     }
-    else if (props.items === 'addressRanges') {
+    else if (props.items === 'address-ranges') {
       return addressRangesColumns
     }
     else if (props.items === 'groups') {
       return groupsColumns
     }
+    else if (props.items === 'application-sites') {
+      return applicationSitesColumns
+    }    
   }
 
   const hostsColumns = [
@@ -1030,6 +1066,198 @@ function ItemsView(props) {
     }
   ];
 
+  const applicationSitesColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Domain',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['domain', 'name'],
+      key: 'domain',
+      ...getColumnSearchProps(['domain', 'name']),
+    },
+    {
+      title: 'Type',
+      align: 'center',
+      dataIndex: 'type',
+      key: 'type',
+      ...getColumnSearchProps('type'),
+    },
+    {
+      title: 'Primary-category',
+      align: 'center',
+      dataIndex: 'primary-category',
+      key: 'primary-category',
+      ...getColumnSearchProps('primary-category'),
+    },
+    {
+      title: 'Risk',
+      align: 'center',
+      dataIndex: 'risk',
+      key: 'risk',
+      ...getColumnSearchProps('risk'),
+    },
+    {
+      title: 'Comments',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'comments',
+      key: 'comments',
+      ...getColumnSearchProps('comments'),
+    },
+    {
+      title: 'Description',
+      align: 'center',
+      dataIndex: 'description',
+      key: 'description',
+      ...getColumnSearchProps('description'),
+    },
+    {
+      title: 'User-defined',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'user-defined',
+      key: 'user-defined',
+      ...getColumnSearchProps('user-defined'),
+    },
+    {
+      title: 'Creation-time',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['meta-info', 'creation-time', 'iso-8601'],
+      key: 'creation-time',
+    },
+    {
+      title: 'Creator',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['meta-info', 'creator'],
+      key: 'creator',
+      ...getColumnSearchProps(['meta-info', 'creator']),
+    },
+    {
+      title: 'Last-modifier',
+      align: 'center',
+      dataIndex: ['meta-info', 'last-modifier'],
+      key: 'last-modifier',
+      ...getColumnSearchProps(['meta-info', 'last-modifier']),
+    },
+    {
+      title: 'Last-modify-time',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['meta-info', 'last-modify-time', 'iso-8601'],
+      key: 'last-modify-time'
+    },
+    {
+      title: 'Lock',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['meta-info', 'lock'],
+      key: 'lock',
+      ...getColumnSearchProps(['meta-info', 'lock']),
+    },
+    {
+      title: 'Url-list',
+      align: 'center',
+      dataIndex: 'url-list',
+      key: 'url-list',
+      render: (name, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_modify`)) ? 
+          <ModifyASItem name={name} obj={obj} />
+          :
+          '-'
+        }
+        </Space>
+      ),
+    },
+    {
+      title: 'Validation-state',
+      align: 'center',
+      width: 'auto',
+      dataIndex: ['meta-info', 'validation-state'],
+      key: 'validation-state',
+      ...getColumnSearchProps(['meta-info', 'validation-state']),
+    },
+    {
+      title: 'Read-only',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'read-only',
+      key: 'read-only',
+      ...getColumnSearchProps('read-only'),
+    },
+    {
+      title: 'Tags',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'tags',
+      key: 'tags',
+      ...getColumnSearchProps('tags'),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    },/*
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          { props.authorizations && (props.authorizations.application_site_delete || props.authorizations.any) ?
+          <Delete name={name} obj={obj} />
+          :
+          '-'
+        }
+        </Space>
+      ),
+    }*/
+  ];
+
   const showErrors = () => {
     if (props.error && props.error.component === 'itemsView') {
       return <Error error={[props.error]} visible={true}/> 
@@ -1053,7 +1281,13 @@ function ItemsView(props) {
           </Radio.Group>
 
           {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.items}_post`) ?
-            <AddItem items={props.items} item={props.item}/>
+            <React.Fragment>
+              {props.items === 'application-sites' ?
+                <AddASItem items={props.items} item={props.item}/>
+              :
+                <AddItem items={props.items} item={props.item}/>
+              }
+            </React.Fragment>
           :
             null
           }
