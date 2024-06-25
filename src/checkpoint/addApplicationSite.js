@@ -14,13 +14,12 @@ import {
   fetchItems,
 } from './store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col, Table, Divider } from 'antd';
 
 import { LoadingOutlined, PlusOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import Highlighter from 'react-highlight-words';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
-const deleteIcon = <CloseCircleOutlined/>
 
 
 
