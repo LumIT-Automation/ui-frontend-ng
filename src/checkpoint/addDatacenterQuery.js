@@ -2,17 +2,17 @@ import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
-import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../../concerto/error'
+import Rest from '../_helpers/Rest'
+import Validators from '../_helpers/validators'
+import Error from '../concerto/error'
 
 import {
   err
-} from '../../concerto/store'
+} from '../concerto/store'
 
 import {
-  datacenterQuerysFetch,
-} from '../store'
+  fetchItems
+} from './store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox, Divider } from 'antd';
 
@@ -246,7 +246,7 @@ class Add extends React.Component {
 
   response = () => {
     setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(datacenterQuerysFetch(true)), 2030)
+    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
     setTimeout( () => this.closeModal(), 2050)
   }
 

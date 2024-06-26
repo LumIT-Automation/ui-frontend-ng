@@ -98,6 +98,7 @@ function Manager(props) {
                   <Radio.Button value={'groups'}>Groups</Radio.Button>
                   <Radio.Button value={'application-sites'}>Application sites</Radio.Button>
                   <Radio.Button value={'datacenter-servers'}>Datacenter servers</Radio.Button>
+                  <Radio.Button value={'datacenter-queries'}>Datacenter queries</Radio.Button>
                 </React.Fragment>
               :
                 null
@@ -108,7 +109,13 @@ function Manager(props) {
       
             {
               items ?
-                <ItemsView vendor='checkpoint' items={items} item={items ? items.slice(0, -1) : '' }/>
+                <React.Fragment>
+                  {items === 'datacenter-queries' ?
+                    <ItemsView vendor='checkpoint' items={items} item={items ? 'datacenter-query' : '' }/>
+                  :
+                    <ItemsView vendor='checkpoint' items={items} item={items ? items.slice(0, -1) : '' }/>
+                  }
+                </React.Fragment>
               :
                 null
             }
