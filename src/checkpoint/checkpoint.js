@@ -97,6 +97,7 @@ function Manager(props) {
                   <Radio.Button value={'address-ranges'}>Address ranges</Radio.Button>
                   <Radio.Button value={'groups'}>Groups</Radio.Button>
                   <Radio.Button value={'application-sites'}>Application sites</Radio.Button>
+                  <Radio.Button value={'datacenter-servers'}>Datacenter servers</Radio.Button>
                 </React.Fragment>
               :
                 null

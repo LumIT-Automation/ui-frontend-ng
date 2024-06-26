@@ -14,6 +14,7 @@ import Authorizators from '../_helpers/authorizators'
 
 import AddItem from './addItem'
 import AddASItem from './addApplicationSite'
+import AddDSItem from './addDatacenterServer'
 import ModifyItem from './modifyItem'
 import ModifyASItem from './modifyApplicationSite'
 
@@ -276,6 +277,32 @@ function ItemsView(props) {
         setLoading(false)
       }
     }
+
+    else if (props.items === 'datacenter-servers') {
+      let fetched = await dataGet(props.asset.id)
+      if (fetched.status && fetched.status !== 200 ) {
+        let error = Object.assign(fetched, {
+          component: 'itemsView',
+          vendor: 'checkpoint',
+          errorType: `${props.items}Error`
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        let items = fetched.data.items.map(item => {
+          item.existent = true
+          item.isModified = {}
+          item.id = id
+          id++
+          return item
+        })
+        setItems(items)
+        setOriginitems(items)
+        setLoading(false)
+      }
+    }
   }
 
   const dataGet = async (assetId, entities) => {
@@ -390,6 +417,16 @@ function ItemsView(props) {
       return errors
     }
     else if (props.items === 'application-sites') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+      }
+      await setItems(items)
+      return errors
+    }
+    else if (props.items === 'datacenter-servers') {
       for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
@@ -760,7 +797,10 @@ function ItemsView(props) {
     }
     else if (props.items === 'application-sites') {
       return applicationSitesColumns
-    }    
+    }
+    else if (props.items === 'datacenter-servers') {
+      return datacenterServersColumns
+    }
   }
 
   const hostsColumns = [
@@ -1258,6 +1298,55 @@ function ItemsView(props) {
     }*/
   ];
 
+  const datacenterServersColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps('name'),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', `${props.item}_delete`)) ? 
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              }
+            </Space>
+            :
+              '-'
+            
+          }
+        </Space>
+      ),
+    }
+  ];
+
   const showErrors = () => {
     if (props.error && props.error.component === 'itemsView') {
       return <Error error={[props.error]} visible={true}/> 
@@ -1285,7 +1374,13 @@ function ItemsView(props) {
               {props.items === 'application-sites' ?
                 <AddASItem items={props.items} item={props.item}/>
               :
-                <AddItem items={props.items} item={props.item}/>
+                <React.Fragment>
+                  {props.items === 'datacenter-servers' ?
+                    <AddDSItem items={props.items} item={props.item}/>
+                  :
+                    <AddItem items={props.items} item={props.item}/>
+                  }
+                </React.Fragment>
               }
             </React.Fragment>
           :
