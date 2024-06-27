@@ -58,7 +58,6 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-    console.log(this.state)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -922,11 +921,36 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        console.log(e)
         await this.setState({items: items})
       }
 
       if (key === 'session') {
+        value = value.toString()
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+        await this.setState({items: items})
+      }
+
+      if (key === 'monitor') {
+        value = value.toString()
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+        await this.setState({items: items})
+      }
+
+      if (key === 'loadBalancingMode') {
         value = value.toString()
         if (value) {
           e[key] = value
@@ -1114,6 +1138,7 @@ class ItemsView extends React.Component {
   */
 
   validationCheck = async () => {
+    console.log('validationCheck')
     let items = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
@@ -1232,13 +1257,29 @@ class ItemsView extends React.Component {
       await this.setState({items: items})
       return errors
     }
+
+    else if (this.props.items === 'pools') {
+      for (const item of Object.values(items)) {
+        if (!item.name) {
+          item.nameError = true
+          ++errors
+        }
+        if (!item.loadBalancingMode) {
+          item.loadBalancingModeError = true
+          ++errors
+        }
+      }
+      await this.setState({items: items})
+      return errors
+    }
   }
 
   validation = async () => {
     this.setState({disableCommit: true})
     let errors = await this.validationCheck()
-    
+    console.log(errors)
     this.setState({disableCommit: false})
+
     if (errors === 0) {
       this.setState({disableCommit: true})
       this.cudManager()
@@ -1257,6 +1298,7 @@ class ItemsView extends React.Component {
 
     for (const item of Object.values(items)) {
       if (!item.existent) {
+        console.log(item)
         toPost.push(item)
       }
       if (item.toDelete) {
@@ -1342,6 +1384,14 @@ class ItemsView extends React.Component {
           body.data = {
             "name": item.name,
             "type": item.type
+          }
+        }
+
+        if (this.props.items === 'pools') {
+          body.data = {
+            "name": item.name,
+            "monitor": `/${this.props.partition}/${item.monitor}`,
+            "loadBalancingMode": item.loadBalancingMode
           }
         }
 
@@ -1505,11 +1555,6 @@ class ItemsView extends React.Component {
   */
 
   render() {
-
-    let today = new Date().getTime();
-    let thirtyDays = 2592000000
-    let inThirtyDays = new Date(today + thirtyDays);
-
 
     let randomKey = () => {
       return Math.random().toString()
@@ -2154,7 +2199,7 @@ class ItemsView extends React.Component {
           obj.existent ?
             val
           :
-            createElement('select', 'type', this.state.monitorTypes, obj, '')
+            createElement('select', 'monitor', this.state.monitorTypes, obj, '')
         )
       },
       {
@@ -2167,7 +2212,7 @@ class ItemsView extends React.Component {
           obj.existent ?
             val
           :
-            createElement('select', 'type', this.state.loadBalancingModes, obj, '')
+            createElement('select', 'loadBalancingMode', this.state.loadBalancingModes, obj, '')
         )
       },
       {
