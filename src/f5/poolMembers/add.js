@@ -39,6 +39,7 @@ class Add extends React.Component {
   }
 
   componentDidMount() {
+    
   }
 
   shouldComponentUpdate(newProps, newState) {
@@ -46,7 +47,7 @@ class Add extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
-
+    console.log('oooooo')
   }
 
   componentWillUnmount() {

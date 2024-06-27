@@ -58,6 +58,7 @@ class ItemsView extends React.Component {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    console.log(this.state)
     if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
       this.main()
     }
@@ -464,9 +465,10 @@ class ItemsView extends React.Component {
   }
 
   getPoolmembers = async(pool) => {
-    await this.setState({poolmembersloading: true})
     let items = JSON.parse(JSON.stringify(this.state.items))
     let p = items.find(item => item.id === pool.id)
+    p.loading = true
+    await this.setState({items: items})
     let endpoint = `${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${pool.name}/members/`
     let r
     let rest = new Rest(
@@ -479,6 +481,7 @@ class ItemsView extends React.Component {
       }
     )
     await rest.doXHR(endpoint, this.props.token)
+
     if (r.status && r.status !== 200 ) {
       let error = Object.assign(r, {
         component: 'itemsView',
@@ -486,13 +489,11 @@ class ItemsView extends React.Component {
         errorType: 'getPoolmembersError'
       })
       this.props.dispatch(err(error))
-      await this.setState({poolmembersloading: false})
       return
     }
     else {
       let mid = 1 
       p.members = r.data.items
-
       p.members = p.members.map(m => {
         let o = {}
         o.existent = true
@@ -540,7 +541,8 @@ class ItemsView extends React.Component {
       })
 
     }
-    await this.setState({items: items, poolmembersloading: false})
+    p.loading = false
+    await this.setState({items: items})
   }
 
   itemAdd = async (items, type) => {
@@ -559,7 +561,7 @@ class ItemsView extends React.Component {
     let items = JSON.parse(JSON.stringify(this.state.items))
     let item = items.find(item => item.id === obj.id)
 
-    if (item.members.length < 1) {
+    if (item < 1) {
       item.members.push({id:1})
     }
     else {
@@ -625,6 +627,38 @@ class ItemsView extends React.Component {
       let fath = items.find(item => item.id === father.id)
       let origFather = this.state.originitems.find(item => item.id === father.id)
       let m = fath.members.find(m => m.id === record.id)
+      
+      if (key === 'name'){
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          m[key] = value
+          delete m[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          m[key] = ''
+        }
+
+        delete m[`${key}Error`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+  
+        ref.focus()
+      }
+
       if (key === 'address'){
         let start = 0
         let end = 0
@@ -655,6 +689,7 @@ class ItemsView extends React.Component {
   
         ref.focus()
       }
+
       if (key === 'routeDomain') {
         //value could be 0
         value = value.toString()
@@ -691,6 +726,37 @@ class ItemsView extends React.Component {
         delete m[`${key}Error`]
 
         await this.setState({items: items})
+      }
+
+      if (key === 'port'){
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+
+        if (value) {
+          m[key] = value
+          delete m[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          m[key] = ''
+        }
+
+        delete m[`${key}Error`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
+        }
+  
+        ref.focus()
       }
     }
 
@@ -1451,89 +1517,41 @@ class ItemsView extends React.Component {
 
     let createElement = (element, key, choices, obj, action, father) => {
       if (element === 'input') {
-        if (key === 'name') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 200}
-                :
-                  {width: 200}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />          
-          )
+        let width = 200
+        if (key === 'port') {
+          width = 80
         }
-        else if (key === 'address') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 200}
-                :
-                  {width: 200}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj, father)}
-            />          
-          )
-        }
-        else if (key === 'interval') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 80}
-                :
-                  {width: 80}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />          
-          )
-        }
-        else if (key === 'timeout') {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: 80}
-                :
-                  {width: 80}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />
-          )
-        }
-      }
 
-      else if (element === 'file') {
-        return (
-          <React.Fragment>
-            <Input 
-              type="file"
+        if (father) {
+          return (
+            <Input
+              value={obj[key]}
               style=
-                { 
-                  obj[`textError`] ?
-                  {borderColor: `red`, width: 350}
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: width}
                 :
-                  {width: 350}
+                  {width: width}
                 }
-              onChange={e => this.set(key, e.target.files[0], obj)} 
-            />
-            <Card>
-              <p>Name: {obj.fileName}</p>
-              <p>Type: {obj.type}</p>
-              <p>Size: {obj.size} Bytes</p>
-            </Card>    
-          </React.Fragment>    
-        )
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj, father ? father : null)}
+            />          
+          )
+        }
+        else {
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: width}
+                :
+                  {width: width}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+            />          
+          )
+        }
       }
 
       else if (element === 'textarea') {
@@ -1712,8 +1730,14 @@ class ItemsView extends React.Component {
           dataIndex: 'delete',
           key: 'delete',
           render: (val, obj)  => (
-            createElement('button', 'subItemRemove', params[0], obj, 'subItemRemove')
-          ),
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+              :
+                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
+              }
+            </Space>
+          )
         }
       ];
 
@@ -1730,16 +1754,55 @@ class ItemsView extends React.Component {
           ),
         },
         {
-          title: 'Member',
+          title: 'Name',
           align: 'center',
           dataIndex: 'name',
           key: 'name',
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'name', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'Address',
+          align: 'center',
+          dataIndex: 'address',
+          key: 'address',
+          ...this.getColumnSearchProps('address'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'address', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'Port',
+          align: 'center',
+          dataIndex: 'address',
+          key: 'address',
+          ...this.getColumnSearchProps('port'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'port', '', obj, '', params[0])
+          )
         },
         {
           title: 'State',
           align: 'center',
           dataIndex: 'state',
           key: 'state',
+          ...this.getColumnSearchProps('state'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('select', 'state', this.state.nodeSessions, obj, '', params[0])
+          )
         },
         {
           title: 'Session',
@@ -1791,7 +1854,13 @@ class ItemsView extends React.Component {
           dataIndex: 'delete',
           key: 'delete',
           render: (val, obj)  => (
-            createElement('button', 'subItemRemove', params[0], obj, 'subItemRemove')
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+              :
+                createElement('button', 'itemRemove', '', obj, 'itemRemove', params[0])
+              }
+          </Space>
           ),
         }
       ]
@@ -1801,6 +1870,7 @@ class ItemsView extends React.Component {
           <br/>
           <Button
             type="primary"
+            disabled={params[0].members ? false : true}
             onClick={() => this.subItemAdd(params[0])}
           >
             Add member
@@ -1818,7 +1888,7 @@ class ItemsView extends React.Component {
           
           <br/>
           <br/>
-          { this.state.poolmembersloading ?
+          { params[0].loading ?
             <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
           :
             <Table
