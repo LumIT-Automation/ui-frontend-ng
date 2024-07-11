@@ -39,8 +39,8 @@ class ItemsView extends React.Component {
       monitorTypes: [],
       loadBalancingModes: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
       profileTypes: [],
-      items: [],
       expandedKeys: [],
+      states: ['enabled', 'disabled', 'forced offline'],
       nodeSessions: ['user-enabled', 'user-disabled'],
       nodeStates: ['unchecked', 'user-down'],
       errors: {}
@@ -494,49 +494,58 @@ class ItemsView extends React.Component {
       let mid = 1 
       p.members = r.data.items
       p.members = p.members.map(m => {
-        let o = {}
-        o.existent = true
-        o.id = mid
-        mid++
-        o.name = m.name
-        o.state = m.state
-        o.session = m.session
-        o.parentState = m.parentState
+        try {
+          console.log(m)
+          let o = {}
+          o.existent = true
+          o.id = mid
+          mid++
+          o.name = m.name
+          o.address = m.address 
+          o.port = m.fullPath.split(':')
+          o.port = o.port[1]        
+          o.state = m.state
+          o.session = m.session
+          o.parentState = m.parentState
 
-        o.connections = 0
-        o.isMonitored= false
-        o.isLoading = false
-        o.intervalId = null
+          o.connections = 0
+          o.isMonitored= false
+          o.isLoading = false
+          o.intervalId = null
 
-        if (m.state === 'up' && m.session === 'monitor-enabled' && m.parentState === 'enabled') {
-          o.status = 'enabled'
-          o.color = '#90ee90'
+          if (m.state === 'up' && m.session === 'monitor-enabled' && m.parentState === 'enabled') {
+            o.status = 'enabled'
+            o.color = '#90ee90'
+          }
+          else if (m.state === 'up' && m.session === 'user-disabled') {
+            o.status = 'disabled' 
+            o.status = 'color'
+          }
+          else if (m.state === 'checking' && m.session === 'user-disabled') {
+            o.status = 'checking'
+            o.color = 'blue'
+          }
+          else if (m.state === 'down' && m.session === 'monitor-enabled') {
+            o.status = 'checking' 
+            o.color = 'red'
+          }
+          else if (m.state === 'down' && m.session === 'user-enabled') {
+            o.status = 'rechecking'
+            o.color = 'blue'
+          }
+          else if (m.state === 'user-down' && m.session === 'user-disabled') {
+            o.status = 'Force offline'
+            o.color = 'black'
+          }
+          else {
+            o.status = 'other'
+            o.color = 'grey'
+          }
+          return o
         }
-        else if (m.state === 'up' && m.session === 'user-disabled') {
-          o.status = 'disabled' 
-          o.status = 'color'
-        }
-        else if (m.state === 'checking' && m.session === 'user-disabled') {
-          o.status = 'checking'
-          o.color = 'blue'
-        }
-        else if (m.state === 'down' && m.session === 'monitor-enabled') {
-          o.status = 'checking' 
-          o.color = 'red'
-        }
-        else if (m.state === 'down' && m.session === 'user-enabled') {
-          o.status = 'rechecking'
-          o.color = 'blue'
-        }
-        else if (m.state === 'user-down' && m.session === 'user-disabled') {
-          o.status = 'Force offline'
-          o.color = 'black'
-        }
-        else {
-          o.status = 'other'
-          o.color = 'grey'
-        }
-        return o
+        catch (error) {
+          console.log(error)
+        }  
       })
 
     }
@@ -581,6 +590,8 @@ class ItemsView extends React.Component {
   }
 
   subItemRemove = async (subItem, father) => {
+    console.log(subItem)
+    console.log(father)
     let items = JSON.parse(JSON.stringify(this.state.items))
     let item = items.find(item => item.id === father.id)
     let member = item.members.find(m => m.id === subItem.id)
@@ -623,6 +634,7 @@ class ItemsView extends React.Component {
     let items = JSON.parse(JSON.stringify(this.state.items))
 
     if (father) {
+      
       let fath = items.find(item => item.id === father.id)
       let origFather = this.state.originitems.find(item => item.id === father.id)
       let m = fath.members.find(m => m.id === record.id)
@@ -658,7 +670,7 @@ class ItemsView extends React.Component {
         ref.focus()
       }
 
-      if (key === 'address'){
+      else if (key === 'address'){
         let start = 0
         let end = 0
         let ref = this.myRefs[`${record.id}_${key}`]
@@ -689,7 +701,7 @@ class ItemsView extends React.Component {
         ref.focus()
       }
 
-      if (key === 'routeDomain') {
+      else if (key === 'routeDomain') {
         //value could be 0
         value = value.toString()
         let rd = this.state.routeDomains.find(r => r.id == value)
@@ -727,7 +739,7 @@ class ItemsView extends React.Component {
         await this.setState({items: items})
       }
 
-      if (key === 'port'){
+      else if (key === 'port'){
         let start = 0
         let end = 0
         let ref = this.myRefs[`${record.id}_${key}`]
@@ -757,6 +769,24 @@ class ItemsView extends React.Component {
   
         ref.focus()
       }
+      
+      if (JSON.parse(JSON.stringify(fath)) !== JSON.parse(JSON.stringify(origFather))) {
+        fath.childrenModified = true
+        await this.setState({items: items})
+      } else {
+        delete fath.childrenModified
+        await this.setState({items: items})
+      }
+      if (key === 'toDelete') {
+        if (value) {
+          m.toDelete = true
+        }
+        else {
+          delete m.toDelete
+        }
+        await this.setState({items: items})
+      }
+      console.log('set father', father)
     }
 
     else if (record) {
@@ -1268,6 +1298,24 @@ class ItemsView extends React.Component {
           item.loadBalancingModeError = true
           ++errors
         }
+        if (item.members && item.members.length > 0) {
+          item.members.forEach(m => {
+            if (!m.name) {
+              m.nameError = true
+              ++errors
+            }
+            if ( !(validators.ipv4(m.address) || validators.ipv6(m.address) || m.address === 'any6') ) {
+              m.addressError = true
+              ++errors
+            }
+            if (!m.port || !validators.port(m.port)) {
+              m.portError = true
+              ++errors
+            }
+          });
+        }
+
+        //pool members
       }
       await this.setState({items: items})
       return errors
@@ -1298,7 +1346,6 @@ class ItemsView extends React.Component {
 
     for (const item of Object.values(items)) {
       if (!item.existent) {
-        console.log(item)
         toPost.push(item)
       }
       if (item.toDelete) {
@@ -1477,6 +1524,29 @@ class ItemsView extends React.Component {
     this.main()
   }
 
+  /*
+  
+    let b = {}
+    b.data = {
+        "name": `/${this.props.partition}/${m.address}:${m.port}`,
+        "connectionLimit": 0,
+        "dynamicRatio": 1,
+        "ephemeral": "false",
+        "inheritProfile": "enabled",
+        "logging": "disabled",
+        "monitor": "default",
+        "priorityGroup": 0,
+        "rateLimit": "disabled",
+        "ratio": 1,
+        "state": m.state,
+        "session": m.session, 
+        "fqdn": {
+            "autopopulate": "disabled"
+        }
+      }
+  
+  */
+
   itemPost = async (body) => {
     let r
     let rest = new Rest(
@@ -1643,7 +1713,6 @@ class ItemsView extends React.Component {
             </Select>
           )
         }
-
         else {
           return (
             <Select
@@ -1662,7 +1731,7 @@ class ItemsView extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onSelect={event => this.set(key, event, obj)}
+              onSelect={event => this.set(key, event, obj, father)}
             >
               <React.Fragment>
                 {choices.map((c, i) => {
@@ -1682,7 +1751,7 @@ class ItemsView extends React.Component {
         return (
           <Checkbox 
             checked={obj.toDelete}
-            onChange={event => this.set(action, event.target.checked, obj)}
+            onChange={event => this.set(action, event.target.checked, obj, father)}
           />
         )
       }
@@ -1699,10 +1768,11 @@ class ItemsView extends React.Component {
           )
         }
         else if (action === 'subItemRemove') {
+          console.log('èèèèèèèè')
           return (
             <Button
               type='danger'
-              onClick={() => this.subItemRemove(obj, choices)}
+              onClick={() => this.subItemRemove(obj, father)}
             >
               -
             </Button>
@@ -1826,8 +1896,8 @@ class ItemsView extends React.Component {
         {
           title: 'Port',
           align: 'center',
-          dataIndex: 'address',
-          key: 'address',
+          dataIndex: 'port',
+          key: 'port',
           ...this.getColumnSearchProps('port'),
           render: (val, obj)  => (
             obj.existent ?
@@ -1842,12 +1912,6 @@ class ItemsView extends React.Component {
           dataIndex: 'state',
           key: 'state',
           ...this.getColumnSearchProps('state'),
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('select', 'state', this.state.nodeSessions, obj, '', params[0])
-          )
         },
         {
           title: 'Session',
@@ -1856,7 +1920,7 @@ class ItemsView extends React.Component {
           key: 'session',
         },
         {
-          title: 'Member State',
+          title: 'Node State',
           align: 'center',
           dataIndex: 'parentState',
           key: 'parentState',
@@ -1903,7 +1967,7 @@ class ItemsView extends React.Component {
               { obj.existent ? 
                 createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
               :
-                createElement('button', 'itemRemove', '', obj, 'itemRemove', params[0])
+                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
               }
           </Space>
           ),
