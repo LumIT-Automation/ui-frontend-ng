@@ -466,6 +466,8 @@ class ItemsView extends React.Component {
   getPoolmembers = async(pool) => {
     let items = JSON.parse(JSON.stringify(this.state.items))
     let p = items.find(item => item.id === pool.id)
+    let origItems = JSON.parse(JSON.stringify(this.state.originitems))
+    let origP = origItems.find(item => item.id === pool.id)
     p.loading = true
     await this.setState({items: items})
     let endpoint = `${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${pool.name}/members/`
@@ -495,7 +497,6 @@ class ItemsView extends React.Component {
       p.members = r.data.items
       p.members = p.members.map(m => {
         try {
-          console.log(m)
           let o = {}
           o.existent = true
           o.id = mid
@@ -550,7 +551,9 @@ class ItemsView extends React.Component {
 
     }
     p.loading = false
-    await this.setState({items: items})
+    origP.members = p.members 
+
+    await this.setState({items: items, originitems: origItems})
   }
 
   itemAdd = async (items, type) => {
@@ -590,8 +593,6 @@ class ItemsView extends React.Component {
   }
 
   subItemRemove = async (subItem, father) => {
-    console.log(subItem)
-    console.log(father)
     let items = JSON.parse(JSON.stringify(this.state.items))
     let item = items.find(item => item.id === father.id)
     let member = item.members.find(m => m.id === subItem.id)
@@ -770,13 +771,6 @@ class ItemsView extends React.Component {
         ref.focus()
       }
       
-      if (JSON.parse(JSON.stringify(fath)) !== JSON.parse(JSON.stringify(origFather))) {
-        fath.childrenModified = true
-        await this.setState({items: items})
-      } else {
-        delete fath.childrenModified
-        await this.setState({items: items})
-      }
       if (key === 'toDelete') {
         if (value) {
           m.toDelete = true
@@ -786,7 +780,14 @@ class ItemsView extends React.Component {
         }
         await this.setState({items: items})
       }
-      console.log('set father', father)
+
+      if (JSON.stringify(fath.members) === JSON.stringify(origFather.members)) {
+        delete fath.isModified.members
+      }
+      else {
+        fath.isModified.members = true
+      }
+      await this.setState({items: items})
     }
 
     else if (record) {
@@ -1168,7 +1169,6 @@ class ItemsView extends React.Component {
   */
 
   validationCheck = async () => {
-    console.log('validationCheck')
     let items = JSON.parse(JSON.stringify(this.state.items))
     let errors = 0
     let validators = new Validators()
@@ -1325,7 +1325,6 @@ class ItemsView extends React.Component {
   validation = async () => {
     this.setState({disableCommit: true})
     let errors = await this.validationCheck()
-    console.log(errors)
     this.setState({disableCommit: false})
 
     if (errors === 0) {
@@ -1354,6 +1353,7 @@ class ItemsView extends React.Component {
       if (item.isModified && Object.keys(item.isModified).length > 0) {
         toPatch.push(item)
       }
+      
     }
 
     if (toDelete.length > 0) {
@@ -1465,6 +1465,9 @@ class ItemsView extends React.Component {
 
     if (toPatch.length > 0) {
       for (const item of toPatch) {
+        if (this.props.items === 'pools') {
+          continue
+        }
         let body = {}
 
         if (this.props.items === 'monitors') {
@@ -1518,6 +1521,77 @@ class ItemsView extends React.Component {
           await this.setState({items: items})
         }
       }
+
+      if (this.props.items === 'pools') {
+        for (const item of toPatch) {
+          if (item.isModified.members) {
+            for (const m of item.members) {
+              if (m.toDelete) {
+                item.loading = true
+                await this.setState({items: items})
+                let e = await this.memberDelete(m.name, item.name )
+                if (e.status && e.status !== 200 ) {
+                  let error = Object.assign(e, {
+                    component: 'itemsView',
+                    vendor: 'f5',
+                    errorType: 'deleteError'
+                  })
+                  this.props.dispatch(err(error))
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+                else {
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+                
+              }
+              if (!m.existent) {
+                let body = {}
+                body.data = {
+                  "name": `/${this.props.partition}/${m.name}:${m.port}`,
+                  "address": m.address,
+                  "connectionLimit": 0,
+                  "dynamicRatio": 1,
+                  "ephemeral": "false",
+                  "inheritProfile": "enabled",
+                  "logging": "disabled",
+                  "monitor": "default",
+                  "priorityGroup": 0,
+                  "rateLimit": "disabled",
+                  "ratio": 1,
+                  "state": "up",
+                  "fqdn": {
+                      "autopopulate": "disabled"
+                  }
+                }
+
+                item.loading = true
+                await this.setState({items: items})
+
+                let e = await this.memberAdd(body, item.name)
+                if (e.status && e.status !== 201 ) {
+                  let error = Object.assign(e, {
+                    component: 'itemsView',
+                    vendor: 'f5',
+                    errorType: 'postError'
+                  })
+                  this.props.dispatch(err(error))
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+                else {
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+
+              }              
+
+            }
+          }
+        }
+      }
+
     }
 
     this.setState({disableCommit: false})
@@ -1547,7 +1621,38 @@ class ItemsView extends React.Component {
   
   */
 
-  itemPost = async (body) => {
+  memberAdd = async (body, data) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+      
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${data}/members/`, this.props.token, body )
+    return r
+  }
+
+  memberDelete = async (name, poolName) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${poolName}/member/${name}/`, this.props.token )
+    return r
+  }
+
+  itemPost = async (body, type) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1768,7 +1873,6 @@ class ItemsView extends React.Component {
           )
         }
         else if (action === 'subItemRemove') {
-          console.log('èèèèèèèè')
           return (
             <Button
               type='danger'
