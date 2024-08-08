@@ -36,6 +36,7 @@ class Add extends React.Component {
       states: ['enabled', 'disabled', 'forced offline'],
       errors: {},
     };
+
   }
 
   componentDidMount() {
@@ -100,7 +101,27 @@ class Add extends React.Component {
     if (key === 'existentNode') {
       let nodes = JSON.parse(JSON.stringify(this.state.nodes))
       let node = nodes.find(n => n.name === value)
-      await this.setState({node: node, existentNode: node, address: node.address, addressError: ''})
+      await this.setState({node: node, existentNode: node, existentNodeError: '', name: node.name, nameError: '', address: node.address, addressError: ''})
+    }
+
+    if (key === 'name') {
+      let start = 0
+      let end = 0
+      let ref = this.myRefs[`name`]
+      if (ref && ref.input) {
+        start = ref.input.selectionStart
+        end = ref.input.selectionEnd
+      }
+
+      await this.setState({name: value, nameError: '', existentNode: null})
+      ref = this.myRefs[`name`]
+
+      if (ref && ref.input) {
+        ref.input.selectionStart = start
+        ref.input.selectionEnd = end
+      }
+
+      ref.focus()
     }
 
     if (key === 'address') {
@@ -181,7 +202,8 @@ class Add extends React.Component {
   poolMemberAdd = async () => {
     let b = {}
     b.data = {
-        "name": `/${this.props.partition}/${this.state.address}:${this.state.port}`,
+        "name": `/${this.props.partition}/${this.state.name}:${this.state.port}`,
+        "address": this.state.address,
         "connectionLimit": 0,
         "dynamicRatio": 1,
         "ephemeral": "false",
@@ -226,8 +248,13 @@ class Add extends React.Component {
 
   //Close and Error
   closeModal = () => {
+    let cleanState = {};
+    Object.keys(this.state).forEach(x => cleanState[x] = '');
+    this.setState(cleanState);
     this.setState({
       visible: false,
+      states: ['enabled', 'disabled', 'forced offline'],
+      errors: {},
     })
   }
 
@@ -244,7 +271,22 @@ class Add extends React.Component {
       switch (element) {
 
         case 'input':
-          if (key === 'address') {
+          if (key === 'name') {
+            return (
+              <Input
+                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
+                ref={ref => this.myRefs[`name`] = ref}
+                style=
+                {this.state.errors[`${key}Error`] ?
+                  {borderColor: 'red'}
+                :
+                  {}
+                }
+                onChange={event => this.set(event.target.value, key)}
+              />
+            )
+          }
+          else if (key === 'address') {
             return (
               <Input
                 value={this.state[`${key}`] ? this.state[`${key}`] : ''}
@@ -418,6 +460,16 @@ class Add extends React.Component {
                       {createElement('select', 'existentNode', 'nodes')}
                     </Col>
                   }
+                </Col>
+              </Row>
+              <br/>
+
+              <Row>
+                <Col offset={5} span={3}>
+                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+                </Col>
+                <Col span={8}>
+                  {createElement('input', 'name', '')}
                 </Col>
               </Row>
               <br/>

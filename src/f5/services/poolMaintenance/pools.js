@@ -113,7 +113,6 @@ class Pools extends React.Component {
 
 
 
-
   render() {
 
     const columns = [
