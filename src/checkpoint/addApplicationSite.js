@@ -159,13 +159,26 @@ class Add extends React.Component {
     let regexp = new RegExp(/^[*]/g);
 
     try {
-      input = input.replaceAll('http://','');
       input = input.replaceAll('https://','');
+      input = input.replaceAll('http://','');   
+      /*
+        /[\/\\]/: È un'espressione regolare che cerca i caratteri / e \.
+        [\/\\]: Definisce una classe di caratteri che include la barra normale (/) e la barra rovesciata (\). Nota che per la barra rovesciata (\) è necessario un doppio backslash (\\) perché il backslash è un carattere di escape nelle espressioni regolari.
+        g: È un flag globale che indica che la sostituzione deve avvenire su tutte le occorrenze del pattern nella stringa, non solo sulla prima.
+        '': È la stringa di sostituzione, che in questo caso è vuota, quindi i caratteri / e \ vengono rimossi dalla stringa originale.
+      */   
       input = input.replaceAll(/[\/\\]/g,'');
       input = input.replaceAll(/[/\t]/g,' ');
-      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,'');
+      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,' ');
       input = input.replaceAll(/[/\r\n]/g,' ');
       input = input.replaceAll(/[/\n]/g,' ');
+      /*
+        /[/\s]{1,}/g: È una espressione regolare che cerca determinati pattern nella stringa.
+        [/\s]: Cerca qualsiasi carattere che sia una barra (/) o uno spazio (\s).
+        {1,}: Indica che deve trovare uno o più (1 o più) di quei caratteri.
+        g: È il flag per la sostituzione globale, il che significa che sostituirà tutte le occorrenze del pattern trovato nella stringa, non solo la prima.
+        ,'': È il carattere con cui sostituire i pattern trovati. In questo caso, è una virgola.
+      */
       input = input.replace(/[/\s]{1,}/g, ',' )
 
       list = input.split(',')
