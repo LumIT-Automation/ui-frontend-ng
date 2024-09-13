@@ -138,10 +138,13 @@ class Modify extends React.Component {
     request.description = this.props.obj.description
 
     let list = []
-    this.props.obj['url-list'].forEach( o => {
-      list.push({url: o})
-    })
+    if (this.props.obj && this.props.obj['url-list']) {
+      this.props.obj['url-list'].forEach( o => {
+        list.push({url: o})
+      })
+    }
     request.urlList = list
+
     await this.setState({request: request})
   }
 
@@ -167,8 +170,9 @@ class Modify extends React.Component {
       input = input.replaceAll(/[/\r\n]/g,' ');
       input = input.replaceAll(/[/\n]/g,' ');
       input = input.replace(/[/\s]{1,}/g, ',' )
-
+      console.log(input)
       list = input.split(',')
+      console.log(list)
       list = list.forEach(x => {
         if (x.length !== 0) {
           nlist.push(x)
