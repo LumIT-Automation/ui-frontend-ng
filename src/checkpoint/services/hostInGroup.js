@@ -18,7 +18,7 @@ import Highlighter from 'react-highlight-words'
 import { LoadingOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
-const HostInGroup = (props) => {
+function HostInGroup(props) {
   const [visible, setVisible] = useState(false);
   const [changeRequestId, setChangeRequestId] = useState('ITIO-');
   const [groups, setGroups] = useState([]);
@@ -308,7 +308,6 @@ const HostInGroup = (props) => {
         if (toAdd.length > 0) {
           setLoading(true);
           const data = await add(toAdd);
-          console.log(data)
           setLoading(false);
           if (data.status && data.status !== 200) {
             let error = Object.assign(data, {
