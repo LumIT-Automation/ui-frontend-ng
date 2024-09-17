@@ -22,7 +22,7 @@ import CertSVG from '../svg/certificates.svg'
 import ItemsSVG from '../svg/items.svg'
 import VmSVG from '../svg/vm.svg'
 import PermissionsPNG from '../svg/icons8-diritti-utente-50.png'
-import TriggersPNG from '../svg/icons8-priorità-media-50.png'
+//import TriggersPNG from '../svg/icons8-priorità-media-50.png'
 
 const { Sider } = Layout;
 
@@ -58,9 +58,9 @@ function CustomSider(props) {
   const permissionsIcon = () => (
       <img src={PermissionsPNG} alt="PermissionsPNG" width="23" height="23" />
   );
-  const triggersIcon = () => (
+  /*const triggersIcon = () => (
       <img src={TriggersPNG} alt="TriggersPNG" width="21" height="21" />
-  );
+  );*/
 
   //heartIcon = props => {<Icon component={LoadbalancerSVG} {...props} />}
   //  <Icon component={() => (<img src={IpSVG} alt="IpSVG"/>)} />
@@ -186,14 +186,14 @@ function CustomSider(props) {
             null
         }
 
-        { authorizatorsSA(props.authorizations) ?
+        {/* authorizatorsSA(props.authorizations) ?
           <React.Fragment>
             <Menu.Item key="triggers" icon={triggersIcon()}><Link to="/triggers/">TRIGGERS</Link></Menu.Item>
             <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
           </React.Fragment>
         :
           null
-        }
+        */}
 
         { authorizatorsSA(props.authorizations) ?
           <React.Fragment>

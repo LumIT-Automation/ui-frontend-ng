@@ -83,7 +83,7 @@ function Concerto(props) {
                 <Route path='/workflows/' component={Workflow}/>
                 <Route path='/assets/' component={Assets}/>
                 <Route path='/permissions/' component={Permissions}/>
-                <Route path='/triggers/' component={Triggers}/>
+                {/*<Route path='/triggers/' component={Triggers}/>*/}
                 <Route path='/configurations/' component={Configurations}/>
 
               </Switch>
