@@ -10,7 +10,6 @@ const Error = (props) => {
   const [errorType, setErrorType] = useState('');
 
   useEffect(() => {
-    console.log(props.error)
     if (props.error && props.error[0]) {
       setComponent(props.error[0].component);
       setVendor(props.error[0].vendor);
@@ -19,7 +18,6 @@ const Error = (props) => {
   }, []);
 
   useEffect(() => {
-    console.log(props.error)
     if (props.error && props.error[0]) {
       setComponent(props.error[0].component);
       setVendor(props.error[0].vendor);
