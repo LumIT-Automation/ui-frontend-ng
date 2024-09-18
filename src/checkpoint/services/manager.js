@@ -1,109 +1,82 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+import React, { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import 'antd/dist/antd.css';
 
-import Rest from '../../_helpers/Rest'
-import Error from '../../concerto/error'
+import Rest from '../../_helpers/Rest';
+import Error from '../../concerto/error';
 
 import {
   err
-} from '../../concerto/store'
+} from '../../concerto/store';
 
 import {
   assets,
-} from '../store'
+} from '../store';
 
-import VpnToServices from './vpnToServices'
-import VpnToHost from './vpnToHost'
-import HostInGroup from './hostInGroup'
-import UrlInApplicationSite from './urlInApplicationSite'
-import { Row, Col } from 'antd'
+import VpnToServices from './vpnToServices';
+import VpnToHost from './vpnToHost';
+import HostInGroup from './hostInGroup';
+import UrlInApplicationSite from './urlInApplicationSite';
+import { Row, Col } from 'antd';
 
+function Manager(props) {
 
-
-class Manager extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      if (!this.props.error && !this.props.assets) {
-        this.assetsGet()
+  useEffect(() => {
+    if (props.authorizations && (props.authorizations.assets_get || props.authorizations.any)) {
+      if (!props.error && !props.assets) {
+        assetsGet();
       }
     }
-  }
+  }, [props.authorizations, props.error, props.assets]);
 
-  shouldComponentUpdate(newProps, newState) {
-      return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-
-  assetsGet = async () => {
+  const assetsGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(assets( resp ))
+        props.dispatch(assets(resp));
       },
       error => {
         error = Object.assign(error, {
           component: 'cpServiceManager',
           vendor: 'checkpoint',
           errorType: 'assetsError'
-        })
-        this.props.dispatch(err(error))
+        });
+        props.dispatch(err(error));
       }
-    )
-    await rest.doXHR("checkpoint/assets/", this.props.token)
-  }
+    );
+    await rest.doXHR("checkpoint/assets/", props.token);
+  };
 
-
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'cpServiceManager') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  const errors = () => {
+    if (props.error && props.error.component === 'cpServiceManager') {
+      return <Error error={[props.error]} visible={true} />;
     }
+  };
 
-    return (
-      <React.Fragment>
-        <Row>
-          <Col span={4} offset={2}>
-            <VpnToServices/>
-          </Col>
-          <Col span={4} offset={2}>
-            <VpnToHost/>
-          </Col>
-          <Col span={4} offset={2}>
-            <HostInGroup/>
-          </Col>
-          <Col span={4} offset={2}>
-            <UrlInApplicationSite/>
-          </Col>
-        </Row>
-
-        {errors()}
-
-      </React.Fragment>
-    )
-  }
-}
+  return (
+    <React.Fragment>
+      <Row>
+        <Col span={4} offset={2}>
+          <VpnToServices />
+        </Col>
+        <Col span={4} offset={2}>
+          <VpnToHost />
+        </Col>
+        <Col span={4} offset={2}>
+          <HostInGroup />
+        </Col>
+        <Col span={4} offset={2}>
+          <UrlInApplicationSite />
+        </Col>
+      </Row>
+      {errors()}
+    </React.Fragment>
+  );
+};
 
 export default connect((state) => ({
   token: state.authentication.token,
   authorizations: state.authorizations.checkpoint,
   error: state.concerto.err,
-
   assets: state.checkpoint.assets,
 }))(Manager);
