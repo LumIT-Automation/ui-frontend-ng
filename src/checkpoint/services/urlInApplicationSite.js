@@ -5,7 +5,6 @@ import 'antd/dist/antd.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
-import CommonFunctions from '../../_helpers/commonFunctions';
 
 import {
   err
@@ -13,9 +12,9 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector';
 
-import { Input, Button, Space, Modal, Spin, Radio, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Alert, Row, Col, Select, Divider, Table} from 'antd';
 import Highlighter from 'react-highlight-words';
-import { LoadingOutlined, ReloadOutlined, SearchOutlined, FormOutlined, CloseCircleOutlined } from '@ant-design/icons';
+import { LoadingOutlined, SearchOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
@@ -252,10 +251,10 @@ function UrlInApplicationSite(props) {
         [\/\\]: Definisce una classe di caratteri che include la barra normale (/) e la barra rovesciata (\). Nota che per la barra rovesciata (\) è necessario un doppio backslash (\\) perché il backslash è un carattere di escape nelle espressioni regolari.
         g: È un flag globale che indica che la sostituzione deve avvenire su tutte le occorrenze del pattern nella stringa, non solo sulla prima.
         '': È la stringa di sostituzione, che in questo caso è vuota, quindi i caratteri / e \ vengono rimossi dalla stringa originale.
-      */   
+      */  
       input = input.replaceAll(/[\/\\]/g, '');
       input = input.replaceAll(/[\t]/g, ' ');
-      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g, ' ');
+      input = input.replaceAll(/[,&£#+()$~%'":;~?!<>{}|@$€^]/g, ' ');
       input = input.replaceAll(/[\r\n]/g, ' ');
       input = input.replaceAll(/[\n]/g, ' ');
       /*
