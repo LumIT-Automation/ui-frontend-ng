@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import 'antd/dist/antd.css';
 
@@ -10,8 +10,7 @@ import { err } from '../../concerto/store';
 import AssetSelector from '../../concerto/assetSelector';
 
 import { Modal, Alert, Row, Col, Input, Result, Button, Select, Spin, Divider, Checkbox } from 'antd';
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
@@ -19,18 +18,27 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 function UpdateCert(props) {
 
   const [visible, setVisible] = useState(false);
+  const [vsLoading, setVsLoading] = useState(false);
   const [virtualServers, setVirtualServers] = useState([]);
   const [virtualServer, setVirtualServer] = useState(null);
+
+  const [clientSSLChecked, setClientSSLChecked] = useState(null);
+  const [clientProileLoading, setClientProileLoading] = useState(false);  
   const [clientProfiles, setClientProfiles] = useState([]);
   const [clientProfile, setClientProfile] = useState(false);
-  const [clientSSLChecked, setClientSSLChecked] = useState(null);
+  const [clientCertName, setClientCertName] = useState('');
+  const [clientCertificate, setClientCertificate] = useState('');
+  const [clientKey, setClientKey] = useState('');
+
   const [serverSSLChecked, setServerSSLChecked] = useState(null);
-  const [errors, setErrors] = useState({});
-  const [certName, setCertName] = useState('');
-  const [certificate, setCertificate] = useState('');
-  const [key, setKey] = useState('');
-  const [vsLoading, setVsLoading] = useState(false);
-  const [profLoading, setProfLoading] = useState(false);
+  const [serverProileLoading, setServerProileLoading] = useState(false);
+  const [serverProfiles, setServerProfiles] = useState([]);
+  const [serverProfile, setServerProfile] = useState(false);
+  const [serverCertName, setServerCertName] = useState('');
+  const [serverCertificate, setServerCertificate] = useState('');
+  const [serverKey, setServerKey] = useState('');
+
+  const [errors, setErrors] = useState({});  
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(false);
 
@@ -42,10 +50,16 @@ function UpdateCert(props) {
   }, [visible, props.asset, props.partition]);
 
   useEffect(() => {
-    if (visible && props.asset && props.partition && virtualServer && (clientSSLChecked)) {
-    getProfiles();
+    if (visible && props.asset && props.partition && virtualServer && clientSSLChecked ) {
+    getProfiles('client');
     }
   }, [clientSSLChecked]);
+
+  useEffect(() => {
+    if (visible && props.asset && props.partition && virtualServer && serverSSLChecked ) {
+    getProfiles('server');
+    }
+  }, [serverSSLChecked]);
 
   const main = async () => {
     try {
@@ -68,23 +82,45 @@ function UpdateCert(props) {
     }
   };
 
-  const getProfiles = async () => {
-    setProfLoading(true);
-    setClientProfile('');
-    const data = await dataGet('', props.partition);
-    setProfLoading(false);
-    console.log(data)
-    if (data.status && data.status !== 200) {
-      const error = { 
-        ...data, 
-        component: 'updateCert', 
-        vendor: 'f5', 
-        errorType: 'clientProfilesError' 
-      };
-      props.dispatch(err(error));
-      return;
+  const getProfiles = async (type) => {
+    if (type === 'client') {
+      setClientProileLoading(true);
+      setClientProfile('');
+      const data = await dataGet('', props.partition);
+      setClientProileLoading(false);
+      console.log(data)
+      if (data.status && data.status !== 200) {
+        const error = { 
+          ...data, 
+          component: 'updateCert', 
+          vendor: 'f5', 
+          errorType: 'clientProfilesError' 
+        };
+        props.dispatch(err(error));
+        return;
+      }
+      setClientProfiles(data.data.profiles);
     }
-    setClientProfiles(data.data.profiles);
+
+    if (type === 'server') {
+      setServerProileLoading(true);
+      setServerProfile('');
+      const data = await dataGet('', props.partition);
+      setServerProileLoading(false);
+      console.log(data)
+      if (data.status && data.status !== 200) {
+        const error = { 
+          ...data, 
+          component: 'updateCert', 
+          vendor: 'f5', 
+          errorType: 'serverProfilesError' 
+        };
+        props.dispatch(err(error));
+        return;
+      }
+      setServerProfiles(data.data.profiles);
+    }
+    
   };
 
   const dataGet = async (entity, partition) => {
@@ -101,6 +137,9 @@ function UpdateCert(props) {
     if (clientSSLChecked && !clientProfile) {
       await rest.doXHR(`${props.vendor}/${props.asset.id}/${partition}/virtualserver/${virtualServer.name}/?related=policies,profiles&profileType=client-ssl`, props.token);
     }
+    if (serverSSLChecked && !serverProfile) {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${partition}/virtualserver/${virtualServer.name}/?related=policies,profiles&profileType=server-ssl`, props.token);
+    }
     return r;
   };
 
@@ -110,14 +149,23 @@ function UpdateCert(props) {
       setVirtualServer(foundVirtualServer);
     } else if (key === 'clientSSLChecked') {
       setClientSSLChecked(!clientSSLChecked);
+    } else if (key === 'serverSSLChecked') {
+      setServerSSLChecked(!serverSSLChecked);
     } else if (key === 'clientProfile') {
       const foundProfile = clientProfiles.find(p => p.name === value);
       setClientProfile(foundProfile);
+    } else if (key === 'serverProfile') {
+      const foundProfile = serverProfiles.find(p => p.name === value);
+      setServerProfile(foundProfile);
     } else {
       // handle other cases if needed
-      if (key === 'certName') setCertName(value);
-      if (key === 'certificate') setCertificate(value);
-      if (key === 'key') setKey(value);
+      if (key === 'clientCertName') setClientCertName(value);
+      if (key === 'clientCertificate') setClientCertificate(value);
+      if (key === 'clientKey') setClientKey(value);
+
+      if (key === 'serverCertName') setServerCertName(value);
+      if (key === 'serverCertificate') setServerCertificate(value);
+      if (key === 'serverKey') setServerKey(value);
     }
   };
   
@@ -126,25 +174,50 @@ function UpdateCert(props) {
     let updatedErrors = { ...errors };
     let valid = true;
 
-    if (!certName) {
-      updatedErrors.certNameError = true;
-      valid = false
-    } else {
-      delete updatedErrors.certNameError;
+    if (clientSSLChecked) {
+      if (!clientCertName) {
+        updatedErrors.clientCertNameError = true;
+        valid = false
+      } else {
+        delete updatedErrors.clientCertNameError;
+      }
+  
+      if (!clientCertificate) {
+        updatedErrors.clientCertificateError = true;
+        valid = false
+      } else {
+        delete updatedErrors.clientCertificateError;
+      }
+  
+      if (!clientKey) {
+        updatedErrors.clientKeyError = true;
+        valid = false
+      } else {
+        delete updatedErrors.clientKeyError;
+      }
     }
-
-    if (!certificate) {
-      updatedErrors.certificateError = true;
-      valid = false
-    } else {
-      delete updatedErrors.certificateError;
-    }
-
-    if (!key) {
-      updatedErrors.keyError = true;
-      valid = false
-    } else {
-      delete updatedErrors.keyError;
+    
+    if (serverSSLChecked) {
+      if (!serverCertName) {
+        updatedErrors.serverCertNameError = true;
+        valid = false
+      } else {
+        delete updatedErrors.serverCertNameError;
+      }
+  
+      if (!serverCertificate) {
+        updatedErrors.serverCertificateError = true;
+        valid = false
+      } else {
+        delete updatedErrors.serverCertificateError;
+      }
+  
+      if (!serverKey) {
+        updatedErrors.serverKeyError = true;
+        valid = false
+      } else {
+        delete updatedErrors.serverKeyError;
+      }
     }
 
     setErrors(updatedErrors);
@@ -159,42 +232,81 @@ function UpdateCert(props) {
   };
 
   const updateHandler = async () => {
+
     setLoading(true);
-    const update = await updateProfile();
-    if (update.status && update.status !== 200) {
-      const error = { 
-        ...update, 
-        component: 'updateCert', 
-        vendor: 'f5', 
-        errorType: 'updateError' 
-      };
-      setLoading(false);
-      props.dispatch(err(error));
-      return;
+
+    if (clientSSLChecked && clientProfile) {
+      const update = await updateProfile('client');
+      if (update.status && update.status !== 200) {
+        const error = { 
+          ...update, 
+          component: 'updateCert', 
+          vendor: 'f5', 
+          errorType: 'updateClientProfileError' 
+        };
+        setLoading(false);
+        props.dispatch(err(error));
+        return;
+      }
     }
+    
+    if (serverSSLChecked && serverProfile) {
+      const update = await updateProfile('server');
+      if (update.status && update.status !== 200) {
+        const error = { 
+          ...update, 
+          component: 'updateCert', 
+          vendor: 'f5', 
+          errorType: 'updateServerProfileError' 
+        };
+        setLoading(false);
+        props.dispatch(err(error));
+        return;
+      }
+    }
+
     setLoading(false);
+
     setResponse(true);
     setTimeout(() => setResponse(false), 2000);
     setTimeout(() => closeModal(), 2050);
   };
 
-  const updateProfile =  async (file) => {
+  const updateProfile =  async (type) => {
     let body
     let r
 
-    body = {
-      "data": {
-        "virtualServerName": virtualServer.name,
-        "certificate": {
-          "name": certName,
-          "content_base64": btoa(certificate)
-        },
-        "key": {
-          "name": certName,
-          "content_base64": btoa(key)
+    if (type === 'client') {
+      body = {
+        "data": {
+          "virtualServerName": virtualServer.name,
+          "certificate": {
+            "name": clientCertName,
+            "content_base64": btoa(clientCertificate)
+          },
+          "key": {
+            "name": clientCertName,
+            "content_base64": btoa(clientKey)
+          }
         }
       }
     }
+
+    if (type === 'server') {
+      body = {
+        "data": {
+          "virtualServerName": virtualServer.name,
+          "certificate": {
+            "name": serverCertName,
+            "content_base64": btoa(serverCertificate)
+          },
+          "key": {
+            "name": serverCertName,
+            "content_base64": btoa(serverKey)
+          }
+        }
+      }
+    }    
 
     let rest = new Rest(
       "PUT",
@@ -205,14 +317,49 @@ function UpdateCert(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/workflow/profile/client-ssl/${clientProfile.name}/`, props.token, body )
+    if (type === 'client') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/workflow/profile/client-ssl/${clientProfile.name}/`, props.token, body )
+    }
+    if (type === 'server') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/workflow/profile/server-ssl/${serverProfile.name}/`, props.token, body )
+    }
+    
     return r
   }
 
   const closeModal = () => {
+    //const \[\s*\w+\s*,\s*
+    /*
+    const \[ corrisponde alla stringa const [.
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+    \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+    ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+    */
     setVisible(false);
-    setResponse(false);
-    setErrors({});
+    setVsLoading(false);
+    setVirtualServers([]);
+    setVirtualServer(null);
+
+    setClientSSLChecked(null);
+    setClientProileLoading(false);  
+    setClientProfiles([]);
+    setClientProfile(false);
+    setClientCertName('');
+    setClientCertificate('');
+    setClientKey('');
+
+    setServerSSLChecked(null);
+    setServerProileLoading(false);
+    setServerProfiles([]);
+    setServerProfile(false);
+    setServerCertName('');
+    setServerCertificate('');
+    setServerKey('');
+
+  	setErrors({});  
+  	setLoading(false);
+  	setResponse(false);
   };
 
   const errorsComponent = () => {
@@ -320,7 +467,7 @@ function UpdateCert(props) {
 
                 <Row>
                   <Col offset={5} span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ClientSSL Profile:</p>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ClientSSL Profile?</p>
                   </Col>
                   <Col span={7} style={{marginTop: 5}}>
                     {createElement('checkbox', 'clientSSLChecked', '', clientSSLChecked)}
@@ -336,7 +483,7 @@ function UpdateCert(props) {
                       <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Profilo Client SSL:</p>
                     </Col>
                     <Col span={8}>
-                      {profLoading ? (
+                      {clientProileLoading ? (
                         <Spin indicator={spinIcon} style={{ margin: '0 10%' }} />
                       ) : (
                         <Col span={24}>
@@ -351,7 +498,7 @@ function UpdateCert(props) {
                       <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Certificate Name:</p>
                     </Col>
                     <Col span={8}>
-                      {createElement('input', 'certName')}
+                      {createElement('input', 'clientCertName')}
                     </Col>
                   </Row>
                   <br />
@@ -360,7 +507,7 @@ function UpdateCert(props) {
                       <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Certificate:</p>
                     </Col>
                     <Col span={8}>
-                      {createElement('textArea', 'certificate')}
+                      {createElement('textArea', 'clientCertificate')}
                     </Col>
                   </Row>
                   <br />
@@ -369,7 +516,67 @@ function UpdateCert(props) {
                       <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Key:</p>
                     </Col>
                     <Col span={8}>
-                      {createElement('textArea', 'key')}
+                      {createElement('textArea', 'clientKey')}
+                    </Col>
+                  </Row>
+                  <br />
+                  </>
+                  :
+                  null
+                }
+
+                <Row>
+                  <Col offset={5} span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ServerSSL Profile?</p>
+                  </Col>
+                  <Col span={7} style={{marginTop: 5}}>
+                    {createElement('checkbox', 'serverSSLChecked', '', serverSSLChecked)}
+                  </Col>
+                </Row>
+                <br/>
+
+                {
+                  serverSSLChecked ?
+                  <>
+                  <Row>
+                    <Col offset={5} span={3}>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Profilo Server SSL:</p>
+                    </Col>
+                    <Col span={8}>
+                      {serverProileLoading ? (
+                        <Spin indicator={spinIcon} style={{ margin: '0 10%' }} />
+                      ) : (
+                        <Col span={24}>
+                          {createElement('select', 'serverProfile', serverProfiles)}
+                        </Col>
+                      )}
+                    </Col>
+                  </Row>
+                  <br />
+                  <Row>
+                    <Col offset={5} span={3}>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Certificate Name:</p>
+                    </Col>
+                    <Col span={8}>
+                      {createElement('input', 'serverCertName')}
+                    </Col>
+                  </Row>
+                  <br />
+                  <Row>
+                    <Col offset={5} span={3}>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Certificate:</p>
+                    </Col>
+                    <Col span={8}>
+                      {createElement('textArea', 'serverCertificate')}
+                    </Col>
+                  </Row>
+                  <br />
+                  <Row>
+                    <Col offset={5} span={3}>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Key:</p>
+                    </Col>
+                    <Col span={8}>
+                      {createElement('textArea', 'serverKey')}
                     </Col>
                   </Row>
                   <br />
@@ -385,7 +592,7 @@ function UpdateCert(props) {
                     <Button
                       type="primary"
                       shape='round'
-                      disabled={loading || !clientSSLChecked}
+                      disabled={loading}
                       onClick={validation}
                     >
                       Update certificate
