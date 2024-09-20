@@ -20,7 +20,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 function HostInGroup(props) {
   const [visible, setVisible] = useState(false);
-  const [changeRequestId, setChangeRequestId] = useState('ITIO-');
+  const [changeRequestId, setChangeRequestId] = useState('');
   const [groups, setGroups] = useState([]);
   const [group, setGroup] = useState(null);
   const [isGroupHostsFetched, setIsGroupHostsFetched] = useState(false);
@@ -242,7 +242,7 @@ function HostInGroup(props) {
       valid = false;
     }
 
-    if (changeRequestId.length < 11) {
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
       setChangeRequestIdError(true);
       valid = false;
     }

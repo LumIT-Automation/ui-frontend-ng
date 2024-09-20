@@ -21,7 +21,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 function UrlInApplicationSite(props) {
 
   const [visible, setVisible] = useState(false);
-  const [changeRequestId, setChangeRequestId] = useState('ITIO-');
+  const [changeRequestId, setChangeRequestId] = useState('');
   const [applicationSites, setApplicationSites] = useState([]);
   const [applicationSite, setApplicationSite] = useState({});
   const [toRemove, setToRemove] = useState([]);
@@ -320,7 +320,7 @@ function UrlInApplicationSite(props) {
       errorsCopy['change-request-idError'] = true;
     }
 
-    if (changeRequestId.length < 11) {
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
       ok = false;
       errorsCopy['change-request-idError'] = true;
     }
