@@ -20,20 +20,20 @@ function UpdateCert(props) {
   const [visible, setVisible] = useState(false);
   const [vsLoading, setVsLoading] = useState(false);
   const [virtualServers, setVirtualServers] = useState([]);
-  const [virtualServer, setVirtualServer] = useState(null);
+  const [virtualServer, setVirtualServer] = useState({});
 
-  const [clientSSLChecked, setClientSSLChecked] = useState(null);
+  const [clientSSLChecked, setClientSSLChecked] = useState(false);
   const [clientProileLoading, setClientProileLoading] = useState(false);  
   const [clientProfiles, setClientProfiles] = useState([]);
-  const [clientProfile, setClientProfile] = useState(false);
+  const [clientProfile, setClientProfile] = useState({});
   const [clientCertName, setClientCertName] = useState('');
   const [clientCertificate, setClientCertificate] = useState('');
   const [clientKey, setClientKey] = useState('');
 
-  const [serverSSLChecked, setServerSSLChecked] = useState(null);
+  const [serverSSLChecked, setServerSSLChecked] = useState(false);
   const [serverProileLoading, setServerProileLoading] = useState(false);
   const [serverProfiles, setServerProfiles] = useState([]);
-  const [serverProfile, setServerProfile] = useState(false);
+  const [serverProfile, setServerProfile] = useState({});
   const [serverCertName, setServerCertName] = useState('');
   const [serverCertificate, setServerCertificate] = useState('');
   const [serverKey, setServerKey] = useState('');
@@ -51,13 +51,13 @@ function UpdateCert(props) {
 
   useEffect(() => {
     if (visible && props.asset && props.partition && virtualServer && clientSSLChecked ) {
-    getProfiles('client');
+      getProfiles('client');
     }
   }, [clientSSLChecked]);
 
   useEffect(() => {
     if (visible && props.asset && props.partition && virtualServer && serverSSLChecked ) {
-    getProfiles('server');
+      getProfiles('server');
     }
   }, [serverSSLChecked]);
 
@@ -85,10 +85,9 @@ function UpdateCert(props) {
   const getProfiles = async (type) => {
     if (type === 'client') {
       setClientProileLoading(true);
-      setClientProfile('');
-      const data = await dataGet('', props.partition);
+      setClientProfile({});
+      const data = await dataGet(type, props.partition);
       setClientProileLoading(false);
-      console.log(data)
       if (data.status && data.status !== 200) {
         const error = { 
           ...data, 
@@ -104,10 +103,9 @@ function UpdateCert(props) {
 
     if (type === 'server') {
       setServerProileLoading(true);
-      setServerProfile('');
-      const data = await dataGet('', props.partition);
+      setServerProfile({});
+      const data = await dataGet(type, props.partition);
       setServerProileLoading(false);
-      console.log(data)
       if (data.status && data.status !== 200) {
         const error = { 
           ...data, 
@@ -134,10 +132,10 @@ function UpdateCert(props) {
     if (entity === 'virtualservers') {
       await rest.doXHR(`${props.vendor}/${props.asset.id}/${partition}/${entity}/`, props.token);
     }
-    if (clientSSLChecked && !clientProfile) {
+    if (entity === 'client') {
       await rest.doXHR(`${props.vendor}/${props.asset.id}/${partition}/virtualserver/${virtualServer.name}/?related=policies,profiles&profileType=client-ssl`, props.token);
     }
-    if (serverSSLChecked && !serverProfile) {
+    if (entity === 'server') {
       await rest.doXHR(`${props.vendor}/${props.asset.id}/${partition}/virtualserver/${virtualServer.name}/?related=policies,profiles&profileType=server-ssl`, props.token);
     }
     return r;
@@ -339,20 +337,20 @@ function UpdateCert(props) {
     setVisible(false);
     setVsLoading(false);
     setVirtualServers([]);
-    setVirtualServer(null);
+    setVirtualServer({});
 
-    setClientSSLChecked(null);
+    setClientSSLChecked(false);
     setClientProileLoading(false);  
     setClientProfiles([]);
-    setClientProfile(false);
+    setClientProfile({});
     setClientCertName('');
     setClientCertificate('');
     setClientKey('');
 
-    setServerSSLChecked(null);
+    setServerSSLChecked(false);
     setServerProileLoading(false);
     setServerProfiles([]);
-    setServerProfile(false);
+    setServerProfile({});
     setServerCertName('');
     setServerCertificate('');
     setServerKey('');
@@ -393,7 +391,7 @@ function UpdateCert(props) {
           <>
           <Checkbox
             checked={obj}
-            disabled={!virtualServer}
+            disabled={Object.keys(virtualServer).length === 0}
             onChange={event => set(event.target.checked, key)}
           />
           </>
@@ -402,8 +400,6 @@ function UpdateCert(props) {
         break;
       case 'select':
         return (
-          <>
-          {console.log(obj)}
           <Select
             value={`${key}` ? `${key}`?.name : ''}
             showSearch
@@ -421,7 +417,6 @@ function UpdateCert(props) {
               <Select.Option key={index} value={choice.name}>{choice.name}</Select.Option>
             )) : null }
           </Select>
-          </>
         );
       default:
         return null;
@@ -480,7 +475,7 @@ function UpdateCert(props) {
                   <>
                   <Row>
                     <Col offset={5} span={3}>
-                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Profilo Client SSL:</p>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Client SSL Profile:</p>
                     </Col>
                     <Col span={8}>
                       {clientProileLoading ? (
@@ -540,7 +535,7 @@ function UpdateCert(props) {
                   <>
                   <Row>
                     <Col offset={5} span={3}>
-                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Profilo Server SSL:</p>
+                      <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Server SSL Profile:</p>
                     </Col>
                     <Col span={8}>
                       {serverProileLoading ? (
