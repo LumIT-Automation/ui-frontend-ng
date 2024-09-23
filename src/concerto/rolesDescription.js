@@ -1,10 +1,9 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import { Modal, Table, List, Spin} from 'antd'
+import { Modal, Table, List, Spin } from 'antd'
 
 import { QuestionCircleOutlined, LoadingOutlined } from '@ant-design/icons';
-
 
 import Rest from '../_helpers/Rest'
 import Error from './error'
@@ -13,164 +12,136 @@ import {
   err,
 } from './store'
 
-
-
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
+function RolesDescription(props) {
 
+  const [visible, setVisible] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState('');
+  const [request, setRequest] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [rolesAndPrivileges, setRolesAndPrivileges] = useState([]);
 
-class RolesDescription extends React.Component {
+  useEffect(() => {
+    // componentDidMount logic
+    return () => {
+      // componentWillUnmount logic
+    }
+  }, []);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      errors: {},
-      message:'',
-      request: {}
-    };
-  }
+  const details = async () => {
+    setVisible(true);
+    setLoading(true);
 
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = async () => {
-    let fetchedRoles
-    await this.setState({visible: true})
-    await this.setState({loading: true})
-
-    fetchedRoles = await this.dataGet('/roles/?related=privileges')
-    if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
-      let error = Object.assign(fetchedRoles, {
+    const fetchedRoles = await dataGet('/roles/?related=privileges');
+    if (fetchedRoles.status && fetchedRoles.status !== 200) {
+      const error = Object.assign(fetchedRoles, {
         component: 'rolesDescription',
         vendor: 'concerto',
         errorType: 'rolesError'
-      })
-      this.props.dispatch(err(error))
-      await this.setState({loading: false})
-      return
+      });
+      props.dispatch(err(error));
+      setLoading(false);
+      return;
+    } else {
+      setRolesAndPrivileges(fetchedRoles.data.items);
+      setLoading(false);
     }
-    else {
-      await this.setState({rolesAndPrivileges: fetchedRoles.data.items})
-      await this.setState({loading: false})
-    }
-
   }
 
-  dataGet = async (entities) => {
-    let r
+  const dataGet = async (entities) => {
+    let r;
     let rest = new Rest(
       "GET",
-      resp => {
-        r = resp
+      (resp) => {
+        r = resp;
       },
-      error => {
-        r = error
+      (error) => {
+        r = error;
       }
-    )
-    await rest.doXHR(`${this.props.vendor}${entities}`, this.props.token)
-    return r
+    );
+    await rest.doXHR(`${props.vendor}${entities}`, props.token);
+    return r;
   }
 
-  //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-    })
+  const closeModal = () => {
+    setVisible(false);
   }
 
+  const columns = [
+    {
+      title: 'Role',
+      align: 'center',
+      dataIndex: 'role',
+      key: 'role',
+    },
+    {
+      title: 'Description',
+      align: 'center',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Privileges',
+      align: 'center',
+      dataIndex: ['privileges', 'privilege'],
+      key: 'privilege',
+      render: (name, obj) => (
+        <List
+          size="small"
+          dataSource={obj.privileges}
+          renderItem={(item) => <List.Item>{item.privilege ? item.privilege : item}</List.Item>}
+        />
+      )
+    },
+  ];
 
-  render() {
-
-    const columns = [
-      {
-        title: 'Role',
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-      },
-      {
-        title: 'Description',
-        align: 'center',
-        dataIndex: 'description',
-        key: 'description',
-      },
-      {
-        title: 'Privileges',
-        align: 'center',
-        dataIndex: ['privileges', 'privilege'],
-        key: 'privilege',
-        render: (name, obj)  => (
-          <List
-            size="small"
-            dataSource={obj.privileges}
-            renderItem={item => <List.Item >{item.privilege ? item.privilege : item}</List.Item>}
-          />
-        )
-      },
-    ];
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'rolesDescription') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  const renderErrors = () => {
+    if (props.error && props.error.component === 'rolesDescription') {
+      return <Error error={[props.error]} visible={true} />
     }
-
-
-    return (
-      <React.Fragment>
-
-        <div> <QuestionCircleOutlined style={{marginRight: '10px', marginTop: '12px', marginBottom: '12px'}} onClick={() => this.details()} /> Role </div>
-
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>{this.props.vendor} {this.props.title}</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1000}
-          maskClosable={false}
-        >
-          {this.state.loading ?
-            <Spin indicator={spinIcon} style={{margin: '10% 48%'}}/>
-          :
-            <Table
-              columns={columns}
-              dataSource={this.state.rolesAndPrivileges}
-              bordered
-              rowKey="role"
-              scroll={{x: 'auto'}}
-              //pagination={false}
-              pagination={{ pageSize: 10 }}
-              style={{marginBottom: 10}}
-            />
-          }
-        </Modal>
-
-        {this.state.visible ?
-          <React.Fragment>
-            {errors()}
-          </React.Fragment>
-        :
-          null
-        }
-      </React.Fragment>
-
-    )
   }
+
+  return (
+    <React.Fragment>
+
+      <div>
+        <QuestionCircleOutlined style={{ marginRight: '10px', marginTop: '12px', marginBottom: '12px' }} onClick={details} /> Role
+      </div>
+
+      <Modal
+        title={<p style={{ textAlign: 'center' }}>{props.vendor} {props.title}</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={null}
+        onCancel={closeModal}
+        width={1000}
+        maskClosable={false}
+      >
+        {loading ? (
+          <Spin indicator={spinIcon} style={{ margin: '10% 48%' }} />
+        ) : (
+          <Table
+            columns={columns}
+            dataSource={rolesAndPrivileges}
+            bordered
+            rowKey="role"
+            scroll={{ x: 'auto' }}
+            pagination={{ pageSize: 10 }}
+            style={{ marginBottom: 10 }}
+          />
+        )}
+      </Modal>
+
+      {visible && (
+        <React.Fragment>
+          {renderErrors()}
+        </React.Fragment>
+      )}
+    </React.Fragment>
+  )
 }
 
 export default connect((state) => ({

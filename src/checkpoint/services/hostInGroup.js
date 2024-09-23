@@ -6,6 +6,7 @@ import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 import CommonFunctions from '../../_helpers/commonFunctions'
+import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import {
   err
@@ -13,9 +14,8 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Input, Button, Space, Modal, Spin, Radio, Result, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
-import Highlighter from 'react-highlight-words'
-import { LoadingOutlined, ReloadOutlined, SearchOutlined } from '@ant-design/icons';
+import { Input, Button, Space, Modal, Spin, Radio, Alert, Row, Col, Select, Divider, Table, Checkbox } from 'antd';
+import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 function HostInGroup(props) {
@@ -27,10 +27,11 @@ function HostInGroup(props) {
   const [hosts, setHosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [ghLoading, setGhLoading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
   const [groupError, setGroupError] = useState('');
   const [changeRequestIdError, setChangeRequestIdError] = useState('');
+
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
 
   useEffect(() => {
@@ -47,68 +48,6 @@ function HostInGroup(props) {
       setIsGroupHostsFetched(true); // Imposta che è stata chiamata
     }
   }, [group, isGroupHostsFetched]);
-
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string') {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-        } else if (Array.isArray(dataIndex)) {
-          return record[dataIndex[0]][dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase());
-        }
-      } catch (error) {}
-    },
-    onFilterDropdownVisibleChange: (visible) => {
-      if (visible) {
-        setTimeout(() => searchInput.current.select(), 100);
-      }
-    },
-    render: (text) =>
-      searchedColumn === dataIndex ? (
-        <Highlighter highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }} searchWords={[searchText]} autoEscape textToHighlight={text ? text.toString() : ''} />
-      ) : (
-        text
-      ),
-  });
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    setSearchText('');
-  };
 
   const dataGet = async () => {
     setLoading(true);
@@ -387,7 +326,17 @@ function HostInGroup(props) {
       align: 'center',
       dataIndex: 'name',
       key: 'name',
-      ...getColumnSearchProps('name'),
+      //...getColumnSearchProps('name'),
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
       render: (name, obj)  => (
         <React.Fragment>
           {obj.groupMember ? 
@@ -424,7 +373,17 @@ function HostInGroup(props) {
       align: 'center',
       dataIndex: 'ipv4-address',
       key: 'ipv4-address',
-     ...getColumnSearchProps('ipv4-address'),
+      //...getColumnSearchProps('ipv4-address'),
+      ...getColumnSearchProps(
+        'ipv4-address', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
      render: (name, obj)  => (
       <React.Fragment>
         {obj.groupMember ? 
@@ -461,7 +420,17 @@ function HostInGroup(props) {
       align: 'center',
       dataIndex: ['domain', 'name'],
       key: 'domain',
-      ...getColumnSearchProps(['domain', 'name']),
+      //...getColumnSearchProps(['domain', 'name']),
+      ...getColumnSearchProps(
+        ['domain', 'name'], 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
     },
     {
       title: 'Group member',
