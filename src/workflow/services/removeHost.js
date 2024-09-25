@@ -1,486 +1,346 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import 'antd/dist/antd.css';
 
-import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../../concerto/error'
+import Rest from '../../_helpers/Rest';
+import Validators from '../../_helpers/validators';
+import Error from '../../concerto/error';
 
-import {
-  err
-} from '../../concerto/store'
+import { err } from '../../concerto/store';
+import { assets as checkpointAssets } from '../../checkpoint/store';
 
-import { assets as checkpointAssets } from '../../checkpoint/store'
+import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
-import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
-const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
+const RemoveHost = (props) => {
+  const [visible, setVisible] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [request, setRequest] = useState({});
+  const [requests, setRequests] = useState([{ id: 1, assets: [] }]);
+  const [cpAssetsLoading, setCpAssetsLoading] = useState(false);
 
-
-class RemoveHost extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      errors: {},
-      request: {},
-      requests: [
-        {id:1, assets: []}
-      ]
-    };
-  }
-
-  componentDidMount() {
-    //this.checkedTheOnlyAsset()
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.visible === true){
-      if (this.state.requests && this.state.requests.length === 0) {
-        let requests = JSON.parse(JSON.stringify(this.state.requests))
-        if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
-          requests.push({id:1, assets: [this.props.checkpointAssets[0].id]})
-          this.setState({requests: requests})
+  useEffect(() => {
+    if (visible) {
+      if (requests.length === 0) {
+        let newRequests = JSON.parse(JSON.stringify(requests));
+        if (props.checkpointAssets && props.checkpointAssets.length === 1) {
+          newRequests.push({ id: 1, assets: [props.checkpointAssets[0].id] });
+        } else {
+          newRequests.push({ id: 1, assets: [] });
         }
-        else {
-          requests.push({id:1, assets: []})
-          this.setState({requests: requests})
-        }
+        setRequests(newRequests);
       }
     }
-  }
+  }, [visible, requests, props.checkpointAssets]);
 
-  componentWillUnmount() {
-  }
+  const details = async () => {
+    setVisible(true);
+    await main();
+  };
 
-  details = async () => {
-    this.setState({visible: true})
-    this.main()
-  }
-
-  main = async () => {
-    await this.setState({cpAssetsLoading: true})
+  const main = async () => {
+    setCpAssetsLoading(true);
     try {
-      let cpAssets = await this.cpAssetsGet()
-      if (cpAssets.status && cpAssets.status !== 200 ) {
+      let cpAssets = await cpAssetsGet();
+      if (cpAssets.status && cpAssets.status !== 200) {
         let error = Object.assign(cpAssets, {
           component: 'removeHost',
           vendor: 'workflow',
-          errorType: 'checkpointAssetsError'
-        })
-        this.props.dispatch(err(error))
-        return
+          errorType: 'checkpointAssetsError',
+        });
+        props.dispatch(err(error));
+        return;
+      } else {
+        await props.dispatch(checkpointAssets(cpAssets));
       }
-      else {
-        await this.props.dispatch(checkpointAssets( cpAssets ))
-      }
-    } catch(error) {
-      console.log('main error', error)
+    } catch (error) {
+      console.log('main error', error);
     }
-    await this.setState({cpAssetsLoading: false})
-    await this.checkedTheOnlyAsset()
-  }
+    setCpAssetsLoading(false);
+    await checkedTheOnlyAsset();
+  };
 
-  checkedTheOnlyAsset = async () => {
+  const checkedTheOnlyAsset = async () => {
     try {
-      let requests = JSON.parse(JSON.stringify(this.state.requests))
-      if (this.props.checkpointAssets && this.props.checkpointAssets.length === 1) {
-        let assets = []
-        assets.push(this.props.checkpointAssets[0].id)
-        requests.forEach((req, i) => {
-          req.assets = [this.props.checkpointAssets[0].id]
+      let newRequests = JSON.parse(JSON.stringify(requests));
+      if (props.checkpointAssets && props.checkpointAssets.length === 1) {
+        let assets = [props.checkpointAssets[0].id];
+        newRequests.forEach((req) => {
+          req.assets = [props.checkpointAssets[0].id];
         });
       } else {
-        requests.forEach((req, i) => {
+        newRequests.forEach((req) => {
           if (!req.assets) {
-            req.assets = []
+            req.assets = [];
           }
         });
       }
-      await this.setState({requests: requests})
+      setRequests(newRequests);
     } catch (error) {
-        console.log('checkedTheOnlyAsset error', error)
+      console.log('checkedTheOnlyAsset error', error);
     }
-  }
+  };
 
-  cpAssetsGet = async () => {
-    let r
+  const cpAssetsGet = async () => {
+    let r;
     let rest = new Rest(
-      "GET",
-      resp => {
-        r = resp
+      'GET',
+      (resp) => {
+        r = resp;
       },
-      error => {
-        r = error
+      (error) => {
+        r = error;
       }
-    )
-    await rest.doXHR("checkpoint/assets/", this.props.token)
-    return r
-  }
+    );
+    await rest.doXHR('checkpoint/assets/', props.token);
+    return r;
+  };
 
-  setRequests = async () => {
-    let id = 0
-    let n = 0
-    this.state.requests.forEach(r => {
-      if (r.id > id) {
-        id = r.id
+  const addRequest = async () => {
+    let id = requests.reduce((maxId, r) => Math.max(r.id, maxId), 0) + 1;
+    let newRequest = { id };
+    let newRequests = [...requests, newRequest];
+    setRequests(newRequests);
+    await checkedTheOnlyAsset();
+  };
+
+  const removeRequest = (r) => {
+    let newRequests = requests.filter((req) => req.id !== r.id);
+    setRequests(newRequests);
+  };
+
+  const ipSet = (e, id) => {
+    let newRequests = JSON.parse(JSON.stringify(requests));
+    let request = newRequests.find((r) => r.id === id);
+    request.ip = e.target.value;
+    setRequests(newRequests);
+  };
+
+  const assetsSet = (e, requestId, asset) => {
+    let newRequests = JSON.parse(JSON.stringify(requests));
+    let request = newRequests.find((r) => r.id === requestId);
+
+    if (!e) {
+      const index = request.assets.indexOf(asset.id);
+      if (index !== -1) {
+        request.assets.splice(index, 1);
+      }
+    } else {
+      if (!request.assets.includes(asset.id)) {
+        request.assets.push(asset.id);
+      }
+    }
+    setRequests(newRequests);
+  };
+
+  const validate = async () => {
+    let newRequests = JSON.parse(JSON.stringify(requests));
+    let validators = new Validators();
+    let error = false;
+
+    newRequests.forEach((request) => {
+      if (!validators.ipv4(request.ip)) {
+        request.ipError = 'Please input a valid ip';
+        error = true;
+      } else {
+        delete request.ipError;
+      }
+
+      if (request.assets.length < 1) {
+        request.assetsError = 'Please check asset(s)';
+        error = true;
+      } else {
+        delete request.assetsError;
       }
     });
-    n = id + 1
 
-    let r = {id: n}
-    let list = JSON.parse(JSON.stringify(this.state.requests))
-    list.push(r)
-    await this.setState({requests: list})
-    await this.checkedTheOnlyAsset()
-  }
+    setRequests(newRequests);
 
-  removeRequest = r => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let newList = requests.filter(n => {
-      return r.id !== n.id
-    })
-    this.setState({requests: newList})
-  }
-
-  ipSet = async (e, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests.find( r => r.id === id )
-    request.ip = e.target.value
-    await this.setState({requests: requests})
-  }
-
-  assetsSet = async (e, requestId, asset) => {
-    try {
-      let requests = JSON.parse(JSON.stringify(this.state.requests))
-      let request = requests.find( r => r.id === requestId )
-
-      if (!e) {
-        if (request.assets.find( a => a === asset.id )) {
-          const index = request.assets.indexOf(asset.id)
-          request.assets.splice(index, 1)
-        }
-      }
-      else {
-        if (!request.assets.find( a => a === asset.id )) {
-          request.assets.push(asset.id)
-        }
-      }
-      await this.setState({requests: requests})
-
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  validate = async () => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let validators = new Validators()
-    let error = false
-    let list = []
-
-    requests.forEach((request, i) => {
-      if (validators.ipv4(request.ip)) {
-        delete request.ipError
-      }
-      else {
-        request.ipError = 'Please input a valid ip'
-        error = true
-      }
-      if (request.assets.length < 1) {
-        request.assetsError = 'Please check asset(s)'
-        error = true
-      }
-      else {
-        delete request.assetsError
-      }
-      list.push(request)
-    })
-    await this.setState({requests: list})
     if (!error) {
-      this.removeHostHandler()
+      await removeHostHandler();
     }
-  }
+  };
 
-  removeHostHandler = async () => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
+  const removeHostHandler = async () => {
+    let newRequests = JSON.parse(JSON.stringify(requests));
 
-    requests.forEach((request, i) => {
-      delete request.isReleased
-    })
-    this.setState({requests: requests})
+    for (let request of newRequests) {
+      request.isLoading = true;
+      setRequests([...newRequests]);
 
-
-    for await (const request of requests) {
-      request.isLoading = true
-      this.setState({requests: requests})
       try {
-        const resp = await this.removeHost(request)
-        request.isLoading = false
+        const resp = await removeHost(request);
+        request.isLoading = false;
         if (resp.status === 200) {
-          request.isReleased = 'REMOVED'
-          this.setState({requests: requests})
-        }
-        else if (resp.status === 404) {
-          request.isReleased = `${resp.status} NOT FOUND`
-          this.setState({requests: requests})
-        }
-        else if (resp.status === 412) {
-          request.isReleased = `${resp.status} ${resp.message}: IS A GATEWAY`
-          this.setState({requests: requests})
-        }
-        else {
-          request.isReleased = `${resp.status} ${resp.message}`
+          request.isReleased = 'REMOVED';
+        } else {
+          request.isReleased = `${resp.status} ${resp.message}`;
           let error = Object.assign(resp, {
-            component: 'addHost',
+            component: 'removeHost',
             vendor: 'workflow',
-            errorType: 'hostRemoveError'
-          })
-          this.props.dispatch(err(error))
-          this.setState({requests: requests})
+            errorType: 'hostRemoveError',
+          });
+          props.dispatch(err(error));
         }
-      } catch(error) {
-        delete request.isLoading
-        delete request.isReleased
-        console.log(error)
-        this.setState({requests: requests})
+      } catch (error) {
+        console.log(error);
       }
     }
-  }
 
-  removeHost = async request => {
-    let r
-    let b = {}
-    b.data = {
-      "asset": {
-        "checkpoint": request.assets
-       },
-      "ipv4-address": `${request.ip}`
-    }
+    setRequests([...newRequests]);
+  };
+
+  const removeHost = async (request) => {
+    let r;
+    let b = {
+      data: {
+        asset: {
+          checkpoint: request.assets,
+        },
+        'ipv4-address': `${request.ip}`,
+      },
+    };
 
     let rest = new Rest(
-      "PUT",
-      resp => {
-        r = resp
+      'PUT',
+      (resp) => {
+        r = resp;
       },
-      error => {
-        r = error
+      (error) => {
+        r = error;
       }
-    )
-    await rest.doXHR(`workflow/checkpoint/remove-host/`, this.props.token, b )
-    return r
-  }
+    );
+    await rest.doXHR('workflow/checkpoint/remove-host/', props.token, b);
+    return r;
+  };
 
-  //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: [],
-      request: {},
-      requests: []
-    })
-  }
+  const closeModal = () => {
+    setVisible(false);
+    setErrors({});
+    setRequest({});
+    setRequests([]);
+  };
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'removeHost') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorComponent = () => {
+    if (props.error && props.error.component === 'removeHost') {
+      return <Error error={[props.error]} visible={true} />;
     }
+  };
 
-    const requests = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        width: 50,
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        width: 50,
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isReleased}
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        width: 50,
-        key: 'id',
-        name: 'dable',
-        description: '',
-      },
-      {
-        title: 'IP',
-        align: 'center',
-        dataIndex: 'ip',
-        width: 150,
-        key: 'ip',
-        render: (name, obj)  => (
-          <React.Fragment>
-            {obj.ipError ?
-              <React.Fragment>
-                <Input
-                  id='ip'
-                  defaultValue={obj.ip}
-                  onChange={e => this.ipSet(e, obj.id)}
-                />
-                <p style={{color: 'red'}}>{obj.ipError}</p>
-              </React.Fragment>
-            :
-              <Input
-                id='ip'
-                defaultValue={obj.ip}
-                onChange={e => this.ipSet(e, obj.id)}
-              />
-            }
-          </React.Fragment>
-        ),
-      },
-      {
-        title: 'ASSETS',
-        align: 'center',
-        dataIndex: 'assets',
-        width: 150,
-        key: 'assets',
-        render: (name, obj)  => (
-          <React.Fragment>
-            { this.state.cpAssetsLoading ?
-              <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
-            :
-              <React.Fragment>
-                {obj.assetsError ?
-                  <React.Fragment>
-                    {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
-                      return (
-                      <Checkbox
-                        key={i}
-                        onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                        checked={obj && obj.assets && obj.assets.includes(n.id)}
-                      >
-                        {n.fqdn}
-                      </Checkbox>
-                      )
-                    })
-                    :
-                    null
-                    }
-                    <p style={{color: 'red'}}>{obj.assetsError}</p>
-                  </React.Fragment>
-                :
-                  <React.Fragment>
-                    {this.props.checkpointAssets ? this.props.checkpointAssets.map((n, i) => {
-                      return (
-                      <Checkbox
-                        key={i}
-                        onChange={e => this.assetsSet(e.target.checked, obj.id, n)}
-                        checked={obj && obj.assets && obj.assets.includes(n.id)}
-                      >
-                        {n.fqdn}
-                      </Checkbox>
-                      )
-                    })
-                    :
-                    null
-                    }
-                  </React.Fragment>
-                }
-              </React.Fragment>
-            }
-          </React.Fragment>
-        ),
-      },
-      {
-        title: 'Remove request',
-        align: 'center',
-        dataIndex: 'remove',
-        width: 50,
-        key: 'remove',
-        render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRequest(obj)}>
-            -
-          </Button>
-        ),
-      },
-    ]
+  const columns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      width: 50,
+      key: 'loading',
+      render: (name, obj) => (
+        <Space size="small">{obj.isLoading ? <Spin indicator={spinIcon} /> : null}</Space>
+      ),
+    },
+    {
+      title: 'Status',
+      align: 'center',
+      dataIndex: 'status',
+      width: 50,
+      key: 'status',
+      render: (name, obj) => <Space size="small">{obj.isReleased}</Space>,
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      width: 50,
+      key: 'id',
+    },
+    {
+      title: 'IP',
+      align: 'center',
+      dataIndex: 'ip',
+      width: 150,
+      key: 'ip',
+      render: (name, obj) => (
+        <>
+          <Input defaultValue={obj.ip} onChange={(e) => ipSet(e, obj.id)} />
+          {obj.ipError && <p style={{ color: 'red' }}>{obj.ipError}</p>}
+        </>
+      ),
+    },
+    {
+      title: 'ASSETS',
+      align: 'center',
+      dataIndex: 'assets',
+      width: 150,
+      key: 'assets',
+      render: (name, obj) => (
+        <>
+          {cpAssetsLoading ? (
+            <Spin indicator={spinIcon} />
+          ) : (
+            <>
+              {props.checkpointAssets &&
+                props.checkpointAssets.map((n, i) => (
+                  <Checkbox
+                    key={i}
+                    checked={obj.assets.includes(n.id)}
+                    onChange={(e) => assetsSet(e.target.checked, obj.id, n)}
+                  >
+                    {n.fqdn}
+                  </Checkbox>
+                ))}
+              {obj.assetsError && <p style={{ color: 'red' }}>{obj.assetsError}</p>}
+            </>
+          )}
+        </>
+      ),
+    },
+    {
+      title: 'Remove request',
+      align: 'center',
+      dataIndex: 'remove',
+      width: 50,
+      key: 'remove',
+      render: (name, obj) => (
+        <Button type="danger" onClick={() => removeRequest(obj)}>
+          -
+        </Button>
+      ),
+    },
+  ];
 
-    return (
-      <React.Fragment>
+  return (
+    <>
+      <Button type="primary" onClick={details}>
+        REMOVE HOST
+      </Button>
 
-        <Button type="primary" onClick={() => this.details()}>REMOVE HOST</Button>
+      <Modal
+        title="Remove Hosts"
+        centered
+        visible={visible}
+        onOk={validate}
+        onCancel={closeModal}
+        width={1500}
+        maskClosable={false}
+      >
+        <Button type="dashed" onClick={addRequest}>
+          ADD REMOVE HOST REQUEST
+        </Button>
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>REMOVE HOST</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
+        {requests && requests.length > 0 && <Table columns={columns} dataSource={requests} pagination={false} />}
 
-          <React.Fragment>
-            <Button type="primary" onClick={() => this.setRequests()}>
-              +
-            </Button>
-            <br/>
-            <br/>
-            <Table
-              columns={requests}
-              dataSource={this.state.requests}
-              bordered
-              rowKey="id"
-              scroll={{x: 'auto'}}
-              pagination={false}
-              style={{marginBottom: 10}}
-            />
-            <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validate()}>
-              Remove Host
-            </Button>
-            <br/>
-          </React.Fragment>
+        {errorComponent()}
+      </Modal>
+    </>
+  );
+};
 
-        </Modal>
-
-      {this.state.visible ?
-        <React.Fragment>
-          {errors()}
-        </React.Fragment>
-      :
-        null
-      }
-
-    </React.Fragment>
-
-    )
-  }
-}
-
-export default connect((state) => ({
+const mapStateToProps = (state) => ({
   token: state.authentication.token,
-  error: state.concerto.err,
-
+  error: state.concerto.error,
   checkpointAssets: state.checkpoint.assets,
-}))(RemoveHost);
+});
+
+export default connect(mapStateToProps)(RemoveHost);
