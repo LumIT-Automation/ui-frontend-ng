@@ -172,8 +172,6 @@ function AddHost(props) {
     return r;
   };
 
-
-
   let nameSet = (e, id) => {
     let newRequests = [...requests];
     let request = newRequests.find((r) => r.id === id);
@@ -333,7 +331,7 @@ function AddHost(props) {
     setItemRemoved(false)
   };
 
-  let errorMessages = () => {
+  let errorComponent = () => {
     if (props.error && props.error.component === 'addHost') {
       return <Error error={[props.error]} visible={true} />;
     }
@@ -602,7 +600,7 @@ function AddHost(props) {
         destroyOnClose={true}
         visible={visible}
         footer={''}
-        onOk={() => setState({visible: true})}
+        onOk={() => setVisible(true)}
         onCancel={() => closeModal()}
         width={1500}
         maskClosable={false}
@@ -623,7 +621,11 @@ function AddHost(props) {
             pagination={false}
             style={{marginBottom: 10}}
           />
-          <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => validate()}>
+          <Button 
+            type="primary" 
+            style={{float: "right", marginRight: '20px'}} 
+            onClick={() => validate()}
+          >
             Add Host
           </Button>
           <br/>
@@ -633,7 +635,7 @@ function AddHost(props) {
 
     {visible ?
       <React.Fragment>
-        {errorMessages()}
+        {errorComponent()}
       </React.Fragment>
     :
       null

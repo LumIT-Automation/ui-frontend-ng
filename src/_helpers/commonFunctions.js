@@ -18,6 +18,9 @@ class CommonFunctions {
       if (type === 'snatpools') {
         e.members = [{id:1}]
       }
+      else if (type === 'workflowRemoveHost') {
+        e.assets = []
+      }
       //list.push(p)
       list = [e].concat(list)
       return list

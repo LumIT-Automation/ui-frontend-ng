@@ -5,7 +5,7 @@ import 'antd/dist/antd.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
-
+import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
 import { assets as checkpointAssets } from '../../checkpoint/store';
 
@@ -14,17 +14,34 @@ import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
-const RemoveHost = (props) => {
-  const [visible, setVisible] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [request, setRequest] = useState({});
-  const [requests, setRequests] = useState([{ id: 1, assets: [] }]);
-  const [cpAssetsLoading, setCpAssetsLoading] = useState(false);
+function RemoveHost(props) {
+  let [visible, setVisible] = useState(false);
+  let [errors, setErrors] = useState({});
+  let [request, setRequest] = useState({});
+  let [requests, setRequests] = useState([{ id: 1, assets: [] }]);
+  let [cpAssetsLoading, setCpAssetsLoading] = useState(false);
+  let [itemAdded, setItemAdded] = useState(false)
+  let [itemRemoved, setItemRemoved] = useState(false)
 
   useEffect(() => {
-    if (visible) {
-      if (requests.length === 0) {
-        let newRequests = JSON.parse(JSON.stringify(requests));
+    getCpAssets()
+  }, []);
+
+  useEffect(() => {
+    checkedTheOnlyAsset();
+  }, [props.checkpointAssets]);
+
+  useEffect(() => {
+    if (itemAdded) {
+      checkedTheOnlyAsset();
+    }
+    setItemAdded(false)
+  }, [itemAdded]);
+
+  useEffect(() => {
+    if (itemRemoved) {
+      if (requests.length < 1) {
+        let newRequests = [...requests];
         if (props.checkpointAssets && props.checkpointAssets.length === 1) {
           newRequests.push({ id: 1, assets: [props.checkpointAssets[0].id] });
         } else {
@@ -33,14 +50,10 @@ const RemoveHost = (props) => {
         setRequests(newRequests);
       }
     }
-  }, [visible, requests, props.checkpointAssets]);
+    setItemRemoved(false)
+  }, [itemRemoved]);
 
-  const details = async () => {
-    setVisible(true);
-    await main();
-  };
-
-  const main = async () => {
+  let getCpAssets = async () => {
     setCpAssetsLoading(true);
     try {
       let cpAssets = await cpAssetsGet();
@@ -62,7 +75,23 @@ const RemoveHost = (props) => {
     await checkedTheOnlyAsset();
   };
 
-  const checkedTheOnlyAsset = async () => {
+  let itemAdd = async (items, type) => {
+    let commonFunctions = new CommonFunctions();
+    let list = await commonFunctions.itemAdd(items, type);
+    console.log(list)
+    setRequests(list);
+    setItemAdded(true)
+  };
+
+  let itemRemove = async (item, items) => {
+    let commonFunctions = new CommonFunctions();
+    let list = await commonFunctions.itemRemove(item, items);
+    console.log(list)
+    setRequests(list);
+    setItemRemoved(true)
+  };
+
+  let checkedTheOnlyAsset = async () => {
     try {
       let newRequests = JSON.parse(JSON.stringify(requests));
       if (props.checkpointAssets && props.checkpointAssets.length === 1) {
@@ -83,7 +112,7 @@ const RemoveHost = (props) => {
     }
   };
 
-  const cpAssetsGet = async () => {
+  let cpAssetsGet = async () => {
     let r;
     let rest = new Rest(
       'GET',
@@ -98,32 +127,19 @@ const RemoveHost = (props) => {
     return r;
   };
 
-  const addRequest = async () => {
-    let id = requests.reduce((maxId, r) => Math.max(r.id, maxId), 0) + 1;
-    let newRequest = { id };
-    let newRequests = [...requests, newRequest];
-    setRequests(newRequests);
-    await checkedTheOnlyAsset();
-  };
-
-  const removeRequest = (r) => {
-    let newRequests = requests.filter((req) => req.id !== r.id);
-    setRequests(newRequests);
-  };
-
-  const ipSet = (e, id) => {
+  let ipSet = (e, id) => {
     let newRequests = JSON.parse(JSON.stringify(requests));
     let request = newRequests.find((r) => r.id === id);
     request.ip = e.target.value;
     setRequests(newRequests);
   };
 
-  const assetsSet = (e, requestId, asset) => {
+  let assetsSet = (e, requestId, asset) => {
     let newRequests = JSON.parse(JSON.stringify(requests));
     let request = newRequests.find((r) => r.id === requestId);
 
     if (!e) {
-      const index = request.assets.indexOf(asset.id);
+      let index = request.assets.indexOf(asset.id);
       if (index !== -1) {
         request.assets.splice(index, 1);
       }
@@ -135,7 +151,7 @@ const RemoveHost = (props) => {
     setRequests(newRequests);
   };
 
-  const validate = async () => {
+  let validate = async () => {
     let newRequests = JSON.parse(JSON.stringify(requests));
     let validators = new Validators();
     let error = false;
@@ -163,28 +179,41 @@ const RemoveHost = (props) => {
     }
   };
 
-  const removeHostHandler = async () => {
+  let removeHostHandler = async () => {
     let newRequests = JSON.parse(JSON.stringify(requests));
 
     for (let request of newRequests) {
+      delete request.isReleased
       request.isLoading = true;
       setRequests([...newRequests]);
 
       try {
-        const resp = await removeHost(request);
+        let resp = await removeHost(request);
         request.isLoading = false;
         if (resp.status === 200) {
           request.isReleased = 'REMOVED';
-        } else {
-          request.isReleased = `${resp.status} ${resp.message}`;
+        }
+        else if (resp.status === 404) {
+          request.isReleased = `${resp.status} NOT FOUND`
+          setRequests([...newRequests]);
+        }
+        else if (resp.status === 412) {
+          request.isReleased = `${resp.status} ${resp.message}: IS A GATEWAY`
+          setRequests([...newRequests]);
+        }
+        else {
+          request.isReleased = `${resp.status} ${resp.message}`
           let error = Object.assign(resp, {
-            component: 'removeHost',
+            component: 'addHost',
             vendor: 'workflow',
-            errorType: 'hostRemoveError',
-          });
-          props.dispatch(err(error));
+            errorType: 'hostRemoveError'
+          })
+          props.dispatch(err(error))
+          setRequests([...newRequests]);
         }
       } catch (error) {
+        delete request.isLoading
+        delete request.isReleased
         console.log(error);
       }
     }
@@ -192,16 +221,19 @@ const RemoveHost = (props) => {
     setRequests([...newRequests]);
   };
 
-  const removeHost = async (request) => {
+  let removeHost = async (request) => {
     let r;
+
     let b = {
-      data: {
-        asset: {
-          checkpoint: request.assets,
-        },
-        'ipv4-address': `${request.ip}`,
-      },
-    };
+      "data": {
+        "checkpoint_remove_host": {
+          "asset": `${request.assets}`,
+          "data": {
+            "ipv4-address": `${request.ip}`
+          }
+        }
+      }
+    }
 
     let rest = new Rest(
       'PUT',
@@ -212,15 +244,27 @@ const RemoveHost = (props) => {
         r = error;
       }
     );
-    await rest.doXHR('workflow/checkpoint/remove-host/', props.token, b);
+    await rest.doXHR('workflow/checkpoint-remove-host/', props.token, b);
     return r;
   };
 
-  const closeModal = () => {
+  //Close and Error
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
     setVisible(false);
     setErrors({});
     setRequest({});
-    setRequests([]);
+    setRequests([{ id: 1, asset: {} }]);
+    setCpAssetsLoading(false);
+    setItemAdded(false)
+    setItemRemoved(false)
   };
 
   let errorComponent = () => {
@@ -229,7 +273,7 @@ const RemoveHost = (props) => {
     }
   };
 
-  const columns = [
+  let columns = [
     {
       title: 'Loading',
       align: 'center',
@@ -303,7 +347,10 @@ const RemoveHost = (props) => {
       width: 50,
       key: 'remove',
       render: (name, obj) => (
-        <Button type="danger" onClick={() => removeRequest(obj)}>
+        <Button 
+          type="danger" 
+          onClick={() => itemRemove(obj, requests)}
+        >
           -
         </Button>
       ),
@@ -311,36 +358,65 @@ const RemoveHost = (props) => {
   ];
 
   return (
-    <>
-      <Button type="primary" onClick={details}>
-        REMOVE HOST
-      </Button>
+    <React.Fragment>
+
+      <Button type="primary" onClick={() => setVisible(true)}>REMOVE HOST</Button>
 
       <Modal
-        title="Remove Hosts"
+        title={<p style={{textAlign: 'center'}}>REMOVE HOST</p>}
         centered
+        destroyOnClose={true}
         visible={visible}
-        onOk={validate}
-        onCancel={closeModal}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
         width={1500}
         maskClosable={false}
       >
-        <Button type="dashed" onClick={addRequest}>
-          ADD REMOVE HOST REQUEST
-        </Button>
 
-        {requests && requests.length > 0 && <Table columns={columns} dataSource={requests} pagination={false} />}
+        <React.Fragment>
+          <Button type="primary" onClick={() => itemAdd(requests, 'workflowRemoveHost')}>
+            +
+          </Button>
+          <br/>
+          <br/>
+          <Table
+            columns={columns}
+            dataSource={requests}
+            bordered
+            rowKey="id"
+            scroll={{x: 'auto'}}
+            pagination={false}
+            style={{marginBottom: 10}}
+          />
+          <Button 
+            type="primary" 
+            style={{float: "right", marginRight: '20px'}} 
+            onClick={() => validate()}
+          >
+            Remove Host
+          </Button>
+          <br/>
+        </React.Fragment>
 
-        {errorComponent()}
       </Modal>
-    </>
-  );
+
+    {visible ?
+      <React.Fragment>
+        {errorComponent()}
+      </React.Fragment>
+    :
+      null
+    }
+
+  </React.Fragment>
+
+  )
 };
 
-const mapStateToProps = (state) => ({
+export default connect((state) => ({
   token: state.authentication.token,
-  error: state.concerto.error,
-  checkpointAssets: state.checkpoint.assets,
-});
+  error: state.concerto.err,
 
-export default connect(mapStateToProps)(RemoveHost);
+  checkpointAssets: state.checkpoint.assets,
+}))(RemoveHost);
