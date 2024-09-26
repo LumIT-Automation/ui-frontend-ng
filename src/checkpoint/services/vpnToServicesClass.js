@@ -273,6 +273,7 @@ class VpnToServices extends React.Component {
 
       return <Table columns={columns} dataSource={params[0].services} pagination={false} />;
     };
+    
     const columns = [
       {
         title: 'Name',
@@ -309,10 +310,6 @@ class VpnToServices extends React.Component {
         ),
       }
     ];
-
-    let randomKey = () => {
-      return Math.random().toString()
-    }
 
     return (
       <React.Fragment>

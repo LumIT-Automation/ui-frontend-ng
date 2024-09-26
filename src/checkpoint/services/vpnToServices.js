@@ -1,123 +1,49 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef } from 'react'
 import { connect } from 'react-redux';
 import 'antd/dist/antd.css';
 
 import Rest from '../../_helpers/Rest';
 import Error from '../../concerto/error';
 import { err } from '../../concerto/store';
+import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
+
 import AssetSelector from '../../concerto/assetSelector';
-import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space } from 'antd';
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
+import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-const VpnToServices = (props) => {
-  const [visible, setVisible] = useState(false);
-  const [expandedKeys, setExpandedKeys] = useState([]);
-  const [domain] = useState('SHARED-SERVICES');
-  const [errors, setErrors] = useState({});
-  const [vpnToServices, setVpnToServices] = useState([]);
-  const [name, setName] = useState(null);
-  const [base64, setBase64] = useState(null);
-  const [nameloading, setNameloading] = useState(false);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
+function VpnToServices(props) {
+  let [visible, setVisible] = useState(false);
+  let [expandedKeys, setExpandedKeys] = useState([]);
+  let [domain] = useState('SHARED-SERVICES');
+  let [errors, setErrors] = useState({});
+  let [vpnToServices, setVpnToServices] = useState([]);
+  let [name, setName] = useState(null);
+  let [base64, setBase64] = useState(null);
+  let [nameloading, setNameloading] = useState(false);
 
-  const getColumnSearchProps = (dataIndex) => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={(node) => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={(e) => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-        } else if (Array.isArray(dataIndex)) {
-          let r = record[dataIndex[0]];
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase());
-        } else {
-          return '';
-        }
-      } catch (error) {}
-    },
-    onFilterDropdownVisibleChange: (visible) => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: (text) => {
-      return searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      );
-    }
-  });
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    setSearchText('');
-  };
-
-  const onTableRowExpand = (expanded, record) => {
-    const keys = [...expandedKeys];
+  let onTableRowExpand = (expanded, record) => {
+    let keys = [...expandedKeys];
     if (expanded) {
       keys.push(record.uid);
     } else {
-      keys.splice(keys.indexOf(record.uid), 1);
+      keys = keys.filter(k => k !== record.uid)
     }
     setExpandedKeys(keys);
   };
 
-  const details = () => {
-    setVisible(true);
-  };
-
-  const setKey = (e, kName) => {
+  let setKey = (e, kName) => {
     if (kName === 'name') {
       setName(e.target.value);
     }
   };
 
-  const validationCheck = async () => {
+  let validationCheck = async () => {
     let currentErrors = { ...errors };
     if (!name) {
       currentErrors.nameError = true;
@@ -129,39 +55,37 @@ const VpnToServices = (props) => {
     return currentErrors;
   };
 
-  const validation = async () => {
+  let validation = async () => {
     await validationCheck();
     if (Object.keys(errors).length === 0) {
       vpnToService();
     }
   };
 
-  const flatProperty = async (items) => {
-    const list = items.map((item) => {
-      const key = Object.keys(item.ipv4)[0];
-      const value = Object.values(item.ipv4)[0];
-      return { ...item, [key]: value, ipValue: value };
-    });
-    setVpnToServices(list);
-  };
-
-  const vpnToService = async () => {
+  let vpnToService = async () => {
     setNameloading(true);
-    const b = { data: { name } };
-    const rest = new Rest(
+    let b = { data: { name } };
+
+    let rest = new Rest(
       'PUT',
       (resp) => {
-        const beauty = JSON.stringify(resp.data.items, null, 2);
-        const base64Data = btoa(beauty);
-        const list = resp.data.items.map((item) => {
-          const list2 = item.ipv4s.map(ip => ({ ip }));
+        let beauty = JSON.stringify(resp.data.items, null, 2);
+        let base64Data = btoa(beauty);
+        //!
+        let list = resp.data.items.map((item) => {
+          let list2 = item.ipv4s.map(ip => ({ ip }));
           return { ...item, ipv4s: list2 };
         });
         setVpnToServices(list);
         setBase64(base64Data);
       },
       (error) => {
-        error = { ...error, component: 'vpnToService', vendor: 'checkpoint', errorType: 'vpnToServiceError' };
+        error = { 
+          ...error, 
+          component: 'vpnToService', 
+          vendor: 'checkpoint', 
+          errorType: 'vpnToServiceError' 
+        };
         props.dispatch(err(error));
       }
     );
@@ -169,58 +93,94 @@ const VpnToServices = (props) => {
     setNameloading(false);
   };
 
-  const closeModal = () => {
+  let closeModal = () => {
     setVisible(false);
     setName(null);
     setVpnToServices([]);
     setErrors({});
   };
 
-  const errorsComponent = () => {
+  let errorsComponent = () => {
     if (props.error && props.error.component === 'vpnToService') {
       return <Error error={[props.error]} visible={true} />;
     }
     return null;
   };
 
-  const ipValueColumns = [
+  let ipValueColumns = [
     {
       title: 'ipValue',
       align: 'center',
       dataIndex: 'ip',
       key: 'ip',
-      ...getColumnSearchProps('ip'),
+      ...getColumnSearchProps(
+        'ip', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
     }
   ];
 
-  const expandedRowRender = (params) => {
-    const columns = [
+  let expandedRowRender = (params) => {
+    let columns = [
       {
         title: 'Port',
         align: 'center',
         dataIndex: 'port',
         key: 'port',
-        ...getColumnSearchProps('port'),
+        ...getColumnSearchProps(
+          'port', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
       },
       {
         title: 'Type',
         align: 'center',
         dataIndex: 'type',
         key: 'type',
-        ...getColumnSearchProps('type'),
+        ...getColumnSearchProps(
+          'type', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
       }
     ];
     return <Table columns={columns} dataSource={params.services} pagination={false} />;
   };
 
-  const columns = [
+  let columns = [
     {
       title: 'Name',
       align: 'center',
       width: 300,
       dataIndex: 'name',
       key: 'name',
-      ...getColumnSearchProps('name'),
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
     },
     {
       title: 'Type',
@@ -228,7 +188,16 @@ const VpnToServices = (props) => {
       width: 300,
       dataIndex: 'type',
       key: 'type',
-      ...getColumnSearchProps('type'),
+      ...getColumnSearchProps(
+        'type', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
     },
     {
       title: 'IP',
@@ -252,75 +221,103 @@ const VpnToServices = (props) => {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={details}>VPN Flows by Profile</Button>
 
-      <Modal
-        title={<p style={{ textAlign: 'center' }}>VPN Flows by Profile</p>}
-        centered
-        destroyOnClose={true}
-        visible={visible}
-        footer={''}
-        onOk={() => setVisible(true)}
-        onCancel={closeModal}
-        width={1500}
-        maskClosable={false}
-      >
-        <AssetSelector vendor='checkpoint' domain={domain} />
-        <Divider />
+        <Button type="primary" onClick={() => setVisible(true)}>VPN Flows by Profile</Button>
 
-        {((props.asset && props.asset.id) && domain) ? (
-          <React.Fragment>
-            <Row>
-              <Col offset={2} span={6}>
-                <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Group Name:</p>
-              </Col>
-              <Col span={8}>
-                <Input
-                  defaultValue={name}
-                  style={errors.nameError ? { borderColor: 'red' } : null}
-                  onChange={(e) => setKey(e, 'name')}
-                  placeholder="Enter group name"
-                />
-              </Col>
-              <Col span={6}>
-                <Button
-                  type="primary"
-                  loading={nameloading}
-                  onClick={validation}
-                  style={{ marginLeft: 10 }}
-                >
-                  Add
-                </Button>
-              </Col>
-            </Row>
-            {errorsComponent()}
-            <Divider />
+        <Modal
+          title={<p style={{textAlign: 'center'}}>VPN Flows by Profile</p>}
+          centered
+          destroyOnClose={true}
+          visible={visible}
+          footer={''}
+          onOk={() => setVisible(true)}
+          onCancel={() => closeModal()}
+          width={1500}
+          maskClosable={false}
+        >
 
-            {vpnToServices.length > 0 ? (
-              <Table
-                columns={columns}
-                expandedRowRender={expandedRowRender}
-                dataSource={vpnToServices}
-                pagination={{ pageSize: 10 }}
-                rowKey={(record) => record.uid}
-                onExpand={onTableRowExpand}
-                expandedRowKeys={expandedKeys}
-              />
-            ) : (
-              <Alert message="No data available" type="info" />
-            )}
-          </React.Fragment>
-        ) : (
-          <Spin indicator={spinIcon} />
-        )}
-      </Modal>
-    </React.Fragment>
+          <AssetSelector vendor='checkpoint' domain={domain}/>
+          <Divider/>
+
+          { (( props.asset && props.asset.id ) && domain) ?
+            <React.Fragment>
+
+              <React.Fragment>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Group Name:</p>
+                  </Col>
+                  <Col span={8}>
+
+                    <Input
+                      defaultValue={name}
+                      style={errors.nameError ? {borderColor: 'red'} : null}
+                      onChange={e => setKey(e, 'name')}
+                      onPressEnter={() => validation()}
+                    />
+
+                  </Col>
+                </Row>
+                <Row>
+                  <Col offset={8} span={16}>
+                    <Button
+                      type="primary"
+                      disabled={name ? false : true}
+                      onClick={() => validation()}
+                    >
+                      VPN Flows by Profile
+                    </Button>
+                  </Col>
+                </Row>
+              </React.Fragment>
+
+              <Divider/>
+
+            { nameloading ?
+              <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
+            :
+              <React.Fragment>
+                { vpnToServices.length < 1 ?
+                  null
+                :
+                  <React.Fragment>
+                    <a download='VPN Flows by Profile.txt' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download data</a>
+                    <br/>
+                    <br/>
+                    <Table
+                      columns={columns}
+                      dataSource={vpnToServices}
+                      bordered
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                      style={{marginBottom: 10}}
+                      onExpand={onTableRowExpand}
+                      expandedRowKeys={expandedKeys}
+                      rowKey={record => record.uid}
+                      expandedRowRender={ record => expandedRowRender(record)}
+                    />
+                  </React.Fragment>
+                }
+              </React.Fragment>
+            }
+            </React.Fragment>
+            :
+            <Alert message="Asset and Domain not set" type="error" />
+          }
+
+        </Modal>
+
+        {errorsComponent()}
+
+      </React.Fragment>
   );
 };
 
-const mapStateToProps = (state) => ({
-  error: state.error,
-  token: state.auth.token,
-});
+export default connect((state) => ({
+  token: state.authentication.token,
+  authorizations: state.authorizations.checkpoint,
+  error: state.concerto.err,
 
-export default connect(mapStateToProps)(VpnToServices);
+  asset: state.checkpoint.asset,
+}))(VpnToServices);
