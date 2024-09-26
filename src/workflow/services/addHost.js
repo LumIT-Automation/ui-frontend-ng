@@ -5,7 +5,7 @@ import 'antd/dist/antd.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
-
+import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
 import { assets as checkpointAssets } from '../../checkpoint/store';
 
@@ -14,32 +14,47 @@ import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
-const AddHost = (props) => {
-  const [visible, setVisible] = useState(false);
-  const [errors, setErrors] = useState({});
-  const [cpDomains, setCpDomains] = useState({});
-  const [requests, setRequests] = useState([{ id: 1, asset: {} }]);
-  const [cpAssetsLoading, setCpAssetsLoading] = useState(false);
-  const [cpDomainsLoading, setCpDomainsLoading] = useState(false);
+function AddHost(props) {
+  let [visible, setVisible] = useState(false);
+  let [errors, setErrors] = useState({});
+  let [cpDomains, setCpDomains] = useState({});
+  let [requests, setRequests] = useState([{ id: 1, asset: {} }]);
+  let [cpAssetsLoading, setCpAssetsLoading] = useState(false);
+  let [cpDomainsLoading, setCpDomainsLoading] = useState(false);
+  let [itemAdded, setItemAdded] = useState(false)
+  let [itemRemoved, setItemRemoved] = useState(false)
 
   useEffect(() => {
-    if (visible && requests.length === 0) {
-      let newRequests = [...requests];
-      if (props.checkpointAssets && props.checkpointAssets.length === 1) {
-        newRequests.push({ id: 1, asset: props.checkpointAssets[0] });
-      } else {
-        newRequests.push({ id: 1, asset: {} });
-      }
-      setRequests(newRequests);
+    getCpAssets()
+  }, []);
+
+  useEffect(() => {
+    checkedTheOnlyAsset();
+  }, [props.checkpointAssets]);
+
+  useEffect(() => {
+    if (itemAdded) {
+      checkedTheOnlyAsset();
     }
-  }, [visible, props.checkpointAssets]);
+    setItemAdded(false)
+  }, [itemAdded]);
 
-  const details = async () => {
-    setVisible(true);
-    main();
-  };
+  useEffect(() => {
+    if (itemRemoved) {
+      if (requests.length < 1) {
+        let newRequests = [...requests];
+        if (props.checkpointAssets && props.checkpointAssets.length === 1) {
+          newRequests.push({ id: 1, asset: props.checkpointAssets[0] });
+        } else {
+          newRequests.push({ id: 1, asset: {} });
+        }
+        setRequests(newRequests);
+      }
+    }
+    setItemRemoved(false)
+  }, [itemRemoved]);
 
-  const main = async () => {
+  let getCpAssets = async () => {
     setCpAssetsLoading(true);
     try {
       let cpAssets = await cpAssetsGet();
@@ -58,31 +73,53 @@ const AddHost = (props) => {
       console.log('main error', error);
     }
     setCpAssetsLoading(false);
-    checkedTheOnlyAsset();
   };
 
-  const checkedTheOnlyAsset = async () => {
+  let itemAdd = async (items, type) => {
+    let commonFunctions = new CommonFunctions();
+    let list = await commonFunctions.itemAdd(items, type);
+    console.log(list)
+    setRequests(list);
+    setItemAdded(true)
+  };
+
+  let itemRemove = async (item, items) => {
+    let commonFunctions = new CommonFunctions();
+    let list = await commonFunctions.itemRemove(item, items);
+    console.log(list)
+    setRequests(list);
+    setItemRemoved(true)
+  };
+
+  let checkedTheOnlyAsset = async () => {
+    console.log('checkedTheOnlyAsset')
+    console.log(props.checkpointAssets)
+    
     try {
       let newRequests = [...requests];
+      console.log(newRequests)
       if (props.checkpointAssets && props.checkpointAssets.length === 1) {
+        console.log('if')
         await cpDomainsGetHandler(props.checkpointAssets[0]);
         newRequests.forEach((req) => {
           req.asset = props.checkpointAssets[0];
         });
       } else {
+        console.log('else')
         newRequests.forEach((req) => {
           if (!req.asset) {
             req.asset = {};
           }
         });
       }
+      console.log(newRequests)
       setRequests(newRequests);
     } catch (error) {
       console.log('checkedTheOnlyAsset error', error);
     }
   };
 
-  const cpAssetsGet = async () => {
+  let cpAssetsGet = async () => {
     let r;
     let rest = new Rest(
       'GET',
@@ -97,9 +134,10 @@ const AddHost = (props) => {
     return r;
   };
 
-  const cpDomainsGetHandler = async (asset) => {
+  let cpDomainsGetHandler = async (asset) => {
+    console.log('cpDomainsGetHandler')
     try {
-      const domains = await cpDomainsGet(asset);
+      let domains = await cpDomainsGet(asset);
       if (!domains.status) {
         let doms = { ...cpDomains };
         doms[asset.id] = domains.data.items;
@@ -117,7 +155,7 @@ const AddHost = (props) => {
     }
   };
 
-  const cpDomainsGet = async (asset) => {
+  let cpDomainsGet = async (asset) => {
     let r;
     setCpDomainsLoading(true);
     let rest = new Rest(
@@ -134,34 +172,23 @@ const AddHost = (props) => {
     return r;
   };
 
-  const handleSetRequests = async () => {
-    let id = Math.max(...requests.map((r) => r.id)) + 1;
-    let newRequest = { id };
-    let newList = [...requests, newRequest];
-    setRequests(newList);
-    checkedTheOnlyAsset();
-  };
 
-  const removeRequest = (r) => {
-    let newList = requests.filter((n) => r.id !== n.id);
-    setRequests(newList);
-  };
 
-  const nameSet = (e, id) => {
+  let nameSet = (e, id) => {
     let newRequests = [...requests];
     let request = newRequests.find((r) => r.id === id);
     request.name = e;
     setRequests(newRequests);
   };
 
-  const ipSet = (e, id) => {
+  let ipSet = (e, id) => {
     let newRequests = [...requests];
     let request = newRequests.find((r) => r.id === id);
     request.ip = e.target.value;
     setRequests(newRequests);
   };
 
-  const assetSet = async (e, requestId, asset) => {
+  let assetSet = async (e, requestId, asset) => {
     try {
       let newRequests = [...requests];
       let request = newRequests.find((r) => r.id === requestId);
@@ -173,14 +200,14 @@ const AddHost = (props) => {
     }
   };
 
-  const cpDomainSet = (e, requestId, domainName) => {
+  let cpDomainSet = (e, requestId, domainName) => {
     let newRequests = [...requests];
     let request = newRequests.find((r) => r.id === requestId);
     request.cpDomain = domainName;
     setRequests(newRequests);
   };
 
-  const validate = async () => {
+  let validate = async () => {
     let newRequests = [...requests];
     let validators = new Validators();
     let error = false;
@@ -222,18 +249,18 @@ const AddHost = (props) => {
     }
   };
 
-  const addHostHandler = async () => {
+  let addHostHandler = async () => {
     let newRequests = [...requests];
     newRequests.forEach((request) => {
       delete request.created;
     });
     setRequests(newRequests);
 
-    for (const request of newRequests) {
+    for (let request of newRequests) {
       request.isLoading = true;
       setRequests([...newRequests]);
       try {
-        const resp = await addHost(request);
+        let resp = await addHost(request);
         request.isLoading = false;
         if (!resp.status) {
           request.created = 'CREATED';
@@ -255,16 +282,23 @@ const AddHost = (props) => {
     setRequests([...newRequests]);
   };
 
-  const addHost = async (request) => {
+  let addHost = async (request) => {
     let r;
     let b = {
-      data: {
-        asset: { checkpoint: [request.asset.id] },
-        name: request.name,
-        'ipv4-address': request.ip,
-        domain: request.cpDomain,
-      },
-    };
+      "data": {
+        "checkpoint_hosts_post": {
+          "asset": request.asset.id,
+          "data": {
+            "name": request.name,
+            "ipv4-address": request.ip
+          },
+          "urlParams": {
+            "domain": request.cpDomain
+          }
+        }
+      }
+    }
+
 
     let rest = new Rest(
       'PUT',
@@ -275,74 +309,344 @@ const AddHost = (props) => {
         r = error;
       }
     );
-    await rest.doXHR(`workflow/checkpoint/add-host/`, props.token, b);
+    await rest.doXHR(`workflow/checkpoint-add-host/`, props.token, b);
     return r;
   };
 
-  const closeModal = () => {
+  //Close and Error
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
     setVisible(false);
-    setErrors([]);
-    setRequests([]);
+    setErrors({});
+    setCpDomains({});
+    setRequests([{ id: 1, asset: {} }]);
+    setCpAssetsLoading(false);
+    setCpDomainsLoading(false);
+    setItemAdded(false)
+    setItemRemoved(false)
   };
 
-  const errorMessages = () => {
+  let errorMessages = () => {
     if (props.error && props.error.component === 'addHost') {
       return <Error error={[props.error]} visible={true} />;
     }
   };
 
-  const columns = [
-    // Same columns structure as in the original code
-  ];
+  let columns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      width: 50,
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Status',
+      align: 'center',
+      dataIndex: 'status',
+      width: 50,
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.created}
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      width: 50,
+      key: 'id',
+      name: 'dable',
+      description: '',
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      width: 200,
+      key: 'name',
+      render: (name, obj)  => (
+        <React.Fragment>
+          {obj.nameError ?
+            <React.Fragment>
+              <Input
+                placeholder={obj.name}
+                onChange={e => nameSet(e.target.value, obj.id)}
+              />
+              <p style={{color: 'red'}}>{obj.nameError}</p>
+              </React.Fragment>
+          :
+            <Input
+              placeholder={obj.name}
+              onChange={e => nameSet(e.target.value, obj.id)}
+            />
+          }
+        </React.Fragment>
+      )
+    },
+    {
+      title: 'IP',
+      align: 'center',
+      dataIndex: 'ip',
+      width: 150,
+      key: 'ip',
+      render: (name, obj)  => (
+        <React.Fragment>
+          {obj.ipError ?
+            <React.Fragment>
+              <Input
+                id='ip'
+                defaultValue={obj.ip}
+                onChange={e => ipSet(e, obj.id)}
+              />
+              <p style={{color: 'red'}}>{obj.ipError}</p>
+            </React.Fragment>
+          :
+            <Input
+              id='ip'
+              defaultValue={obj.ip}
+              onChange={e => ipSet(e, obj.id)}
+            />
+          }
+        </React.Fragment>
+      ),
+    },
+    {
+      title: 'ASSETS',
+      align: 'center',
+      dataIndex: 'assets',
+      width: 150,
+      key: 'assets',
+      render: (name, obj)  => (
+        <React.Fragment>
+          { cpAssetsLoading ?
+            <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+          :
+            <React.Fragment>
+              {obj.assetError ?
+                <React.Fragment>
+                  {props.checkpointAssets ?
+                    <React.Fragment>
+                      {props.checkpointAssets.length === 1 ?
+                        <Radio
+                          onChange={e => assetSet(e.target.checked, obj.id, props.checkpointAssets[0])}
+                          checked
+                        >
+                          {props.checkpointAssets[0].fqdn}
+                        </Radio>
+                      :
+                        props.checkpointAssets.map((n, i) => {
+                          return (
+                            <Radio
+                              key={i}
+                              onChange={e => assetSet(e.target.checked, obj.id, n)}
+                              checked={obj && obj.asset && (obj.asset.id === n.id)}
+                            >
+                              {n.fqdn}
+                            </Radio>
+                          )
+                        })
+                      }
+                    </React.Fragment>
+                  :
+                    <React.Fragment>
+                      <p style={{color: 'red'}}>Assets Error</p>
+                    </React.Fragment>
+                  }
+                  <p style={{color: 'red'}}>{obj.assetError}</p>
+                </React.Fragment>
+              :
+              <React.Fragment>
+                {props.checkpointAssets ?
+                  <React.Fragment>
+                    {props.checkpointAssets.length === 1 ?
+                      <Radio
+                        onChange={e => assetSet(e.target.checked, obj.id, props.checkpointAssets[0])}
+                        checked
+                      >
+                        {props.checkpointAssets[0].fqdn}
+                      </Radio>
+                    :
+                      props.checkpointAssets.map((n, i) => {
+                        return (
+                          <Radio
+                            key={i}
+                            onChange={e => assetSet(e.target.checked, obj.id, n)}
+                            checked={obj && obj.asset && (obj.asset.id === n.id)}
+                          >
+                            {n.fqdn}
+                          </Radio>
+                        )
+                      })
+                    }
+                  </React.Fragment>
+                :
+                <React.Fragment>
+                  <p style={{color: 'red'}}>Assets Error</p>
+                </React.Fragment>
+                }
+              </React.Fragment>
+              }
+            </React.Fragment>
+          }
+        </React.Fragment>
+      ),
+    },
+    {
+      title: 'Domains',
+      align: 'center',
+      dataIndex: 'domains',
+      width: 50,
+      key: 'domains',
+      render: (name, obj)  => (
+        <React.Fragment>
+        { cpDomainsLoading ?
+          <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
+        :
+          <React.Fragment>
+            {cpDomains && obj.asset && obj.asset.id && cpDomains[obj.asset.id] ?
+              <React.Fragment>
+                {obj.cpDomainError ?
+                  <React.Fragment>
+                    <Select
+                      key={obj.id}
+                      style={{ width: '300px'}}
+                      value={obj.cpDomain}
+                      onChange={(value, event) => cpDomainSet(event, obj.id, value)}>
+                      { cpDomains[obj.asset.id] ? cpDomains[obj.asset.id].map((d, i) => {
+                        return (
+                          <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
+                          )
+                        })
+                      :
+                        null
+                      }
+                    </Select>
+                    <p style={{color: 'red'}}>{obj.cpDomainError}</p>
+                  </React.Fragment>
+                :
+                  <React.Fragment>
+                    <Select
+                      key={obj.id}
+                      style={{ width: '300px'}}
+                      value={obj.cpDomain}
+                      onChange={(value, event) => cpDomainSet(event, obj.id, value)}>
+                      { cpDomains[obj.asset.id] ? cpDomains[obj.asset.id].map((d, i) => {
+                        return (
+                          <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
+                          )
+                        })
+                      :
+                        null
+                      }
+                    </Select>
+                  </React.Fragment>
+                }
+              </React.Fragment>
+            :
+              <React.Fragment>
+                {obj.cpDomainError ?
+                  <React.Fragment>
+                    <Select style={{ width: '300px'}} disabled/>
+                    <p style={{color: 'red'}}>{obj.cpDomainError}</p>
+                  </React.Fragment>
+                :
+                  <Select style={{ width: '300px'}} disabled/>
+                }
+              </React.Fragment>
+            }
+          </React.Fragment>
+        }
+        </React.Fragment>
+      ),
+    },
+    {
+      title: 'Remove request',
+      align: 'center',
+      dataIndex: 'remove',
+      width: 50,
+      key: 'remove',
+      render: (name, obj)  => (
+        <Button 
+          type="danger" 
+          onClick={() => itemRemove(obj, requests)}
+        >
+          -
+        </Button>
+      ),
+    },
+  ]
 
   return (
-    <>
-      <Button type="primary" onClick={details}>
-        ADD HOST
-      </Button>
+    <React.Fragment>
+
+      <Button type="primary" onClick={() => setVisible(true)}>ADD HOST</Button>
 
       <Modal
-        title={<p style={{ textAlign: 'center' }}>ADD HOST</p>}
+        title={<p style={{textAlign: 'center'}}>ADD HOST</p>}
         centered
-        destroyOnClose
+        destroyOnClose={true}
         visible={visible}
-        footer={null}
-        onOk={() => setVisible(true)}
-        onCancel={closeModal}
+        footer={''}
+        onOk={() => setState({visible: true})}
+        onCancel={() => closeModal()}
         width={1500}
         maskClosable={false}
       >
-        <>
-          <Button type="primary" onClick={handleSetRequests}>
+
+        <React.Fragment>
+          <Button type="primary" onClick={() => itemAdd(requests)}>
             +
           </Button>
-          <br />
-          <br />
+          <br/>
+          <br/>
           <Table
             columns={columns}
             dataSource={requests}
+            bordered
+            rowKey="id"
+            scroll={{x: 'auto'}}
             pagination={false}
-            rowKey={(r) => r.id}
-            scroll={{ y: 300 }}
+            style={{marginBottom: 10}}
           />
-        </>
-        <br />
-        {errorMessages()}
-        <Space style={{ display: 'flex', justifyContent: 'center' }}>
-          {cpAssetsLoading && <Spin indicator={spinIcon} style={{ marginLeft: '50%', marginRight: '50%' }} />}
-          <Button type="primary" onClick={validate}>
-            Validate
+          <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => validate()}>
+            Add Host
           </Button>
-        </Space>
+          <br/>
+        </React.Fragment>
+
       </Modal>
-    </>
-  );
+
+    {visible ?
+      <React.Fragment>
+        {errorMessages()}
+      </React.Fragment>
+    :
+      null
+    }
+
+  </React.Fragment>
+
+  )
 };
 
-const mapStateToProps = (state) => ({
+export default connect((state) => ({
   token: state.authentication.token,
-  error: state.concerto.error,
-  checkpointAssets: state.checkpoint.assets,
-});
+  error: state.concerto.err,
 
-export default connect(mapStateToProps)(AddHost);
+  checkpointAssets: state.checkpoint.assets,
+}))(AddHost);
