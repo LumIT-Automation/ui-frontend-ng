@@ -5,105 +5,32 @@ import 'antd/dist/antd.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
+import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
-import {
-  err
-} from '../../concerto/store';
+import { err } from '../../concerto/store';
 
 import AssetSelector from '../../concerto/assetSelector';
 
-import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col, Space } from 'antd';
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
+import { Modal, Input, Button, Spin, Divider, Table, Alert, Row, Col } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 
-const VpnToHost = (props) => {
-  const [visible, setVisible] = useState(false);
-  const [domain, setDomain] = useState('SHARED-SERVICES');
-  const [expandedKeys, setExpandedKeys] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [vpnToHosts, setVpnToHosts] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [ipv4Address, setIpv4Address] = useState('');
-  const [base64, setBase64] = useState('');
+function VpnToHost(props) {
+  let [visible, setVisible] = useState(false);
+  let [domain, setDomain] = useState('SHARED-SERVICES');
+  let [expandedKeys, setExpandedKeys] = useState([]);
+  let [errors, setErrors] = useState({});
+  let [vpnToHosts, setVpnToHosts] = useState([]);
+  let [loading, setLoading] = useState(false);
+  let [ipv4Address, setIpv4Address] = useState('');
+  let [base64, setBase64] = useState('');
 
-  const searchInput = useRef(null);
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-  const getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string') {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-        } else if (Array.isArray(dataIndex)) {
-          let r = record[dataIndex[0]];
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase());
-        } else {
-          return '';
-        }
-      } catch (error) {
-        return '';
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => searchInput.current.select(), 100);
-      }
-    },
-    render: text => searchedColumn === dataIndex ? (
-      <Highlighter
-        highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-        searchWords={[searchText]}
-        autoEscape
-        textToHighlight={text ? text.toString() : ''}
-      />
-    ) : (
-      text
-    ),
-  });
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    setSearchText('');
-  };
-
-  const onTableRowExpand = (expanded, record) => {
+  let onTableRowExpand = (expanded, record) => {
     let keys = [...expandedKeys];
     if (expanded) {
       keys.push(record.uid);
@@ -113,17 +40,13 @@ const VpnToHost = (props) => {
     setExpandedKeys(keys);
   };
 
-  const details = () => {
-    setVisible(true);
-  };
-
-  const setKey = (e, kName) => {
+  let setKey = (e, kName) => {
     if (kName === 'ipv4-address') {
       setIpv4Address(e.target.value);
     }
   };
 
-  const validationCheck = async () => {
+  let validationCheck = async () => {
     let validators = new Validators();
     let newErrors = { ...errors };
 
@@ -138,14 +61,14 @@ const VpnToHost = (props) => {
     return newErrors;
   };
 
-  const validation = async () => {
+  let validation = async () => {
     await validationCheck();
     if (Object.keys(errors).length === 0) {
       vpnToHost();
     }
   };
 
-  const vpnToHost = async () => {
+  let vpnToHost = async () => {
     setLoading(true);
     let b = {
       data: {
@@ -175,53 +98,80 @@ const VpnToHost = (props) => {
     setLoading(false);
   };
 
-  const closeModal = () => {
+  let closeModal = () => {
     setVisible(false);
     setIpv4Address(null);
     setVpnToHosts([]);
     setErrors({});
   };
 
-  const errorsRender = () => {
+  let errorsRender = () => {
     if (props.error && props.error.component === 'vpnToHost') {
       return <Error error={[props.error]} visible={true} />;
     }
   };
 
-  const expandedRowRender = (record) => {
-    const columns = [
+  let expandedRowRender = (record) => {
+    let columns = [
       {
         title: 'Port',
         align: 'center',
         dataIndex: 'port',
         key: 'port',
-        ...getColumnSearchProps('port'),
+        ...getColumnSearchProps(
+          'ip', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
       },
       {
         title: 'Type',
         align: 'center',
         dataIndex: 'type',
         key: 'type',
-        ...getColumnSearchProps('type'),
+        ...getColumnSearchProps(
+          'type', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
       }
     ];
 
     return <Table columns={columns} dataSource={record.services} pagination={false} />;
   };
 
-  const columns = [
+  let columns = [
     {
       title: 'Name',
       align: 'center',
       dataIndex: 'name',
       key: 'name',
-      ...getColumnSearchProps('name'),
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
     }
   ];
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={details}>Get VPN Profiles</Button>
+      <Button type="primary" onClick={() => setVisible(true)}>Get VPN Profiles</Button>
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>Get VPN Profiles</p>}

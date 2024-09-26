@@ -5,10 +5,9 @@ import 'antd/dist/antd.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
+import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
-import {
-  err
-} from '../../concerto/store';
+import { err } from '../../concerto/store';
 
 import AssetSelector from '../../concerto/assetSelector';
 
@@ -20,22 +19,23 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function UrlInApplicationSite(props) {
 
-  const [visible, setVisible] = useState(false);
-  const [changeRequestId, setChangeRequestId] = useState('');
-  const [applicationSites, setApplicationSites] = useState([]);
-  const [applicationSite, setApplicationSite] = useState({});
-  const [toRemove, setToRemove] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [applicationSiteError, setApplicationSiteError] = useState('');
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const [urlInputList, setUrlInputList] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [response, setResponse] = useState(null);
+  let [visible, setVisible] = useState(false);
+  let [changeRequestId, setChangeRequestId] = useState('');
+  let [applicationSites, setApplicationSites] = useState([]);
+  let [applicationSite, setApplicationSite] = useState({});
+  let [toRemove, setToRemove] = useState([]);
+  let [errors, setErrors] = useState({});
+  let [applicationSiteError, setApplicationSiteError] = useState('');
+  let [urlInputList, setUrlInputList] = useState('');
+  let [loading, setLoading] = useState(false);
+  let [response, setResponse] = useState(null);
 
-  const myRefs = useRef({});
-  const searchInput = useRef(null);
-  const prevDomainRef = useRef();
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
+
+  let myRefs = useRef({});
+  let prevDomainRef = useRef();
 
   useEffect(() => {
     if (visible && props.asset && props.domain && (prevDomainRef.current !== props.domain)) {
@@ -45,84 +45,7 @@ function UrlInApplicationSite(props) {
     prevDomainRef.current = props.domain;
   }, [visible, props.asset, props.domain]);
 
-  const details = () => {
-    setVisible(true);
-  };
-
-  const handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    setSearchText(selectedKeys[0]);
-    setSearchedColumn(dataIndex);
-  };
-
-  const handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    setSearchText('');
-  };
-
-  const getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={searchInput}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase());
-        } else if (Array.isArray(dataIndex)) {
-          let r = record[dataIndex[0]];
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase());
-        } else {
-          return '';
-        }
-      } catch (error) {
-        return '';
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => searchInput.current.select(), 100);
-      }
-    },
-    render: text => {
-      return searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      );
-    }
-  });
-
-  const dataGet = async () => {
+  let dataGet = async () => {
     setLoading(true);
 
     let data = await getData('application-sites');
@@ -163,7 +86,7 @@ function UrlInApplicationSite(props) {
     setLoading(false);
   };
 
-  const getData = async (entity) => {
+  let getData = async (entity) => {
     let r;
     let endpoint = '';
 
@@ -186,12 +109,12 @@ function UrlInApplicationSite(props) {
     return r;
   };
 
-  const set = async (value, key, obj) => {
+  let set = async (value, key, obj) => {
     let errorsCopy = { ...errors };
 
     try {
       if (key === 'applicationSite') {
-        const selectedApplicationSite = applicationSites.find(as => as.name === value);
+        let selectedApplicationSite = applicationSites.find(as => as.name === value);
         setApplicationSite(selectedApplicationSite);
         setUrlInputList('');
       }
@@ -213,7 +136,7 @@ function UrlInApplicationSite(props) {
         delete urlObj.urlError;
         setApplicationSite(applicationSiteCopy);
 
-        const ref = myRefs.current[`${obj.id}_url`];
+        let ref = myRefs.current[`${obj.id}_url`];
         if (ref && ref.input) {
           ref.input.focus();
         }
@@ -232,7 +155,7 @@ function UrlInApplicationSite(props) {
     }
   };
 
-  const urlListSet = async () => {
+  let urlListSet = async () => {
     let input = urlInputList;
     let applicationSiteCopy = { ...applicationSite };
     let n = Math.max(...applicationSiteCopy['url-list'].map(o => o.id), 0);
@@ -307,7 +230,7 @@ function UrlInApplicationSite(props) {
     }
   };
 
-  const validationCheck = async () => {
+  let validationCheck = async () => {
     let applicationSiteCopy = { ...applicationSite };
     setErrors({});
     let validators = new Validators();
@@ -346,7 +269,7 @@ function UrlInApplicationSite(props) {
     return ok;
   };
 
-  const validation = async () => {
+  let validation = async () => {
     let valid = await validationCheck();
 
     if (Object.keys(errors).length === 0 && valid) {
@@ -354,7 +277,7 @@ function UrlInApplicationSite(props) {
     }
   };
 
-  const reqHandler = async () => {
+  let reqHandler = async () => {
     let applicationSiteCopy = { ...applicationSite };
     let toRemoveCopy = [...toRemove];
     let toAdd = applicationSiteCopy['url-list'].filter(url => url.toAdd);
@@ -393,7 +316,7 @@ function UrlInApplicationSite(props) {
     dataGet();
   };
 
-  const toDel = async (list) => {
+  let toDel = async (list) => {
     let body = {};
     let urlList = list.map(url => url.url);
     body.data = {
@@ -415,7 +338,7 @@ function UrlInApplicationSite(props) {
     return r;
   };
 
-  const toAddUrls = async (list) => {
+  let toAddUrls = async (list) => {
     let body = {};
     let urlList = list.map(url => url.url);
     body.data = {
@@ -437,7 +360,7 @@ function UrlInApplicationSite(props) {
     return r;
   };
 
-  const closeModal = () => {
+  let closeModal = () => {
     setVisible(false);
     setChangeRequestId('ITIO-');
     setApplicationSites([]);
@@ -447,20 +370,29 @@ function UrlInApplicationSite(props) {
     setApplicationSiteError('');
   };
 
-  const errorsComponent = () => {
+  let errorsComponent = () => {
     if (props.error && props.error.component === 'urlInApplicationSite') {
       return <Error error={[props.error]} visible={true} />;
     }
   };
 
-  const urlColumns = [
+  let urlColumns = [
     {
       title: 'Url',
       align: 'center',
       width: 'auto',
       dataIndex: 'url',
       key: 'url',
-      ...getColumnSearchProps('url'),
+      ...getColumnSearchProps(
+        'url', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
       render: (name, obj) => (
         <Input
           value={obj.url}
@@ -487,7 +419,7 @@ function UrlInApplicationSite(props) {
 
   return (
     <Space direction='vertical'>
-      <Button type="primary" onClick={() => details()}>Url In ApplicationSite</Button>
+      <Button type="primary" onClick={() => setVisible(true)}>Url In ApplicationSite</Button>
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>Url In ApplicationSite</p>}
