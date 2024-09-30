@@ -98,6 +98,15 @@ function VpnToHost(props) {
     setLoading(false);
   };
 
+  //Close and Error
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
   let closeModal = () => {
     setVisible(false);
     setIpv4Address(null);

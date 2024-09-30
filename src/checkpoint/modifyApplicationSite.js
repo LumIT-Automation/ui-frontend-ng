@@ -1,180 +1,97 @@
-import React from 'react'
-import {useRef} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from '../concerto/error'
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
-import {
-  err
-} from '../concerto/store'
+import { err } from '../concerto/store';
 
 import {
   fetchItems,
 } from './store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Table, Divider } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Row, Col, Table, Divider } from 'antd';
 
-import { LoadingOutlined, EditOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
+import { LoadingOutlined, EditOutlined, CloseCircleOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const modifyIcon = <EditOutlined style={{color: 'white' }}  />
-const deleteIcon = <CloseCircleOutlined/>
 
 
+function ModifyUrlInApplicationSite(props) {
+  let [visible, setVisible] = useState(false);
+  let [loading, setLoading] = useState(false);
+  let [input, setInput] = useState('');
+  let [url, setUrl] = useState('');
+  let [errors, setErrors] = useState({});
+  let [valid, setValid] = useState(false);
+  let [request, setRequest] = useState({});
+  let [response, setResponse] = useState(null);
 
-class Modify extends React.Component {
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      input: [],
-      errors: {},
-      request: {}
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else if ( Array.isArray(dataIndex) ) {
-          let r = record[dataIndex[0]]
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else {
-          return ''
-        }
-      }
-      catch (error){
-
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text => {
-      return this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
+  useEffect(() => {
+    console.log(errors)
+    if (Object.keys(errors).length === 0 && valid) {
+      application_siteModify()
+      setValid(false)
     }
-  });
+  }, [valid]);
 
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  details = async () => {
-    await this.setState({visible: true})
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    //request.name = this.props.obj
-    request.name = this.props.obj.name
-    request.description = this.props.obj.description
+  let details = async () => {
+    setVisible(true)
+    let requestCopy = {...request}
+    requestCopy.name = props.obj.name
+    requestCopy.description = props.obj.description
 
     let list = []
-    if (this.props.obj && this.props.obj['url-list']) {
-      this.props.obj['url-list'].forEach( o => {
+    if (props.obj && props.obj['url-list']) {
+      props.obj['url-list'].forEach( o => {
         list.push({url: o})
       })
     }
-    request.urlList = list
+    requestCopy.urlList = list
 
-    await this.setState({request: request})
+    setRequest(requestCopy)
   }
 
-  //SETTERS
-  urlListInput = async e => {
-    let input = e.target.value
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    await this.setState({request: request, errors: errors, input: input})
+  //SETTERS  
+  let urlListInput = async value => {
+    let inputCopy = value
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
+    delete requestCopy.urlList
+    delete errorsCopy.urlListError
+    setRequest(requestCopy)
+    setErrors(errorsCopy)
+    setInput(inputCopy)
   }
-  urlListSet = async () => {
-    let input = JSON.parse(JSON.stringify(this.state.input))
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let list=[], nlist=[], urlsList=[], actualUrls=[]
+  
+  let urlListSet = async () => {
+    let inputCopy = input
+    let requestCopy = {...request}
+    
+    let list=[], nlist=[], urlsList=[]
     let regexp = new RegExp(/^[*]/g);
 
     try {
-      input = input.replaceAll('https://','');
-      input = input.replaceAll('http://','');   
+      inputCopy = inputCopy.replaceAll('https://','');
+      inputCopy = inputCopy.replaceAll('http://','');   
       /*
         /[\/\\]/: È un'espressione regolare che cerca i caratteri / e \.
         [\/\\]: Definisce una classe di caratteri che include la barra normale (/) e la barra rovesciata (\). Nota che per la barra rovesciata (\) è necessario un doppio backslash (\\) perché il backslash è un carattere di escape nelle espressioni regolari.
         g: È un flag globale che indica che la sostituzione deve avvenire su tutte le occorrenze del pattern nella stringa, non solo sulla prima.
         '': È la stringa di sostituzione, che in questo caso è vuota, quindi i caratteri / e \ vengono rimossi dalla stringa originale.
       */   
-      input = input.replaceAll(/[\/\\]/g,'');
-      input = input.replaceAll(/[/\t]/g,' ');
-      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,' ');
-      input = input.replaceAll(/[/\r\n]/g,' ');
-      input = input.replaceAll(/[/\n]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[\/\\]/g,'');
+      inputCopy = inputCopy.replaceAll(/[/\t]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[,&£#+()$~%'":;~?!<>{}|@$€^]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[/\r\n]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[/\n]/g,' ');
       /*
         /[/\s]{1,}/g: È una espressione regolare che cerca determinati pattern nella stringa.
         [/\s]: Cerca qualsiasi carattere che sia una barra (/) o uno spazio (\s).
@@ -182,9 +99,9 @@ class Modify extends React.Component {
         g: È il flag per la sostituzione globale, il che significa che sostituirà tutte le occorrenze del pattern trovato nella stringa, non solo la prima.
         ,'': È il carattere con cui sostituire i pattern trovati. In questo caso, è una virgola.
       */
-      input = input.replace(/[/\s]{1,}/g, ',' )
+      inputCopy = inputCopy.replace(/[/\s]{1,}/g, ',' )
 
-      list = input.split(',')
+      list = inputCopy.split(',')
       list = list.forEach(x => {
         if (x.length !== 0) {
           nlist.push(x)
@@ -198,99 +115,90 @@ class Modify extends React.Component {
         }
       });
 
+      let unique = [...new Set(nlist)];
 
-      request.urlList.forEach((item, i) => {
-        actualUrls.push(item.url)
-      });
-
-      urlsList = actualUrls.concat(nlist)
-
-      let unique = [...new Set(urlsList)];
-
-      urlsList = []
       unique.sort().forEach((item, i) => {
         urlsList.push({url: item})
       });
 
 
-      request.urlList = urlsList
+      requestCopy.urlList = urlsList
     } catch (error) {
       console.log(error)
     }
 
-    await this.setState({request: request})
+    setRequest(requestCopy)
   }
 
-  urlSet = async obj => {
-    await this.setState({url: obj.url})
+  let urlSet = async obj => {
+    setUrl(obj.url)
   }
 
-  urlModify = async value => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+  let urlModify = async value => {
+    let requestCopy = {...request}
     let item
-    item = request.urlList.find( o => o.url === this.state.url )
+    item = requestCopy.urlList.find( o => o.url === url )
     item.url = value
-    await this.setState({url: value, request: request})
+    setRequest(requestCopy)
+    setUrl(value)
   }
-
-  removeUrl = async obj => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+  
+  let removeUrl = async obj => {
+    let requestCopy = {...request}
     let list = []
-    request.urlList.map( o => {
+    requestCopy.urlList.map( o => {
       if (o.url !== obj.url) {
         list.push(o)
       }
     })
-    request.urlList = list
-    await this.setState({request: request})
+    requestCopy.urlList = list
+    setRequest(requestCopy)
   }
 
-
-
   //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+  let validationCheck = async () => {
+    setErrors({});
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
     let validators = new Validators()
     let regexp = new RegExp(/^[*]/g);
+    let ok = true;
 
-    if (!request.urlList) {
-      errors.urlListError = true
-      this.setState({errors: errors})
+    if (!requestCopy.hasOwnProperty('urlList') /*|| requestCopy.urlList.length < 1*/) {
+      ok = false;
+      errorsCopy.urlListError = true
     }
     else {
-      for await (let item of request.urlList) {
+      for await (let item of requestCopy.urlList) {
         if (regexp.test(item.url)) {
           continue
         }
         if (!validators.fqdn(item.url)) {
-          errors.urlListError = item.url
-          await this.setState({errors: errors})
+          ok = false;
+          errorsCopy.urlListError = item.url
           break
         }
         else {
-          delete errors.urlListError
-          await this.setState({errors: errors})
+          delete errorsCopy.urlListError
         }
       }
     }
-    return errors
+
+    setErrors(errorsCopy)
+    return ok;
   }
 
-  validation = async () => {
-    await this.validationCheck()
-
-    if (Object.keys(this.state.errors).length === 0) {
-      this.application_siteModify()
-    }
+  let validation = async () => {
+    let valid = await validationCheck();
+    setValid(valid)
   }
-
-
+  
+  
   //DISPOSAL ACTION
-  application_siteModify = async () => {
-    let request = Object.assign({}, this.state.request)
+  let application_siteModify = async () => {
+    let requestCopy = {...request}
     let list = []
-    request.urlList.forEach( o => {
+    requestCopy.urlList.map( o => {
       list.push(o.url)
     })
     let b = {}
@@ -298,207 +206,226 @@ class Modify extends React.Component {
       "url-list": list,
     }
 
-    this.setState({loading: true})
+    setLoading(true)
 
     let rest = new Rest(
       "PATCH",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        setLoading(false)
+        setResponse(true)
+        hanldeResponse()
       },
       error => {
         error = Object.assign(error, {
-          component: 'application_sitesModify',
+          component: 'application_sitesAdd',
           vendor: 'checkpoint',
           errorType: 'application_siteModifyError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-site/${this.props.obj.uid}/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/application-site/${props.obj.uid}/`, props.token, b)
   }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+  
+  let hanldeResponse = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(fetchItems(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: {},
-      request: {},
-      input: []
-    })
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
+    setVisible(false);
+    setLoading(false);
+    setInput('');
+    setUrl('');
+    setErrors({});
+    setRequest({});
+    setResponse(null);
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'application_sitesModify') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'application_sitesAdd') {
+      return <Error error={[props.error]} visible={true}/> 
     }
+  }
 
-    const columns = [
-      {
-        title: 'Url',
-        align: 'center',
-        width: 'auto',
-        dataIndex: 'url',
-        key: 'url',
-        ...this.getColumnSearchProps('url'),
-        render: (name, obj)  => (
-          <Input
-            placeholder={obj.url}
-            value={obj.url}
-            style={{ width: '150px' }}
-            onFocus={() => this.urlSet(obj)}
-            onChange={e => this.urlModify(e.target.value)}
-            onPressEnter={null}
-          />
-        ),
-      },
-      {
-        title: 'Remove',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <CloseCircleOutlined onClick={() => this.removeUrl(obj)}/>
-        ),
-      }
-    ]
-    return (
-      <Space direction='vertical'>
+  let columns = [
+    {
+      title: 'Url',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'url',
+      key: 'url',
+      ...getColumnSearchProps(
+        'url', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Input
+          placeholder={obj.url}
+          value={obj.url}
+          style={{ width: '150px' }}
+          onFocus={() => urlSet(obj)}
+          onChange={e => urlModify(e.target.value)}
+          onPressEnter={null}
+        />
+      ),
+    },
+    {
+      title: 'Remove',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <CloseCircleOutlined onClick={() => removeUrl(obj)}/>
+      ),
+    }
+  ]
 
-        <Button icon={modifyIcon} type='primary' onClick={() => this.details()} shape='round'/>
+  return (
+    <Space direction='vertical'>
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>Modify urls</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.response &&
-            <Result
-               status="success"
-               title="Custom application sites modified"
-             />
-          }
-          { !this.state.loading && !this.state.response &&
-            <React.Fragment>
-              <Row>
-                <Col span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={16}>
-                  <Input defaultValue={this.state.request.name} style={{width: 250}} disabled/>
-                </Col>
-              </Row>
-              <br/>
+<Button icon={modifyIcon} type='primary' onClick={() => details()} shape='round'/>
 
-              <Row>
-                <Col span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
-                </Col>
-                <Col span={16}>
-                  <Input defaultValue={this.state.request.description} style={{width: 250}} disabled/>
-                </Col>
-              </Row>
+      <Modal
+        title={<p style={{textAlign: 'center'}}>Modify urls</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+        { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !loading && response &&
+          <Result
+             status="success"
+             title="Custom application sites modified"
+           />
+        }
+        { !loading && !response &&
+          <React.Fragment>
+            <Row>
+              <Col span={2}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+              </Col>
+              <Col span={16}>
+                <Input defaultValue={request.name} style={{width: 250}} disabled/>
+              </Col>
+            </Row>
+            <br/>
 
-              <Divider/>
+            <Row>
+              <Col span={2}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
+              </Col>
+              <Col span={16}>
+                <Input defaultValue={request.description} style={{width: 250}} disabled/>
+              </Col>
+            </Row>
 
-              {/* radio button  per text area o tabella */}
-              <Row>
-                <Col offset={1} span={9}>
-                  <Input.TextArea
-                    rows={7}
-                    placeholder="Insert your url's list"
-                    value={this.state.input}
-                    onChange={e => this.urlListInput(e)}
-                  />
-                </Col>
+            <Divider/>
 
-                <Col offset={1} span={2}>
-                  <Button type="primary" shape='round' onClick={() => this.urlListSet()} >
-                    Normalize
-                  </Button>
-                </Col>
+            {/* radio button  per text area o tabella */}
+            <Row>
+              <Col offset={1} span={9}>
+                <Input.TextArea
+                  rows={7}
+                  placeholder="Insert your url's list"
+                  value={input}
+                  onChange={e => urlListInput(e.target.value)}
+                />
+              </Col>
 
-                <Col offset={1} span={9}>
-                  {this.state.errors.urlListError ?
-                    <React.Fragment>
-                      <Table
-                        columns={columns}
-                        dataSource={this.state.request.urlList}
-                        bordered
-                        rowKey="name"
-                        scroll={{x: 'auto'}}
-                        pagination={{ pageSize: 10 }}
-                        rowClassName={ (record, index) => (record.url === this.state.errors.urlListError) ? "rowClassName1" : "" }
-                        style={{marginBottom: 10}}
-                      />
-                      {this.state.errors.urlListError && (this.state.errors.urlListError.length > 0) ?
-                        <React.Fragment>
-                          <p><span style={{color: 'red'}}>{this.state.errors.urlListError}</span> is not a valid fqdn. <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
-                        </React.Fragment>
-                      :
-                        null
-                      }
+              <Col offset={1} span={2}>
+                <Button type="primary" shape='round' onClick={() => urlListSet()} >
+                  Normalize
+                </Button>
+              </Col>
 
-                    </React.Fragment>
-                  :
+              <Col offset={1} span={9}>
+                {errors.urlListError ?
+                  <React.Fragment>
                     <Table
                       columns={columns}
-                      dataSource={this.state.request.urlList}
+                      dataSource={request.urlList}
                       bordered
                       rowKey="name"
                       scroll={{x: 'auto'}}
                       pagination={{ pageSize: 10 }}
+                      rowClassName={ (record, index) => (record.url === errors.urlListError) ? "rowClassName1" : "" }
                       style={{marginBottom: 10}}
                     />
-                  }
-                </Col>
-              </Row>
-              <br/>
+                    {errors.urlListError && (errors.urlListError.length > 0) ?
+                      <React.Fragment>
+                        <p><span style={{color: 'red'}}>{errors.urlListError}</span> is not a valid fqdn. <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
+                      </React.Fragment>
+                    :
+                      null
+                    }
 
-              <Row>
+                  </React.Fragment>
+                :
+                  <Table
+                    columns={columns}
+                    dataSource={request.urlList}
+                    bordered
+                    rowKey="name"
+                    scroll={{x: 'auto'}}
+                    pagination={{ pageSize: 10 }}
+                    style={{marginBottom: 10}}
+                  />
+                }
+              </Col>
+            </Row>
+            <br/>
 
-              </Row>
+            <Row>
 
-              <Row>
-                <Col offset={10} span={3}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Modify Custom Application Sites
-                  </Button>
-                </Col>
-              </Row>
-            </React.Fragment>
-          }
-        </Modal>
+            </Row>
 
-        {errors()}
+            <Row>
+              <Col offset={10} span={3}>
+                <Button type="primary" shape='round' onClick={() => validation()} >
+                Modify Custom Application Sites
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
+        }
+      </Modal>
 
-      </Space>
+      {errorsComponent()}
 
-    )
-  }
+    </Space>
+
+  )
 }
 
-export default connect((state) => ({
-  token: state.authentication.token,
-  error: state.concerto.err,
 
-  asset: state.checkpoint.asset,
-  domain: state.checkpoint.domain,
-}))(Modify);
+export default connect((state) => ({
+token: state.authentication.token,
+error: state.concerto.err,
+
+asset: state.checkpoint.asset,
+domain: state.checkpoint.domain,
+}))(ModifyUrlInApplicationSite);

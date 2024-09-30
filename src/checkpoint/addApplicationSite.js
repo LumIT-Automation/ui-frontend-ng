@@ -1,14 +1,13 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import Error from '../concerto/error'
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
-import {
-  err
-} from '../concerto/store'
+import { err } from '../concerto/store';
 
 import {
   fetchItems,
@@ -16,162 +15,77 @@ import {
 
 import { Input, Button, Space, Modal, Spin, Result, Row, Col, Table, Divider } from 'antd';
 
-import { LoadingOutlined, PlusOutlined, CloseCircleOutlined, SearchOutlined } from '@ant-design/icons';
-import Highlighter from 'react-highlight-words';
+import { LoadingOutlined, PlusOutlined, CloseCircleOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
+function AddUrlInApplicationSite(props) {
+  let [visible, setVisible] = useState(false);
+  let [loading, setLoading] = useState(false);
+  let [input, setInput] = useState('');
+  let [errors, setErrors] = useState({});
+  let [valid, setValid] = useState(false);
+  let [request, setRequest] = useState({});
+  let [response, setResponse] = useState(null);
 
-class Add extends React.Component {
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      input: [],
-      errors: {},
-      request: {}
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else if ( Array.isArray(dataIndex) ) {
-          let r = record[dataIndex[0]]
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else {
-          return ''
-        }
-      }
-      catch (error){
-
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text => {
-      return this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
+  useEffect(() => {
+    console.log(errors)
+    if (Object.keys(errors).length === 0 && valid) {
+      application_siteAdd()
+      setValid(false)
     }
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  details = async () => {
-    await this.setState({visible: true})
-
-  }
+  }, [valid]);
 
   //SETTERS
-  nameSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.name = e.target.value
-    this.setState({request: request})
+  let nameSet = value => {
+    let requestCopy = {...request}
+    requestCopy.name = value
+    setRequest(requestCopy)
   }
-  descriptionSet = e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.description = e.target.value
-    this.setState({request: request})
+  
+  let descriptionSet = value => {
+    let requestCopy = {...request}
+    requestCopy.description = value
+    setRequest(requestCopy)
   }
-  urlListInput = async e => {
-    let input = e.target.value
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    delete request.urlList
-    delete errors.urlListError
-    await this.setState({request: request, errors: errors, input: input})
+  
+  let urlListInput = async value => {
+    let inputCopy = value
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
+    delete requestCopy.urlList
+    delete errorsCopy.urlListError
+    setRequest(requestCopy)
+    setErrors(errorsCopy)
+    setInput(inputCopy)
   }
-  urlListSet = async () => {
-    let input = JSON.parse(JSON.stringify(this.state.input))
-    let request = JSON.parse(JSON.stringify(this.state.request))
+  
+  let urlListSet = async () => {
+    let inputCopy = input
+    let requestCopy = {...request}
+    
     let list=[], nlist=[], urlsList=[]
     let regexp = new RegExp(/^[*]/g);
 
     try {
-      input = input.replaceAll('https://','');
-      input = input.replaceAll('http://','');   
+      inputCopy = inputCopy.replaceAll('https://','');
+      inputCopy = inputCopy.replaceAll('http://','');   
       /*
         /[\/\\]/: È un'espressione regolare che cerca i caratteri / e \.
         [\/\\]: Definisce una classe di caratteri che include la barra normale (/) e la barra rovesciata (\). Nota che per la barra rovesciata (\) è necessario un doppio backslash (\\) perché il backslash è un carattere di escape nelle espressioni regolari.
         g: È un flag globale che indica che la sostituzione deve avvenire su tutte le occorrenze del pattern nella stringa, non solo sulla prima.
         '': È la stringa di sostituzione, che in questo caso è vuota, quindi i caratteri / e \ vengono rimossi dalla stringa originale.
       */   
-      input = input.replaceAll(/[\/\\]/g,'');
-      input = input.replaceAll(/[/\t]/g,' ');
-      input = input.replaceAll(/[,&#+()$~%'":;~?!<>{}|@$€^]/g,' ');
-      input = input.replaceAll(/[/\r\n]/g,' ');
-      input = input.replaceAll(/[/\n]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[\/\\]/g,'');
+      inputCopy = inputCopy.replaceAll(/[/\t]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[,&£#+()$~%'":;~?!<>{}|@$€^]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[/\r\n]/g,' ');
+      inputCopy = inputCopy.replaceAll(/[/\n]/g,' ');
       /*
         /[/\s]{1,}/g: È una espressione regolare che cerca determinati pattern nella stringa.
         [/\s]: Cerca qualsiasi carattere che sia una barra (/) o uno spazio (\s).
@@ -179,9 +93,9 @@ class Add extends React.Component {
         g: È il flag per la sostituzione globale, il che significa che sostituirà tutte le occorrenze del pattern trovato nella stringa, non solo la prima.
         ,'': È il carattere con cui sostituire i pattern trovati. In questo caso, è una virgola.
       */
-      input = input.replace(/[/\s]{1,}/g, ',' )
+      inputCopy = inputCopy.replace(/[/\s]{1,}/g, ',' )
 
-      list = input.split(',')
+      list = inputCopy.split(',')
       list = list.forEach(x => {
         if (x.length !== 0) {
           nlist.push(x)
@@ -202,108 +116,104 @@ class Add extends React.Component {
       });
 
 
-      request.urlList = urlsList
+      requestCopy.urlList = urlsList
     } catch (error) {
       console.log(error)
     }
 
-    await this.setState({request: request})
+    setRequest(requestCopy)
   }
-
-  removeUrl = async obj => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
+  
+  let removeUrl = async obj => {
+    let requestCopy = {...request}
     let list = []
-    request.urlList.map( o => {
+    requestCopy.urlList.map( o => {
       if (o.url !== obj.url) {
         list.push(o)
       }
     })
-    request.urlList = list
-    await this.setState({request: request})
+    requestCopy.urlList = list
+    setRequest(requestCopy)
   }
 
-
-
   //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+  let validationCheck = async () => {
+    setErrors({});
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
     let validators = new Validators()
     let regexp = new RegExp(/^[*]/g);
+    let ok = true;
 
-    if (!request.name) {
-      errors.nameError = true
-      this.setState({errors: errors})
+    console.log(requestCopy)
+    if (!requestCopy.name) {
+      ok = false;
+      errorsCopy.nameError = true
     }
     else {
-      delete errors.nameError
-      this.setState({errors: errors})
+      delete errorsCopy.nameError
     }
-    if (!request.description) {
-      errors.descriptionError = true
-      this.setState({errors: errors})
-    }
-    else {
-      delete errors.descriptionError
-      this.setState({errors: errors})
-    }
-    if (!request.urlList) {
-      errors.urlListError = true
-      this.setState({errors: errors})
+    if (!requestCopy.description) {
+      ok = false;
+      errorsCopy.descriptionError = true
     }
     else {
-      for await (let item of request.urlList) {
+      delete errorsCopy.descriptionError
+    }
+    if (!requestCopy.hasOwnProperty('urlList') /*|| requestCopy.urlList.length < 1*/) {
+      ok = false;
+      errorsCopy.urlListError = true
+    }
+    else {
+      for await (let item of requestCopy.urlList) {
         if (regexp.test(item.url)) {
           continue
         }
         if (!validators.fqdn(item.url)) {
-          errors.urlListError = item.url
-          await this.setState({errors: errors})
+          ok = false;
+          errorsCopy.urlListError = item.url
           break
         }
         else {
-          delete errors.urlListError
-          await this.setState({errors: errors})
+          delete errorsCopy.urlListError
         }
       }
-
-
     }
 
-    return errors
+    setErrors(errorsCopy)
+    return ok;
   }
 
-  validation = async () => {
-    await this.validationCheck()
-
-    if (Object.keys(this.state.errors).length === 0) {
-      this.application_siteAdd()
-    }
+  let validation = async () => {
+    let valid = await validationCheck();
+    setValid(valid)
   }
-
-
+  
+  
   //DISPOSAL ACTION
-  application_siteAdd = async () => {
-    let request = Object.assign({}, this.state.request)
+  let application_siteAdd = async () => {
+    let requestCopy = {...request}
     let list = []
-    request.urlList.map( o => {
+    requestCopy.urlList.map( o => {
       list.push(o.url)
     })
     let b = {}
     b.data = {
-      "name": this.state.request.name,
-      "description": this.state.request.description,
+      "name": requestCopy.name,
+      "description": requestCopy.description,
       "url-list": list,
       "primary-category": "Custom_Application_Site",
       "urls-defined-as-regular-expression": false
     }
 
-    this.setState({loading: true})
+    setLoading(true)
 
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        setLoading(false)
+        setResponse(true)
+        hanldeResponse()
       },
       error => {
         error = Object.assign(error, {
@@ -311,191 +221,208 @@ class Add extends React.Component {
           vendor: 'checkpoint',
           errorType: 'application_siteAddError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/application-sites/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/application-sites/`, props.token, b)
   }
-
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+  
+  let hanldeResponse = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(fetchItems(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: {},
-      request: {}
-    })
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
+    setVisible(false);
+    setLoading(false);
+    setInput('');
+    setErrors({});
+    setRequest({});
+    setResponse(null);
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'application_sitesAdd') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'application_sitesAdd') {
+      return <Error error={[props.error]} visible={true}/> 
     }
+  }
 
-    const columns = [
-      {
-        title: 'Url',
-        align: 'center',
-        width: 'auto',
-        dataIndex: 'url',
-        key: 'url',
-        ...this.getColumnSearchProps('url'),
-      },
-      {
-        title: 'Remove',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <CloseCircleOutlined onClick={() => this.removeUrl(obj)}/>
-        ),
-      }
-    ]
-    return (
-      <Space direction='vertical'>
+  let columns = [
+    {
+      title: 'Url',
+      align: 'center',
+      width: 'auto',
+      dataIndex: 'url',
+      key: 'url',
+      ...getColumnSearchProps(
+        'url', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Remove',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <CloseCircleOutlined onClick={() => removeUrl(obj)}/>
+      ),
+    }
+  ]
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+  return (
+    <Space direction='vertical'>
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>ADD CUSTOM APPLICATION SITES</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.response &&
-            <Result
-               status="success"
-               title="Custom application sites added"
-             />
-          }
-          { !this.state.loading && !this.state.response &&
-            <React.Fragment>
-              <Row>
-                <Col span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={16}>
-                  {this.state.errors.nameError ?
-                    <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.nameSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.name} style={{width: 250}} onChange={e => this.nameSet(e)} />
-                  }
-                </Col>
-              </Row>
-              <br/>
+      <Button icon={addIcon} type='primary' onClick={() => setVisible(true)} shape='round'/>
 
-              <Row>
-                <Col span={2}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
-                </Col>
-                <Col span={16}>
-                  {this.state.errors.descriptionError ?
-                    <Input style={{width: 250, borderColor: 'red'}} onChange={e => this.descriptionSet(e)} />
-                  :
-                    <Input defaultValue={this.state.request.description} style={{width: 250}} onChange={e => this.descriptionSet(e)} />
-                  }
-                </Col>
-              </Row>
+      <Modal
+        title={<p style={{textAlign: 'center'}}>ADD CUSTOM APPLICATION SITES</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+        { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !loading && response &&
+          <Result
+             status="success"
+             title="Custom application sites added"
+           />
+        }
+        { !loading && !response &&
+          <React.Fragment>
+            <Row>
+              <Col span={2}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+              </Col>
+              <Col span={16}>
+                {errors.nameError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => nameSet(e.target.value)} />
+                :
+                  <Input defaultValue={request.name} style={{width: 250}} onChange={e => nameSet(e.target.value)} />
+                }
+              </Col>
+            </Row>
+            <br/>
 
-              <Divider/>
+            <Row>
+              <Col span={2}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Description:</p>
+              </Col>
+              <Col span={16}>
+                {errors.descriptionError ?
+                  <Input style={{width: 250, borderColor: 'red'}} onChange={e => descriptionSet(e.target.value)} />
+                :
+                  <Input defaultValue={request.description} style={{width: 250}} onChange={e => descriptionSet(e.target.value)} />
+                }
+              </Col>
+            </Row>
 
-              {/* radio button  per text area o tabella */}
-              <Row>
-                <Col offset={1} span={9}>
-                  <Input.TextArea
-                    rows={7}
-                    placeholder="Insert your url's list"
-                    value={this.state.input}
-                    onChange={e => this.urlListInput(e)}
-                  />
-                </Col>
+            <Divider/>
 
-                <Col offset={1} span={2}>
-                  <Button type="primary" shape='round' onClick={() => this.urlListSet()} >
-                    Normalize
-                  </Button>
-                </Col>
+            {/* radio button  per text area o tabella */}
+            <Row>
+              <Col offset={1} span={9}>
+                <Input.TextArea
+                  rows={7}
+                  placeholder="Insert your url's list"
+                  value={input}
+                  onChange={e => urlListInput(e.target.value)}
+                />
+              </Col>
 
-                <Col offset={1} span={9}>
-                  {this.state.errors.urlListError ?
-                    <React.Fragment>
-                      <Table
-                        columns={columns}
-                        dataSource={this.state.request.urlList}
-                        bordered
-                        rowKey="name"
-                        scroll={{x: 'auto'}}
-                        pagination={{ pageSize: 10 }}
-                        rowClassName={ (record, index) => (record.url === this.state.errors.urlListError) ? "rowClassName1" : "" }
-                        style={{marginBottom: 10}}
-                      />
-                      {this.state.errors.urlListError && (this.state.errors.urlListError.length > 0) ?
-                        <React.Fragment>
-                          <p><span style={{color: 'red'}}>{this.state.errors.urlListError}</span> is not a valid fqdn. <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
-                        </React.Fragment>
-                      :
-                        null
-                      }
+              <Col offset={1} span={2}>
+                <Button type="primary" shape='round' onClick={() => urlListSet()} >
+                  Normalize
+                </Button>
+              </Col>
 
-                    </React.Fragment>
-                  :
+              <Col offset={1} span={9}>
+                {errors.urlListError ?
+                  <React.Fragment>
                     <Table
                       columns={columns}
-                      dataSource={this.state.request.urlList}
+                      dataSource={request.urlList}
                       bordered
                       rowKey="name"
                       scroll={{x: 'auto'}}
                       pagination={{ pageSize: 10 }}
+                      rowClassName={ (record, index) => (record.url === errors.urlListError) ? "rowClassName1" : "" }
                       style={{marginBottom: 10}}
                     />
-                  }
-                </Col>
-              </Row>
-              <br/>
+                    {errors.urlListError && (errors.urlListError.length > 0) ?
+                      <React.Fragment>
+                        <p><span style={{color: 'red'}}>{errors.urlListError}</span> is not a valid fqdn. <a href="https://www.ietf.org/rfc/rfc952.txt" target="_blank">rfc952</a> or <a href="https://www.ietf.org/rfc/rfc1123.txt" target="_blank">rfc1123</a> for more details.</p>
+                      </React.Fragment>
+                    :
+                      null
+                    }
 
-              <Row>
+                  </React.Fragment>
+                :
+                  <Table
+                    columns={columns}
+                    dataSource={request.urlList}
+                    bordered
+                    rowKey="name"
+                    scroll={{x: 'auto'}}
+                    pagination={{ pageSize: 10 }}
+                    style={{marginBottom: 10}}
+                  />
+                }
+              </Col>
+            </Row>
+            <br/>
 
-              </Row>
+            <Row>
 
-              <Row>
-                <Col offset={10} span={3}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Custom Application Sites
-                  </Button>
-                </Col>
-              </Row>
-            </React.Fragment>
-          }
-        </Modal>
+            </Row>
 
-        {errors()}
+            <Row>
+              <Col offset={10} span={3}>
+                <Button type="primary" shape='round' onClick={() => validation()} >
+                  Add Custom Application Sites
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
+        }
+      </Modal>
 
-      </Space>
+      {errorsComponent()}
 
-    )
-  }
+    </Space>
+
+  )
 }
 
-export default connect((state) => ({
-  token: state.authentication.token,
-  error: state.concerto.err,
 
-  asset: state.checkpoint.asset,
-  domain: state.checkpoint.domain,
-}))(Add);
+export default connect((state) => ({
+token: state.authentication.token,
+error: state.concerto.err,
+
+asset: state.checkpoint.asset,
+domain: state.checkpoint.domain,
+}))(AddUrlInApplicationSite);
