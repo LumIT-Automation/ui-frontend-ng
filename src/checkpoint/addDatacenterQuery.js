@@ -1,81 +1,77 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../_helpers/Rest'
-import Validators from '../_helpers/validators'
 import Error from '../concerto/error'
 
-import {
-  err
-} from '../concerto/store'
+import { err } from '../concerto/store';
 
 import {
-  fetchItems
+  fetchItems,
 } from './store'
 
 import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox, Divider } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const datacenterServerLoading = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
+const datacenterServerLoading = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
+function Add(props) {
+  let [visible, setVisible] = useState(false);
+  let [datacenterServers, setDatacenterServers] = useState([]);
+  let [defaultCheckedList, setDefaultCheckedList] = useState([]);
+  let [checkedList, setCheckedList] = useState([]);
+  let [indeterminate, setIndeterminate] = useState(true);
+  let [checkAll, setCheckAll] = useState(false);
 
+  let [keyTypes, setKeyTypes] = useState(['predefined', 'tag']);
+  let [predefinedKeys, setPredefinedKeys] = useState(['type-in-data-center', 'name-in-data-center', 'ip-address']);
+  let [tagKeys, setTagKeys] = useState(['tag']);
+  let [detailsLevels, setDetailsLevels] = useState(['uid', 'standard', 'full']);
+      
+  let [loading, setLoading] = useState(false);
+  let [datacenterServersLoading, setDatacenterServersLoading] = useState(false);
+  let [request, setRequest] = useState({});
+  let [errors, setErrors] = useState({});
+  let [valid, setValid] = useState(false);
+  let [response, setResponse] = useState(null);
 
-class Add extends React.Component {
+  const prevRequest = useRef(request);
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      datacenterServers: [],
-      defaultCheckedList: [],
-      checkedList: [],
-      indeterminate: true,
-      checkAll: false,
-      'key-types': ['predefined', 'tag'],
-      'predefined-keys': ['type-in-data-center', 'name-in-data-center', 'ip-address'],
-      'tag-keys': ['tag'],
-      'details-levels': ['uid', 'standard', 'full'],
-      request: {},
-      errors: {},
-
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.request['key-type'] !== this.state.request['key-type']) {
-      let request = JSON.parse(JSON.stringify(this.state.request))
-      delete request['key']
-      delete request['values']
-      this.setState({request: request})
+  useEffect(() => {
+    if (prevRequest.current['keyType'] !== request['keyType']) {
+      const newRequest = { ...request };
+      delete newRequest['key'];
+      delete newRequest['values'];
+      setRequest(newRequest);
+    } else if (prevRequest.current['key'] !== request['key']) {
+      const newRequest = { ...request };
+      delete newRequest['values'];
+      setRequest(newRequest);
     }
+    
+    // Aggiorna prevRequest dopo che il rendering è stato completato
+    prevRequest.current = request;
+  }, [request['keyType'], request['key']]); // Dipendenze
 
-    if (prevState.request['key'] !== this.state.request['key']) {
-      let request = JSON.parse(JSON.stringify(this.state.request))
-      delete request['values']
-      this.setState({request: request})
+  useEffect(() => {
+    if (visible) {
+      datacenterServersGet()
     }
-  }
+  }, [visible]);
 
-  componentWillUnmount() {
-  }
+  useEffect(() => {
+    console.log(errors)
+    if (Object.keys(errors).length === 0 && valid) {
+      datacenterQueryAdd()
+      setValid(false)
+    }
+  }, [valid]);
 
-  details = () => {
-    this.setState({visible: true})
-    this.datacenterServersGet()
-  }
-
-  datacenterServersGet = async () => {
-    this.setState({datacenterServersLoading: true})
+  let datacenterServersGet = async () => {
+    setDatacenterServersLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
@@ -83,7 +79,8 @@ class Add extends React.Component {
         resp.data.items.forEach((item, i) => {
           list.push(item.name)
         });
-        this.setState({datacenterServers: list, datacenterServersLoading: false})
+        setDatacenterServers(list)
+        setDatacenterServersLoading(false)
       },
       error => {
         error = Object.assign(error, {
@@ -91,107 +88,102 @@ class Add extends React.Component {
           vendor: 'checkpoint',
           errorType: 'datacenterQuerysError'
         })
-        this.props.dispatch(err(error))
-        this.setState({datacenterServersLoading: false})
+        props.dispatch(err(error))
+        setDatacenterServersLoading(false)
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/datacenter-servers/?local`, this.props.token)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/datacenter-servers/?local`, props.token)
 
   }
 
-  set = async (e, key) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request[key] = e
-    await this.setState({request: request})
+  let set = async (e, key) => {
+    let requestCopy = {...request}
+    requestCopy[key] = e
+    setRequest(requestCopy)
   }
-  //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
 
-    if (!request['name']) {
-      errors['nameError'] = true
-      await this.setState({errors: errors})
+  let validationCheck = async () => {
+    setErrors({});
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
+    let ok = true;
+
+    if (!requestCopy['name']) {
+      errorsCopy['nameError'] = true
+      ok = false;
     }
     else {
-      delete errors['nameError']
-      await this.setState({errors: errors})
+      delete errorsCopy['nameError']
     }
 
-    if (!request['key-type']) {
-      errors['key-typeError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['keyType']) {
+      errorsCopy['keyTypeError'] = true
+      ok = false;
     }
     else {
-      delete errors['key-typeError']
-      await this.setState({errors: errors})
+      delete errorsCopy['keyTypeError']
     }
 
-    if (this.state.request['key-type']) {
-      if (!request['key']) {
-        errors['keyError'] = true
-        await this.setState({errors: errors})
+    if (requestCopy['keyType']) {
+      if (!requestCopy['key']) {
+        errorsCopy['keyError'] = true
+        ok = false;
       }
       else {
-        delete errors['keyError']
-        await this.setState({errors: errors})
+        delete errorsCopy['keyError']
       }
 
-      if (!request['values']) {
-        errors['valuesError'] = true
-        await this.setState({errors: errors})
+      if (!requestCopy['values']) {
+        errorsCopy['valuesError'] = true
+        ok = false;
       }
       else {
-        delete errors['valuesError']
-        await this.setState({errors: errors})
+        delete errorsCopy['valuesError']
       }
     }
 
-    if (!request['tags']) {
-      errors['tagsError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['tags']) {
+      errorsCopy['tagsError'] = true
+      ok = false;
     }
     else {
-      delete errors['tagsError']
-      await this.setState({errors: errors})
+      delete errorsCopy['tagsError']
     }
 
-    if (!request['details-level']) {
-      errors['details-levelError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['detailsLevel']) {
+      errorsCopy['detailsLevelError'] = true
+      ok = false;
     }
     else {
-      delete errors['details-levelError']
-      await this.setState({errors: errors})
+      delete errorsCopy['detailsLevelError']
     }
 
-    return errors
+    setErrors(errorsCopy)
+    return ok;
   }
 
-  validation = async () => {
-    await this.validationCheck()
-
-    if (Object.keys(this.state.errors).length === 0) {
-      this.datacenterQueryAdd()
-    }
+  let validation = async () => {
+    let valid = await validationCheck();
+    console.log(valid)
+    console.log(errors)
+    setValid(valid)
   }
-
 
   //DISPOSAL ACTION
-  datacenterQueryAdd = async () => {
-    let request = Object.assign({}, this.state.request)
+  let datacenterQueryAdd = async () => {
+    console.log('disposal')
+    let requestCopy = {...request}
     let tags = []
     let values = []
     let l = []
 
     try {
-      l = request.tags.split(',')
+      l = requestCopy.tags.split(',')
       l.forEach((item, i) => {
         tags.push(item.trim())
       });
 
-      l = request.values.split(',')
+      l = requestCopy.values.split(',')
       l.forEach((item, i) => {
         values.push(item.trim())
       });
@@ -203,33 +195,35 @@ class Add extends React.Component {
 
     let b = {}
     b.data = {
-      "name": request.name,
+      "name": requestCopy.name,
       "query-rules": {
-        "key-type": request['key-type'],
-        "key": request.key,
+        "key-type": requestCopy['keyType'],
+        "key": requestCopy.key,
         "values": values
       },
 
       "tags": tags,
       "color": "orange",
-      "comments": request.comments,
-      "details-level": request['details-level'],
+      "comments": requestCopy.comments,
+      "details-level": requestCopy['detailsLevel'],
       "ignore-warnings": true,
       "ignore-errors": false
     }
 
-    if (this.state.checkedList.length === 0) {
+    if (checkedList.length === 0) {
       b.data["data-centers"] = 'All'
     } else {
-      b.data["data-centers"] = this.state.checkedList
+      b.data["data-centers"] = checkedList
     }
 
-    this.setState({loading: true})
+    setLoading(true)
 
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        setLoading(false)
+        setResponse(true)
+        hanldeResponse()
       },
       error => {
         error = Object.assign(error, {
@@ -237,336 +231,361 @@ class Add extends React.Component {
           vendor: 'checkpoint',
           errorType: 'datacenterQueryAddError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/datacenter-queries/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/datacenter-queries/`, props.token, b)
   }
 
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+  let hanldeResponse = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(fetchItems(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: {},
-      request: {}
-    })
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
+    setVisible(false);
+    setDatacenterServers([]);
+    setDefaultCheckedList([]);
+    setCheckedList([]);
+    setIndeterminate(true);
+    setCheckAll(false);
+
+    setKeyTypes(['predefined', 'tag']);
+    setPredefinedKeys(['type-in-data-center', 'name-in-data-center', 'ip-address']);
+    setTagKeys(['tag']);
+    setDetailsLevels(['uid', 'standard', 'full']);
+        
+    setLoading(false);
+    setDatacenterServersLoading(false);
+    setRequest({});
+    setErrors({});
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'datacenterQuerysAdd') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'datacenterQuerysAdd') {
+      return <Error error={[props.error]} visible={true}/> 
     }
+  }
 
-    const onChange = (list) => {
-      this.setState({checkedList: list});
-      this.setState({indeterminate: (!!list.length && list.length < this.state.datacenterServers.length)} )
-      this.setState({checkAll: list.length === this.state.datacenterServers.length});
-    };
+  let onChangeCustom = (list) => {
+    setCheckedList(list)
+    setIndeterminate(!!list.length && list.length < datacenterServers.length)
+    setCheckAll(list.length === datacenterServers.length)
+  };
 
-    const onCheckAllChange = (e) => {
-      this.setState({checkedList : (e.target.checked ? this.state.datacenterServers : []) })
-      this.setState({indeterminate: false})
-      this.setState({checkAll: e.target.checked})
-    };
+  let onCheckAllChange = (e) => {
+    setCheckedList((e.target.checked ? datacenterServers : []))
+    setIndeterminate(false)
+    setCheckAll()
+  };
 
-    let createElement = (component, key, choices) => {
+  let createElement = (component, key, choices) => {
 
-      switch (component) {
-        case 'input':
-          return (
-            <Input
-              style=
-              {this.state.errors[`${key}Error`] ?
-                {borderColor: 'red'}
-              :
-                {}
-              }
-              onChange={event => this.set(event.target.value, key)}
+    switch (component) {
+      case 'input':
+        return (
+          <Input
+            style=
+            {errors[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(event.target.value, key)}
+          />
+        )
+        break;
+
+      case 'checkbox':
+        return (
+          <Checkbox
+            checked={request[`${key}`]}
+            onChange={event => set(event.target.checked, key)}
+          />
+        )
+        break;
+
+      case 'checkboxGroup':
+        return (
+          <React.Fragment>
+            <Checkbox 
+              indeterminate={indeterminate} 
+              onChange={onCheckAllChange} 
+              checked={checkAll}
+            >
+              Check all
+            </Checkbox>
+            <Divider />
+            <Checkbox.Group 
+              options={datacenterServers} 
+              value={checkedList} 
+              onChange={onChangeCustom}
             />
-          )
-          break;
+          </React.Fragment>
+        )
+        break;
 
-        case 'checkbox':
-          return (
-            <Checkbox
-              checked={this.state.request[`${key}`]}
-              onChange={event => this.set(event.target.checked, key)}
-            />
-          )
-          break;
-
-        case 'checkboxGroup':
-          return (
+      case 'radio':
+        return (
+          <Radio.Group
+            onChange={event => set(event.target.value, key)}
+            value={request[`${key}`]}
+            style={errors[`${key}Error`] ?
+              {border: `1px solid red`}
+            :
+              {}
+            }
+          >
             <React.Fragment>
-              <Checkbox indeterminate={this.state.indeterminate} onChange={onCheckAllChange} checked={this.state.checkAll}>
-                Check all
-              </Checkbox>
-              <Divider />
-              <Checkbox.Group options={this.state.datacenterServers} value={this.state.checkedList} onChange={onChange} />
+              {choices.map((n, i) => {
+                return (
+                  <Radio.Button key={i} value={n}>{n}</Radio.Button>
+                )
+              })
+              }
             </React.Fragment>
-          )
-          break;
+        </Radio.Group>
+        )
+        break;
 
-        case 'radio':
-          return (
-            <Radio.Group
-              onChange={event => this.set(event.target.value, key)}
-              value={this.state.request[`${key}`]}
-              style={this.state.errors[`${key}Error`] ?
-                {border: `1px solid red`}
-              :
-                {}
-              }
-            >
-              <React.Fragment>
-                {this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Radio.Group>
-          )
-          break;
+      case 'textArea':
+        return (
+          <Input.TextArea
+            rows={7}
+            placeholder={
+            (key === 'tags') ? "Insert your tags' list, each one comma separated. \nExample: tag1, tag2, ..., tagN" :
+            (key === "values") ? "The value(s) of the Data Center property to match the Query Rule. Values are case-insensitive. There is an 'OR' operation between multiple values. \n\nFor key-type 'predefined' and key 'ip-address', the values must be an IPv4 or IPv6 address. \nFor key-type 'tag', the values must be the Data Center tag values. \n\nInsert your values' list, each one comma separated. \nExample: val1, val2, ..., valN" :
+            ""
+            }
+            value={request[`${key}`]}
+            onChange={event => set(event.target.value, key)}
+            style=
+            { errors[`${key}Error`] ?
+              {borderColor: `red`}
+            :
+              {}
+            }
+          />
+        )
+        break;
 
-        case 'textArea':
-          return (
-            <Input.TextArea
-              rows={7}
-              placeholder={
-              (key === 'tags') ? "Insert your tags' list, each one comma separated. \nExample: tag1, tag2, ..., tagN" :
-              (key === "values") ? "The value(s) of the Data Center property to match the Query Rule. Values are case-insensitive. There is an 'OR' operation between multiple values. \n\nFor key-type 'predefined' and key 'ip-address', the values must be an IPv4 or IPv6 address. \nFor key-type 'tag', the values must be the Data Center tag values. \n\nInsert your values' list, each one comma separated. \nExample: val1, val2, ..., valN" :
-              ""
-              }
-              value={this.state.request[`${key}`]}
-              onChange={event => this.set(event.target.value, key)}
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {borderColor: `red`}
-              :
-                {}
-              }
-            />
-          )
-          break;
+      case 'select':
+        return (
+          <Select
+            value={request[`${key}`]}
+            showSearch
+            style=
+            { errors[`${key}Error`] ?
+              {width: "100%", border: `1px solid red`}
+            :
+              {width: "100%"}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set(event, key)}
+          >
+            <React.Fragment>
+            { choices === 'AWS Regions' ?
+              ['AWS Regions'].map((v,i) => {
+                let str = `${v[0].toString()} - ${v[1].toString()}`
+                return (
+                  <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                )
+              })
+            :
+              choices.map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
+            }
+            </React.Fragment>
+          </Select>
+        )
 
-        case 'select':
-          return (
-            <Select
-              value={this.state.request[`${key}`]}
-              showSearch
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {width: "100%", border: `1px solid red`}
-              :
-                {width: "100%"}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set(event, key)}
-            >
-              <React.Fragment>
-              { choices === 'AWS Regions' ?
-                this.state['AWS Regions'].map((v,i) => {
-                  let str = `${v[0].toString()} - ${v[1].toString()}`
-                  return (
-                    <Select.Option key={i} value={v[1]}>{str}</Select.Option>
-                  )
-                })
-              :
-                this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-              }
-              </React.Fragment>
-            </Select>
-          )
-
-        default:
-
-      }
+      default:
 
     }
-    return (
-      <Space direction='vertical'>
 
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
+  }
 
-        <Modal
-          title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.response &&
-            <Result
-               status="success"
-               title="Datacenter Query addedd"
-             />
-          }
-          { !this.state.loading && !this.state.response &&
-            <React.Fragment>
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('input', 'name')}
-                </Col>
-              </Row>
-              <br/>
+  return (
+    <Space direction='vertical'>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key Type:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('radio', 'key-type', 'key-types')}
-                </Col>
-              </Row>
-              <br/>
+      <Button icon={addIcon} type='primary' onClick={() => setVisible(true)} shape='round'/>
 
-              {this.state.request['key-type'] === 'predefined' ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createElement('radio', 'key', 'predefined-keys')}
-                    </Col>
-                  </Row>
-                  <br/>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createElement('textArea', 'values')}
-                    </Col>
-                  </Row>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-              }
+      <Modal
+        title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+        { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !loading && response &&
+          <Result
+             status="success"
+             title="Datacenter Query addedd"
+           />
+        }
+        { !loading && !response &&
+          <React.Fragment>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('input', 'name')}
+              </Col>
+            </Row>
+            <br/>
 
-              {this.state.request['key-type'] === 'tag' ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createElement('radio', 'key', 'tag-keys')}
-                    </Col>
-                  </Row>
-                  <br/>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createElement('textArea', 'values')}
-                    </Col>
-                  </Row>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-              }
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key Type:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('radio', 'keyType', keyTypes)}
+              </Col>
+            </Row>
+            <br/>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenters:</p>
-                </Col>
-                {this.state.datacenterServersLoading ?
-                  <Col span={8}>
-                    <Spin indicator={datacenterServerLoading} style={{margin: 'auto 48%'}}/>
+            {request['keyType'] === 'predefined' ?
+              <React.Fragment>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
                   </Col>
-                :
+                  <Col span={7}>
+                    {createElement('radio', 'key', predefinedKeys)}
+                  </Col>
+                </Row>
+                <br/>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createElement('textArea', 'values')}
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
+              null
+            }
+
+            {request['keyType'] === 'tag' ?
+              <React.Fragment>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Key:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createElement('radio', 'key', tagKeys)}
+                  </Col>
+                </Row>
+                <br/>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Values:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createElement('textArea', 'values')}
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
+              null
+            }
+
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Datacenters:</p>
+              </Col>
+              {datacenterServersLoading ?
                 <Col span={8}>
-                  {createElement('checkboxGroup')}
+                  <Spin indicator={datacenterServerLoading} style={{margin: 'auto 48%'}}/>
                 </Col>
-                }
+              :
+              <Col span={8}>
+                {createElement('checkboxGroup')}
+              </Col>
+              }
 
-              </Row>
-              <br/>
+            </Row>
+            <br/>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('textArea', 'tags')}
-                </Col>
-              </Row>
-              <br/>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('textArea', 'tags')}
+              </Col>
+            </Row>
+            <br/>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('textArea', 'comments')}
-                </Col>
-              </Row>
-              <br/>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('textArea', 'comments')}
+              </Col>
+            </Row>
+            <br/>
 
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('radio', 'details-level', 'details-levels')}
-                </Col>
-              </Row>
-              <br/>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('radio', 'detailsLevel', detailsLevels)}
+              </Col>
+            </Row>
+            <br/>
 
 
 
-              <Row>
-                <Col offset={8} span={16}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Datacenter Query
-                  </Button>
-                </Col>
-              </Row>
-            </React.Fragment>
-          }
-        </Modal>
+            <Row>
+              <Col offset={8} span={16}>
+                <Button type="primary" shape='round' onClick={() => validation()} >
+                  Add Datacenter Query
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
+        }
+      </Modal>
 
-        {errors()}
+      {errorsComponent()}
 
-      </Space>
+    </Space>
 
-    )
-  }
+  )
 }
 
 export default connect((state) => ({
@@ -576,3 +595,5 @@ export default connect((state) => ({
   asset: state.checkpoint.asset,
   domain: state.checkpoint.domain
 }))(Add);
+
+

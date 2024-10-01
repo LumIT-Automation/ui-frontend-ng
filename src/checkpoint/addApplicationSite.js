@@ -34,7 +34,6 @@ function AddUrlInApplicationSite(props) {
   let searchInput = useRef(null);
 
   useEffect(() => {
-    console.log(errors)
     if (Object.keys(errors).length === 0 && valid) {
       application_siteAdd()
       setValid(false)
