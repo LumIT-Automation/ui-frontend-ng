@@ -162,12 +162,6 @@ function ModifyItem(props) {
     }
   }, [itemTypes] );
 
-  useEffect( () => { 
-    console.log('domainDataPurged', domainDataPurged)
-    console.log('groupData', groupData)
-    console.log(domainData)
-  }, [domainDataPurged, groupData, domainData] );
-
   const dataGet = async () => {
     let list = []
     setDataLoading(true)

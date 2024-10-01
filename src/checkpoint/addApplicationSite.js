@@ -144,7 +144,6 @@ function AddUrlInApplicationSite(props) {
     let regexp = new RegExp(/^[*]/g);
     let ok = true;
 
-    console.log(requestCopy)
     if (!requestCopy.name) {
       ok = false;
       errorsCopy.nameError = true

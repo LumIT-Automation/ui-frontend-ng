@@ -63,7 +63,6 @@ function Add(props) {
   }, [visible]);
 
   useEffect(() => {
-    console.log(errors)
     if (Object.keys(errors).length === 0 && valid) {
       datacenterQueryAdd()
       setValid(false)
@@ -164,14 +163,11 @@ function Add(props) {
 
   let validation = async () => {
     let valid = await validationCheck();
-    console.log(valid)
-    console.log(errors)
     setValid(valid)
   }
 
   //DISPOSAL ACTION
   let datacenterQueryAdd = async () => {
-    console.log('disposal')
     let requestCopy = {...request}
     let tags = []
     let values = []

@@ -1,80 +1,65 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../_helpers/Rest'
-import Validators from '../_helpers/validators'
 import Error from '../concerto/error'
 
-import {
-  err
-} from '../concerto/store'
+import { err } from '../concerto/store';
 
 import {
-  fetchItems
+  fetchItems,
 } from './store'
 
-import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox } from 'antd';
+import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col, Radio, Checkbox, Divider } from 'antd';
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
+function Add(props) {
+  let [visible, setVisible] = useState(false);
+  let [AWSRegions, setAWSRegions] = useState([]);
+  let [types, setTypes] = useState(['aws', 'azure', 'gcp']);
 
-class Add extends React.Component {
+  let [awsAuthenticationMethods, setAwsAuthenticationMethods] = useState(['user-authentication', 'role-authentication'])
+  let [azureAuthenticationMethods, setAzureAuthenticationMethods] = useState(['user-authentication', 'service-principal-authentication'])
+  let [gcpAuthenticationMethods, setGcpAuthenticationMethods] = useState(['key-authentication', 'vm-instance-authentication'])
+  let [azureEnvironment, setAzureEnvironment] = useState(['AzureCloud', 'AzureChinaCloud', 'AzureUSGovernment'])
+  let [detailsLevels, setDetailsLevels] = useState(['uid', 'standard', 'full'])
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      ['AWS Regions']: [],
-      types: ['aws', 'azure', 'gcp'],
-      'aws-authentication-methods': ['user-authentication', 'role-authentication'],
-      'azure-authentication-methods': ['user-authentication', 'service-principal-authentication'],
-      'gcp-authentication-methods': ['key-authentication', 'vm-instance-authentication'],
-      'azure-environment': ['AzureCloud', 'AzureChinaCloud', 'AzureUSGovernment'],
-      'details-levels': ['uid', 'standard', 'full'],
-      request: {},
-      errors: {},
+  let [loading, setLoading] = useState(false);
+  let [request, setRequest] = useState({});
+  let [errors, setErrors] = useState({});
+  let [valid, setValid] = useState(false);
+  let [response, setResponse] = useState(null);
 
-    };
-  }
-
-  componentDidMount() {
-    if (!this.props.error) {
-      this.main()
+  useEffect(() => {
+    if (visible) {
+      main()
     }
-  }
+  }, [visible]);
 
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
+  useEffect(() => {
+    if (Object.keys(errors).length === 0 && valid) {
+      datacenterServerAdd()
+      setValid(false)
+    }
+  }, [valid]);
 
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-  }
-
-  //SETTERS
-
-  main = async () => {
-    await this.setState({loading: true})
+  let main = async () => {
+    setLoading(true)
     let conf = []
-    let configurationsFetched = await this.configurationGet()
+    let configurationsFetched = await configurationGet()
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       let error = Object.assign(configurationsFetched, {
         component: 'datacenterServersAdd',
         vendor: 'checkpoint',
         errorType: 'configurationsError'
       })
-      this.props.dispatch(err(error))
-      await this.setState({loading: false})
+      props.dispatch(err(error))
+      setLoading(false)
       return
     }
     else {
@@ -84,18 +69,18 @@ class Add extends React.Component {
           conf.forEach((item, i) => {
             if (item.key === 'AWS Regions') {
               let list = JSON.parse(item.value)
-              this.setState({['AWS Regions']: list})
+              setAWSRegions(list)
             }
           });
         } catch (error) {
           console.log(error)
         }
       }
-      await this.setState({loading: false})
+      setLoading(false)
     }
   }
 
-  configurationGet = async () => {
+  let configurationGet = async () => {
     let r
 
     let rest = new Rest(
@@ -107,218 +92,201 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR('checkpoint/configuration/global/', this.props.token)
+    await rest.doXHR('checkpoint/configuration/global/', props.token)
     return r
   }
 
-  set = async (e, key) => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request[key] = e
-    await this.setState({request: request})
+  let set = async (e, key) => {
+    let requestCopy = {...request}
+    requestCopy[key] = e
+    setRequest(requestCopy)
   }
 
   //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
-    let validators = new Validators()
+  let validationCheck = async () => {
+    setErrors({});
+    let requestCopy = {...request}
+    let errorsCopy = {...errors}
+    let ok = true;
 
-    if (!request['name']) {
-      errors['nameError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['name']) {
+      errorsCopy['nameError'] = true
+      ok = false;
     }
     else {
-      delete errors['nameError']
-      await this.setState({errors: errors})
+      delete errorsCopy['nameError']
     }
 
-    if (!request['type']) {
-      errors['typeError'] = true
-      await this.setState({errors: errors})
-    }
-    else {
-      delete errors['typeError']
-      await this.setState({errors: errors})
-    }
-
-    if (!request['authentication-method']) {
-      errors['authentication-methodError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['type']) {
+      errorsCopy['typeError'] = true
+      ok = false;
     }
     else {
-      delete errors['authentication-methodError']
-      await this.setState({errors: errors})
+      delete errorsCopy['typeError']
     }
 
-    if (this.state.request.type !== 'aws') {
-      delete errors['access-key-idError']
-      delete errors['secret-access-keyError']
-      delete errors['regionError']
-      delete errors['sts-roleError']
+    if (!requestCopy['authentication-method']) {
+      errorsCopy['authentication-methodError'] = true
+      ok = false;
+    }
+    else {
+      delete errorsCopy['authentication-methodError']
     }
 
-    if (this.state.request.type !== 'azure') {
-      delete errors['application-idError']
-      delete errors['application-keyError']
-      delete errors['directory-idError']
-      delete errors['usernameError']
-      delete errors['passwordError']
-      delete errors['password-base64Error']
-      delete errors['environmentError']
+    if (requestCopy.type !== 'aws') {
+      delete errorsCopy['access-key-idError']
+      delete errorsCopy['secret-access-keyError']
+      delete errorsCopy['regionError']
+      delete errorsCopy['sts-roleError']
     }
 
-    if (this.state.request.type !== 'gcp') {
-      delete errors['private-keyError']
+    if (requestCopy.type !== 'azure') {
+      delete errorsCopy['application-idError']
+      delete errorsCopy['application-keyError']
+      delete errorsCopy['directory-idError']
+      delete errorsCopy['usernameError']
+      delete errorsCopy['passwordError']
+      delete errorsCopy['password-base64Error']
+      delete errorsCopy['environmentError']
     }
 
-    if (this.state.request.type === 'aws') {
-      if (!request['access-key-id']) {
-        errors['access-key-idError'] = true
-        await this.setState({errors: errors})
+    if (requestCopy.type !== 'gcp') {
+      delete errorsCopy['private-keyError']
+    }
+
+    if (requestCopy.type === 'aws') {
+      if (!requestCopy['access-key-id']) {
+        errorsCopy['access-key-idError'] = true
+        ok = false;
       }
       else {
-        delete errors['access-key-idError']
-        await this.setState({errors: errors})
+        delete errorsCopy['access-key-idError']
       }
 
-      if (!request['secret-access-key']) {
-        errors['secret-access-keyError'] = true
-        await this.setState({errors: errors})
+      if (!requestCopy['secret-access-key']) {
+        errorsCopy['secret-access-keyError'] = true
+        ok = false;
       }
       else {
-        delete errors['secret-access-keyError']
-        await this.setState({errors: errors})
+        delete errorsCopy['secret-access-keyError']
       }
 
-      if (!request['region']) {
-        errors['regionError'] = true
-        await this.setState({errors: errors})
+      if (!requestCopy['region']) {
+        errorsCopy['regionError'] = true
+        ok = false;
       }
       else {
-        delete errors['regionError']
-        await this.setState({errors: errors})
+        delete errorsCopy['regionError']
       }
 
-      if (request['enable-sts-assume-role']) {
-        if (!request['sts-role']) {
-          errors['sts-roleError'] = true
-          await this.setState({errors: errors})
+      if (requestCopy['enable-sts-assume-role']) {
+        if (!requestCopy['sts-role']) {
+          errorsCopy['sts-roleError'] = true
+          ok = false;
         }
         else {
-          delete errors['sts-roleError']
-          await this.setState({errors: errors})
+          delete errorsCopy['sts-roleError']
         }
       } else {
-        delete errors['sts-roleError']
+        delete errorsCopy['sts-roleError']
       }
     }
 
-    if (this.state.request.type === 'azure') {
-      if (request['authentication-method'] === 'user-authentication') {
-        if (!request['username']) {
-          errors['usernameError'] = true
-          await this.setState({errors: errors})
+    if (requestCopy.type === 'azure') {
+      if (requestCopy['authentication-method'] === 'user-authentication') {
+        if (!requestCopy['username']) {
+          errorsCopy['usernameError'] = true
+          ok = false;
         }
         else {
-          delete errors['usernameError']
-          await this.setState({errors: errors})
+          delete errorsCopy['usernameError']
         }
 
-        if (!request['password'] && !request['password-base64']) {
-          errors['passwordError'] = true
-          errors['password-base64Error'] = true
-          await this.setState({errors: errors})
+        if (!requestCopy['password'] && !requestCopy['password-base64']) {
+          errorsCopy['passwordError'] = true
+          errorsCopy['password-base64Error'] = true
+          ok = false;
         }
         else {
-          delete errors['passwordError']
-          delete errors['password-base64Error']
-          await this.setState({errors: errors})
+          delete errorsCopy['passwordError']
+          delete errorsCopy['password-base64Error']
         }
       }
       else {
-        delete errors['usernameError']
-        delete errors['passwordError']
-        delete errors['password-base64Error']
+        delete errorsCopy['usernameError']
+        delete errorsCopy['passwordError']
+        delete errorsCopy['password-base64Error']
       }
 
-      if (request['authentication-method'] === 'service-principal-authentication') {
-        if (!request['application-id']) {
-          errors['application-idError'] = true
-          await this.setState({errors: errors})
+      if (requestCopy['authentication-method'] === 'service-principal-authentication') {
+        if (!requestCopy['application-id']) {
+          errorsCopy['application-idError'] = true
+          ok = false;
         }
         else {
-          delete errors['application-idError']
-          await this.setState({errors: errors})
+          delete errorsCopy['application-idError']
         }
 
-        if (!request['application-key']) {
-          errors['application-keyError'] = true
-          await this.setState({errors: errors})
+        if (!requestCopy['application-key']) {
+          errorsCopy['application-keyError'] = true
+          ok = false;
         }
         else {
-          delete errors['application-keyError']
-          await this.setState({errors: errors})
+          delete errorsCopy['application-keyError']
         }
 
-        if (!request['directory-id']) {
-          errors['directory-idError'] = true
-          await this.setState({errors: errors})
+        if (!requestCopy['directory-id']) {
+          errorsCopy['directory-idError'] = true
+          ok = false;
         }
         else {
-          delete errors['directory-idError']
-          await this.setState({errors: errors})
+          delete errorsCopy['directory-idError']
         }
       } else {
-        delete errors['application-idError']
-        delete errors['application-keyError']
-        delete errors['directory-idError']
+        delete errorsCopy['application-idError']
+        delete errorsCopy['application-keyError']
+        delete errorsCopy['directory-idError']
       }
 
     }
 
-    if (this.state.request.type === 'gcp') {
-      if (request['authentication-method'] === 'key-authentication') {
-        if (!request['private-key']) {
-          errors['private-keyError'] = true
-          await this.setState({errors: errors})
+    if (requestCopy.type === 'gcp') {
+      if (requestCopy['authentication-method'] === 'key-authentication') {
+        if (!requestCopy['private-key']) {
+          errorsCopy['private-keyError'] = true
+          ok = false;
         }
         else {
-          delete errors['private-keyError']
-          await this.setState({errors: errors})
+          delete errorsCopy['private-keyError']
         }
       } else {
-        delete errors['private-keyError']
+        delete errorsCopy['private-keyError']
       }
     }
 
-    if (!request['details-level']) {
-      errors['details-levelError'] = true
-      await this.setState({errors: errors})
+    if (!requestCopy['details-level']) {
+      errorsCopy['details-levelError'] = true
+      ok = false;
     }
     else {
-      delete errors['details-levelError']
-      await this.setState({errors: errors})
+      delete errorsCopy['details-levelError']
     }
-
-    return errors
+    setErrors(errorsCopy)
+    return ok;
   }
 
-  validation = async () => {
-    await this.validationCheck()
-
-    if (Object.keys(this.state.errors).length === 0) {
-      this.datacenterServerAdd()
-    }
+  let validation = async () => {
+    let valid = await validationCheck();
+    setValid(valid)
   }
-
 
   //DISPOSAL ACTION
-  datacenterServerAdd = async () => {
-    let request = Object.assign({}, this.state.request)
+  let datacenterServerAdd = async () => {
+    let requestCopy = {...request}
     let list = []
     let l = []
     try {
-      l = request.tags.split(',')
+      l = requestCopy.tags.split(',')
 
       l.forEach((item, i) => {
         list.push(item)
@@ -331,79 +299,71 @@ class Add extends React.Component {
 
     let b = {}
     b.data = {
-      "name": request.name,
-      "type": request.type,
-      "authentication-method": request['authentication-method'],
+      "name": requestCopy.name,
+      "type": requestCopy.type,
+      "authentication-method": requestCopy['authentication-method'],
       "tags": list,
       "color": "orange",
-      "comments": request.comments,
-      "details-level": request['details-level'],
+      "comments": requestCopy.comments,
+      "details-level": requestCopy['details-level'],
       "ignore-warnings": true,
       "ignore-errors": false
     }
 
-    if (this.state.request.type === 'aws') {
-      b.data["access-key-id"] = request["access-key-id"]
-      b.data["secret-access-key"] = request["secret-access-key"]
-      b.data["region"] = request["region"]
-      if (request["enable-sts-assume-role"]) {
-        b.data["enable-sts-assume-role"] = request["enable-sts-assume-role"]
-        b.data["sts-role"] = request["sts-role"]
-        if (request["sts-external-id"]) {
-          b.data["sts-external-id"] = request["sts-external-id"]
+    if (requestCopy.type === 'aws') {
+      b.data["access-key-id"] = requestCopy["access-key-id"]
+      b.data["secret-access-key"] = requestCopy["secret-access-key"]
+      b.data["region"] = requestCopy["region"]
+      if (requestCopy["enable-sts-assume-role"]) {
+        b.data["enable-sts-assume-role"] = requestCopy["enable-sts-assume-role"]
+        b.data["sts-role"] = requestCopy["sts-role"]
+        if (requestCopy["sts-external-id"]) {
+          b.data["sts-external-id"] = requestCopy["sts-external-id"]
         }
       }
-      /*
-      b["access-key-id"] = "AKIAI4EMUXLDYNO3KFGQ"
-      b["secret-access-key"] = "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"
-      b["region"] = "eu-west-1"
-      */
     }
 
-    if (this.state.request.type === 'azure') {
-      if (request['authentication-method'] === 'user-authentication') {
-        b.data["username"] = request["username"]
+    if (requestCopy.type === 'azure') {
+      if (requestCopy['authentication-method'] === 'user-authentication') {
+        b.data["username"] = requestCopy["username"]
 
-        if (request["password"]) {
-          b.data["password"] = request["password"]
+        if (requestCopy["password"]) {
+          b.data["password"] = requestCopy["password"]
         }
         else {
-          b.data["password-base64"] = request["password-base64"]
+          b.data["password-base64"] = requestCopy["password-base64"]
         }
       }
 
-      if (request['authentication-method'] === 'service-principal-authentication') {
-        b.data["application-id"] = request["application-id"]
-        b.data["application-key"] = request["application-key"]
-        b.data["directory-id"] = request["directory-id"]
+      if (requestCopy['authentication-method'] === 'service-principal-authentication') {
+        b.data["application-id"] = requestCopy["application-id"]
+        b.data["application-key"] = requestCopy["application-key"]
+        b.data["directory-id"] = requestCopy["directory-id"]
       }
 
-      if (!request["environment"]) {
+      if (!requestCopy["environment"]) {
         b.data["environment"] = "AzureCloud"
       }
       else {
-        b.data["environment"] = request["environment"]
+        b.data["environment"] = requestCopy["environment"]
       }
 
-      /*
-      b["application-id"] = "936aa61f-e04f-479c-a0fb-58d10f0e4016"
-      b["application-key"] = "HiDrju0Ck2mluOv6sMh9s6h2aYvuV3wNYeHl5tKWlto="
-      b["directory-id"] = "e97896c5-9549-48fb-976d-ef5f2c7dcbfc"
-      */
     }
 
-    if (this.state.request.type === 'gcp') {
-      if (request["authentication-method"] === "key-authentication") {
-        b.data["private-key"] = request["private-key"]
+    if (requestCopy.type === 'gcp') {
+      if (requestCopy["authentication-method"] === "key-authentication") {
+        b.data["private-key"] = requestCopy["private-key"]
       }
     }
 
-    this.setState({loading: true})
+    setLoading(true)
 
     let rest = new Rest(
       "POST",
       resp => {
-        this.setState({loading: false, response: true}, () => this.response())
+        setLoading(false)
+        setResponse(true)
+        hanldeResponse()
       },
       error => {
         error = Object.assign(error, {
@@ -411,454 +371,469 @@ class Add extends React.Component {
           vendor: 'checkpoint',
           errorType: 'datacenterServerAddError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
       }
     )
-    await rest.doXHR(`checkpoint/${this.props.asset.id}/${this.props.domain}/datacenter-servers/`, this.props.token, b)
+    await rest.doXHR(`checkpoint/${props.asset.id}/${props.domain}/datacenter-servers/`, props.token, b)
   }
 
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(fetchItems(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+  let hanldeResponse = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(fetchItems(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: {},
-      request: {}
-    })
+  //const \[\s*\w+\s*,\s*
+  /*
+  const \[ corrisponde alla stringa const [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  */
+  let closeModal = () => {
+    setVisible(false);
+    setAWSRegions([]);
+    setTypes(['aws', 'azure', 'gcp']);
+
+    setAwsAuthenticationMethods(['user-authentication', 'role-authentication'])
+    setAzureAuthenticationMethods('user-authentication', 'service-principal-authentication')
+    setGcpAuthenticationMethods(['key-authentication', 'vm-instance-authentication'])
+    setAzureEnvironment(['AzureCloud', 'AzureChinaCloud', 'AzureUSGovernment'])
+    setDetailsLevels(['uid', 'standard', 'full'])
+
+    setRequest({});
+    setErrors({});
+    setValid(false);
+    setResponse(null);
   }
 
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'datacenterServersAdd') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
 
-  render() {
+  let createComponent = (component, key, choices) => {
 
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'datacenterServersAdd') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+    switch (component) {
+      case 'input':
+        return (
+          <Input
+            style=
+            {errors[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(event.target.value, key)}
+          />
+        )
+        break;
+
+      case 'checkbox':
+        return (
+          <Checkbox
+            checked={request[`${key}`]}
+            onChange={event => set(event.target.checked, key)}
+          />
+        )
+        break;
+
+      case 'radio':
+        return (
+          <Radio.Group
+            onChange={event => set(event.target.value, key)}
+            defaultValue={key === 'environment' ? 'AzureCloud' : null}
+            value={request[`${key}`]}
+            style={errors[`${key}Error`] ?
+              {border: `1px solid red`}
+            :
+              {}
+            }
+          >
+            <React.Fragment>
+              {choices && (choices.length > 1) && choices.map((n, i) => {
+                return (
+                  <Radio.Button key={i} value={n}>{n}</Radio.Button>
+                )
+              })
+              }
+            </React.Fragment>
+        </Radio.Group>
+        )
+        break;
+
+      case 'textArea':
+        return (
+          <Input.TextArea
+            rows={7}
+            placeholder={key === 'tags' ? "Insert your tags's list. Example: tag1, tag2, ..., tagN" : ""}
+            value={request[`${key}`]}
+            onChange={event => set(event.target.value, key)}
+            style=
+            { errors[`${key}Error`] ?
+              {borderColor: `red`}
+            :
+              {}
+            }
+          />
+        )
+        break;
+
+      case 'select':
+        return (
+          <Select
+            value={request[`${key}`]}
+            showSearch
+            style=
+            { errors[`${key}Error`] ?
+              {width: "100%", border: `1px solid red`}
+            :
+              {width: "100%"}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set(event, key)}
+          >
+            <React.Fragment>
+            { choices === 'AWSRegions' ?
+              AWSRegions.map((v,i) => {
+                let str = `${v[0].toString()} - ${v[1].toString()}`
+                return (
+                  <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                )
+              })
+            :
+              [`${choices}`].map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
+            }
+            </React.Fragment>
+          </Select>
+        )
+
+      default:
+
     }
 
-    let createComponent = (component, key, choices) => {
+  }
 
-      switch (component) {
-        case 'input':
-          return (
-            <Input
-              style=
-              {this.state.errors[`${key}Error`] ?
-                {borderColor: 'red'}
-              :
-                {}
-              }
-              onChange={event => this.set(event.target.value, key)}
-            />
-          )
-          break;
+  return (
+    <Space direction='vertical'>
 
-        case 'checkbox':
-          return (
-            <Checkbox
-              checked={this.state.request[`${key}`]}
-              onChange={event => this.set(event.target.checked, key)}
-            />
-          )
-          break;
+      <Button icon={addIcon} type='primary' onClick={() => setVisible(true)} shape='round'/>
 
-        case 'radio':
-          return (
-            <Radio.Group
-              onChange={event => this.set(event.target.value, key)}
-              defaultValue={key === 'environment' ? 'AzureCloud' : null}
-              value={this.state.request[`${key}`]}
-              style={this.state.errors[`${key}Error`] ?
-                {border: `1px solid red`}
-              :
-                {}
-              }
-            >
+      <Modal
+        title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+        { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !loading && response &&
+          <Result
+             status="success"
+             title="Datacenter Server addedd"
+           />
+        }
+        { !loading && !response &&
+          <React.Fragment>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+              </Col>
+              <Col span={8}>
+                {createComponent('input', 'name')}
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Type:</p>
+              </Col>
+              <Col span={8}>
+                {createComponent('radio', 'type', types)}
+              </Col>
+            </Row>
+            <br/>
+
+            {request.type === 'aws' ?
               <React.Fragment>
-                {this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Radio.Button key={i} value={n}>{n}</Radio.Button>
-                  )
-                })
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('radio', 'authentication-method', awsAuthenticationMethods)}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Access-key-id:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('input', 'access-key-id')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Secret-access-key:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('input', 'secret-access-key')}
+                  </Col>
+                </Row>
+                <br/>
+
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Enable-sts-assume-role:</p>
+                  </Col>
+                  <Col span={7} style={{marginTop: 5}}>
+                    {createComponent('checkbox', 'enable-sts-assume-role')}
+                  </Col>
+                </Row>
+                <br/>
+
+                {request['enable-sts-assume-role'] ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-role:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'sts-role')}
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-external-id:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'sts-external-id')}
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
+
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Region:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('select', 'region', 'AWSRegions')}
+                  </Col>
+                </Row>
+                <br/>
+              </React.Fragment>
+            :
+              null
+            }
+
+            {request.type === 'azure' ?
+              <React.Fragment>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('radio', 'authentication-method', azureAuthenticationMethods)}
+                  </Col>
+                </Row>
+                <br/>
+
+                { request['authentication-method'] === 'service-principal-authentication' ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-id:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'application-id')}
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-key:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'application-key')}
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Directory-id:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'directory-id')}
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
+                { request['authentication-method'] === 'user-authentication' ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Username:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'username')}
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'password')}
+                      </Col>
+                    </Row>
+                    <br/>
+
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password-base64:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('input', 'password-base64')}
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
+                }
+
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('radio', 'environment', azureEnvironment)}
+                  </Col>
+                </Row>
+                <br/>
+
+              </React.Fragment>
+            :
+              null
+            }
+
+            {request.type === 'gcp' ?
+              <React.Fragment>
+                <Row>
+                  <Col offset={3} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
+                  </Col>
+                  <Col span={7}>
+                    {createComponent('radio', 'authentication-method', gcpAuthenticationMethods)}
+                  </Col>
+                </Row>
+                <br/>
+
+                { request['authentication-method'] === 'key-authentication' ?
+                  <React.Fragment>
+                    <Row>
+                      <Col offset={3} span={6}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Private-key:</p>
+                      </Col>
+                      <Col span={7}>
+                        {createComponent('textArea', 'private-key')}
+                      </Col>
+                    </Row>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
                 }
               </React.Fragment>
-          </Radio.Group>
-          )
-          break;
+            :
+              null
+            }
 
-        case 'textArea':
-          return (
-            <Input.TextArea
-              rows={7}
-              placeholder={key === 'tags' ? "Insert your tags's list. Example: tag1, tag2, ..., tagN" : ""}
-              value={this.state.request[`${key}`]}
-              onChange={event => this.set(event.target.value, key)}
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {borderColor: `red`}
-              :
-                {}
-              }
-            />
-          )
-          break;
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
+              </Col>
+              <Col span={8}>
+                {createComponent('textArea', 'tags')}
+              </Col>
+            </Row>
+            <br/>
 
-        case 'select':
-          return (
-            <Select
-              value={this.state.request[`${key}`]}
-              showSearch
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {width: "100%", border: `1px solid red`}
-              :
-                {width: "100%"}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set(event, key)}
-            >
-              <React.Fragment>
-              { choices === 'AWS Regions' ?
-                this.state['AWS Regions'].map((v,i) => {
-                  let str = `${v[0].toString()} - ${v[1].toString()}`
-                  return (
-                    <Select.Option key={i} value={v[1]}>{str}</Select.Option>
-                  )
-                })
-              :
-                this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-              }
-              </React.Fragment>
-            </Select>
-          )
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
+              </Col>
+              <Col span={8}>
+                {createComponent('textArea', 'comments')}
+              </Col>
+            </Row>
+            <br/>
 
-        default:
-
-      }
-
-    }
-    return (
-      <Space direction='vertical'>
-
-        <Button icon={addIcon} type='primary' onClick={() => this.details()} shape='round'/>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-          { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.loading && this.state.response &&
-            <Result
-               status="success"
-               title="Datacenter Server addedd"
-             />
-          }
-          { !this.state.loading && !this.state.response &&
-            <React.Fragment>
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('input', 'name')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Type:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('radio', 'type', 'types')}
-                </Col>
-              </Row>
-              <br/>
-
-              {this.state.request.type === 'aws' ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('radio', 'authentication-method', 'aws-authentication-methods')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Access-key-id:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('input', 'access-key-id')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Secret-access-key:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('input', 'secret-access-key')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Enable-sts-assume-role:</p>
-                    </Col>
-                    <Col span={7} style={{marginTop: 5}}>
-                      {createComponent('checkbox', 'enable-sts-assume-role')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  {this.state.request['enable-sts-assume-role'] ?
-                    <React.Fragment>
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-role:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'sts-role')}
-                        </Col>
-                      </Row>
-                      <br/>
-
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Sts-external-id:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'sts-external-id')}
-                        </Col>
-                      </Row>
-                      <br/>
-                    </React.Fragment>
-                  :
-                    null
-                  }
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Region:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('select', 'region', 'AWS Regions')}
-                    </Col>
-                  </Row>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-              }
-
-              {this.state.request.type === 'azure' ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('radio', 'authentication-method', 'azure-authentication-methods')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  { this.state.request['authentication-method'] === 'service-principal-authentication' ?
-                    <React.Fragment>
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-id:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'application-id')}
-                        </Col>
-                      </Row>
-                      <br/>
-
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Application-key:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'application-key')}
-                        </Col>
-                      </Row>
-                      <br/>
-
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Directory-id:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'directory-id')}
-                        </Col>
-                      </Row>
-                      <br/>
-                    </React.Fragment>
-                  :
-                    null
-                  }
-                  { this.state.request['authentication-method'] === 'user-authentication' ?
-                    <React.Fragment>
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Username:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'username')}
-                        </Col>
-                      </Row>
-                      <br/>
-
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'password')}
-                        </Col>
-                      </Row>
-                      <br/>
-
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Password-base64:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('input', 'password-base64')}
-                        </Col>
-                      </Row>
-                      <br/>
-                    </React.Fragment>
-                  :
-                    null
-                  }
-
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('radio', 'environment', 'azure-environment')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                </React.Fragment>
-              :
-                null
-              }
-
-              {this.state.request.type === 'gcp' ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={3} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Authentication-method:</p>
-                    </Col>
-                    <Col span={7}>
-                      {createComponent('radio', 'authentication-method', 'gcp-authentication-methods')}
-                    </Col>
-                  </Row>
-                  <br/>
-
-                  { this.state.request['authentication-method'] === 'key-authentication' ?
-                    <React.Fragment>
-                      <Row>
-                        <Col offset={3} span={6}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Private-key:</p>
-                        </Col>
-                        <Col span={7}>
-                          {createComponent('textArea', 'private-key')}
-                        </Col>
-                      </Row>
-                      <br/>
-                    </React.Fragment>
-                  :
-                    null
-                  }
-                </React.Fragment>
-              :
-                null
-              }
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('textArea', 'tags')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Comments:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('textArea', 'comments')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={2} span={6}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
-                </Col>
-                <Col span={8}>
-                  {createComponent('radio', 'details-level', 'details-levels')}
-                </Col>
-              </Row>
-              <br/>
+            <Row>
+              <Col offset={2} span={6}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Details-level:</p>
+              </Col>
+              <Col span={8}>
+                {createComponent('radio', 'details-level', detailsLevels)}
+              </Col>
+            </Row>
+            <br/>
 
 
 
-              <Row>
-                <Col offset={8} span={16}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Datacenter Server
-                  </Button>
-                </Col>
-              </Row>
-            </React.Fragment>
-          }
-        </Modal>
+            <Row>
+              <Col offset={8} span={16}>
+                <Button type="primary" shape='round' onClick={() => validation()} >
+                  Add Datacenter Server
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
+        }
+      </Modal>
 
-        {errors()}
+      {errorsComponent()}
 
-      </Space>
+    </Space>
+  )
 
-    )
-  }
 }
 
 export default connect((state) => ({
