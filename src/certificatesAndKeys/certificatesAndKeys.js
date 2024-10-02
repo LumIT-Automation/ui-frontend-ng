@@ -22,6 +22,7 @@ import {
 
 
 function Manager(props) {
+  const [loading, setLoading] = useState(false);
   const [items, setItems] = useState('');
   const [vendor] = useState('f5');
 
@@ -91,7 +92,7 @@ function Manager(props) {
               value={items}
               style={{marginLeft: 16}}
             >
-              {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, vendor, 'assets_get') ?
+              {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'assets_get') ?
                 <React.Fragment>
                   <Radio.Button value={'certificates'}>Certificates</Radio.Button>
                   <Radio.Button value={'keys'}>Keys</Radio.Button>

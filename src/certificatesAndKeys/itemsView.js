@@ -25,9 +25,9 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 function ItemsView(props) {
   
-  //let [disableCommit, setDisableCommit] = useState(false);
+  let [disableCommit, setDisableCommit] = useState(false);
   let [loading, setLoading] = useState(false);
-  //let [originitems, setOriginitems] = useState([]);
+  let [originitems, setOriginitems] = useState([]);
   let [items, setItems] = useState([]);
   //let [errors, setErrors] = useState({});
 

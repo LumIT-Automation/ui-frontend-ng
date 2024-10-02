@@ -19,7 +19,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const dispatch = useDispatch();
   const token = useSelector((state) => state.authentication.token);
-  const username = useSelector((state) => state.authentication.username);
+  //const username = useSelector((state) => state.authentication.username);
 
   useEffect(() => {
     const initialize = async () => {
