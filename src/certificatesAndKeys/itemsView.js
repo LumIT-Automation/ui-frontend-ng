@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
 import '../App.css'
-import { Space, Table, Input, Select, Button, Spin, List, Checkbox, Radio, Card } from 'antd';
-import Highlighter from 'react-highlight-words';
+import { Table, Spin, Radio } from 'antd';
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
 import Rest from '../_helpers/Rest'
@@ -22,22 +21,21 @@ import {
 } from '../concerto/store'
   
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 function ItemsView(props) {
   
-  let [disableCommit, setDisableCommit] = useState(false);
+  //let [disableCommit, setDisableCommit] = useState(false);
   let [loading, setLoading] = useState(false);
-  let [originitems, setOriginitems] = useState([]);
+  //let [originitems, setOriginitems] = useState([]);
   let [items, setItems] = useState([]);
-  let [errors, setErrors] = useState({});
+  //let [errors, setErrors] = useState({});
 
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
-  let myRefs = useRef(null);
-  let textAreaRefs = useRef(null);
+  //let myRefs = useRef(null);
+  //let textAreaRefs = useRef(null);
 
   //UPDATE
   useEffect(() => {
@@ -253,7 +251,7 @@ function ItemsView(props) {
         if (e.status && e.status !== 200) {
           let error = Object.assign(e, {
             component: 'itemsView',
-            vendor: 'checkpoint',
+            vendor: props.vendor,
             errorType: `delete${props.item}Error`
           });
           props.dispatch(err(error));
@@ -286,7 +284,7 @@ function ItemsView(props) {
         if (e.status && e.status !== 201 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
-            vendor: 'checkpoint',
+            vendor: props.vendor,
             errorType: `add${props.items}Error`
           })
           props.dispatch(err(error))
@@ -311,7 +309,7 @@ function ItemsView(props) {
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
-            vendor: 'checkpoint',
+            vendor: props.vendor,
             errorType: `edit${props.item}Error`
           })
           props.dispatch(err(error))
