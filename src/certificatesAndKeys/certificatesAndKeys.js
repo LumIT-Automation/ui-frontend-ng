@@ -1,160 +1,137 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import '../App.css'
-import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons'
-import { Tabs, Space, Spin, Divider } from 'antd'
+
+import { Space, Radio, Alert, Divider } from 'antd'
 
 import Rest from '../_helpers/Rest'
 import Error from '../concerto/error'
+import Authorizators from '../_helpers/authorizators'
 
 import AssetSelector from '../concerto/assetSelector'
-import CertificatesManager from './f5/certificates/manager'
-import KeysManager from './f5/keys/manager'
+import ItemsView from './itemsView'
 
 import {
   assets,
-  certificatesFetch,
-  keysFetch
 } from '../f5/store'
 
 import {
   err
 } from '../concerto/store'
 
-const { TabPane } = Tabs;
-const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
+function Manager(props) {
+  const [loading, setLoading] = useState(false);
+  const [items, setItems] = useState('');
+  const [vendor] = useState('f5');
 
-
-class CertificatesAndKeys extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      error: null,
-    };
-  }
-
-  componentDidMount() {
-    if (this.props.authorizations && (this.props.authorizations.assets_get || this.props.authorizations.any ) ) {
-      this.assetsGet()
+  //MOUNT
+  useEffect( () => { 
+    if (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, vendor, 'assets_get')) {
+      if (!props.error) {
+        if (!props.assets) {
+          assetsGet()
+        }
+      }
     }
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
+  }, [] );
 
 
-  assetsGet = async () => {
-    this.setState({loading: true})
+  const assetsGet = async () => {
+    setLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        this.setState({loading: false}, () => this.props.dispatch(assets( resp )))
+        setLoading(true)
+        props.dispatch(assets(resp))
       },
       error => {
         error = Object.assign(error, {
           component: 'certKey manager f5',
-          vendor: 'f5',
+          vendor: vendor,
           errorType: 'assetsError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
       }
     )
-    await rest.doXHR("f5/assets/", this.props.token)
+    await rest.doXHR(`${vendor}/assets/?includeDr`, props.token)
+  }
+
+  const authorizatorsSA = a => {
+    let author = new Authorizators()
+    return author.isSuperAdmin(a)
+  }
+  
+  const isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
   }
 
 
-  certificatesRefresh = () => {
-    this.props.dispatch(certificatesFetch(true))
-  }
-
-  keysRefresh = () => {
-    this.props.dispatch(keysFetch(true))
-  }
-
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'certKey manager f5') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  const showErrors = () => {
+    if (props.error && props.error.component === vendor) {
+      return <Error error={[props.error]} visible={true}/> 
     }
-
-    return (
-      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', padding: 24}}>
-        <Tabs type="card">
-          <TabPane tab="F5" key="2">
-            {this.state.loading ? <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
-            <React.Fragment>
-              <AssetSelector vendor='f5'/>
-              <Divider/>
-              <Tabs type="card">
-                { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                  <React.Fragment>
-                    {this.props.certificatesLoading ?
-                      <TabPane key="Certificates" tab="Certificates">
-                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                      </TabPane>
-                      :
-                      <TabPane key="Certificates" tab=<span>Certificates <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.certificatesRefresh()}/></span>>
-                        <CertificatesManager/>
-                      </TabPane>
-                    }
-                  </React.Fragment>
-                  :
-                  null
-                }
-                {/*certificates_get da sostituire con keys_get*/}
-                { this.props.authorizations && (this.props.authorizations.certificates_get || this.props.authorizations.any) ?
-                  <React.Fragment>
-                    {this.props.keysLoading ?
-                      <TabPane key="Keys" tab="Keys">
-                        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-                      </TabPane>
-                      :
-                      <TabPane key="Keys" tab=<span>Keys <ReloadOutlined style={{marginLeft: '10px' }} onClick={() => this.keysRefresh()}/></span>>
-                        <KeysManager/>
-                      </TabPane>
-                    }
-                  </React.Fragment>
-                  :
-                  null
-                }
-
-
-              </Tabs>
-            </React.Fragment>
-            }
-          </TabPane>
-        </Tabs>
-
-        {errors()}
-
-      </Space>
-    )
   }
+
+  return (
+    <React.Fragment>
+      <AssetSelector vendor={vendor}/>
+
+      <Divider style={{borderBottom: '3vh solid #f0f2f5'}}/>
+      <Space direction="vertical" style={{width: '100%', justifyContent: 'center', paddingLeft: 24, paddingRight: 24}}>
+        {!(props.asset && props.partition) ?
+          <Alert message="Asset and Partition not set" type="error" />
+        :
+          <React.Fragment>
+
+            <Radio.Group
+              onChange={e => setItems(e.target.value)}
+              value={items}
+              style={{marginLeft: 16}}
+            >
+              {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'assets_get') ?
+                <React.Fragment>
+                  <Radio.Button value={'certificates'}>Certificates</Radio.Button>
+                  <Radio.Button value={'keys'}>Keys</Radio.Button>
+                </React.Fragment>
+              :
+                null
+              }
+            </Radio.Group>
+            <Divider/>
+      
+            {
+              items ?
+                <ItemsView vendor={vendor} items={items} item={items ? items.slice(0, -1) : '' }/>
+              :
+                null
+            }
+          </React.Fragment>
+        }
+        
+      </Space>
+
+      {showErrors()}
+
+    </React.Fragment>
+  )
+  
 }
 
 
 export default connect((state) => ({
   token: state.authentication.token,
-  authorizations: state.authorizations.f5,
+  authorizations: state.authorizations,
   error: state.concerto.err,
 
-  certificatesLoading: state.f5.certificatesLoading,
-  keysLoading: state.f5.keysLoading,
+  asset: state.f5.asset,
+  partition: state.f5.partition,
+}))(Manager);
 
 
-  asset: state.f5.asset
-}))(CertificatesAndKeys);
+
+
+

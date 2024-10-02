@@ -58,7 +58,9 @@ const f5Slice = createSlice({
           state.keysFetch = action.payload
         },
 
-        
+        fetchItems: (state, action) => {
+          state.fetchItems = action.payload
+        },
 
         f5objects: (state, action) => {
           state.f5objects = action.payload.data.items
@@ -95,6 +97,8 @@ export const {
   certificatesFetch,
   keys,
   keysFetch,
+
+  fetchItems,
 
   f5objects,
 
