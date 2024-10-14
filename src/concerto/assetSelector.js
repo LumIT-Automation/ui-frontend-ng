@@ -354,7 +354,7 @@ function AssetSelector(props) {
           null
         }
 
-        { (props.vendor && props.vendor === 'checkpoint') ?
+        { (props.vendor && props.vendor === 'checkpoint' && props.useCase !== 'datacenterAccount') ?
           <React.Fragment>
             <Col xs={{offset: 1, span: 2}} sm={{offset: 1, span: 2}} md={{offset: 1, span: 2}} lg={{offset: 1, span: 2}} xl={{offset: 1, span: 2}} xxl={{offset: 2, span: 1}}>
               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Domain:</p>

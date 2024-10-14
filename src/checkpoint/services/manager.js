@@ -17,6 +17,7 @@ import VpnToServices from './vpnToServices';
 import VpnToHost from './vpnToHost';
 import HostInGroup from './hostInGroup';
 import UrlInApplicationSite from './urlInApplicationSite';
+import DatacenterAccount from './datacenterAccount';
 import { Row, Col } from 'antd';
 
 function Manager(props) {
@@ -67,6 +68,14 @@ function Manager(props) {
         </Col>
         <Col span={4} offset={2}>
           <UrlInApplicationSite />
+        </Col>
+      </Row>
+      
+      <br />
+
+      <Row>
+        <Col span={4} offset={2}>
+          <DatacenterAccount vendor={'checkpoint'}/>
         </Col>
       </Row>
       {errors()}
