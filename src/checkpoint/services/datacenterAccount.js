@@ -13,64 +13,75 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox } from 'antd';
+import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox, Radio } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 function DatacenterAccount(props) {
   let [visible, setVisible] = useState(false);
+  let [existent, setExistent] = useState(true);
   let [AWSRegions, setAWSRegions] = useState([]);
+  let [loading, setLoading] = useState(false);
+
+  let [changeRequestId, setChangeRequestId] = useState('');
+
+  let [datacenterAccounts, setDatacenterAccounts] = useState([]);
+  let [datacenterAccountsLoading, setDatacenterAccountsLoading] = useState(false);
+  let [datacenterAccount, setDatacenterAccount] = useState({
+    id: '',
+    name: '',
+    regions : []
+  });
+  let [datacenterAccountLoading, setDatacenterAccountLoading] = useState(false);
+  let [originDca, setOriginDca] = useState({});
+  let [mapRegions, setMapRegions] = useState(false)
+
   let [checkedList, setCheckedList] = useState([]);
   let indeterminate = checkedList.length > 0 && checkedList.length < AWSRegions.length;
-  let checkAll = AWSRegions.length === checkedList.length;
-  let [loading, setLoading] = useState(false);
-  let [changeRequestId, setChangeRequestId] = useState('');
-  let [datacenterAccounts, setDatacenterAccounts] = useState([]);
-  let [dcasLoading, setDcasLoading] = useState(false);
-  let [dcaName, setDcaName] = useState('');
-  let [datacenterAccount, setDatacenterAccount] = useState({});
-  let [originDca, setOriginDca] = useState({});
-  let [dcaLoading, setDcaLoading] = useState(false);
+  let checkAll = AWSRegions.length === checkedList.length;  
+  
   let [valid, setValid] = useState(false);
   let [errors, setErrors] = useState({});
   let [refreshDca, setRefreshDca] = useState(false);
 
-  const prevdcaName = useRef(dcaName);
-
+  //cambia asset, chiedi AWS Regions
   useEffect(() => {
     if (visible && props.asset) {
       AWSRegionsGet()
-      setDcaName();
-      setDatacenterAccount();
-      setDatacenterAccounts([]);
-      dataGet('datacenter-accounts');
     }
   }, [props.asset]);
 
+  //se AWS Regions, chiedi lista datacenterAccounts se existent true
+  useEffect(() => {
+    if (AWSRegions && AWSRegions.length > 0) {
+      setDatacenterAccounts([]);
+      setCheckedList([])
+      if (existent) {
+        dataGet('datacenter-accounts');
+        if (datacenterAccount && datacenterAccount.name) {
+          dataGet('datacenter-account');
+        }
+      }
+    }
+  }, [existent, AWSRegions]);
+
+  //se cambia dcname, chiedi chiedi dati specifici, se existent true
   useEffect(async() => {
-    if ( visible && props.asset && (prevdcaName.current !== prevdcaName) && (datacenterAccounts && datacenterAccounts.length > 0)) {
-      setDatacenterAccount();
+    if ( visible && props.asset && (datacenterAccounts && datacenterAccounts.length > 0) && existent) {
       await dataGet('datacenter-account');
     }
-    prevdcaName.current = dcaName;
-  }, [dcaName]);
+  }, [datacenterAccount.name]);
 
+  //flagga le regioni esistenti
   useEffect(async() => {
-    if ( visible && props.asset && refreshDca)  {
-      setRefreshDca(false)
-      await dataGet('datacenter-account');
-    }
-  }, [refreshDca]);
+    setMapRegions(false)
+    let checkedListCopy = [...checkedList];
+    checkedListCopy = datacenterAccount.regions
+    setCheckedList(checkedListCopy)
+  }, [mapRegions]);
 
-  useEffect(async() => {
-    if (datacenterAccount && Object.keys(datacenterAccount).length > 0 ) {
-      let checkedListCopy = [...checkedList];
-      checkedListCopy = datacenterAccount.regions
-      setCheckedList(checkedListCopy)
-    }
-  }, [datacenterAccount]);
-
+  //renderizza le regioni esistenti
   useEffect(async() => {
     if (datacenterAccount && datacenterAccount.regions) {
       let datacenterAccountCopy = {...datacenterAccount};
@@ -85,6 +96,13 @@ function DatacenterAccount(props) {
       setValid(false)
     }
   }, [valid]);
+
+  useEffect(async() => {
+    if ( visible && props.asset && refreshDca)  {
+      setRefreshDca(false)
+      setExistent(true)
+    }
+  }, [refreshDca]);
 
 
 
@@ -143,11 +161,11 @@ function DatacenterAccount(props) {
 
   let dataGet = async (endpoint) => {
     if (endpoint === 'datacenter-accounts') {
-      setDcasLoading(true)
+      setDatacenterAccountsLoading(true)
     }
 
     if (endpoint === 'datacenter-account') {
-      setDcaLoading(true)
+      setDatacenterAccountLoading(true)
     }
 
     let data = await getData(endpoint);
@@ -160,21 +178,25 @@ function DatacenterAccount(props) {
       })
       props.dispatch(err(error))
       if (endpoint === 'datacenter-accounts') {
-        setDcasLoading(false)
+        setDatacenterAccountsLoading(false)
       }
       if (endpoint === 'datacenter-account') {
-        setDcaLoading(false)
+        setDatacenterAccountLoading(false)
       }
       return;
     }
     if (endpoint === 'datacenter-accounts') {
       setDatacenterAccounts(data.data.items)
-      setDcasLoading(false)
+      setDatacenterAccountsLoading(false)
     }
     else if (endpoint === 'datacenter-account') {
-      setOriginDca(data.data)
-      setDatacenterAccount(data.data)
-      setDcaLoading(false)
+      let o = data.data
+      o.name = data.data["Account Name"]
+      o.id = data.data["Account ID"]
+      setOriginDca(o)
+      setDatacenterAccount(o)
+      setDatacenterAccountLoading(false)
+      setMapRegions(true)
     }
     
   };
@@ -186,7 +208,7 @@ function DatacenterAccount(props) {
       endpoint = `${props.vendor}/${props.asset.id}/${endpoint}/`
     }
     else if (endpoint === 'datacenter-account') {
-      endpoint = `${props.vendor}/${props.asset.id}/${endpoint}/${dcaName}/`
+      endpoint = `${props.vendor}/${props.asset.id}/${endpoint}/${datacenterAccount.name}/`
     }
 
     let rest = new Rest(
@@ -212,9 +234,16 @@ function DatacenterAccount(props) {
         setChangeRequestId(value);
         setErrors(errorsCopy);
       }
-      if (key === 'dcaName') {
-        delete errorsCopy['dcaNameError'];
-        setDcaName(value);
+      if (key === 'name') {
+        delete errorsCopy['nameError'];
+        datacenterAccountCopy.name = value
+        setDatacenterAccount(datacenterAccountCopy)
+        setErrors(errorsCopy);
+      }
+      if (key === 'id') {
+        delete errorsCopy['idError'];
+        datacenterAccountCopy.id = value
+        setDatacenterAccount(datacenterAccountCopy)
         setErrors(errorsCopy);
       }
       if (key === 'tags') {
@@ -223,6 +252,7 @@ function DatacenterAccount(props) {
         setDatacenterAccount(datacenterAccountCopy)
         setErrors(errorsCopy);
       }
+
     }
     catch(error) {
       console.log()
@@ -250,6 +280,25 @@ function DatacenterAccount(props) {
       delete errorsCopy.changeRequestIdError;
       setErrors(errorsCopy);
     }
+    if (!existent) {
+      if (!datacenterAccount.name) {
+        errorsCopy.nameError = true
+        ok = false;
+        setErrors(errorsCopy);
+      } else {
+        delete errorsCopy.nameError;
+        setErrors(errorsCopy);
+      }
+      if (!datacenterAccount.id) {
+        errorsCopy.idError = true
+        ok = false;
+        setErrors(errorsCopy);
+      } else {
+        delete errorsCopy.idError;
+        setErrors(errorsCopy);
+      }
+    }
+    
 
     return ok;
   };
@@ -262,12 +311,8 @@ function DatacenterAccount(props) {
   let reqHandler = async () => {
     let ori = new Set(originDca.regions)
     let actual = new Set(datacenterAccount.regions)
-    console.log('to del', ori.difference(actual))
-    console.log('to add', actual.difference(ori))
 
-    if (actual.difference(ori).size > 0) {
-      console.log('to add')
-      
+    if (actual.difference(ori).size > 0) {      
       setLoading(true);
       const data = await add(Array.from(actual.difference(ori)))
       setLoading(false);
@@ -278,11 +323,10 @@ function DatacenterAccount(props) {
           errorType: 'modifyError'
         })
         props.dispatch(err(error))
-        return;
+        //return;
       }
     }
     if (ori.difference(actual).size > 0) {
-      console.log('to del')
       setLoading(true);
       const data = await del(Array.from(ori.difference(actual)))
       setLoading(false);
@@ -293,7 +337,7 @@ function DatacenterAccount(props) {
           errorType: 'modifyError'
         })
         props.dispatch(err(error))
-        return;
+        //return;
       }
     }
     
@@ -315,8 +359,8 @@ function DatacenterAccount(props) {
     const body = {
       data: {
         "change-request-id": changeRequestId,
-        "Account Name": datacenterAccount['Account Name'],
-        "Account ID": datacenterAccount['Account ID'],
+        "Account Name": datacenterAccount.name,
+        "Account ID": datacenterAccount.id,
         "regions": list,
         "tags": []
       },
@@ -324,7 +368,6 @@ function DatacenterAccount(props) {
     if (tags) {
       body.data.tags = tags
     }
-    console.log(body)
     
     let rest = new Rest(
       "PUT",
@@ -360,7 +403,6 @@ function DatacenterAccount(props) {
     if (tags) {
       body.data.tags = tags
     }
-    console.log(body)
     
     let rest = new Rest(
       "DELETE",
@@ -371,7 +413,7 @@ function DatacenterAccount(props) {
         r = error
       }
     )
-    await rest.doXHR(`checkpoint/${props.asset.id}/datacenter-account/${dcaName}/`, props.token, body )
+    await rest.doXHR(`checkpoint/${props.asset.id}/datacenter-account/${datacenterAccount.name}/`, props.token, body )
     return r
   };
 
@@ -412,11 +454,11 @@ function DatacenterAccount(props) {
 
     switch (component) {
       case 'input':
-        if (key === 'dcaId') {
+        if (key === 'id') {
           return (
             <Input
-              value={datacenterAccount && datacenterAccount['Account ID'] ? 
-                datacenterAccount['Account ID'] 
+              value={datacenterAccount && datacenterAccount.id ? 
+                datacenterAccount.id 
               : 
                 null
               }
@@ -424,15 +466,10 @@ function DatacenterAccount(props) {
             />
           )
         }
-        else {
+        else if (key === 'changeRequestId' ) {
           return (
             <Input
-              defaultValue={
-                key === 'changeRequestId' ?
-                  changeRequestId
-                :
-                  null
-              }
+              defaultValue={changeRequestId}
               placeholder={
                 key === 'changeRequestId' ?
                   "ITIO-6 to 18 numbers"
@@ -445,6 +482,14 @@ function DatacenterAccount(props) {
               :
                 {}
               }
+              onBlur={event => set(event.target.value, key)}
+            />
+          )
+        }
+        else  {
+          return (
+            <Input
+              
               onBlur={event => set(event.target.value, key)}
             />
           )
@@ -497,10 +542,10 @@ function DatacenterAccount(props) {
         break;
 
       case 'select':
-        if (key === 'dcaName') {
+        if (key === 'name') {
           return (
             <Select
-              value={dcaName}
+              value={datacenterAccount.name}
               showSearch
               style=
               { errors[`${key}Error`] ?
@@ -591,24 +636,64 @@ function DatacenterAccount(props) {
               {!loading && (
                 <React.Fragment>
                   <Row>
+                    <Radio.Group defaultValue="existent" buttonStyle="solid">
+                      <Radio.Button 
+                        value="existent"
+                        onClick={() => setExistent(true)}
+                      >
+                        Existent Datacenter Account
+                      </Radio.Button>
+                      <Radio.Button 
+                        value="new"
+                        onClick={() => setExistent(false)}
+                      >
+                        New Datacenter Account
+                      </Radio.Button>
+                    </Radio.Group>
+                  </Row>
+                  <br />
+
+                  <Row>
                     <Col span={3}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name</p>
                     </Col>
                     <Col span={6}>
-                      {dcasLoading ?
+                      {datacenterAccountsLoading ?
                         <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> 
                       :
-                        createElement('select', 'dcaName', datacenterAccounts)
+                        existent ?
+                          createElement('select', 'name', datacenterAccounts)
+                        :
+                          <Input
+                            style=
+                            {errors.nameError ?
+                              {borderColor: 'red'}
+                            :
+                              {}
+                            }
+                            onBlur={event => set(event.target.value, 'name')}
+                          />
                       }
                     </Col>
                     <Col span={3}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID</p>
                     </Col>
                     <Col span={6}>
-                      {dcaLoading ?
+                      {datacenterAccountLoading ?
                         <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> 
                       :
-                        createElement('input', 'dcaId')
+                        existent ?
+                          createElement('input', 'id')
+                        :
+                          <Input
+                            style=
+                            {errors.idError ?
+                              {borderColor: 'red'}
+                            :
+                              {}
+                            }
+                            onBlur={event => set(event.target.value, 'id')}
+                          />
                       }
                     </Col>
                   </Row>
@@ -630,13 +715,13 @@ function DatacenterAccount(props) {
                       <Col span={3}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>AWS Regions</p>
                       </Col>
-                      {dcaLoading ?
+                      {datacenterAccountLoading ?
                         <Col span={6}>
                           <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/>
                         </Col>
                       :
                         <Col span={6}>
-                          {datacenterAccount && datacenterAccount.regions ?
+                          {(datacenterAccount && datacenterAccount.regions) ?
                             createElement('checkboxGroup')
                           :
                             null
@@ -652,7 +737,7 @@ function DatacenterAccount(props) {
                     <Col span={3}>
                       <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags</p>
                     </Col>
-                    {datacenterAccount && Object.keys(datacenterAccount).length > 0 ?
+                    {(datacenterAccount && Object.keys(datacenterAccount).length > 0 ) ?
                       <Col span={6}>
                         {createElement('textArea', 'tags')}
                       </Col>
