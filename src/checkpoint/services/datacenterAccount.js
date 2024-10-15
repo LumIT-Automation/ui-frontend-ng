@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
-import CommonFunctions from '../../_helpers/commonFunctions'
 
 import {
   err
@@ -90,6 +88,7 @@ function DatacenterAccount(props) {
     }
   }, [checkedList]);
 
+  //body valido, fai richiesta
   useEffect(() => {
     if (Object.keys(errors).length === 0 && valid) {
       reqHandler()
@@ -97,6 +96,7 @@ function DatacenterAccount(props) {
     }
   }, [valid]);
 
+  //refresh
   useEffect(async() => {
     if ( visible && props.asset && refreshDca)  {
       setRefreshDca(false)
@@ -430,6 +430,30 @@ function DatacenterAccount(props) {
   */
   let closeModal = () => {
     setVisible(false);
+    setExistent(true);
+    setAWSRegions([]);
+    setLoading(false);
+
+    setChangeRequestId('');
+
+    setDatacenterAccounts([]);
+    setDatacenterAccountsLoading(false);
+    setDatacenterAccount({
+      id: '',
+      name: '',
+      regions : []
+    });
+    setDatacenterAccountLoading(false);
+    setOriginDca({});
+    setMapRegions(false)
+
+    setCheckedList([]);
+    let indeterminate = checkedList.length > 0 && checkedList.length < AWSRegions.length;
+    let checkAll = AWSRegions.length === checkedList.length;  
+    
+    setValid(false);
+    setErrors({});
+    setRefreshDca(false);
   };
 
   let renderError = () => {
@@ -611,7 +635,11 @@ function DatacenterAccount(props) {
   }
 
   return (
+    
     <>
+    {console.log(indeterminate)}
+    {console.log(checkedList)}
+    {console.log(AWSRegions)}
     <Space direction="vertical">
       <Button type="primary" onClick={() => setVisible(true)}>
         Datacenter Account
