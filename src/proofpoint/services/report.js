@@ -1,212 +1,185 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
-import { Modal, Alert, Input, Select, Button, Divider, Spin, Row, Col, Card } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons'
+import React, { useState, useEffect } from 'react';
+import { connect } from 'react-redux';
+import 'antd/dist/antd.css';
+import { Modal, Alert, Input, Select, Button, Divider, Spin, Row, Col, Card } from 'antd';
+import { LoadingOutlined } from '@ant-design/icons';
 
-import Rest from '../../_helpers/Rest'
-import Validators from '../../_helpers/validators'
-import Error from '../../concerto/error'
+import Rest from '../../_helpers/Rest';
+import Validators from '../../_helpers/validators';
+import Error from '../../concerto/error';
 
 import {
   err
-} from '../../concerto/store'
+} from '../../concerto/store';
 
-import AssetSelector from '../../concerto/assetSelector'
+import AssetSelector from '../../concerto/assetSelector';
+
+const spinIcon25 = <LoadingOutlined style={{ fontSize: 25 }} spin />;
+const spinIcon50 = <LoadingOutlined style={{ fontSize: 50 }} spin />;
+
+function Report(props) {
+  let [visible, setVisible] = useState(false);
+  let [errors, setErrors] = useState({});
+  let [reportTypes] = useState(["report-knowledge-assessment", "report-training", "report-phishing"]);
+  let [reportType, setReportType] = useState('');
+
+  let [reports, setReports] = useState([]);
+  let [report, setReport] = useState('');
+  
+  let [file, setFile] = useState('');
+  let [fileName, setFileName] = useState('');
+  let [size, setSize] = useState('');
+  let [type, setType] = useState('');
+  let [binaryString, setBinaryString] = useState('');
+  
+  let [reportsLoading, setReportsLoading] = useState(false);
+  let [reportLoading, setReportLoading] = useState(false);
+  let [reportTypeError, setReportTypeError] = useState(false);
+  let [reportError, setReportError] = useState(false);
+  let [mailFrom, setMailFrom] = useState('');
+  let [mailFromError, setMailFromError] = useState(false);
+  let [binaryStringError, setBinaryStringError] = useState(false);
+
+  useEffect(() => {
+    if (props.assetToken || props.asset) {
+      setReportType('');
+      setReports([]);
+      setReport('');
+    }
+  }, [props.assetToken, props.asset]);
+
+  useEffect(() => {
+    if (reportType) {
+      main();
+    }
+  }, [reportType]);
 
 
-const spinIcon25 = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const spinIcon50 = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-
-class RemoveHost extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      errors: {},
-      reportTypes: ["report-knowledge-assessment", "report-training", "report-phishing"],
-      reports: [],
-      file: '',
-      fileName: '',
-      size: '',
-      type: '',
-      binaryString: '',
-    };
-  }
-
-  componentDidMount() {
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.assetToken !== prevProps.assetToken) {
-      this.setState({reportType: '', reports: [], report: '' })
-    } 
-    if (this.props.asset !== prevProps.asset) {
-      this.setState({reportType: '', reports: [], report: '' })
-    } 
-    if (this.state.reportType && (this.state.reportType !== prevState.reportType)) {
-      this.main()
-    } 
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = async () => {
-    this.setState({visible: true})
-  }
-
-  main = async() => {
-    if (this.props.vendor && this.props.asset && this.state.reportType) {
-      this.setState({reportsLoading: true})
-      let data = await this.dataGet(this.state.reportType)
-      if (data.status && data.status !== 200 ) {
+  let main = async () => {
+    if (props.vendor && props.asset && reportType) {
+      setReportsLoading(true);
+      let data = await dataGet(reportType);
+      if (data.status && data.status !== 200) {
         let error = Object.assign(data, {
           component: 'report',
           vendor: 'proofpoint',
           errorType: 'reportsError'
-        })
-        this.props.dispatch(err(error))
-        await this.setState({reportsLoading: false})
-        return
+        });
+        props.dispatch(err(error));
+      } else {
+        setReports(data.data.items);
       }
-      else {
-        await this.setState({reportsLoading: false, reports: data.data.items})
-      }
+      setReportsLoading(false);
     }
-    
-  }
+  };
 
-  readFile = (file) => {
+  let readFile = (file) => {
     return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-  
-      reader.onload = res => {
-        resolve(res.target.result);
-      };
+      let reader = new FileReader();
+      reader.onload = res => resolve(res.target.result);
       reader.onerror = err => reject(err);
-  
       reader.readAsBinaryString(file);
     });
-  }
+  };
 
-  set = async (key, value) => {
+  let set = async (key, value) => {
     if (key === 'reportType') {
-      await this.setState({reportType: value, reportTypeError: false, report: '', reportError: false})
+      setReportType(value);
+      setReportTypeError(false);
+      setReport('');
+      setReportError(false);
     }
     if (key === 'report') {
-      await this.setState({report: value, reportError: false})
+      setReport(value);
+      setReportError(false);
     }
     if (key === 'mailFrom') {
-      await this.setState({mailFrom: value, mailFromError: false})
+      setMailFrom(value);
+      setMailFromError(false);
     }
     if (key === 'upload') {
-
       if (value) {
-          this.setState({
-            file: value,
-            fileName: value.name,
-            size: value.size,
-            type: value.type
-          })
-          let t = await this.readFile(value)
-          this.setState({binaryString: t})
+        setFile(value);
+        setFileName(value.name);
+        setSize(value.size);
+        setType(value.type);
+        let binary = await readFile(value);
+        setBinaryString(binary);
+      } else {
+        setBinaryString('');
       }
-      else {
-        //blank value while typing.
-        this.setState({binaryString: ''})
-      }
-
-      await this.setState({binaryStringError: ''})
+      setBinaryStringError(false);
     }
-  }
+  };
 
-  validation = async () => {
-    let errors = await this.validationCheck()
+  let validation = async () => {
+    let errors = await validationCheck();
     if (errors === 0) {
-      this.getReport()
+      getReport();
     }
-  }
+  };
 
-  validationCheck = async () => {
-    let errors = 0
-    let validators = new Validators()
+  let validationCheck = async () => {
+    let errors = 0;
+    let validators = new Validators();
 
-    if (!this.state.reportType) {
-      ++errors
-      await this.setState({reportTypeError: true})
+    if (!reportType) {
+      ++errors;
+      setReportTypeError(true);
     }
-    if (!this.state.report) {
-      ++errors
-      await this.setState({reportError: true})
+    if (!report) {
+      ++errors;
+      setReportError(true);
     }
-    if (this.state.reportType === "report-phishing") {
-      if (!this.state.mailFrom) {
-        ++errors
-        await this.setState({mailFromError: true})
+    if (reportType === "report-phishing") {
+      if (!mailFrom) {
+        ++errors;
+        setMailFromError(true);
       }
-      if (!validators.mailAddress(this.state.mailFrom)) {
-        ++errors
-        await this.setState({mailFromError: true})
+      if (!validators.mailAddress(mailFrom)) {
+        ++errors;
+        setMailFromError(true);
       }
-      if (!this.state.binaryString) {
-        ++errors
-        await this.setState({binaryStringError: true})
+      if (!binaryString) {
+        ++errors;
+        setBinaryStringError(true);
       }
     }
 
-    return errors
-  }
+    return errors;
+  };
 
-  getReport = async () => {
-    this.setState({reportLoading: true})
-    let data = await this.dataPut(this.state.report)
-    if (data.status && data.status !== 200 ) {
+  let getReport = async () => {
+    setReportLoading(true);
+    let data = await dataPut(report);
+    if (data.status && data.status !== 200) {
       let error = Object.assign(data, {
         component: 'report',
         vendor: 'proofpoint',
         errorType: 'reportError'
-      })
-      this.props.dispatch(err(error))
-      await this.setState({reportLoading: false})
-      return
-    }
-    else {
-      await this.setState({reportLoading: false})
+      });
+      props.dispatch(err(error));
+    } else {
       try {
         data.blob().then((blob) => {
-          // Creating new object of PDF file
-          const fileURL = window.URL.createObjectURL(blob)
-                
-          // Setting various property values
-          let link = document.createElement("a")
-          link.title = this.state.report
-          link.href = fileURL
-          link.target = "_blank"
-          link.click()
+          let fileURL = window.URL.createObjectURL(blob);
+          let link = document.createElement("a");
+          link.title = report;
+          link.href = fileURL;
+          link.target = "_blank";
+          link.click();
         });
-      }
-      catch (err) {
-        console.log(err)
+      } catch (err) {
+        console.log(err);
       }
     }
-  }
+    setReportLoading(false);
+  };
 
-  dataGet = async (resource) => {
-    let endpoint 
+  let dataGet = async (resource) => {
     let r
-    let additionalHeaders
-
-    endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${resource}/`
-
-    if (this.props.assetToken) {
-      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
-    }
+    let endpoint = `${props.vendor}/${props.asset.id}/usecases/${resource}/`;
+    let additionalHeaders = props.assetToken ? [{ 'X-User-Defined-Remote-API-Token': props.assetToken }] : null;
 
     let rest = new Rest(
       "GET",
@@ -216,32 +189,23 @@ class RemoveHost extends React.Component {
       error => {
         r = error
       }
-    )
-    await rest.doXHR(endpoint, this.props.token, null, additionalHeaders )
+    );
+    await rest.doXHR(endpoint, props.token, null, additionalHeaders);
     return r
-  }
+  };
 
-  dataPut = async (resource) => {
+  let dataPut = async (resource) => {
     let r
-    let additionalHeaders
-    let endpoint = `${this.props.vendor}/${this.props.asset.id}/usecases/${this.state.reportType}/`     
-
-    let body = {}
-    body.data = {}
-
-    if (this.state.reportType === "report-phishing") {
-      body.data.mailFrom = this.state.mailFrom
-      body.data.emailScreenshot = btoa(this.state.binaryString)
-      body.data.campaignname = this.state.report
+    let endpoint = `${props.vendor}/${props.asset.id}/usecases/${reportType}/`;
+    let body = { data: {} };
+    if (reportType === "report-phishing") {
+      body.data.mailFrom = mailFrom;
+      body.data.emailScreenshot = btoa(binaryString);
+      body.data.campaignname = report;
+    } else {
+      body.data.assignmentname = report;
     }
-    else {
-      body.data.assignmentname = this.state.report
-    }
-
-    if (this.props.assetToken) {
-      additionalHeaders = [{'X-User-Defined-Remote-API-Token': this.props.assetToken}]
-    }
-
+    let additionalHeaders = props.assetToken ? [{ 'X-User-Defined-Remote-API-Token': props.assetToken }] : null;
     let rest = new Rest(
       "PUT",
       resp => {
@@ -250,229 +214,202 @@ class RemoveHost extends React.Component {
       error => {
         r = error
       }
-    )
-    await rest.doXHR(endpoint, this.props.token, body, additionalHeaders )
+    );
+    await rest.doXHR(endpoint, props.token, body, additionalHeaders);
     return r
-  }
+  };
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: {},
-      reportTypes: [],
-      reportType: "",
-      reports: [],
-      report: ""
-    })
+  //let \[\s*\w+\s*,\s*
+  /*
+  let \[ corrisponde alla stringa let [.
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+  \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+  \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+  ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+  \]\s*=\s*useState
+  */
+  let closeModal = () => {
+    setVisible(false);
+    setErrors({});
+    setReports([]);
+    setReportType('');
+    setReport('');
+    setFile('');
+    setFileName('');
+    setSize('');
+    setType('');
+    setBinaryString('');
+    setReportsLoading(false);
+    setReportLoading(false);
+    setReportTypeError(false);
+    setReportError(false);
+    setMailFrom('');
+    setMailFromError(false);
+    setBinaryStringError(false);
+  };
+
+  let createElement = (element, key, choices) => {
+    switch (element) {
+      case 'button':
+        return (
+          <Button
+            type="primary"
+            disabled={!reportType || !report || reportLoading}
+            onClick={validation}
+          >
+            Get Your Report
+          </Button>
+        );
+      case 'input':
+        return (
+          <Input
+            value={key === 'mailFrom' ? mailFrom : ''}
+            style={mailFromError ? { borderColor: 'red', width: 200 } : { width: 200 }}
+            onChange={(event) => set(key, event.target.value)}
+          />
+        );
+      case 'upload':
+        return (
+          <>
+            <Input
+              type="file"
+              style={binaryStringError ? { borderColor: 'red', width: 350 } : { width: 350 }}
+              onChange={(e) => set('upload', e.target.files[0])}
+            />
+            <Card>
+              <p>Name: {fileName}</p>
+              <p>Type: {type}</p>
+              <p>Size: {size} Bytes</p>
+            </Card>
+          </>
+        );
+      case 'select':
+        return (
+          <Select
+            value={key === 'reportType' ? reportType : report}
+            showSearch
+            style={key === 'reportType' && reportTypeError ? { borderColor: 'red', width: '100%' } : { width: '100%' }}
+            onSelect={(value) => set(key, value)}
+          >
+            {(key === 'reportType' ? reportTypes : reports).map((n, i) => (
+              <Select.Option key={i} value={n}>
+                {n}
+              </Select.Option>
+            ))}
+          </Select>
+        );
+      default:
+        return null;
+    }
+  };
+
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'report') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
   }
 
-
-  render() {
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'report') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
-    }
-
-    let createElement = (element, key, choices, obj, action) => {  
-
-      switch (element) {
-
-        case 'button':
-          return (
-            <Button
-              type="primary"
-              disabled={(!(this.state.reportType && this.state.report) || this.state.reportLoading) ? true : false}
-              onClick={() => this.validation()}
-            >
-              Get Your Report
-            </Button>
-          )
-
-        case 'input':
-          return (
-            <Input
-              value={this.state[key]}
-              style=
-                {this.state[`${key}Error`] ?
-                  {borderColor: 'red', width: 200}
-                :
-                  {width: 200}
-                }
-              //ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value)}
-            />          
-          )
-
-        case 'upload' :
-          return (
-            <React.Fragment>
-              <Input 
-                type="file"
-                style=
-                  { 
-                    this.state[`binaryStringError`] ?
-                    {borderColor: `red`, width: 350}
-                  :
-                    {width: 350}
-                  }
-                onChange={e => this.set('upload', e.target.files[0])} 
-              />
-              <Card>
-                <p>Name: {this.state.fileName}</p>
-                <p>Type: {this.state.type}</p>
-                <p>Size: {this.state.size} Bytes</p>
-              </Card>    
-          </React.Fragment>    
-          )
-
-        case 'select':         
-          return (
-            <Select
-              value={this.state[key]}
-              showSearch
-              style={
-                this.state[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set(key, event, '')}
-            >
-              <React.Fragment>
-                {this.state[`${choices}`].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Select>
-          )
-                
-        default:
-
-      }
-    }
-    
-    return (
-      <React.Fragment>
-
-        <Button type="primary" onClick={() => this.details()}>GENERATE REPORT</Button>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>{this.props.type}</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-
-          <AssetSelector vendor='proofpoint'/>
-
-          <Divider/>
-
-          { (this.props.asset && this.props.asset.id) ?
-            <React.Fragment>
-              {this.state.loading ?
-                <Spin indicator={spinIcon25} style={{margin: 'auto 48%'}}/> 
-              :
-               <React.Fragment>
-                <br/>
+  return (
+    <>
+      <Button type="primary" onClick={() => setVisible(true)}>GENERATE REPORT</Button>
+  
+      <Modal
+        title={<p style={{ textAlign: 'center' }}>{props.type}</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={null}
+        onOk={() => setVisible(true)}
+        onCancel={closeModal}
+        width={1500}
+        maskClosable={false}
+      >
+        <AssetSelector vendor='proofpoint' />
+  
+        <Divider />
+  
+        {(props.asset && props.asset.id) ? (
+          <>
+            {reportsLoading ? (
+              <Spin indicator={spinIcon25} style={{ margin: 'auto 48%' }} />
+            ) : (
+              <>
+                <br />
                 <Row>
                   <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Report Type:</p>
+                    <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Report Type:</p>
                   </Col>
-                    <Col span={6}>
-                      {createElement('select', 'reportType', 'reportTypes', '', '')}
-                    </Col>
+                  <Col span={6}>
+                    {createElement('select', 'reportType', 'reportTypes', '', '')}
+                  </Col>
                 </Row>
-
-                { this.state.reportType && this.state.reportType === "report-phishing" ?
-                  <React.Fragment>
+  
+                {reportType === "report-phishing" && (
+                  <>
                     <Row>
                       <Col span={3}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Mail From:</p>
+                        <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Mail From:</p>
                       </Col>
                       <Col span={6}>
                         {createElement('input', 'mailFrom', '', '', '')}
                       </Col>
                     </Row>
-
+  
                     <Row>
                       <Col span={3}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Upload:</p>
+                        <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Upload:</p>
                       </Col>
                       <Col span={6}>
                         {createElement('upload', 'upload', '', '', '')}
                       </Col>
                     </Row>
-                    <br/>
-                  </React.Fragment>
-                :
-                  null
-                }
-
+                    <br />
+                  </>
+                )}
+  
                 <Row>
                   <Col span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Report:</p>
+                    <p style={{ marginRight: 10, marginTop: 5, float: 'right' }}>Report:</p>
                   </Col>
                   <Col span={6}>
-                    {this.state.reportsLoading ?
-                      <Spin indicator={spinIcon25} style={{margin: '0 50px', display: 'inline'}}/>
-                    :
-                      <React.Fragment>
+                    {reportsLoading ? (
+                      <Spin indicator={spinIcon25} style={{ margin: '0 50px', display: 'inline' }} />
+                    ) : (
+                      <>
                         {createElement('select', 'report', 'reports', '', '')}
-                      </React.Fragment>
-                    }
+                      </>
+                    )}
                   </Col>
                 </Row>
-
-                <br/>
+  
+                <br />
                 <Row>
                   <Col offset={3} span={3}>
                     {createElement('button', '', '', '', 'commit')}
                   </Col>
                 </Row>
-
-                <br/>
-
-                <Divider/>
-
-                {this.state.reportLoading ?
-                  <Spin indicator={spinIcon50} style={{margin: '0 48%', display: 'inline'}}/>
-                :
-                  null
-                }
-
-              </React.Fragment>
-              }
-             </React.Fragment>
-          :
-            <Alert message="Asset not set" type="error" />
-          }
-        </Modal>
-
-        {errors()}
-
-      </React.Fragment>
-    )
-  }
-
-}
-
+  
+                <br />
+  
+                <Divider />
+  
+                {reportLoading && (
+                  <Spin indicator={spinIcon50} style={{ margin: '0 48%', display: 'inline' }} />
+                )}
+              </>
+            )}
+          </>
+        ) : (
+          <Alert message="Asset not set" type="error" />
+        )}
+      </Modal>
+  
+      {errorsComponent()}
+    </>
+  );
+  
+};
 
 export default connect((state) => ({
   token: state.authentication.token,
@@ -480,4 +417,4 @@ export default connect((state) => ({
 
   asset: state.proofpoint.asset,
   assetToken: state.proofpoint.assetToken,  
-}))(RemoveHost);
+}))(Report);
