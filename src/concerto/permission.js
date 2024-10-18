@@ -1,166 +1,73 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import '../App.css'
 
 import Rest from '../_helpers/Rest'
 import JsonHelper from '../_helpers/jsonHelper'
-import Error from './error'
+import Error from '../concerto/error'
 import RolesDescription from './rolesDescription'
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
 import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
 
+import { LoadingOutlined, ReloadOutlined, CloseCircleOutlined, PlusOutlined } from '@ant-design/icons';
 
-import {
-  err
-} from './store'
-
+import { err } from './store'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
+function Permission(props) {
+  let [loading, setLoading] = useState(false);
+  let [permissionsRefresh, setPermissionsRefresh] = useState(false);
 
-/*
-any case (input)
-patch permission
-fetch all tags for domain
-*/
+  let [subAssets, setSubAssets] = useState([]);
+  let [subAsset, setSubAsset] = useState(null);
+  let [newIg, setNewIg] = useState('');
+  let [newIgLoading, setNewIgLoading] = useState(false)
+  let [delIg, setDelIg] = useState('');
+  let [delIgLoading, setDelIgLoading] = useState(false)
+  let [newIGShow, setNewIGShow] = useState(false);
+  let [delIGShow, setDelIGShow] = useState(false);
 
+  let [assets, setAssets] = useState([]);
+  let [workflows, setWorkflows] = useState([]);
+  let [roles, setRoles] = useState([]);
 
-class Permission extends React.Component {
+  let [identityGroups, setIdentityGroups] = useState([]);
+  let [permissions, setPermissions] = useState([]);
+  let [originPermissions, setOriginPermissions] = useState([]);
 
-  constructor(props) {
-    super(props);
+  let [errors, setErrors] = useState({});
 
-    this.textAreaRefs = {};
-    this.myRefs = {};
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-    this.state = {
-      searchText: '',
-      searchedColumn: '',
-      assets: [],
-      subAssets: '',
-      subAsset: '',
-      workflows: [],
-      identityGroups: [],
-      roles: [],
-      permissions: [],
-      originPermissions: [],
-      newIg: '',
-      delIg: '',
-      errors: {}
-    };
-  }
+  const prevVendor = useRef(props.vendor);
 
-  componentDidMount() {
-    if (!this.props.error) {
-      this.setState({permissionsRefresh: false})
-      this.main()
+  useEffect(() => {
+    if (!props.errors) {
+      setPermissionsRefresh(false)
+      main()
     }
-  }
+  }, []);
 
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.vendor !== this.props.vendor) {
-      this.setState({permissionsRefresh: false})
-      this.main()
+  useEffect(() => {
+    if (permissionsRefresh) {
+      setPermissionsRefresh(false)
+      main()
     }
-    if (this.state.permissionsRefresh) {
-      this.setState({permissionsRefresh: false})
-      this.main()
+  }, [permissionsRefresh]);
+
+  useEffect(() => {
+    if (prevVendor.current !== props.vendor) {
+      setPermissionsRefresh(false);
+      main();
     }
-  }
+    prevVendor.current = props.vendor;
+  }, [props.vendor]);
 
-  componentWillUnmount() {
-  }
-
-
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else if ( Array.isArray(dataIndex) ) {
-          let r = record[dataIndex[0]]
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else {
-          return ''
-        }
-      }
-      catch (error){
-
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text => {
-      return this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
-    }
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  main = async () => {
-
+  let main = async () => {
     let fetchedAssets,
     fetchedWorkflows,
     fetchedIdentityGroups,
@@ -173,7 +80,8 @@ class Permission extends React.Component {
     permissionsWithAssets
 
     let subAsset, subAssets
-    switch (this.props.vendor) {
+
+    switch (props.vendor) {
       case 'superAdmin':
         subAsset = ''
         subAssets = ''
@@ -209,25 +117,31 @@ class Permission extends React.Component {
 
     }
 
-    await this.setState({loading: true, subAssets: subAssets, subAsset: subAsset, newIg: '', delIg: '', newIGShow: false, delIGShow: false})
+    setLoading(true)
+    setSubAssets(subAssets);
+    setSubAsset(subAsset);
+    setNewIg('');
+    setDelIg('');
+    setNewIGShow(false);
+    setDelIGShow(false);
 
-    if (this.props.vendor !== 'superAdmin') {
+    if (props.vendor !== 'superAdmin') {
 
-      if (this.props.vendor === 'infoblox' ||
-          this.props.vendor === 'checkpoint' ||
-          this.props.vendor === 'f5' ||
-          this.props.vendor === 'proofpoint' ||
-          this.props.vendor === 'vmware') {
+      if (props.vendor === 'infoblox' ||
+          props.vendor === 'checkpoint' ||
+          props.vendor === 'f5' ||
+          props.vendor === 'proofpoint' ||
+          props.vendor === 'vmware') {
 
-        fetchedAssets = await this.dataGet('assets')
+        fetchedAssets = await dataGet('assets')
         if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
           let error = Object.assign(fetchedAssets, {
             component: 'permission',
             vendor: 'concerto',
             errorType: 'assetsError'
           })
-          this.props.dispatch(err(error))
-          await this.setState({loading: false})
+          props.dispatch(err(error))
+          setLoading(false)
           return
         }
         else {
@@ -236,79 +150,79 @@ class Permission extends React.Component {
             item[subAssets] = []
             assets.push(item)
           });
-          await this.setState({assets: assets})
+          setAssets(assets)
         }
-        await this.assetWithSubAssets()
+        await assetWithSubAssets()
       }
-      else if (this.props.vendor === 'workflow' ){
-        fetchedWorkflows = await this.dataGet('workflows')
+      else if (props.vendor === 'workflow' ){
+        fetchedWorkflows = await dataGet('workflows')
         if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
           let error = Object.assign(fetchedWorkflows, {
             component: 'permission',
             vendor: 'concerto',
             errorType: 'workflowsError'
           })
-          this.props.dispatch(err(error))
-          await this.setState({loading: false})
+          props.dispatch(err(error))
+          setLoading(false)
           return
         }
         else {
-          await this.setState({workflows: fetchedWorkflows.data.items})
+          setWorkflows(fetchedWorkflows.data.items)
         }
       }
       else {
 
       }
 
-      fetchedRoles = await this.dataGet('roles')
+      fetchedRoles = await dataGet('roles')
       if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
         let error = Object.assign(fetchedRoles, {
           component: 'permission',
           vendor: 'concerto',
           errorType: 'rolesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
         rolesNoWorkflow = fetchedRoles.data.items.filter(r => r.role !== 'workflow');
-        await this.setState({roles: rolesNoWorkflow})
+        setRoles(rolesNoWorkflow)
       }
 
-      fetchedIdentityGroups = await this.dataGet('identity-groups')
+      fetchedIdentityGroups = await dataGet('identity-groups')
       if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
         let error = Object.assign(fetchedIdentityGroups, {
           component: 'permission',
           vendor: 'concerto',
           errorType: 'identityGroupsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
         identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-        await this.setState({identityGroups: identityGroupsNoWorkflowLocal})
+        setIdentityGroups(identityGroupsNoWorkflowLocal)
       }
 
     }
 
-    fetchedPermissions = await this.dataGet('permissions')
+    fetchedPermissions = await dataGet('permissions')
     if (fetchedPermissions.status && fetchedPermissions.status !== 200 ) {
       let error = Object.assign(fetchedPermissions, {
         component: 'permission',
         vendor: 'concerto',
         errorType: 'permissionsError'
       })
-      this.props.dispatch(err(error))
-      await this.setState({loading: false})
+      props.dispatch(err(error))
+      setLoading(false)
       return
     }
     else {
       permissionsNoWorkflowLocal = fetchedPermissions.data.items.filter(r => r.identity_group_name !== 'workflow.local');
 
-      if (this.props.vendor === 'superAdmin') {
+      if (props.vendor === 'superAdmin') {
         let list = []
         for ( let s in permissionsNoWorkflowLocal) {
           const regex = /(cn=)([\w\d]+)/gm
@@ -321,47 +235,49 @@ class Permission extends React.Component {
           }
 
         }
-        await this.setState({permissions: list, originPermissions: list})
+        setPermissions(list) 
+        setOriginPermissions(list)
       }
 
-      else if (this.props.vendor === 'workflow') {
+      else if (props.vendor === 'workflow') {
         let jsonHelper = new JsonHelper()
 
-        permissionsWithWorkflows = await this.workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
+        permissionsWithWorkflows = await workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
         permissionsWithWorkflows.forEach((item, i) => {
           item.existent = true
           item.isModified = {}
           item.details = jsonHelper.jsonPretty(item.details)
           //item.details
-          //this[`inputTextAreaRef${item.id}`] = React.createRef(null);
         });
-        await this.setState({permissions: permissionsWithWorkflows, originPermissions: permissionsWithWorkflows})
+        setPermissions(permissionsWithWorkflows) 
+        setOriginPermissions(permissionsWithWorkflows)
       }
       else {
-        permissionsWithAssets = await this.permsWithAsset(permissionsNoWorkflowLocal)
+        permissionsWithAssets = await permsWithAsset(permissionsNoWorkflowLocal)
         permissionsWithAssets.forEach((item, i) => {
           item.existent = true
           item.isModified = {}
         });
-        await this.setState({permissions: permissionsWithAssets, originPermissions: permissionsWithAssets})
+        setPermissions(permissionsWithAssets) 
+        setOriginPermissions(permissionsWithAssets)
       }
 
     }
 
-    await this.setState({loading: false})
+    setLoading(false)
   }
 
-  dataGet = async (entities, assetId, subAsset) => {
-    let endpoint = `${this.props.vendor}/${entities}/`
+  let dataGet = async (entities, assetId, subAsset) => {
+    let endpoint = `${props.vendor}/${entities}/`
     let r
-    if (this.props.vendor === 'superAdmin') {
+    if (props.vendor === 'superAdmin') {
       endpoint = 'superadmins'
     }
     if (assetId) {
-      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
+      endpoint = `${props.vendor}/${assetId}/${entities}/`
     }
     if (entities === 'tags') {
-      endpoint = `${this.props.vendor}/${assetId}/${subAsset}/${entities}/`
+      endpoint = `${props.vendor}/${assetId}/${subAsset}/${entities}/`
     }
     let rest = new Rest(
       "GET",
@@ -372,19 +288,19 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token)
+    await rest.doXHR(endpoint, props.token)
     return r
   }
 
-  getTags = async (entities, assetId, subAsset) => {
-    let fetchedTags = await this.dataGet(entities, assetId, subAsset)
+  let getTags = async (entities, assetId, subAsset) => {
+    let fetchedTags = await dataGet(entities, assetId, subAsset)
     if (fetchedTags.status && fetchedTags.status !== 200 ) {
       let error = Object.assign(fetchedTags, {
         component: 'permission',
         vendor: 'concerto',
         errorType: 'tagsError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
     else {
@@ -392,23 +308,24 @@ class Permission extends React.Component {
     }
   }
 
-  assetWithSubAssets = async () => {
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
+  let assetWithSubAssets = async () => {
+    let assetsCopy = [...assets]
     let subAssetsFetched
 
     try {
-      for (const asset of Object.values(assets)) {
-        await this.setState({assets: assets})
+      for (const asset of Object.values(assetsCopy)) {
+        setAssets(assetsCopy)
+        
 
-        switch (this.state.subAssets) {
+        switch (subAssets) {
           case 'networks':
-            subAssetsFetched = await this.networksGet(asset.id)
+            subAssetsFetched = await networksGet(asset.id)
             break;
           case 'domains':
-            subAssetsFetched = await this.dataGet('domains', asset.id)
+            subAssetsFetched = await dataGet('domains', asset.id)
             break;
           case 'partitions':
-            subAssetsFetched = await this.dataGet('partitions', asset.id)
+            subAssetsFetched = await dataGet('partitions', asset.id)
             break;
           case 'objects':
             subAssetsFetched = []
@@ -424,48 +341,48 @@ class Permission extends React.Component {
             vendor: 'concerto',
             errorType: 'subAssetsError'
           })
-          this.props.dispatch(err(error))
-          await this.setState({assets: assets})
+          props.dispatch(err(error))
+          setAssets(assetsCopy)
           return
         }
         else {
           if (subAssetsFetched.data && subAssetsFetched.data.items) {
-            asset[this.state.subAssets] = subAssetsFetched.data.items
+            asset[subAssets] = subAssetsFetched.data.items
           }
           else {
-            asset[this.state.subAssets] = subAssetsFetched
+            asset[subAssets] = subAssetsFetched
           }
 
-          await this.setState({assets: assets})
+          setAssets(assetsCopy)
         }
       };
-      return assets
+      return assetsCopy
     } catch(error) {
       console.log(error)
       return assets
     }
   }
-
-  networksGet = async (assetId) => {
-    let nets = await this.dataGet('networks', assetId)
+  
+  let networksGet = async (assetId) => {
+    let nets = await dataGet('networks', assetId)
     if (nets.status && nets.status !== 200) {
       let error = Object.assign(nets, {
         component: 'permission',
         vendor: 'concerto',
         errorType: 'networksError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
 
-    let containers = await this.dataGet('network-containers', assetId)
+    let containers = await dataGet('network-containers', assetId)
     if (containers.status && containers.status !== 200) {
       let error = Object.assign(containers, {
         component: 'permission',
         vendor: 'concerto',
         errorType: 'containersError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
 
@@ -473,12 +390,11 @@ class Permission extends React.Component {
     return networks
   }
 
-
-  permsWithAsset = async (permissions) => {
-    if (this.props.vendor === 'proofpoint') {
+  let permsWithAsset = async (permissions) => {
+    if (props.vendor === 'proofpoint') {
       try {
         Object.values(permissions).forEach((perm, i) => {
-          let asset = this.state.assets.find(a => a.id === perm.id_asset)
+          let asset = assets.find(a => a.id === perm.id_asset)
           perm.asset = asset
           perm.assetFqdn = asset.fqdn
         });
@@ -490,7 +406,7 @@ class Permission extends React.Component {
     }
     try {
       Object.values(permissions).forEach((perm, i) => {
-        let asset = this.state.assets.find(a => a.id === perm[this.state.subAsset].id_asset)
+        let asset = assets.find(a => a.id === perm[subAsset].id_asset)
         perm.asset = asset
         perm.assetFqdn = asset.fqdn
       });
@@ -501,7 +417,7 @@ class Permission extends React.Component {
     }
   }
 
-  workflowAddDescription = async (workflows, permissions) => {
+  let workflowAddDescription = async (workflows, permissions) => {
     let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
     let workflowsObject = JSON.parse(JSON.stringify(workflows.data.items))
     let list = []
@@ -531,18 +447,13 @@ class Permission extends React.Component {
     return permissionsWithWorkflowDescription
   }
 
-  permissionsRefresh = async () => {
-    await this.setState({permissionsRefresh: true})
-  }
-
-
-  permissionAdd = async () => {
+  let permissionAdd = async () => {
     let id = 0
     let n = 0
     let p = {}
-    let list = JSON.parse(JSON.stringify(this.state.permissions))
+    let list = [...permissions]
 
-    this.state.permissions.forEach(p => {
+    permissions.forEach(p => {
       if (p.id > id) {
         id = p.id
       }
@@ -555,43 +466,42 @@ class Permission extends React.Component {
     p.identity_group_identifier = ''
     p.identity_group_name = ''
 
-    if (this.props.vendor === 'infoblox' ||
-        this.props.vendor === 'checkpoint' ||
-        this.props.vendor === 'f5' ||
-        this.props.vendor === 'vmware') {
-          p[this.state.subAsset] = {}
+    if (props.vendor === 'infoblox' ||
+        props.vendor === 'checkpoint' ||
+        props.vendor === 'f5' ||
+        props.vendor === 'vmware') {
+          p[subAsset] = {}
         }
 
     p.role = ''
 
     list = [p].concat(list)
 
-    await this.setState({permissions: list})
+    setPermissions(list)
   }
 
-  permissionRemove = async p => {
-    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
-    let newList = permissions.filter(n => {
+  let permissionRemove = async p => {
+    let list = [...permissions]
+    let newList = list.filter(n => {
       return p.id !== n.id
     })
 
-    //delete this[`inputTextAreaRef${p.id}`]
-    await this.setState({permissions: newList})
+    setPermissions(newList)
   }
 
-  set = async (key, value, permission) => {
+  let set = async (key, value, permission) => {
 
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
-    let workflows = JSON.parse(JSON.stringify(this.state.workflows))
-    let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
-    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
-    let origPerm = this.state.originPermissions.find(p => p.id === permission.id)
-    let perm = permissions.find(p => p.id === permission.id)
+    let assetsCopy = [...assets]
+    let workflowsCopy = [...workflows]
+    let identityGroupsCopy = [...identityGroups]
+    let permissionsCopy = [...permissions]
+    let origPerm = originPermissions.find(p => p.id === permission.id)
+    let perm = permissionsCopy.find(p => p.id === permission.id)
     
 
     if (key === 'workflowName') {
       if (value) {
-        let wf = workflows.find(w => w.name === value)
+        let wf = workflowsCopy.find(w => w.name === value)
         if (perm.existent) {
           if (wf.name !== origPerm.workflow.name) {
             perm.isModified.workflowName = true
@@ -617,14 +527,15 @@ class Permission extends React.Component {
     }
 
     if (key === 'details') {
-      let start = 0
+      //onBlur
+      /*let start = 0
       let end = 0
-      let ref = this.textAreaRefs[permission.id]
+      let ref = textAreaRefs[permission.id]
 
       if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
         start = ref.resizableTextArea.textArea.selectionStart
         end = ref.resizableTextArea.textArea.selectionEnd
-      }
+      }*/
 
       if (value) {
         if (perm.existent) {
@@ -647,20 +558,21 @@ class Permission extends React.Component {
         perm.details = ''
       }
 
-      await this.setState({permissions: permissions})
+      setPermissions(permissionsCopy)
 
-      ref = this.textAreaRefs[permission.id]
+      /*ref = textAreaRefs[permission.id]
       if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
         ref.resizableTextArea.textArea.selectionStart = start
         ref.resizableTextArea.textArea.selectionEnd = end
       }
 
       ref.focus()
+      */
     }
 
     if (key === 'identity_group_identifier') {
       if (value) {
-        let ig = identityGroups.find(i => i.identity_group_identifier === value)
+        let ig = identityGroupsCopy.find(i => i.identity_group_identifier === value)
         if (perm.existent) {
           if (ig.identity_group_identifier !== origPerm.identity_group_identifier) {
             perm.isModified.identity_group_identifier = true
@@ -702,15 +614,15 @@ class Permission extends React.Component {
 
     if (key === 'assetId') {
       if (value) {
-        let asset = assets.find(a => a.id === value)
+        let asset = assetsCopy.find(a => a.id === value)
         if (perm.existent) {
           if (asset.id !== origPerm.asset.id) {
             perm.isModified.subAsset_assetId = true
             perm.isModified.subAsset_name = true
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            if (this.props.vendor !== 'proofpoint') {
-              perm[this.state.subAsset] = {id_asset: value}
+            if (props.vendor !== 'proofpoint') {
+              perm[subAsset] = {id_asset: value}
             }
             else {}
           }
@@ -718,8 +630,8 @@ class Permission extends React.Component {
             delete perm.isModified.subAsset_assetId
             perm.asset = asset
             perm.assetFqdn = asset.fqdn
-            if (this.props.vendor !== 'proofpoint') {
-              perm[this.state.subAsset] = {id_asset: value}
+            if (props.vendor !== 'proofpoint') {
+              perm[subAsset] = {id_asset: value}
             }
             perm.isModified.subAsset_name = true
           }
@@ -727,8 +639,8 @@ class Permission extends React.Component {
         else {
           perm.asset = asset
           perm.assetFqdn = asset.fqdn
-          if (this.props.vendor !== 'proofpoint') {
-            perm[this.state.subAsset] = {id_asset: value}
+          if (props.vendor !== 'proofpoint') {
+            perm[subAsset] = {id_asset: value}
           }
         }
         delete perm.assetIdError
@@ -738,38 +650,38 @@ class Permission extends React.Component {
     if (key === 'subAsset') {
       if (value) {
         if (perm.existent) {
-          if (value !== origPerm[this.state.subAsset].name) {
+          if (value !== origPerm[subAsset].name) {
             perm.isModified.subAsset_name = true
-            perm[this.state.subAsset].name = value
+            perm[subAsset].name = value
           }
           else {
             delete perm.isModified.subAsset_name
-            perm[this.state.subAsset].name = value
+            perm[subAsset].name = value
           }
         }
         else {
-          perm[this.state.subAsset].name = value
+          perm[subAsset].name = value
         }
-        delete perm[`${this.state.subAsset}Error`]
-        await this.setState({permissions: permissions})
+        delete perm[`${subAsset}Error`]
+        setPermissions(permissionsCopy)
 
-        if (this.props.vendor === 'checkpoint' && value !== 'any') {
+        if (props.vendor === 'checkpoint' && value !== 'any') {
           perm.tagsLoading = true
-          await this.setState({permissions: permissions})
-          let tags = await this.getTags('tags', perm.asset.id, perm.domain.name)
+          setPermissions(permissionsCopy)
+          let tags = await getTags('tags', perm.asset.id, perm.domain.name)
           perm.domain.tags = tags 
           delete perm.tag
           perm.tagsLoading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
       }
     }
 
     if (key === 'refreshTags') {
-      if (this.props.vendor === 'checkpoint' && value !== 'any') {
+      if (props.vendor === 'checkpoint' && value !== 'any') {
         perm.tagsLoading = true
-        await this.setState({permissions: permissions})
-        let tags = await this.getTags('tags', perm.asset.id, perm.domain.name)
+        setPermissions(permissionsCopy)
+        let tags = await getTags('tags', perm.asset.id, perm.domain.name)
         perm.domain.tags = tags 
         delete perm.tag
 
@@ -780,7 +692,7 @@ class Permission extends React.Component {
         });
 
         perm.tagsLoading = false
-        await this.setState({permissions: permissions})
+        setPermissions(permissionsCopy)
       }
     }
 
@@ -801,7 +713,7 @@ class Permission extends React.Component {
         }
         delete perm.tagError
       }
-      await this.setState({permissions: permissions})
+      setPermissions(permissionsCopy)
     }
 
     if (key === 'toDelete') {
@@ -814,31 +726,31 @@ class Permission extends React.Component {
     }
 
     if (key !== 'details') {
-      await this.setState({permissions: permissions})
+      setPermissions(permissionsCopy)
     }
     console.log(perm)
 
   }
 
-  newIdentityGroupHandler = async () => {
-    let ig = JSON.parse(JSON.stringify(this.state.newIg))
-    let identityGroups = JSON.parse(JSON.stringify(this.state.identityGroups))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+  let newIdentityGroupHandler = async () => {
+    let ig = JSON.parse(JSON.stringify(newIg))
+    let identityGroupsCopy = [...identityGroups]
+    let errorsCopy = {...errors}
     let identityGroupIds = []
     let body = {}
 
-    identityGroups.forEach((item, i) => {
+    identityGroupsCopy.forEach((item, i) => {
       identityGroupIds.push(item.identity_group_identifier)
     });
 
     if (ig === '') {
-      errors.newIdentityGroup = 'Empty identity group.'
-      await this.setState({errors: errors})
+      errorsCopy.newIdentityGroup = 'Empty identity group.'
+      setErrors(errorsCopy)
       return
     }
     else if (identityGroupIds.includes(ig)) {
-      errors.newIdentityGroup = 'Identity group already exists.'
-      await this.setState({errors: errors})
+      errorsCopy.newIdentityGroup = 'Identity group already exists.'
+      setErrors(errorsCopy)
       return
     }
     else {
@@ -854,18 +766,18 @@ class Permission extends React.Component {
           }
         })
         if (cns.length < 1) {
-          errors.newIdentityGroup = 'Malformed DN.'
-          await this.setState({errors: errors})
+          errorsCopy.newIdentityGroup = 'Malformed DN.'
+          setErrors(errorsCopy)
         }
         else {
           body.name = cns[0]
           body.identity_group_identifier = ig
-          delete errors.newIdentityGroup
-          await this.setState({errors: errors})
+          delete errorsCopy.newIdentityGroup
+          setErrors(errorsCopy)
 
-          await this.setState({newIgLoading: true})
-          let newIg = await this.newIdentityGroupAdd(body)
-          await this.setState({newIgLoading: false})
+          setNewIgLoading(true)
+          let newIg = await newIdentityGroupAdd(body)
+          setNewIgLoading(false)
 
           if (newIg.status && newIg.status !== 201) {
             let error = Object.assign(newIg, {
@@ -873,24 +785,24 @@ class Permission extends React.Component {
               vendor: 'concerto',
               errorType: 'newIdentityGroupAddError'
             })
-            this.props.dispatch(err(error))
+            props.dispatch(err(error))
             return
           }
           else {
-            let fetchedIdentityGroups = await this.dataGet('identity-groups')
+            let fetchedIdentityGroups = await dataGet('identity-groups')
             if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
               let error = Object.assign(fetchedIdentityGroups, {
                 component: 'permission',
                 vendor: 'concerto',
                 errorType: 'identityGroupsError'
               })
-              this.props.dispatch(err(error))
-              await this.setState({loading: false})
+              props.dispatch(err(error))
+              setLoading(false)
               return
             }
             else {
               let identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
-              await this.setState({identityGroups: identityGroupsNoWorkflowLocal})
+              setIdentityGroups(identityGroupsNoWorkflowLocal)
             }
           }
         }
@@ -900,7 +812,7 @@ class Permission extends React.Component {
     }
   }
 
-  newIdentityGroupAdd = async (data) => {
+  let newIdentityGroupAdd = async (data) => {
     let r
     let b = {}
     b.data = data
@@ -914,45 +826,44 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/identity-groups/`, this.props.token, b )
+    await rest.doXHR(`${props.vendor}/identity-groups/`, props.token, b )
     return r
   }
 
-  delIdentityGroupHandler = async () => {
+  let delIdentityGroupHandler = async () => {
+    setDelIgLoading(true)
+    let response = await identityGroupDelete(delIg)
 
-    await this.setState({delIgLoading: true})
-    let delIg = await this.identityGroupDelete(this.state.delIg)
 
-
-    if (delIg.status && delIg.status !== 200 ) {
-      let error = Object.assign(delIg, {
+    if (response.status && response.status !== 200 ) {
+      let error = Object.assign(response, {
         component: 'permission',
         vendor: 'concerto',
         errorType: 'identityGroupDeleteError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
     else {
-      let fetchedIdentityGroups = await this.dataGet('identity-groups')
+      let fetchedIdentityGroups = await dataGet('identity-groups')
       if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
         let error = Object.assign(fetchedIdentityGroups, {
           component: 'permission',
           vendor: 'concerto',
           errorType: 'identityGroupsError'
         })
-        this.props.dispatch(err(error))
+        props.dispatch(err(error))
         return
       }
       else {
-        await this.setState({delIg: ''})
+        setDelIg('')
       }
     }
-    await this.setState({delIgLoading: false})
-    this.main()
+    setDelIgLoading(false)
+    main()
   }
 
-  identityGroupDelete = async (data) => {
+  let identityGroupDelete = async (data) => {
     let r
 
     let rest = new Rest(
@@ -964,23 +875,23 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/identity-group/${data}/`, this.props.token)
+    await rest.doXHR(`${props.vendor}/identity-group/${data}/`, props.token)
     return r
   }
 
-  validation = async () => {
-    let errors = await this.validationCheck()
+  let validation = async () => {
+    let errors = await validationCheck()
     if (errors === 0) {
-      this.cudManager()
+      cudManager()
     }
   }
 
-  validationCheck = async () => {
-    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+  let validationCheck = async () => {
+    let permissionsCopy = [...permissions]
     let errors = 0
     let jsonHelper = new JsonHelper()
 
-    for (const perm of Object.values(permissions)) {
+    for (const perm of Object.values(permissionsCopy)) {
       if (!perm.identity_group_identifier) {
         ++errors
         perm.identity_group_identifierError = true
@@ -989,7 +900,7 @@ class Permission extends React.Component {
         perm.roleError = true
         ++errors
       }
-      if (this.props.vendor === 'workflow') {
+      if (props.vendor === 'workflow') {
         if (!perm.workflow || (perm.workflow && !perm.workflow.id) ) {
           perm.workflowNameError = true
           ++errors
@@ -1010,21 +921,21 @@ class Permission extends React.Component {
         }
       }
       else {
-        if (this.props.vendor === 'proofpoint') {
+        if (props.vendor === 'proofpoint') {
           if (!perm.asset.id) {
             perm.assetIdError = true
             ++errors
           }
         }
-        else if (!perm[this.state.subAsset].id_asset) {
+        else if (!perm[subAsset].id_asset) {
           perm.assetIdError = true
           ++errors
         }
-        else if (!perm[this.state.subAsset].name) {
-          perm[`${this.state.subAsset}Error`] = true
+        else if (!perm[subAsset].name) {
+          perm[`${subAsset}Error`] = true
           ++errors
         }
-        else if (this.props.vendor === 'checkpoint' && !perm.tag) {
+        else if (props.vendor === 'checkpoint' && !perm.tag) {
           perm.tagError = true
           ++errors
         }
@@ -1035,17 +946,17 @@ class Permission extends React.Component {
       }
 
     }
-    await this.setState({permissions: permissions})
+    setPermissions(permissionsCopy)
     return errors
   }
 
-  cudManager = async () => {
-    let permissions = JSON.parse(JSON.stringify(this.state.permissions))
+  let cudManager = async () => {
+    let permissionsCopy = [...permissions]
     let toDelete = []
     let toPatch = []
     let toPost = []
 
-    for (const perm of Object.values(permissions)) {
+    for (const perm of Object.values(permissionsCopy)) {
       if (perm.toDelete) {
         toDelete.push(perm)
       }
@@ -1061,22 +972,22 @@ class Permission extends React.Component {
       for (const perm of toDelete) {
         //let per = permissions.find(p => p.id === perm.id)
         perm.loading = true
-        await this.setState({permissions: permissions})
+        setPermissions(permissionsCopy)
 
-        let p = await this.permissionDelete(perm.id)
+        let p = await permissionDelete(perm.id)
         if (p.status && p.status !== 200 ) {
           let error = Object.assign(p, {
             component: 'permission',
             vendor: 'concerto',
             errorType: 'permissionDeleteError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
         else {
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
 
       }
@@ -1086,7 +997,7 @@ class Permission extends React.Component {
       for (const perm of toPatch) {
         let body = {}
 
-        if (this.props.vendor === 'workflow') {
+        if (props.vendor === 'workflow') {
           let details = JSON.parse(perm.details);
           body.data = {
             "identity_group_identifier": perm.identity_group_identifier,
@@ -1097,7 +1008,7 @@ class Permission extends React.Component {
             "details" : details
           }
         }
-        else if (this.props.vendor === 'proofpoint') {
+        else if (props.vendor === 'proofpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
@@ -1105,14 +1016,14 @@ class Permission extends React.Component {
             "id_asset": perm.asset.id
           }
         }
-        else if (this.props.vendor === 'checkpoint') {
+        else if (props.vendor === 'checkpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
             "role": perm.role,
-            [this.state.subAsset]: {
-              "name": perm[this.state.subAsset].name,
-              "id_asset": perm[this.state.subAsset].id_asset
+            [subAsset]: {
+              "name": perm[subAsset].name,
+              "id_asset": perm[subAsset].id_asset
             },
             "tag": perm.tag
           }
@@ -1122,33 +1033,33 @@ class Permission extends React.Component {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
             "role": perm.role,
-            [this.state.subAsset]: {
-              "name": perm[this.state.subAsset].name,
-              "id_asset": perm[this.state.subAsset].id_asset
+            [subAsset]: {
+              "name": perm[subAsset].name,
+              "id_asset": perm[subAsset].id_asset
             }
           }
-          if (this.props.vendor === 'vmware') {
-            body.data[this.state.subAsset].moId = "any"
+          if (props.vendor === 'vmware') {
+            body.data[subAsset].moId = "any"
           }
         }
 
         perm.loading = true
-        await this.setState({permissions: permissions})
+        setPermissions(permissionsCopy)
 
-        let p = await this.permModify(perm.id, body)
+        let p = await permModify(perm.id, body)
         if (p.status && p.status !== 200 ) {
           let error = Object.assign(p, {
             component: 'permission',
             vendor: 'concerto',
             errorType: 'permissionModifyError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
         else {
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
 
       }
@@ -1158,7 +1069,7 @@ class Permission extends React.Component {
       for (const perm of toPost) {
         let body = {}
 
-        if (this.props.vendor === 'workflow') {
+        if (props.vendor === 'workflow') {
           let details = JSON.parse(perm.details);
           body.data = {
              "identity_group_identifier": perm.identity_group_identifier,
@@ -1169,7 +1080,7 @@ class Permission extends React.Component {
              "details" : details
           }
         }
-        else if (this.props.vendor === 'proofpoint') {
+        else if (props.vendor === 'proofpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
@@ -1177,14 +1088,14 @@ class Permission extends React.Component {
             "id_asset": perm.asset.id
           }
         }
-        else if (this.props.vendor === 'checkpoint') {
+        else if (props.vendor === 'checkpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
             "role": perm.role,
-            [this.state.subAsset]: {
-              "name": perm[this.state.subAsset].name,
-              "id_asset": perm[this.state.subAsset].id_asset
+            [subAsset]: {
+              "name": perm[subAsset].name,
+              "id_asset": perm[subAsset].id_asset
             },
             "tag": perm.tag
           }
@@ -1194,42 +1105,42 @@ class Permission extends React.Component {
              "identity_group_name": perm.identity_group_name,
              "identity_group_identifier": perm.identity_group_identifier,
              "role": perm.role,
-             [this.state.subAsset]: {
-                 "name": perm[this.state.subAsset].name,
-                 "id_asset": perm[this.state.subAsset].id_asset
+             [subAsset]: {
+                 "name": perm[subAsset].name,
+                 "id_asset": perm[subAsset].id_asset
              }
           }
-          if (this.props.vendor === 'vmware') {
-            body.data[this.state.subAsset].moId = "any"
+          if (props.vendor === 'vmware') {
+            body.data[subAsset].moId = "any"
           }
         }
 
         perm.loading = true
-        await this.setState({permissions: permissions})
+        setPermissions(permissionsCopy)
 
-        let p = await this.permAdd(body)
+        let p = await permAdd(body)
         if (p.status && p.status !== 201 ) {
           let error = Object.assign(p, {
             component: 'permission',
             vendor: 'concerto',
             errorType: 'permissionAddError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
         else {
           perm.loading = false
-          await this.setState({permissions: permissions})
+          setPermissions(permissionsCopy)
         }
 
       }
     }
 
-    this.permissionsRefresh()
+    setPermissionsRefresh(true)
   }
 
-  permissionDelete = async (permissionId) => {
+  let permissionDelete = async (permissionId) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1240,11 +1151,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/permission/${permissionId}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/permission/${permissionId}/`, props.token )
     return r
   }
 
-  permModify = async (permId, body) => {
+  let permModify = async (permId, body) => {
     let r
     let rest = new Rest(
       "PATCH",
@@ -1255,11 +1166,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/permission/${permId}/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/permission/${permId}/`, props.token, body )
     return r
   }
 
-  permAdd = async (body) => {
+  let permAdd = async (body) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1270,369 +1181,639 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/permissions/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/permissions/`, props.token, body )
     return r
   }
 
-
-  render() {
-
-    /*let localTags = []
-
-    let tagsForDomain = async (obj) => {
-      console.log(obj)
-      let tags = this.state.domainsTags.find(dt => dt.domain === obj[this.state.subAsset].name)
-      console.log(tags)
-      if (tags && tags.tags && tags.tags.length > 0) {
-        localTags = tags.tags
-        return true
-      }
-      else {
-        return false
-      }
-      
-    }*/
-
-    let returnCol = () => {
-      let newArray = []
-      if (this.props.vendor === 'superAdmin') {
-        newArray = superAdminColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray
-      }
-      else if (this.props.vendor === 'workflow') {
-        newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray 
-      }
-      else if (this.props.vendor === 'checkpoint') {
-        newArray = checkpointColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray 
-      }
-      else if (this.props.vendor === 'proofpoint') {
-        newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray 
-      }
-      else {
-        newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
-        return newArray 
-      }
+  let returnCol = () => {
+    let newArray = []
+    if (props.vendor === 'superAdmin') {
+      newArray = superAdminColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray
     }
+    else if (props.vendor === 'workflow') {
+      newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray 
+    }
+    else if (props.vendor === 'checkpoint') {
+      newArray = checkpointColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray 
+    }
+    else if (props.vendor === 'proofpoint') {
+      newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray 
+    }
+    else {
+      newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
+      return newArray 
+    }
+  }
 
-    const superAdminColumns = [
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'dn',
-        key: 'dn',
-        ...this.getColumnSearchProps('dn'),
-      },
-    ];
+  let superAdminColumns = [
+    {
+      title: 'AD group name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Distinguished name',
+      align: 'center',
+      dataIndex: 'dn',
+      key: 'dn',
+      ...getColumnSearchProps(
+        'dn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+  ];
 
-    const workflowColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
+  let workflowColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id'
+    },
+    {
+      title: 'AD group name',
+      align: 'center',
+      dataIndex: 'identity_group_name',
+      key: 'identity_group_name',
+      ...getColumnSearchProps(
+        'identity_group_name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Distinguished name',
+      align: 'center',
+      dataIndex: 'identity_group_identifier',
+      key: 'identity_group_identifier',
+      ...getColumnSearchProps(
+        'identity_group_identifier', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.identity_group_identifier}
+          showSearch
+          style=
+          { obj.identity_group_identifierError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('identity_group_identifier', value, obj )}
+        >
+          { identityGroups.map((ig, i) => {
+              return (
+                <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: 'Workflow name',
+      align: 'center',
+      dataIndex: ['workflow', 'name' ],
+      key: 'name',
+      ...getColumnSearchProps(
+        ['workflow', 'name' ], 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj && obj.workflow && obj.workflow.name ? obj.workflow.name : null}
+          showSearch
+          style=
+          { obj.workflowNameError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('workflowName', value, obj )}
+        >
+          { workflows.map((wf, i) => {
+              return (
+                <Select.Option key={i} value={wf.name}>{wf.name}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: 'Description',
+      align: 'center',
+      width: '100%',
+      dataIndex: ['workflow', 'description' ],
+      key: 'description',
+      ...getColumnSearchProps(
+        ['workflow', 'description' ], 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Assets',
+      align: 'center',
+      dataIndex: 'details',
+      key: 'details',
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input.TextArea
+            value={obj.details}
+            autoSize={{minRows: 7}}
+            //ref={ref => textAreaRefs[obj.id] = ref}
+            style={
+              obj.detailsError ?
+                {borderColor: 'red', textAlign: 'left', width: 250}
+              :
+                {textAlign: 'left', width: 250}
+            }
+            onBlur={e => {
+              set('details', e.target.value, obj)}
+            }
+          />
+          {obj.jsonError ?
+            <p style={{color: 'red'}}>{obj.jsonError}</p>
+          :
+            null
+          }
+          </React.Fragment>
+        )
       },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-        ...this.getColumnSearchProps('identity_group_name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-        ...this.getColumnSearchProps('identity_group_identifier'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.identity_group_identifier}
-            showSearch
-            style=
-            { obj.identity_group_identifierError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('identity_group_identifier', value, obj )}
-          >
-            { this.state.identityGroups.map((ig, i) => {
-                return (
-                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: 'Workflow name',
-        align: 'center',
-        dataIndex: ['workflow', 'name' ],
-        key: 'name',
-        ...this.getColumnSearchProps(['workflow', 'name' ]),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.workflow && obj.workflow.name ? obj.workflow.name : null}
-            showSearch
-            style=
-            { obj.workflowNameError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('workflowName', value, obj )}
-          >
-            { this.state.workflows.map((wf, i) => {
-                return (
-                  <Select.Option key={i} value={wf.name}>{wf.name}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: 'Description',
-        align: 'center',
-        width: '100%',
-        dataIndex: ['workflow', 'description' ],
-        key: 'description',
-        ...this.getColumnSearchProps(['workflow', 'description' ]),
-      },
-      {
-        title: 'Assets',
-        align: 'center',
-        dataIndex: 'details',
-        key: 'details',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input.TextArea
-              value={obj.details}
-              autoSize={{minRows: 7}}
-              //ref={ref => this.setRef(ref, obj.id)}
-              ref={ref => this.textAreaRefs[obj.id] = ref}
-              style={
-                obj.detailsError ?
-                  {borderColor: 'red', textAlign: 'left', width: 250}
-                :
-                  {textAlign: 'left', width: 250}
-              }
-              onChange={e => {
-                this.set('details', e.target.value, obj)}
-              }
+    },
+    {
+      title: <RolesDescription vendor={props.vendor} title={`roles' description`}/>,
+      align: 'center',
+      dataIndex: 'role',
+      key: 'role',
+      ...getColumnSearchProps(
+        'role', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj && obj.role ? obj.role : null}
+          showSearch
+          style=
+          { obj.roleError ?
+            {width: 75, border: `1px solid red`}
+          :
+            {width: 75}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('role', value, obj )}
+        >
+          { (roles ? roles.map((role, i) => {
+              return (
+                <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+              )
+            })
+          :
+            null
+          )}
+        </Select>
+      ),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
             />
-            {obj.jsonError ?
-              <p style={{color: 'red'}}>{obj.jsonError}</p>
-            :
-              null
-            }
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-        ...this.getColumnSearchProps('role'),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.role ? obj.role : null}
-            showSearch
-            style=
-            { obj.roleError ?
-              {width: 75, border: `1px solid red`}
-            :
-              {width: 75}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('role', value, obj )}
-          >
-            { (this.state.roles ? this.state.roles.map((role, i) => {
-                return (
-                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-                )
-              })
-            :
-              null
-            )}
-          </Select>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.permissionRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
+          :
+            <Button
+              type='danger'
+              onClick={(e) => permissionRemove(obj)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
 
-    const proofpointColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-        ...this.getColumnSearchProps('identity_group_name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-        ...this.getColumnSearchProps('identity_group_identifier'),
-        render: (name, obj)  => (
+  let proofpointColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id'
+    },
+    {
+      title: 'AD group name',
+      align: 'center',
+      dataIndex: 'identity_group_name',
+      key: 'identity_group_name',
+      ...getColumnSearchProps(
+        'identity_group_name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Distinguished name',
+      align: 'center',
+      dataIndex: 'identity_group_identifier',
+      key: 'identity_group_identifier',
+      ...getColumnSearchProps(
+        'identity_group_identifier', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.identity_group_identifier}
+          showSearch
+          style=
+          { obj.identity_group_identifierError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('identity_group_identifier', value, obj )}
+        >
+          { identityGroups.map((ig, i) => {
+              return (
+                <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: 'Asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetIdError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('assetId', value, obj )}
+        >
+          { assets.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: <RolesDescription vendor={props.vendor} title={`roles' description`}/>,
+      align: 'center',
+      dataIndex: 'role',
+      key: 'role',
+      ...getColumnSearchProps(
+        'role', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj && obj.role ? obj.role : null}
+          showSearch
+          style=
+          { obj.roleError ?
+            {width: 150, border: `1px solid red`}
+          :
+            {width: 150}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('role', value, obj )}
+        >
+          { (roles ? roles.map((role, i) => {
+              return (
+                <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+              )
+            })
+          :
+            null
+          )}
+        </Select>
+      ),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => permissionRemove(obj)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let checkpointColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id'
+    },
+    {
+      title: 'AD group name',
+      align: 'center',
+      dataIndex: 'identity_group_name',
+      key: 'identity_group_name',
+      ...getColumnSearchProps(
+        'identity_group_name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Distinguished name',
+      align: 'center',
+      dataIndex: 'identity_group_identifier',
+      key: 'identity_group_identifier',
+      ...getColumnSearchProps(
+        'identity_group_identifier', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.identity_group_identifier}
+          showSearch
+          style=
+          { obj.identity_group_identifierError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('identity_group_identifier', value, obj )}
+        >
+          { identityGroups.map((ig, i) => {
+              return (
+                <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: 'Asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetIdError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('assetId', value, obj )}
+        >
+          { assets.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: subAsset,
+      align: 'center',
+      dataIndex: [subAsset, 'name' ],
+      key: subAsset,
+      ...getColumnSearchProps(
+        [subAsset, 'name' ], 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
           <Select
-            value={obj.identity_group_identifier}
+            value={obj && obj[subAsset] ? obj[subAsset].name : null}
+            disabled={obj && obj[subAsset] && !obj[subAsset].id_asset ? true : false}
             showSearch
             style=
-            { obj.identity_group_identifierError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('identity_group_identifier', value, obj )}
-          >
-            { this.state.identityGroups.map((ig, i) => {
-                return (
-                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: 'Asset',
-        align: 'center',
-        dataIndex: 'assetFqdn',
-        key: 'assetFqdn',
-        ...this.getColumnSearchProps('assetFqdn'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.assetFqdn}
-            showSearch
-            style=
-            { obj.assetIdError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('assetId', value, obj )}
-          >
-            { this.state.assets.map((ass, i) => {
-                return (
-                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-        ...this.getColumnSearchProps('role'),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.role ? obj.role : null}
-            showSearch
-            style=
-            { obj.roleError ?
+            { obj[`${subAsset}Error`] ?
               {width: 150, border: `1px solid red`}
             :
               {width: 150}
@@ -1644,154 +1825,608 @@ class Permission extends React.Component {
             filterSort={(optionA, optionB) =>
               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
             }
-            onSelect={value => this.set('role', value, obj )}
+            onSelect={value => set('subAsset', value, obj )}
           >
-            { (this.state.roles ? this.state.roles.map((role, i) => {
-                return (
-                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-                )
-              })
+            {obj && obj.role && obj.role === 'admin' ?
+              <Select.Option key={'any'} value={'any'}>any</Select.Option>
             :
-              null
-            )}
+              <React.Fragment>
+                <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                { (obj && obj.asset && obj.asset[subAssets]) ? obj.asset[subAssets].map((sub, i) => {
+                    return (
+                      <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                    )
+                  })
+                :
+                  null
+                }
+              </React.Fragment>
+            }
+
           </Select>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
+      ),
+    },
+    {
+      title: 'Tags',
+      align: 'center',
+      key: 'tag',
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+            {obj && obj.domain && obj.domain.name === 'any' ?
+              <Input
+                defaultValue={obj && obj.tag ? obj.tag : null}
+                style={
+                  obj.tagError ?
+                    {borderColor: 'red', textAlign: 'center', width: 150}
+                  :
+                    {textAlign: 'center', width: 150}
+                }
+                onBlur={e => {
+                  set('tag', e.target.value, obj)
+                }
+                }
               />
             :
-              <Button
-                type='danger'
-                onClick={(e) => this.permissionRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
+              <React.Fragment>
+                {obj.tagsLoading ? 
+                  <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
+                :
+                  <div
+                    style={{display: 'flex', alignItems: 'center'}}
+                  >
+                    <Select
+                      value={obj && obj.tag ? obj.tag : null}
+                      disabled={obj && obj[subAsset] && !obj[subAsset].name ? true : false}
+                      showSearch
+                      style=
+                      { obj[`tagError`] ?
+                        {width: '65%', border: `1px solid red`}
+                      :
+                        {width: '65%'}
+                      }
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      onSelect={value => set('tag', value, obj )}
+                    >
+                      <React.Fragment>
+                        { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
+                            return (
+                              <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    </Select>
 
-    const checkpointColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-        ...this.getColumnSearchProps('identity_group_name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-        ...this.getColumnSearchProps('identity_group_identifier'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.identity_group_identifier}
-            showSearch
-            style=
-            { obj.identity_group_identifierError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
+                    <Radio.Group
+                      style={{marginLeft: 20}}
+                    >
+                      <Radio.Button
+                        disabled={obj && obj.domain && !obj.domain.name ? true : false}
+                        onClick={() => set('refreshTags', true, obj )}
+                      >
+                        <ReloadOutlined/>
+                      </Radio.Button>
+                    </Radio.Group>
+                  </div>
+                
+                }
+
+              </React.Fragment>
             }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('identity_group_identifier', value, obj )}
+
+          </React.Fragment>
+         )
+      },
+    },
+    {
+      title: <RolesDescription vendor={props.vendor} title={`roles' description`}/>,
+      align: 'center',
+      dataIndex: 'role',
+      key: 'role',
+      ...getColumnSearchProps(
+        'role', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj && obj.role ? obj.role : null}
+          showSearch
+          style=
+          { obj.roleError ?
+            {width: 150, border: `1px solid red`}
+          :
+            {width: 150}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('role', value, obj )}
+        >
+          { (roles ? roles.map((role, i) => {
+              return (
+                <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+              )
+            })
+          :
+            null
+          )}
+        </Select>
+      ),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => permissionRemove(obj)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let vendorColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      key: 'id'
+    },
+    {
+      title: 'AD group name',
+      align: 'center',
+      dataIndex: 'identity_group_name',
+      key: 'identity_group_name',
+      ...getColumnSearchProps(
+        'identity_group_name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Distinguished name',
+      align: 'center',
+      dataIndex: 'identity_group_identifier',
+      key: 'identity_group_identifier',
+      ...getColumnSearchProps(
+        'identity_group_identifier', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.identity_group_identifier}
+          showSearch
+          style=
+          { obj.identity_group_identifierError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('identity_group_identifier', value, obj )}
+        >
+          { identityGroups.map((ig, i) => {
+              return (
+                <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    {
+      title: 'Asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetIdError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('assetId', value, obj )}
+        >
+          { assets.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),
+    },
+    ...(
+      props.vendor === 'infoblox' ?
+        [
+          {
+            title: subAsset,
+            align: 'center',
+            dataIndex: [subAsset, 'name' ],
+            key: subAsset,
+            ...getColumnSearchProps(
+              [subAsset, 'name' ], 
+              searchInput, 
+              (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+              (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+              searchText, 
+              searchedColumn, 
+              setSearchText, 
+              setSearchedColumn
+            ),
+            render: (name, obj)  => (
+                <Select
+                  value={obj && obj[subAsset] ? obj[subAsset].name : null}
+                  disabled={obj && obj[subAsset] && !obj[subAsset].id_asset ? true : false}
+                  showSearch
+                  style=
+                  { obj[`${subAsset}Error`] ?
+                    {width: 150, border: `1px solid red`}
+                  :
+                    {width: 150}
+                  }
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onSelect={value => set('subAsset', value, obj )}
+                >
+                  {obj && obj.role && obj.role === 'admin' ?
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  :
+                    <React.Fragment>
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                      { (obj && obj.asset && obj.asset[subAssets]) ? obj.asset[subAssets].map((sub, i) => {
+                          return (
+                            <Select.Option key={i} value={sub.network ? sub.network : ''}>{sub.network ? sub.network : ''}</Select.Option>
+                          )
+                        })
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
+
+                </Select>
+            ),
+          },
+        ]
+      :
+        [
+          {
+            title: subAsset,
+            align: 'center',
+            dataIndex: [subAsset, 'name' ],
+            key: subAsset,
+            ...getColumnSearchProps(
+              [subAsset, 'name' ], 
+              searchInput, 
+              (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+              (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+              searchText, 
+              searchedColumn, 
+              setSearchText, 
+              setSearchedColumn
+            ),
+            render: (name, obj)  => (
+                <Select
+                  value={obj && obj[subAsset] ? obj[subAsset].name : null}
+                  disabled={obj && obj[subAsset] && !obj[subAsset].id_asset ? true : false}
+                  showSearch
+                  style=
+                  { obj[`${subAsset}Error`] ?
+                    {width: 150, border: `1px solid red`}
+                  :
+                    {width: 150}
+                  }
+                  optionFilterProp="children"
+                  filterOption={(input, option) =>
+                    option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                  }
+                  filterSort={(optionA, optionB) =>
+                    optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                  }
+                  onSelect={value => set('subAsset', value, obj )}
+                >
+                  {obj && obj.role && obj.role === 'admin' ?
+                    <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                  :
+                    <React.Fragment>
+                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
+                      { (obj && obj.asset && obj.asset[subAssets]) ? obj.asset[subAssets].map((sub, i) => {
+                          return (
+                            <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
+                          )
+                        })
+                      :
+                        null
+                      }
+                    </React.Fragment>
+                  }
+
+                </Select>
+            ),
+          },
+        ]
+    ),
+    {
+      title: <RolesDescription vendor={props.vendor} title={`roles' description`}/>,
+      align: 'center',
+      dataIndex: 'role',
+      key: 'role',
+      ...getColumnSearchProps(
+        'role', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj && obj.role ? obj.role : null}
+          showSearch
+          style=
+          { obj.roleError ?
+            {width: 150, border: `1px solid red`}
+          :
+            {width: 150}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('role', value, obj )}
+        >
+          { (roles ? roles.map((role, i) => {
+              return (
+                <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
+              )
+            })
+          :
+            null
+          )}
+        </Select>
+      ),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => permissionRemove(obj)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let randomKey = () => {
+    return Math.random().toString()
+  }
+
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'permission') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
+
+  return (
+    <>
+      {loading ?
+        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+      :
+      <React.Fragment>
+
+      <Radio.Group>
+        <Radio.Button
+          style={{marginLeft: 16 }}
+          onClick={() => setPermissionsRefresh(true)}
+        >
+          <ReloadOutlined/>
+        </Radio.Button>
+      </Radio.Group>
+
+      {(props.vendor !== 'superAdmin') ?
+        <Radio.Group
+          buttonStyle="solid"
+        >
+          <Radio.Button
+            style={{marginLeft: 16 }}
+            onClick={() => permissionAdd()}
           >
-            { this.state.identityGroups.map((ig, i) => {
-                return (
-                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                )
-              })
+            Add permission
+          </Radio.Button>
+
+          <Radio.Button
+            style={{marginLeft: 16 }}
+            buttonStyle="solid"
+            onClick={() => {
+              setNewIGShow(true)
+              setDelIGShow(false)
             }
-          </Select>
-        ),
-      },
-      {
-        title: 'Asset',
-        align: 'center',
-        dataIndex: 'assetFqdn',
-        key: 'assetFqdn',
-        ...this.getColumnSearchProps('assetFqdn'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.assetFqdn}
-            showSearch
-            style=
-            { obj.assetIdError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
             }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('assetId', value, obj )}
           >
-            { this.state.assets.map((ass, i) => {
-                return (
-                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
-                )
-              })
+            New identity group
+          </Radio.Button>
+
+          <Radio.Button
+            style={{ backgroundColor: 'red', borderColor: 'red'}}
+            onClick={() => {
+              setNewIGShow(false)
+              setDelIGShow(true)
             }
-          </Select>
-        ),
-      },
-      {
-        title: this.state.subAsset,
-        align: 'center',
-        dataIndex: [this.state.subAsset, 'name' ],
-        key: this.state.subAsset,
-        ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-        render: (name, obj)  => (
-            <Select
-              value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-              disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-              showSearch
-              style=
-              { obj[`${this.state.subAsset}Error`] ?
-                {width: 150, border: `1px solid red`}
-              :
-                {width: 150}
+            }
+          >
+            Delete identity group
+          </Radio.Button>
+        </Radio.Group>
+      :
+        null
+      }
+
+      { (newIGShow && props.vendor !== 'superAdmin') ?
+        <React.Fragment>
+        <br/>
+        <br/>
+        { newIgLoading ?
+            <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
+          :
+            <Input
+              style={{width: 350, marginLeft: 16}}
+              value={newIg}
+              placeholder="cn= ,cn= ,dc= ,dc= "
+              suffix={
+                <CloseCircleOutlined onClick={() => {
+                  let errorsCopy = {...errors}
+                  delete errorsCopy.newIdentityGroup
+                  setNewIg('')
+                  setErrors(errorsCopy)
+                }
+                }
+                />
               }
+              onChange={e => setNewIg(e.target.value)}
+            />
+        }
+          <Button
+            type='primary'
+            style={{marginLeft: 8}}
+            onClick={() => newIdentityGroupHandler()}
+          >
+            Add
+          </Button>
+          <Button
+            style={{marginLeft: 8}}
+            onClick={() => {
+              let errorsCopy = {...errors}
+              delete errorsCopy.newIdentityGroup
+              setNewIg('')
+              setErrors(errorsCopy)
+              setNewIGShow(false)
+            }
+            }
+          >
+            Hide
+          </Button>
+          <p style={{marginLeft: '16px', color: 'red'}}>{errors.newIdentityGroup}</p>
+        </React.Fragment>
+        :
+        null
+      }
+      { (delIGShow && props.vendor !== 'superAdmin') ?
+        <React.Fragment>
+        <br/>
+        <br/>
+        { delIgLoading ?
+            <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
+          :
+            <Select
+              value={delIg}
+              showSearch
+              style={{width: 350, marginLeft: 16}}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -1799,609 +2434,72 @@ class Permission extends React.Component {
               filterSort={(optionA, optionB) =>
                 optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
               }
-              onSelect={value => this.set('subAsset', value, obj )}
+              onSelect={e => setDelIg(e)}
             >
-              {obj && obj.role && obj.role === 'admin' ?
-                <Select.Option key={'any'} value={'any'}>any</Select.Option>
-              :
-                <React.Fragment>
-                  <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                  { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                      return (
-                        <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
-                      )
-                    })
-                  :
-                    null
-                  }
-                </React.Fragment>
+              { identityGroups.map((ig, i) => {
+                  return (
+                    <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
+                  )
+                })
               }
-
             </Select>
-        ),
-      },
-      {
-        title: 'Tags',
-        align: 'center',
-        key: 'tag',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-              {obj && obj.domain && obj.domain.name === 'any' ?
-                <Input
-                  defaultValue={obj && obj.tag ? obj.tag : null}
-                  style={
-                    obj.tagError ?
-                      {borderColor: 'red', textAlign: 'center', width: 150}
-                    :
-                      {textAlign: 'center', width: 150}
-                  }
-                  onBlur={e => {
-                    this.set('tag', e.target.value, obj)
-                  }
-                  }
-                />
-              :
-                <React.Fragment>
-                  {obj.tagsLoading ? 
-                    <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
-                  :
-                    <div
-                      style={{display: 'flex', alignItems: 'center'}}
-                    >
-                      <Select
-                        value={obj && obj.tag ? obj.tag : null}
-                        disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].name ? true : false}
-                        showSearch
-                        style=
-                        { obj[`tagError`] ?
-                          {width: '65%', border: `1px solid red`}
-                        :
-                          {width: '65%'}
-                        }
-                        optionFilterProp="children"
-                        filterOption={(input, option) =>
-                          option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                        }
-                        filterSort={(optionA, optionB) =>
-                          optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                        }
-                        onSelect={value => this.set('tag', value, obj )}
-                      >
-                        <React.Fragment>
-                          { obj && obj.domain && obj.domain.tags && obj.domain.tags.length > 0 ? obj.domain.tags.map((tag, i) => {
-                              return (
-                                <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
-                              )
-                            })
-                          :
-                            null
-                          }
-                        </React.Fragment>
-                      </Select>
 
-                      <Radio.Group
-                        style={{marginLeft: 20}}
-                      >
-                        <Radio.Button
-                          disabled={obj && obj.domain && !obj.domain.name ? true : false}
-                          onClick={() => this.set('refreshTags', true, obj )}
-                        >
-                          <ReloadOutlined/>
-                        </Radio.Button>
-                      </Radio.Group>
-                    </div>
-                  
-                  }
-
-                </React.Fragment>
-              }
-
-            </React.Fragment>
-           )
-        },
-      },
-      {
-        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-        ...this.getColumnSearchProps('role'),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.role ? obj.role : null}
-            showSearch
-            style=
-            { obj.roleError ?
-              {width: 150, border: `1px solid red`}
-            :
-              {width: 150}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('role', value, obj )}
-          >
-            { (this.state.roles ? this.state.roles.map((role, i) => {
-                return (
-                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-                )
-              })
-            :
-              null
-            )}
-          </Select>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.permissionRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const vendorColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        key: 'id'
-      },
-      {
-        title: 'AD group name',
-        align: 'center',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-        ...this.getColumnSearchProps('identity_group_name'),
-      },
-      {
-        title: 'Distinguished name',
-        align: 'center',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-        ...this.getColumnSearchProps('identity_group_identifier'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.identity_group_identifier}
-            showSearch
-            style=
-            { obj.identity_group_identifierError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('identity_group_identifier', value, obj )}
-          >
-            { this.state.identityGroups.map((ig, i) => {
-                return (
-                  <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      {
-        title: 'Asset',
-        align: 'center',
-        dataIndex: 'assetFqdn',
-        key: 'assetFqdn',
-        ...this.getColumnSearchProps('assetFqdn'),
-        render: (name, obj)  => (
-          <Select
-            value={obj.assetFqdn}
-            showSearch
-            style=
-            { obj.assetIdError ?
-              {width: '100%', border: `1px solid red`}
-            :
-              {width: '100%'}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('assetId', value, obj )}
-          >
-            { this.state.assets.map((ass, i) => {
-                return (
-                  <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
-                )
-              })
-            }
-          </Select>
-        ),
-      },
-      ...(
-        this.props.vendor === 'infoblox' ?
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.network ? sub.network : ''}>{sub.network ? sub.network : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-        :
-          [
-            {
-              title: this.state.subAsset,
-              align: 'center',
-              dataIndex: [this.state.subAsset, 'name' ],
-              key: this.state.subAsset,
-              ...this.getColumnSearchProps([this.state.subAsset, 'name' ]),
-              render: (name, obj)  => (
-                  <Select
-                    value={obj && obj[this.state.subAsset] ? obj[this.state.subAsset].name : null}
-                    disabled={obj && obj[this.state.subAsset] && !obj[this.state.subAsset].id_asset ? true : false}
-                    showSearch
-                    style=
-                    { obj[`${this.state.subAsset}Error`] ?
-                      {width: 150, border: `1px solid red`}
-                    :
-                      {width: 150}
-                    }
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={value => this.set('subAsset', value, obj )}
-                  >
-                    {obj && obj.role && obj.role === 'admin' ?
-                      <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                    :
-                      <React.Fragment>
-                        <Select.Option key={'any'} value={'any'}>any</Select.Option>
-                        { (obj && obj.asset && obj.asset[this.state.subAssets]) ? obj.asset[this.state.subAssets].map((sub, i) => {
-                            return (
-                              <Select.Option key={i} value={sub.name ? sub.name : ''}>{sub.name ? sub.name : ''}</Select.Option>
-                            )
-                          })
-                        :
-                          null
-                        }
-                      </React.Fragment>
-                    }
-
-                  </Select>
-              ),
-            },
-          ]
-      ),
-      {
-        title: <RolesDescription vendor={this.props.vendor} title={`roles' description`}/>,
-        align: 'center',
-        dataIndex: 'role',
-        key: 'role',
-        ...this.getColumnSearchProps('role'),
-        render: (name, obj)  => (
-          <Select
-            value={obj && obj.role ? obj.role : null}
-            showSearch
-            style=
-            { obj.roleError ?
-              {width: 150, border: `1px solid red`}
-            :
-              {width: 150}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => this.set('role', value, obj )}
-          >
-            { (this.state.roles ? this.state.roles.map((role, i) => {
-                return (
-                  <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-                )
-              })
-            :
-              null
-            )}
-          </Select>
-        ),
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.permissionRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    let randomKey = () => {
-      return Math.random().toString()
-    }
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'permission') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
-    }
-
-    return (
-      <React.Fragment>
-        {this.state.loading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-        :
-          //<Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
-          <React.Fragment>
-
-            <Radio.Group>
-              <Radio.Button
-                style={{marginLeft: 16 }}
-                onClick={() => this.permissionsRefresh()}
-              >
-                <ReloadOutlined/>
-              </Radio.Button>
-            </Radio.Group>
-
-            {(this.props.vendor !== 'superAdmin') ?
-              <Radio.Group
-                buttonStyle="solid"
-              >
-                <Radio.Button
-                  style={{marginLeft: 16 }}
-                  onClick={() => this.permissionAdd()}
-                >
-                  Add permission
-                </Radio.Button>
-
-                <Radio.Button
-                  style={{marginLeft: 16 }}
-                  buttonStyle="solid"
-                  onClick={() => this.setState({newIGShow: true, delIGShow: false})}
-                >
-                  New identity group
-                </Radio.Button>
-
-                <Radio.Button
-                  style={{ backgroundColor: 'red', borderColor: 'red'}}
-                  onClick={() => this.setState({newIGShow: false, delIGShow: true})}
-                >
-                  Delete identity group
-                </Radio.Button>
-              </Radio.Group>
-            :
-              null
-            }
-
-            { (this.state.newIGShow && this.props.vendor !== 'superAdmin') ?
-              <React.Fragment>
-              <br/>
-              <br/>
-              { this.state.newIgLoading ?
-                  <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
-                :
-                  <Input
-                    style={{width: 350, marginLeft: 16}}
-                    value={this.state.newIg}
-                    placeholder="cn= ,cn= ,dc= ,dc= "
-                    suffix={
-                      <CloseCircleOutlined onClick={() => {
-                        let errors = JSON.parse(JSON.stringify(this.state.errors))
-                        delete errors.newIdentityGroup
-                        this.setState({newIg: '', errors: errors})
-                      }
-                      }
-                      />
-                    }
-                    onChange={e => this.setState({newIg: e.target.value})}
-                  />
-              }
-                <Button
-                  type='primary'
-                  style={{marginLeft: 8}}
-                  onClick={() => this.newIdentityGroupHandler()}
-                >
-                  Add
-                </Button>
-                <Button
-                  style={{marginLeft: 8}}
-                  onClick={() => {
-                    let errors = JSON.parse(JSON.stringify(this.state.errors))
-                    delete errors.newIdentityGroup
-                    this.setState({newIGShow: false, newIg: '', errors: errors})
-                  }
-                  }
-                >
-                  Hide
-                </Button>
-                <p style={{marginLeft: '16px', color: 'red'}}>{this.state.errors.newIdentityGroup}</p>
-              </React.Fragment>
-              :
-              null
-            }
-            { (this.state.delIGShow && this.props.vendor !== 'superAdmin') ?
-              <React.Fragment>
-              <br/>
-              <br/>
-              { this.state.delIgLoading ?
-                  <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
-                :
-                  <Select
-                    value={this.state.delIg}
-                    showSearch
-                    style={{width: 350, marginLeft: 16}}
-                    optionFilterProp="children"
-                    filterOption={(input, option) =>
-                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                    }
-                    filterSort={(optionA, optionB) =>
-                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                    }
-                    onSelect={e => this.setState({delIg: e})}
-                  >
-                    { this.state.identityGroups.map((ig, i) => {
-                        return (
-                          <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-                        )
-                      })
-                    }
-                  </Select>
-
-              }
-                <Button
-                  type='danger'
-                  style={{marginLeft: 8}}
-                  onClick={() => this.delIdentityGroupHandler()}
-                >
-                  Delete
-                </Button>
-                <Button
-                  style={{marginLeft: 8}}
-                  onClick={() => {
-                    let errors = JSON.parse(JSON.stringify(this.state.errors))
-                    delete errors.delIdentityGroup
-                    this.setState({delIGShow: false, delIg: '', errors: errors})
-                  }
-                  }
-                >
-                  Hide
-                </Button>
-                <p style={{marginLeft: '16px', color: 'red'}}>{this.state.errors.delIdentityGroup}</p>
-              </React.Fragment>
-              :
-              null
-            }
-
-
-            <br/>
-            <Table
-              columns={returnCol()}
-              style={{width: '100%', padding: 15}}
-              dataSource={this.state.permissions}
-              bordered
-              rowKey={randomKey}
-              scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
-            />
-            {(this.props.vendor !== 'superAdmin') ?
-              <Button
-                type="primary"
-                style={{float: 'right', marginRight: 15}}
-                onClick={() => this.validation()}
-              >
-                Commit
-              </Button>
-            :
-              null
-            }
-
-          </React.Fragment>
-          //</Space>
         }
+          <Button
+            type='danger'
+            style={{marginLeft: 8}}
+            onClick={() => delIdentityGroupHandler()}
+          >
+            Delete
+          </Button>
+          <Button
+            style={{marginLeft: 8}}
+            onClick={() => {
+              let errorsCopy = {...errors}
+              delete errorsCopy.delIdentityGroup
+              setDelIg('')
+              setErrors(errorsCopy)
+              setDelIGShow(false)
+            }
+            }
+          >
+            Hide
+          </Button>
+          <p style={{marginLeft: '16px', color: 'red'}}>{errors.delIdentityGroup}</p>
+        </React.Fragment>
+        :
+        null
+      }
 
-        {errors()}
 
-      </React.Fragment>
-    )
-  }
+      <br/>
+      <Table
+        columns={returnCol()}
+        style={{width: '100%', padding: 15}}
+        dataSource={permissions}
+        bordered
+        rowKey={randomKey}
+        scroll={{x: 'auto'}}
+        pagination={{ pageSize: 10 }}
+      />
+      {(props.vendor !== 'superAdmin') ?
+        <Button
+          type="primary"
+          style={{float: 'right', marginRight: 15}}
+          onClick={() => validation()}
+        >
+          Commit
+        </Button>
+      :
+        null
+      }
+
+    </React.Fragment>
+      }
+      {errorsComponent()}
+    </>
+    
+  )
 }
 
 export default connect((state) => ({
