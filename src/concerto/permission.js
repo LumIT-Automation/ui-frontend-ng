@@ -30,9 +30,10 @@ function Permission(props) {
   let [delIGShow, setDelIGShow] = useState(false);
 
   let [assets, setAssets] = useState([]);
-  let [workflows, setWorkflows] = useState([]);
+  let [gotAssets, setGotAssets] = useState(false);
+  let [asswSubAss, setAsswSubAss] = useState(false);
+  
   let [roles, setRoles] = useState([]);
-
   let [identityGroups, setIdentityGroups] = useState([]);
   let [permissions, setPermissions] = useState([]);
   let [originPermissions, setOriginPermissions] = useState([]);
@@ -46,84 +47,74 @@ function Permission(props) {
   const prevVendor = useRef(props.vendor);
 
   useEffect(() => {
-    if (!props.errors) {
-      setPermissionsRefresh(false)
+    /*if (prevVendor.current !== props.vendor) {
+      setPermissionsRefresh(false);
+      main();
+    }
+    prevVendor.current = props.vendor;*/
+    console.log(props.vendor)
+
+
+
+    let sa, sas
+    switch (props.vendor) {
+      case 'infoblox':
+        sa = 'network'
+        sas = 'networks'
+        break;
+      case 'checkpoint':
+        sa = 'domain'
+        sas = 'domains'
+        break;
+      case 'f5':
+        sa = 'partition'
+        sas = 'partitions'
+        break;
+      case 'vmware':
+        sa = 'object'
+        sas = 'objects'
+        break;
+
+      default:
+        sa = ''
+        sas = ''
+    }
+    setSubAssets(sas);
+    setSubAsset(sa);
+
+  }, [props.vendor]);
+
+  useEffect(() => {
+    assetsGet()
+  }, [subAssets, subAsset]);
+
+  useEffect(async () => {
+    if (gotAssets) {
+      setGotAssets(false)
+      await assetWithSubAssets()
+    }
+  }, [gotAssets]);
+
+  useEffect(() => {
+    if (asswSubAss) {
+      setAsswSubAss(false)
       main()
     }
-  }, []);
+  }, [asswSubAss]);
 
   useEffect(() => {
     if (permissionsRefresh) {
       setPermissionsRefresh(false)
-      main()
+      assetsGet()
     }
   }, [permissionsRefresh]);
 
-  useEffect(() => {
-    if (prevVendor.current !== props.vendor) {
-      setPermissionsRefresh(false);
-      main();
-    }
-    prevVendor.current = props.vendor;
-  }, [props.vendor]);
 
-  let main = async () => {
-    let fetchedAssets,
-    fetchedWorkflows,
-    fetchedIdentityGroups,
-    fetchedRoles,
-    rolesNoWorkflow,
-    fetchedPermissions,
-    identityGroupsNoWorkflowLocal,
-    permissionsNoWorkflowLocal,
-    permissionsWithWorkflows,
-    permissionsWithAssets
 
-    let subAsset, subAssets
-
-    switch (props.vendor) {
-      case 'superAdmin':
-        subAsset = ''
-        subAssets = ''
-        break;
-
-      case 'workflow':
-        subAsset = ''
-        subAssets = ''
-        break;
-
-      case 'infoblox':
-        subAsset = 'network'
-        subAssets = 'networks'
-        break;
-      case 'checkpoint':
-        subAsset = 'domain'
-        subAssets = 'domains'
-        break;
-      case 'f5':
-        subAsset = 'partition'
-        subAssets = 'partitions'
-        break;
-      case 'proofpoint':
-        subAsset = ''
-        subAssets = ''
-        break;
-      case 'vmware':
-        subAsset = 'object'
-        subAssets = 'objects'
-        break;
-
-      default:
-
-    }
+  let assetsGet = async () => {
+    let fetchedAssets
 
     setLoading(true)
-    setSubAssets(subAssets);
-    setSubAsset(subAsset);
-    setNewIg('');
-    setDelIg('');
-    setNewIGShow(false);
-    setDelIGShow(false);
 
     if (props.vendor !== 'superAdmin') {
 
@@ -145,35 +136,37 @@ function Permission(props) {
           return
         }
         else {
-          let assets = []
+          let list = []
           fetchedAssets.data.items.forEach((item, i) => {
             item[subAssets] = []
-            assets.push(item)
+            list.push(item)
           });
-          setAssets(assets)
-        }
-        await assetWithSubAssets()
-      }
-      else if (props.vendor === 'workflow' ){
-        fetchedWorkflows = await dataGet('workflows')
-        if (fetchedWorkflows.status && fetchedWorkflows.status !== 200 ) {
-          let error = Object.assign(fetchedWorkflows, {
-            component: 'permission',
-            vendor: 'concerto',
-            errorType: 'workflowsError'
-          })
-          props.dispatch(err(error))
-          setLoading(false)
-          return
-        }
-        else {
-          setWorkflows(fetchedWorkflows.data.items)
+          setAssets(list)
         }
       }
       else {
 
       }
+    }
 
+    setGotAssets(true)
+  }
+
+  let main = async () => {
+    let fetchedIdentityGroups,
+    fetchedRoles,
+    rolesNoWorkflow,
+    fetchedPermissions,
+    identityGroupsNoWorkflowLocal,
+    permissionsNoWorkflowLocal,
+    permissionsWithAssets    
+    
+    setNewIg('');
+    setDelIg('');
+    setNewIGShow(false);
+    setDelIGShow(false);
+
+    if (props.vendor !== 'superAdmin') {
       fetchedRoles = await dataGet('roles')
       if (fetchedRoles.status && fetchedRoles.status !== 200 ) {
         let error = Object.assign(fetchedRoles, {
@@ -237,20 +230,6 @@ function Permission(props) {
         }
         setPermissions(list) 
         setOriginPermissions(list)
-      }
-
-      else if (props.vendor === 'workflow') {
-        let jsonHelper = new JsonHelper()
-
-        permissionsWithWorkflows = await workflowAddDescription(fetchedWorkflows, {data: {items: permissionsNoWorkflowLocal}})
-        permissionsWithWorkflows.forEach((item, i) => {
-          item.existent = true
-          item.isModified = {}
-          item.details = jsonHelper.jsonPretty(item.details)
-          //item.details
-        });
-        setPermissions(permissionsWithWorkflows) 
-        setOriginPermissions(permissionsWithWorkflows)
       }
       else {
         permissionsWithAssets = await permsWithAsset(permissionsNoWorkflowLocal)
@@ -356,10 +335,10 @@ function Permission(props) {
           setAssets(assetsCopy)
         }
       };
-      return assetsCopy
+      setAsswSubAss(true)
     } catch(error) {
       console.log(error)
-      return assets
+      setAsswSubAss(true)
     }
   }
   
@@ -417,36 +396,6 @@ function Permission(props) {
     }
   }
 
-  let workflowAddDescription = async (workflows, permissions) => {
-    let newPermissions = JSON.parse(JSON.stringify(permissions.data.items))
-    let workflowsObject = JSON.parse(JSON.stringify(workflows.data.items))
-    let list = []
-
-    /*To use object.values not object.entries
-    for (const [key, value] of Object.entries(workflowsObject)) {
-      list.push(value)
-    }*/
-
-    Object.values(workflowsObject).forEach((value, i) => {
-      list.push(value)
-    })
-
-    /*
-    for (const [key, value] of Object.entries(newPermissions)) {
-      const workflow = list.find(a => a.id === value.workflow.id)
-      value.workflow = workflow
-    }*/
-
-    Object.values(newPermissions).forEach((value, i) => {
-      const workflow = list.find(a => a.id === value.workflow.id)
-      value.workflow = workflow
-    })
-
-    let permissionsWithWorkflowDescription = JSON.parse(JSON.stringify(newPermissions))
-
-    return permissionsWithWorkflowDescription
-  }
-
   let permissionAdd = async () => {
     let id = 0
     let n = 0
@@ -492,39 +441,10 @@ function Permission(props) {
   let set = async (key, value, permission) => {
 
     let assetsCopy = [...assets]
-    let workflowsCopy = [...workflows]
     let identityGroupsCopy = [...identityGroups]
     let permissionsCopy = [...permissions]
     let origPerm = originPermissions.find(p => p.id === permission.id)
     let perm = permissionsCopy.find(p => p.id === permission.id)
-    
-
-    if (key === 'workflowName') {
-      if (value) {
-        let wf = workflowsCopy.find(w => w.name === value)
-        if (perm.existent) {
-          if (wf.name !== origPerm.workflow.name) {
-            perm.isModified.workflowName = true
-            perm.workflow.id = wf.id
-            perm.workflow.name = wf.name
-            perm.workflow.description = wf.description
-          }
-          else {
-            delete perm.isModified.workflowName
-            perm.workflow.id = wf.id
-            perm.workflow.name = wf.name
-            perm.workflow.description = wf.description
-          }
-        }
-        else {
-          perm.workflow = {}
-          perm.workflow.id = wf.id
-          perm.workflow.name = wf.name
-          perm.workflow.description = wf.description
-        }
-        delete perm.workflowNameError
-      }
-    }
 
     if (key === 'details') {
       //onBlur
@@ -558,7 +478,7 @@ function Permission(props) {
         perm.details = ''
       }
 
-      setPermissions(permissionsCopy)
+      setPermissions([...permissionsCopy]);
 
       /*ref = textAreaRefs[permission.id]
       if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
@@ -663,16 +583,16 @@ function Permission(props) {
           perm[subAsset].name = value
         }
         delete perm[`${subAsset}Error`]
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
 
         if (props.vendor === 'checkpoint' && value !== 'any') {
           perm.tagsLoading = true
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
           let tags = await getTags('tags', perm.asset.id, perm.domain.name)
           perm.domain.tags = tags 
           delete perm.tag
           perm.tagsLoading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
       }
     }
@@ -680,7 +600,7 @@ function Permission(props) {
     if (key === 'refreshTags') {
       if (props.vendor === 'checkpoint' && value !== 'any') {
         perm.tagsLoading = true
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
         let tags = await getTags('tags', perm.asset.id, perm.domain.name)
         perm.domain.tags = tags 
         delete perm.tag
@@ -692,7 +612,7 @@ function Permission(props) {
         });
 
         perm.tagsLoading = false
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
       }
     }
 
@@ -713,7 +633,7 @@ function Permission(props) {
         }
         delete perm.tagError
       }
-      setPermissions(permissionsCopy)
+      setPermissions([...permissionsCopy]);
     }
 
     if (key === 'toDelete') {
@@ -726,7 +646,7 @@ function Permission(props) {
     }
 
     if (key !== 'details') {
-      setPermissions(permissionsCopy)
+      setPermissions([...permissionsCopy]);
     }
     console.log(perm)
 
@@ -946,7 +866,7 @@ function Permission(props) {
       }
 
     }
-    setPermissions(permissionsCopy)
+    setPermissions([...permissionsCopy]);
     return errors
   }
 
@@ -969,10 +889,10 @@ function Permission(props) {
     }
 
     if (toDelete.length > 0) {
-      for (const perm of toDelete) {
+      for await (const perm of toDelete) {
         //let per = permissions.find(p => p.id === perm.id)
         perm.loading = true
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
 
         let p = await permissionDelete(perm.id)
         if (p.status && p.status !== 200 ) {
@@ -983,11 +903,11 @@ function Permission(props) {
           })
           props.dispatch(err(error))
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
         else {
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
 
       }
@@ -997,18 +917,7 @@ function Permission(props) {
       for (const perm of toPatch) {
         let body = {}
 
-        if (props.vendor === 'workflow') {
-          let details = JSON.parse(perm.details);
-          body.data = {
-            "identity_group_identifier": perm.identity_group_identifier,
-            "role": perm.role,
-            "workflow" : {
-              "id": perm.workflow.id
-            },
-            "details" : details
-          }
-        }
-        else if (props.vendor === 'proofpoint') {
+        if (props.vendor === 'proofpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
@@ -1044,7 +953,7 @@ function Permission(props) {
         }
 
         perm.loading = true
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
 
         let p = await permModify(perm.id, body)
         if (p.status && p.status !== 200 ) {
@@ -1055,11 +964,11 @@ function Permission(props) {
           })
           props.dispatch(err(error))
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
         else {
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
 
       }
@@ -1069,18 +978,7 @@ function Permission(props) {
       for (const perm of toPost) {
         let body = {}
 
-        if (props.vendor === 'workflow') {
-          let details = JSON.parse(perm.details);
-          body.data = {
-             "identity_group_identifier": perm.identity_group_identifier,
-             "role": perm.role,
-             "workflow" : {
-               "id": perm.workflow.id
-             },
-             "details" : details
-          }
-        }
-        else if (props.vendor === 'proofpoint') {
+        if (props.vendor === 'proofpoint') {
           body.data = {
             "identity_group_name": perm.identity_group_name,
             "identity_group_identifier": perm.identity_group_identifier,
@@ -1116,7 +1014,7 @@ function Permission(props) {
         }
 
         perm.loading = true
-        setPermissions(permissionsCopy)
+        setPermissions([...permissionsCopy]);
 
         let p = await permAdd(body)
         if (p.status && p.status !== 201 ) {
@@ -1127,11 +1025,11 @@ function Permission(props) {
           })
           props.dispatch(err(error))
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
         else {
           perm.loading = false
-          setPermissions(permissionsCopy)
+          setPermissions([...permissionsCopy]);
         }
 
       }
@@ -1191,10 +1089,6 @@ function Permission(props) {
       newArray = superAdminColumns.filter(value => Object.keys(value).length !== 0);
       return newArray
     }
-    else if (props.vendor === 'workflow') {
-      newArray = workflowColumns.filter(value => Object.keys(value).length !== 0);
-      return newArray 
-    }
     else if (props.vendor === 'checkpoint') {
       newArray = checkpointColumns.filter(value => Object.keys(value).length !== 0);
       return newArray 
@@ -1242,244 +1136,6 @@ function Permission(props) {
         setSearchedColumn
       ),
     },
-  ];
-
-  let workflowColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (name, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'id',
-      align: 'center',
-      dataIndex: 'id',
-      key: 'id'
-    },
-    {
-      title: 'AD group name',
-      align: 'center',
-      dataIndex: 'identity_group_name',
-      key: 'identity_group_name',
-      ...getColumnSearchProps(
-        'identity_group_name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-    },
-    {
-      title: 'Distinguished name',
-      align: 'center',
-      dataIndex: 'identity_group_identifier',
-      key: 'identity_group_identifier',
-      ...getColumnSearchProps(
-        'identity_group_identifier', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, obj)  => (
-        <Select
-          value={obj.identity_group_identifier}
-          showSearch
-          style=
-          { obj.identity_group_identifierError ?
-            {width: '100%', border: `1px solid red`}
-          :
-            {width: '100%'}
-          }
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
-          filterSort={(optionA, optionB) =>
-            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-          }
-          onSelect={value => set('identity_group_identifier', value, obj )}
-        >
-          { identityGroups.map((ig, i) => {
-              return (
-                <Select.Option key={i} value={ig.identity_group_identifier}>{ig.identity_group_identifier}</Select.Option>
-              )
-            })
-          }
-        </Select>
-      ),
-    },
-    {
-      title: 'Workflow name',
-      align: 'center',
-      dataIndex: ['workflow', 'name' ],
-      key: 'name',
-      ...getColumnSearchProps(
-        ['workflow', 'name' ], 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, obj)  => (
-        <Select
-          value={obj && obj.workflow && obj.workflow.name ? obj.workflow.name : null}
-          showSearch
-          style=
-          { obj.workflowNameError ?
-            {width: '100%', border: `1px solid red`}
-          :
-            {width: '100%'}
-          }
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
-          filterSort={(optionA, optionB) =>
-            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-          }
-          onSelect={value => set('workflowName', value, obj )}
-        >
-          { workflows.map((wf, i) => {
-              return (
-                <Select.Option key={i} value={wf.name}>{wf.name}</Select.Option>
-              )
-            })
-          }
-        </Select>
-      ),
-    },
-    {
-      title: 'Description',
-      align: 'center',
-      width: '100%',
-      dataIndex: ['workflow', 'description' ],
-      key: 'description',
-      ...getColumnSearchProps(
-        ['workflow', 'description' ], 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-    },
-    {
-      title: 'Assets',
-      align: 'center',
-      dataIndex: 'details',
-      key: 'details',
-      render: (name, obj)  => {
-        return (
-          <React.Fragment>
-          <Input.TextArea
-            value={obj.details}
-            autoSize={{minRows: 7}}
-            //ref={ref => textAreaRefs[obj.id] = ref}
-            style={
-              obj.detailsError ?
-                {borderColor: 'red', textAlign: 'left', width: 250}
-              :
-                {textAlign: 'left', width: 250}
-            }
-            onBlur={e => {
-              set('details', e.target.value, obj)}
-            }
-          />
-          {obj.jsonError ?
-            <p style={{color: 'red'}}>{obj.jsonError}</p>
-          :
-            null
-          }
-          </React.Fragment>
-        )
-      },
-    },
-    {
-      title: <RolesDescription vendor={props.vendor} title={`roles' description`}/>,
-      align: 'center',
-      dataIndex: 'role',
-      key: 'role',
-      ...getColumnSearchProps(
-        'role', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, obj)  => (
-        <Select
-          value={obj && obj.role ? obj.role : null}
-          showSearch
-          style=
-          { obj.roleError ?
-            {width: 75, border: `1px solid red`}
-          :
-            {width: 75}
-          }
-          optionFilterProp="children"
-          filterOption={(input, option) =>
-            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-          }
-          filterSort={(optionA, optionB) =>
-            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-          }
-          onSelect={value => set('role', value, obj )}
-        >
-          { (roles ? roles.map((role, i) => {
-              return (
-                <Select.Option key={i} value={role.role ? role.role : ''}>{role.role ? role.role : ''}</Select.Option>
-              )
-            })
-          :
-            null
-          )}
-        </Select>
-      ),
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (name, obj)  => (
-        <Space size="small">
-          {obj.existent ?
-            <Checkbox
-              checked={obj.toDelete}
-              onChange={e => set('toDelete', e.target.checked, obj)}
-            />
-          :
-            <Button
-              type='danger'
-              onClick={(e) => permissionRemove(obj)}
-            >
-              -
-            </Button>
-          }
-        </Space>
-      ),
-    }
   ];
 
   let proofpointColumns = [

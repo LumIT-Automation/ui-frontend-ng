@@ -35,11 +35,11 @@ function Permissions(props) {
           null
         }
 
-        { props.authorizations && authorizatorsSA(props.authorizations) ?
+        {/* props.authorizations && authorizatorsSA(props.authorizations) ?
           <Radio.Button value={'workflow'}>workflow</Radio.Button>
         :
           null
-        }
+        */}
       </Radio.Group>
 
       <Radio.Group
