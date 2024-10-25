@@ -150,7 +150,6 @@ function HeaderCustom(props) {
 
   return (
     <>
-      {console.log(doc)}
       <Header className="header" style={{padding: '0 10px', backgroundColor: HeaderColor()}}>
         <Row>
           { props.banner ?

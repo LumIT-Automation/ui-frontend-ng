@@ -1,177 +1,80 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
-import '../App.css'
 
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
-import Error from './error'
+import CommonFunctions from '../_helpers/commonFunctions'
+import Error from '../concerto/error'
+
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
 import { Space, Table, Input, Button, Radio, Checkbox, Select, Spin, Divider, Card } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined, CloseCircleOutlined, UserOutlined, PlusOutlined } from '@ant-design/icons';
 
-import {
-  err,
-} from './store'
+import { LoadingOutlined, ReloadOutlined, CloseCircleOutlined, PlusOutlined, UserOutlined } from '@ant-design/icons';
 
+import { err } from './store'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const assetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
+function Asset(props) {
 
-//import List from './list'
+  let [loading, setLoading] = useState(false);
+  let [assetsRefresh, setAssetsRefresh] = useState(false);
 
+  let [assets, setAssets] = useState([]);  
+  let [protocols, setProtocols] = useState([]);
+  let [ports, setPorts] = useState([]);
+  let [paths, setPaths] = useState([]);
+  let [environments, setEnvironments] = useState([]);
+  let [datacenters, setDatacenters] = useState([]);
+  let [originAssets, setOriginAssets] = useState([]);
 
+  let [errors, setErrors] = useState({});
 
-class Permission extends React.Component {
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-  constructor(props) {
-    super(props);
+  const prevVendor = useRef(props.vendor);
 
-    this.myRefs = {};
-
-    this.state = {
-      searchText: '',
-      searchedColumn: '',
-      assets: [],
-      protocols: [],
-      ports: [],
-      paths: [],
-      environments: [],
-      datacenters: [],
-      originAssets: [],
-      errors: {}
-    };
-  }
-
-  componentDidMount() {
-    if (!this.props.error) {
-      this.setState({assetsRefresh: false})
-      this.main()
+  useEffect(() => {
+    if (assetsRefresh) {
+      setAssetsRefresh(false)
+      main()
     }
-  }
+  }, [assetsRefresh]);
 
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    
-    if (prevProps.vendor !== this.props.vendor) {
-      this.setState({assetsRefresh: false})
-      this.main()
-    }
-    if (this.state.assetsRefresh) {
-      this.setState({assetsRefresh: false})
-      this.main()
-    }
-  }
-
-  componentWillUnmount() {
-  }
+  useEffect(() => {
+    //if (prevVendor.current !== props.vendor) {
+      setAssetsRefresh(false);
+      main();
+    //}
+    //prevVendor.current = props.vendor;
+  }, [props.vendor]);
 
 
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else if ( Array.isArray(dataIndex) ) {
-          let r = record[dataIndex[0]]
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else {
-          return ''
-        }
-      }
-      catch (error){
+  let main = async () => {
+    setLoading(true)
 
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text => {
-      return this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
-    }
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  main = async () => {
-    await this.setState({loading: true})
-
-    let fetchedAssets = await this.dataGet('assets')
+    let fetchedAssets = await dataGet('assets')
     if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
       let error = Object.assign(fetchedAssets, {
         component: 'asset',
         vendor: 'concerto',
         errorType: 'assetsError'
       })
-      this.props.dispatch(err(error))
-      await this.setState({loading: false})
+      props.dispatch(err(error))
+      setLoading(false)
       return
     }
     else {
-      let protocols = []
-      let ports = []
-      let paths = []
-      let environments = []
-      let datacenters = []
+      let protocolsLocal = []
+      let portsLocal = []
+      let pathsLocal = []
+      let environmentsLocal = []
+      let datacentersLocal = []
       let uniqueProtocols = []
       let uniquePorts = []
       let uniquePaths = []
@@ -182,41 +85,39 @@ class Permission extends React.Component {
         item.existent = true
         item.isModified = {}
         item.tlsverify = item.tlsverify
-        protocols.push(item.protocol)
-        ports.push(item.port)
-        paths.push(item.path)
-        environments.push(item.environment)
-        datacenters.push(item.datacenter)
+        protocolsLocal.push(item.protocol)
+        portsLocal.push(item.port)
+        pathsLocal.push(item.path)
+        environmentsLocal.push(item.environment)
+        datacentersLocal.push(item.datacenter)
       });
 
-      uniqueProtocols = [...new Set(protocols)];
-      uniquePorts = [...new Set(ports)];
-      uniquePaths = [...new Set(paths)];
-      uniqueEnvironments = [...new Set(environments)];
-      uniqueDatacenters = [...new Set(datacenters)];
+      uniqueProtocols = [...new Set(protocolsLocal)];
+      uniquePorts = [...new Set(portsLocal)];
+      uniquePaths = [...new Set(pathsLocal)];
+      uniqueEnvironments = [...new Set(environmentsLocal)];
+      uniqueDatacenters = [...new Set(datacentersLocal)];
 
-      await this.setState({
-        assets: fetchedAssets.data.items,
-        originAssets: fetchedAssets.data.items,
-        protocols: uniqueProtocols,
-        ports: uniquePorts,
-        paths: uniquePaths,
-        environments: uniqueEnvironments,
-        datacenters: uniqueDatacenters
-      })
+      setAssets(fetchedAssets.data.items);  
+      setOriginAssets(fetchedAssets.data.items);
+      setProtocols(uniqueProtocols);
+      setPorts(uniquePorts);
+      setPaths(uniquePaths);
+      setEnvironments(uniqueEnvironments);
+      setDatacenters(uniqueDatacenters);
     }
 
-    await this.setState({loading: false})
+    setLoading(false)
   }
 
-  dataGet = async (entities, assetId) => {
-    let endpoint = `${this.props.vendor}/${entities}/`
+  let dataGet = async (entities, assetId) => {
+    let endpoint = `${props.vendor}/${entities}/`
     let r
     if (assetId) {
-      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
+      endpoint = `${props.vendor}/${assetId}/${entities}/`
     }
-    if (this.props.vendor === 'f5' && entities === 'assets') {
-      endpoint = `${this.props.vendor}/${entities}/?includeDr`
+    if (props.vendor === 'f5' && entities === 'assets') {
+      endpoint = `${props.vendor}/${entities}/?includeDr`
     }
     let rest = new Rest(
       "GET",
@@ -227,44 +128,23 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token)
+    await rest.doXHR(endpoint, props.token)
     return r
   }
 
-  assetsRefresh = async () => {
-    await this.setState({assetsRefresh: true})
-  }
+  let itemAdd = async (items, type) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemAdd(items, type);
+    setAssets([...list]);  
+  };
 
-  assetAdd = async () => {
-    let id = 0
-    let n = 0
-    let p = {}
-    let list = JSON.parse(JSON.stringify(this.state.assets))
+  let itemRemove = async (item, items) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemRemove(item, items);
+    setAssets([...list]);  
+  };
 
-    this.state.assets.forEach(p => {
-      if (p.id > id) {
-        id = p.id
-      }
-    });
-
-    n = id + 1
-    p.id = n
-    p.tlsverify = true
-    list.push(p)
-
-    await this.setState({assets: list})
-  }
-
-  assetRemove = async p => {
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
-    let newList = assets.filter(n => {
-      return p.id !== n.id
-    })
-
-    await this.setState({assets: newList})
-  }
-
-  readFile = (file) => {
+  let readFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
   
@@ -277,22 +157,27 @@ class Permission extends React.Component {
     });
   }
 
-  set = async (key, value, asset) => {
+  let set = async (key, value, asset) => {
 
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
-    let origAsset = this.state.originAssets.find(a => a.id === asset.id)
-    let ass = assets.find(a => a.id === asset.id)
+    /*
+      se non copi correttamente la proprietà assetsDr, 
+      e poi modifichi ass.assetsDr, 
+      modificherai anche origAsset.assetsDr 
+      (perché ass e origAsset condividono lo stesso riferimento a quella proprietà)
+    */
+
+    //let assetsCopy = [...assets]
+    let assetsCopy = JSON.parse(JSON.stringify(assets));
+
+    /*let assetsCopy = assets.map(a => ({
+      ...a,
+      assetsDr: a.assetsDr ? a.assetsDr.map(dr => ({ ...dr, asset: { ...dr.asset } })) : [],
+      isModified: { ...a.isModified },
+    }));*/
+    let origAsset = originAssets.find(a => a.id === asset.id)
+    let ass = assetsCopy.find(a => a.id === asset.id)
 
     if (key === 'fqdn') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_fqdn`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
       if (value) {
         if (ass.existent) {
           if (origAsset.fqdn !== value) {
@@ -314,26 +199,10 @@ class Permission extends React.Component {
         ass.fqdn = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_fqdn`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'name') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_name`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -356,26 +225,10 @@ class Permission extends React.Component {
         ass.name = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_name`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'protocol') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_protocol`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -398,38 +251,19 @@ class Permission extends React.Component {
         ass.protocol = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_protocol`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'protocols') {
-      let ref = this.myRefs[`${asset.id}_protocol`]
 
-      let protocols = JSON.parse(JSON.stringify(this.state.protocols))
+      let protocolsCopy = [...protocols]
       if (value) {
-        protocols.push(value)
+        protocolsCopy.push(value)
       }
-      await this.setState({protocols: protocols})
-      ref = this.myRefs[`${asset.id}_protocol`]
-      ref.focus()
+      setProtocols([...protocolsCopy])
     }
 
     if (key === 'port') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_port`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -452,38 +286,19 @@ class Permission extends React.Component {
         ass.port = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_port`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
     
     if (key === 'ports') {
-      let ref = this.myRefs[`${asset.id}_port`]
 
-      let ports = JSON.parse(JSON.stringify(this.state.ports))
+      let portsCopy = [...ports]
       if (value) {
-        ports.push(value)
+        portsCopy.push(value)
       }
-      await this.setState({ports: ports})
-      ref = this.myRefs[`${asset.id}_port`]
-      ref.focus()
+      setPorts([...portsCopy])
     }
 
     if (key === 'path') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_path`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -506,38 +321,19 @@ class Permission extends React.Component {
         ass.path = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_path`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'paths') {
-      let ref = this.myRefs[`${asset.id}_path`]
 
-      let paths = JSON.parse(JSON.stringify(this.state.paths))
+      let pathsCopy = [...paths]
       if (value) {
-        paths.push(value)
+        pathsCopy.push(value)
       }
-      await this.setState({paths: paths})
-      ref = this.myRefs[`${asset.id}_path`]
-      ref.focus()
+      setPaths([...pathsCopy])
     }
 
     if (key === 'environment') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_environment`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -560,50 +356,29 @@ class Permission extends React.Component {
         ass.environment = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_environment`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'environments') {
-      let ref = this.myRefs[`${asset.id}_environment`]
 
-      let environments = JSON.parse(JSON.stringify(this.state.environments))
+      let environmentsCopy = [...environments]
       if (value) {
-        environments.push(value)
+        environmentsCopy.push(value)
       }
-      await this.setState({environments: environments})
-      ref = this.myRefs[`${asset.id}_environment`]
-      ref.focus()
+      setEnvironments([...environmentsCopy])
     }
 
     if (key === 'datacenters') {
-      let ref = this.myRefs[`${asset.id}_datacenter`]
 
-      let datacenters = JSON.parse(JSON.stringify(this.state.datacenters))
+      let datacentersCopy = [...datacenters]
       if (value) {
-        datacenters.push(value)
+        datacentersCopy.push(value)
       }
-      await this.setState({datacenters: datacenters})
-      ref = this.myRefs[`${asset.id}_datacenter`]
-      ref.focus()
+      setDatacenters([...datacentersCopy])
+
     }
 
     if (key === 'datacenter') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_datacenter`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -626,15 +401,7 @@ class Permission extends React.Component {
         ass.datacenter = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_datacenter`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'tlsverify') {
@@ -652,14 +419,14 @@ class Permission extends React.Component {
         ass.tlsverify = value
       }
       delete ass.tlsverifyError
-      await this.setState({assets: assets})
+      setAssets([...assetsCopy])
     }
 
     if (key === 'assetDr') {
       if (ass.existent) {
         if (origAsset.assetsDr && origAsset.assetsDr[0]) {
           if (value) {
-            let assDr = assets.find(a => a.id === value)
+            let assDr = assetsCopy.find(a => a.id === value)
             if (origAsset.assetsDr[0].asset.id !== value) {
               ass.isModified.assetsDr = true
               ass.assetsDr[0].asset = assDr
@@ -676,7 +443,7 @@ class Permission extends React.Component {
         }
         else {
           if (value) {
-            let assDr = assets.find(a => a.id === value)
+            let assDr = assetsCopy.find(a => a.id === value)
             ass.assetsDr = []
             ass.assetsDr.push({asset: assDr})
             ass.isModified.assetsDr = true
@@ -689,7 +456,7 @@ class Permission extends React.Component {
       }
       else {
         if (value) {
-          let assDr = assets.find(a => a.id === value)
+          let assDr = assetsCopy.find(a => a.id === value)
           ass.assetsDr = []
           ass.assetsDr.push({asset: assDr})
         }
@@ -698,18 +465,10 @@ class Permission extends React.Component {
         }
       }
 
-      await this.setState({assets: assets})
+      setAssets([...assetsCopy])
     }
 
     if (key === 'username') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_username`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -732,26 +491,10 @@ class Permission extends React.Component {
         ass.username = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_username`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'password') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`${asset.id}_password`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
 
       if (value) {
         if (ass.existent) {
@@ -774,15 +517,7 @@ class Permission extends React.Component {
         ass.password = ''
       }
 
-      await this.setState({assets: assets})
-      ref = this.myRefs[`${asset.id}_password`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAssets([...assetsCopy])
     }
 
     if (key === 'upload') {
@@ -795,7 +530,7 @@ class Permission extends React.Component {
             ass.fileName = value.name
             ass.size = value.size
             ass.type = value.type
-            let t = await this.readFile(value)
+            let t = await readFile(value)
             ass.binaryString = t
           }
           else {
@@ -804,7 +539,7 @@ class Permission extends React.Component {
             ass.fileName = value.name
             ass.size = value.size
             ass.type = value.type
-            let t = await this.readFile(value)
+            let t = await readFile(value)
             ass.binaryString = t
           }
         }
@@ -813,7 +548,7 @@ class Permission extends React.Component {
           ass.fileName = value.name
           ass.size = value.size
           ass.type = value.type
-          let t = await this.readFile(value)
+          let t = await readFile(value)
           ass.binaryString = t
         }
         delete ass[`binaryStringError`]
@@ -823,7 +558,7 @@ class Permission extends React.Component {
         ass.binaryString = ''
       }
 
-      await this.setState({assets: assets})
+      setAssets([...assetsCopy])
     }
 
     if (key === 'toDelete') {
@@ -833,31 +568,30 @@ class Permission extends React.Component {
       else {
         delete ass.toDelete
       }
-      await this.setState({assets: assets})
+      setAssets([...assetsCopy])
     }
 
   }
 
-  validation = async () => {
-    let errors = await this.validationCheck()
-    console.log(errors)
+  let validation = async () => {
+    let errors = await validationCheck()
     if (errors === 0) {
       
-      this.cudManager()
+      cudManager()
     }
   }
 
-  validationCheck = async () => {
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
+  let validationCheck = async () => {
+    let assetsCopy = [...assets]
     let errors = 0
     let validators = new Validators()
 
-    for (const ass of Object.values(assets)) {
+    for (const ass of Object.values(assetsCopy)) {
       if (!validators.fqdn(ass.fqdn)) {
         ++errors
         ass.fqdnError = true
       }
-      if (this.props.vendor === 'proofpoint' && !ass.name) {
+      if (props.vendor === 'proofpoint' && !ass.name) {
         ++errors
         ass.nameError = true
       }
@@ -881,7 +615,7 @@ class Permission extends React.Component {
         ass.datacenterError = true
         ++errors
       }
-      if (this.props.vendor !== 'proofpoint') {
+      if (props.vendor !== 'proofpoint') {
         if (!ass.existent) {
           if (!ass.username) {
             ass.usernameError = true
@@ -906,12 +640,12 @@ class Permission extends React.Component {
       
 
     }
-    await this.setState({assets: assets})
+    setAssets([...assetsCopy])
     return errors
   }
-//
-  cudManager = async () => {
-    let assets = JSON.parse(JSON.stringify(this.state.assets))
+  
+  let cudManager = async () => {
+    let assetsCopy = [...assets]
     let toDelete = []
     let toPatch = []
     let toPost = []
@@ -931,22 +665,22 @@ class Permission extends React.Component {
     if (toDelete.length > 0) {
       for (const ass of toDelete) {
         ass.loading = true
-        await this.setState({assets: assets})
+        setAssets([...assetsCopy])
 
-        let a = await this.assetDelete(ass.id)
+        let a = await assetDelete(ass.id)
         if (a.status && a.status !== 200 ) {
           let error = Object.assign(a, {
             component: 'asset',
             vendor: 'concerto',
             errorType: 'assetDeleteError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
         else {
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
 
       }
@@ -968,28 +702,28 @@ class Permission extends React.Component {
            "password": ass.password
         }
 
-        if (this.props.vendor === 'proofpoint') {
+        if (props.vendor === 'proofpoint') {
           body.data.name = ass.name
           body.data["logo_base64"] = btoa(ass.binaryString)
         }
 
         ass.loading = true
-        await this.setState({assets: assets})
+        setAssets([...assetsCopy])
 
-        let a = await this.assAdd(body)
+        let a = await assAdd(body)
         if (a.status && a.status !== 201 ) {
           let error = Object.assign(a, {
             component: 'asset',
             vendor: 'concerto',
             errorType: 'assetAddError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
         else {
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
       }
     }
@@ -997,14 +731,14 @@ class Permission extends React.Component {
     //add dr
     if (toPost.length > 0) {
       let tempAssets = []
-      let fetchedAssets = await this.dataGet('assets')
+      let fetchedAssets = await dataGet('assets')
       if (fetchedAssets.status && fetchedAssets.status !== 200 ) {
         let error = Object.assign(fetchedAssets, {
           component: 'asset',
           vendor: 'concerto',
           errorType: 'assetsError'
         })
-        this.props.dispatch(err(error))
+        props.dispatch(err(error))
         return
       }
       else {
@@ -1019,21 +753,21 @@ class Permission extends React.Component {
             }
 
             ass.drLoading = true
-            await this.setState({assets: assets})
-            let drAdd = await this.drAdd(as.id, b)
+            setAssets([...assetsCopy])
+            let drAdd = await drAddFunc(as.id, b)
             if (drAdd.status && drAdd.status !== 201 ) {
               let error = Object.assign(drAdd, {
                 component: 'asset',
                 vendor: 'concerto',
                 errorType: 'drAddError'
               })
-              this.props.dispatch(err(error))
+              props.dispatch(err(error))
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
             else {
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
           }
         }
@@ -1054,7 +788,7 @@ class Permission extends React.Component {
            "tlsverify": ass.tlsverify
         }
 
-        if (this.props.vendor === 'proofpoint') {
+        if (props.vendor === 'proofpoint') {
           body.data.name = ass.name
           body.data["logo_base64"] = btoa(ass.binaryString)
         }
@@ -1067,70 +801,70 @@ class Permission extends React.Component {
         }
 
         ass.loading = true
-        await this.setState({assets: assets})
+        setAssets([...assetsCopy])
 
-        let a = await this.assModify(ass.id, body)
+        let a = await assModify(ass.id, body)
         if (a.status && a.status !== 200 ) {
           let error = Object.assign(a, {
             component: 'asset',
             vendor: 'concerto',
             errorType: 'assetModifyError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
         else {
           ass.loading = false
-          await this.setState({assets: assets})
+          setAssets([...assetsCopy])
         }
 
         if (ass.isModified.assetsDr) {
           if (ass.assetsDr && ass.assetsDr.length < 1 ) {
             //deletedr
-            let origAsset = this.state.originAssets.find(a => a.id === ass.id)
+            let origAsset = originAssets.find(a => a.id === ass.id)
 
             ass.drLoading = true
-            await this.setState({assets: assets})
+            setAssets([...assetsCopy])
 
-            let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
+            let drDelete = await drDeleteFunc(ass.id, origAsset.assetsDr[0].asset.id)
             if (drDelete.status && drDelete.status !== 200 ) {
               let error = Object.assign(drDelete, {
                 component: 'asset',
                 vendor: 'concerto',
                 errorType: 'drDeleteError'
               })
-              this.props.dispatch(err(error))
+              props.dispatch(err(error))
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
             else {
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
           }
           else {
             //deletedr
-            let origAsset = this.state.originAssets.find(a => a.id === ass.id)
+            let origAsset = originAssets.find(a => a.id === ass.id)
 
             if (origAsset.assetsDr.length > 0) {
               ass.drLoading = true
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
 
-              let drDelete = await this.drDelete(ass.id, origAsset.assetsDr[0].asset.id)
+              let drDelete = await drDeleteFunc(ass.id, origAsset.assetsDr[0].asset.id)
               if (drDelete.status && drDelete.status !== 200 ) {
                 let error = Object.assign(drDelete, {
                   component: 'asset',
                   vendor: 'concerto',
                   errorType: 'drDeleteError'
                 })
-                this.props.dispatch(err(error))
+                props.dispatch(err(error))
                 ass.drLoading = false
-                await this.setState({assets: assets})
+                setAssets([...assetsCopy])
               }
               else {
                 ass.drLoading = false
-                await this.setState({assets: assets})
+                setAssets([...assetsCopy])
               }
             }
 
@@ -1142,21 +876,21 @@ class Permission extends React.Component {
             }
 
             ass.drLoading = true
-            await this.setState({assets: assets})
-            let drAdd = await this.drAdd(ass.id, b)
+            setAssets([...assetsCopy])
+            let drAdd = await drAddFunc(ass.id, b)
             if (drAdd.status && drAdd.status !== 201 ) {
               let error = Object.assign(drAdd, {
                 component: 'asset',
                 vendor: 'concerto',
                 errorType: 'drAddError'
               })
-              this.props.dispatch(err(error))
+              props.dispatch(err(error))
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
             else {
               ass.drLoading = false
-              await this.setState({assets: assets})
+              setAssets([...assetsCopy])
             }
           }
         }
@@ -1164,11 +898,11 @@ class Permission extends React.Component {
       }
     }
 
-    this.assetsRefresh()
+    setAssetsRefresh(true)
 
   }
 
-  drAdd = async (id, b) => {
+  let drAddFunc = async (id, b) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1179,11 +913,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/asset/${id}/assetsdr/`, this.props.token, b )
+    await rest.doXHR(`${props.vendor}/asset/${id}/assetsdr/`, props.token, b )
     return r
   }
 
-  drDelete = async (assetId, assetDrId) => {
+  let drDeleteFunc = async (assetId, assetDrId) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1194,11 +928,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/assetdr/${assetDrId}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/asset/${assetId}/assetdr/${assetDrId}/`, props.token )
     return r
   }
 
-  assetDelete = async (assetId) => {
+  let assetDelete = async (assetId) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1209,11 +943,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/asset/${assetId}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/asset/${assetId}/`, props.token )
     return r
   }
 
-  assModify = async (assId, body) => {
+  let assModify = async (assId, body) => {
     let r
     let rest = new Rest(
       "PATCH",
@@ -1224,11 +958,11 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/asset/${assId}/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/asset/${assId}/`, props.token, body )
     return r
   }
 
-  assAdd = async (body) => {
+  let assAdd = async (body) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1239,1044 +973,1194 @@ class Permission extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/assets/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/assets/`, props.token, body )
     return r
   }
 
-
-  render() {
-
-    let returnCol = () => {
-      let newArray
-      newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
-      
-      if (this.props.vendor === 'proofpoint') {
-        newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
-      }
-      return newArray
-    }
-
-    const Example = ({ data }) => <img src={`data:image/jpeg;base64,${data}`} width="200" />
-
-    const vendorColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Protocol',
-        align: 'center',
-        dataIndex: 'protocol',
-        key: 'protocol',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.protocolError ?
-                    {border: `1px solid red`, width: 120}
-                  :
-                    {width: 120}
-                }
-                value={obj.protocol}
-                onChange={e => {
-                  this.set('protocol', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_protocol`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('protocols', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.protocols ? this.state.protocols.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Fqdn',
-        align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.fqdn}
-              ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
-              style={
-                obj.fqdnError ?
-                  {borderColor: 'red', textAlign: 'center', width: 200}
-                :
-                  {textAlign: 'center', width: 200}
-              }
-              onChange={e => {
-                this.set('fqdn', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Port',
-        align: 'center',
-        dataIndex: 'port',
-        key: 'port',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.portError ?
-                    {border: `1px solid red`, width: 100}
-                  :
-                    {width: 100}
-                }
-                value={obj.port}
-                onChange={e => {
-                  this.set('port', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_port`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('ports', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.ports ? this.state.ports.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Path',
-        align: 'center',
-        dataIndex: 'path',
-        key: 'path',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.pathError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.path}
-                onChange={e => {
-                  this.set('path', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_path`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('paths', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.paths ? this.state.paths.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Environment',
-        align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.environmentError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.environment}
-                onChange={e => {
-                  this.set('environment', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('environments', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.environments ? this.state.environments.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.datacenterError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.datacenter}
-                onChange={e => {
-                  this.set('datacenter', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('datacenters', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.datacenters ? this.state.datacenters.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'TLSverify',
-        align: 'center',
-        dataIndex: 'tlsverify',
-        key: 'tlsverify',
-        render: (name, obj)  => {
-          return (
-              <Radio.Group
-                style={
-                  obj.tlsverifyError ?
-                    {marginTop: 5, backgroundColor: 'red'}
-                  :
-                    {marginTop: 5}
-                }
-                value={obj.tlsverify}
-                onChange={e => {this.set('tlsverify', e.target.value, obj)}
-                }
-              >
-                <Space direction="vertical">
-                  <Radio value={true}>Yes</Radio>
-                  <Radio value={false}>No </Radio>
-                </Space>
-              </Radio.Group>
-          )
-        },
-      },
-      ...(
-        this.props.vendor === 'f5' ?
-          [
-            {
-              title: 'DR',
-              align: 'center',
-              width: 250,
-              dataIndex: 'assetsDrList',
-              key: 'assetsDrList',
-              render: (name, obj)  => (
-                <React.Fragment>
-                  {obj.drLoading ?
-                    <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
-                  :
-                    <Space>
-                      <Select
-                        value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
-                        key={obj.id}
-                        style={{ width: '200px'}}
-                        onChange={e => {this.set('assetDr', e, obj)} }
-                      >
-                        { this.state.assets.map((dr,i) => {
-                          return (
-                            <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
-                          )
-                        })
-                        }
-                      </Select>
-                      <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => this.set('assetDr', '', obj)}/>
-                    </Space>
-                  }
-                </React.Fragment>
-              )
-            },
-          ]
-        :
-          []
-        ),
-      {
-        title: 'Username',
-        align: 'center',
-        dataIndex: 'username',
-        key: 'username',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.username}
-              suffix={<UserOutlined className="site-form-item-icon" />}
-              ref={ref => this.myRefs[`${obj.id}_username`] = ref}
-              style={
-                obj.usernameError ?
-                  {borderColor: 'red', textAlign: 'left', width: 150}
-                :
-                  {textAlign: 'left', width: 150}
-              }
-              onChange={e => {
-                this.set('username', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Password',
-        align: 'center',
-        dataIndex: 'password',
-        key: 'password',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input.Password
-              value={obj.password}
-              ref={ref => this.myRefs[`${obj.id}_password`] = ref}
-              style={
-                obj.passwordError ?
-                  {borderColor: 'red', textAlign: 'left', width: 150}
-                :
-                  {textAlign: 'left', width: 150}
-              }
-              onChange={e => {
-                this.set('password', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.assetRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const proofpointColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Logo',
-        align: 'center',
-        dataIndex: '',
-        key: 'logo_base64',
-        render: (val, obj)  => (
-          
-
-          <React.Fragment>
-            <Example data={obj.logo_base64} />
-          </React.Fragment>    
-        )
-      },
-      {
-        title: 'Upload Logo',
-        align: 'center',
-        dataIndex: '',
-        key: 'upload',
-        render: (val, obj)  => (
-          <React.Fragment>
-            <Input 
-              type="file"
-              style=
-                { 
-                  obj[`binaryStringError`] ?
-                  {borderColor: `red`, width: 350}
-                :
-                  {width: 350}
-                }
-              onChange={e => this.set('upload', e.target.files[0], obj)} 
-            />
-            <Card>
-              <p>Name: {obj.fileName}</p>
-              <p>Type: {obj.type}</p>
-              <p>Size: {obj.size} Bytes</p>
-            </Card>    
-          </React.Fragment>    
-        )
-      },
-      {
-        title: 'Protocol',
-        align: 'center',
-        dataIndex: 'protocol',
-        key: 'protocol',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.protocolError ?
-                    {border: `1px solid red`, width: 120}
-                  :
-                    {width: 120}
-                }
-                value={obj.protocol}
-                onChange={e => {
-                  this.set('protocol', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_protocol`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('protocols', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.protocols ? this.state.protocols.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Fqdn',
-        align: 'center',
-        dataIndex: 'fqdn',
-        key: 'fqdn',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.fqdn}
-              ref={ref => this.myRefs[`${obj.id}_fqdn`] = ref}
-              style={
-                obj.fqdnError ?
-                  {borderColor: 'red', textAlign: 'center', width: 200}
-                :
-                  {textAlign: 'center', width: 200}
-              }
-              onChange={e => {
-                this.set('fqdn', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        render: (name, obj)  => {
-          return (
-            <React.Fragment>
-            <Input
-              value={obj.name}
-              ref={ref => this.myRefs[`${obj.id}_name`] = ref}
-              style={
-                obj.nameError ?
-                  {borderColor: 'red', textAlign: 'center', width: 200}
-                :
-                  {textAlign: 'center', width: 200}
-              }
-              onChange={e => {
-                this.set('name', e.target.value, obj)}
-              }
-            />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Port',
-        align: 'center',
-        dataIndex: 'port',
-        key: 'port',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.portError ?
-                    {border: `1px solid red`, width: 100}
-                  :
-                    {width: 100}
-                }
-                value={obj.port}
-                onChange={e => {
-                  this.set('port', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_port`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('ports', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.ports ? this.state.ports.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Path',
-        align: 'center',
-        dataIndex: 'path',
-        key: 'path',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.pathError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.path}
-                onChange={e => {
-                  this.set('path', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_path`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('paths', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.paths ? this.state.paths.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Environment',
-        align: 'center',
-        dataIndex: 'environment',
-        key: 'environment',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.environmentError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.environment}
-                onChange={e => {
-                  this.set('environment', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_environment`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('environments', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.environments ? this.state.environments.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'Datacenter',
-        align: 'center',
-        dataIndex: 'datacenter',
-        key: 'datacenter',
-        render: (name, obj)  => {
-          let s = '';
-
-          return (
-            <React.Fragment>
-              <Select
-                style={
-                  obj.datacenterError ?
-                    {border: `1px solid red`, width: 180}
-                  :
-                    {width: 180}
-                }
-                value={obj.datacenter}
-                onChange={e => {
-                  this.set('datacenter', e, obj)}
-                }
-                ref={ref => this.myRefs[`${obj.id}_datacenter`] = ref}
-                dropdownRender={(menu) => (
-                  <>
-                    {menu}
-                    <Divider
-                      style={{
-                        margin: '8px 0',
-                      }}
-                    />
-                    <Space
-                      style={{
-                        padding: '0 8px 4px',
-                      }}
-                    >
-                      <Input
-                        placeholder="Type new"
-                        onChange={e => s = e.target.value}
-                      />
-                      <Button type="text" icon={<PlusOutlined />} onClick={() => {this.set('datacenters', s, obj)} }
-                      >
-                      </Button>
-
-                    </Space>
-                  </>
-                )}
-                options={this.state.datacenters ? this.state.datacenters.map((item) => ({
-                  label: item,
-                  value: item,
-                }))
-                :
-                null
-                }
-              />
-            </React.Fragment>
-          )
-        },
-      },
-      {
-        title: 'TLSverify',
-        align: 'center',
-        dataIndex: 'tlsverify',
-        key: 'tlsverify',
-        render: (name, obj)  => {
-          return (
-              <Radio.Group
-                style={
-                  obj.tlsverifyError ?
-                    {marginTop: 5, backgroundColor: 'red'}
-                  :
-                    {marginTop: 5}
-                }
-                value={obj.tlsverify}
-                onChange={e => {this.set('tlsverify', e.target.value, obj)}
-                }
-              >
-                <Space direction="vertical">
-                  <Radio value={true}>Yes</Radio>
-                  <Radio value={false}>No </Radio>
-                </Space>
-              </Radio.Group>
-          )
-        },
-      },
-      ...(
-        this.props.vendor === 'f5' ?
-          [
-            {
-              title: 'DR',
-              align: 'center',
-              width: 250,
-              dataIndex: 'assetsDrList',
-              key: 'assetsDrList',
-              render: (name, obj)  => (
-                <React.Fragment>
-                  {obj.drLoading ?
-                    <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
-                  :
-                    <Space>
-                      <Select
-                        value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
-                        key={obj.id}
-                        style={{ width: '200px'}}
-                        onChange={e => {this.set('assetDr', e, obj)} }
-                      >
-                        { this.state.assets.map((dr,i) => {
-                          return (
-                            <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
-                          )
-                        })
-                        }
-                      </Select>
-                      <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => this.set('assetDr', '', obj)}/>
-                    </Space>
-                  }
-                </React.Fragment>
-              )
-            },
-          ]
-        :
-          []
-        ),
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.existent ?
-              <Checkbox
-                checked={obj.toDelete}
-                onChange={e => this.set('toDelete', e.target.checked, obj)}
-              />
-            :
-              <Button
-                type='danger'
-                onClick={(e) => this.assetRemove(obj)}
-              >
-                -
-              </Button>
-            }
-          </Space>
-        ),
-      }
-    ];
+  let returnCol = () => {
+    let newArray = vendorColumns.filter(value => Object.keys(value).length !== 0);
     
-    let randomKey = () => {
-      return Math.random().toString()
+    if (props.vendor === 'proofpoint') {
+      newArray = proofpointColumns.filter(value => Object.keys(value).length !== 0);
     }
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'asset') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
-    }
-
-    return (
-      <React.Fragment>
-        {this.state.loading ?
-          <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-        :
-          //<Space direction="vertical" style={{width: '100%', padding: 15, marginBottom: 10}}>
-          <React.Fragment>
-
-            <Radio.Group>
-              <Radio.Button
-                style={{marginLeft: 16 }}
-                onClick={() => this.assetsRefresh()}
-              >
-                <ReloadOutlined/>
-              </Radio.Button>
-            </Radio.Group>
-
-            <Radio.Group
-              buttonStyle="solid"
-            >
-              <Radio.Button
-                buttonStyle="solid"
-                style={{marginLeft: 16 }}
-                onClick={() => this.assetAdd()}
-              >
-                Add asset
-              </Radio.Button>
-            </Radio.Group>
-
-            <br/>
-            <Table
-              columns={returnCol()}
-              style={{width: '100%', padding: 15}}
-              dataSource={this.state.assets}
-              bordered
-              rowKey={randomKey}
-              scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
-            />
-
-              <Button
-                type="primary"
-                style={{float: 'right', marginRight: 15}}
-                onClick={() => this.validation()}
-              >
-                Commit
-              </Button>
-
-
-          </React.Fragment>
-          //</Space>
-        }
-
-        {errors()}
-
-      </React.Fragment>
-    )
+    return newArray
   }
+
+  let Example = ({ data }) => <img src={`data:image/jpeg;base64,${data}`} width="200" />
+
+  let vendorColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Protocol',
+      align: 'center',
+      dataIndex: 'protocol',
+      key: 'protocol',
+      ...getColumnSearchProps(
+        'protocol', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.protocolError ?
+                  {border: `1px solid red`, width: 120}
+                :
+                  {width: 120}
+              }
+              value={obj.protocol}
+              onChange={e => {
+                set('protocol', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('protocols', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={protocols ? protocols.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Fqdn',
+      align: 'center',
+      dataIndex: 'fqdn',
+      key: 'fqdn',
+      ...getColumnSearchProps(
+        'fqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input
+            defaultValue={obj.fqdn}
+            style={
+              obj.fqdnError ?
+                {borderColor: 'red', textAlign: 'center', width: 200}
+              :
+                {textAlign: 'center', width: 200}
+            }
+            onBlur={e => {
+              set('fqdn', e.target.value, obj)}
+            }
+          />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Port',
+      align: 'center',
+      dataIndex: 'port',
+      key: 'port',
+      ...getColumnSearchProps(
+        'port', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.portError ?
+                  {border: `1px solid red`, width: 100}
+                :
+                  {width: 100}
+              }
+              value={obj.port}
+              onChange={e => {
+                set('port', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('ports', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={ports ? ports.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Path',
+      align: 'center',
+      dataIndex: 'path',
+      key: 'path',
+      ...getColumnSearchProps(
+        'path', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.pathError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.path}
+              onChange={e => {
+                set('path', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('paths', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={paths ? paths.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Environment',
+      align: 'center',
+      dataIndex: 'environment',
+      key: 'environment',
+      ...getColumnSearchProps(
+        'environment', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.environmentError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.environment}
+              onChange={e => {
+                set('environment', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('environments', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={environments ? environments.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Datacenter',
+      align: 'center',
+      dataIndex: 'datacenter',
+      key: 'datacenter',
+      ...getColumnSearchProps(
+        'datacenter', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.datacenterError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.datacenter}
+              onChange={e => {
+                set('datacenter', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('datacenters', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={datacenters ? datacenters.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'TLSverify',
+      align: 'center',
+      dataIndex: 'tlsverify',
+      key: 'tlsverify',
+      render: (name, obj)  => {
+        return (
+            <Radio.Group
+              style={
+                obj.tlsverifyError ?
+                  {marginTop: 5, backgroundColor: 'red'}
+                :
+                  {marginTop: 5}
+              }
+              value={obj.tlsverify}
+              onChange={e => {set('tlsverify', e.target.value, obj)}
+              }
+            >
+              <Space direction="vertical">
+                <Radio value={true}>Yes</Radio>
+                <Radio value={false}>No </Radio>
+              </Space>
+            </Radio.Group>
+        )
+      },
+    },
+    ...(
+      props.vendor === 'f5' ?
+        [
+          {
+            title: 'DR',
+            align: 'center',
+            width: 250,
+            dataIndex: 'assetsDrList',
+            key: 'assetsDrList',
+            ...getColumnSearchProps(
+              'assetsDrList', 
+              searchInput, 
+              (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+              (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+              searchText, 
+              searchedColumn, 
+              setSearchText, 
+              setSearchedColumn
+            ),
+            render: (name, obj)  => (
+              <React.Fragment>
+                {obj.drLoading ?
+                  <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
+                :
+                  <Space>
+                    <Select
+                      value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
+                      key={obj.id}
+                      style={{ width: '200px'}}
+                      onChange={e => {set('assetDr', e, obj)} }
+                    >
+                      { assets.map((dr,i) => {
+                        return (
+                          <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
+                        )
+                      })
+                      }
+                    </Select>
+                    <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => set('assetDr', '', obj)}/>
+                  </Space>
+                }
+              </React.Fragment>
+            )
+          },
+        ]
+      :
+        []
+      ),
+    {
+      title: 'Username',
+      align: 'center',
+      dataIndex: 'username',
+      key: 'username',
+      ...getColumnSearchProps(
+        'username', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input
+            defaultValue={obj.username}
+            suffix={<UserOutlined className="site-form-item-icon" />}
+            style={
+              obj.usernameError ?
+                {borderColor: 'red', textAlign: 'left', width: 150}
+              :
+                {textAlign: 'left', width: 150}
+            }
+            onBlur={e => {
+              set('username', e.target.value, obj)}
+            }
+          />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Password',
+      align: 'center',
+      dataIndex: 'password',
+      key: 'password',
+      ...getColumnSearchProps(
+        'password', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input.Password
+            defaultValue={obj.password}
+            style={
+              obj.passwordError ?
+                {borderColor: 'red', textAlign: 'left', width: 150}
+              :
+                {textAlign: 'left', width: 150}
+            }
+            onBlur={e => {
+              set('password', e.target.value, obj)}
+            }
+          />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => itemRemove(obj, assets)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let proofpointColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={assetLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Logo',
+      align: 'center',
+      dataIndex: '',
+      key: 'logo_base64',
+      render: (val, obj)  => (
+        
+
+        <React.Fragment>
+          <Example data={obj.logo_base64} />
+        </React.Fragment>    
+      )
+    },
+    {
+      title: 'Upload Logo',
+      align: 'center',
+      dataIndex: '',
+      key: 'upload',
+      render: (val, obj)  => (
+        <React.Fragment>
+          <Input 
+            type="file"
+            style=
+              { 
+                obj[`binaryStringError`] ?
+                {borderColor: `red`, width: 350}
+              :
+                {width: 350}
+              }
+            onChange={e => set('upload', e.target.files[0], obj)} 
+          />
+          <Card>
+            <p>Name: {obj.fileName}</p>
+            <p>Type: {obj.type}</p>
+            <p>Size: {obj.size} Bytes</p>
+          </Card>    
+        </React.Fragment>    
+      )
+    },
+    {
+      title: 'Protocol',
+      align: 'center',
+      dataIndex: 'protocol',
+      key: 'protocol',
+      ...getColumnSearchProps(
+        'protocol', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.protocolError ?
+                  {border: `1px solid red`, width: 120}
+                :
+                  {width: 120}
+              }
+              value={obj.protocol}
+              onChange={e => {
+                set('protocol', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('protocols', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={protocols ? protocols.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Fqdn',
+      align: 'center',
+      dataIndex: 'fqdn',
+      key: 'fqdn',
+      ...getColumnSearchProps(
+        'fqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input
+            defaultValue={obj.fqdn}
+            style={
+              obj.fqdnError ?
+                {borderColor: 'red', textAlign: 'center', width: 200}
+              :
+                {textAlign: 'center', width: 200}
+            }
+            onBlur={e => {
+              set('fqdn', e.target.value, obj)}
+            }
+          />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+          <Input
+            defaultValue={obj.name}
+            style={
+              obj.nameError ?
+                {borderColor: 'red', textAlign: 'center', width: 200}
+              :
+                {textAlign: 'center', width: 200}
+            }
+            onBlur={e => {
+              set('name', e.target.value, obj)}
+            }
+          />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Port',
+      align: 'center',
+      dataIndex: 'port',
+      key: 'port',
+      ...getColumnSearchProps(
+        'port', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.portError ?
+                  {border: `1px solid red`, width: 100}
+                :
+                  {width: 100}
+              }
+              value={obj.port}
+              onChange={e => {
+                set('port', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('ports', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={ports ? ports.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Path',
+      align: 'center',
+      dataIndex: 'path',
+      key: 'path',
+      ...getColumnSearchProps(
+        'path', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.pathError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.path}
+              onChange={e => {
+                set('path', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('paths', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={paths ? paths.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Environment',
+      align: 'center',
+      dataIndex: 'environment',
+      key: 'environment',
+      ...getColumnSearchProps(
+        'environment', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.environmentError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.environment}
+              onChange={e => {
+                set('environment', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('environments', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={environments ? environments.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'Datacenter',
+      align: 'center',
+      dataIndex: 'datacenter',
+      key: 'datacenter',
+      ...getColumnSearchProps(
+        'datacenter', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => {
+        let s = '';
+
+        return (
+          <React.Fragment>
+            <Select
+              style={
+                obj.datacenterError ?
+                  {border: `1px solid red`, width: 180}
+                :
+                  {width: 180}
+              }
+              value={obj.datacenter}
+              onChange={e => {
+                set('datacenter', e, obj)}
+              }
+              dropdownRender={(menu) => (
+                <>
+                  {menu}
+                  <Divider
+                    style={{
+                      margin: '8px 0',
+                    }}
+                  />
+                  <Space
+                    style={{
+                      padding: '0 8px 4px',
+                    }}
+                  >
+                    <Input
+                      placeholder="Type new"
+                      onChange={e => s = e.target.value}
+                    />
+                    <Button type="text" icon={<PlusOutlined />} onClick={() => {set('datacenters', s, obj)} }
+                    >
+                    </Button>
+
+                  </Space>
+                </>
+              )}
+              options={datacenters ? datacenters.map((item) => ({
+                label: item,
+                value: item,
+              }))
+              :
+              null
+              }
+            />
+          </React.Fragment>
+        )
+      },
+    },
+    {
+      title: 'TLSverify',
+      align: 'center',
+      dataIndex: 'tlsverify',
+      key: 'tlsverify',
+      render: (name, obj)  => {
+        return (
+            <Radio.Group
+              style={
+                obj.tlsverifyError ?
+                  {marginTop: 5, backgroundColor: 'red'}
+                :
+                  {marginTop: 5}
+              }
+              value={obj.tlsverify}
+              onChange={e => {set('tlsverify', e.target.value, obj)}
+              }
+            >
+              <Space direction="vertical">
+                <Radio value={true}>Yes</Radio>
+                <Radio value={false}>No </Radio>
+              </Space>
+            </Radio.Group>
+        )
+      },
+    },
+    ...(
+      props.vendor === 'f5' ?
+        [
+          {
+            title: 'DR',
+            align: 'center',
+            width: 250,
+            dataIndex: 'assetsDrList',
+            key: 'assetsDrList',
+            ...getColumnSearchProps(
+              'assetsDrList', 
+              searchInput, 
+              (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+              (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+              searchText, 
+              searchedColumn, 
+              setSearchText, 
+              setSearchedColumn
+            ),
+            render: (name, obj)  => (
+              <React.Fragment>
+                {obj.drLoading ?
+                  <Spin indicator={assetLoadIcon} style={{margin: 'auto auto'}}/>
+                :
+                  <Space>
+                    <Select
+                      value={(obj.assetsDr && obj.assetsDr.length > 0) ? obj.assetsDr[0].asset.id : null}
+                      key={obj.id}
+                      style={{ width: '200px'}}
+                      onChange={e => {set('assetDr', e, obj)} }
+                    >
+                      { assets.map((dr,i) => {
+                        return (
+                          <Select.Option key={i} value={dr.id}>{dr.fqdn}</Select.Option>
+                        )
+                      })
+                      }
+                    </Select>
+                    <CloseCircleOutlined style={{ marginLeft: '15px'}} onClick={() => set('assetDr', '', obj)}/>
+                  </Space>
+                }
+              </React.Fragment>
+            )
+          },
+        ]
+      :
+        []
+      ),
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => itemRemove(obj, assets)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
+  ];
+  
+  let randomKey = () => {
+    return Math.random().toString()
+  }
+
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'asset') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
+
+  return (
+    <React.Fragment>
+      {loading ?
+        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+      :
+        <React.Fragment>
+
+          <Radio.Group>
+            <Radio.Button
+              style={{marginLeft: 16 }}
+              onClick={() => setAssetsRefresh(true)}
+            >
+              <ReloadOutlined/>
+            </Radio.Button>
+          </Radio.Group>
+
+          <Radio.Group
+            buttonStyle="solid"
+          >
+            <Radio.Button
+              buttonStyle="solid"
+              style={{marginLeft: 16 }}
+              onClick={() => itemAdd(assets)}
+            >
+              Add asset
+            </Radio.Button>
+          </Radio.Group>
+
+          <br/>
+          <Table
+            columns={returnCol()}
+            style={{width: '100%', padding: 15}}
+            dataSource={assets}
+            bordered
+            rowKey={randomKey}
+            scroll={{x: 'auto'}}
+            pagination={{ pageSize: 10 }}
+          />
+
+            <Button
+              type="primary"
+              style={{float: 'right', marginRight: 15}}
+              onClick={() => validation()}
+            >
+              Commit
+            </Button>
+
+
+        </React.Fragment>
+        //</Space>
+      }
+
+      {errorsComponent()}
+
+    </React.Fragment>
+  )
+
 }
 
 export default connect((state) => ({
   token: state.authentication.token,
   error: state.concerto.err,
 
-}))(Permission);
+}))(Asset);
