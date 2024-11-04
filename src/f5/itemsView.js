@@ -154,6 +154,8 @@ class ItemsView extends React.Component {
   };
 
   onTableRowExpand = (expanded, record) => {
+    console.log(expanded)
+    console.log(record)
     let keys = Object.assign([], this.state.expandedKeys);
 
     if(expanded){

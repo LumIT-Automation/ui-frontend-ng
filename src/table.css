@@ -1,0 +1,32 @@
+/* Stile per la tabella F5 */
+.f5-table .ant-table {
+  background-color: #ffeae6; /* Blu chiaro */
+}
+.f5-table .ant-table-thead > tr > th {
+  background-color: #ff877e; /* Intestazione blu chiaro */
+}
+.f5-table .ant-table-tbody > tr > td {
+  background-color: #ffe6e6;
+}
+
+/* Stile per la tabella Infoblox */
+.infoblox-table .ant-table {
+  background-color: #f6ffed; /* Verde chiaro */
+}
+.infoblox-table .ant-table-thead > tr > th {
+  background-color: #b7eb8f; /* Intestazione verde chiaro */
+}
+.infoblox-table .ant-table-tbody > tr > td {
+  background-color: #f6ffed;
+}
+
+/* Stile per la tabella Checkpoint */
+.checkpoint-table .ant-table {
+  background-color: #ffe6ff; /* Giallo chiaro */
+}
+.checkpoint-table .ant-table-thead > tr > th {
+  background-color: #ff8ff9; /* Intestazione giallo chiaro */
+}
+.checkpoint-table .ant-table-tbody > tr > td {
+  background-color: #ffe6fe;
+}

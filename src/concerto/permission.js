@@ -47,15 +47,6 @@ function Permission(props) {
   const prevVendor = useRef(props.vendor);
 
   useEffect(() => {
-    /*if (prevVendor.current !== props.vendor) {
-      setPermissionsRefresh(false);
-      main();
-    }
-    prevVendor.current = props.vendor;*/
-    console.log(props.vendor)
-
-
-
     let sa, sas
     switch (props.vendor) {
       case 'infoblox':
@@ -85,7 +76,9 @@ function Permission(props) {
   }, [props.vendor]);
 
   useEffect(() => {
-    assetsGet()
+    if (props.vendor !== 'workflow') {
+      assetsGet()
+    }
   }, [subAssets, subAsset]);
 
   useEffect(async () => {

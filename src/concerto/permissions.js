@@ -6,6 +6,7 @@ import '../App.css'
 
 import Authorizators from '../_helpers/authorizators'
 import Permission from './permission'
+import WorkflowPermission from './permissionWorkflow'
 
 
 
@@ -35,11 +36,11 @@ function Permissions(props) {
           null
         }
 
-        {/* props.authorizations && authorizatorsSA(props.authorizations) ?
+        {props.authorizations && authorizatorsSA(props.authorizations) ?
           <Radio.Button value={'workflow'}>workflow</Radio.Button>
         :
           null
-        */}
+        }
       </Radio.Group>
 
       <Radio.Group
@@ -82,7 +83,10 @@ function Permissions(props) {
 
       {
         vendor ?
-          <Permission vendor={vendor}/>
+          vendor !== 'workflow' ?
+            <Permission vendor={vendor}/>
+          :
+            <WorkflowPermission vendor={vendor}/>  
         :
           null
       }
