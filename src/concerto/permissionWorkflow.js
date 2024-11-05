@@ -18,6 +18,12 @@ const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function PermissionWorkflow(props) {
   let [loading, setLoading] = useState(false);
+  let [gotAssets, setGotAssets] = useState(false);
+  let [gotPermissions, setGotPermissions] = useState(false);
+  
+  let [assets, setAssets] = useState([]);
+  let [permissionsRefresh, setPermissionsRefresh] = useState(false);
+
   let [permissions, setPermissions] = useState([]);
   let [expandedRowKeys, setExpandedRowKeys] = useState([]); // Stato per le righe espanse
 
@@ -26,10 +32,108 @@ function PermissionWorkflow(props) {
   let searchInput = useRef(null);
 
   useEffect(() => {
-    if (props.vendor) {
-      permissionsGet();
+    if (props.vendor || permissionsRefresh) {
+      setPermissionsRefresh(false)
+      assetsGet()
     }
-  }, [props.vendor]);
+  }, [props.vendor, permissionsRefresh]);
+
+  useEffect(() => {    
+    if (gotAssets) {
+      permissionsGet();
+      setGotAssets(false)
+    }
+  }, [gotAssets]);
+
+  useEffect(() => {    
+    if (gotPermissions) {
+      permsWithAsset();
+      setGotPermissions(false)
+    }
+    
+  }, [gotPermissions]);
+
+
+  const assetsGet = async () => {
+    setLoading(true);
+    let vendors = ['infoblox', 'checkpoint', 'f5']
+    let list = JSON.parse(JSON.stringify(assets));
+
+    for await (const vendor of vendors) {
+      let data = await dataGet(`${vendor}/assets/`);
+      if (data.status && data.status !== 200) {
+        let error = Object.assign(data, {
+          component: 'permissionWorkflow',
+          vendor: 'concerto',
+          errorType: `get ${vendor} assets Error`,
+        });
+        props.dispatch(err(error));
+      } else {
+        let vendorAssets = data.data.items
+        for await (const asset of vendorAssets) {
+          let subAssets, saLabel
+          if (vendor === 'infoblox'){
+            subAssets = await networksGet(asset.id)
+            saLabel = 'networks'
+          }
+          else if (vendor === 'checkpoint') {
+            subAssets = await dataGet(`${vendor}/${asset.id}/domains/`, asset.id)
+            saLabel = 'domains'
+          }
+          else if (vendor === 'f5') {
+            subAssets = await dataGet(`${vendor}/${asset.id}/partitions/`, asset.id)
+            saLabel = 'partitions'
+          }
+          if (subAssets.status && subAssets.status !== 200) {
+            let error = Object.assign(subAssets, {
+              component: 'permissionWorkflow',
+              vendor: 'concerto',
+              errorType: `get ${vendor} assets Error`,
+            });
+            props.dispatch(err(error));
+          } else {
+            if (subAssets.data && subAssets.data.items) {
+              asset[saLabel] = subAssets.data.items
+            }
+            else {
+              asset[saLabel] = subAssets
+            }
+          }
+        }
+        list.push({[vendor]: vendorAssets})   
+      }
+    }
+    setAssets(list)
+    setLoading(false);
+    setGotAssets(true)
+  };
+
+  let networksGet = async (assetId) => {
+    let nets = await dataGet(`infoblox/${assetId}/networks/`)
+    if (nets.status && nets.status !== 200) {
+      let error = Object.assign(nets, {
+        component: 'permissionWorkflow',
+        vendor: 'concerto',
+        errorType: 'networksError'
+      })
+      props.dispatch(err(error))
+      return
+    }
+
+    let containers = await dataGet(`infoblox/${assetId}/network-containers/`, assetId)
+    if (containers.status && containers.status !== 200) {
+      let error = Object.assign(containers, {
+        component: 'permissionWorkflow',
+        vendor: 'concerto',
+        errorType: 'containersError'
+      })
+      props.dispatch(err(error))
+      return
+    }
+
+    let networks = nets.data.concat(containers.data)
+    return networks
+  }
 
   const permissionsGet = async () => {
     setLoading(true);
@@ -49,6 +153,7 @@ function PermissionWorkflow(props) {
       setPermissions(itemsWithIds);
     }
     setLoading(false);
+    setGotPermissions(true)
   };
 
   const dataGet = async (endpoint) => {
@@ -67,97 +172,99 @@ function PermissionWorkflow(props) {
     return r;
   };
 
-    // Colonne per la tabella F5
-    const f5Columns = [
-      {
-        title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
-      },
-      {
-        title: 'Nome Gruppo',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-      },
-      {
-        title: 'Identificatore Gruppo',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-      },
-      {
-        title: 'Partition Name',
-        dataIndex: ['partition', 'name'],
-        key: 'partition_name',
-      },
-      {
-        title: 'Partition ID Asset',
-        dataIndex: ['partition', 'id_asset'],
-        key: 'partition_id_asset',
-      },
-    ];
-  
-    // Colonne per la tabella Infoblox
-    const infobloxColumns = [
-      {
-        title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
-      },
-      {
-        title: 'Nome Gruppo',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-      },
-      {
-        title: 'Identificatore Gruppo',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-      },
-      {
-        title: 'Network Name',
-        dataIndex: ['network', 'name'],
-        key: 'network_name',
-      },
-      {
-        title: 'Network ID Asset',
-        dataIndex: ['network', 'id_asset'],
-        key: 'network_id_asset',
-      },
-    ];
-  
-    // Colonne per la tabella Checkpoint
-    const checkpointColumns = [
-      {
-        title: 'ID',
-        dataIndex: 'id',
-        key: 'id',
-      },
-      {
-        title: 'Nome Gruppo',
-        dataIndex: 'identity_group_name',
-        key: 'identity_group_name',
-      },
-      {
-        title: 'Identificatore Gruppo',
-        dataIndex: 'identity_group_identifier',
-        key: 'identity_group_identifier',
-      },
-      {
-        title: 'Domain Name',
-        dataIndex: ['domain', 'name'],
-        key: 'domain_name',
-      },
-      {
-        title: 'Domain ID Asset',
-        dataIndex: ['domain', 'id_asset'],
-        key: 'domain_id_asset',
-      },
-      {
-        title: 'Tag',
-        dataIndex: 'tag',
-        key: 'tag',
-      },
-    ];
+  function findAssetById(type, id) {
+    const assetGroup = assets.find(asset => asset[type]);
+    if (assetGroup) {
+        return assetGroup[type].find(asset => asset.id === id) || null;
+    }
+    return null;
+  }
+
+  let permsWithAsset = async () => {
+    let copyPermissions = JSON.parse(JSON.stringify(permissions));
+
+    copyPermissions.forEach(copyPermission => {
+      ['f5', 'infoblox', 'checkpoint'].forEach(type => {
+        // Controlla se esiste e se è un array
+        if (Array.isArray(copyPermission[type])) {
+          copyPermission[type].forEach(entry => {
+            const idAsset = entry[type === 'f5' ? 'partition' : type === 'infoblox' ? 'network' : 'domain'].id_asset;
+            const asset = findAssetById(type, idAsset);
+            console.log(asset);
+            if (asset) {
+              entry.asset = { ...asset }; 
+            }
+          });
+        }
+      });
+    });
+
+    console.log(copyPermissions);
+    setPermissions([...copyPermissions]);
+}
+
+
+  // Colonne per la tabella F5
+  const f5Columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Asset',
+      dataIndex: ['asset', 'fqdn'],
+      key: 'asset',
+    },
+    {
+      title: 'Partition Name',
+      dataIndex: ['partition', 'name'],
+      key: 'partition_name',
+    },
+  ];
+
+  // Colonne per la tabella Infoblox
+  const infobloxColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Asset',
+      dataIndex: ['asset', 'fqdn'],
+      key: 'asset',
+    },
+    {
+      title: 'Network Name',
+      dataIndex: ['network', 'name'],
+      key: 'network_name',
+    },
+  ];
+
+  // Colonne per la tabella Checkpoint
+  const checkpointColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Asset',
+      dataIndex: ['asset', 'fqdn'],
+      key: 'asset',
+    },
+    {
+      title: 'Domain Name',
+      dataIndex: ['domain', 'name'],
+      key: 'domain_name',
+    },
+    {
+      title: 'Tag',
+      dataIndex: 'tag',
+      key: 'tag',
+    },
+  ];
 
   const expandedRowRender = (record) => {
     return (
@@ -172,6 +279,7 @@ function PermissionWorkflow(props) {
               rowKey="id" 
               className="f5-table"
             />
+            <br/>
           </>
         )}
         {record.infoblox && record.infoblox.length > 0 && (
@@ -184,6 +292,7 @@ function PermissionWorkflow(props) {
               rowKey="id" 
               className="infoblox-table"
             />
+            <br/>
           </>
         )}
         {record.checkpoint && record.checkpoint.length > 0 && (
@@ -196,6 +305,7 @@ function PermissionWorkflow(props) {
               rowKey="id"
               className="checkpoint-table"
             />
+            <br/>
           </>
         )}
       </>
@@ -203,8 +313,6 @@ function PermissionWorkflow(props) {
   };
 
   const onTableRowExpand = (expanded, record) => {
-    console.log(expanded)
-    console.log(record)
     if (expanded) {
       setExpandedRowKeys([...expandedRowKeys, record.id]);
     } else {
@@ -266,14 +374,26 @@ function PermissionWorkflow(props) {
 
   return (
     <>
+    {console.log(permissions)}
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
       ) : (
         <React.Fragment>
+          <Radio.Group>
+            <Radio.Button
+              style={{marginLeft: 16 }}
+              onClick={() => setPermissionsRefresh(true)}
+            >
+              <ReloadOutlined/>
+            </Radio.Button>
+          </Radio.Group>
           <Table
             columns={workflowColumns}
+            style={{width: '100%', padding: 5}}
             dataSource={permissions}
+            bordered
             rowKey={(record) => record.id}
+            scroll={{x: 'auto'}}          
             expandedRowKeys={expandedRowKeys}
             onExpand={(expanded, record) => onTableRowExpand(expanded, record)}
             expandable={{ expandedRowRender }}

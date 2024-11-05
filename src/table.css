@@ -1,20 +1,20 @@
 /* Stile per la tabella F5 */
 .f5-table .ant-table {
-  background-color: #ffeae6; /* Blu chiaro */
+  background-color: #ffeae6; 
 }
 .f5-table .ant-table-thead > tr > th {
-  background-color: #ff877e; /* Intestazione blu chiaro */
+  background-color: #E6412D; 
 }
 .f5-table .ant-table-tbody > tr > td {
-  background-color: #ffe6e6;
+  background-color: #fddbd6;
 }
 
 /* Stile per la tabella Infoblox */
 .infoblox-table .ant-table {
-  background-color: #f6ffed; /* Verde chiaro */
+  background-color: #f6ffed; 
 }
 .infoblox-table .ant-table-thead > tr > th {
-  background-color: #b7eb8f; /* Intestazione verde chiaro */
+  background-color: #b7eb8f; 
 }
 .infoblox-table .ant-table-tbody > tr > td {
   background-color: #f6ffed;
@@ -22,10 +22,10 @@
 
 /* Stile per la tabella Checkpoint */
 .checkpoint-table .ant-table {
-  background-color: #ffe6ff; /* Giallo chiaro */
+  background-color: #ffe6ff; 
 }
 .checkpoint-table .ant-table-thead > tr > th {
-  background-color: #ff8ff9; /* Intestazione giallo chiaro */
+  background-color: #ff8ff9; 
 }
 .checkpoint-table .ant-table-tbody > tr > td {
   background-color: #ffe6fe;
