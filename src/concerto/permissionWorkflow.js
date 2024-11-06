@@ -5,6 +5,7 @@ import '../table.css'
 
 import Rest from '../_helpers/Rest';
 import JsonHelper from '../_helpers/jsonHelper';
+import CommonFunctions from '../_helpers/commonFunctions'
 import Error from '../concerto/error';
 import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
@@ -18,13 +19,21 @@ const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function PermissionWorkflow(props) {
   let [loading, setLoading] = useState(false);
-  let [gotAssets, setGotAssets] = useState(false);
-  let [gotPermissions, setGotPermissions] = useState(false);
-  
   let [assets, setAssets] = useState([]);
-  let [permissionsRefresh, setPermissionsRefresh] = useState(false);
+  let [gotAssets, setGotAssets] = useState(false);
+  let [identityGroups, setIdentityGroups] = useState([]);
+  let [workflows, setWorkflows] = useState([]);
 
+  let [gotPermissions, setGotPermissions] = useState(false);
+
+  let [permissionsRefresh, setPermissionsRefresh] = useState(false);
   let [permissions, setPermissions] = useState([]);
+  let [origPermissions, setOrigPermissions] = useState([]);
+  
+  
+
+
+  
   let [expandedRowKeys, setExpandedRowKeys] = useState([]); // Stato per le righe espanse
 
   let [searchText, setSearchText] = useState('');
@@ -35,6 +44,8 @@ function PermissionWorkflow(props) {
     if (props.vendor || permissionsRefresh) {
       setPermissionsRefresh(false)
       assetsGet()
+      igsGet()
+      workflowsGet()
     }
   }, [props.vendor, permissionsRefresh]);
 
@@ -107,6 +118,63 @@ function PermissionWorkflow(props) {
     setLoading(false);
     setGotAssets(true)
   };
+
+  const igsGet = async () => {
+    setLoading(true);
+    let data = await dataGet('identity-groups/')
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'permissionWorkflow',
+          vendor: 'concerto',
+          errorType: 'identityGroupsError'
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        console.log(data)
+        let list = data.data.items.map(item => {
+          // Crea una copia dell'oggetto principale
+          const updatedItem = { ...item };
+      
+          // Cicla su "technologies" per rinominare "tehnology" in "technology"
+          updatedItem.technologies = updatedItem.technologies.map(tech => {
+              const updatedTech = { ...tech };
+      
+              // Se c'è la chiave errata "tehnology", rinominala
+              if (updatedTech.tehnology) {
+                  updatedTech.technology = updatedTech.tehnology;
+                  delete updatedTech.tehnology;
+              }
+      
+              return updatedTech;  // Restituisce l'oggetto aggiornato
+          });
+      
+          return updatedItem;  // Restituisce l'oggetto principale con "technologies" corretto
+      });
+        console.log(list)
+        setIdentityGroups(list)
+      }
+  }
+
+  const workflowsGet = async () => {
+    setLoading(true);
+    let data = await dataGet('workflows/')
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'permissionWorkflow',
+          vendor: 'concerto',
+          errorType: 'workflowsError'
+        })
+        props.dispatch(err(error))
+        setLoading(false)
+        return
+      }
+      else {
+        setWorkflows(data.data.items)
+      }
+  }
 
   let networksGet = async (assetId) => {
     let nets = await dataGet(`infoblox/${assetId}/networks/`)
@@ -190,19 +258,165 @@ function PermissionWorkflow(props) {
           copyPermission[type].forEach(entry => {
             const idAsset = entry[type === 'f5' ? 'partition' : type === 'infoblox' ? 'network' : 'domain'].id_asset;
             const asset = findAssetById(type, idAsset);
-            console.log(asset);
+            //console.log(asset);
             if (asset) {
               entry.asset = { ...asset }; 
+              entry.assetFqdn = asset.fqdn
+              entry.existent = true
+              entry.isModified = {}
             }
           });
         }
       });
     });
 
+    copyPermissions.forEach((item, i) => {
+      item.existent = true
+      item.isModified = {}
+    });
+
+
     console.log(copyPermissions);
     setPermissions([...copyPermissions]);
-}
+    setOrigPermissions([...copyPermissions]);
+  }
 
+  let itemAdd = async (items, type) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemAdd(items, type);
+    setPermissions([...list]);  
+  };
+
+  let itemRemove = async (item, items) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemRemove(item, items);
+    setPermissions([...list]);  
+  };
+
+  let set = async (key, value, permission, child) => { 
+    
+    let permissionsCopy = [...permissions]
+    let perm = permissionsCopy.find(p => p.id === permission.id)
+    let identityGroupsCopy = [...identityGroups]
+    let workflowsCopy = [... workflows]
+
+    if (key === 'workflow') {
+      if (value) {
+        let w = workflowsCopy.find(i => i.name === value)
+        perm.workflow = w.name
+        delete perm.workflowError
+      }
+    }
+
+    if (key === 'identity_group_identifier') {
+      if (value) {
+        let ig = identityGroupsCopy.find(i => i.identity_group_identifier === value)
+        perm.identity_group_identifier = ig.identity_group_identifier
+        if (ig.technologies && ig.technologies.length > 0) {
+          ig.technologies.forEach(item => {
+            console.log(item)
+            let tech = item.technology;
+            console.log(tech)
+            if (tech && !(tech in perm)) {
+                perm[tech] = []; 
+            }
+        });
+        }
+        delete perm.identity_group_identifierError
+      }
+    }
+
+    if (key === 'toDelete') {
+      if (value) {
+        perm.toDelete = true
+      }
+      else {
+        delete perm.toDelete
+      }
+    }
+    setPermissions([...permissionsCopy]);
+  }
+
+  let validationCheck = async () => {
+    let permissionsCopy = [...permissions]
+    let errors = 0
+    let jsonHelper = new JsonHelper()
+
+    for (const perm of Object.values(permissionsCopy)) {
+
+    }
+    setPermissions([...permissionsCopy]);
+    return errors
+  }
+
+  let validation = async () => {
+    let errors = await validationCheck()
+    if (errors === 0) {
+      cudManager()
+    }
+  }
+
+  let cudManager = async () => {
+    let permissionsCopy = [...permissions]
+    let toDelete = []
+    let toPatch = []
+    let toPost = []
+  
+    for (const perm of Object.values(permissionsCopy)) {
+      if (perm.toDelete) {
+        toDelete.push(perm)
+      }
+      if (perm.isModified && Object.keys(perm.isModified).length > 0) {
+        toPatch.push(perm)
+      }
+      if (!perm.existent) {
+        toPost.push(perm)
+      }
+    }
+
+    if (toDelete.length > 0) {
+      for await (const perm of toDelete) {
+        //let per = permissions.find(p => p.id === perm.id)
+        perm.loading = true
+        setPermissions([...permissionsCopy]);
+
+        let p = await permissionDelete(`${perm.workflow}/${perm.identity_group_identifier}/`)
+        if (p.status && p.status !== 200 ) {
+          let error = Object.assign(p, {
+            component: 'permission',
+            vendor: 'concerto',
+            errorType: 'permissionDeleteError'
+          })
+          props.dispatch(err(error))
+          perm.loading = false
+          setPermissions([...permissionsCopy]);
+        }
+        else {
+          perm.loading = false
+          setPermissions([...permissionsCopy]);
+        }
+
+      }
+    }
+
+    setPermissionsRefresh(true)
+
+  }
+
+  let permissionDelete = async (endpoint) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`workflow-permission/${endpoint}d/`, props.token )
+    return r
+  }
 
   // Colonne per la tabella F5
   const f5Columns = [
@@ -213,14 +427,76 @@ function PermissionWorkflow(props) {
     },
     {
       title: 'Asset',
-      dataIndex: ['asset', 'fqdn'],
-      key: 'asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      /*render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetIdError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('assetId', value, obj )}
+        >
+          { assets.f5.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            })
+          }
+        </Select>
+      ),*/
     },
     {
       title: 'Partition Name',
       dataIndex: ['partition', 'name'],
       key: 'partition_name',
     },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              //onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              //onClick={(e) => permissionRemove(obj)}
+              onClick={(e) => console.log(obj)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
   ];
 
   // Colonne per la tabella Infoblox
@@ -353,6 +629,39 @@ function PermissionWorkflow(props) {
         setSearchText,
         setSearchedColumn
       ),
+      render: (name, obj)  => (
+        <>
+          {obj.existent ?
+            name
+          :
+            <Select
+              value={obj.name}
+              showSearch
+              style=
+              { obj.assetIdError ?
+                {width: '100%', border: `1px solid red`}
+              :
+                {width: '100%'}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={value => set('workflow', value, obj )}
+            >
+              { workflows.map((w, i) => {
+                  return (
+                    <Select.Option key={i} value={w.name}>{w.name}</Select.Option>
+                  )
+                })
+              }
+            </Select>
+          }
+        </>
+      ),
     },
     {
       title: 'Distinguished name',
@@ -369,11 +678,69 @@ function PermissionWorkflow(props) {
         setSearchText,
         setSearchedColumn
       ),
+      render: (name, obj)  => (
+        <>
+          {obj.existent ?
+            name
+          :
+            <Select
+              value={obj.identity_group_identifier}
+              showSearch
+              style=
+              { obj.assetIdError ?
+                {width: '100%', border: `1px solid red`}
+              :
+                {width: '100%'}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={value => set('identity_group_identifier', value, obj )}
+            >
+              { identityGroups.map((w, i) => {
+                  return (
+                    <Select.Option key={i} value={w.identity_group_identifier}>{w.identity_group_identifier}</Select.Option>
+                  )
+                })
+              }
+            </Select>
+          }
+        </>
+      ),
     },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => itemRemove(obj, permissions)}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
   ];
 
   return (
     <>
+    {console.log(identityGroups)}
+    {console.log(workflows)}
     {console.log(permissions)}
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
@@ -387,6 +754,20 @@ function PermissionWorkflow(props) {
               <ReloadOutlined/>
             </Radio.Button>
           </Radio.Group>
+
+          <Radio.Group
+            buttonStyle="solid"
+          >
+            <Radio.Button
+              style={{marginLeft: 16 }}
+              onClick={() => itemAdd(permissions)}
+            >
+              Add permission
+            </Radio.Button>
+
+          </Radio.Group>
+        <br/>
+        <br/>
           <Table
             columns={workflowColumns}
             style={{width: '100%', padding: 5}}
@@ -399,6 +780,13 @@ function PermissionWorkflow(props) {
             expandable={{ expandedRowRender }}
             pagination={{ pageSize: 10 }}
           />
+          <Button
+            type="primary"
+            style={{float: 'right', marginRight: 15}}
+            onClick={() => validation()}
+          >
+            Commit
+          </Button>
         </React.Fragment>
       )}
       {props.error && props.error.component === 'permissionWorkflow' && <Error error={[props.error]} visible={true} />}
