@@ -46,13 +46,21 @@ function PermissionWorkflow(props) {
   let searchInput = useRef(null);
 
   useEffect(() => {
-    if (props.vendor || permissionsRefresh) {
+    if (props.vendor) {
+      assetsGet()
+      igsGet()
+      workflowsGet()
+    }
+  }, [props.vendor]);
+
+  useEffect(() => {
+    if (permissionsRefresh) {
       setPermissionsRefresh(false)
       assetsGet()
       igsGet()
       workflowsGet()
     }
-  }, [props.vendor, permissionsRefresh]);
+  }, [permissionsRefresh]);
 
   useEffect(() => {    
     if (gotAssets) {
@@ -539,7 +547,6 @@ function PermissionWorkflow(props) {
 
     if (toDelete.length > 0) {
       for await (const perm of toDelete) {
-        //let per = permissions.find(p => p.id === perm.id)
         perm.loading = true
         setPermissions([...permissionsCopy]);
 
@@ -570,6 +577,7 @@ function PermissionWorkflow(props) {
         }
         if (perm.checkpoint && perm.checkpoint.length > 0) {
           body.data.checkpoint = perm.checkpoint
+          // !!!!
           body.data.checkpoint[0].domain.name = 'POLAND'
           body.data.checkpoint[0].tag = 'any'
         }
@@ -577,8 +585,6 @@ function PermissionWorkflow(props) {
           body.data.f5 = perm.f5
         }
 
-        console.log(body)
-        //let per = permissions.find(p => p.id === perm.id)
         perm.loading = true
         setPermissions([...permissionsCopy]);
 
