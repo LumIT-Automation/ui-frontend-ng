@@ -20,6 +20,11 @@ const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 function PermissionWorkflow(props) {
   let [loading, setLoading] = useState(false);
   let [assets, setAssets] = useState([]);
+
+  let [assetsInfoblox, setAssetsInfoblox] = useState([]);
+  let [assetsCheckpoint, setAssetsCheckpoint] = useState([]);
+  let [assetsF5, setAssetsF5] = useState([]);
+
   let [gotAssets, setGotAssets] = useState(false);
   let [identityGroups, setIdentityGroups] = useState([]);
   let [workflows, setWorkflows] = useState([]);
@@ -110,6 +115,17 @@ function PermissionWorkflow(props) {
               asset[saLabel] = subAssets
             }
           }
+
+          if (vendor === 'infoblox'){
+            setAssetsInfoblox(vendorAssets)
+          }
+          else if (vendor === 'checkpoint') {
+            setAssetsCheckpoint(vendorAssets)
+          }
+          else if (vendor === 'f5') {
+            setAssetsF5(vendorAssets)
+          }
+
         }
         list.push({[vendor]: vendorAssets})   
       }
@@ -133,7 +149,6 @@ function PermissionWorkflow(props) {
         return
       }
       else {
-        console.log(data)
         let list = data.data.items.map(item => {
           // Crea una copia dell'oggetto principale
           const updatedItem = { ...item };
@@ -153,7 +168,6 @@ function PermissionWorkflow(props) {
       
           return updatedItem;  // Restituisce l'oggetto principale con "technologies" corretto
       });
-        console.log(list)
         setIdentityGroups(list)
       }
   }
@@ -258,7 +272,6 @@ function PermissionWorkflow(props) {
           copyPermission[type].forEach(entry => {
             const idAsset = entry[type === 'f5' ? 'partition' : type === 'infoblox' ? 'network' : 'domain'].id_asset;
             const asset = findAssetById(type, idAsset);
-            //console.log(asset);
             if (asset) {
               entry.asset = { ...asset }; 
               entry.assetFqdn = asset.fqdn
@@ -275,8 +288,6 @@ function PermissionWorkflow(props) {
       item.isModified = {}
     });
 
-
-    console.log(copyPermissions);
     setPermissions([...copyPermissions]);
     setOrigPermissions([...copyPermissions]);
   }
@@ -293,7 +304,7 @@ function PermissionWorkflow(props) {
     setPermissions([...list]);  
   };
 
-  let set = async (key, value, permission, child) => { 
+  let set = async (key, value, permission, child, tech) => { 
     
     let permissionsCopy = [...permissions]
     let perm = permissionsCopy.find(p => p.id === permission.id)
@@ -302,8 +313,48 @@ function PermissionWorkflow(props) {
 
     if (key === 'workflow') {
       if (value) {
+        if (perm.infoblox) {
+          delete perm.infoblox
+        }
+        if (perm.checkpoint) {
+          delete perm.checkpoint
+        }
+        if (perm.f5) {
+          delete perm.f5
+        }
+        
         let w = workflowsCopy.find(i => i.name === value)
         perm.workflow = w.name
+
+        if (w.technologies.includes('infoblox')) {
+          perm.infoblox = [
+            {
+              id:1,
+              network: {
+              }
+            }
+          ]
+        }
+        if (w.technologies.includes('checkpoint')) {
+          perm.checkpoint = [
+            {
+              id:1,
+              domain: {
+              },
+              tag: ""
+            }
+          ]
+        }
+        if (w.technologies.includes('f5')) {
+          perm.f5 = [
+            {
+              id:1,
+              partition: {
+              }
+            }
+          ]
+        }
+
         delete perm.workflowError
       }
     }
@@ -314,9 +365,7 @@ function PermissionWorkflow(props) {
         perm.identity_group_identifier = ig.identity_group_identifier
         if (ig.technologies && ig.technologies.length > 0) {
           ig.technologies.forEach(item => {
-            console.log(item)
             let tech = item.technology;
-            console.log(tech)
             if (tech && !(tech in perm)) {
                 perm[tech] = []; 
             }
@@ -324,6 +373,50 @@ function PermissionWorkflow(props) {
         }
         delete perm.identity_group_identifierError
       }
+    }
+
+    if (key === 'asset') {
+      let list = []
+      if (tech === 'infoblox') {
+        list = assetsInfoblox
+      } 
+      if (tech === 'checkpoint') {
+        list = assetsCheckpoint
+      } 
+      if (tech === 'f5') {
+        list = assetsF5
+      } 
+      let asset = list.find(a => a.id = value)
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+      subPerm.asset = asset
+      subPerm.assetFqdn = asset.fqdn
+
+      if (tech === 'infoblox') {
+        subPerm.network.id_asset = asset.id
+      } 
+      if (tech === 'checkpoint') {
+        subPerm.domain.id_asset = asset.id
+      } 
+      if (tech === 'f5') {
+        subPerm.partition.id_asset = asset.id
+      } 
+      delete subPerm.assetError      
+    }
+
+    if (key === 'subAsset') {
+
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+
+      if (tech === 'infoblox') {
+        subPerm.network.name = value
+      } 
+      if (tech === 'checkpoint') {
+        subPerm.domain.name = value
+      } 
+      if (tech === 'f5') {
+        subPerm.partition.name = value
+      } 
+      delete subPerm.subAssetError      
     }
 
     if (key === 'toDelete') {
@@ -334,6 +427,7 @@ function PermissionWorkflow(props) {
         delete perm.toDelete
       }
     }
+
     setPermissions([...permissionsCopy]);
   }
 
@@ -341,9 +435,78 @@ function PermissionWorkflow(props) {
     let permissionsCopy = [...permissions]
     let errors = 0
     let jsonHelper = new JsonHelper()
+    let workflowsCopy = [... workflows]
 
     for (const perm of Object.values(permissionsCopy)) {
+      if (!perm.identity_group_identifier) {
+        ++errors
+        perm.identity_group_identifierError = true
+      }
 
+      if (!perm.workflow) {
+        ++errors
+        perm.workflowError = true
+      }
+      else {
+        let w = workflowsCopy.find(o => o.name === perm.workflow)
+        if (w.technologies && w.technologies.length > 0) {
+          if (w.technologies.includes('infoblox')) {
+            if (!perm.infoblox || (perm.infoblox && perm.infoblox.length < 1)) {
+              //missing technologiy
+            }
+            if (perm.infoblox && perm.infoblox.length > 0) {
+              perm.infoblox.forEach(element => {
+                if (element.network && !element.network.id_asset) {
+                  ++errors
+                  element.assetError = true
+                }
+                if (element.network && !element.network.name) {
+                  ++errors
+                  element.subAssetError = true
+                }
+              });
+  
+            }
+          }
+          /*if (w.technologies.includes('checkpoint')) {
+            if (!perm.checkpoint || (perm.checkpoint && perm.checkpoint.length < 1)) {
+              //missing technologiy
+            }
+            if (perm.checkpoint && perm.checkpoint.length > 0) {
+              perm.checkpoint.forEach(element => {
+                if (element.domain && !element.domain.id_asset) {
+                  ++errors
+                  element.assetError  = true
+                }
+                if (element.domain && !element.domain.name) {
+                  ++errors
+                  element.subAssetError = true
+                }
+              });
+  
+            }
+          }*/
+          if (w.technologies.includes('f5')) {
+            if (!perm.f5 || (perm.f5 && perm.f5.length < 1)) {
+              //missing technologiy
+            }
+            if (perm.f5 && perm.f5.length > 0) {
+              perm.f5.forEach(element => {
+                if (element.partition && !element.partition.id_asset) {
+                  ++errors
+                  element.assetError = true
+                }
+                if (element.partition && !element.partition.name) {
+                  ++errors
+                  element.subAssetError = true
+                }
+              });
+  
+            }
+          }
+        }
+      }
+      
     }
     setPermissions([...permissionsCopy]);
     return errors
@@ -383,19 +546,53 @@ function PermissionWorkflow(props) {
         let p = await permissionDelete(`${perm.workflow}/${perm.identity_group_identifier}/`)
         if (p.status && p.status !== 200 ) {
           let error = Object.assign(p, {
-            component: 'permission',
+            component: 'permissionWorkflow',
             vendor: 'concerto',
             errorType: 'permissionDeleteError'
           })
           props.dispatch(err(error))
-          perm.loading = false
-          setPermissions([...permissionsCopy]);
         }
-        else {
-          perm.loading = false
-          setPermissions([...permissionsCopy]);
+        perm.loading = false
+        setPermissions([...permissionsCopy]);
+      }
+    }
+
+    if (toPost.length > 0) {
+      let body = {}
+      for await (const perm of toPost) {
+        body.data = {
+          "workflow": perm.workflow,
+          "identity_group_identifier": perm.identity_group_identifier,
         }
 
+        if (perm.infoblox && perm.infoblox.length > 0) {
+          body.data.infoblox = perm.infoblox
+        }
+        if (perm.checkpoint && perm.checkpoint.length > 0) {
+          body.data.checkpoint = perm.checkpoint
+          body.data.checkpoint[0].domain.name = 'POLAND'
+          body.data.checkpoint[0].tag = 'any'
+        }
+        if (perm.f5 && perm.f5.length > 0) {
+          body.data.f5 = perm.f5
+        }
+
+        console.log(body)
+        //let per = permissions.find(p => p.id === perm.id)
+        perm.loading = true
+        setPermissions([...permissionsCopy]);
+
+        let p = await permissionAdd('workflow-permissions/', body)
+        if (p.status && p.status !== 201 ) {
+          let error = Object.assign(p, {
+            component: 'permissionWorkflow',
+            vendor: 'concerto',
+            errorType: 'permissionAddError'
+          })
+          props.dispatch(err(error))
+        }
+        perm.loading = false
+        setPermissions([...permissionsCopy]);
       }
     }
 
@@ -414,12 +611,27 @@ function PermissionWorkflow(props) {
         r = error
       }
     )
-    await rest.doXHR(`workflow-permission/${endpoint}d/`, props.token )
+    await rest.doXHR(`workflow-permission/${endpoint}/`, props.token )
+    return r
+  }
+
+  let permissionAdd = async (endpoint, body) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(endpoint, props.token, body )
     return r
   }
 
   // Colonne per la tabella F5
-  const f5Columns = [
+  const f5Columns = (father) => [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -440,12 +652,12 @@ function PermissionWorkflow(props) {
         setSearchText, 
         setSearchedColumn
       ),
-      /*render: (name, obj)  => (
+      render: (name, obj)  => (
         <Select
           value={obj.assetFqdn}
           showSearch
           style=
-          { obj.assetIdError ?
+          { obj.assetError ?
             {width: '100%', border: `1px solid red`}
           :
             {width: '100%'}
@@ -457,21 +669,60 @@ function PermissionWorkflow(props) {
           filterSort={(optionA, optionB) =>
             optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
           }
-          onSelect={value => set('assetId', value, obj )}
+          onSelect={value => set('asset', value, father, obj, 'f5' )}
         >
-          { assets.f5.map((ass, i) => {
+          { assetsF5 ? assetsF5.map((ass, i) => {
               return (
                 <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
               )
-            })
+            }) : null
           }
         </Select>
-      ),*/
+      ),
     },
     {
       title: 'Partition Name',
       dataIndex: ['partition', 'name'],
-      key: 'partition_name',
+      key: 'partition',
+      ...getColumnSearchProps(
+        'partition', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.partition && obj.partition.name ? obj.partition.name : '' }
+          showSearch
+          style=
+          { obj.subAssetError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          disabled = {(obj && obj.asset && obj.asset.partitions) ? false : true} 
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('subAsset', value, father, obj, 'f5' )}
+        >
+          <Select.Option key={'any'} value={'any'}>any</Select.Option>
+          { (obj && obj.asset && obj.asset.partitions) ? obj.asset.partitions.map((part, i) => {
+              return (
+                <Select.Option key={i} value={part.name}>{part.name}</Select.Option>
+              )
+            }) : null
+          }
+        </Select>
+      ),
     },
     {
       title: 'Delete',
@@ -500,7 +751,7 @@ function PermissionWorkflow(props) {
   ];
 
   // Colonne per la tabella Infoblox
-  const infobloxColumns = [
+  const infobloxColumns = (father) => [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -508,18 +759,95 @@ function PermissionWorkflow(props) {
     },
     {
       title: 'Asset',
-      dataIndex: ['asset', 'fqdn'],
-      key: 'asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('asset', value, father, obj, 'infoblox' )}
+        >
+          { assetsInfoblox ? assetsInfoblox.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            }) : null
+          }
+        </Select>
+      ),
     },
     {
       title: 'Network Name',
       dataIndex: ['network', 'name'],
-      key: 'network_name',
+      key: 'network',
+      ...getColumnSearchProps(
+        'network', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.network && obj.network.name ? obj.network.name : '' }
+          showSearch
+          style=
+          { obj.subAssetError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          disabled = {(obj && obj.asset && obj.asset.networks) ? false : true} 
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('subAsset', value, father, obj, 'infoblox' )}
+        >
+          <Select.Option key={'any'} value={'any'}>any</Select.Option>
+          { (obj && obj.asset && obj.asset.networks) ? obj.asset.networks.map((n, i) => {
+              return (
+                <Select.Option key={i} value={n.network}>{n.network}</Select.Option>
+              )
+            }) : null
+          }
+        </Select>
+      ),
     },
   ];
 
   // Colonne per la tabella Checkpoint
-  const checkpointColumns = [
+  const checkpointColumns = (father) => [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -527,13 +855,90 @@ function PermissionWorkflow(props) {
     },
     {
       title: 'Asset',
-      dataIndex: ['asset', 'fqdn'],
-      key: 'asset',
+      align: 'center',
+      dataIndex: 'assetFqdn',
+      key: 'assetFqdn',
+      ...getColumnSearchProps(
+        'assetFqdn', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.assetFqdn}
+          showSearch
+          style=
+          { obj.assetError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('asset', value, father, obj, 'checkpoint' )}
+        >
+          { assetsCheckpoint ? assetsCheckpoint.map((ass, i) => {
+              return (
+                <Select.Option key={i} value={ass.id}>{ass.fqdn}</Select.Option>
+              )
+            }) : null
+          }
+        </Select>
+      ),
     },
     {
       title: 'Domain Name',
       dataIndex: ['domain', 'name'],
-      key: 'domain_name',
+      key: 'domain',
+      ...getColumnSearchProps(
+        'domain', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, obj)  => (
+        <Select
+          value={obj.domain && obj.domain.name ? obj.domain.name : '' }
+          showSearch
+          style=
+          { obj.subAssetError ?
+            {width: '100%', border: `1px solid red`}
+          :
+            {width: '100%'}
+          }
+          disabled = {(obj && obj.asset && obj.asset.domains) ? false : true} 
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set('subAsset', value, father, obj, 'checkpoint' )}
+        >
+          <Select.Option key={'any'} value={'any'}>any</Select.Option>
+          { (obj && obj.asset && obj.asset.domains) ? obj.asset.domains.map((d, i) => {
+              return (
+                <Select.Option key={i} value={d.name}>{d.name}</Select.Option>
+              )
+            }) : null
+          }
+        </Select>
+      ),
     },
     {
       title: 'Tag',
@@ -549,7 +954,7 @@ function PermissionWorkflow(props) {
           <>
             <h4>F5</h4>
             <Table 
-              columns={f5Columns} 
+              columns={f5Columns(record)} 
               dataSource={record.f5} 
               pagination={false} 
               rowKey="id" 
@@ -562,7 +967,7 @@ function PermissionWorkflow(props) {
           <>
             <h4>Infoblox</h4>
             <Table 
-              columns={infobloxColumns} 
+              columns={infobloxColumns(record)} 
               dataSource={record.infoblox} 
               pagination={false} 
               rowKey="id" 
@@ -575,7 +980,7 @@ function PermissionWorkflow(props) {
           <>
             <h4>Checkpoint</h4>
             <Table 
-              columns={checkpointColumns} 
+              columns={checkpointColumns(record)} 
               dataSource={record.checkpoint} 
               pagination={false} 
               rowKey="id"
@@ -638,7 +1043,7 @@ function PermissionWorkflow(props) {
               value={obj.name}
               showSearch
               style=
-              { obj.assetIdError ?
+              { obj.workflowError ?
                 {width: '100%', border: `1px solid red`}
               :
                 {width: '100%'}
@@ -687,7 +1092,7 @@ function PermissionWorkflow(props) {
               value={obj.identity_group_identifier}
               showSearch
               style=
-              { obj.assetIdError ?
+              { obj.identity_group_identifierError ?
                 {width: '100%', border: `1px solid red`}
               :
                 {width: '100%'}
@@ -739,9 +1144,8 @@ function PermissionWorkflow(props) {
 
   return (
     <>
-    {console.log(identityGroups)}
-    {console.log(workflows)}
-    {console.log(permissions)}
+
+    {console.log('permissions', permissions)}
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
       ) : (
