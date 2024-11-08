@@ -157,26 +157,7 @@ function PermissionWorkflow(props) {
         return
       }
       else {
-        let list = data.data.items.map(item => {
-          // Crea una copia dell'oggetto principale
-          const updatedItem = { ...item };
-      
-          // Cicla su "technologies" per rinominare "tehnology" in "technology"
-          updatedItem.technologies = updatedItem.technologies.map(tech => {
-              const updatedTech = { ...tech };
-      
-              // Se c'è la chiave errata "tehnology", rinominala
-              if (updatedTech.tehnology) {
-                  updatedTech.technology = updatedTech.tehnology;
-                  delete updatedTech.tehnology;
-              }
-      
-              return updatedTech;  // Restituisce l'oggetto aggiornato
-          });
-      
-          return updatedItem;  // Restituisce l'oggetto principale con "technologies" corretto
-      });
-        setIdentityGroups(list)
+        setIdentityGroups(data.data.items)
       }
   }
 
@@ -238,9 +219,21 @@ function PermissionWorkflow(props) {
     } else {
       const itemsWithIds = data.data.items.map((item, index) => ({
         ...item,
-        id: index + 1, // L'id parte da 1 invece che da 0
+        id: index + 1, // L'id parte da 1 invece che da 0 
       }));
-      setPermissions(itemsWithIds);
+
+      let addNetworkKeyifInfoblox = itemsWithIds.map((item, index) => {
+        if (item.infoblox && Array.isArray(item.infoblox) && item.infoblox.length > 0) {
+          item.infoblox.map((i, index) => {
+            if (i.network && i.network.name) {
+              i.network.network = i.network.name
+              return i
+            }
+          })
+        }
+        return item
+      });
+      setPermissions(addNetworkKeyifInfoblox);
     }
     setLoading(false);
     setGotPermissions(true)
@@ -310,6 +303,102 @@ function PermissionWorkflow(props) {
     const commonFunctions = new CommonFunctions();
     const list = await commonFunctions.itemRemove(item, items);
     setPermissions([...list]);  
+  };
+
+  let subItemAdd = async (record, tech) => {
+    let permissionsCopy = [...permissions]
+    let perm = permissionsCopy.find(p => p.id === record.id)
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemAdd(record[tech]);
+    perm[tech] = list 
+    perm[tech].forEach(element => {
+      if (!element.existent) {
+        element.workflow = perm.workflow
+        element.identity_group_identifier = perm.identity_group_identifier
+        let str = perm.identity_group_identifier ? perm.identity_group_identifier.split(',') : ''
+        let cn = str ? str[0].split('=') : null
+        element.identity_group_name = cn[1] ? cn[1] : ''
+        if (tech === 'infoblox') {
+          if (!element.network) {
+            element.network = {}
+          }
+          if (element.network && !element.network.network) {
+            element.network.network = ''
+          }
+          if (element.network && !element.network.id_asset) {
+            element.network.id_asset = null
+          }
+        }
+        if (tech === 'checkpoint') {
+          if (!element.domain) {
+            element.domain = {}
+          }
+          if (element.domain && !element.domain.name) {
+            element.domain.name = ''
+          }
+          if (element.domain && !element.domain.id_asset) {
+            element.domain.id_asset = null
+          }
+        }
+        if (tech === 'f5') {
+          if (!element.partition) {
+            element.partition = {}
+          }
+          if (element.partition && !element.partition.name) {
+            element.partition.name = ''
+          }
+          if (element.partition && !element.partition.id_asset) {
+            element.partition.id_asset = null
+          }
+        }
+      }
+    });
+    //inizializzare il bubper con workflo, ig, partition, id_asset, name
+    setPermissions([...permissionsCopy]);  
+  };
+
+  let subItemRemove = async (item, father, tech) => {
+    console.log(item)
+    console.log(father)
+    console.log(tech)
+
+    let permissionsCopy = [...permissions]
+    let perm = permissionsCopy.find(p => p.id === father.id)
+
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemRemove(item, father[tech]);
+
+    if (list.length < 1) {
+      let o = {}
+      o.id = 1
+      o.workflow = perm.workflow
+      o.identity_group_identifier = perm.identity_group_identifier
+      let str = perm.identity_group_identifier ? perm.identity_group_identifier.split(',') : ''
+      let cn = str ? str[0].split('=') : null
+      o.identity_group_name = cn[1] ? cn[1] : ''
+      if (tech === 'infoblox') {
+        o.network = {
+          network: '',
+          id_asset: null,
+        }
+      }
+      if (tech === 'checkpoint') {
+        o.domain = {
+          name: '',
+          id_asset: null,
+        }
+      }
+      if (tech === 'f5') {
+        o.partition = {
+          name: '',
+          id_asset: null,
+        }
+      }
+      list.push(o)
+    }
+    console.log(list)
+    perm[tech] = list 
+    setPermissions([...permissionsCopy]);  
   };
 
   let set = async (key, value, permission, child, tech) => { 
@@ -394,6 +483,7 @@ function PermissionWorkflow(props) {
       if (tech === 'f5') {
         list = assetsF5
       } 
+
       let asset = list.find(a => a.id = value)
       let subPerm = perm[tech].find(sp => sp.id === child.id)
       subPerm.asset = asset
@@ -401,12 +491,26 @@ function PermissionWorkflow(props) {
 
       if (tech === 'infoblox') {
         subPerm.network.id_asset = asset.id
+        
+        //orig
+        if (subPerm.existent) {
+          subPerm.isModified = true
+        }
       } 
       if (tech === 'checkpoint') {
         subPerm.domain.id_asset = asset.id
+         //orig
+        if (subPerm.existent) {
+          subPerm.isModified = true
+        }
       } 
       if (tech === 'f5') {
         subPerm.partition.id_asset = asset.id
+        if (subPerm.existent) {
+           //orig
+          subPerm.isModified = true
+        }
+        
       } 
       delete subPerm.assetError      
     }
@@ -416,7 +520,7 @@ function PermissionWorkflow(props) {
       let subPerm = perm[tech].find(sp => sp.id === child.id)
 
       if (tech === 'infoblox') {
-        subPerm.network.name = value
+        subPerm.network.network = value
       } 
       if (tech === 'checkpoint') {
         subPerm.domain.name = value
@@ -468,7 +572,7 @@ function PermissionWorkflow(props) {
                   ++errors
                   element.assetError = true
                 }
-                if (element.network && !element.network.name) {
+                if (element.network && !element.network.network) {
                   ++errors
                   element.subAssetError = true
                 }
@@ -745,8 +849,7 @@ function PermissionWorkflow(props) {
           :
             <Button
               type='danger'
-              //onClick={(e) => permissionRemove(obj)}
-              onClick={(e) => console.log(obj)}
+              onClick={(e) => subItemRemove(obj, father, 'f5')}
             >
               -
             </Button>
@@ -822,7 +925,7 @@ function PermissionWorkflow(props) {
       ),
       render: (name, obj)  => (
         <Select
-          value={obj.network && obj.network.name ? obj.network.name : '' }
+          value={obj.network && obj.network.network ? obj.network.network : '' }
           showSearch
           style=
           { obj.subAssetError ?
@@ -850,6 +953,29 @@ function PermissionWorkflow(props) {
         </Select>
       ),
     },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              //onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => subItemRemove(obj, father, 'infoblox')}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
   ];
 
   // Colonne per la tabella Checkpoint
@@ -951,6 +1077,29 @@ function PermissionWorkflow(props) {
       dataIndex: 'tag',
       key: 'tag',
     },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.existent ?
+            <Checkbox
+              checked={obj.toDelete}
+              //onChange={e => set('toDelete', e.target.checked, obj)}
+            />
+          :
+            <Button
+              type='danger'
+              onClick={(e) => subItemRemove(obj, father, 'checkpoint')}
+            >
+              -
+            </Button>
+          }
+        </Space>
+      ),
+    }
   ];
 
   const expandedRowRender = (record) => {
@@ -959,6 +1108,18 @@ function PermissionWorkflow(props) {
         {record.f5 && record.f5.length > 0 && (
           <>
             <h4>F5</h4>
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                onClick={() => subItemAdd(record, 'f5')}
+              >
+                Add permission
+              </Radio.Button>
+
+            </Radio.Group>
+            <br/>
+            <br/>
             <Table 
               columns={f5Columns(record)} 
               dataSource={record.f5} 
@@ -972,6 +1133,18 @@ function PermissionWorkflow(props) {
         {record.infoblox && record.infoblox.length > 0 && (
           <>
             <h4>Infoblox</h4>
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                onClick={() => subItemAdd(record, 'infoblox')}
+              >
+                Add permission
+              </Radio.Button>
+
+            </Radio.Group>
+            <br/>
+            <br/>
             <Table 
               columns={infobloxColumns(record)} 
               dataSource={record.infoblox} 
@@ -985,6 +1158,18 @@ function PermissionWorkflow(props) {
         {record.checkpoint && record.checkpoint.length > 0 && (
           <>
             <h4>Checkpoint</h4>
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                onClick={() => subItemAdd(record, 'checkpoint')}
+              >
+                Add permission
+              </Radio.Button>
+
+            </Radio.Group>
+            <br/>
+            <br/>
             <Table 
               columns={checkpointColumns(record)} 
               dataSource={record.checkpoint} 
@@ -1150,8 +1335,21 @@ function PermissionWorkflow(props) {
 
   return (
     <>
-
-    {console.log('permissions', permissions)}
+    {
+      //console.log('assets', assets)
+    }
+    {
+      //console.log('assetsInfoblox', assetsInfoblox)
+    }
+    {
+      //console.log('origPermissions', origPermissions)
+    }
+    {
+      //console.log('origPermissions', origPermissions)
+    }
+    {
+      //console.log('permissions', permissions)
+    }
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
       ) : (
@@ -1176,8 +1374,8 @@ function PermissionWorkflow(props) {
             </Radio.Button>
 
           </Radio.Group>
-        <br/>
-        <br/>
+          <br/>
+          <br/>
           <Table
             columns={workflowColumns}
             style={{width: '100%', padding: 5}}

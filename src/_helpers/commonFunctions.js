@@ -35,7 +35,7 @@ class CommonFunctions {
     try {
       let list = JSON.parse(JSON.stringify(items))
       list = list.filter(n => el.id !== n.id)
-      return list
+      return list || []
     }
     catch(e) {
       console.log(e)

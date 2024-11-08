@@ -328,7 +328,7 @@ function RemoveHost(props) {
                 props.checkpointAssets.map((n, i) => (
                   <Checkbox
                     key={i}
-                    checked={obj.assets.includes(n.id)}
+                    checked={obj && obj.assets && obj.assets.includes(n.id)}
                     onChange={(e) => assetsSet(e.target.checked, obj.id, n)}
                   >
                     {n.fqdn}
