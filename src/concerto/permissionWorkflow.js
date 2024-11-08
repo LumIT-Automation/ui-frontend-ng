@@ -35,10 +35,6 @@ function PermissionWorkflow(props) {
   let [permissions, setPermissions] = useState([]);
   let [origPermissions, setOrigPermissions] = useState([]);
   
-  
-
-
-  
   let [expandedRowKeys, setExpandedRowKeys] = useState([]); // Stato per le righe espanse
 
   let [searchText, setSearchText] = useState('');
@@ -290,7 +286,8 @@ function PermissionWorkflow(props) {
     });
 
     setPermissions([...copyPermissions]);
-    setOrigPermissions([...copyPermissions]);
+
+    setOrigPermissions(JSON.parse(JSON.stringify(copyPermissions)));
   }
 
   let itemAdd = async (items, type) => {
@@ -401,9 +398,12 @@ function PermissionWorkflow(props) {
     setPermissions([...permissionsCopy]);  
   };
 
+
+
   let set = async (key, value, permission, child, tech) => { 
     
-    let permissionsCopy = [...permissions]
+    let permissionsCopy = JSON.parse(JSON.stringify(permissions))
+    let origPermissionsCopy = JSON.parse(JSON.stringify(origPermissions))
     let perm = permissionsCopy.find(p => p.id === permission.id)
     let identityGroupsCopy = [...identityGroups]
     let workflowsCopy = [... workflows]
@@ -489,6 +489,23 @@ function PermissionWorkflow(props) {
       subPerm.asset = asset
       subPerm.assetFqdn = asset.fqdn
 
+      if (perm.existent) {
+        if (perm.isModified[tech]) {
+          if (perm.isModified[tech][subPerm.id]) {
+            perm.isModified[tech][subPerm.id].asset = true
+          } 
+          else {
+            perm.isModified[tech][subPerm.id] = {}
+            perm.isModified[tech][subPerm.id].asset = true
+          } 
+        } 
+        else {
+          perm.isModified[tech] = {}
+          perm.isModified[tech][subPerm.id] = {}
+          perm.isModified[tech][subPerm.id].asset = true
+        }  
+      }
+
       if (tech === 'infoblox') {
         subPerm.network.id_asset = asset.id
         
@@ -519,8 +536,25 @@ function PermissionWorkflow(props) {
 
       let subPerm = perm[tech].find(sp => sp.id === child.id)
 
+      if (perm.existent) {
+        if (perm.isModified[tech]) {
+          if (perm.isModified[tech][subPerm.id]) {
+            perm.isModified[tech][subPerm.id].subAsset = true
+          } 
+          else {
+            perm.isModified[tech][subPerm.id] = {}
+            perm.isModified[tech][subPerm.id].subAsset = true
+          } 
+        } 
+        else {
+          perm.isModified[tech] = {}
+          perm.isModified[tech][subPerm.id] = {}
+          perm.isModified[tech][subPerm.id].subAsset = true
+        }  
+      }
+    
       if (tech === 'infoblox') {
-        subPerm.network.network = value
+        subPerm.network.network = value 
       } 
       if (tech === 'checkpoint') {
         subPerm.domain.name = value
@@ -529,6 +563,33 @@ function PermissionWorkflow(props) {
         subPerm.partition.name = value
       } 
       delete subPerm.subAssetError      
+    }
+
+    if (key === 'subPermDel') {
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+      if (perm.existent) {
+        if (value) {
+          if (perm.isModified[tech]) {
+            if (perm.isModified[tech][subPerm.id]) {
+              perm.isModified[tech][subPerm.id].toDelete = true
+            } 
+            else {
+              perm.isModified[tech][subPerm.id] = {}
+              perm.isModified[tech][subPerm.id].toDelete = true
+            } 
+          } 
+          else {
+            perm.isModified[tech] = {}
+            perm.isModified[tech][subPerm.id] = {}
+            perm.isModified[tech][subPerm.id].toDelete = true
+          }  
+          subPerm.toDelete = true
+        }
+        else {
+          delete perm.isModified[tech][subPerm.id].toDelete
+          delete subPerm.toDelete
+        }        
+      }
     }
 
     if (key === 'toDelete') {
@@ -654,7 +715,7 @@ function PermissionWorkflow(props) {
         perm.loading = true
         setPermissions([...permissionsCopy]);
 
-        let p = await permissionDelete(`${perm.workflow}/${perm.identity_group_identifier}/`)
+        let p = await permissionDelete(`workflow-permission/${perm.workflow}/${perm.identity_group_identifier}/`)
         if (p.status && p.status !== 200 ) {
           let error = Object.assign(p, {
             component: 'permissionWorkflow',
@@ -706,8 +767,63 @@ function PermissionWorkflow(props) {
       }
     }
 
-    setPermissionsRefresh(true)
+    if (toPatch.length > 0) {
+      for (let perm of toPatch) {
+        let localPerm = JSON.parse(JSON.stringify(perm));
+        let wf = workflows.find(w => w.name === localPerm.workflow);
+        let techs = wf.technologies;
+    
+        for (const tech of techs) {
+          if (localPerm.isModified[tech] && Object.keys(localPerm.isModified[tech]).length > 0) {
+            for (const [key, value] of Object.entries(localPerm.isModified[tech])) {
+              if (value.toDelete) {
+                console.log(`${key}: ${JSON.stringify(value)}`);
+    
+                const indexToDelete = localPerm[tech].findIndex(item => item.id === parseInt(key));
+                if (indexToDelete !== -1) {
+                  localPerm[tech].splice(indexToDelete, 1);
+                  console.log(`Elemento con id ${key} eliminato da ${tech}`);
+                }
+              }
+            }
+            
+            if (tech === 'infoblox') {
+              if (Object.keys(localPerm.infoblox).length > 0) {
+                const updatedInfoblox = localPerm.infoblox.map(item => {
+                  if (item.network && !item.network.name) {
+                    item.network.name = item.network.network; // Aggiunge "name" uguale a "network" se non esiste
+                  }
+                  return item;
+                });
+              }
+            }
+            let body = {};
+            body.data = { [tech]: localPerm[tech] };
+            console.log(body);
+    
+            perm.loading = true
+            setPermissions([...permissionsCopy]);
 
+            let p = await permissionModify(`workflow-permission/${perm.workflow}/${perm.identity_group_identifier}/`, body)
+            if (p.status && p.status !== 200 ) {
+              let error = Object.assign(p, {
+                component: 'permissionWorkflow',
+                vendor: 'concerto',
+                errorType: 'permissionModifyError'
+              })
+              props.dispatch(err(error))
+            }
+            perm.loading = false
+            setPermissions([...permissionsCopy]);
+          }
+        }
+    
+        // Puoi fare ulteriori elaborazioni con `localPerm` se necessario
+        console.log(localPerm);
+      }
+    }
+    
+    setPermissionsRefresh(true)
   }
 
   let permissionDelete = async (endpoint) => {
@@ -721,7 +837,7 @@ function PermissionWorkflow(props) {
         r = error
       }
     )
-    await rest.doXHR(`workflow-permission/${endpoint}/`, props.token )
+    await rest.doXHR(endpoint, props.token )
     return r
   }
 
@@ -729,6 +845,21 @@ function PermissionWorkflow(props) {
     let r
     let rest = new Rest(
       "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(endpoint, props.token, body )
+    return r
+  }
+
+  let permissionModify = async (endpoint, body) => {
+    let r
+    let rest = new Rest(
+      "PATCH",
       resp => {
         r = resp
       },
@@ -844,7 +975,7 @@ function PermissionWorkflow(props) {
           {obj.existent ?
             <Checkbox
               checked={obj.toDelete}
-              //onChange={e => set('toDelete', e.target.checked, obj)}
+              onChange={e => set('subPermDel', e.target.checked, father, obj, 'f5' )}
             />
           :
             <Button
@@ -963,7 +1094,7 @@ function PermissionWorkflow(props) {
           {obj.existent ?
             <Checkbox
               checked={obj.toDelete}
-              //onChange={e => set('toDelete', e.target.checked, obj)}
+              onChange={e => set('subPermDel', e.target.checked, father, obj, 'infoblox' )}
             />
           :
             <Button
@@ -1087,7 +1218,7 @@ function PermissionWorkflow(props) {
           {obj.existent ?
             <Checkbox
               checked={obj.toDelete}
-              //onChange={e => set('toDelete', e.target.checked, obj)}
+              onChange={e => set('subPermDel', e.target.checked, father, obj, 'checkpoint' )}
             />
           :
             <Button
@@ -1342,13 +1473,7 @@ function PermissionWorkflow(props) {
       //console.log('assetsInfoblox', assetsInfoblox)
     }
     {
-      //console.log('origPermissions', origPermissions)
-    }
-    {
-      //console.log('origPermissions', origPermissions)
-    }
-    {
-      //console.log('permissions', permissions)
+      console.log('permissions', permissions)
     }
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
