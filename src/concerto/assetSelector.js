@@ -448,7 +448,6 @@ export default connect((state) => ({
   checkpointDomains: state.checkpoint.domains,
   checkpointDomain: state.checkpoint.domain,
   
-
   f5Assets: state.f5.assets,
   f5Asset: state.f5.asset,
   f5Partitions: state.f5.partitions,
