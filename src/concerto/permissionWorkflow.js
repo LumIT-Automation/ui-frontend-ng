@@ -472,6 +472,35 @@ function PermissionWorkflow(props) {
       }
     }
 
+    if (key === 'tag') {
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+      
+      if (perm.existent) {
+        if (perm.isModified[tech]) {
+          if (perm.isModified[tech][subPerm.id]) {
+            perm.isModified[tech][subPerm.id].tag = true
+          } 
+          else {
+            perm.isModified[tech][subPerm.id] = {}
+            perm.isModified[tech][subPerm.id].tag = true
+          } 
+        } 
+        else {
+          perm.isModified[tech] = {}
+          perm.isModified[tech][subPerm.id] = {}
+          perm.isModified[tech][subPerm.id].tag = true
+        }  
+      }
+
+      if (tech === 'checkpoint') {
+        subPerm.tag = value
+         //orig
+        if (subPerm.existent) {
+          subPerm.isModified = true
+        }
+      } 
+    }
+
     if (key === 'asset') {
       let list = []
       if (tech === 'infoblox') {
@@ -743,8 +772,8 @@ function PermissionWorkflow(props) {
         if (perm.checkpoint && perm.checkpoint.length > 0) {
           body.data.checkpoint = perm.checkpoint
           // !!!!
-          body.data.checkpoint[0].domain.name = 'POLAND'
-          body.data.checkpoint[0].tag = 'any'
+          //body.data.checkpoint[0].domain.name = 'POLAND'
+          //body.data.checkpoint[0].tag = 'any'
         }
         if (perm.f5 && perm.f5.length > 0) {
           body.data.f5 = perm.f5
@@ -869,6 +898,25 @@ function PermissionWorkflow(props) {
     )
     await rest.doXHR(endpoint, props.token, body )
     return r
+  }
+
+  let createElement = (element, key, choices, obj, action, father, tech) => {
+    if (element === 'textArea') {
+      return (
+        <Input.TextArea
+          rows={5}
+          defaultValue={obj[key]}
+          //ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
+          onBlur={event => set(key, event.target.value, father, obj, tech)}
+          style=
+            { obj[`${key}Error`] ?
+              {borderColor: `red`, width: 150}
+            :
+              {width: 150}
+            }
+        />
+      )
+    }
   }
 
   // Colonne per la tabella F5
@@ -1207,6 +1255,16 @@ function PermissionWorkflow(props) {
       title: 'Tag',
       dataIndex: 'tag',
       key: 'tag',
+      render: (name, obj)  => (
+        <>
+        {
+          createElement('textArea', 'tag', '', obj, '', father, 'checkpoint')
+        }
+        {
+          //<p>Insert tags separated by comma (,).</p>
+        }
+        </>
+      )
     },
     {
       title: 'Delete',
