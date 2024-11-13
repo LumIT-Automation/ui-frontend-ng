@@ -7,7 +7,6 @@ import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
-import { assets as checkpointAssets } from '../../checkpoint/store';
 
 import { Modal, Input, Button, Spin, Table, Space, Radio, Select } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -16,21 +15,24 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function AddHost(props) {
   let [visible, setVisible] = useState(false);
+  let [assets, setAssets] = useState([]);
   let [errors, setErrors] = useState({});
   let [cpDomains, setCpDomains] = useState({});
   let [requests, setRequests] = useState([{ id: 1, asset: {} }]);
-  let [cpAssetsLoading, setCpAssetsLoading] = useState(false);
+  let [loading, setLoading] = useState(false);
   let [cpDomainsLoading, setCpDomainsLoading] = useState(false);
   let [itemAdded, setItemAdded] = useState(false)
   let [itemRemoved, setItemRemoved] = useState(false)
 
   useEffect(() => {
-    getCpAssets()
-  }, []);
+    if (visible) {
+      getCpAssets()
+    }
+  }, [visible]);
 
   useEffect(() => {
     checkedTheOnlyAsset();
-  }, [props.checkpointAssets]);
+  }, [assets]);
 
   useEffect(() => {
     if (itemAdded) {
@@ -43,8 +45,8 @@ function AddHost(props) {
     if (itemRemoved) {
       if (requests.length < 1) {
         let newRequests = [...requests];
-        if (props.checkpointAssets && props.checkpointAssets.length === 1) {
-          newRequests.push({ id: 1, asset: props.checkpointAssets[0] });
+        if (assets && assets.length === 1) {
+          newRequests.push({ id: 1, asset: assets[0] });
         } else {
           newRequests.push({ id: 1, asset: {} });
         }
@@ -55,7 +57,7 @@ function AddHost(props) {
   }, [itemRemoved]);
 
   let getCpAssets = async () => {
-    setCpAssetsLoading(true);
+    setLoading(true);
     try {
       let cpAssets = await cpAssetsGet();
       if (cpAssets.status && cpAssets.status !== 200) {
@@ -67,18 +69,17 @@ function AddHost(props) {
         props.dispatch(err(error));
         return;
       } else {
-        await props.dispatch(checkpointAssets(cpAssets));
+        setAssets(cpAssets.data.items)
       }
     } catch (error) {
       console.log('main error', error);
     }
-    setCpAssetsLoading(false);
+    setLoading(false);
   };
 
   let itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions();
     let list = await commonFunctions.itemAdd(items, type);
-    console.log(list)
     setRequests(list);
     setItemAdded(true)
   };
@@ -86,33 +87,26 @@ function AddHost(props) {
   let itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions();
     let list = await commonFunctions.itemRemove(item, items);
-    console.log(list)
     setRequests(list);
     setItemRemoved(true)
   };
 
   let checkedTheOnlyAsset = async () => {
-    console.log('checkedTheOnlyAsset')
-    console.log(props.checkpointAssets)
     
     try {
       let newRequests = [...requests];
-      console.log(newRequests)
-      if (props.checkpointAssets && props.checkpointAssets.length === 1) {
-        console.log('if')
-        await cpDomainsGetHandler(props.checkpointAssets[0]);
+      if (assets && assets.length === 1) {
+        await cpDomainsGetHandler(assets[0]);
         newRequests.forEach((req) => {
-          req.asset = props.checkpointAssets[0];
+          req.asset = assets[0];
         });
       } else {
-        console.log('else')
         newRequests.forEach((req) => {
           if (!req.asset) {
             req.asset = {};
           }
         });
       }
-      console.log(newRequests)
       setRequests(newRequests);
     } catch (error) {
       console.log('checkedTheOnlyAsset error', error);
@@ -135,7 +129,6 @@ function AddHost(props) {
   };
 
   let cpDomainsGetHandler = async (asset) => {
-    console.log('cpDomainsGetHandler')
     try {
       let domains = await cpDomainsGet(asset);
       if (!domains.status) {
@@ -325,7 +318,7 @@ function AddHost(props) {
     setErrors({});
     setCpDomains({});
     setRequests([{ id: 1, asset: {} }]);
-    setCpAssetsLoading(false);
+    setLoading(false);
     setCpDomainsLoading(false);
     setItemAdded(false)
     setItemRemoved(false)
@@ -431,23 +424,23 @@ function AddHost(props) {
       key: 'assets',
       render: (name, obj)  => (
         <React.Fragment>
-          { cpAssetsLoading ?
+          { loading ?
             <Spin indicator={spinIcon} style={{margin: 'auto auto'}}/>
           :
             <React.Fragment>
               {obj.assetError ?
                 <React.Fragment>
-                  {props.checkpointAssets ?
+                  {assets ?
                     <React.Fragment>
-                      {props.checkpointAssets.length === 1 ?
+                      {assets.length === 1 ?
                         <Radio
-                          onChange={e => assetSet(e.target.checked, obj.id, props.checkpointAssets[0])}
+                          onChange={e => assetSet(e.target.checked, obj.id, assets[0])}
                           checked
                         >
-                          {props.checkpointAssets[0].fqdn}
+                          {assets[0].fqdn}
                         </Radio>
                       :
-                        props.checkpointAssets.map((n, i) => {
+                        assets.map((n, i) => {
                           return (
                             <Radio
                               key={i}
@@ -469,17 +462,17 @@ function AddHost(props) {
                 </React.Fragment>
               :
               <React.Fragment>
-                {props.checkpointAssets ?
+                {assets ?
                   <React.Fragment>
-                    {props.checkpointAssets.length === 1 ?
+                    {assets.length === 1 ?
                       <Radio
-                        onChange={e => assetSet(e.target.checked, obj.id, props.checkpointAssets[0])}
+                        onChange={e => assetSet(e.target.checked, obj.id, assets[0])}
                         checked
                       >
-                        {props.checkpointAssets[0].fqdn}
+                        {assets[0].fqdn}
                       </Radio>
                     :
-                      props.checkpointAssets.map((n, i) => {
+                      assets.map((n, i) => {
                         return (
                           <Radio
                             key={i}
@@ -649,6 +642,4 @@ function AddHost(props) {
 export default connect((state) => ({
   token: state.authentication.token,
   error: state.concerto.err,
-
-  checkpointAssets: state.checkpoint.assets,
 }))(AddHost);

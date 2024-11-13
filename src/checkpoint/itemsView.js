@@ -33,16 +33,18 @@ const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 function ItemsView(props) {
-  const [searchText, setSearchText] = useState('');
-  const [searchedColumn, setSearchedColumn] = useState('');
-  const searchInput = useRef(null);
   const [disableCommit, setDisableCommit] = useState(false);
   const [loading, setLoading] = useState(false);
   const [originitems, setOriginitems] = useState([]);
   const [items, setItems] = useState([]);
   const [errors, setErrors] = useState({});
+  
   const myRefs = useRef(null);
   const textAreaRefs = useRef(null);
+
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const searchInput = useRef(null);
 
   //UPDATE
   useEffect(() => {

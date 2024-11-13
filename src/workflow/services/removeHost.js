@@ -7,7 +7,6 @@ import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
-import { assets as checkpointAssets } from '../../checkpoint/store';
 
 import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -16,20 +15,25 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function RemoveHost(props) {
   let [visible, setVisible] = useState(false);
+  let [assets, setAssets] = useState([]);
   let [errors, setErrors] = useState({});
   let [request, setRequest] = useState({});
   let [requests, setRequests] = useState([{ id: 1, assets: [] }]);
-  let [cpAssetsLoading, setCpAssetsLoading] = useState(false);
+  let [loading, setLoading] = useState(false);
   let [itemAdded, setItemAdded] = useState(false)
   let [itemRemoved, setItemRemoved] = useState(false)
 
   useEffect(() => {
-    getCpAssets()
-  }, []);
+    if (visible) {
+      getCpAssets()
+    }
+  }, [visible]);
 
   useEffect(() => {
-    checkedTheOnlyAsset();
-  }, [props.checkpointAssets]);
+    if (assets && assets.length > 0) {
+      checkedTheOnlyAsset();
+    }
+  }, [assets]);
 
   useEffect(() => {
     if (itemAdded) {
@@ -41,9 +45,9 @@ function RemoveHost(props) {
   useEffect(() => {
     if (itemRemoved) {
       if (requests.length < 1) {
-        let newRequests = [...requests];
-        if (props.checkpointAssets && props.checkpointAssets.length === 1) {
-          newRequests.push({ id: 1, assets: [props.checkpointAssets[0].id] });
+        let newRequests = [];
+        if (assets && assets.length === 1) {
+          newRequests.push({ id: 1, assets: [assets[0].id] });
         } else {
           newRequests.push({ id: 1, assets: [] });
         }
@@ -54,7 +58,7 @@ function RemoveHost(props) {
   }, [itemRemoved]);
 
   let getCpAssets = async () => {
-    setCpAssetsLoading(true);
+    setLoading(true);
     try {
       let cpAssets = await cpAssetsGet();
       if (cpAssets.status && cpAssets.status !== 200) {
@@ -66,19 +70,17 @@ function RemoveHost(props) {
         props.dispatch(err(error));
         return;
       } else {
-        await props.dispatch(checkpointAssets(cpAssets));
+        setAssets(cpAssets.data.items);
       }
     } catch (error) {
       console.log('main error', error);
     }
-    setCpAssetsLoading(false);
-    await checkedTheOnlyAsset();
+    setLoading(false);
   };
 
   let itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions();
     let list = await commonFunctions.itemAdd(items, type);
-    console.log(list)
     setRequests(list);
     setItemAdded(true)
   };
@@ -86,7 +88,6 @@ function RemoveHost(props) {
   let itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions();
     let list = await commonFunctions.itemRemove(item, items);
-    console.log(list)
     setRequests(list);
     setItemRemoved(true)
   };
@@ -94,10 +95,9 @@ function RemoveHost(props) {
   let checkedTheOnlyAsset = async () => {
     try {
       let newRequests = JSON.parse(JSON.stringify(requests));
-      if (props.checkpointAssets && props.checkpointAssets.length === 1) {
-        let assets = [props.checkpointAssets[0].id];
+      if (assets && assets.length === 1) {
         newRequests.forEach((req) => {
-          req.assets = [props.checkpointAssets[0].id];
+          req.assets = [assets[0].id];
         });
       } else {
         newRequests.forEach((req) => {
@@ -262,7 +262,7 @@ function RemoveHost(props) {
     setErrors({});
     setRequest({});
     setRequests([{ id: 1, asset: {} }]);
-    setCpAssetsLoading(false);
+    setLoading(false);
     setItemAdded(false)
     setItemRemoved(false)
   };
@@ -320,12 +320,12 @@ function RemoveHost(props) {
       key: 'assets',
       render: (name, obj) => (
         <>
-          {cpAssetsLoading ? (
+          {loading ? (
             <Spin indicator={spinIcon} />
           ) : (
             <>
-              {props.checkpointAssets &&
-                props.checkpointAssets.map((n, i) => (
+              {assets &&
+                assets.map((n, i) => (
                   <Checkbox
                     key={i}
                     checked={obj && obj.assets && obj.assets.includes(n.id)}
@@ -359,7 +359,6 @@ function RemoveHost(props) {
 
   return (
     <React.Fragment>
-
       <Button type="primary" onClick={() => setVisible(true)}>REMOVE HOST</Button>
 
       <Modal
@@ -405,9 +404,9 @@ function RemoveHost(props) {
       <React.Fragment>
         {errorComponent()}
       </React.Fragment>
-    :
-      null
-    }
+      :
+        null
+      }
 
   </React.Fragment>
 
@@ -417,6 +416,4 @@ function RemoveHost(props) {
 export default connect((state) => ({
   token: state.authentication.token,
   error: state.concerto.err,
-
-  checkpointAssets: state.checkpoint.assets,
 }))(RemoveHost);
