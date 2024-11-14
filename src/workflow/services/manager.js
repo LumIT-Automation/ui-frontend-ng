@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 import Authorizators from '../../_helpers/authorizators'
 
+import CloudAccount from './cloudAccount'
 import RemoveHost from './removeHost'
 import AddHost from './addHost'
 
@@ -22,23 +23,22 @@ function Manager(props) {
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-  const workflowRemoveHost = a => {
-    let author = new Authorizators()
-    return author.workflowRemoveHost(a)
-  }
-
-  const workflowAddHost = a => {
-    let author = new Authorizators()
-    return author.workflowAddHost(a)
-  }
-
   return (
     
     <React.Fragment>
       <Row>
+      {/*authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account-assign') ?
+          <Col span={6} offset={2}>
+            <p>Manage cloud account</p>
+            <CloudAccount/>
+          </Col>
+        :
+          null
+        */}
+
         {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_remove_host') ?
-          <Col span={8} offset={2}>
-            <p>Remove host from firewall if not a network gateway</p>
+          <Col span={6} offset={2}>
+            <p>Remove host from firewall (no for gateway)</p>
             <RemoveHost/>
           </Col>
         :
@@ -46,7 +46,7 @@ function Manager(props) {
         }
 
         {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host') ?
-          <Col span={8} offset={2}>
+          <Col span={6} offset={2}>
             <p>Add host in firewall if it exists in ipam</p>
             <AddHost/>
           </Col>

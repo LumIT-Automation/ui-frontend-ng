@@ -8,17 +8,17 @@ const { TextArea } = Input;
 const TextAreaHelper = forwardRef((props, ref) => (
   //<TextArea ref={ref} {...props} />
   <Input.TextArea
-          rows={12}
-          value={obj[key]}
-          ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
-          onChange={event => set(key, event.target.value, obj)}
-          style=
-            { obj[`${key}Error`] ?
-              {borderColor: `red`, width: 350}
-            :
-              {width: 350}
-            }
-        />
+    rows={12}
+    value={obj[key]}
+    ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
+    onChange={event => set(key, event.target.value, obj)}
+    style=
+      { obj[`${key}Error`] ?
+        {borderColor: `red`, width: 350}
+      :
+        {width: 350}
+      }
+  />
 ));
 
 // Definisci il componente Input con forwardRef
