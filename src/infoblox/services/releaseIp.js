@@ -1,8 +1,10 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
+import CommonFunctions from '../../_helpers/commonFunctions'
 import Error from '../../concerto/error'
 
 import {
@@ -31,138 +33,99 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 */
 
+function ReleaseIp(props) {
 
-class ReleaseIp extends React.Component {
+  let [visible, setVisible] = useState(false);
+  let [requests, setRequests] = useState([{id:1}]);
+  let [request, setRequest] = useState({});
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      errors: {},
-      request: {},
-      requests: []
-    };
-  }
+  let itemAdd = async (items, type) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemAdd(items, type);
+    setRequests([...list]);  
+  };
 
-  componentDidMount() {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    requests.push({id:1})
-    this.setState({requests: requests})
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.visible === true){
-      if (this.state.requests && this.state.requests.length === 0) {
-        let requests = JSON.parse(JSON.stringify(this.state.requests))
-        requests.push({id:1})
-        this.setState({requests: requests})
-      }
+  let itemRemove = async (item, items) => {
+    const commonFunctions = new CommonFunctions();
+    const list = await commonFunctions.itemRemove(item, items);
+    if (list && list.length < 1) {
+      list.push({id:1})
     }
+    setRequests([...list]);  
+  };
+
+  let setIp = (e, id) => {
+    let requestsCopy = JSON.parse(JSON.stringify(requests))
+    let requestCopy = requestsCopy.find( r => r.id === id )
+    requestCopy.ip = e.target.value
+    setRequests(requestsCopy)
   }
 
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-  }
-
-  setRequests = () => {
-    //let n = this.state.counter + 1
-    let id = 0
-    let n = 0
-    this.state.requests.forEach(r => {
-      if (r.id > id) {
-        id = r.id
-      }
-    });
-    n = id + 1
-
-    let r = {id: n}
-    let list = JSON.parse(JSON.stringify(this.state.requests))
-    list.push(r)
-    this.setState({requests: list})
-  }
-
-  removeRequest = r => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let newList = requests.filter(n => {
-      return r.id !== n.id
-    })
-    this.setState({requests: newList})
-  }
-
-  setIp = (e, id) => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
-    let request = requests.find( r => r.id === id )
-    request.ip = e.target.value
-    this.setState({requests: requests})
-  }
-
-  validateIp = async () => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
+  let validateIp = async () => {
+    let requestsCopy = JSON.parse(JSON.stringify(requests))
     let validators = new Validators()
     let error = false
 
-    requests.forEach((request, i) => {
-      if (validators.ipv4(request.ip)) {
-        request.ipError = null
+    requestsCopy.forEach((r, i) => {
+      if (validators.ipv4(r.ip)) {
+        r.ipError = null
       }
       else {
-        request.ipError = 'Please input a valid ip'
+        r.ipError = 'Please input a valid ip'
         error = true
       }
-      this.setState({requests: requests})
+      setRequests(requestsCopy)
     })
 
     if (!error) {
-      this.releaseHandler()
+      releaseHandler()
     }
   }
 
-  releaseHandler = async () => {
-    let requests = JSON.parse(JSON.stringify(this.state.requests))
+  let releaseHandler = async () => {
+    let requestsCopy = JSON.parse(JSON.stringify(requests))
 
-    requests.forEach((request, i) => {
-      request.isReleased = null
+    requestsCopy.forEach((r, i) => {
+      delete r.isReleased
     })
-    this.setState({requests: requests})
+    setRequests(requestsCopy)
 
-
-    for await (const request of requests) {
-      request.isLoading = true
-      this.setState({requests: requests})
+    for await (const r of requestsCopy) {
+      r.isLoading = true
+      setRequests([...requestsCopy])
       try {
-        const resp = await this.releaseIp(request)
-        request.isLoading = false
-        if (resp.status !== 200) {
-          request.isReleased = 'NOT RELEASED'
-          this.setState({requests: requests})
+        const resp = await releaseIp(r)
+        if (resp.status === 404) {
+          r.isReleased = 'NOT FOUND, NOT RELEASED'
+          r.isLoading = false
+          setRequests([...requestsCopy])
+        }
+        else if (resp.status !== 200) {
+          r.isReleased = 'NOT RELEASED'
           let error = Object.assign(resp, {
             component: 'releaseIp',
             vendor: 'infoblox',
             errorType: 'ipReleaseError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error));
+          r.isLoading = false
+          setRequests([...requestsCopy])
         }
         else {
-          request.isReleased = 'RELEASED'
-          this.setState({requests: requests})
+          r.isReleased = 'RELEASED'
+          r.isLoading = false
+          setRequests([...requestsCopy])
         }
       } catch(error) {
         console.log(error)
-        request.isLoading = false
-        request.isReleased = false
-        this.setState({requests: requests})
+        r.isReleased = false
+        r.isLoading = false
+        setRequests([...requestsCopy])
       }
     }
   }
 
-  releaseIp = async request => {
+  let releaseIp = async request => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -173,197 +136,159 @@ class ReleaseIp extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`infoblox/${this.props.asset.id}/ipv4/${request.ip}/`, this.props.token )
+    await rest.doXHR(`infoblox/${props.asset.id}/ipv4/${request.ip}/`, props.token )
     return r
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      errors: [],
-      request: {},
-      requests: []
-    })
+  let closeModal = () => {
+    setVisible(false);
+    setRequests([{id:1}]);
+    setRequest({});
   }
 
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'releaseIp') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
+  }
 
-  render() {
+  const requestsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      width: 50,
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Status',
+      align: 'center',
+      dataIndex: 'status',
+      width: 50,
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.isReleased}
+        </Space>
+      ),
+    },
+    {
+      title: 'id',
+      align: 'center',
+      dataIndex: 'id',
+      width: 50,
+      key: 'id',
+      name: 'dable',
+      description: '',
+    },
+    {
+      title: 'IP',
+      align: 'center',
+      dataIndex: 'ip',
+      width: 150,
+      key: 'ip',
+      render: (name, obj)  => (
+        <React.Fragment>
+          <Input
+            id='ip'
+            defaultValue={obj.ip}
+            onBlur={e => setIp(e, obj.id)}
+            onPressEnter={() => validateIp()}
+          />
+          {obj.ipError ?
+            <p style={{color: 'red'}}>{obj.ipError}</p>
+          :
+            null
+          }
+        </React.Fragment>
+      ),
+    },
+    {
+      title: 'Remove request',
+      align: 'center',
+      dataIndex: 'remove',
+      width: 50,
+      key: 'remove',
+      render: (name, obj)  => (
+        <Button type="danger" onClick={() => itemRemove(obj, requests)}>
+          -
+        </Button>
+      ),
+    },
 
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'releaseIp') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  ]
+
+  return (
+    <React.Fragment>
+
+      <Button type="primary" onClick={() => setVisible(true)}>RELEASE IP</Button>
+
+      <Modal
+        title={<p style={{textAlign: 'center'}}>RELEASE IP</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+
+        <AssetSelector vendor='infoblox'/>
+        <Divider/>
+
+        { ( props.asset && props.asset.id ) ?
+          <React.Fragment>
+
+          <React.Fragment>
+            <Button type="primary" onClick={() => itemAdd(requests)}>
+              +
+            </Button>
+            <br/>
+            <br/>
+            <Table
+              columns={requestsColumns}
+              dataSource={requests}
+              bordered
+              rowKey="id"
+              scroll={{x: 'auto'}}
+              pagination={false}
+              style={{marginBottom: 10}}
+            />
+            <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => validateIp()}>
+              Release Ip
+            </Button>
+            <br/>
+          </React.Fragment>
+
+            <Divider/>
+
+          </React.Fragment>
+          :
+          <Alert message="Asset and Partition not set" type="error" />
+        }
+
+      </Modal>
+
+    {visible ?
+      <React.Fragment>
+        {errorsComponent()}
+      </React.Fragment>
+    :
+      null
     }
 
-    const requests = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        width: 50,
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        width: 50,
-        key: 'loading',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isReleased}
-          </Space>
-        ),
-      },
-      {
-        title: 'id',
-        align: 'center',
-        dataIndex: 'id',
-        width: 50,
-        key: 'id',
-        name: 'dable',
-        description: '',
-      },
-      {
-        title: 'IP',
-        align: 'center',
-        dataIndex: 'ip',
-        width: 150,
-        key: 'ip',
-        render: (name, obj)  => (
-          <React.Fragment>
-            {obj.ipError ?
-              <React.Fragment>
-                <Input
-                  id='ip'
-                  defaultValue={obj.ip}
-                  onChange={e => this.setIp(e, obj.id)}
-                  onPressEnter={() => this.validateIp()}
-                />
-                <p style={{color: 'red'}}>{obj.ipError}</p>
-              </React.Fragment>
-            :
-              <Input
-                id='ip'
-                defaultValue={obj.ip}
-                onChange={e => this.setIp(e, obj.id)}
-                onPressEnter={() => this.validateIp()}
-              />
-            }
-          </React.Fragment>
-        ),
-      },
-      {
-        title: 'Remove request',
-        align: 'center',
-        dataIndex: 'remove',
-        width: 50,
-        key: 'remove',
-        render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.removeRequest(obj)}>
-            -
-          </Button>
-        ),
-      },
+  </React.Fragment>
 
-    ]
-
-    return (
-      <React.Fragment>
-
-        <Button type="primary" onClick={() => this.details()}>RELEASE IP</Button>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>RELEASE IP</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-
-          <AssetSelector vendor='infoblox'/>
-          <Divider/>
-
-          { ( this.props.asset && this.props.asset.id ) ?
-            <React.Fragment>
-
-            <React.Fragment>
-              <Button type="primary" onClick={() => this.setRequests()}>
-                +
-              </Button>
-              <br/>
-              <br/>
-              <Table
-                columns={requests}
-                dataSource={this.state.requests}
-                bordered
-                rowKey="id"
-                scroll={{x: 'auto'}}
-                pagination={false}
-                style={{marginBottom: 10}}
-              />
-              <Button type="primary" style={{float: "right", marginRight: '20px'}} onClick={() => this.validateIp()}>
-                Release Ip
-              </Button>
-              <br/>
-            </React.Fragment>
-
-              <Divider/>
-
-            {/* this.state.ipDetails.length < 1 ?
-              null
-              :
-              <React.Fragment>
-                <Table
-                  columns={columns}
-                  dataSource={this.state.ipDetails}
-                  bordered
-                  rowKey="ip"
-                  scroll={{x: 'auto'}}
-                  pagination={false}
-                  style={{marginBottom: 10}}
-                />
-                { ( this.state.ipDetails[0].status === 'USED' ) ?
-                  <Button type="primary" onClick={() => this.validateMac()}>
-                    Modify Ip
-                  </Button>
-                :
-                  <Button type="primary" disabled>
-                    Modify Ip
-                  </Button>
-                }
-              </React.Fragment>
-
-            */}
-            </React.Fragment>
-            :
-            <Alert message="Asset and Partition not set" type="error" />
-          }
-
-        </Modal>
-
-      {this.state.visible ?
-        <React.Fragment>
-          {errors()}
-        </React.Fragment>
-      :
-        null
-      }
-
-    </React.Fragment>
-
-    )
-  }
+  )
+  
 }
 
 export default connect((state) => ({

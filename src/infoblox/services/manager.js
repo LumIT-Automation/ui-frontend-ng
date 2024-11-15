@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -22,40 +22,21 @@ import CloudNetwork from './cloudNetwork'
 import { Row, Col } from 'antd';
 
 
+function Manager(props) {
 
-class Manager extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-    };
-  }
-
-  componentDidMount() {
-    if (this.authorizatorsSA(this.props.authorizations) || this.isAuthorized(this.props.authorizations, 'infoblox', 'assets_get')) {
-      if (!this.props.error) {
-        if (!this.props.assets) {
-          this.assetsGet()
-        }
+  useEffect(() => {
+    if (authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'infoblox', 'assets_get')) {
+      if (!props.error && !props.assets) {
+        assetsGet()
       }
     }
-  }
+  }, [props.authorizations]);
 
-  shouldComponentUpdate(newProps, newState) {
-      return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  assetsGet = async () => {
+  let assetsGet = async () => {
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(assets( resp ))
+        props.dispatch(assets( resp ))
       },
       error => {
         error = Object.assign(error, {
@@ -63,64 +44,61 @@ class Manager extends React.Component {
           vendor: 'infoblox',
           errorType: 'assetsError'
         })
-        this.props.dispatch(err(error))
+        props.dispatch(err(error))
       }
     )
-    await rest.doXHR("infoblox/assets/", this.props.token)
+    await rest.doXHR("infoblox/assets/", props.token)
   }
 
-  authorizatorsSA = a => {
+  let authorizatorsSA = a => {
     let author = new Authorizators()
     return author.isSuperAdmin(a)
   }
   
-  isAuthorized = (authorizations, vendor, key) => {
+  let isAuthorized = (authorizations, vendor, key) => {
     let author = new Authorizators()
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'serviceManager') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errors = () => {
+    if (props.error && props.error.component === 'serviceManager') {
+      return <Error error={[props.error]} visible={true}/> 
     }
-
-    return (
-      <React.Fragment >
-        <Row>
-          <Col span={4} offset={2} >
-            <IpComponent service='ip details'/>
-          </Col>
-
-          <Col span={4} offset={2}>
-            <RequestIp/>
-          </Col>
-
-          <Col span={4} offset={2} >
-            <IpComponent service='ip modify'/>
-          </Col>
-
-          <Col span={4} offset={2}>
-            <ReleaseIp/>
-          </Col>
-        </Row>
-
-        <br/>
-
-        <Row>
-          <Col span={4} offset={2}>
-            <CloudNetwork vendor='infoblox' service='cloud network'/>
-          </Col>
-        </Row>
-
-        {errors()}
-
-      </React.Fragment>
-    )
   }
+
+  return (
+    <React.Fragment >
+      <Row>
+        <Col span={4} offset={2} >
+          <IpComponent service='ip details'/>
+        </Col>
+
+        <Col span={4} offset={2}>
+          <RequestIp/>
+        </Col>
+
+        <Col span={4} offset={2} >
+          <IpComponent service='ip modify'/>
+        </Col>
+
+        <Col span={4} offset={2}>
+          <ReleaseIp/>
+        </Col>
+      </Row>
+
+      <br/>
+
+      <Row>
+        <Col span={4} offset={2}>
+          <CloudNetwork vendor='infoblox' service='cloud network'/>
+        </Col>
+      </Row>
+
+      {errors()}
+
+    </React.Fragment>
+  )
+
 }
 
 export default connect((state) => ({
