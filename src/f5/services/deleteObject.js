@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -22,53 +22,28 @@ const spinGetIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
+function DeleteF5Node(props) {
+  const [visible, setVisible] = useState(false);
+  const [errors, setErrors] = useState({});  
+  const [loading, setLoading] = useState(false);
+  const [f5objectsLoading, setF5objectsLoading] = useState(false);
+  const [request, setRequest] = useState({});
+  const [response, setResponse] = useState(false);
 
-class DeleteF5Node extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {
-      visible: false,
-      errors: {},
-      message:'',
-      request: {}
-    };
-  }
-
-  componentDidMount() {
-    if (this.state.visible) {
-      if ( (this.props.asset && this.props.partition) ) {
-        this.f5objectsGet()
-      }
+  useEffect(() => {
+    if (visible && props.asset && props.partition) {
+      f5objectsGet();
     }
-  }
+  }, [visible, props.asset, props.partition]);
 
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.visible) {
-      if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
-        this.f5objectsGet()
-      }
-    }
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-  }
-
-  f5objectsGet = async () => {
-    let f5object = this.props.f5object
-    this.setState({f5objectsLoading: true})
+  let f5objectsGet = async () => {
+    let f5object = props.f5object
+    setF5objectsLoading(true)
     let rest = new Rest(
       "GET",
       resp => {
-        this.props.dispatch(f5objects(resp))
+        props.dispatch(f5objects(resp))
       },
       error => {
         error = Object.assign(error, {
@@ -76,53 +51,60 @@ class DeleteF5Node extends React.Component {
           vendor: 'f5',
           errorType: 'f5objectsError'
         })
-        this.props.dispatch(err(error))
+        props.dispatch(err(error))
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/${f5object}s/`, this.props.token)
-    this.setState({f5objectsLoading: false})
+    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/${f5object}s/`, props.token)
+    setF5objectsLoading(false)
   }
 
-  f5objectNameSet = async e => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    request.f5objectName = e
-    await this.setState({request: request})
+  let f5objectNameSet = async e => {
+    try {
+      let requestCopy = JSON.parse(JSON.stringify(request))
+      requestCopy.f5objectName = e
+      setRequest(requestCopy)
+    }
+    catch (error) {
+      console.log(error)
+    }
+    
   }
 
   //VALIDATION
-  validationCheck = async () => {
-    let request = JSON.parse(JSON.stringify(this.state.request))
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+  let validationCheck = async () => {
+    let requestCopy = JSON.parse(JSON.stringify(request))
+    let errorsCopy = JSON.parse(JSON.stringify(errors))
 
-    if (!request.f5objectName) {
-      errors.f5objectNameError = true
-      this.setState({errors: errors})
+    if (!requestCopy.f5objectName) {
+      errorsCopy.f5objectNameError = true
+      setErrors(errorsCopy)
     }
     else {
-      delete errors.f5objectNameError
-      this.setState({errors: errors})
+      delete errorsCopy.f5objectNameError
+      setErrors(errorsCopy)
     }
     return errors
   }
 
-  validation = async () => {
-    await this.validationCheck()
+  let validation = async () => {
+    let e = await validationCheck()
 
-    if (Object.keys(this.state.errors).length === 0) {
-      this.f5objectDelete()
+    if (Object.keys(e).length === 0) {
+      f5objectDelete()
     }
 
   }
 
-  f5objectDelete = async () => {
-    let f5object = this.props.f5object
-    this.setState({loading: true})
+  let f5objectDelete = async () => {
+    let f5object = props.f5object
+    setLoading(true)
 
     let rest = new Rest(
       "DELETE",
       resp => {
-        this.setState({loading: false, response: true})
-        this.response()
+        setLoading(false)
+        setResponse(true)
+        responseHandler()
       },
       error => {
         error = Object.assign(error, {
@@ -130,142 +112,148 @@ class DeleteF5Node extends React.Component {
           vendor: 'f5',
           errorType: 'f5objectDeleteError'
         })
-        this.props.dispatch(err(error))
-        this.setState({loading: false, response: false})
+        props.dispatch(err(error))
+        setLoading(false)
+        setResponse(false)
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/workflow/${f5object}/${this.state.request.f5objectName}/`, this.props.token )
+    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/workflow/${f5object}/${request.f5objectName}/`, props.token )
 
   }
 
-  response = () => {
-    //setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.closeModal(), 2050)
+  let responseHandler = () => {
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    this.setState({
-      visible: false,
-      response: false,
-      request: {}
-    })
+  let closeModal = () => {
+    //const \[\s*\w+\s*,\s*
+    /*
+    const \[ corrisponde alla stringa const [.
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+    \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+    ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+    */
+    setVisible(false);
+    setErrors({});  
+    setLoading(false);
+    setF5objectsLoading(false);
+    setRequest(false);
+    setResponse(false);
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'f5deleteObject') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'f5deleteObject') {
+      return <Error error={[props.error]} visible={true}/> 
     }
-
-    let f5object = this.props.f5object
-    return (
-      <React.Fragment>
-
-        <Button type="primary" onClick={() => this.details()}>DELETE {f5object.toUpperCase()}</Button>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>DELETE {f5object.toUpperCase()}</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-
-          <AssetSelector vendor='f5'/>
-          <Divider/>
-
-          { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
-            <React.Fragment>
-              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-              { !this.state.loading && this.state.response &&
-                <Result
-                   status="success"
-                   title={`${f5object} deleted`}
-                 />
-              }
-
-              {!this.state.loading && !this.state.response ?
-                <React.Fragment>
-                  <Row>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>{f5object} Name:</p>
-                    </Col>
-                    <Col span={16}>
-                      { this.state.f5objectsLoading ?
-                        <Spin indicator={spinGetIcon} style={{ margin: '0 10%'}}/>
-                      :
-                        <React.Fragment>
-                          { this.props.f5objects && this.props.f5objects.length > 0 ?
-                            <Select
-                              defaultValue={this.state.request.f5objectName}
-                              value={this.state.request.f5objectName}
-                              showSearch
-                              style={this.state.errors.f5objectNameError ? {width: 450, border: `1px solid red`} : {width: 450}}
-                              optionFilterProp="children"
-                              filterOption={(input, option) =>
-                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                              }
-                              filterSort={(optionA, optionB) =>
-                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                              }
-                              onSelect={n => this.f5objectNameSet(n)}
-                            >
-                              <React.Fragment>
-                                {this.props.f5objects.map((n, i) => {
-                                  return (
-                                    <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                                  )
-                                })
-                                }
-                              </React.Fragment>
-                            </Select>
-                          :
-                            null
-                          }
-                        </React.Fragment>
-                      }
-                    </Col>
-                  </Row>
-
-                  <br/>
-
-                  <Row>
-                    <Col offset={2} span={6}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove {f5object}:</p>
-                    </Col>
-                    <Col span={16}>
-                      <Button type="danger" onClick={() => this.validation()}>
-                        Delete {f5object}
-                      </Button>
-                    </Col>
-                  </Row>
-
-                  <br/>
-
-                </React.Fragment>
-              :
-                null
-              }
-            </React.Fragment>
-          :
-            <Alert message="Asset and Partition not set" type="error" />
-          }
-        </Modal>
-
-        {errors()}
-
-      </React.Fragment>
-
-    )
   }
+
+  let f5object = props.f5object
+    
+  return (
+    <React.Fragment>
+
+      <Button type="primary" onClick={() => setVisible(true)}>DELETE {f5object.toUpperCase()}</Button>
+
+      <Modal
+        title={<p style={{textAlign: 'center'}}>DELETE {f5object.toUpperCase()}</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+
+        <AssetSelector vendor='f5'/>
+        <Divider/>
+
+        { ( (props.asset && props.asset.id) && props.partition ) ?
+          <React.Fragment>
+            { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+            { !loading && response &&
+              <Result
+                  status="success"
+                  title={`${f5object} deleted`}
+                />
+            }
+
+            {!loading && !response ?
+              <React.Fragment>
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>{f5object} Name:</p>
+                  </Col>
+                  <Col span={16}>
+                    { f5objectsLoading ?
+                      <Spin indicator={spinGetIcon} style={{ margin: '0 10%'}}/>
+                    :
+                      <React.Fragment>
+                        { props.f5objects && props.f5objects.length > 0 ?
+                          <Select
+                            defaultValue={request.f5objectName}
+                            value={request.f5objectName}
+                            showSearch
+                            style={errors.f5objectNameError ? {width: 450, border: `1px solid red`} : {width: 450}}
+                            optionFilterProp="children"
+                            filterOption={(input, option) =>
+                              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                            }
+                            filterSort={(optionA, optionB) =>
+                              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                            }
+                            onSelect={n => f5objectNameSet(n)}
+                          >
+                            <React.Fragment>
+                              {props.f5objects.map((n, i) => {
+                                return (
+                                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                                )
+                              })
+                              }
+                            </React.Fragment>
+                          </Select>
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    }
+                  </Col>
+                </Row>
+
+                <br/>
+
+                <Row>
+                  <Col offset={2} span={6}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove {f5object}:</p>
+                  </Col>
+                  <Col span={16}>
+                    <Button type="danger" onClick={() => validation()}>
+                      Delete {f5object}
+                    </Button>
+                  </Col>
+                </Row>
+
+                <br/>
+
+              </React.Fragment>
+            :
+              null
+            }
+          </React.Fragment>
+        :
+          <Alert message="Asset and Partition not set" type="error" />
+        }
+      </Modal>
+
+      {errorsComponent()}
+
+    </React.Fragment>
+
+  )
 }
 
 export default connect((state) => ({

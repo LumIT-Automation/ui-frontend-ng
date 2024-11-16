@@ -637,9 +637,6 @@ function DatacenterAccount(props) {
   return (
     
     <>
-    {console.log(indeterminate)}
-    {console.log(checkedList)}
-    {console.log(AWSRegions)}
     <Space direction="vertical">
       <Button type="primary" onClick={() => setVisible(true)}>
         Datacenter Account

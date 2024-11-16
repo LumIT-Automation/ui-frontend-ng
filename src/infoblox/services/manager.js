@@ -14,6 +14,7 @@ import {
   assets,
 } from '../store'
 
+//import IpDetails from './ipDetails'
 import IpComponent from './ipComponent'
 import RequestIp from './requestIp'
 import ReleaseIp from './releaseIp'
