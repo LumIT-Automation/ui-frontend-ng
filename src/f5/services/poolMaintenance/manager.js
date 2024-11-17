@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
+
 import { Modal, Alert, Button, Divider, Spin } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
@@ -21,66 +22,39 @@ import Pools from './pools'
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 
 
+function Manager(props) {
+  const [visible, setVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-class Manager extends React.Component {
-
-  constructor(props) {
-    super(props);
-    this.state = {}
-  }
-
-  componentDidMount() {
-    if (this.state.visible) {
-      if (this.props.asset && this.props.partition) {
-        this.getPools()
-      }
+  useEffect(() => {
+    if (visible && props.asset && props.partition) {
+      getPools()
     }
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.visible) {
-      if ( (this.props.asset && this.props.partition) && (prevProps.partition !== this.props.partition) ) {
-        this.getPools()
-      }
-    }
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-  }
+  }, [visible, props.asset, props.partition]);
 
 
-  getPools = async () => {
-    if (this.props.asset.id) {
+  let getPools = async () => {
+    if (props.asset.id) {
 
-      await this.setState({loading: true})
-      let data = await this.poolsGet()
+      setLoading(true)
+      let data = await poolsGet()
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'poolMaintenanceManager',
           vendor: 'f5',
           errorType: 'poolsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
       }
       else {
-        this.props.dispatch(pools( data.data.items ))
-        await this.setState({loading: false})
+        props.dispatch(pools( data.data.items ))
+        setLoading(false)
       }
-
     }
-
   }
 
-  poolsGet = async () => {
+  let poolsGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -91,61 +65,57 @@ class Manager extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pools/`, this.props.token)
+    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/pools/`, props.token)
     return r
   }
 
-  closeModal = () => {
-    this.setState({
-      visible: false
-    })
+  let closeModal = () => {
+    setVisible(false);
+    setLoading(false);
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'poolMaintenanceManager') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'poolMaintenanceManager') {
+      return <Error error={[props.error]} visible={true}/> 
     }
-
-    return (
-      <React.Fragment>
-
-        <Button type="primary" onClick={() => this.details()}>POOL MANAGEMENT</Button>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>POOL MANAGEMENT</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={1500}
-          maskClosable={false}
-        >
-          <AssetSelector vendor='f5'/>
-          <Divider/>
-
-          { ( (this.props.asset && this.props.asset.id) && this.props.partition ) ?
-            <React.Fragment>
-            {this.state.loading ?
-              <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
-              <Pools/>
-            }
-            </React.Fragment>
-            :
-            <Alert message="Asset and Partition not set" type="error" />
-          }
-        </Modal>
-
-        {errors()}
-
-      </React.Fragment>
-    )
   }
+
+  return (
+    <React.Fragment>
+
+      <Button type="primary" onClick={() => setVisible(true)}>POOL MANAGEMENT</Button>
+
+      <Modal
+        title={<p style={{textAlign: 'center'}}>POOL MANAGEMENT</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={1500}
+        maskClosable={false}
+      >
+        <AssetSelector vendor='f5'/>
+        <Divider/>
+
+        { ( (props.asset && props.asset.id) && props.partition ) ?
+          <React.Fragment>
+          {loading ?
+            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/> :
+            <Pools/>
+          }
+          </React.Fragment>
+          :
+          <Alert message="Asset and Partition not set" type="error" />
+        }
+      </Modal>
+
+      {errorsComponent()}
+
+    </React.Fragment>
+  )
+  
 };
 
 export default connect((state) => ({
