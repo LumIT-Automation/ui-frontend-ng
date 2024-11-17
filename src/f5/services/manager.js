@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -18,7 +18,7 @@ import CreateVs from './createVs'
 import F5ObjectDelete from './deleteObject'
 import UpdateCert from './updateCert'
 import PoolMaintenance from './poolMaintenance/manager'
-import { Row, Col, Divider } from 'antd'
+import { Row, Col } from 'antd'
 
 
 function Manager(props) {

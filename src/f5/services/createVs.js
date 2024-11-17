@@ -544,7 +544,6 @@ function CreateF5Service(props) {
 
   //DISPOSAL ACTION
   let createService = async () => {
-    serviceName
 
     let b = {}
     b.data = {
@@ -743,137 +742,134 @@ function CreateF5Service(props) {
   }
     
   let createElement = (element, key, choices, obj, action) => {
-    switch (element) {
 
-      case 'input':
-        return (
-          <Input
-            defaultValue={
-              key === 'serviceName' ?
-                serviceName
-              :
-                key === 'destination' ?
-                  destination
-                :
-                  key === 'destinationPort' ?
-                    destinationPort
-                  :
-                    key === 'snatPoolAddress' ?
-                      snatPoolAddress
-                    :
-                      null
-            }
-            style=
-            {errors[`${key}Error`] ?
-              {borderColor: 'red'}
+    if (element === 'input') {
+      return (
+        <Input
+          defaultValue={
+            key === 'serviceName' ?
+              serviceName
             :
-              {}
-            }
-            onBlur={event => set(event.target.value, key)}
-          />
-        )
-
-      case 'textArea':
-        return (
-          <Input.TextArea
-            rows={7}
-            defaultValue={
-              key === 'monitorSendString' ?
-                monitorSendString
+              key === 'destination' ?
+                destination
               :
-                key === 'monitorReceiveString' ?
-                  monitorReceiveString
+                key === 'destinationPort' ?
+                  destinationPort
                 :
-                  key === 'certificate' ?
-                    certificate
+                  key === 'snatPoolAddress' ?
+                    snatPoolAddress
                   :
-                    key === 'certKey' ?
-                      certKey
-                    :
-                      null
-            }
-            onBlur={event => set(event.target.value, key)}
-            style=
-            { errors[`${key}Error`] ?
-              {borderColor: `red`}
+                    null
+          }
+          style=
+          {errors[`${key}Error`] ?
+            {borderColor: 'red'}
+          :
+            {}
+          }
+          onBlur={event => set(event.target.value, key)}
+        />
+      )
+    }
+    else if (element === 'textArea') {
+      return (
+        <Input.TextArea
+          rows={7}
+          defaultValue={
+            key === 'monitorSendString' ?
+              monitorSendString
             :
-              {}
-            }
-          />
-        )
-        break;
-
-      case 'select':
-        return (
-          <Select
-            value={
-              key === 'routeDomain' ?
-                routeDomain
+              key === 'monitorReceiveString' ?
+                monitorReceiveString
               :
-                key === 'snat' ?
-                  snat
+                key === 'certificate' ?
+                  certificate
                 :
-                  key === 'lbMethod' ?
-                    lbMethod
+                  key === 'certKey' ?
+                    certKey
                   :
-                    key === 'monitorType' ?
-                      monitorType
-                    :
-                      null
-            }
-            showSearch
-            style=
-            { errors[`${key}Error`] ?
-              {width: "100%", border: `1px solid red`}
+                    null
+          }
+          onBlur={event => set(event.target.value, key)}
+          style=
+          { errors[`${key}Error`] ?
+            {borderColor: `red`}
+          :
+            {}
+          }
+        />
+      )
+    }
+    else if (element === 'select') {
+      return (
+        <Select
+          value={
+            key === 'routeDomain' ?
+              routeDomain
             :
-              {width: "100%"}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={event => set(event, key)}
-          >
-            <React.Fragment>
-            { choices === 'routeDomains' ?
-              routeDomains.map((r,i) => {
+              key === 'snat' ?
+                snat
+              :
+                key === 'lbMethod' ?
+                  lbMethod
+                :
+                  key === 'monitorType' ?
+                    monitorType
+                  :
+                    null
+          }
+          showSearch
+          style=
+          { errors[`${key}Error`] ?
+            {width: "100%", border: `1px solid red`}
+          :
+            {width: "100%"}
+          }
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={event => set(event, key)}
+        >
+          <React.Fragment>
+          { choices === 'routeDomains' ?
+            routeDomains.map((r,i) => {
+              return (
+                <Select.Option key={i} value={r.id}>{r.name}</Select.Option>
+              )
+            })
+          :
+            choices === 'snats' ?
+              snats.map((n, i) => {
                 return (
-                  <Select.Option key={i} value={r.id}>{r.name}</Select.Option>
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
                 )
               })
             :
-              choices === 'snats' ?
-                snats.map((n, i) => {
+              choices === 'lbMethods' ?
+                lbMethods.map((n, i) => {
                   return (
                     <Select.Option key={i} value={n}>{n}</Select.Option>
                   )
                 })
               :
-                choices === 'lbMethods' ?
-                  lbMethods.map((n, i) => {
+                choices === 'monitorTypes' ?
+                monitorTypes.map((n, i) => {
                     return (
                       <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
                   })
                 :
-                  choices === 'monitorTypes' ?
-                  monitorTypes.map((n, i) => {
-                      return (
-                        <Select.Option key={i} value={n}>{n}</Select.Option>
-                      )
-                    })
-                  :
-                null
-            }
-            </React.Fragment>
-          </Select>
-        )
-
-      default:
+              null
+          }
+          </React.Fragment>
+        </Select>
+      )
     }
+
   }
 
   const columns = [

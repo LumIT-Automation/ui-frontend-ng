@@ -146,6 +146,8 @@ function UpdateCert(props) {
     if (key === 'virtualServer') {
       const foundVirtualServer = virtualServers.find(v => v.name === value);
       setVirtualServer(foundVirtualServer);
+      setClientSSLChecked(false)
+      setServerSSLChecked(false)
     } else if (key === 'clientSSLChecked') {
       setClientSSLChecked(!clientSSLChecked);
     } else if (key === 'serverSSLChecked') {
@@ -369,59 +371,59 @@ function UpdateCert(props) {
   };
 
   const createElement = (element, key, choices, obj, action) => {
-    switch (element) {
-      case 'input':
-        return (
-          <Input
-            defaultValue={obj ? obj[key] : ''}
-            style={errors[`${key}Error`] ? { borderColor: 'red' } : {}}
-            onChange={event => set(event.target.value, key)}
-          />
-        );
-      case 'textArea':
-        return (
-          <TextArea
-            defaultValue={obj ? obj[key] : ''}
-            style={errors[`${key}Error`] ? { borderColor: 'red' } : {}}
-            onChange={event => set(event.target.value, key)}
-            rows={7}
-          />
-        );
-      case 'checkbox':
-        return (
-          <>
-          <Checkbox
-            checked={obj}
-            disabled={Object.keys(virtualServer).length === 0}
-            onChange={event => set(event.target.checked, key)}
-          />
-          </>
-          
-        )
-        break;
-      case 'select':
-        return (
-          <Select
-            value={`${key}` ? `${key}`?.name : ''}
-            showSearch
-            style={errors[`${key}Error`] ? { width: '100%', border: '1px solid red' } : { width: '100%' }}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().includes(input.toLowerCase())
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={value => set(value, key, obj)}
-          >
-            {choices ? choices.map((choice, index) => (
-              <Select.Option key={index} value={choice.name}>{choice.name}</Select.Option>
-            )) : null }
-          </Select>
-        );
-      default:
-        return null;
+    if (element === 'input') {
+      return (
+        <Input
+          defaultValue={obj ? obj[key] : ''}
+          style={errors[`${key}Error`] ? { borderColor: 'red' } : {}}
+          onChange={event => set(event.target.value, key)}
+        />
+      );
     }
+    else if (element === 'textArea') {
+      return (
+        <TextArea
+          defaultValue={obj ? obj[key] : ''}
+          style={errors[`${key}Error`] ? { borderColor: 'red' } : {}}
+          onChange={event => set(event.target.value, key)}
+          rows={7}
+        />
+      );
+    }
+    else if (element === 'checkbox') {
+      return (
+        <>
+        <Checkbox
+          checked={obj}
+          disabled={Object.keys(virtualServer).length === 0}
+          onChange={event => set(event.target.checked, key)}
+        />
+        </>
+        
+      )
+    }
+    else if (element === 'select') {
+      return (
+        <Select
+          value={`${key}` ? `${key}`?.name : ''}
+          showSearch
+          style={errors[`${key}Error`] ? { width: '100%', border: '1px solid red' } : { width: '100%' }}
+          optionFilterProp="children"
+          filterOption={(input, option) =>
+            option.children.toLowerCase().includes(input.toLowerCase())
+          }
+          filterSort={(optionA, optionB) =>
+            optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+          }
+          onSelect={value => set(value, key, obj)}
+        >
+          {choices ? choices.map((choice, index) => (
+            <Select.Option key={index} value={choice.name}>{choice.name}</Select.Option>
+          )) : null }
+        </Select>
+      );
+    }
+
   };
 
   return (

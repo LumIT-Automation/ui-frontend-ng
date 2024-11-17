@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import { getColumnSearchProps, handleSearch, handleReset } from '../../../_helpers/tableUtils';
 
-import { Table, Input, Button, Space } from 'antd'
-import Highlighter from 'react-highlight-words'
-import { SearchOutlined } from '@ant-design/icons'
+import { Table, Space } from 'antd'
 
 import PoolMembers from '../../poolMembers/manager'
 
