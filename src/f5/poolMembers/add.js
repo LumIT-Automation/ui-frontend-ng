@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -10,7 +10,6 @@ import {
   err
 } from '../../concerto/store'
 
-
 import {
   poolMembersFetch,
 } from '../store'
@@ -19,67 +18,62 @@ import { Input, Button, Space, Modal, Spin, Result, Select, Row, Col } from 'ant
 
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const rdIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-const addIcon = <PlusOutlined style={{color: 'white' }}  />
 
 
+function Add(props) {
+  let [visible, setVisible] = useState(false);
+  let [loading, setLoading] = useState(false);
+  let [nodesLoading, setNodesLoading] = useState(false);
+  let [poolMembersLoading, setPoolMembersLoading] = useState(false);
+  let [states, setStates] = useState(['enabled', 'disabled', 'forced offline']);
+  let [status, setStatus] = useState('')
+  let [statusError, setStatusError] = useState(false)
+  let [session, setSession] = useState('')
+  let [nodeState, setNodeState] = useState('')
 
-class Add extends React.Component {
+  let [nodes, setNodes] = useState([])
+  let [node, setNode] = useState({})
+  let [existentNode, setExistentNode] = useState({})
+  let [existentNodeError, setExistentNodeError] = useState('')
 
-  constructor(props) {
-    super(props);
+  let [name, setName] = useState('')
+  let [nameError, setNameError] = useState('')
+  let [address, setAddress] = useState('')
+  let [addressError, setAddressError] = useState('')
+  let [port, setPort] = useState('')
+  let [portError, setPortError] = useState('')
 
-    this.myRefs = {};
-
-    this.state = {
-      visible: false,
-      states: ['enabled', 'disabled', 'forced offline'],
-      errors: {},
-    };
-
-  }
-
-  componentDidMount() {
-    
-  }
-
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
-
-  componentDidUpdate(prevProps, prevState) {
-  }
-
-  componentWillUnmount() {
-  }
-
-  details = () => {
-    this.setState({visible: true})
-    this.main()
-  }
+  let [response, setResponse] = useState(false);
 
 
-  main = async () => {
-    await this.setState({nodesLoading: true})
-    let nodesFetched = await this.nodesGet()
-    await this.setState({nodesLoading: false})
+  useEffect(() => {
+    if (visible && !props.error) {
+      main()
+    }
+  }, [visible, props.error]);
+
+
+  let main = async () => {
+    setNodesLoading(true)
+    let nodesFetched = await nodesGet()
+    setNodesLoading(false)
     if (nodesFetched.status && nodesFetched.status !== 200 ) {
       let error = Object.assign(nodesFetched, {
         component: 'poolMembersAdd',
         vendor: 'f5',
         errorType: 'nodesError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
     else {
-      await this.setState({nodes: nodesFetched.data.items})
+      setNodes(nodesFetched.data.items)
     }
   }
 
 
   //FETCH
-  nodesGet = async () => {
+  let nodesGet = async () => {
     let r
     let rest = new Rest(
       "GET",
@@ -90,120 +84,116 @@ class Add extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/nodes/`, this.props.token)
+    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/nodes/`, props.token)
     return r
   }
 
 
   //SETTERS
-  set = async (value, key, obj) => {
+  let set = async (value, key, obj) => {
 
     if (key === 'existentNode') {
-      let nodes = JSON.parse(JSON.stringify(this.state.nodes))
-      let node = nodes.find(n => n.name === value)
-      await this.setState({node: node, existentNode: node, existentNodeError: '', name: node.name, nameError: '', address: node.address, addressError: ''})
+      let nodesCopy = JSON.parse(JSON.stringify(nodes))
+      let nodeCopy = nodesCopy.find(n => n.name === value)
+      console.log(nodeCopy)
+      setNode(nodeCopy)
+      setExistentNode(nodeCopy)
+      setExistentNodeError('')
+
+      setName(nodeCopy.name)
+      setNameError('')
+
+      setAddress(nodeCopy.address)
+      setAddressError('')
     }
 
     if (key === 'name') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`name`]
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
-      await this.setState({name: value, nameError: '', existentNode: null})
-      ref = this.myRefs[`name`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setName(value)
+      setNameError('')
+      setExistentNode(null)
     }
 
     if (key === 'address') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`address`]
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
-      await this.setState({address: value, addressError: '', existentNode: null})
-      ref = this.myRefs[`address`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setAddress(value)
+      setAddressError('')
     }
 
     if (key === 'port') {
-      let start = 0
-      let end = 0
-      let ref = this.myRefs[`port`]
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
-      await this.setState({port: value, portError: ''})
-      ref = this.myRefs[`port`]
-
-      if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
+      setPort(value)
+      setPortError('')
     }
 
     if (key === 'status') {
       if (value === 'enabled') {
-        await this.setState({status: value, session: 'user-enabled', state: 'user-up'})
+        setStatus(value)
+        setSession('user-enabled')
+        setNodeState('user-up')
       }
       else if (value === 'disabled') {
-        await this.setState({status: value, session: 'user-disabled', state: 'user-down'})
+        setStatus(value)
+        setSession('user-disabled')
+        setNodeState('user-down')
       }
       else if (value === 'forced offline') {
-        await this.setState({status: value, session: 'user-disabled'})
+        setStatus(value)
+        setSession('user-disabled')
+        setNodeState('')
       }
-      else {}
-      
+      setStatusError(false)
     }
-
   }
 
   //VALIDATION
-  validationCheck = async () => {
-
-    let errors = JSON.parse(JSON.stringify(this.state.errors))
+  let validationCheck = async () => {
     let validators = new Validators()
+    let errorsCopy = {}
 
-    return errors
+    if (!name) {
+      setNameError(true)
+      errorsCopy.nameError = true
+    }
+
+    if (!address) {
+      setAddressError(true)
+      errorsCopy.addressError = true
+    }
+    else if (!validators.ipv4(address)) {
+      setAddressError(true)
+      errorsCopy.addressError = true
+    }
+
+    if (!port) {
+      setPortError(true)
+      errorsCopy.portError = true
+    }
+    else if (!validators.port(port)) {
+      setPortError(true)
+      errorsCopy.portError = true
+    }
+
+    if (!status) {
+      setStatusError(true)
+      errorsCopy.statusError = true
+    }
+
+    return errorsCopy
   }
 
-  validation = async () => {
-    await this.validationCheck()
+  let validation = async () => {
+    let e = await validationCheck()
 
-    if (Object.keys(this.state.errors).length === 0) {
-      this.poolMemberAdd()
+    if (Object.keys(e).length === 0) {
+      poolMemberAdd()
     }
   }
 
 
   //DISPOSAL ACTION
-  poolMemberAdd = async () => {
+  let poolMemberAdd = async () => {
     let b = {}
     b.data = {
-        "name": `/${this.props.partition}/${this.state.name}:${this.state.port}`,
-        "address": this.state.address,
+        "name": `/${props.partition}/${name}:${port}`,
+        "address": address,
         "connectionLimit": 0,
         "dynamicRatio": 1,
         "ephemeral": "false",
@@ -213,314 +203,300 @@ class Add extends React.Component {
         "priorityGroup": 0,
         "rateLimit": "disabled",
         "ratio": 1,
-        "state": this.state.state,
-        "session": this.state.session, 
+        "state": nodeState,
+        "session": session, 
         "fqdn": {
             "autopopulate": "disabled"
         }
       }
 
-    await this.setState({poolMembersLoading: true})
+    setPoolMembersLoading(true)
 
     let rest = new Rest(
         "POST",
         resp => {
-          this.setState({poolMembersLoading: false, response: true}, () => this.response())
+          setPoolMembersLoading(false)
+          setResponse(true)
+          responseHandler()
         },
         error => {
-          this.setState({poolMembersLoading: false})
+          setPoolMembersLoading(false)
           error = Object.assign(error, {
             component: 'poolMembersAdd',
             vendor: 'f5',
             errorType: 'poolMemberAddError'
           })
-          this.props.dispatch(err(error))
+          props.dispatch(err(error))
         }
       )
-    await rest.doXHR(`f5/${this.props.asset.id}/${this.props.partition}/pool/${this.props.obj.name}/members/`, this.props.token, b)
+    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/pool/${props.obj.name}/members/`, props.token, b)
   }
 
-  response = () => {
-    setTimeout( () => this.setState({ response: false }), 2000)
-    setTimeout( () => this.props.dispatch(poolMembersFetch(true)), 2030)
-    setTimeout( () => this.closeModal(), 2050)
+  let responseHandler = () => {
+    setTimeout( () => setResponse(false), 2000)
+    setTimeout( () => props.dispatch(poolMembersFetch(true)), 2030)
+    setTimeout( () => closeModal(), 2050)
   }
 
   //Close and Error
-  closeModal = () => {
-    let cleanState = {};
-    Object.keys(this.state).forEach(x => cleanState[x] = '');
-    this.setState(cleanState);
-    this.setState({
-      visible: false,
-      states: ['enabled', 'disabled', 'forced offline'],
-      errors: {},
-    })
+  let closeModal = () => {
+    //const \[\s*\w+\s*,\s*
+    /*
+    const \[ corrisponde alla stringa const [.
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+    \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+    ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+    */
+    setVisible(false);
+    setLoading(false);
+    setNodesLoading(false);
+    setPoolMembersLoading(false);
+    setStates(['enabled', 'disabled', 'forced offline']);
+    setStatus('')
+    setStatusError(false)
+    setSession('')
+    setNodeState('')
+
+    setNodes([])
+    setNode({})
+    setExistentNode({})
+    setExistentNodeError('')
+
+    setName('')
+    setNameError('')
+    setAddress('')
+    setAddressError('')
+    setPort('')
+    setPortError('')
+
+    setResponse(false);
   }
 
-
-  render() {
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'poolMembersAdd') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'poolMembersAdd') {
+      return <Error error={[props.error]} visible={true}/> 
     }
+  }
     
-    let createElement = (element, key, choices, obj, action) => {
-      switch (element) {
-
-        case 'input':
-          if (key === 'name') {
-            return (
-              <Input
-                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
-                ref={ref => this.myRefs[`name`] = ref}
-                style=
-                {this.state.errors[`${key}Error`] ?
-                  {borderColor: 'red'}
-                :
-                  {}
-                }
-                onChange={event => this.set(event.target.value, key)}
-              />
-            )
-          }
-          else if (key === 'address') {
-            return (
-              <Input
-                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
-                ref={ref => this.myRefs[`address`] = ref}
-                style=
-                {this.state.errors[`${key}Error`] ?
-                  {borderColor: 'red'}
-                :
-                  {}
-                }
-                onChange={event => this.set(event.target.value, key)}
-              />
-            )
-          }
-          else if (key === 'port') {
-            return (
-              <Input
-                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
-                ref={ref => this.myRefs[`port`] = ref}
-                style=
-                {this.state.errors[`${key}Error`] ?
-                  {borderColor: 'red'}
-                :
-                  {}
-                }
-                onChange={event => this.set(event.target.value, key)}
-              />
-            )
-          }
-          else {
-            return (
-              <Input
-                value={this.state[`${key}`] ? this.state[`${key}`].name : ''}
-                style=
-                {this.state.errors[`${key}Error`] ?
-                  {borderColor: 'red'}
-                :
-                  {}
-                }
-                onChange={event => this.set(event.target.value, key)}
-              />
-            )
-          }
-
-        case 'textArea':
-          return (
-            <Input.TextArea
-              rows={7}
-              value={this.state[`${key}`]}
-              onChange={event => this.set(event.target.value, key)}
-              style=
-              { this.state.errors[`${key}Error`] ?
-                {borderColor: `red`}
+  let createElement = (element, key, choices, obj, action) => {
+    if (element === 'input') {
+      if (key === 'name') {
+        return (
+          <Input
+            value={name || ''}
+            style=
+            {nameError ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            //onBlur={event => set(event.target.value, key)}
+            onChange={event => set(event.target.value, key)}
+          />
+        )
+      }
+      else if (key === 'address') {
+        return (
+          <Input
+            //defaultValue={address ? address : ''}
+            value={address || ''}
+            style=
+            {addressError ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(event.target.value, key)}
+          />
+        )
+      }
+      else if (key === 'port') {
+        return (
+          <Input
+            //defaultValue={port ? port : ''}
+            value={port || ''}
+            style=
+            {portError ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(event.target.value, key)}
+          />
+        )
+      }
+    }
+    else if (element === 'select') {
+      if (key === 'status') {
+        return (
+          <Select
+            value={status ? status : ''}
+            showSearch
+            style=
+            { statusError ?
+              {width: "100%", border: `1px solid red`}
+            :
+              {width: "100%"}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={n => set(n, key, obj)}
+          >
+            <React.Fragment>
+              
+            { states ?
+              states.map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n}>{n}</Select.Option>
+                )
+              })
               :
-                {}
-              }
-            />
-          )
-
-        case 'select':
-          if (key === 'status') {
-            return (
-              <Select
-                value={this.state[`${key}`] ? this.state[`${key}`] : ''}
-                showSearch
-                style=
-                { this.state.errors[`${key}Error`] ?
-                  {width: "100%", border: `1px solid red`}
-                :
-                  {width: "100%"}
-                }
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                onSelect={n => this.set(n, key, obj)}
-              >
-                <React.Fragment>
-                  
-                { this.state[`${choices}`] ?
-                  this.state[`${choices}`].map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                  :
-                  null
-                }
-                </React.Fragment>
-              </Select>
-            )
-          }
-          else {
-            return (
-              <Select
-                value={this.state[`${key}`] ? this.state[`${key}`].name : ''}
-                showSearch
-                style=
-                { this.state.errors[`${key}Error`] ?
-                  {width: "100%", border: `1px solid red`}
-                :
-                  {width: "100%"}
-                }
-                optionFilterProp="children"
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-                filterSort={(optionA, optionB) =>
-                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-                }
-                onSelect={n => this.set(n, key, obj)}
-              >
-                <React.Fragment>
-                  
-                { this.state[`${choices}`] ?
-                  this.state[`${choices}`].map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
-                    )
-                  })
-                  :
-                  null
-                }
-                </React.Fragment>
-              </Select>
-            )
-          }
-
-        default:
+              null
+            }
+            </React.Fragment>
+          </Select>
+        )
+      }
+      else if (key === 'existentNode') {
+        return (
+          <Select
+            value={existentNode && existentNode.name ? existentNode.name : ''}
+            showSearch
+            style={ {width: "100%"} }
+            
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={n => set(n, key, obj)}
+          >
+            <React.Fragment>
+              
+            { nodes ?
+              nodes.map((n, i) => {
+                return (
+                  <Select.Option key={i} value={n.name}>{n.name}</Select.Option>
+                )
+              })
+              :
+              null
+            }
+            </React.Fragment>
+          </Select>
+        )
       }
     }
 
-    return (
-      <Space direction='vertical'>
-
-        <Button type="primary" onClick={() => this.details()}>Add Member</Button>
-
-        <Modal
-          title={<p style={{textAlign: 'center'}}>Add Pool Member</p>}
-          centered
-          destroyOnClose={true}
-          visible={this.state.visible}
-          footer={''}
-          onOk={() => this.setState({visible: true})}
-          onCancel={() => this.closeModal()}
-          width={750}
-          maskClosable={false}
-        >
-          { this.state.poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-          { !this.state.poolMembersLoading && this.state.response &&
-            <Result
-               status="success"
-               title="Member Added"
-             />
-          }
-          { !this.state.poolMembersLoading && !this.state.response &&
-            <React.Fragment>
-
-              <Row>
-                <Col offset={4} span={4}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Existent Node:</p>
-                </Col>
-                <Col span={8}>
-                  { this.state.nodesLoading ?
-                    <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                  :
-                    <Col span={24}>
-                      {createElement('select', 'existentNode', 'nodes')}
-                    </Col>
-                  }
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={5} span={3}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('input', 'name', '')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={5} span={3}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('input', 'address', '')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={5} span={3}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('input', 'port', '')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={5} span={3}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>State:</p>
-                </Col>
-                <Col span={8}>
-                  {createElement('select', 'status', 'states')}
-                </Col>
-              </Row>
-              <br/>
-
-              <Row>
-                <Col offset={8} span={16}>
-                  <Button type="primary" shape='round' onClick={() => this.validation()} >
-                    Add Node
-                  </Button>
-                </Col>
-              </Row>
-            </React.Fragment>
-          }
-        </Modal>
-
-        {errors()}
-
-      </Space>
-
-    )
   }
+
+  return (
+    <Space direction='vertical'>
+      {console.log(name)}
+      <Button type="primary" onClick={() => setVisible(true)}>Add Member</Button>
+
+      <Modal
+        title={<p style={{textAlign: 'center'}}>Add Pool Member</p>}
+        centered
+        destroyOnClose={true}
+        visible={visible}
+        footer={''}
+        onOk={() => setVisible(true)}
+        onCancel={() => closeModal()}
+        width={750}
+        maskClosable={false}
+      >
+        { poolMembersLoading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+        { !poolMembersLoading && response &&
+          <Result
+              status="success"
+              title="Member Added"
+            />
+        }
+        { !poolMembersLoading && !response &&
+          <React.Fragment>
+
+            <Row>
+              <Col offset={4} span={4}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Existent Node:</p>
+              </Col>
+              <Col span={8}>
+                { nodesLoading ?
+                  <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                :
+                  <Col span={24}>
+                    {createElement('select', 'existentNode', 'nodes')}
+                  </Col>
+                }
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={5} span={3}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Name:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('input', 'name', '')}
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={5} span={3}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Address:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('input', 'address', '')}
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={5} span={3}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Port:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('input', 'port', '')}
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={5} span={3}>
+                <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>State:</p>
+              </Col>
+              <Col span={8}>
+                {createElement('select', 'status', 'states')}
+              </Col>
+            </Row>
+            <br/>
+
+            <Row>
+              <Col offset={8} span={16}>
+                <Button type="primary" shape='round' onClick={() => validation()} >
+                  Add Node
+                </Button>
+              </Col>
+            </Row>
+          </React.Fragment>
+        }
+      </Modal>
+
+      {errorsComponent()}
+
+    </Space>
+
+  )
+  
 }
 
 export default connect((state) => ({
