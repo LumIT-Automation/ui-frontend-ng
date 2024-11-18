@@ -675,9 +675,9 @@ function CreateF5Service(props) {
 
   //Close and Error
   let closeModal = () => {
-    //const \[\s*\w+\s*,\s*
+    //let \[\s*\w+\s*,\s*
     /*
-    const \[ corrisponde alla stringa const [.
+    let \[ corrisponde alla stringa const [.
     \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
     \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
     \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
