@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
@@ -197,6 +197,14 @@ function IpModify(props) {
 
   //Close and Error
   let closeModal = () => {
+    //let \[\s*\w+\s*,\s*
+    /*
+    let \[ corrisponde alla stringa const [.
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
+    \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
+    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
+    ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
+    */
     setVisible(false);
     setLoading(false);
     setErrors({});
