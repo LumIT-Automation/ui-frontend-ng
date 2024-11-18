@@ -6,7 +6,7 @@ printf "\n* Container prerm...\n"
 printf "\n* Cleanup...\n"
 
 if podman ps | awk '{print $2}' | grep -Eq '\blocalhost/ui(:|$)'; then
-    podman stop -t 5 ui &
+    podman stop -t 15 ui &
     wait $! # Wait for the shutdown process of the container.
 fi
 
