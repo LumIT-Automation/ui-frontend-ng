@@ -22,13 +22,45 @@ function IpModify(props) {
 
   let [visible, setVisible] = useState(false);
   let [loading, setLoading] = useState(false);
+  let [ipModifyLoading, setIpModifyLoading] = useState(false);
+  
   let [errors, setErrors] = useState({});
   let [requestIp, setRequestIp] = useState('');
   let [response, setResponse] = useState([]);
+  let [ipModifyRequest, setIpModifyRequest] = useState({ip: ''});
+  let [ipModifyResponse, setIpModifyResponse] = useState([]);
+
+  useEffect(() => {
+    if (response && response.length > 0 ) {
+      let ipModifyRequestCopy = response[0]
+      setIpModifyRequest(ipModifyRequestCopy)
+    }
+  }, [response]);
+
+  let ipDetailsHanldler = async() => {
+    setResponse([])
+    validation()
+  }
+
+  let set = async (e, key) => {
+    let ipModifyRequestCopy = JSON.parse(JSON.stringify(ipModifyRequest))
+
+    ipModifyRequestCopy[key] = e
+
+    if (key === 'serverName' && ipModifyRequestCopy.options) {
+      ipModifyRequestCopy.options.forEach((item, i) => {
+        if (item.num === 12) {
+          item.value = e
+        }
+      });
+    }
+    setIpModifyRequest(ipModifyRequestCopy)
+  }
 
   let validationChecks = async () => {
     let errorsCopy = JSON.parse(JSON.stringify(errors))
     let validators = new Validators()
+    let ipModifyRequestCopy = JSON.parse(JSON.stringify(ipModifyRequest))
 
     if (validators.ipv4(requestIp)) {
       delete errorsCopy.requestIpError
@@ -39,14 +71,50 @@ function IpModify(props) {
       setErrors({...errorsCopy})
     }
 
+    if (response && response.length > 1 ) {
+      if (key === 'macAddress') {
+        if (ipModifyRequestCopy.macAddress === '' || ipModifyRequestCopy.macAddress === undefined) {
+          ipModifyRequestCopy.macAddress = '00:00:00:00:00:00'
+          setIpModifyRequest(ipModifyRequestCopy)
+        }
+        if (!validators.macAddress(ipModifyRequestCopy.macAddress)) {
+          errorsCopy.macAddressError = true
+          setErrors({...errorsCopy})
+        }
+        else {
+          delete errorsCopy.macAddressError
+          setErrors({...errorsCopy})
+        }
+      }
+      if (key === 'serverName') {
+        if (!ipModifyRequestCopy.serverName) {
+          errorsCopy.serverNameError = true
+          setErrors({...errorsCopy})
+        }
+        else {
+          delete errorsCopy.serverNameError
+          setErrors({...errorsCopy})
+        }
+      }
+    }
+
+
     return errorsCopy
   }
 
   let validation = async(action) => {
     let e = await validationChecks()
-
-    if (Object.keys(e).length === 0) {
-      ipDetail()
+    console.log(response)
+    console.log(response.length)
+    if (response.length < 1 ) {
+      if (requestIp && Object.keys(e).length === 0) {
+        console.log('details')
+        ipDetail()
+      }
+    }
+    else {
+      console.log('modify')
+      ipModify()
     }
   }
 
@@ -78,7 +146,7 @@ function IpModify(props) {
       },
       error => {
         error = Object.assign(error, {
-          component: 'ipDetails',
+          component: 'ipModify',
           vendor: 'infoblox',
           errorType: 'ipDetailError'
         })
@@ -87,6 +155,44 @@ function IpModify(props) {
     )
     await rest.doXHR(`infoblox/${props.asset.id}/ipv4/${requestIp}/`, props.token)
     setLoading(false)
+  }
+
+  let ipModify = async () => {
+    let ipModifyRequestCopy = JSON.parse(JSON.stringify(ipModifyRequest))
+    let b = {}
+    b.data = {
+      "mac": `${ipModifyRequestCopy.macAddress}`,
+      "extattrs": {
+          "Name Server": {
+              "value": `${ipModifyRequestCopy.serverName}`
+          }
+      },
+    }
+
+    if (ipModifyRequestCopy.options) {
+      b.data.options = ipModifyRequestCopy.options
+    }
+
+
+    setIpModifyLoading(true)
+
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        setIpModifyLoading(false)
+        ipDetail()
+      },
+      error => {
+        error = Object.assign(error, {
+          component: 'ipModify',
+          vendor: 'infoblox',
+          errorType: 'ipModifyError'
+        })
+        props.dispatch(err(error))
+        setIpModifyLoading(false)
+      }
+    )
+    await rest.doXHR(`infoblox/${props.asset.id}/ipv4/${ipModifyRequestCopy.ip_address}/`, props.token, b )
   }
 
   //Close and Error
@@ -98,6 +204,24 @@ function IpModify(props) {
     setResponse([]);
   }
 
+  let createElement = (element, key, choices, obj) => {
+    if (element === 'input') {
+      return (
+        <Input
+          style=
+          {errors[`${key}Error`] ?
+            {borderColor: 'red'}
+          :
+            {}
+          }
+          defaultValue={obj ? obj[key] : ''}
+          onChange={event => set(event.target.value, key)}
+          onPressEnter={() => validation()}
+        />
+      )
+    }
+  }
+
   const columns = [
     {
       title: 'Loading',
@@ -106,7 +230,7 @@ function IpModify(props) {
       key: 'loading',
       render: (name, obj)  => (
         <Space size="small">
-          {loading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
+          {ipModifyLoading ? <Spin indicator={spinIcon} style={{margin: '10% 10%'}}/> : null }
         </Space>
       ),
     },
@@ -119,14 +243,26 @@ function IpModify(props) {
     {
       title: 'Server Name',
       align: 'center',
-      dataIndex: 'serverName',
-      key: 'serverName',
+      width: 200,
+      dataIndex: ['extattrs', 'Name Server', 'value'],
+      key: 'nameServer',
+      render: (name, obj)  => (
+        <React.Fragment>
+          {createElement('input', 'serverName', '', obj)}
+        </React.Fragment>
+      ),
     },
     {
       title: 'Mac address',
       align: 'center',
-      dataIndex: 'macAddress',
-      key: 'macAddress',
+      width: 200,
+      dataIndex: 'mac_address',
+      key: 'mac_address',
+      render: (name, obj)  => (
+        <React.Fragment>
+          {createElement('input', 'macAddress', '', obj)}
+        </React.Fragment>
+      ),
     },
     {
       title: 'Status',
@@ -199,13 +335,19 @@ function IpModify(props) {
   ];
 
   let errorsComponent = () => {
-    if (props.error && props.error.component === 'ipDetails') {
+    if (props.error && props.error.component === 'ipModify') {
       return <Error error={[props.error]} visible={true}/> 
     }
   }
 
   return (
     <React.Fragment>
+      {console.log('errors', errors)}
+      {console.log('requestIp', requestIp)}
+      {console.log('response', response)}
+      {console.log('ipModifyRequest', ipModifyRequest)}
+      {console.log('ipModifyResponse', ipModifyResponse)}
+
       <Button type="primary" onClick={() => setVisible(true)}>IP MODIFY</Button>
 
       <Modal
@@ -257,19 +399,21 @@ function IpModify(props) {
               <Col offset={8} span={16}>
                 <Button
                   type="primary"
-                  onClick={() => validation()}
+                  onClick={() => ipDetailsHanldler()}
                 >
                   ip details
                 </Button>
               </Col>
             </Row>
 
+              
             <Divider/>
 
           { (response.length < 1 || loading)?
             null
           :
-            <Table
+            <>
+              <Table
               columns={columns}
               dataSource={response}
               bordered
@@ -278,6 +422,15 @@ function IpModify(props) {
               pagination={false}
               style={{marginBottom: 10}}
             />
+            <br/>
+            <Button
+              type="primary"
+              onClick={() => validation()}
+            >
+              ip modify
+            </Button>
+            </>
+            
           }
           </React.Fragment>
           :

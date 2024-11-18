@@ -14,11 +14,14 @@ import {
   assets,
 } from '../store'
 
-//import IpDetails from './ipDetails'
-import IpComponent from './ipComponent'
-import RequestIp from './requestIp'
-import ReleaseIp from './releaseIp'
+import IpDetails from './ipDetails'
+import IpRequest from './ipRequest'
+import IpModify from './ipModify'
+import IpRelease from './ipRelease'
 import CloudNetwork from './cloudNetwork'
+
+import IpComponent from './ipComponent'
+
 
 import { Row, Col } from 'antd';
 
@@ -70,20 +73,28 @@ function Manager(props) {
   return (
     <React.Fragment >
       <Row>
-        <Col span={4} offset={2} >
+        {/*<Col span={4} offset={2} >
           <IpComponent service='ip details'/>
-        </Col>
-
-        <Col span={4} offset={2}>
-          <RequestIp/>
-        </Col>
+        </Col>*/}
 
         <Col span={4} offset={2} >
-          <IpComponent service='ip modify'/>
+          <IpDetails/>
         </Col>
 
         <Col span={4} offset={2}>
-          <ReleaseIp/>
+          <IpRequest/>
+        </Col>
+
+        {/*<Col span={4} offset={2} >
+          <IpComponent service='ip modify'/>
+        </Col>*/}
+
+        <Col span={4} offset={2} >
+          <IpModify/>
+        </Col>
+
+        <Col span={4} offset={2}>
+          <IpRelease/>
         </Col>
       </Row>
 
