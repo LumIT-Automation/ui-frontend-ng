@@ -767,6 +767,11 @@ function PermissionWorkflow(props) {
         }
 
         if (perm.infoblox && perm.infoblox.length > 0) {
+          perm.infoblox.forEach(element => {
+            if (element.network) {
+              element.network.name = element.network.network
+            }
+          });
           body.data.infoblox = perm.infoblox
         }
         if (perm.checkpoint && perm.checkpoint.length > 0) {
