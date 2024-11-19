@@ -33,15 +33,41 @@ function Manager(props) {
   //UPDATE
   useEffect(() => {
     if (!props.error) {
-      main()
+      start()
     }
   }, [props.vendor]);
 
+  const start = async () => {
+    setLoading(true)
+    let configurationsFetched = await dataGet('configurations/')
+    console.log(configurationsFetched)
+    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
+      let error = Object.assign(configurationsFetched, {
+        component: 'configurations',
+        vendor: 'concerto',
+        errorType: 'configurationsError'
+      })
+      props.dispatch(err(error))
+    }
+    else {
+      let list = []
+      
+      configurationsFetched.data.items.forEach((item, i) => {
+        item.existent = true
+        //
+        item.value = item.configuration
+        list.push(item)
+      });
+      setConfigurations(list)
+    }
+    setLoading(false)
+  }
 
-  const main = async () => {
+  /*const start = async () => {
     setLoading(true)
     let confs = []
-    let configurationsFetched = await dataGet('/configuration/global/')
+    let configurationsFetched = await dataGet('/configuration/AWS%20Regions/')
+    console.log(configurationsFetched)
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       let error = Object.assign(configurationsFetched, {
         component: 'configuration',
@@ -64,10 +90,10 @@ function Manager(props) {
       setLoading(false)
       setConfigurations(confs)
     }
-  }
+  }*/
 
   const dataGet = async (entities) => {
-    let endpoint = `${props.vendor}${entities}`
+    let endpoint = `${props.vendor}/${entities}`
     let r
 
     let rest = new Rest(
@@ -85,30 +111,36 @@ function Manager(props) {
     return r
   }
 
+  let recordAdd = async() => {
+    let commonFunctions = new CommonFunctions()
+    let configurationsCopy = await commonFunctions.itemAdd(configurations)
+    setConfigurations(configurationsCopy)
+  } 
+
+  let recordRemove = async(record) => {
+    let commonFunctions = new CommonFunctions()
+    const configurationsCopy = await commonFunctions.itemRemove(record, configurations)
+    if (configurationsCopy.length === 0) {
+      setConfigurations([{id:1}])
+    } else {
+      setConfigurations(configurationsCopy)
+    }
+  }
 
   const set = async (key, value, record) => {
-    let commonFunctions = new CommonFunctions()
-    let confs = JSON.parse(JSON.stringify(configurations));
-    let conf
+    
+    let configurationsCopy = JSON.parse(JSON.stringify(configurations));
+    let configuration
 
     try {
-      if (key === 'recordAdd') {
-        const list = await commonFunctions.itemAdd(configurations)
-        setConfigurations(list)
-      } 
-      if (key === 'recordRemove') {
-        const list = await commonFunctions.itemRemove(record, configurations)
-        if (list.length === 0) {
-          setConfigurations([{id:1}])
-        } else {
-          setConfigurations(list)
-        }
-      }
-  
+      
       if (record) {
-        conf = confs.find(cn => cn.id === record.id);
+        configuration = configurationsCopy.find(cn => cn.id === record.id);
   
-        if (key === 'key') {
+        if (key === 'config_type') {
+          if (configuration.existent) {
+            configuration.isModified = true
+          }
           let start = 0
           let end = 0
           let ref = myRefs.current[`${record.id}_key`];
@@ -118,9 +150,9 @@ function Manager(props) {
             end = ref.input.selectionEnd
           }
   
-          conf['key'] = value || '';
-          delete conf['keyError'];
-          setConfigurations(confs)
+          configuration.config_type = value || '';
+          delete configuration.config_typeError;
+          setConfigurations(configurationsCopy)
           //ref = myRefs.current[`${record.id}_key`];
   
           if (ref && ref.input) {
@@ -132,6 +164,9 @@ function Manager(props) {
         }
   
         if (key === 'value') {
+          if (configuration.existent) {
+            configuration.isModified = true
+          }
           let start = 0
           let end = 0
           let ref = textAreaRefs.current[`${record.id}_value`];
@@ -141,9 +176,9 @@ function Manager(props) {
             end = ref.resizableTextArea.textArea.selectionEnd
           }
   
-          conf['value'] = value || '';
-          delete conf['valueError'];
-          setConfigurations(confs);
+          configuration.value = value || '';
+          delete configuration.valueError;
+          setConfigurations(configurationsCopy);
           //ref = textAreaRefs.current[`${record.id}_value`];
   
           if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
@@ -155,13 +190,15 @@ function Manager(props) {
         }
   
         if (key === 'toDelete') {
-          if (value) {
-            conf.toDelete = true
+          if (configuration.existent) {
+            if (value) {
+              configuration.toDelete = true
+            }
+            else {
+              delete configuration.toDelete
+            }
+            setConfigurations(configurationsCopy);
           }
-          else {
-            delete conf.toDelete
-          }
-          setConfigurations(confs);
         }
   
       }
@@ -172,35 +209,35 @@ function Manager(props) {
   }
 
   const validationCheck = async () => {
-    let confs = JSON.parse(JSON.stringify(configurations));
+    let configurationsCopy = JSON.parse(JSON.stringify(configurations));
     let errorsCount = 0;
 
-    for (let conf of Object.values(confs)) {
-      if (!conf.key) {
+    for (let configuration of Object.values(configurationsCopy)) {
+      if (!configuration.config_type) {
         ++errorsCount;
-        conf.keyError = true;
+        configuration.config_typeError = true;
       }
-      if (!conf.value) {
+      if (!configuration.value) {
         ++errorsCount;
-        conf.valueError = true;
+        configuration.valueError = true;
       }
     }
 
-    setConfigurations(confs);
+    setConfigurations(configurationsCopy);
     return errorsCount;
   };
 
   const validation = async () => {
     let errorsCount = await validationCheck();
     if (errorsCount === 0) {
-      let confs = configurations.filter(conf => !conf.toDelete);
-      modifyConfiguration(confs);
+      let configurationsCopy = configurations.filter(configuration => !configuration.toDelete);
+      modifyConfiguration(configurationsCopy);
     }
   };
 
 
   const modifyConfiguration = async (configurations) => {
-    await setLoading(true)
+    setLoading(true)
 
     let b = {}
     b.data = {
@@ -211,12 +248,12 @@ function Manager(props) {
       "PUT",
       resp => {
         setLoading(false)
-        main()
+        start()
       },
       error => {
         setLoading(false)
         error = Object.assign(error, {
-          component: 'configuration',
+          component: 'configurations',
           vendor: 'concerto',
           errorType: 'modifyConfigurationError'
         })
@@ -229,70 +266,68 @@ function Manager(props) {
 
 
   const createElement = (element, key, choices, record, action) => {
-    switch (element) {
+    if (element === 'input') {
+      return (
+        <Input
+          value={record.config_type}
+          style=
+            {record.config_typeError ?
+              {borderColor: 'red', width: 200}
+            :
+              {width: 200}
+            }
+          ref={ref => (myRefs.current[`${record.id}_${key}`] = ref)}
+          onChange={event => set(key, event.target.value, record)}
+        />
+      )
+    }
 
-      case 'input':
-        return (
-          <Input
-            value={record[key]}
-            style=
-              {record[`${key}Error`] ?
-                {borderColor: 'red', width: 200}
-              :
-                {width: 200}
-              }
-            ref={ref => (myRefs.current[`${record.id}_${key}`] = ref)}
-            onChange={event => set(key, event.target.value, record)}
-          />
-        )
+    else if (element === 'textArea') {
+      return (
+        <Input.TextArea
+          rows={12}
+          value={record[key]}
+          ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
+          onChange={event => set(key, event.target.value, record)}
+          style=
+            { record[`${key}Error`] ?
+              {borderColor: `red`, width: 350}
+            :
+              {width: 350}
+            }
+        />
+      )
+    }
 
-      case 'textArea':
-        return (
-          <Input.TextArea
-            rows={12}
-            value={record[key]}
-            ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
-            onChange={event => set(key, event.target.value, record)}
-            style=
-              { record[`${key}Error`] ?
-                {borderColor: `red`, width: 350}
-              :
-                {width: 350}
-              }
-          />
-        )
+    else if (element === 'button') {
+      return (
+        <Button
+          type="danger"
+          onClick={() => recordRemove(record)}
+        >
+          -
+        </Button>
+      )
+    }
 
-      case 'button':
-        return (
-          <Button
-            type="danger"
-            onClick={() => set('recordRemove', '', record)}
-          >
-            -
-          </Button>
-        )
-
-      case 'checkbox':
-        return (
-          <Checkbox
-            checked={record[key]}
-            onChange={e => set('toDelete', e.target.checked, record)}
-          />
-        )
-
-      default:
-        return null;
+    else if (element === 'checkbox') {
+      return (
+        <Checkbox
+          checked={record[key]}
+          onChange={e => set('toDelete', e.target.checked, record)}
+        />
+      )
     }
   }
 
   const columns = [
     {
-      title: 'Key',
+      title: 'Config type',
       align: 'center',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: 'config_type',
+      key: 'config_type',
       render: (name, record)  => (
-        createElement('input', 'key', '', record, '')
+        createElement('input', 'config_type', '', record, '')
       )
     },
     {
@@ -320,14 +355,15 @@ function Manager(props) {
     },
   ];
 
-  const showErrors = () => {
-    if (props.error && props.error.component === 'configuration') {
+  const errorsComponent = () => {
+    if (props.error && props.error.component === 'configurations') {
       return <Error error={[props.error]} visible={true}/> 
     }
   }
 
   return (
     <React.Fragment>
+      {console.log(configurations)}
       {loading ?
         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
       :
@@ -335,13 +371,13 @@ function Manager(props) {
 
           <Space wrap>
             <Button
-              onClick={() => main()}
+              onClick={() => start()}
             >
               <ReloadOutlined/>
             </Button>
             <Button
               type="primary"
-              onClick={() => set('recordAdd')}
+              onClick={() => recordAdd()}
             >
               +
             </Button>
@@ -366,7 +402,7 @@ function Manager(props) {
         </Space>
       }
 
-      {showErrors()}
+      {errorsComponent()}
 
     </React.Fragment>
   )

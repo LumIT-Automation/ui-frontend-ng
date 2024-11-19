@@ -350,11 +350,6 @@ function IpModify(props) {
 
   return (
     <React.Fragment>
-      {console.log('errors', errors)}
-      {console.log('requestIp', requestIp)}
-      {console.log('response', response)}
-      {console.log('ipModifyRequest', ipModifyRequest)}
-      {console.log('ipModifyResponse', ipModifyResponse)}
 
       <Button type="primary" onClick={() => setVisible(true)}>IP MODIFY</Button>
 
