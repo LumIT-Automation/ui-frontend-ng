@@ -928,7 +928,7 @@ function RequestIp(props) {
                 { width: '150px' }
               }
               onChange={e => macAddressSet(e, obj.id)}
-              onPressEnter={() => tvalidation()}
+              onPressEnter={() => validation()}
             />
 
             <Divider/>
