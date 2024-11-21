@@ -61,7 +61,7 @@ function Manager(props) {
     return author.isAuthorized(authorizations, vendor, key)
   }
 
-  let errors = () => {
+  let errorsComponent = () => {
     if (props.error && props.error.component === 'serviceManager') {
       return <Error error={[props.error]} visible={true}/> 
     }
@@ -95,7 +95,7 @@ function Manager(props) {
         </Col>
       </Row>
 
-      {errors()}
+      {errorsComponent()}
 
     </React.Fragment>
   )

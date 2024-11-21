@@ -1,5 +1,23 @@
 class JsonHelper {
 
+  processJSON = input => {
+    try {
+      // Prova a fare il parsing
+      const parsed = JSON.parse(input);
+
+      // Controlla che sia un oggetto o un array
+      if (typeof parsed === "object" && parsed !== null) {
+          //return JSON.stringify(parsed, null, 2); // Ritorna il JSON formattato
+          return parsed
+      } else {
+          return null; // Non è un oggetto o un array
+      }
+    } catch (error) {
+        // Se il parsing fallisce, non è un JSON valido
+        return null;
+    }
+}
+
   jsonPretty = json => {
     let str = ''
     try {

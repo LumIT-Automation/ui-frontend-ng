@@ -80,7 +80,7 @@ class CloudNetwork extends React.Component {
         cloudNetworks: [],
         originCloudNetworks: [],
       })
-      this.dataGetHandler('configuration')
+      this.dataGetHandler('configurations')
       this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     } 
 
@@ -180,9 +180,9 @@ class CloudNetwork extends React.Component {
   dataGetHandler = async (entities, assetId) => {
     let data
 
-    if (entities === 'configuration') {
+    if (entities === 'configurations') {
       await this.setState({loading: true})
-      data = await this.dataGet('configuration')
+      data = await this.dataGet('configurations')
       try {
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
@@ -194,11 +194,11 @@ class CloudNetwork extends React.Component {
           await this.setState({loading: false})
         }
         else {
-          if (data.data.configuration.length > 0) {
+          if (data.data.items.length > 0) {
             let list2 = []
             if (this.state.provider === 'AWS') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'AWS Regions') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'AWS Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -207,8 +207,8 @@ class CloudNetwork extends React.Component {
               });
             }
             else if (this.state.provider === 'AZURE') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'AZURE Regions') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'AZURE Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -217,8 +217,8 @@ class CloudNetwork extends React.Component {
               });
             }
             else if (this.state.provider === 'OCI') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'OCI Regions') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'OCI Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -383,8 +383,8 @@ class CloudNetwork extends React.Component {
     let endpoint
     let r
 
-    if (entities === 'configuration') {
-      endpoint = `${this.props.vendor}/${entities}/global/`
+    if (entities === 'configurations') {
+      endpoint = `${this.props.vendor}/${entities}/`
     }
 
     if (entities === 'getNetworks') {
@@ -1262,10 +1262,10 @@ class CloudNetwork extends React.Component {
               >
                 <React.Fragment>
                   { this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI' ?
-                    this.state.regions.map((v,i) => {
-                      let str = `${v[0].toString()} - ${v[1].toString()}`
+                    this.state.regions.map((region,i) => {
+                      let str = `${region.AWSRegionName.toString()} - ${region.AWSRegionCode.toString()}`
                       return (
-                        <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                        <Select.Option key={i} value={region.AWSRegionCode}>{str}</Select.Option>
                       )
                     })
                   :

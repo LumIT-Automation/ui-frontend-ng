@@ -6,6 +6,9 @@ import '../App.css'
 import Rest from '../_helpers/Rest'
 import Error from './error'
 import CommonFunctions from '../_helpers/commonFunctions'
+import JsonHelper from '../_helpers/jsonHelper'
+
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
 
 import { Space, Table, Input, Button, Spin, Checkbox } from 'antd';
 import { LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
@@ -15,59 +18,62 @@ import {
 } from './store'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
-
-//import List from './list'
-
+const confLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
 function Manager(props) {
 
-  const [configurations, setConfigurations] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  let [loading, setLoading] = useState(false);
+  let [configurations, setConfigurations] = useState([]);
+  let [ok, setOk] = useState(false);
 
   const myRefs = useRef({});
   const textAreaRefs = useRef({});
 
-
+  const update = async (newValue) => {
+    setConfigurations(newValue); 
+    await new Promise((resolve) => setTimeout(resolve, 0)); 
+  };
+  
   //UPDATE
   useEffect(() => {
     if (!props.error) {
-      main()
+      start()
     }
   }, [props.vendor]);
 
+  useEffect(() => {
+    if (ok) {
+      setOk(false); 
+      cudHandler();  
+    }
+  }, [configurations, ok]); 
 
-  const main = async () => {
+  const start = async () => {
     setLoading(true)
-    let confs = []
-    let configurationsFetched = await dataGet('/configuration/global/')
+    let configurationsFetched = await dataGet('configurations/')
     if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
       let error = Object.assign(configurationsFetched, {
-        component: 'configuration',
+        component: 'configurations',
         vendor: 'concerto',
         errorType: 'configurationsError'
       })
       props.dispatch(err(error))
-      setLoading(false)
-      return
     }
     else {
-      confs = configurationsFetched.data.configuration
-
-      if (configurationsFetched.data.configuration.length > 0) {
-        confs.forEach((item, i) => {
-          item.existent = true
-        });
-        //conf = JSON.parse(configurationsFetched.data.configuration)
-      }
-      setLoading(false)
-      setConfigurations(confs)
+      let list = []
+      configurationsFetched.data.items.forEach((item, i) => {
+        item.existent = true
+        item.value = JSON.stringify(item.value, null, 2)
+        list.push(item)
+      });
+      setConfigurations(configurationsFetched.data.items)
     }
+    setLoading(false)
   }
 
   const dataGet = async (entities) => {
-    let endpoint = `${props.vendor}${entities}`
+    let endpoint = `${props.vendor}/${entities}`
     let r
 
     let rest = new Rest(
@@ -79,49 +85,52 @@ function Manager(props) {
         r = error
       }
     )
-
     await rest.doXHR(`${endpoint}`, props.token)
-
     return r
   }
 
+  let recordAdd = async() => {
+    let commonFunctions = new CommonFunctions()
+    let configurationsCopy = await commonFunctions.itemAdd(configurations)
+    setConfigurations(configurationsCopy)
+  } 
+
+  let recordRemove = async(record) => {
+    let commonFunctions = new CommonFunctions()
+    const configurationsCopy = await commonFunctions.itemRemove(record, configurations)
+    if (configurationsCopy.length === 0) {
+      setConfigurations([{id:1}])
+    } else {
+      setConfigurations(configurationsCopy)
+    }
+  }
 
   const set = async (key, value, record) => {
-    let commonFunctions = new CommonFunctions()
-    let confs = JSON.parse(JSON.stringify(configurations));
-    let conf
+    
+    let configurationsCopy = JSON.parse(JSON.stringify(configurations));
+    let configuration
 
     try {
-      if (key === 'recordAdd') {
-        const list = await commonFunctions.itemAdd(configurations)
-        setConfigurations(list)
-      } 
-      if (key === 'recordRemove') {
-        const list = await commonFunctions.itemRemove(record, configurations)
-        if (list.length === 0) {
-          setConfigurations([{id:1}])
-        } else {
-          setConfigurations(list)
-        }
-      }
-  
+      
       if (record) {
-        conf = confs.find(cn => cn.id === record.id);
-  
-        if (key === 'key') {
+        configuration = configurationsCopy.find(cn => cn.id === record.id);
+
+        if (key === 'config_type') {
+          if (configuration.existent) {
+            configuration.isModified = true
+          }
           let start = 0
           let end = 0
-          let ref = myRefs.current[`${record.id}_key`];
+          let ref = myRefs.current[`${record.id}_${key}`];
   
           if (ref && ref.input) {
             start = ref.input.selectionStart
             end = ref.input.selectionEnd
           }
   
-          conf['key'] = value || '';
-          delete conf['keyError'];
-          setConfigurations(confs)
-          //ref = myRefs.current[`${record.id}_key`];
+          configuration.config_type = value || '';
+          delete configuration.config_typeError;
+          setConfigurations([...configurationsCopy])
   
           if (ref && ref.input) {
             ref.input.selectionStart = start
@@ -132,19 +141,21 @@ function Manager(props) {
         }
   
         if (key === 'value') {
+          if (configuration.existent) {
+            configuration.isModified = true
+          }
           let start = 0
           let end = 0
-          let ref = textAreaRefs.current[`${record.id}_value`];
+          let ref = textAreaRefs.current[`${record.id}_${key}`];
   
           if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
             start = ref.resizableTextArea.textArea.selectionStart
             end = ref.resizableTextArea.textArea.selectionEnd
           }
   
-          conf['value'] = value || '';
-          delete conf['valueError'];
-          setConfigurations(confs);
-          //ref = textAreaRefs.current[`${record.id}_value`];
+          configuration.value = value || '';
+          delete configuration.valueError;
+          setConfigurations([...configurationsCopy])
   
           if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
             ref.resizableTextArea.textArea.selectionStart = start;
@@ -155,13 +166,15 @@ function Manager(props) {
         }
   
         if (key === 'toDelete') {
-          if (value) {
-            conf.toDelete = true
+          if (configuration.existent) {
+            if (value) {
+              configuration.toDelete = true
+            }
+            else {
+              delete configuration.toDelete
+            }
+            setConfigurations([...configurationsCopy])
           }
-          else {
-            delete conf.toDelete
-          }
-          setConfigurations(confs);
         }
   
       }
@@ -171,128 +184,305 @@ function Manager(props) {
     }
   }
 
+  function cleanObject(obj) {
+    if (typeof obj === 'string') {
+        return obj.replace(/\\n/g, ' ').replace(/\s+/g, ' ').trim(); // Rimuove \n e spazi extra
+    } else if (Array.isArray(obj)) {
+        return obj.map(cleanObject); // Pulisce ogni elemento dell'array
+    } else if (typeof obj === 'object' && obj !== null) {
+        return Object.fromEntries(
+            Object.entries(obj).map(([key, value]) => [key, cleanObject(value)])
+        );
+    }
+    return obj; // Restituisce il valore non stringa invariato
+  }
+
+  const deepCopy = (value) => {
+    if (Array.isArray(value)) {
+      // Se è un array, crea una copia profonda dell'array
+      return value.map(item => deepCopy(item));
+    } else if (value && typeof value === 'object') {
+      // Se è un oggetto, crea una copia profonda dell'oggetto
+      const copy = {};
+      for (const key in value) {
+        if (value.hasOwnProperty(key)) {
+          copy[key] = deepCopy(value[key]);
+        }
+      }
+      return copy;
+    } else {
+      // Se è un tipo primitivo (stringa, numero, booleano), ritorna il valore così com'è
+      return value;
+    }
+  };
+
   const validationCheck = async () => {
-    let confs = JSON.parse(JSON.stringify(configurations));
+    let configurationsCopy = configurations.map(config => ({
+      ...config,
+      value: deepCopy(config.value), // Applica deepCopy al valore
+    }));
+
+    let jsonHelper = new JsonHelper()
     let errorsCount = 0;
 
-    for (let conf of Object.values(confs)) {
-      if (!conf.key) {
+    for (let configuration of Object.values(configurationsCopy)) {
+      if (!configuration.config_type) {
         ++errorsCount;
-        conf.keyError = true;
+        configuration.config_typeError = true;
       }
-      if (!conf.value) {
+      if (!configuration.value) {
         ++errorsCount;
-        conf.valueError = true;
+        configuration.valueError = true;
+      }
+      let j = jsonHelper.processJSON(configuration.value)
+      if (j) {
+        try {
+          // Parsing della stringa JSON in un oggetto JavaScript
+          let parsedObject = JSON.parse(configuration.value);
+          
+          // Pulizia dell'oggetto
+          let cleanedObject = await cleanObject(parsedObject);
+
+          // Aggiornamento del valore con l'oggetto pulito
+          configuration.value = cleanedObject;  // Puoi lasciare l'oggetto qui
+
+        } catch (error) {
+            console.error("Errore nel parsing del JSON:", error);
+        }
+      }
+      else {
+        console.log('non è un json', j)
       }
     }
 
-    setConfigurations(confs);
-    return errorsCount;
+    await update(configurationsCopy)
+
+    return {
+      data: configurationsCopy,
+      errorsCount: errorsCount
+    };
   };
 
   const validation = async () => {
-    let errorsCount = await validationCheck();
-    if (errorsCount === 0) {
-      let confs = configurations.filter(conf => !conf.toDelete);
-      modifyConfiguration(confs);
+    let vc = await validationCheck();
+
+    if (vc.errorsCount === 0) {
+      setOk(true)
     }
   };
 
+  let cudHandler = async () => {
+    console.log(configurations)
+    let configurationsCopy = [...configurations];
+    
+    let toDelete = []
+    let toPatch = []
+    let toPost = []
 
-  const modifyConfiguration = async (configurations) => {
-    await setLoading(true)
-
-    let b = {}
-    b.data = {
-      "configuration": configurations
+    for (const configurationCopy of Object.values(configurationsCopy)) {
+      if (configurationCopy.toDelete) {
+        toDelete.push(configurationCopy)
+      }
+      if (configurationCopy.isModified) {
+        toPatch.push(configurationCopy)
+      }
+      if (!configurationCopy.existent) {
+        toPost.push(configurationCopy)
+      }
     }
 
-    let rest = new Rest(
-      "PUT",
-      resp => {
-        setLoading(false)
-        main()
-      },
-      error => {
-        setLoading(false)
-        error = Object.assign(error, {
-          component: 'configuration',
-          vendor: 'concerto',
-          errorType: 'modifyConfigurationError'
-        })
-        props.dispatch(err(error))
+    if (toDelete.length > 0) {
+      for (const configurationCopy of toDelete) {
+        configurationCopy.loading = true
+        setConfigurations([...configurationsCopy])
+
+        let a = await configurationDelete(configurationCopy.id)
+        if (a.status && a.status !== 200 ) {
+          let error = Object.assign(a, {
+            component: 'configurations',
+            vendor: 'concerto',
+            errorType: 'deleteConfigurationError'
+          })
+          props.dispatch(err(error))
+        }
+        configurationCopy.loading = false
+        setConfigurations([...configurationsCopy])
       }
-    )
-    await rest.doXHR(`${props.vendor}/configuration/global/`, props.token, b )
+    }
+
+    if (toPost.length > 0) {
+      for (const configurationCopy of toPost) {
+        let body = {}
+
+        body.data = {
+          "config_type": configurationCopy.config_type,
+          "value": configurationCopy.value
+        }
+
+        configurationCopy.loading = true
+        setConfigurations([...configurationsCopy])
+
+        let a = await configurationAdd(body)
+        if (a.status && a.status !== 201 ) {
+          let error = Object.assign(a, {
+            component: 'configurations',
+            vendor: 'concerto',
+            errorType: 'configurationsAddError'
+          })
+          props.dispatch(err(error))
+        }
+        configurationCopy.loading = false
+        setConfigurations([...configurationsCopy])
+      }
+    }
+
+    if (toPatch.length > 0) {
+      for (const configurationCopy of toPatch) {
+        let body = {}
+
+        body.data = {
+          "config_type": configurationCopy.config_type,
+          "value": configurationCopy.value
+        }
+
+        configurationCopy.loading = true
+        setConfigurations([...configurationsCopy])
+
+        let a = await configurationModify(configurationCopy.id, body)
+        if (a.status && a.status !== 200 ) {
+          let error = Object.assign(a, {
+            component: 'configurations',
+            vendor: 'concerto',
+            errorType: 'configurationsModifyError'
+          })
+          props.dispatch(err(error))
+        }
+        configurationCopy.loading = false
+        setConfigurations([...configurationsCopy])
+      }
+    }
+    start()
   }
 
+  let configurationDelete = async (id) => {
+    let r
+    let rest = new Rest(
+      "DELETE",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${props.vendor}/configuration/${id}/`, props.token )
+    return r
+  }
 
+  let configurationAdd = async (body) => {
+    let r
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${props.vendor}/configurations/`, props.token, body )
+    return r
+  }
+
+  const configurationModify = async (id, body) => {
+    let r
+    let rest = new Rest(
+      "PATCH",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`${props.vendor}/configuration/${id}/`, props.token, body )
+    return r
+  }
 
   const createElement = (element, key, choices, record, action) => {
-    switch (element) {
+    if (element === 'input') {
+      return (
+        <Input
+          value={record.config_type}
+          style=
+            {record.config_typeError ?
+              {borderColor: 'red', width: 200}
+            :
+              {width: 200}
+            }
+          ref={ref => (myRefs.current[`${record.id}_${key}`] = ref)}
+          onChange={event => set(key, event.target.value, record)}
+        />
+      )
+    }
 
-      case 'input':
-        return (
-          <Input
-            value={record[key]}
-            style=
-              {record[`${key}Error`] ?
-                {borderColor: 'red', width: 200}
-              :
-                {width: 200}
-              }
-            ref={ref => (myRefs.current[`${record.id}_${key}`] = ref)}
-            onChange={event => set(key, event.target.value, record)}
-          />
-        )
+    else if (element === 'textArea') {
+      return (
+        <Input.TextArea
+          rows={12}
+          value={record[key]}
+          ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
+          onChange={event => set(key, event.target.value, record)}
+          style=
+            { record[`${key}Error`] ?
+              {borderColor: `red`, width: 350}
+            :
+              {width: 350}
+            }
+        />
+      )
+    }
 
-      case 'textArea':
-        return (
-          <Input.TextArea
-            rows={12}
-            value={record[key]}
-            ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
-            onChange={event => set(key, event.target.value, record)}
-            style=
-              { record[`${key}Error`] ?
-                {borderColor: `red`, width: 350}
-              :
-                {width: 350}
-              }
-          />
-        )
+    else if (element === 'button') {
+      return (
+        <Button
+          type="danger"
+          onClick={() => recordRemove(record)}
+        >
+          -
+        </Button>
+      )
+    }
 
-      case 'button':
-        return (
-          <Button
-            type="danger"
-            onClick={() => set('recordRemove', '', record)}
-          >
-            -
-          </Button>
-        )
-
-      case 'checkbox':
-        return (
-          <Checkbox
-            checked={record[key]}
-            onChange={e => set('toDelete', e.target.checked, record)}
-          />
-        )
-
-      default:
-        return null;
+    else if (element === 'checkbox') {
+      return (
+        <Checkbox
+          checked={record[key]}
+          onChange={e => set('toDelete', e.target.checked, record)}
+        />
+      )
     }
   }
 
   const columns = [
     {
-      title: 'Key',
+      title: 'Loading',
       align: 'center',
-      dataIndex: 'key',
-      key: 'key',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (name, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={confLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Config type',
+      align: 'center',
+      dataIndex: 'config_type',
+      key: 'config_type',
       render: (name, record)  => (
-        createElement('input', 'key', '', record, '')
+        createElement('input', 'config_type', '', record, '')
       )
     },
     {
@@ -320,14 +510,15 @@ function Manager(props) {
     },
   ];
 
-  const showErrors = () => {
-    if (props.error && props.error.component === 'configuration') {
+  const errorsComponent = () => {
+    if (props.error && props.error.component === 'configurations') {
       return <Error error={[props.error]} visible={true}/> 
     }
   }
 
   return (
     <React.Fragment>
+      {console.log(configurations)}
       {loading ?
         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
       :
@@ -335,13 +526,13 @@ function Manager(props) {
 
           <Space wrap>
             <Button
-              onClick={() => main()}
+              onClick={() => start()}
             >
               <ReloadOutlined/>
             </Button>
             <Button
               type="primary"
-              onClick={() => set('recordAdd')}
+              onClick={() => recordAdd()}
             >
               +
             </Button>
@@ -366,7 +557,7 @@ function Manager(props) {
         </Space>
       }
 
-      {showErrors()}
+      {errorsComponent()}
 
     </React.Fragment>
   )
