@@ -20,9 +20,6 @@ import {
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const confLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
-//import List from './list'
-
-
 
 function Manager(props) {
 
@@ -34,17 +31,10 @@ function Manager(props) {
   const textAreaRefs = useRef({});
 
   const update = async (newValue) => {
-    console.log('update', newValue);
-  
-    // Prima aggiorna lo stato con il nuovo valore
     setConfigurations(newValue); 
-  
-    // Poi esegui l'operazione asincrona (la promise)
-    await new Promise((resolve) => setTimeout(resolve, 0)); // Aspetta che React completi il rendering (anche se questo passaggio è facoltativo)
+    await new Promise((resolve) => setTimeout(resolve, 0)); 
   };
   
-
-
   //UPDATE
   useEffect(() => {
     if (!props.error) {
@@ -54,11 +44,10 @@ function Manager(props) {
 
   useEffect(() => {
     if (ok) {
-      console.log('Configurazioni aggiornate', configurations);
-      cudHandler();  // Esegui solo quando lo stato è stato aggiornato
-      setOk(false);  // Reset della flag dopo l'esecuzione di cudHandler
+      setOk(false); 
+      cudHandler();  
     }
-  }, [configurations, ok]); // Esegui quando `configurations` o `isValid` cambia
+  }, [configurations, ok]); 
 
   const start = async () => {
     setLoading(true)
@@ -96,9 +85,7 @@ function Manager(props) {
         r = error
       }
     )
-
     await rest.doXHR(`${endpoint}`, props.token)
-
     return r
   }
 
@@ -210,7 +197,6 @@ function Manager(props) {
     return obj; // Restituisce il valore non stringa invariato
   }
 
-  // Funzione per creare una copia profonda che gestisce ogni tipo di dato
   const deepCopy = (value) => {
     if (Array.isArray(value)) {
       // Se è un array, crea una copia profonda dell'array
@@ -268,11 +254,9 @@ function Manager(props) {
         console.log('non è un json', j)
       }
     }
-    console.log(configurationsCopy)
+
     await update(configurationsCopy)
-    //setConfigurations(configurationsCopy)
-    
-    //return errorsCount;
+
     return {
       data: configurationsCopy,
       errorsCount: errorsCount
@@ -377,9 +361,7 @@ function Manager(props) {
         setConfigurations([...configurationsCopy])
       }
     }
-
     start()
-
   }
 
   let configurationDelete = async (id) => {
@@ -412,7 +394,6 @@ function Manager(props) {
     return r
   }
 
-
   const configurationModify = async (id, body) => {
     let r
     let rest = new Rest(
@@ -427,8 +408,6 @@ function Manager(props) {
     await rest.doXHR(`${props.vendor}/configuration/${id}/`, props.token, body )
     return r
   }
-
-
 
   const createElement = (element, key, choices, record, action) => {
     if (element === 'input') {

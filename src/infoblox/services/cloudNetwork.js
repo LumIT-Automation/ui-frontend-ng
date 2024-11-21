@@ -1,11 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css'
 
 import Rest from '../../_helpers/Rest'
-import Authorizators from '../../_helpers/authorizators'
-import CommonFunctions from '../../_helpers/commonFunctions'
-import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
 
 import {
@@ -13,8 +10,6 @@ import {
 } from '../../concerto/store'
 
 import AssetSelector from '../../concerto/assetSelector'
-
-import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import { Space, Modal, Row, Col, Divider, Table, Input, Select, Button, Checkbox, Spin, Alert, Result, Popover } from 'antd'
 import Highlighter from 'react-highlight-words';
@@ -35,129 +30,159 @@ Reference = ITSM (IT SERVICE MANAGER)
 - conferma delete
 */
 
+class CloudNetwork extends React.Component {
 
-function CloudNetwork(props) {
+  constructor(props) {
+    super(props);
 
-  let [visible, setVisible] = useState(false);
-  let [loading, setLoading] = useState(false);
-  
-  let [providers, setProviders] = useState(['AWS', 'AZURE', 'GCP', 'OCI']);
-  let [provider, setProvider] = useState('');
-  
-  //let [regions, setRegions] = useState([]);
-  let [regions, setRegions] = useState([
-    {
-        "AWSRegionName": "Frankfurt",
-        "AWSRegionCode": "eu-central-1",
-        "existent": true
+    this.myRefs = {};
+    this.textAreaRefs = {};
+
+    this.state = {
+      visible: false,
+      providers: ['AWS', 'AZURE', 'GCP', 'OCI'],
+      subnetMaskCidrs: ['23','24'],
+      provider: '',
+      regions: [],
+      loading: false,
+      accountsLoading: false,
+      accounts: [],
+      accountModify: false,
+      'Account ID': '',
+      'Account Name': '',
+      ITSM: '',
+      'Modify ID': '',
+      'Modify Name': '',
+      'Modify ITSM': '',
+      cloudNetworks: [],
+      originCloudNetworks: [],
+    };
+  }
+
+  componentDidMount() {
+  }
+
+  shouldComponentUpdate(newProps, newState) {
+    return true;
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    
+    if (this.state.provider !== prevState.provider) {
+      this.setState({
+        accountModify: false,
+        'Account ID': '',
+        'Account Name': '',
+        ITSM: '',
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',
+        cloudNetworks: [],
+        originCloudNetworks: [],
+      })
+      this.dataGetHandler('configurations')
+      this.dataGetHandler('accountsAndProviders', this.props.asset.id)
+    } 
+
+    if ((this.state.provider === prevState.provider) && (this.state['Account ID'] && this.state['Account ID'] !== prevState['Account ID']) ) {
+      this.dataGetHandler('getNetworks', this.props.asset.id)
+    } 
+  }
+
+  componentWillUnmount() {
+  }
+
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
+      }
+      catch (error){
+
+      }
     },
-    {
-        "AWSRegionName": "London",
-        "AWSRegionCode": "eu-west-2",
-        "existent": true
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
     },
-    {
-        "AWSRegionName": "Ohio",
-        "AWSRegionCode": "us-east-2",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Hong Kong",
-        "AWSRegionCode": "ap-east-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Singapore",
-        "AWSRegionCode": "ap-southeast-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Ireland",
-        "AWSRegionCode": "eu-west-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "N. Virginia",
-        "AWSRegionCode": "us-east-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Milan",
-        "AWSRegionCode": "eu-south-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Bahrain",
-        "AWSRegionCode": "me-south-1",
-        "existent": true
-    },
-    {
-        "AWSRegionName": "Mumbai",
-        "AWSRegionCode": "ap-south-1",
-        "existent": true
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
     }
-]);
-  
-  let [cloudNetworks, setCloudNetworks] = useState([]);
-  let [originCloudNetworks, setOriginCloudNetworks] = useState([]);
-  
-  let [accountsLoading, setAccountsLoading] = useState(false);
-  let [accounts, setAccounts] = useState([]);
-  let [accountId, setAccountId] = useState('');
-  let [accountName, setAccountName] = useState('');
-  let [ITSM, setITSM] = useState('');
-  
-  let [modifyId, setModifyId] = useState('');
-  let [modifyName, setModifyName] = useState('');
-  let [modifyITSM, setModifyITSM] = useState('');
-  let [accountModify, setAccountModify] = useState(false);
-  
-  let [newAccountId, setNewAccountId] = useState('');
-  let [newAccountName, setNewAccountName] = useState('');
-  let [newITSM, setNewITSM] = useState('');
+  });
 
-  let [subnetMaskCidrs, setSubnetMaskCidrs] = useState(['23', '24']);
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
 
-  let [searchText, setSearchText] = useState('');
-  let [searchedColumn, setSearchedColumn] = useState('');
-  let searchInput = useRef(null);
-
-  let [response, setResponse] = useState(false);
-
-  let myRefs = {};
-  let textAreaRefs = {};
+  handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    this.setState({ searchText: '' });
+  };
 
 
-  useEffect(() => {
-    if (provider && props.asset) {
-      setAccountModify(false);
-      setAccountId('');
-      setAccountName('');
-      setITSM('');
-      setModifyId('');
-      setModifyName('');
-      setModifyITSM('');
-      setCloudNetworks([]);
-      setOriginCloudNetworks([]);
+  details = () => {
+    this.setState({visible: true})
+  }
 
-      //dataGetHandler('configuration')
-      dataGetHandler('accountsAndProviders', props.asset.id)
-    }    
-  }, [provider]);
-
-  useEffect(() => {
-    if (provider && props.asset && accountId) {
-      dataGetHandler('getNetworks', props.asset.id)
-    }    
-  }, [provider, accountId]);
-
-
-  let dataGetHandler = async (entities, assetId) => {
+  dataGetHandler = async (entities, assetId) => {
     let data
 
-    if (entities === 'configuration') {
-      setLoading(true);
-      data = await dataGet('configuration')
+    if (entities === 'configurations') {
+      await this.setState({loading: true})
+      data = await this.dataGet('configurations')
       try {
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
@@ -165,15 +190,15 @@ function CloudNetwork(props) {
             vendor: 'infoblox',
             errorType: 'configurationsError'
           })
-          props.dispatch(err(error))
-          setLoading(false);
+          this.props.dispatch(err(error))
+          await this.setState({loading: false})
         }
         else {
-          if (data.data.configuration.length > 0) {
+          if (data.data.items.length > 0) {
             let list2 = []
-            if (provider === 'AWS') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'AWS Regions') {
+            if (this.state.provider === 'AWS') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'AWS Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -181,9 +206,9 @@ function CloudNetwork(props) {
                 }
               });
             }
-            else if (provider === 'AZURE') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'AZURE Regions') {
+            else if (this.state.provider === 'AZURE') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'AZURE Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -191,9 +216,9 @@ function CloudNetwork(props) {
                 }
               });
             }
-            else if (provider === 'OCI') {
-              data.data.configuration.forEach((item, i) => {
-                if (item.key === 'OCI Regions') {
+            else if (this.state.provider === 'OCI') {
+              data.data.items.forEach((item, i) => {
+                if (item.config_type === 'OCI Regions') {
                   let list = JSON.parse(item.value)
                   list.forEach((item, i) => {
                     list2.push(item)
@@ -201,57 +226,48 @@ function CloudNetwork(props) {
                 }
               });
             }
-            setLoading(false);
-            setRegions(list2)
+            await this.setState({loading: false, regions: list2})
           }
         }
       } catch (error) {
-        setLoading(false);
-        setRegions([])
+        await this.setState({loading: false, regions: []})
         console.log(error)
       }
     }
 
     if (entities === 'accountsAndProviders') {
-      setAccountsLoading(true)
-      data = await dataGet(entities, assetId)
+      await this.setState({accountsLoading: true})
+      data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'assignCloudNetwork',
           vendor: 'infoblox',
           errorType: 'accountsAndProviders'
         })
-        props.dispatch(err(error))
-        setAccountsLoading(false)
-        setAccounts([])
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({accounts: [], accountsLoading: false, loading: false})
         return
       }
       else {
-        console.log(data.data)
         let list = data.data.map(item => {
           item.ITSM = item.Reference
-          item.accountId = item['Account ID']
-          item.accountName = item['Account Name']
           return item
         })
-        setAccountsLoading(false)
-        setAccounts(list)
-        setLoading(false)
+        await this.setState({accounts: list, accountsLoading: false, loading: false})
       }
     }
     
     if (entities === 'getNetworks') {
-      setLoading(true)
-      data = await dataGet(entities, assetId)
+      await this.setState({loading: true})
+      data = await this.dataGet(entities, assetId)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'assignCloudNetwork',
           vendor: 'infoblox',
           errorType: 'getNetworks'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
@@ -286,12 +302,10 @@ function CloudNetwork(props) {
               }
             }
           });
-          setLoading(false)
-          setOriginCloudNetworks(data.data)
-          setCloudNetworks(data.data)
+          await this.setState({loading: false, originCloudNetworks: data.data, cloudNetworks: data.data})
         }
         catch (error) {
-          setLoading(false)
+          await this.setState({loading: false})
         }
         
         
@@ -299,28 +313,25 @@ function CloudNetwork(props) {
     }
 
     if (entities === 'newAccount') {
-      setLoading(true)
-      setAccountId(newAccountId)
-      setAccountName(newAccountName)
-      setITSM(newITSM)
-
-      data = await dataGet('getNetworks', assetId)
+      await this.setState({loading: true, 'Account ID': this.state['New Account ID'], 'Account Name': this.state['New Account Name'], ITSM: this.state['New ITSM']})
+      data = await this.dataGet('getNetworks', assetId)
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'assignCloudNetwork',
           vendor: 'infoblox',
           errorType: 'getNetworksError'
         })
-        props.dispatch(err(error))
-
-        setLoading(false)
-        setAccountId('')
-        setAccountName('')
-        setITSM('')
-        setNewAccountId('')
-        setNewAccountName('')
-        setNewITSM('')
-        setAccountModify(false)
+        this.props.dispatch(err(error))
+        await this.setState({
+          loading: false, 
+          'Account ID': '', 
+          'Account Name': '', 
+          ITSM: '',
+          'New Account ID': '', 
+          'New Account Name': '',
+          'New ITSM': '',
+          accountModify: false,
+        })
         return
       }
       else {
@@ -352,39 +363,41 @@ function CloudNetwork(props) {
             }
           }
         });
-        setLoading(false)
-        setOriginCloudNetworks(data.data)
-        setCloudNetworks(data.data)
-        setNewAccountId('')
-        setNewAccountName('')
-        setNewITSM('')
-        setAccountModify(false)
+        await this.setState({
+          loading: false, 
+          originCloudNetworks: data.data, 
+          cloudNetworks: data.data, 
+          'New Account ID': '', 
+          'New Account Name': '', 
+          'New ITSM': '',
+          accountModify: false,
+        })
 
-        dataGetHandler('accountsAndProviders', props.asset.id)
+        this.dataGetHandler('accountsAndProviders', this.props.asset.id)
       }
     }
     
   }
 
-  let dataGet = async (entities, assetId) => {
+  dataGet = async (entities, assetId) => {
     let endpoint
     let r
 
-    if (entities === 'configuration') {
-      endpoint = `${props.vendor}/${entities}/global/`
+    if (entities === 'configurations') {
+      endpoint = `${this.props.vendor}/${entities}/`
     }
 
     if (entities === 'getNetworks') {
-      if (accountId) {
-        endpoint = `${props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${accountId}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${provider}`
+      if (this.state['Account ID']) {
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account ID&fval=${this.state['Account ID']}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${this.state.provider}`
       }
-      else if(accountName) {
-        endpoint = `${props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${accountName}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${provider}`
+      else if(this.state['Account Name']) {
+        endpoint = `${this.props.vendor}/${assetId}/networks/?fby=*Account Name&fval=${this.state['Account Name']}&fby=*Environment&fval=Cloud&fby=*Country&fval=Cloud-${this.state.provider}`
       }
     }
 
     if (entities === 'accountsAndProviders') {
-      endpoint = `${props.vendor}/${assetId}/list-cloud-extattrs/account+provider/?fby=*Country&fval=Cloud-${provider}`
+      endpoint = `${this.props.vendor}/${assetId}/list-cloud-extattrs/account+provider/?fby=*Country&fval=Cloud-${this.state.provider}`
     }
 
     let rest = new Rest(
@@ -396,51 +409,52 @@ function CloudNetwork(props) {
         r = error
       }
     )
-    await rest.doXHR(endpoint, props.token)
+    await rest.doXHR(endpoint, this.props.token)
     return r
   }
 
-  let accountDel = async() => {
-    setLoading(true)
-      let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
-      for (const cloudNet of cloudNetworksCopy) {
+  accountDel = async() => {
+    await this.setState({loading: true})
+      let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+      for (const cloudNet of cloudNetworks) {
         cloudNet.loading = true
         let net = cloudNet.network.split('/')
-        let n = await cloudNetworkDelete(net[0])
+        let n = await this.cloudNetworkDelete(net[0])
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
             errorType: 'NetworkDeleteError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
         else {
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
       }
     
-    setLoading(false)
-    setAccountId('')
-    setAccountName('')
-    setITSM('')
-    setCloudNetworks([])
-    setOriginCloudNetworks([])
-    setAccountModify(false)
-   
-    dataGetHandler('accountsAndProviders', props.asset.id)
+    await this.setState({
+      loading: false, 
+      'Account ID': '',
+      'Account Name': '',
+      ITSM: '',
+      cloudNetworks: [],
+      originCloudNetworks: [],
+      accountModify: false,
+    })
+    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
   }
 
-  let cloudNetworkAdd = async () => {
+  cloudNetworkAdd = async () => {
     let id = 0
     let n = 0
     let p = {}
-    let list = JSON.parse(JSON.stringify(cloudNetworks))
+    let list = JSON.parse(JSON.stringify(this.state.cloudNetworks))
 
-    cloudNetworks.forEach(p => {
+    this.state.cloudNetworks.forEach(p => {
       if (p.id > id) {
         id = p.id
       }
@@ -448,96 +462,87 @@ function CloudNetwork(props) {
 
     n = id + 1
     p.id = n
-    if (accountId) {
-      p.accountId = accountId
+    if (this.state['Account ID']) {
+      p['Account ID'] = this.state['Account ID']
     }
-    if (accountName) {
-      p.accountName = accountName
+    if (this.state['Account Name']) {
+      p['Account Name'] = this.state['Account Name']
     }
     list.push(p)
 
-    setCloudNetworks(list)
+    await this.setState({cloudNetworks: list})
   }
 
-  let cloudNetworkRemove = async p => {
-    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
-    let newList = cloudNetworksCopy.filter(n => {
+  cloudNetworkRemove = async p => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
+    let newList = cloudNetworks.filter(n => {
       return p.id !== n.id
     })
 
-    setCloudNetworks(newList)
+    //delete this[`inputTextAreaRef${p.id}`]
+    await this.setState({cloudNetworks: newList})
   }
 
   /* SET */
-  let set = async (key, value, cloudNetwork) => {
-    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
+  set = async (key, value, cloudNetwork) => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let origCloudNet
     let cloudNet
 
     if (key === 'provider') {
-      setProvider(value)
+      await this.setState({provider: value})
     }
 
-    if (key === 'accountId') {
-      let accountsCopy = JSON.parse(JSON.stringify(accounts))
-      let account = accountsCopy.find( a => a.accountId === value )
-      
-      setAccountId(account.accountId)
-      setAccountName(account.accountName)
-      setITSM(account.ITSM)
+    if (key === 'Account ID') {
+      let accounts = JSON.parse(JSON.stringify(this.state.accounts))
+      let account = accounts.find( a => a['Account ID'] === value )
+      await this.setState({'Account ID': account['Account ID'], 'Account Name': account['Account Name'], ITSM: account.ITSM})
     }
 
-    if (key === 'accountName') {
-      let accountsCopy = JSON.parse(JSON.stringify(accounts))
-      let account = accountsCopy.find( a => a.accountName === value )
-      setAccountId(account.accountId)
-      setAccountName(account.accountName)
-      setITSM(account.ITSM)
+    if (key === 'Account Name') {
+      let accounts = JSON.parse(JSON.stringify(this.state.accounts))
+      let account = accounts.find( a => a['Account Name'] === value )
+      await this.setState({'Account ID': account['Account ID'], 'Account Name': account['Account Name'], ITSM: account.ITSM})
     }
 
     if (key === 'accountModify') {
-      setAccountModify(value)
-      setModifyId(accountId)
-      setModifyName(accountName)
-      setModifyITSM(ITSM)
-      
+      await this.setState({accountModify: value, 'Modify ID': this.state['Account ID'], 'Modify Name': this.state['Account Name'], 'Modify ITSM': this.state.ITSM})
       if (!value) {
-        setModifyId('')
-        setModifyName('')
-        setModifyITSM('')
+        await this.setState({'Modify ID': '', 'Modify Name': '', 'Modify ITSM': '',})
       }
+      
     }
 
-    if (key === 'modifyId') {
-      setModifyId(value)
+    if (key === 'Modify ID') {
+      await this.setState({[key]: value})
     }
 
-    if (key === 'modifyName') {
-      setModifyName(value)
+    if (key === 'Modify Name') {
+      await this.setState({[key]: value})
     }
 
-    if (key === 'modifyITSM') {
-      setModifyITSM(value)
+    if (key === 'Modify ITSM') {
+      await this.setState({[key]: value})
     }
 
-    if (key === 'newAccountId') {
-      setNewAccountId(value)
+    if (key === 'New Account ID') {
+      await this.setState({'New Account ID': value})
     }
 
-    if (key === 'newAccountName') {
-      setNewAccountName(value)
+    if (key === 'New Account Name') {
+      await this.setState({'New Account Name': value})
     }
 
-    if (key === 'newITSM') {
-      setNewITSM(value)
+    if (key === 'New ITSM') {
+      await this.setState({'New ITSM': value})
     }
 
     if (cloudNetwork) {
-      origCloudNet = originCloudNetworks.find(cn => cn.id === cloudNetwork.id)
-      cloudNet = cloudNetworksCopy.find(cn => cn.id === cloudNetwork.id)
+      origCloudNet = this.state.originCloudNetworks.find(cn => cn.id === cloudNetwork.id)
+      cloudNet = cloudNetworks.find(cn => cn.id === cloudNetwork.id)
 
       if (key === 'Region') {
-        if (provider === 'AWS') {
+        if (this.state.provider === 'AWS') {
           if (value) {
             if (cloudNet.existent) {
               if (origCloudNet.Region !== 'aws-'+value) {
@@ -555,7 +560,7 @@ function CloudNetwork(props) {
             delete cloudNet.RegionError
           }
         }
-        else if (provider === 'AZURE') {
+        else if (this.state.provider === 'AZURE') {
           if (value) {
             if (cloudNet.existent) {
               if (origCloudNet.Region !== 'azure-'+value) {
@@ -573,7 +578,7 @@ function CloudNetwork(props) {
             delete cloudNet.RegionError
           }
         }
-        else if (provider === 'OCI') {
+        else if (this.state.provider === 'OCI') {
           if (value) {
             if (cloudNet.existent) {
               if (origCloudNet.Region !== 'oci-'+value) {
@@ -597,7 +602,7 @@ function CloudNetwork(props) {
       if (key === 'ITSM') {
         let start = 0
         let end = 0
-        let ref = myRefs[`${cloudNetwork.id}_ITSM`]
+        let ref = this.myRefs[`${cloudNetwork.id}_ITSM`]
 
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -625,9 +630,8 @@ function CloudNetwork(props) {
           cloudNet['ITSM'] = ''
         }
 
-        setCloudNetworks([...cloudNetworksCopy])
-
-        ref = myRefs[`${cloudNetwork.id}_ITSM`]
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.myRefs[`${cloudNetwork.id}_ITSM`]
 
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -645,7 +649,7 @@ function CloudNetwork(props) {
       if (key === 'comment') {
         let start = 0
         let end = 0
-        let ref = textAreaRefs[`${cloudNetwork.id}_comment`]
+        let ref = this.textAreaRefs[`${cloudNetwork.id}_comment`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -673,8 +677,8 @@ function CloudNetwork(props) {
           cloudNet['comment'] = ''
         }
 
-        setCloudNetworks([...cloudNetworksCopy])
-        ref = textAreaRefs[`${cloudNetwork.id}_comment`]
+        await this.setState({cloudNetworks: cloudNetworks})
+        ref = this.textAreaRefs[`${cloudNetwork.id}_comment`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -695,27 +699,27 @@ function CloudNetwork(props) {
 
     }
 
-    if (key !== 'accountId' && key !== 'accountName' && key !== 'ITSM' && key !== 'comment') {
-      setCloudNetworks([...cloudNetworksCopy])
+    if (key !== 'Account ID' && key !== 'Account Name' && key !== 'ITSM' && key !== 'comment') {
+      await this.setState({cloudNetworks: cloudNetworks})
     }
 
   }
 
   /* VALIDATION */
 
-  let validation = async () => {
-    let errors = await validationCheck()
+  validation = async () => {
+    let errors = await this.validationCheck()
     if (errors === 0) {
-      cudManager()
+      this.cudManager()
     }
   }
 
-  let validationCheck = async () => {
-    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
+  validationCheck = async () => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let errors = 0
 
-    for (let cloudNet of Object.values(cloudNetworksCopy)) {
-      if ((provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ) && !cloudNet.Region) {
+    for (let cloudNet of Object.values(cloudNetworks)) {
+      if ((this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI' ) && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
       }
@@ -725,26 +729,26 @@ function CloudNetwork(props) {
       }
     }
 
-    setCloudNetworks([...cloudNetworksCopy])
+    await this.setState({cloudNetworks: cloudNetworks})
     return errors
   }
 
   /* DISPOSITION */
 
-  let cudManager = async () => {
-    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
+  cudManager = async () => {
+    let cloudNetworks = JSON.parse(JSON.stringify(this.state.cloudNetworks))
     let toDelete = []
     let toPatch = []
     let toPost = []
 
-    for (const cloudNet of Object.values(cloudNetworksCopy)) {
+    for (const cloudNet of Object.values(cloudNetworks)) {
       if (cloudNet.toDelete) {
         toDelete.push(cloudNet)
       }
       if (cloudNet.isModified && Object.keys(cloudNet.isModified).length > 0) {
         toPatch.push(cloudNet)
       }
-      if (modifyId && modifyName && modifyITSM) {
+      if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
         toPatch.push(cloudNet)
       }
       if (!cloudNet.existent) {
@@ -754,23 +758,24 @@ function CloudNetwork(props) {
 
     if (toDelete.length > 0) {
       for (const cloudNet of toDelete) {
+        //let per = cloudNetworks.find(p => p.id === cloudNet.id)
         cloudNet.loading = true
-        setCloudNetworks([...cloudNetworksCopy])
+        await this.setState({cloudNetworks: cloudNetworks})
         let net = cloudNet.network.split('/')
-        let n = await cloudNetworkDelete(net[0])
+        let n = await this.cloudNetworkDelete(net[0])
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
             errorType: 'networkDeleteError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
         else {
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
       }
     }
@@ -780,46 +785,46 @@ function CloudNetwork(props) {
         let body = {}
 
         body.data = {
-          "provider": provider,
+          "provider": this.state.provider,
           "network_data": {
             "network": "next-available",
             "subnetMaskCidr": cloudNet.subnetMaskCidr,
             "comment": cloudNet.comment,
             "extattrs": {
               "Account ID": {
-                "value": accountId
+                "value": this.state['Account ID']
               },
               "Account Name": {
-                "value": accountName
+                "value": this.state['Account Name']
               },
               "Reference": {
-                "value": ITSM
+                "value": this.state.ITSM
               }
             }
           }
         }
 
-        if (provider === 'AWS' || provider === 'AZURE' || provider === 'OCI') {
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') {
           body.data.region = cloudNet.Region
         }
 
         cloudNet.loading = true
-        setCloudNetworks([...cloudNetworksCopy])
+        await this.setState({cloudNetworks: cloudNetworks})
 
-        let cn = await cloudNetworkAssign(body)
+        let cn = await this.cloudNetworkAssign(body)
         if (cn.status && cn.status !== 200 ) {
           let error = Object.assign(cn, {
             component: 'assignCloudNetwork',
             vendor: 'infoblox',
             errorType: 'networkAssignError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
         else {
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
       }
     }
@@ -834,26 +839,47 @@ function CloudNetwork(props) {
             "comment": cloudNet.comment,
             "extattrs": {
               "Account ID": {
-                "value": accountId
+                "value": this.state['Account ID']
               },
               "Account Name": {
-                "value": accountId
+                "value": this.state['Account Name']
               },
               "Reference": {
-                "value": ITSM
+                "value": this.state.ITSM
               }
             }
           }
         }
 
-        if (provider === 'AWS' || provider === 'AZURE' || provider === 'OCI') {
+        /*
+        if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
+          body.data = {
+            "network_data": {
+              "network": "next-available",
+              "comment": cloudNet.comment,
+              "extattrs": {
+                "Account ID": {
+                  "value": this.state['Modify ID']
+                },
+                "Account Name": {
+                  "value": this.state['Modify Name']
+                },
+                "Reference": {
+                  "value": this.state['Modify ITSM']
+                }
+              }
+            }
+          }
+        }*/
+
+        if (this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') {
           body.data.region = cloudNet.Region
         }
 
         cloudNet.loading = true
-        setCloudNetworks([...cloudNetworksCopy])
+        await this.setState({cloudNetworks: cloudNetworks})
         let net = cloudNet.network.split('/')
-        let cn = await cloudNetworkModify(net[0], body)
+        let cn = await this.cloudNetworkModify(net[0], body)
         
         if (cn.status && cn.status !== 200 ) {
           let error = Object.assign(cn, {
@@ -861,51 +887,66 @@ function CloudNetwork(props) {
             vendor: 'infoblox',
             errorType: 'networkModifyError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
         else {
           cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
+          await this.setState({cloudNetworks: cloudNetworks})
         }
       }
     }
 
-    await dataGetHandler('getNetworks', props.asset.id)
+    /*
+    if (this.state['Modify ID'] && this.state['Modify Name'] && this.state['Modify ITSM']) {
+      await this.setState({
+        ['Account ID']: this.state['Modify ID'],
+        ['Account Name']: this.state['Modify Name'],
+        ITSM: this.state['Modify ITSM'],
+        accountModify: false,
+        ['Modify ID']: '',
+        ['Modify Name']: '',
+        ['Modify ITSM']: '',
+      })
+    }*/
+
+    await this.dataGetHandler('getNetworks', this.props.asset.id)
 
     //if account is deleted
-    if (cloudNetworks.length < 1) {
-      setLoading(false)
-      setAccountId('')
-      setAccountName('')
-      setITSM('')
-      setModifyId('')
-      setModifyName('')
-      setModifyITSM('')
+    if (this.state.cloudNetworks.length < 1) {
+      await this.setState({
+        loading: false, 
+        'Account ID': '',
+        'Account Name': '',
+        ITSM: '',
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',      
+      })
     }
 
-    dataGetHandler('accountsAndProviders', props.asset.id)
+    this.dataGetHandler('accountsAndProviders', this.props.asset.id)
     
   }
 
-  let accountModifyManager = async () => {
+  accountModifyManager = async () => {
     let body = {}
 
     body.data = {
       "Account ID": {
-        "value": modifyId
+        "value": this.state['Modify ID']
       },
       "Account Name": {
-          "value": modifyName
+          "value": this.state['Modify Name']
       },
       "Reference": {
-          "value": modifyITSM
+          "value": this.state['Modify ITSM']
       }
     }
 
-    setLoading(true)
-    let data = await accountModifyHandler(accountId, body)
+    await this.setState({loading: true})
+    let data = await this.accountModify(this.state['Account ID'], body)
     
     if (data.status && data.status !== 200 ) {
       let error = Object.assign(data, {
@@ -913,27 +954,28 @@ function CloudNetwork(props) {
         vendor: 'infoblox',
         errorType: 'accountModifyError'
       })
-      props.dispatch(err(error))
-      setLoading(false)
+      this.props.dispatch(err(error))
+      await this.setState({loading: false})
     }
     else {
-      setLoading(false)
-      setAccountId(modifyId)
-      setAccountName(modifyName)
-      setITSM(modifyITSM)
-      setModifyId('')
-      setModifyName('')
-      setModifyITSM('')
-      setAccountModify(false)
-      
-      await dataGetHandler('accountsAndProviders', props.asset.id)
-      await dataGetHandler('getNetworks', props.asset.id)
+      await this.setState({
+        loading: false, 
+        'Account ID': this.state['Modify ID'],
+        'Account Name': this.state['Modify Name'],
+        ITSM: this.state['Modify ITSM'],
+        'Modify ID': '',
+        'Modify Name': '',
+        'Modify ITSM': '',
+        accountModify: false      
+      })
+      await this.dataGetHandler('accountsAndProviders', this.props.asset.id)
+      await this.dataGetHandler('getNetworks', this.props.asset.id)
       
     }
 
   }
 
-  let cloudNetworkDelete = async (net) => {
+  cloudNetworkDelete = async (net) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -944,11 +986,11 @@ function CloudNetwork(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/delete-cloud-network/${net}/`, props.token )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/delete-cloud-network/${net}/`, this.props.token )
     return r
   }
 
-  let cloudNetworkAssign = async (b) => {
+  cloudNetworkAssign = async (b) => {
     let r
     let rest = new Rest(
       "PUT",
@@ -959,11 +1001,11 @@ function CloudNetwork(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/assign-cloud-network/`, props.token, b )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/assign-cloud-network/`, this.props.token, b )
     return r
   }
 
-  let cloudNetworkModify = async (net, b) => {
+  cloudNetworkModify = async (net, b) => {
     let r
     let rest = new Rest(
       "PUT",
@@ -974,11 +1016,11 @@ function CloudNetwork(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/modify-cloud-network/${net}/`, props.token, b )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/modify-cloud-network/${net}/`, this.props.token, b )
     return r
   }
 
-  let accountModifyHandler = async (id, b) => {
+  accountModify = async (id, b) => {
     let r
     let rest = new Rest(
       "PUT",
@@ -989,753 +1031,652 @@ function CloudNetwork(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/modify-account-cloud-network/${id}/`, props.token, b )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/modify-account-cloud-network/${id}/`, this.props.token, b )
     return r
   }
 
-  let responseHandler = () => {
-    setTimeout( () => setResponse(false), 2000)
-    setTimeout( () => closeModal(), 2050)
+  response = () => {
+    setTimeout( () => this.setState({ response: false }), 2000)
+    setTimeout( () => this.closeModal(), 2050)
   }
 
   //Close and Error
-  let closeModal = () => {
-    //let \[\s*\w+\s*,\s*
-    /*
-    let \[ corrisponde alla stringa const [.
-    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra [ e l'identificatore).
-    \w+ corrisponde a uno o più caratteri alfanumerici (l'identificatore xyz).
-    \s* corrisponde a zero o più spazi bianchi (per gestire gli spazi tra l'identificatore e ,).
-    ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
-    */
-    setVisible(false);
-    setProviders(['AWS', 'AZURE', 'GCP', 'OCI']);
-    setSubnetMaskCidrs(['23', '24']);
-    setProvider('');
-    setRegions([]);
-    setLoading(false);
-    setAccountsLoading(false);
-    setAccounts([]);
-    setAccountModify(false);
-    setAccountId('');
-    setAccountName('');
-    setITSM('');
-    setModifyId('');
-    setModifyName('');
-    setModifyITSM('');
-    setCloudNetworks([]);
-    setOriginCloudNetworks([]);
+  closeModal = () => {
+    this.setState({
+      visible: false,
+      provider: '',
+      regions: [],
+      loading: false,
+      accountsLoading: false,
+      accounts: [],
+      accountModify: false,
+      'Account ID': '',
+      'Account Name': '',
+      ITSM: '',
+      'Modify ID': '',
+      'Modify Name': '',
+      'Modify ITSM': '',
+      cloudNetworks: [],
+      originCloudNetworks: []
+    })
   }
   
   /* RENDER */
-  let randomKey = () => {
-    return Math.random().toString()
-  }
 
-  let createElement = (element, key, choices, obj, action) => {
+  render() {
 
-    if (element === 'input') {
-      if (key === 'newAccountId') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={newAccountId}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'modifyId') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={modifyId}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'newAccountName') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={newAccountName}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'modifyName') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={modifyName}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'modifyITSM') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={modifyITSM}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'newITSM') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={newITSM}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
+    let randomKey = () => {
+      return Math.random().toString()
     }
 
-    switch (element) {
+    let createElement = (element, key, choices, obj, action) => {
 
-      case 'button':
-        if (action === 'getNetworks') {
+      if (element === 'input') {
+        if (key === 'New Account ID') {
           return (
-            <Button
-              type="primary"
-              disabled={(accountId || accountName) ? false : true}
-              onClick={() => dataGetHandler(action, props.asset.id)}
-            >
-              Get cloud networks
-            </Button>
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
           )
         }
 
-        else if (action === 'modifyAccount') {
+        else if (key === 'Modify ID') {
           return (
-            <Button
-              type="primary"
-              disabled={(modifyId && modifyId.length === 12 && modifyName && modifyITSM) ? false : true}
-              onClick={() => accountModifyManager()}
-            >
-              Modify Account
-            </Button>
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
           )
         }
 
-        else if (action === 'newAccount') {
+        else if (key === 'New Account Name') {
           return (
-            <Button
-              type="primary"
-              disabled={(newAccountId && newAccountId.length === 12 && newAccountName && newITSM) ? false : true}
-              onClick={() => dataGetHandler(action, props.asset.id)}
-            >
-              Set new Account
-            </Button>
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
           )
         }
-      break;
 
-      case 'popOver':
-        if (action === 'delAccount') {
+        else if (key === 'Modify Name') {
           return (
-            <Popover
-            content={
-              <div>
-                <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
-                <a onClick={() => accountDel()}>DELETE ACCOUNT</a>
-              </div>
-            }
-            title='Attention!'
-            trigger="click"
-          >
-            <Button 
-              type="danger"
-              disabled={(accountId && accountName && ITSM) ? false : true}
-            >
-              Delete Account
-            </Button>
-          </Popover>
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
           )
         }
-      break;
 
-      case 'textArea':
-        return (
-          <Input.TextArea
-            rows={7}
-            value={obj[key]}
-            ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
-            onChange={event => set(key, event.target.value, obj)}
-            style={{width: 350}}
-          />
-        )
-
-      case 'select':          
-        if (key === 'Region') {
+        else if (key === 'Modify ITSM') {
           return (
-            <Select
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+
+        else if (key === 'New ITSM') {
+          return (
+            <Input
+              style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              value={this.state[key]}
+              onChange={event => this.set(key, event.target.value)}
+            />
+          )
+        }
+      }
+
+      switch (element) {
+
+        case 'button':
+          if (action === 'getNetworks') {
+            return (
+              <Button
+                type="primary"
+                disabled={(this.state['Account ID'] || this.state['Account Name']) ? false : true}
+                onClick={() => this.dataGetHandler(action, this.props.asset.id)}
+              >
+                Get cloud networks
+              </Button>
+            )
+          }
+
+          else if (action === 'modifyAccount') {
+            return (
+              <Button
+                type="primary"
+                disabled={(this.state['Modify ID'] && this.state['Modify ID'].length === 12 && this.state['Modify Name'] && this.state['Modify ITSM']) ? false : true}
+                onClick={() => this.accountModifyManager()}
+              >
+                Modify Account
+              </Button>
+            )
+          }
+
+          else if (action === 'newAccount') {
+            return (
+              <Button
+                type="primary"
+                disabled={(this.state['New Account ID'] && this.state['New Account ID'].length === 12 && this.state['New Account Name'] && this.state['New ITSM']) ? false : true}
+                onClick={() => this.dataGetHandler(action, this.props.asset.id)}
+              >
+                Set new Account
+              </Button>
+            )
+          }
+        break;
+
+        case 'popOver':
+          if (action === 'delAccount') {
+            return (
+              <Popover
+              content={
+                <div>
+                  <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
+                  <a onClick={() => this.accountDel()}>DELETE ACCOUNT</a>
+                </div>
+              }
+              title='Attention!'
+              trigger="click"
+            >
+              <Button 
+                type="danger"
+                disabled={(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? false : true}
+              >
+                Delete Account
+              </Button>
+            </Popover>
+            )
+          }
+        break;
+
+        case 'textArea':
+          return (
+            <Input.TextArea
+              rows={7}
               value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: 180}
-                :
-                  {width: 180}
-              }
-              disabled={(provider === 'AWS' || provider === 'AZURE' || provider === 'OCI') ? false : true}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, obj)}
-            >
-              <React.Fragment>
-                { provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ?
-                  regions ?
-                    regions.map((r,i) => {
-                      let str = `${r.AWSRegionName.toString()} - ${r.AWSRegionCode.toString()}`
+              ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+              style={{width: 350}}
+            />
+          )
+
+        case 'select':          
+          if (key === 'Region') {
+            return (
+              <Select
+                value={obj[key]}
+                showSearch
+                style={
+                  obj[`${key}Error`] ?
+                    {border: `1px solid red`, width: 180}
+                  :
+                    {width: 180}
+                }
+                disabled={(this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI') ? false : true}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={event => this.set(key, event, obj)}
+              >
+                <React.Fragment>
+                  { this.state.provider === 'AWS' || this.state.provider === 'AZURE' || this.state.provider === 'OCI' ?
+                    this.state.regions.map((region,i) => {
+                      let str = `${region.AWSRegionName.toString()} - ${region.AWSRegionCode.toString()}`
                       return (
-                        <Select.Option key={i} value={r.AWSRegionCode}>{str}</Select.Option>
+                        <Select.Option key={i} value={region.AWSRegionCode}>{str}</Select.Option>
                       )
                     })
                   :
-                   []
-                :
-                  null 
+                    null 
+                  }
+                </React.Fragment>
+              </Select>
+            )
+          }
+          else if (key === 'subnetMaskCidr') {
+            return (
+              <Select
+                value={obj[key]}
+                showSearch
+                style={
+                  obj[`${key}Error`] ?
+                    {border: `1px solid red`, width: '100%'}
+                  :
+                    {width: '100%'}
                 }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else if (key === 'subnetMaskCidr') {
-          return (
-            <Select
-              value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, obj)}
-            >
-              <React.Fragment>
-                {subnetMaskCidrs ? 
-                  subnetMaskCidrs.map((n, i) => {
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={event => this.set(key, event, obj)}
+              >
+                <React.Fragment>
+                  {this.state[`${choices}`].map((n, i) => {
                     return (
                       <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
                   })
-                : 
-                  []
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else if (key === 'accountId' || key === 'accountName') {
-          return (
-            <Select
-              value={
-                key === 'accountId' ?
-                  accountId
-                : 
-                  key === 'accountName' ?
-                    accountName
+                  }
+                </React.Fragment>
+              </Select>
+            )
+          }
+          else if (key === 'Account ID' || key === 'Account Name') {
+            return (
+              <Select
+                value={this.state[key]}
+                showSearch
+                style={
+                  obj[`${key}Error`] ?
+                    {border: `1px solid red`, width: '100%'}
                   :
-                    null
-              }
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              disabled={accountModify ? true : false}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {accounts ?
-                  accounts.map((n, i) => {
+                    {width: '100%'}
+                }
+                disabled={this.state.accountModify ? true : false}
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={event => this.set(key, event, '')}
+              >
+                <React.Fragment>
+                  {this.state[`${choices}`].map((n, i) => {
                     return (
                       <Select.Option key={i} value={n[key]}>{n[key]}</Select.Option>
                     )
                   })
-                :
-                  []
+                  }
+                </React.Fragment>
+            </Select>
+            )
+          }
+          else {
+            return (
+              <Select
+                value={this.state[key]}
+                showSearch
+                style={
+                  obj[`${key}Error`] ?
+                    {border: `1px solid red`, width: '100%'}
+                  :
+                    {width: '100%'}
                 }
-              </React.Fragment>
-          </Select>
-          )
-        }
-        else if (key === 'provider') {
-          return (
-            <Select
-              value={provider}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {providers ?
-                  providers.map((n, i) => {
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+                filterSort={(optionA, optionB) =>
+                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                }
+                onSelect={event => this.set(key, event, '')}
+              >
+                <React.Fragment>
+                  {this.state[`${choices}`].map((n, i) => {
                     return (
                       <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
                   })
-                :
-                  []
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }        
-        else {
-          return (
-            <Select
-              value={''}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {[].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }        
+                  }
+                </React.Fragment>
+            </Select>
+            )
+          }        
 
-      default:
+        default:
+
+      }
 
     }
 
-  }
-
-  let columns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (name, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Id',
-      align: 'center',
-      dataIndex: 'id',
-      key: 'id'
-    },
-    {
-      title: 'Network',
-      align: 'center',
-      dataIndex: 'network',
-      key: 'network',
-      ...getColumnSearchProps(
-        'network', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-    },
-    {
-      title: 'Network_container',
-      align: 'center',
-      dataIndex: 'network_container',
-      key: 'network_container',
-      ...getColumnSearchProps(
-        'network_container', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-    },
-    {
-      title: 'Region',
-      align: 'center',
-      dataIndex: 'region',
-      key: 'region',
-      ...getColumnSearchProps(
-        'region', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, cloudNet)  => (
-        cloudNet.existent ? 
-          cloudNet.Region
-        :
-          createElement('select', 'Region', '', cloudNet, '')
-      )
-    },
-    {
-      title: 'Subnet Mask',
-      align: 'center',
-      dataIndex: 'subnetMaskCidr',
-      key: 'subnetMaskCidr',
-      ...getColumnSearchProps(
-        'subnetMaskCidr', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, cloudNet)  => (
-        cloudNet.existent ? 
-          cloudNet.subnetMaskCidr
-        :
-          createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
-      )
-    },
-    {
-      title: 'Comment',
-      align: 'center',
-      dataIndex: 'comment',
-      key: 'comment',
-      ...getColumnSearchProps(
-        'comment', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, cloudNet)  => (
-        createElement('textArea', 'comment', '', cloudNet, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (name, obj)  => (
-        <Space size="small">
-          {obj.existent ?
-            <Checkbox
-              checked={obj.toDelete}
-              onChange={e => set('toDelete', e.target.checked, obj)}
-            />
+    let columns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Id',
+        align: 'center',
+        dataIndex: 'id',
+        key: 'id'
+      },
+      {
+        title: 'Network',
+        align: 'center',
+        dataIndex: 'network',
+        key: 'network',
+        ...this.getColumnSearchProps('network'),
+      },
+      {
+        title: 'Network_container',
+        align: 'center',
+        dataIndex: 'network_container',
+        key: 'network_container',
+        ...this.getColumnSearchProps('network_container'),
+      },
+      {
+        title: 'Region',
+        align: 'center',
+        dataIndex: 'region',
+        key: 'region',
+        ...this.getColumnSearchProps('region'),
+        render: (name, cloudNet)  => (
+          cloudNet.existent ? 
+            cloudNet.Region
           :
-            <Button
-              type='danger'
-              onClick={(e) => cloudNetworkRemove(obj)}
-            >
-              -
-            </Button>
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let errorsComponent = () => {
-    if (props.error && props.error.component === 'assignCloudNetwork') {
-      return <Error error={[props.error]} visible={true}/> 
-    }
-  }
-
-  return (
-    <React.Fragment>
-      {console.log('cloudNetworks', cloudNetworks)}
-      <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
-
-      <Modal
-        title={<p style={{textAlign: 'center'}}>{props.service.toUpperCase()}</p>}
-        centered
-        destroyOnClose={true}
-        visible={visible}
-        footer={''}
-        onOk={() => setVisible(true)}
-        onCancel={() => closeModal()}
-        width={1800}
-        maskClosable={false}
-      >
-
-        <AssetSelector vendor='infoblox'/>
-        <Divider/>
-
-        { ( props.asset && props.asset.id ) ?
-          <React.Fragment>
-            { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
-            { !loading && response &&
-              <Result
-                  status="success"
-                  title="Cloud Network Assigned"
-                  subTitle={network}
-                />
+            createElement('select', 'Region', '', cloudNet, '')
+        )
+      },
+      {
+        title: 'Subnet Mask',
+        align: 'center',
+        dataIndex: 'subnetMaskCidr',
+        key: 'subnetMaskCidr',
+        ...this.getColumnSearchProps('subnetMaskCidr'),
+        render: (name, cloudNet)  => (
+          cloudNet.existent ? 
+            cloudNet.subnetMaskCidr
+          :
+            createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
+        )
+      },
+      {
+        title: 'Comment',
+        align: 'center',
+        dataIndex: 'comment',
+        key: 'comment',
+        ...this.getColumnSearchProps('comment'),
+        render: (name, cloudNet)  => (
+          createElement('textArea', 'comment', '', cloudNet, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.existent ?
+              <Checkbox
+                checked={obj.toDelete}
+                onChange={e => this.set('toDelete', e.target.checked, obj)}
+              />
+            :
+              <Button
+                type='danger'
+                onClick={(e) => this.cloudNetworkRemove(obj)}
+              >
+                -
+              </Button>
             }
-            { !loading && !response &&
+          </Space>
+        ),
+      }
+    ];
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'assignCloudNetwork') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
+
+    return (
+      <React.Fragment>
+
+        <Button type="primary" onClick={() => this.details()}>{this.props.service.toUpperCase()}</Button>
+
+        <Modal
+          title={<p style={{textAlign: 'center'}}>{this.props.service.toUpperCase()}</p>}
+          centered
+          destroyOnClose={true}
+          visible={this.state.visible}
+          footer={''}
+          onOk={() => this.setState({visible: true})}
+          onCancel={() => this.closeModal()}
+          width={1800}
+          maskClosable={false}
+        >
+
+          <AssetSelector vendor='infoblox'/>
+          <Divider/>
+
+          { ( this.props.asset && this.props.asset.id ) ?
             <React.Fragment>
+              { this.state.loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
+              { !this.state.loading && this.state.response &&
+                <Result
+                   status="success"
+                   title="Cloud Network Assigned"
+                   subTitle={this.state.network}
+                 />
+              }
+              { !this.state.loading && !this.state.response &&
+              <React.Fragment>
 
-              <Row>
-                <Col span={3}>
-                  <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
-                </Col>
-                <Col span={3}>
-                  {createElement('select', 'provider', 'providers', '', '')}
-                </Col>
+                <Row>
+                  <Col span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
+                  </Col>
+                  <Col span={3}>
+                    {createElement('select', 'provider', 'providers', '', '')}
+                  </Col>
 
-              </Row>
-              {provider ?
-                <React.Fragment>
-                  <Row>
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
-                    </Col>
-                    {accountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
-                      <Col span={3}>
-                        {createElement('select', 'accountId', 'accounts', '', 'getNetworks')}
-                      </Col>
-                    }
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
-                    </Col>
-                    {accountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
-                      <Col span={4}>
-                        {createElement('select', 'accountName', 'accounts', '', 'getNetworks')}
-                      </Col>
-                    }
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
-                    </Col>
-                    {accountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5}}>{ITSM}</p>
-                      </Col>
-                    }
-                    <Col offset={1} span={1}>
-                      <Checkbox
-                        checked={accountModify}
-                        disabled={!(accountId && accountName && ITSM) ? true : false}
-                        style={{marginTop: 5}}
-                        onChange={e => set('accountModify', e.target.checked)}
-                      >
-                        Modify
-                      </Checkbox>
-                    </Col>
-                    <Col offset={1}  span={2}>
-                      {createElement('popOver', '', '', '', 'delAccount')}
-                    </Col>
-                  </Row>
-
-                  { accountModify ?
+                </Row>
+                {this.state.provider ?
+                  <React.Fragment>
                     <Row>
                       <Col span={3}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
                       </Col>
-                      <Col span={3}>
-                        {createElement('input', 'modifyId', '', '', '')}
-                      </Col>
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={3}>
+                          {createElement('select', 'Account ID', 'accounts', '', 'getNetworks')}
+                        </Col>
+                      }
                       <Col span={3}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                       </Col>
-                      <Col span={4}>
-                        {createElement('input', 'modifyName', '', '', '')}
-                      </Col>
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={4}>
+                          {createElement('select', 'Account Name', 'accounts', '', 'getNetworks')}
+                        </Col>
+                      }
                       <Col span={2}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
                       </Col>
-                      <Col span={2}>
-                        {createElement('input', 'modifyITSM', '', '', '')}
+                      {this.state.accountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5}}>{this.state.ITSM}</p>
+                        </Col>
+                      }
+                      <Col offset={1} span={1}>
+                        <Checkbox
+                          checked={this.state.accountModify}
+                          disabled={!(this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ? true : false}
+                          style={{marginTop: 5}}
+                          onChange={e => this.set('accountModify', e.target.checked)}
+                        >
+                          Modify
+                        </Checkbox>
                       </Col>
-                      <Col offset={3} span={2}>
-                        {createElement('button', '', '', '', 'modifyAccount')}
+                      <Col offset={1}  span={2}>
+                        {createElement('popOver', '', '', '', 'delAccount')}
                       </Col>
                     </Row>
-                  :
-                    null 
-                  }
 
-                  <Divider/>
+                    { this.state.accountModify ?
+                      <Row>
+                        <Col span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
+                        </Col>
+                        <Col span={3}>
+                          {createElement('input', 'Modify ID', '', '', '')}
+                        </Col>
+                        <Col span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                        </Col>
+                        <Col span={4}>
+                          {createElement('input', 'Modify Name', '', '', '')}
+                        </Col>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                        </Col>
+                        <Col span={2}>
+                          {createElement('input', 'Modify ITSM', '', '', '')}
+                        </Col>
+                        <Col offset={3} span={2}>
+                          {createElement('button', '', '', '', 'modifyAccount')}
+                        </Col>
+                      </Row>
+                    :
+                      null 
+                    }
 
-                  <Row>
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
-                    </Col>
-                    <Col span={3}>
-                      {createElement('input', 'newAccountId', '', '', '')}
-                    </Col>
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
-                    </Col>
-                    <Col span={4}>
-                      {createElement('input', 'newAccountName', '', '', '')}
-                    </Col>
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
-                    </Col>
-                    <Col span={2}>
-                      {createElement('input', 'newITSM', '', '', '')}
-                    </Col>
-                    <Col offset={3} span={2}>
-                      {createElement('button', '', '', '', 'newAccount')}
-                    </Col>
-                  </Row>
-                </React.Fragment>
-              :
-                null
+                    <Divider/>
+
+                    <Row>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
+                      </Col>
+                      <Col span={3}>
+                        {createElement('input', 'New Account ID', '', '', '')}
+                      </Col>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'New Account Name', '', '', '')}
+                      </Col>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                      </Col>
+                      <Col span={2}>
+                        {createElement('input', 'New ITSM', '', '', '')}
+                      </Col>
+                      <Col offset={3} span={2}>
+                        {createElement('button', '', '', '', 'newAccount')}
+                      </Col>
+                    </Row>
+                  </React.Fragment>
+                :
+                  null
+                }
+                <Divider/>
+
+                {
+                (this.state.provider && this.state['Account ID'] && this.state['Account Name'] && this.state.ITSM) ?
+                  <React.Fragment>
+                    <Button
+                      type="primary"
+                      style={{marginLeft: 16 }}
+                      onClick={() => this.cloudNetworkAdd()}
+                    >
+                      Request a Cloud Network
+                    </Button>
+                    <Table
+                      columns={columns}
+                      style={{width: '100%', padding: 15}}
+                      dataSource={this.state.cloudNetworks}
+                      bordered
+                      rowKey={randomKey}
+                      scroll={{x: 'auto'}}
+                      pagination={{ pageSize: 10 }}
+                    />
+                    <Button
+                      type="primary"
+                      style={{float: 'right', marginRight: 15}}
+                      onClick={() => this.validation()}
+                    >
+                      Commit
+                    </Button>
+                    <br/>
+                  </React.Fragment>
+                :
+                  null
               }
-              <Divider/>
 
-              {
-              (provider && accountId && accountName && ITSM) ?
-                <React.Fragment>
-                  <Button
-                    type="primary"
-                    style={{marginLeft: 16 }}
-                    onClick={() => cloudNetworkAdd()}
-                  >
-                    Request a Cloud Network
-                  </Button>
-                  <Table
-                    columns={columns}
-                    style={{width: '100%', padding: 15}}
-                    dataSource={cloudNetworks}
-                    bordered
-                    rowKey={randomKey}
-                    scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
-                  />
-                  <Button
-                    type="primary"
-                    style={{float: 'right', marginRight: 15}}
-                    onClick={() => validation()}
-                  >
-                    Commit
-                  </Button>
-                  <br/>
-                </React.Fragment>
-              :
-                null
-            }
-
+              </React.Fragment>
+              }
             </React.Fragment>
-            }
-          </React.Fragment>
+          :
+            <Alert message="Asset and Partition not set" type="error" />
+          }
+
+        </Modal>
+
+        {this.state.visible ?
+
+          errors()
+
         :
-          <Alert message="Asset and Partition not set" type="error" />
+          null          
         }
 
-      </Modal>
+      </React.Fragment>
 
-      {visible ?
-        <>
-          {errorsComponent()}
-        </>
-      :
-        null          
-      }
-
-    </React.Fragment>
-
-  )
-  
+    )
+  }
 }
 
 export default connect((state) => ({

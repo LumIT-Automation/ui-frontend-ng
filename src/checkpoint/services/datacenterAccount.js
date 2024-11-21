@@ -108,10 +108,9 @@ function DatacenterAccount(props) {
 
   let AWSRegionsGet = async () => {
     setLoading(true)
-    let conf = []
-    let configurationsFetched = await configurationGet()
-    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-      let error = Object.assign(configurationsFetched, {
+    let data = await configurationGet()
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
         component: 'datacenterServersAdd',
         vendor: 'checkpoint',
         errorType: 'configurationsError'
@@ -121,18 +120,18 @@ function DatacenterAccount(props) {
       return
     }
     else {
-      if (configurationsFetched.data.configuration.length > 0) {
+      if (data.data.items.length > 0) {
         try {
-          conf = configurationsFetched.data.configuration
-          conf.forEach((item, i) => {
-            if (item.key === 'AWS Regions') {
-              let list = JSON.parse(item.value)
-              let list2 = list.map((n, i) => {
+          data.data.items.forEach((item, i) => {
+            if (item.config_type === 'AWS Regions') {
+              let list = []
+              item.value.map((n, i) => {
                 return (
-                  n[1]
+                  //n[1]
+                  list.push(n.AWSRegionCode)
                 )
               })
-              setAWSRegions(list2)
+              setAWSRegions(list)
             }
           });
         } catch (error) {
@@ -155,7 +154,7 @@ function DatacenterAccount(props) {
         r = error
       }
     )
-    await rest.doXHR('checkpoint/configuration/global/', props.token)
+    await rest.doXHR('checkpoint/configurations/', props.token)
     return r
   }
 

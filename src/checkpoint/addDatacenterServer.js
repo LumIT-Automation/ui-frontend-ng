@@ -37,7 +37,7 @@ function Add(props) {
 
   useEffect(() => {
     if (visible) {
-      main()
+      start()
     }
   }, [visible]);
 
@@ -48,12 +48,11 @@ function Add(props) {
     }
   }, [valid]);
 
-  let main = async () => {
+  let start = async () => {
     setLoading(true)
-    let conf = []
-    let configurationsFetched = await configurationGet()
-    if (configurationsFetched.status && configurationsFetched.status !== 200 ) {
-      let error = Object.assign(configurationsFetched, {
+    let data = await configurationGet()
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
         component: 'datacenterServersAdd',
         vendor: 'checkpoint',
         errorType: 'configurationsError'
@@ -63,12 +62,12 @@ function Add(props) {
       return
     }
     else {
-      if (configurationsFetched.data.configuration.length > 0) {
+      if (data.data.items.length > 0) {
         try {
-          conf = configurationsFetched.data.configuration
-          conf.forEach((item, i) => {
-            if (item.key === 'AWS Regions') {
-              let list = JSON.parse(item.value)
+          data.data.items.forEach((item, i) => {
+            if (item.config_type === 'AWS Regions') {
+              //item.value = JSON.stringify(item.value, null, 2)
+              let list = item.value
               setAWSRegions(list)
             }
           });
@@ -92,7 +91,7 @@ function Add(props) {
         r = error
       }
     )
-    await rest.doXHR('checkpoint/configuration/global/', props.token)
+    await rest.doXHR('checkpoint/configurations/', props.token)
     return r
   }
 
@@ -506,10 +505,10 @@ function Add(props) {
           >
             <React.Fragment>
             { choices === 'AWSRegions' ?
-              AWSRegions.map((v,i) => {
-                let str = `${v[0].toString()} - ${v[1].toString()}`
+              AWSRegions.map((region,i) => {
+                let str = `${region.AWSRegionName.toString()} - ${region.AWSRegionCode.toString()}`
                 return (
-                  <Select.Option key={i} value={v[1]}>{str}</Select.Option>
+                  <Select.Option key={i} value={region.AWSRegionCode}>{str}</Select.Option>
                 )
               })
             :
