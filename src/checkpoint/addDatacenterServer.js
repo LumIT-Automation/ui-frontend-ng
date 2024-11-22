@@ -506,9 +506,9 @@ function Add(props) {
             <React.Fragment>
             { choices === 'AWSRegions' ?
               AWSRegions.map((region,i) => {
-                let str = `${region.AWSRegionName.toString()} - ${region.AWSRegionCode.toString()}`
+                let str = `${region.regionName.toString()} - ${region.regionCode.toString()}`
                 return (
-                  <Select.Option key={i} value={region.AWSRegionCode}>{str}</Select.Option>
+                  <Select.Option key={i} value={region.regionCode}>{str}</Select.Option>
                 )
               })
             :
