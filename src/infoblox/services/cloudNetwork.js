@@ -950,11 +950,6 @@ function CloudNetwork(props) {
     return r
   }
 
-  let responseHandler = () => {
-    setTimeout( () => setResponse(false), 2000)
-    setTimeout( () => closeModal(), 2050)
-  }
-
   //Close and Error
   let closeModal = () => {
     //let \[\s*\w+\s*,\s*
@@ -1522,7 +1517,6 @@ function CloudNetwork(props) {
               <Result
                   status="success"
                   title="Cloud Network Assigned"
-                  subTitle={network}
                 />
             }
             { !loading && !response &&
