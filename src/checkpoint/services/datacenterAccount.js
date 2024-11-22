@@ -128,7 +128,7 @@ function DatacenterAccount(props) {
               item.value.map((n, i) => {
                 return (
                   //n[1]
-                  list.push(n.AWSRegionCode)
+                  list.push(n.regionCode)
                 )
               })
               setAWSRegions(list)
