@@ -21,6 +21,10 @@ function PermissionWorkflow(props) {
   let [loading, setLoading] = useState(false);
   let [assets, setAssets] = useState([]);
 
+  let [newIGShow, setNewIGShow] = useState(false);
+  let [newIg, setNewIg] = useState('');
+  let [newIgLoading, setNewIgLoading] = useState(false)
+
   let [assetsInfoblox, setAssetsInfoblox] = useState([]);
   let [assetsCheckpoint, setAssetsCheckpoint] = useState([]);
   let [assetsF5, setAssetsF5] = useState([]);
@@ -40,9 +44,12 @@ function PermissionWorkflow(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
+  let [errors, setErrors] = useState({})
 
   useEffect(() => {
     if (props.vendor) {
+      setNewIg('');
+      setNewIGShow(false);
       assetsGet()
       igsGet()
       workflowsGet()
@@ -80,58 +87,63 @@ function PermissionWorkflow(props) {
     let list = JSON.parse(JSON.stringify(assets));
 
     for await (const vendor of vendors) {
-      let data = await dataGet(`${vendor}/assets/`);
-      if (data.status && data.status !== 200) {
-        let error = Object.assign(data, {
-          component: 'permissionWorkflow',
-          vendor: 'concerto',
-          errorType: `get ${vendor} assets Error`,
-        });
-        props.dispatch(err(error));
-      } else {
-        let vendorAssets = data.data.items
-        for await (const asset of vendorAssets) {
-          let subAssets, saLabel
-          if (vendor === 'infoblox'){
-            subAssets = await networksGet(asset.id)
-            saLabel = 'networks'
-          }
-          else if (vendor === 'checkpoint') {
-            subAssets = await dataGet(`${vendor}/${asset.id}/domains/`, asset.id)
-            saLabel = 'domains'
-          }
-          else if (vendor === 'f5') {
-            subAssets = await dataGet(`${vendor}/${asset.id}/partitions/`, asset.id)
-            saLabel = 'partitions'
-          }
-          if (subAssets.status && subAssets.status !== 200) {
-            let error = Object.assign(subAssets, {
-              component: 'permissionWorkflow',
-              vendor: 'concerto',
-              errorType: `get ${vendor} assets Error`,
-            });
-            props.dispatch(err(error));
-          } else {
-            if (subAssets.data && subAssets.data.items) {
-              asset[saLabel] = subAssets.data.items
+      try {
+        let data = await dataGet(`${vendor}/assets/`);
+        if (data.status && data.status !== 200) {
+          let error = Object.assign(data, {
+            component: 'permissionWorkflow',
+            vendor: 'concerto',
+            errorType: `get ${vendor} assets Error`,
+          });
+          props.dispatch(err(error));
+        } else {
+          let vendorAssets = data.data.items
+          for await (const asset of vendorAssets) {
+            let subAssets, saLabel
+            if (vendor === 'infoblox'){
+              subAssets = await networksGet(asset.id)
+              saLabel = 'networks'
             }
-            else {
-              asset[saLabel] = subAssets
+            else if (vendor === 'checkpoint') {
+              subAssets = await dataGet(`${vendor}/${asset.id}/domains/`, asset.id)
+              saLabel = 'domains'
             }
-          }
+            else if (vendor === 'f5') {
+              subAssets = await dataGet(`${vendor}/${asset.id}/partitions/`, asset.id)
+              saLabel = 'partitions'
+            }
+            if (subAssets.status && subAssets.status !== 200) {
+              let error = Object.assign(subAssets, {
+                component: 'permissionWorkflow',
+                vendor: 'concerto',
+                errorType: `get ${vendor} assets Error`,
+              });
+              props.dispatch(err(error));
+            } else {
+              if (subAssets.data && subAssets.data.items) {
+                asset[saLabel] = subAssets.data.items
+              }
+              else {
+                asset[saLabel] = subAssets
+              }
+            }
 
-          if (vendor === 'infoblox'){
-            setAssetsInfoblox(vendorAssets)
-          }
-          else if (vendor === 'checkpoint') {
-            setAssetsCheckpoint(vendorAssets)
-          }
-          else if (vendor === 'f5') {
-            setAssetsF5(vendorAssets)
-          }
+            if (vendor === 'infoblox'){
+              setAssetsInfoblox(vendorAssets)
+            }
+            else if (vendor === 'checkpoint') {
+              setAssetsCheckpoint(vendorAssets)
+            }
+            else if (vendor === 'f5') {
+              setAssetsF5(vendorAssets)
+            }
 
+          }
+          list.push({[vendor]: vendorAssets})   
         }
-        list.push({[vendor]: vendorAssets})   
+      }
+      catch (error) {
+        console.log(error)
       }
     }
     setAssets(list)
@@ -355,10 +367,6 @@ function PermissionWorkflow(props) {
   };
 
   let subItemRemove = async (item, father, tech) => {
-    console.log(item)
-    console.log(father)
-    console.log(tech)
-
     let permissionsCopy = [...permissions]
     let perm = permissionsCopy.find(p => p.id === father.id)
 
@@ -393,10 +401,105 @@ function PermissionWorkflow(props) {
       }
       list.push(o)
     }
-    console.log(list)
     perm[tech] = list 
     setPermissions([...permissionsCopy]);  
   };
+
+  let newIdentityGroupHandler = async () => {
+    let ig = JSON.parse(JSON.stringify(newIg))
+    let identityGroupsCopy = [...identityGroups]
+    let errorsCopy = {...errors}
+    let identityGroupIds = []
+    let body = {}
+
+    identityGroupsCopy.forEach((item, i) => {
+      identityGroupIds.push(item.identity_group_identifier)
+    });
+
+    if (ig === '') {
+      errorsCopy.newIdentityGroup = 'Empty identity group.'
+      setErrors(errorsCopy)
+    }
+    else if (identityGroupIds.includes(ig)) {
+      errorsCopy.newIdentityGroup = 'Identity group already exists.'
+      setErrors(errorsCopy)
+    }
+    else {
+      try{
+        let list = ig.split(',')
+        let cns = []
+
+        let found = list.filter(i => {
+          let iLow = i.toLowerCase()
+          if (iLow.startsWith('cn=')) {
+            let cn = iLow.split('=')
+            cns.push(cn[1])
+          }
+        })
+        if (cns.length < 1) {
+          errorsCopy.newIdentityGroup = 'Malformed DN.'
+          setErrors(errorsCopy)
+        }
+        else {
+          body.name = cns[0]
+          body.identity_group_identifier = ig
+          delete errorsCopy.newIdentityGroup
+          setErrors(errorsCopy)
+
+          setNewIgLoading(true)
+          let newIg = await newIdentityGroupAdd(body)
+          setNewIgLoading(false)
+          if (newIg.status && newIg.status !== 201) {
+            let error = Object.assign(newIg, {
+              component: 'permissionWorkflow',
+              vendor: 'concerto',
+              errorType: 'newIdentityGroupAddError'
+            })
+            props.dispatch(err(error))
+          }
+          else {
+            setLoading(true)
+            let fetchedIdentityGroups = await dataGet('identity-groups/')
+            if (fetchedIdentityGroups.status && fetchedIdentityGroups.status !== 200 ) {
+              let error = Object.assign(fetchedIdentityGroups, {
+                component: 'permissionWorkflow',
+                vendor: 'concerto',
+                errorType: 'identityGroupsError'
+              })
+              props.dispatch(err(error))
+              
+            }
+            else {
+              let identityGroupsNoWorkflowLocal = fetchedIdentityGroups.data.items.filter(r => r.name !== 'workflow.local');
+              setIdentityGroups(identityGroupsNoWorkflowLocal)
+              setLoading(false)
+            }
+          }
+        }
+      } catch(error) {
+        console.log(error)
+      }
+    }
+  }
+
+  let newIdentityGroupAdd = async (data) => {
+    let r
+    let b = {}
+    b.data = data
+
+    let rest = new Rest(
+      "POST",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`identity-groups/`, props.token, b )
+    return r
+  }
+
 
 
 
@@ -810,13 +913,10 @@ function PermissionWorkflow(props) {
         for (const tech of techs) {
           if (localPerm.isModified[tech] && Object.keys(localPerm.isModified[tech]).length > 0) {
             for (const [key, value] of Object.entries(localPerm.isModified[tech])) {
-              if (value.toDelete) {
-                console.log(`${key}: ${JSON.stringify(value)}`);
-    
+              if (value.toDelete) {    
                 const indexToDelete = localPerm[tech].findIndex(item => item.id === parseInt(key));
                 if (indexToDelete !== -1) {
                   localPerm[tech].splice(indexToDelete, 1);
-                  console.log(`Elemento con id ${key} eliminato da ${tech}`);
                 }
               }
             }
@@ -833,7 +933,6 @@ function PermissionWorkflow(props) {
             }
             let body = {};
             body.data = { [tech]: localPerm[tech] };
-            console.log(body);
     
             perm.loading = true
             setPermissions([...permissionsCopy]);
@@ -851,9 +950,6 @@ function PermissionWorkflow(props) {
             setPermissions([...permissionsCopy]);
           }
         }
-    
-        // Puoi fare ulteriori elaborazioni con `localPerm` se necessario
-        console.log(localPerm);
       }
     }
     
@@ -1529,15 +1625,6 @@ function PermissionWorkflow(props) {
 
   return (
     <>
-    {
-      //console.log('assets', assets)
-    }
-    {
-      //console.log('assetsInfoblox', assetsInfoblox)
-    }
-    {
-      console.log('permissions', permissions)
-    }
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
       ) : (
@@ -1561,7 +1648,66 @@ function PermissionWorkflow(props) {
               Add permission
             </Radio.Button>
 
+            <Radio.Button
+              style={{marginLeft: 16 }}
+              buttonStyle="solid"
+              onClick={() => {
+                setNewIGShow(true)
+              }}
+            >
+              New identity group
+            </Radio.Button>
           </Radio.Group>
+
+          { newIGShow ?
+            <React.Fragment>
+              <br/>
+              <br/>
+              { newIgLoading ?
+                  <Spin indicator={permLoadIcon} style={{marginLeft: '16px', marginRight: '8px'}}/>
+                :
+                  <Input
+                    style={{width: 350, marginLeft: 16}}
+                    value={newIg}
+                    placeholder="cn= ,cn= ,dc= ,dc= "
+                    suffix={
+                      <CloseCircleOutlined onClick={() => {
+                        let errorsCopy = {...errors}
+                        delete errorsCopy.newIdentityGroup
+                        setNewIg('')
+                        setErrors(errorsCopy)
+                      }
+                      }
+                      />
+                    }
+                    onChange={e => setNewIg(e.target.value)}
+                  />
+              }
+              <Button
+                type='primary'
+                style={{marginLeft: 8}}
+                onClick={() => newIdentityGroupHandler()}
+              >
+                Add
+              </Button>
+              <Button
+                style={{marginLeft: 8}}
+                onClick={() => {
+                  let errorsCopy = {...errors}
+                  delete errorsCopy.newIdentityGroup
+                  setNewIg('')
+                  setErrors(errorsCopy)
+                  setNewIGShow(false)
+                }
+                }
+              >
+                Hide
+              </Button>
+              <p style={{marginLeft: '16px', color: 'red'}}>{errors.newIdentityGroup}</p>
+            </React.Fragment>
+            :
+              null
+          }
           <br/>
           <br/>
           <Table
