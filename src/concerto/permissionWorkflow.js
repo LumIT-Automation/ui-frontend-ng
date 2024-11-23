@@ -18,6 +18,7 @@ const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 const permLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />;
 
 function PermissionWorkflow(props) {
+  let [forceRefresh, setForceRefresh] = useState([])
   let [loading, setLoading] = useState(false);
   let [assets, setAssets] = useState([]);
 
@@ -79,6 +80,13 @@ function PermissionWorkflow(props) {
     }
     
   }, [gotPermissions]);
+
+  useEffect(() => {    
+    if (forceRefresh.length > 0) {
+      refreshTagsHandler(forceRefresh[0], forceRefresh[1]);
+      setForceRefresh([])
+    }
+  }, [forceRefresh]);
 
 
   const assetsGet = async () => {
@@ -302,6 +310,24 @@ function PermissionWorkflow(props) {
     setOrigPermissions(JSON.parse(JSON.stringify(copyPermissions)));
   }
 
+  let getTags = async (entities, assetId, subAsset) => {
+    let fetchedTags = await dataGet(`checkpoint/${assetId}/${subAsset}/tags/`)
+    if (fetchedTags.status && fetchedTags.status !== 200 ) {
+      let error = Object.assign(fetchedTags, {
+        component: 'permissionWorkflow',
+        vendor: 'concerto',
+        errorType: 'tagsError'
+      })
+      props.dispatch(err(error))
+      return
+    }
+    else {
+      return fetchedTags.data.items
+    }
+  }
+
+
+
   let itemAdd = async (items, type) => {
     const commonFunctions = new CommonFunctions();
     const list = await commonFunctions.itemAdd(items, type);
@@ -501,7 +527,7 @@ function PermissionWorkflow(props) {
   }
 
 
-
+  
 
   let set = async (key, value, permission, child, tech) => { 
     
@@ -575,35 +601,6 @@ function PermissionWorkflow(props) {
       }
     }
 
-    if (key === 'tag') {
-      let subPerm = perm[tech].find(sp => sp.id === child.id)
-      
-      if (perm.existent) {
-        if (perm.isModified[tech]) {
-          if (perm.isModified[tech][subPerm.id]) {
-            perm.isModified[tech][subPerm.id].tag = true
-          } 
-          else {
-            perm.isModified[tech][subPerm.id] = {}
-            perm.isModified[tech][subPerm.id].tag = true
-          } 
-        } 
-        else {
-          perm.isModified[tech] = {}
-          perm.isModified[tech][subPerm.id] = {}
-          perm.isModified[tech][subPerm.id].tag = true
-        }  
-      }
-
-      if (tech === 'checkpoint') {
-        subPerm.tag = value
-         //orig
-        if (subPerm.existent) {
-          subPerm.isModified = true
-        }
-      } 
-    }
-
     if (key === 'asset') {
       let list = []
       if (tech === 'infoblox') {
@@ -665,7 +662,6 @@ function PermissionWorkflow(props) {
     }
 
     if (key === 'subAsset') {
-
       let subPerm = perm[tech].find(sp => sp.id === child.id)
 
       if (perm.existent) {
@@ -690,11 +686,73 @@ function PermissionWorkflow(props) {
       } 
       if (tech === 'checkpoint') {
         subPerm.domain.name = value
+        setPermissions([...permissionsCopy]);
+        setForceRefresh([perm, subPerm])     
       } 
       if (tech === 'f5') {
         subPerm.partition.name = value
       } 
       delete subPerm.subAssetError      
+    }
+
+    if (key === 'tag') {
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+      
+      if (perm.existent) {
+        if (perm.isModified[tech]) {
+          if (perm.isModified[tech][subPerm.id]) {
+            perm.isModified[tech][subPerm.id].tag = true
+          } 
+          else {
+            perm.isModified[tech][subPerm.id] = {}
+            perm.isModified[tech][subPerm.id].tag = true
+          } 
+        } 
+        else {
+          perm.isModified[tech] = {}
+          perm.isModified[tech][subPerm.id] = {}
+          perm.isModified[tech][subPerm.id].tag = true
+        }  
+      }
+
+      if (tech === 'checkpoint') {
+        subPerm.tag = value
+         //orig
+        if (subPerm.existent) {
+          subPerm.isModified = true
+        }
+      } 
+    }
+
+    if (key === 'refreshTags') {
+      let subPerm = perm[tech].find(sp => sp.id === child.id)
+      let asset = assetsCheckpoint.find(a => a.id = subPerm.asset.id)
+
+      if (value !== 'any') {
+        subPerm.tagsLoading = true
+        setPermissions([...permissionsCopy]);
+        let tags = await getTags('tags', subPerm.asset.id, subPerm.domain.name)
+        permissionsCopy = JSON.parse(JSON.stringify(permissions))
+        perm = permissionsCopy.find(p => p.id === permission.id)
+        subPerm = perm[tech].find(sp => sp.id === child.id)
+        subPerm.asset = asset
+        subPerm.assetFqdn = asset.fqdn
+        subPerm.tags = tags 
+        delete subPerm.tag
+
+        permissionsCopy.forEach(p => {
+          if (p.checkpoint) {
+            p.checkpoint.forEach(subP => {
+              if (subP.domain && subP.domain.name === subPerm.domain.name) {
+                subP.tags = tags 
+              }
+            })
+          }
+        })
+
+        subPerm.tagsLoading = false
+        setPermissions([...permissionsCopy]);
+      }
     }
 
     if (key === 'subPermDel') {
@@ -736,85 +794,147 @@ function PermissionWorkflow(props) {
     setPermissions([...permissionsCopy]);
   }
 
-  let validationCheck = async () => {
-    let permissionsCopy = [...permissions]
-    let errors = 0
-    let jsonHelper = new JsonHelper()
-    let workflowsCopy = [... workflows]
+  let refreshTagsHandler = async(permLocal, subPermLocal) => {
+    let permissionsCopy = JSON.parse(JSON.stringify(permissions))
+    let perm = permissionsCopy.find(p => p.id === permLocal.id)
+    let subPerm = perm['checkpoint'].find(sp => sp.id === subPermLocal.id)
+    let tags = []
+      /*
+      If there are already tags for that specific domain do not call backend
+      */
+      let shouldSkip = false 
 
-    for (const perm of Object.values(permissionsCopy)) {
-      if (!perm.identity_group_identifier) {
-        ++errors
-        perm.identity_group_identifierError = true
-      }
+      for (let p of permissionsCopy) {
 
-      if (!perm.workflow) {
-        ++errors
-        perm.workflowError = true
-      }
-      else {
-        let w = workflowsCopy.find(o => o.name === perm.workflow)
-        if (w.technologies && w.technologies.length > 0) {
-          if (w.technologies.includes('infoblox')) {
-            if (!perm.infoblox || (perm.infoblox && perm.infoblox.length < 1)) {
-              //missing technologiy
-            }
-            if (perm.infoblox && perm.infoblox.length > 0) {
-              perm.infoblox.forEach(element => {
-                if (element.network && !element.network.id_asset) {
-                  ++errors
-                  element.assetError = true
-                }
-                if (element.network && !element.network.network) {
-                  ++errors
-                  element.subAssetError = true
-                }
-              });
-  
-            }
-          }
-          /*if (w.technologies.includes('checkpoint')) {
-            if (!perm.checkpoint || (perm.checkpoint && perm.checkpoint.length < 1)) {
-              //missing technologiy
-            }
-            if (perm.checkpoint && perm.checkpoint.length > 0) {
-              perm.checkpoint.forEach(element => {
-                if (element.domain && !element.domain.id_asset) {
-                  ++errors
-                  element.assetError  = true
-                }
-                if (element.domain && !element.domain.name) {
-                  ++errors
-                  element.subAssetError = true
-                }
-              });
-  
-            }
-          }*/
-          if (w.technologies.includes('f5')) {
-            if (!perm.f5 || (perm.f5 && perm.f5.length < 1)) {
-              //missing technologiy
-            }
-            if (perm.f5 && perm.f5.length > 0) {
-              perm.f5.forEach(element => {
-                if (element.partition && !element.partition.id_asset) {
-                  ++errors
-                  element.assetError = true
-                }
-                if (element.partition && !element.partition.name) {
-                  ++errors
-                  element.subAssetError = true
-                }
-              });
-  
+        if (shouldSkip) {
+          break 
+        }
+        if (p.checkpoint) {
+          for (let subP of p.checkpoint) {
+            if (subP.domain && (subP.domain.name === subPerm.domain.name)) {
+              if (subP.tags && subP.tags.length > 0) {
+                tags = subP.tags
+                shouldSkip = true
+              }
             }
           }
         }
       }
+
+      if (tags.length === 0) {                    
+        subPerm.tagsLoading = true
+        setPermissions([...permissionsCopy]);
+        tags = await getTags('tags', subPerm.asset.id, subPerm.domain.name)
+        subPerm.tagsLoading = false
+        setPermissions([...permissionsCopy]);
+      }
       
+      perm = permissionsCopy.find(p => p.id === permLocal.id)
+      subPerm = perm['checkpoint'].find(sp => sp.id === subPermLocal.id)
+      subPerm.tags = tags
+      delete subPerm.tag
+
+      /*get tags for one specific domain 
+      and spread on every checkpoint subpermissions 
+      with the same domain*/
+      permissionsCopy.forEach(p => {
+        if (p.checkpoint) {
+          p.checkpoint.forEach(subP => {
+            if (subP.domain && subP.domain.name === subPerm.domain.name) {
+              subP.tags = tags 
+            }
+          })
+        }
+      })
+
+      setPermissions([...permissionsCopy]);
+  }
+
+  let validationCheck = async () => {
+    try {
+      let permissionsCopy = [...permissions]
+      let errors = 0
+      let jsonHelper = new JsonHelper()
+      let workflowsCopy = [... workflows]
+
+      for (const perm of Object.values(permissionsCopy)) {
+        if (!perm.identity_group_identifier) {
+          ++errors
+          perm.identity_group_identifierError = true
+        }
+
+        if (!perm.workflow) {
+          ++errors
+          perm.workflowError = true
+        }
+        else {
+          let w = workflowsCopy.find(o => o.name === perm.workflow)
+          if (w && w.technologies && w.technologies.length > 0) {
+            if (w.technologies.includes('infoblox')) {
+              if (!perm.infoblox || (perm.infoblox && perm.infoblox.length < 1)) {
+                //missing technologiy
+              }
+              if (perm.infoblox && perm.infoblox.length > 0) {
+                perm.infoblox.forEach(element => {
+                  if (element.network && !element.network.id_asset) {
+                    ++errors
+                    element.assetError = true
+                  }
+                  if (element.network && !element.network.network) {
+                    ++errors
+                    element.subAssetError = true
+                  }
+                });
+    
+              }
+            }
+            if (w.technologies.includes('checkpoint')) {
+              if (!perm.checkpoint || (perm.checkpoint && perm.checkpoint.length < 1)) {
+                //missing technologiy
+              }
+              if (perm.checkpoint && perm.checkpoint.length > 0) {
+                perm.checkpoint.forEach(element => {
+                  if (element.domain && !element.domain.id_asset) {
+                    ++errors
+                    element.assetError  = true
+                  }
+                  if (element.domain && !element.domain.name) {
+                    ++errors
+                    element.subAssetError = true
+                  }
+                });
+    
+              }
+            }
+            if (w.technologies.includes('f5')) {
+              if (!perm.f5 || (perm.f5 && perm.f5.length < 1)) {
+                //missing technologiy
+              }
+              if (perm.f5 && perm.f5.length > 0) {
+                perm.f5.forEach(element => {
+                  if (element.partition && !element.partition.id_asset) {
+                    ++errors
+                    element.assetError = true
+                  }
+                  if (element.partition && !element.partition.name) {
+                    ++errors
+                    element.subAssetError = true
+                  }
+                });
+    
+              }
+            }
+          }
+        }
+        
+      }
+      setPermissions([...permissionsCopy]);
+      return errors
     }
-    setPermissions([...permissionsCopy]);
-    return errors
+    catch (errors) {
+      console.log(errors)
+    }
+    
   }
 
   let validation = async () => {
@@ -879,9 +999,6 @@ function PermissionWorkflow(props) {
         }
         if (perm.checkpoint && perm.checkpoint.length > 0) {
           body.data.checkpoint = perm.checkpoint
-          // !!!!
-          //body.data.checkpoint[0].domain.name = 'POLAND'
-          //body.data.checkpoint[0].tag = 'any'
         }
         if (perm.f5 && perm.f5.length > 0) {
           body.data.f5 = perm.f5
@@ -953,6 +1070,7 @@ function PermissionWorkflow(props) {
       }
     }
     
+    setExpandedRowKeys([])
     setPermissionsRefresh(true)
   }
 
@@ -999,25 +1117,6 @@ function PermissionWorkflow(props) {
     )
     await rest.doXHR(endpoint, props.token, body )
     return r
-  }
-
-  let createElement = (element, key, choices, obj, action, father, tech) => {
-    if (element === 'textArea') {
-      return (
-        <Input.TextArea
-          rows={5}
-          defaultValue={obj[key]}
-          //ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
-          onBlur={event => set(key, event.target.value, father, obj, tech)}
-          style=
-            { obj[`${key}Error`] ?
-              {borderColor: `red`, width: 150}
-            :
-              {width: 150}
-            }
-        />
-      )
-    }
   }
 
   // Colonne per la tabella F5
@@ -1354,18 +1453,84 @@ function PermissionWorkflow(props) {
     },
     {
       title: 'Tag',
-      dataIndex: 'tag',
+      align: 'center',
       key: 'tag',
-      render: (name, obj)  => (
-        <>
-        {
-          createElement('textArea', 'tag', '', obj, '', father, 'checkpoint')
-        }
-        {
-          //<p>Insert tags separated by comma (,).</p>
-        }
-        </>
-      )
+      render: (name, obj)  => {
+        return (
+          <React.Fragment>
+            {obj && obj.domain && obj.domain.name === 'any' ?
+              <Input
+                defaultValue={obj && obj.tag ? obj.tag : null}
+                style={
+                  obj.tagError ?
+                    {borderColor: 'red', textAlign: 'center', width: 150}
+                  :
+                    {textAlign: 'center', width: 150}
+                }
+                onBlur={e => {
+                  set('tag', e.target.value, obj)
+                }
+                }
+              />
+            :
+              <React.Fragment>
+                {obj.tagsLoading ? 
+                  <Spin indicator={permLoadIcon} style={{margin: '10% 10%'}}/>
+                :
+                  <div
+                    style={{display: 'flex', alignItems: 'center'}}
+                  >
+                    <Select
+                      value={obj && obj.tag ? obj.tag : null}
+                      disabled={obj && obj.domain && !obj.domain.name ? true : false}
+                      showSearch
+                      style=
+                      { obj[`tagError`] ?
+                        {width: '65%', border: `1px solid red`}
+                      :
+                        {width: '65%'}
+                      }
+                      optionFilterProp="children"
+                      filterOption={(input, option) =>
+                        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                      }
+                      filterSort={(optionA, optionB) =>
+                        optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                      }
+                      onSelect={value => set('tag', value, father, obj, 'checkpoint' )}
+                    >
+                      <React.Fragment>
+                        { obj && obj.tags && obj.tags.length > 0 ? obj.tags.map((tag, i) => {
+                            return (
+                              <Select.Option key={i} value={tag.name ? tag.name : ''}>{tag.name ? tag.name : ''}</Select.Option>
+                            )
+                          })
+                        :
+                          null
+                        }
+                      </React.Fragment>
+                    </Select>
+
+                    <Radio.Group
+                      style={{marginLeft: 20}}
+                    >
+                      <Radio.Button
+                        disabled={obj && obj.domain && !obj.domain.name ? true : false}
+                        onClick={() => set('refreshTags', true, father, obj, 'checkpoint' )}
+                      >
+                        <ReloadOutlined/>
+                      </Radio.Button>
+                    </Radio.Group>
+                  </div>
+                
+                }
+
+              </React.Fragment>
+            }
+
+          </React.Fragment>
+         )
+      },
     },
     {
       title: 'Delete',
