@@ -27,11 +27,11 @@ function Manager(props) {
     
     <React.Fragment>
       <Row>
-      {/*authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account-assign') ?
+        {/*authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?*/
           <Col span={6} offset={2}>
             <p>Manage cloud account</p>
-            <CloudAccount/>
-          </Col>
+            <CloudAccount service='cloud account' vendor='infoblox'/>
+          </Col>/*
         :
           null
         */}

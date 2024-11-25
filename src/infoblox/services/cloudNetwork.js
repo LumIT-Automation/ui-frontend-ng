@@ -1184,10 +1184,15 @@ function CloudNetwork(props) {
                 { provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ?
                   regions ?
                     regions.map((r,i) => {
-                      let str = `${r.regionName.toString()} - ${r.regionCode.toString()}`
+                      try{
+                        let str = `${r.regionName.toString()} - ${r.regionCode.toString()}`
                       return (
                         <Select.Option key={i} value={r.regionCode}>{str}</Select.Option>
                       )
+                      }
+                      catch (error) {
+                        console.log(error)
+                      }
                     })
                   :
                    []
