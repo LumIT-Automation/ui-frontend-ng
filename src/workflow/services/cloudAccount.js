@@ -56,7 +56,6 @@ function CloudAccount(props) {
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
   let [cloudAccount, setCloudAccount] = useState({});
   let [cloudAccountModify, setCloudAccountModify] = useState({});
-  let [cloudAccountNew, setCloudAccountNew] = useState({});
 
   let [changeRequestId, setChangeRequestId] = useState('');
 
@@ -90,11 +89,22 @@ function CloudAccount(props) {
 
   useEffect(() => {
     //1
-    if (cloudAccount.accountName) {
+    if (cloudAccount.accountName && existent) {
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
 
+  useEffect(() => {
+    if (!existent) {
+      setCloudAccount({
+        cloudNetworks: [{id:1}]
+      })
+    }
+    else {
+      setCloudAccount({})
+    }
+    
+  }, [existent]);
 
   let dataGetHandler = async (entities, assetId) => {
     let data
@@ -276,101 +286,6 @@ function CloudAccount(props) {
     return r
   }
 
-
-  let accountDel = async() => {
-    let localErrors = await validationCheck()
-    if (localErrors === 0) {
-      setLoading(true)
-      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
-        let net = cloudNet.network.split('/')
-        net = net[0]
-        let body = {}
-        body.data = {
-          "change-request-id": changeRequestId,
-          "provider": provider,
-          "infoblox_cloud_network_delete": [
-            {
-              "asset": props.asset?.id ? props.asset.id : null,
-              "network": net
-            }
-          ],
-          "checkpoint_datacenter_account_delete": {
-            "asset": cpAsset
-          }
-        }
-        
-        let n = await cloudNetworkDelete(cloudAccount.accountName, body)
-        if (n.status && n.status !== 200 ) {
-          let error = Object.assign(n, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'CloudNetworkOrAccountDeleteError'
-          })
-          props.dispatch(err(error))
-        }
-      }
-
-      setAccountModify(false);
-      setCloudAccount({});
-      setLoading(false)
-    
-      dataGetHandler('cloudAccounts', props.asset.id)
-    }
-  }
-
-  let modifyAccountHandler = async() => {
-    let localErrors = await validationCheck()
-    if (localErrors === 0) {
-      setLoading(true)
-      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
-
-      let body = {}
-      body.data = {
-        "change-request-id": changeRequestId,
-        "Account ID": cloudAccountCopy.accountId,
-        "Reference": cloudAccountCopy.ITSM,
-        "provider": provider,
-        "checkpoint_datacenter_account_put": {
-          "asset": cpAsset,
-          "tags": [
-            "testone", "acquazzone"
-          ]
-        }
-      }
-
-      let list = cloudAccountCopy.cloudNetworks.map((n,i) => { 
-        let o = {}
-        //!!!!!!!!1
-        o.asset = n.asset_id
-        o.comment = cloudAccountCopy.ITSM
-        o.subnetMaskCidr = n.subnetMaskCidr
-        o.region = n.Region
-        return o
-      })
-
-      body.data.infoblox_cloud_network_assign = list 
-      
-      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
-      if (n.status && n.status !== 200 ) {
-        let error = Object.assign(n, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'CloudAccountPutError'
-        })
-        props.dispatch(err(error))
-      }
-      
-
-      setAccountModify(false);
-      setCloudAccount({});
-      setCloudAccountModify({});
-      setLoading(false)
-    
-      dataGetHandler('cloudAccounts', props.asset.id)
-    }
-  }
-
   let cloudNetworkAdd = async () => {
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let commonFunctions = new CommonFunctions()
@@ -434,8 +349,10 @@ function CloudAccount(props) {
       if (key === 'Region') {
         if (provider === 'AWS') {
           if (value) {
-            cloudNet.Region = 'aws-'+value
+            cloudNet.Region = value
             delete cloudNet.RegionError
+            setCloudAccount(cloudAccountCopy)
+            setErrors(errorsCopy);
           }
         }
       }
@@ -443,6 +360,8 @@ function CloudAccount(props) {
       if (key === 'subnetMaskCidr') {
         cloudNet.subnetMaskCidr = value
         delete cloudNet.subnetMaskCidrError
+        setCloudAccount(cloudAccountCopy)
+        setErrors(errorsCopy);
       }
 
       if (key === 'comment') {
@@ -484,6 +403,7 @@ function CloudAccount(props) {
         else {
           delete cloudNet.toDelete
         }
+        setCloudAccount(cloudAccountCopy)
       }
 
     }
@@ -511,18 +431,6 @@ function CloudAccount(props) {
       }
     }
 
-    /*if (key === 'cloudAccountModifyName') {
-      delete errorsCopy.cloudAccountModifyNameError
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
-      accountCopy.accountName = value
-      setErrors(errorsCopy);
-      setCloudAccountModify(accountCopy)
-      let ref = myRefs.current['cloudAccountModifyName'];
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }*/
-
     if (key === 'cloudAccountModifyITSM') {
       delete errorsCopy.cloudAccountModifyITSMError
       let accountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
@@ -535,8 +443,41 @@ function CloudAccount(props) {
       }
     }
 
-    
+    if (key === 'cloudAccountId') {
+      delete errorsCopy.cloudAccountIdError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.accountId = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current['cloudAccountId'];
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
 
+    if (key === 'cloudAccountName') {
+      delete errorsCopy.cloudAccountNameError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.accountName = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current.cloudAccountName;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
+    if (key === 'cloudAccountITSM') {
+      delete errorsCopy.cloudAccountITSMError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.ITSM = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current.cloudAccountITSM;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
     
   }
 
@@ -574,7 +515,9 @@ function CloudAccount(props) {
     } 
 
     for (let cloudNet of Object.values(cloudNetworksCopy)) {
-      if ((provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ) && !cloudNet.Region) {
+      console.log(cloudNet)
+      if (!cloudNet.Region) {
+        console.log('No cloudNet.Region')
         ++localErrors
         cloudNet.RegionError = true
       }
@@ -589,9 +532,194 @@ function CloudAccount(props) {
   }
 
   /* DISPOSITION */
+  let accountDel = async() => {
+    let localErrors = await validationCheck()
+    if (localErrors === 0) {
+      setLoading(true)
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
+        let net = cloudNet.network.split('/')
+        net = net[0]
+        let body = {}
+        body.data = {
+          "change-request-id": changeRequestId,
+          "provider": provider,
+          "infoblox_cloud_network_delete": [
+            {
+              "asset": props.asset?.id ? props.asset.id : null,
+              "network": net
+            }
+          ],
+          "checkpoint_datacenter_account_delete": {
+            "asset": cpAsset
+          }
+        }
+        
+        let n = await cloudNetworkDelete(cloudAccount.accountName, body)
+        if (n.status && n.status !== 200 ) {
+          let error = Object.assign(n, {
+            component: 'cloudAccount',
+            vendor: 'concerto',
+            errorType: 'CloudNetworkOrAccountDeleteError'
+          })
+          props.dispatch(err(error))
+        }
+      }
+
+      setAccountModify(false);
+      setCloudAccount({});
+      setExistent(true)
+      setLoading(false)
+    
+      dataGetHandler('cloudAccounts', props.asset.id)
+    }
+  }
+
+  let modifyAccountHandler = async() => {
+    let localErrors = await validationCheck()
+    if (localErrors === 0) {
+      setLoading(true)
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
+
+      let body = {}
+      body.data = {
+        "change-request-id": changeRequestId,
+        "Account ID": cloudAccountCopy.accountId,
+        "Reference": cloudAccountCopy.ITSM,
+        "provider": provider,
+        "checkpoint_datacenter_account_put": {
+          "asset": cpAsset,
+          "tags": [
+            "testone", "acquazzone"
+          ]
+        }
+      }
+
+      let list = cloudAccountCopy.cloudNetworks.map((n,i) => { 
+        let o = {}
+        //!!!!!!!!1
+        o.asset = props.asset.id
+        o.comment = cloudAccountCopy.ITSM
+        o.subnetMaskCidr = n.subnetMaskCidr
+        o.region = n.Region
+        return o
+      })
+
+      body.data.infoblox_cloud_network_assign = list 
+      
+      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      if (n.status && n.status !== 200 ) {
+        let error = Object.assign(n, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'CloudAccountPutError'
+        })
+        props.dispatch(err(error))
+      }
+      
+
+      setAccountModify(false);
+      setCloudAccount({});
+      setCloudAccountModify({});
+      setExistent(true)
+      setLoading(false)
+    
+      dataGetHandler('cloudAccounts', props.asset.id)
+    }
+  }
 
   let cudManager = async () => {
-    console.log('èèèèèèèèè')
+    let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+    let toDelete = []
+    let toPut = []
+
+    for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
+      if (cloudNet.toDelete) {
+        toDelete.push(cloudNet)
+      }
+      else {
+        toPut.push(cloudNet)
+      }
+    }
+
+    setLoading(true)
+
+    if (toDelete.length > 0) {
+      for (const cloudNet of toDelete) {
+        let net = cloudNet.network.split('/')
+        net = net[0]
+        let body = {}
+        body.data = {
+          "change-request-id": changeRequestId,
+          "provider": provider,
+          "infoblox_cloud_network_delete": [
+            {
+              "asset": props.asset?.id ? props.asset.id : null,
+              "network": net
+            }
+          ],
+          "checkpoint_datacenter_account_delete": {
+            "asset": cpAsset
+          }
+        }
+        
+        let n = await cloudNetworkDelete(cloudAccountCopy.accountName, body)
+        if (n.status && n.status !== 200 ) {
+          let error = Object.assign(n, {
+            component: 'cloudAccount',
+            vendor: 'concerto',
+            errorType: 'CloudNetworkOrAccountDeleteError'
+          })
+          props.dispatch(err(error))
+        }
+      }
+    }
+
+    let body = {}
+      body.data = {
+        "change-request-id": changeRequestId,
+        "Account ID": cloudAccountCopy.accountId,
+        "Reference": cloudAccountCopy.ITSM,
+        "provider": provider,
+        "checkpoint_datacenter_account_put": {
+          "asset": cpAsset,
+          "tags": [
+            "testone", "acquazzone"
+          ]
+        }
+      }
+
+      let list = cloudAccountCopy.cloudNetworks.map((n,i) => { 
+        let o = {}
+        //!!!!!!!!1
+        o.asset = props.asset.id
+        o.comment = cloudAccountCopy.ITSM
+        o.subnetMaskCidr = n.subnetMaskCidr
+        o.region = n.Region
+        return o
+      })
+
+      body.data.infoblox_cloud_network_assign = list 
+      
+      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      if (n.status && n.status !== 200 ) {
+        let error = Object.assign(n, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'CloudAccountPutError'
+        })
+        props.dispatch(err(error))
+      }
+      
+
+      setAccountModify(false);
+      setCloudAccount({});
+      setCloudAccountModify({});
+      setExistent(true)
+      setLoading(false)
+    
+      dataGetHandler('cloudAccounts', props.asset.id)
+
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
@@ -724,10 +852,56 @@ function CloudAccount(props) {
         )
       }
 
+      else if (key === 'cloudAccountId') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccount?.accountId}
+            ref={ref => (myRefs.current.cloudAccountId = ref)}
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+
+      else if (key === 'cloudAccountName') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccount?.accountName}
+            ref={ref => (myRefs.current.cloudAccountName = ref)}
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+
+      else if (key === 'cloudAccountITSM') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccount?.ITSM}
+            ref={ref => (myRefs.current.cloudAccountITSM = ref)}
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
     }
-
     switch (element) {
-
+      
       case 'popOver':
         if (action === 'delAccount') {
           return (
@@ -779,7 +953,6 @@ function CloudAccount(props) {
                 :
                   {width: 180}
               }
-              disabled={(provider === 'AWS' || provider === 'AZURE' || provider === 'OCI') ? false : true}
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
@@ -790,7 +963,7 @@ function CloudAccount(props) {
               onSelect={event => set(key, event, obj)}
             >
               <React.Fragment>
-                { provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ?
+                { 
                   regions ?
                     regions.map((r,i) => {
                       try{
@@ -805,8 +978,6 @@ function CloudAccount(props) {
                     })
                   :
                    []
-                :
-                  null 
                 }
               </React.Fragment>
             </Select>
@@ -1115,10 +1286,7 @@ function CloudAccount(props) {
   return (
     <React.Fragment>
       {console.log(cloudAccount)}
-      {console.log('cloudAccountModify', cloudAccountModify)}
-      {console.log(changeRequestId)}
-      {console.log(cpAssets)}
-      {console.log(cpAsset)}
+      {console.log(errors)}
       <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
 
       <Modal
@@ -1271,7 +1439,7 @@ function CloudAccount(props) {
                           <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
                         </Col>
                       }
-                      <Col offset={1} span={1}>
+                      {/*<Col offset={1} span={1}>
                         <Checkbox
                           checked={accountModify}
                           disabled={!(cloudAccount?.accountId || cloudAccount?.accountName || cloudAccount?.ITSM) ? true : false}
@@ -1280,7 +1448,7 @@ function CloudAccount(props) {
                         >
                           Modify
                         </Checkbox>
-                      </Col>
+                      </Col>*/}
                       <Col offset={1}  span={2}>
                         {createElement('popOver', '', '', '', 'delAccount')}
                       </Col>
@@ -1329,19 +1497,19 @@ function CloudAccount(props) {
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
                       </Col>
                       <Col span={3}>
-                        {createElement('input', 'newAccountId', '', '', '')}
+                        {createElement('input', 'cloudAccountId', '', '', '')}
                       </Col>
                       <Col span={3}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
                       </Col>
                       <Col span={4}>
-                        {createElement('input', 'newAccountName', '', '', '')}
+                        {createElement('input', 'cloudAccountName', '', '', '')}
                       </Col>
                       <Col span={2}>
                         <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
                       </Col>
                       <Col span={2}>
-                        {createElement('input', 'newITSM', '', '', '')}
+                        {createElement('input', 'cloudAccountITSM', '', '', '')}
                       </Col>
                       <Col offset={3} span={2}>
                         {createElement('button', '', '', '', 'newAccount')}
@@ -1375,7 +1543,7 @@ function CloudAccount(props) {
                       style={{width: '100%', padding: 15}}
                       dataSource={cloudAccount?.cloudNetworks ? cloudAccount.cloudNetworks : []}
                       bordered
-                      rowKey={randomKey}
+                      rowKey={record => record.id}
                       scroll={{x: 'auto'}}
                       pagination={{ pageSize: 10 }}
                     />
