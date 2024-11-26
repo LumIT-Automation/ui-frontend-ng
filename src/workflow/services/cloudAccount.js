@@ -237,7 +237,8 @@ function CloudAccount(props) {
             item.network = item.network ? item.network : '';
             item.network_container = item.network_container ? item.network_container : '';
             item.Region = item?.extattrs?.City?.value ? item.extattrs.City.value : '';
-            item.comment
+            //
+            item.comment = ''
             item.existent = true
             item.subnetMaskCidr = sm[1]
             item.id = ++i
@@ -304,8 +305,6 @@ function CloudAccount(props) {
 
   /* SET */
   let set = async (key, value, cloudNetwork) => {
-    console.log(key)
-    console.log(value)
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
     let cloudNet
@@ -515,9 +514,7 @@ function CloudAccount(props) {
     } 
 
     for (let cloudNet of Object.values(cloudNetworksCopy)) {
-      console.log(cloudNet)
       if (!cloudNet.Region) {
-        console.log('No cloudNet.Region')
         ++localErrors
         cloudNet.RegionError = true
       }
@@ -1285,8 +1282,6 @@ function CloudAccount(props) {
 
   return (
     <React.Fragment>
-      {console.log(cloudAccount)}
-      {console.log(errors)}
       <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
 
       <Modal
