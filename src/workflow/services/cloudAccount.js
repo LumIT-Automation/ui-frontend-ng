@@ -359,34 +359,39 @@ function CloudAccount(props) {
 
   let accountDel = async() => {
     setLoading(true)
-      let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudAccount.cloudNetworks))
-      for (const cloudNet of cloudNetworksCopy) {
-        cloudNet.loading = true
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
         let net = cloudNet.network.split('/')
-        let n = await cloudNetworkDelete(net[0])
+        net = net[0]
+        let body = {}
+        body.data = {
+          "change-request-id": "ITIO-777777779",
+          "provider": provider,
+          "infoblox_cloud_network_delete": [
+            {
+              "asset": props.asset?.id ? props.asset.id : null,
+              "network": net
+            }
+          ],
+          "checkpoint_datacenter_account_delete": {
+            "asset": 1
+          }
+        }
+        
+        let n = await cloudNetworkDelete(cloudAccount.accountName, body)
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
             vendor: 'concerto',
-            errorType: 'NetworkDeleteError'
+            errorType: 'CloudNetworkOrAccountDeleteError'
           })
           props.dispatch(err(error))
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
-        }
-        else {
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
         }
       }
-    
+
+    setAccountModify(false);
+    setCloudAccount({});
     setLoading(false)
-    setAccountId('')
-    setAccountName('')
-    setITSM('')
-    setCloudNetworks([])
-    setOriginCloudNetworks([])
-    setAccountModify(false)
    
     dataGetHandler('cloudAccounts', props.asset.id)
   }
@@ -584,7 +589,7 @@ function CloudAccount(props) {
   let cudManager = async () => {
     let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
     let toDelete = []
-    let toPatch = []
+    let toPut = []
 
     for (const cloudNet of Object.values(cloudNetworksCopy)) {
       if (cloudNet.toDelete) {
@@ -723,7 +728,7 @@ function CloudAccount(props) {
     }
   }
 
-  let cloudNetworkDelete = async (net) => {
+  let cloudNetworkDelete = async (accountName, body) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -734,7 +739,7 @@ function CloudAccount(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/delete-cloud-network/${net}/`, props.token )
+    await rest.doXHR(`workflow/cloud-account/${accountName}/`, props.token, body )
     return r
   }
 
@@ -955,7 +960,7 @@ function CloudAccount(props) {
           >
             <Button 
               type="danger"
-              disabled={(accountId && accountName && ITSM) ? false : true}
+              disabled={(cloudAccount?.accountId) ? false : true}
             >
               Delete Account
             </Button>
