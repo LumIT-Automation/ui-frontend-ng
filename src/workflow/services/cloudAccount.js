@@ -48,36 +48,23 @@ function CloudAccount(props) {
   let [regions, setRegions] = useState([]);
   
   let [cpAssets, setCpAssets] = useState([]);
-  let [cpAsset, setCpAsset] = useState([]);
-  
-  let [cloudNetworks, setCloudNetworks] = useState([]);
-  let [originCloudNetworks, setOriginCloudNetworks] = useState([]);
+  let [cpAsset, setCpAsset] = useState(0);
 
   let [cloudAccountsLoading, setCloudAccountsLoading] = useState(false);
   let [cloudAccounts, setCloudAccounts] = useState([]);
 
-  let [cloudAccount, setCloudAccount] = useState({});
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
+  let [cloudAccount, setCloudAccount] = useState({});
+  let [cloudAccountModify, setCloudAccountModify] = useState({});
+  let [cloudAccountNew, setCloudAccountNew] = useState({});
 
+  let [changeRequestId, setChangeRequestId] = useState('');
 
-  let [accountId, setAccountId] = useState('');
-  let [accountName, setAccountName] = useState('');
-  let [ITSM, setITSM] = useState('');
-  
-  let [modifyId, setModifyId] = useState('');
-  let [modifyName, setModifyName] = useState('');
-  let [modifyITSM, setModifyITSM] = useState('');
   let [accountModify, setAccountModify] = useState(false);
-  
-  let [newAccountId, setNewAccountId] = useState('');
-  let [newAccountName, setNewAccountName] = useState('');
-  let [newITSM, setNewITSM] = useState('');
-
-
-
-
 
   let [subnetMaskCidrs, setSubnetMaskCidrs] = useState(['23', '24']);
+
+  let [errors, setErrors] = useState({});
 
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
@@ -85,7 +72,7 @@ function CloudAccount(props) {
 
   let [response, setResponse] = useState(false);
 
-  let myRefs = {};
+  let myRefs = useRef({});
   let textAreaRefs = useRef({});
 
 
@@ -107,25 +94,6 @@ function CloudAccount(props) {
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
-
-  useEffect(() => {
-    if (!existent) {
-      setAccountModify(false);
-      setAccountId('');
-      setAccountName('');
-      setITSM('');
-      setModifyId('');
-      setModifyName('');
-      setModifyITSM('');
-    }
-    else {
-      setNewAccountId('')
-      setNewAccountName('')
-      setNewITSM('')
-      setAccountModify(false)
-    }
-  }, [existent]);
-
 
 
   let dataGetHandler = async (entities, assetId) => {
@@ -308,64 +276,18 @@ function CloudAccount(props) {
     return r
   }
 
-  let newAccountHandler = async() => {
-      setLoading(true)
-
-      let data = await dataGet('getNetworks', props.asset.id)
-      if (data.status && data.status !== 200 ) {
-        let error = Object.assign(data, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'getNetworksError'
-        })
-        props.dispatch(err(error))
-      }
-      else {
-        data.data.forEach((item, i) => {
-          item.existent = true
-          item.isModified = {}
-          item.id = ++i
-          if (item.extattrs) {
-            for (let k in item.extattrs) {
-              if (k === 'Country') {
-                let v
-                if (item.extattrs[k].value.includes('Cloud-')){
-                  v = item.extattrs[k].value.replace('Cloud-', '')
-                  item['Provider'] = v
-                }
-                else {
-                  item['Provider'] = item.extattrs[k].value
-                }
-              }
-              else if (k === 'City') {
-                item['Region'] = item.extattrs[k].value
-              }
-              else if (k === 'Reference') {
-                item['ITSM'] = item.extattrs[k].value
-              }
-              else {
-                item[k] = item.extattrs[k].value
-              }
-            }
-          }
-        });
-        setLoading(false)
-        setOriginCloudNetworks(data.data)
-        setCloudNetworks(data.data)
-        setExistent(true)
-      }
-    
-  }
 
   let accountDel = async() => {
-    setLoading(true)
+    let localErrors = await validationCheck()
+    if (localErrors === 0) {
+      setLoading(true)
       let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
       for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
         let net = cloudNet.network.split('/')
         net = net[0]
         let body = {}
         body.data = {
-          "change-request-id": "ITIO-777777779",
+          "change-request-id": changeRequestId,
           "provider": provider,
           "infoblox_cloud_network_delete": [
             {
@@ -374,7 +296,7 @@ function CloudAccount(props) {
             }
           ],
           "checkpoint_datacenter_account_delete": {
-            "asset": 1
+            "asset": cpAsset
           }
         }
         
@@ -389,11 +311,64 @@ function CloudAccount(props) {
         }
       }
 
-    setAccountModify(false);
-    setCloudAccount({});
-    setLoading(false)
-   
-    dataGetHandler('cloudAccounts', props.asset.id)
+      setAccountModify(false);
+      setCloudAccount({});
+      setLoading(false)
+    
+      dataGetHandler('cloudAccounts', props.asset.id)
+    }
+  }
+
+  let modifyAccountHandler = async() => {
+    let localErrors = await validationCheck()
+    if (localErrors === 0) {
+      setLoading(true)
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
+
+      let body = {}
+      body.data = {
+        "change-request-id": changeRequestId,
+        "Account ID": cloudAccountCopy.accountId,
+        "Reference": cloudAccountCopy.ITSM,
+        "provider": provider,
+        "checkpoint_datacenter_account_put": {
+          "asset": cpAsset,
+          "tags": [
+            "testone", "acquazzone"
+          ]
+        }
+      }
+
+      let list = cloudAccountCopy.cloudNetworks.map((n,i) => { 
+        let o = {}
+        //!!!!!!!!1
+        o.asset = n.asset_id
+        o.comment = cloudAccountCopy.ITSM
+        o.subnetMaskCidr = n.subnetMaskCidr
+        o.region = n.Region
+        return o
+      })
+
+      body.data.infoblox_cloud_network_assign = list 
+      
+      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      if (n.status && n.status !== 200 ) {
+        let error = Object.assign(n, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'CloudAccountPutError'
+        })
+        props.dispatch(err(error))
+      }
+      
+
+      setAccountModify(false);
+      setCloudAccount({});
+      setCloudAccountModify({});
+      setLoading(false)
+    
+      dataGetHandler('cloudAccounts', props.asset.id)
+    }
   }
 
   let cloudNetworkAdd = async () => {
@@ -414,15 +389,30 @@ function CloudAccount(props) {
 
   /* SET */
   let set = async (key, value, cloudNetwork) => {
+    console.log(key)
+    console.log(value)
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
     let cloudNet
+    let errorsCopy = JSON.parse(JSON.stringify(errors))
+
+    if (key === 'changeRequestId') {
+      delete errorsCopy.changeRequestIdError
+      setChangeRequestId(value);
+      setErrors(errorsCopy);
+      let ref = myRefs.current['changeRequestId'];
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
 
     if (key === 'provider') {
       setProvider(value)
     }
 
     if (key === 'cpAsset') {
+      delete errorsCopy.cpAssetError
+      setErrors(errorsCopy);
       setCpAsset(value)
     }
 
@@ -498,64 +488,63 @@ function CloudAccount(props) {
 
     }
 
-    if (key === 'ITSM') {
-      let cloudNet = cloudNetworksCopy.find(cn => cn.id === cloudNetwork.id)
-      let start = 0
-      let end = 0
-      let ref = myRefs[`${cloudNet.id}_ITSM`]
-
-      if (ref && ref.input) {
-        start = ref.input.selectionStart
-        end = ref.input.selectionEnd
-      }
-
+    if (key === 'accountModify') {
       if (value) {
-        cloudNet.ITSM = value
-        delete cloudNet.ITSMError
+        setAccountModify(value)
+        setCloudAccountModify(cloudAccount)
       }
       else {
-        //blank value while typing.
-        cloudNet.ITSM = ''
+        setAccountModify(value)
+        setCloudAccountModify({})
       }
+    }
 
-      setCloudAccount(cloudAccountCopy)
-
-      ref = myRefs[`${cloudNet.id}_ITSM`]
-
+    if (key === 'cloudAccountModifyId') {
+      delete errorsCopy.cloudAccountModifyIdError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
+      accountCopy.accountId = value
+      setErrors(errorsCopy);
+      setCloudAccountModify(accountCopy)
+      let ref = myRefs.current['cloudAccountModifyId'];
       if (ref && ref.input) {
-        ref.input.selectionStart = start
-        ref.input.selectionEnd = end
-      }
-
-      ref.focus()
-    }
-
-    if (key === 'accountModify') {
-      setAccountModify(value)
-      setModifyId(accountId)
-      setModifyName(accountName)
-      setModifyITSM(ITSM)
-      
-      if (!value) {
-        setModifyId('')
-        setModifyName('')
-        setModifyITSM('')
+        ref.input.focus();
       }
     }
 
+    /*if (key === 'cloudAccountModifyName') {
+      delete errorsCopy.cloudAccountModifyNameError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
+      accountCopy.accountName = value
+      setErrors(errorsCopy);
+      setCloudAccountModify(accountCopy)
+      let ref = myRefs.current['cloudAccountModifyName'];
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }*/
 
-
-    if (key !== 'accountId' && key !== 'accountName' && key !== 'ITSM' && key !== 'comment') {
-      setCloudAccount(cloudAccountCopy)
+    if (key === 'cloudAccountModifyITSM') {
+      delete errorsCopy.cloudAccountModifyITSMError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccountModify))
+      accountCopy.ITSM = value
+      setErrors(errorsCopy);
+      setCloudAccountModify(accountCopy)
+      let ref = myRefs.current.cloudAccountModifyITSM;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
     }
 
+    
+
+    
   }
 
   /* VALIDATION */
 
   let validation = async () => {
-    let errors = await validationCheck()
-    if (errors === 0) {
+    let localErrors = await validationCheck()
+    if (localErrors === 0) {
       cudManager()
     }
   }
@@ -563,169 +552,46 @@ function CloudAccount(props) {
   let validationCheck = async () => {
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
-    let errors = 0
+    let localErrors = 0
+    let errorsCopy = JSON.parse(JSON.stringify(errors))
 
     if (!cpAsset) {
-      //cpAssetError
+      errorsCopy.cpAssetError = true
+      ++localErrors
+      setErrors(errorsCopy);
     }
+
+    if (!changeRequestId) {
+      errorsCopy.changeRequestIdError = true
+      ++localErrors
+      setErrors(errorsCopy);
+    } 
+
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
+      errorsCopy.changeRequestIdError = true
+      ++localErrors
+      setErrors(errorsCopy);
+    } 
 
     for (let cloudNet of Object.values(cloudNetworksCopy)) {
       if ((provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ) && !cloudNet.Region) {
-        ++errors
+        ++localErrors
         cloudNet.RegionError = true
       }
       if (!cloudNet.subnetMaskCidr) {
-        ++errors
+        ++localErrors
         cloudNet.subnetMaskCidrError = true
       }
     }
 
     setCloudAccount(cloudAccountCopy)
-    return errors
+    return localErrors
   }
 
   /* DISPOSITION */
 
   let cudManager = async () => {
-    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
-    let toDelete = []
-    let toPut = []
-
-    for (const cloudNet of Object.values(cloudNetworksCopy)) {
-      if (cloudNet.toDelete) {
-        toDelete.push(cloudNet)
-      }
-      if (cloudNet.isModified && Object.keys(cloudNet.isModified).length > 0) {
-        toPatch.push(cloudNet)
-      }
-      if (modifyId && modifyName && modifyITSM) {
-        toPatch.push(cloudNet)
-      }
-    }
-
-    if (toDelete.length > 0) {
-      for (const cloudNet of toDelete) {
-        cloudNet.loading = true
-        setCloudNetworks([...cloudNetworksCopy])
-        let net = cloudNet.network.split('/')
-        let n = await cloudNetworkDelete(net[0])
-        if (n.status && n.status !== 200 ) {
-          let error = Object.assign(n, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'networkDeleteError'
-          })
-          props.dispatch(err(error))
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
-        }
-        else {
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
-        }
-      }
-    }
-
-    if (toPatch.length > 0) {
-      for (const cloudNet of toPatch) {
-        let body = {}
-
-        body.data = {
-          "network_data": {
-            "network": "next-available",
-            "comment": cloudNet.comment,
-            "extattrs": {
-              "Account ID": {
-                "value": accountId
-              },
-              "Account Name": {
-                "value": accountId
-              },
-              "Reference": {
-                "value": ITSM
-              }
-            }
-          }
-        }
-
-        if (provider === 'AWS' || provider === 'AZURE' || provider === 'OCI') {
-          body.data.region = cloudNet.Region
-        }
-
-        cloudNet.loading = true
-        setCloudNetworks([...cloudNetworksCopy])
-        let net = cloudNet.network.split('/')
-        let cn = await cloudNetworkModify(net[0], body)
-        
-        if (cn.status && cn.status !== 200 ) {
-          let error = Object.assign(cn, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'networkModifyError'
-          })
-          props.dispatch(err(error))
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
-        }
-        else {
-          cloudNet.loading = false
-          setCloudNetworks([...cloudNetworksCopy])
-        }
-      }
-    }
-
-    //if account is deleted
-    if (cloudNetworks.length < 1) {
-      setLoading(false)
-      setAccountId('')
-      setAccountName('')
-      setITSM('')
-      setModifyId('')
-      setModifyName('')
-      setModifyITSM('')
-    }
-
-    dataGetHandler('cloudAccounts', props.asset.id)
-    
-  }
-
-  let accountModifyManager = async () => {
-    let body = {}
-
-    body.data = {
-      "Account ID": {
-        "value": modifyId
-      },
-      "Account Name": {
-          "value": modifyName
-      },
-      "Reference": {
-          "value": modifyITSM
-      }
-    }
-
-    setLoading(true)
-    let data = await accountModifyHandler(accountId, body)
-    
-    if (data.status && data.status !== 200 ) {
-      let error = Object.assign(data, {
-        component: 'cloudAccount',
-        vendor: 'concerto',
-        errorType: 'accountModifyError'
-      })
-      props.dispatch(err(error))
-      setLoading(false)
-    }
-    else {
-      setLoading(false)
-      setAccountId(modifyId)
-      setAccountName(modifyName)
-      setITSM(modifyITSM)
-      setModifyId('')
-      setModifyName('')
-      setModifyITSM('')
-      setAccountModify(false)
-    }
+    console.log('èèèèèèèèè')
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
@@ -743,7 +609,7 @@ function CloudAccount(props) {
     return r
   }
 
-  let cloudNetworkAssign = async (b) => {
+  let cloudAccountPut = async (accountName, body) => {
     let r
     let rest = new Rest(
       "PUT",
@@ -754,37 +620,7 @@ function CloudAccount(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/assign-cloud-network/`, props.token, b )
-    return r
-  }
-
-  let cloudNetworkModify = async (net, b) => {
-    let r
-    let rest = new Rest(
-      "PUT",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/modify-cloud-network/${net}/`, props.token, b )
-    return r
-  }
-
-  let accountModifyHandler = async (id, b) => {
-    let r
-    let rest = new Rest(
-      "PUT",
-      resp => {
-        r = resp
-      },
-      error => {
-        r = error
-      }
-    )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/modify-account-cloud-network/${id}/`, props.token, b )
+    await rest.doXHR(`workflow/cloud-account/${accountName}/`, props.token, body )
     return r
   }
 
@@ -807,14 +643,6 @@ function CloudAccount(props) {
     setCloudAccountsLoading(false);
     setCloudAccounts([]);
     setAccountModify(false);
-    setAccountId('');
-    setAccountName('');
-    setITSM('');
-    setModifyId('');
-    setModifyName('');
-    setModifyITSM('');
-    setCloudNetworks([]);
-    setOriginCloudNetworks([]);
   }
   
   /* RENDER */
@@ -825,7 +653,29 @@ function CloudAccount(props) {
   let createElement = (element, key, choices, obj, action) => {
 
     if (element === 'input') {
-      if (key === 'newAccountId') {
+      if (key === 'changeRequestId' ) {
+        return (
+          <Input
+            value={changeRequestId}
+            ref={ref => (myRefs.current['changeRequestId'] = ref)}
+            placeholder={
+              key === 'changeRequestId' ?
+                "ITIO-6 to 18 numbers"
+              :
+                null
+              }
+            style=
+            {errors[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+      
+      else if (key === 'cloudAccountModifyId') {
         return (
           <Input
             style=
@@ -834,13 +684,14 @@ function CloudAccount(props) {
             :
               {}
             }
-            value={newAccountId}
+            value={cloudAccountModify?.accountId}
+            ref={ref => (myRefs.current.cloudAccountModifyId = ref)}
             onChange={event => set(key, event.target.value)}
           />
         )
       }
 
-      else if (key === 'modifyId') {
+      else if (key === 'cloudAccountModifyName') {
         return (
           <Input
             style=
@@ -849,101 +700,33 @@ function CloudAccount(props) {
             :
               {}
             }
-            value={modifyId}
+            disabled={true}
+            value={cloudAccountModify?.accountName}
+            ref={ref => (myRefs.current.cloudAccountModifyName = ref)}
+            //onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+
+      else if (key === 'cloudAccountModifyITSM') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccountModify?.ITSM}
+            ref={ref => (myRefs.current.cloudAccountModifyITSM = ref)}
             onChange={event => set(key, event.target.value)}
           />
         )
       }
 
-      else if (key === 'newAccountName') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={newAccountName}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'modifyName') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={modifyName}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'modifyITSM') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={modifyITSM}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'newITSM') {
-        return (
-          <Input
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={newITSM}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
     }
 
     switch (element) {
-
-      case 'button':
-
-        if (action === 'modifyAccount') {
-          return (
-            <Button
-              type="primary"
-              disabled={(modifyId && modifyId.length === 12 && modifyName && modifyITSM) ? false : true}
-              onClick={() => accountModifyManager()}
-            >
-              Modify Account
-            </Button>
-          )
-        }
-
-        else if (action === 'newAccount') {
-          return (
-            <Button
-              type="primary"
-              disabled={(newAccountId && newAccountId.length === 12 && newAccountName && newITSM) ? false : true}
-              onClick={() => newAccountHandler()}
-            >
-              Set new Account
-            </Button>
-          )
-        }
-      break;
 
       case 'popOver':
         if (action === 'delAccount') {
@@ -967,7 +750,6 @@ function CloudAccount(props) {
           </Popover>
           )
         }
-      break;
 
       case 'textArea':
         return (
@@ -1333,6 +1115,10 @@ function CloudAccount(props) {
   return (
     <React.Fragment>
       {console.log(cloudAccount)}
+      {console.log('cloudAccountModify', cloudAccountModify)}
+      {console.log(changeRequestId)}
+      {console.log(cpAssets)}
+      {console.log(cpAsset)}
       <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
 
       <Modal
@@ -1366,7 +1152,7 @@ function CloudAccount(props) {
                 <Col offset={1} span={1}>
                   <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                 </Col>
-                <Col span={3}>
+                <Col offset={1} span={3}>
                   {createElement('select', 'provider', 'providers', '', '')}
                 </Col>
 
@@ -1377,12 +1163,59 @@ function CloudAccount(props) {
               {provider ?
                 <React.Fragment>
                   <Row>
-                    <Col offset={1} span={21}>
+                    <Col span={3}>
+                      <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
+                    </Col>
+                    <Col span={6}>
+                      {createElement('input', 'changeRequestId')}
+                    </Col>
+                  </Row>
+                  <br />
+
+                  <Row>
+                    <Col span={3}>
+                      <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Check Point asset:</p>
+                    </Col>
+                    <Col span={6}>
+                      <Radio.Group 
+                        style={
+                          errors?.cpAssetError ? 
+                            {backgroundColor: 'red'}
+                          :
+                            {}
+                        }
+                        onChange={event => set('cpAsset', event.target.value)} 
+                        value={cpAsset}
+                      >
+                        <Space direction="vertical">
+                          {cpAssets ?
+                            cpAssets.map((r,i) => {
+                              try{
+                                return (
+                                  <Radio value={r.id}>{r.fqdn}</Radio>
+                                )
+                              }
+                              catch (error) {
+                                console.log(error)
+                              }
+                            })
+                          :
+                            null
+                          }
+                          
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
+                  <br />
+
+                  <Row>
+                    <Col span={21}>
                       <Radio.Group
                         defaultValue="existent"
                         buttonStyle="solid"
                         value={existent ? 'existent' : 'new'}
-                        //style={{ paddingLeft: 10 }} // Spazio a sinistra dei bottoni
+                        style={{ marginLeft: 25 }} // Spazio a sinistra dei bottoni
                       >
                         <Radio.Button
                           value="existent"
@@ -1401,6 +1234,9 @@ function CloudAccount(props) {
                   </Row>
 
                   <br />
+
+                  
+
                   <Divider/>
                   {existent ?
                   <>
@@ -1438,7 +1274,7 @@ function CloudAccount(props) {
                       <Col offset={1} span={1}>
                         <Checkbox
                           checked={accountModify}
-                          disabled={!(accountId && accountName && ITSM) ? true : false}
+                          disabled={!(cloudAccount?.accountId || cloudAccount?.accountName || cloudAccount?.ITSM) ? true : false}
                           style={{marginTop: 5}}
                           onChange={e => set('accountModify', e.target.checked)}
                         >
@@ -1456,22 +1292,28 @@ function CloudAccount(props) {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
                         </Col>
                         <Col span={3}>
-                          {createElement('input', 'modifyId', '', '', '')}
+                          {createElement('input', 'cloudAccountModifyId', '', '', '')}
                         </Col>
                         <Col span={3}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                         </Col>
                         <Col span={4}>
-                          {createElement('input', 'modifyName', '', '', '')}
+                          {createElement('input', 'cloudAccountModifyName', '', '', '')}
                         </Col>
                         <Col span={2}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
                         </Col>
                         <Col span={2}>
-                          {createElement('input', 'modifyITSM', '', '', '')}
+                          {createElement('input', 'cloudAccountModifyITSM', '', '', '')}
                         </Col>
                         <Col offset={3} span={2}>
-                          {createElement('button', '', '', '', 'modifyAccount')}
+                          <Button
+                            type="primary"
+                            style={{marginLeft: 16 }}
+                            onClick={() => modifyAccountHandler()}
+                          >
+                            Modify Account
+                          </Button>
                         </Col>
                       </Row>
                     :
@@ -1541,6 +1383,7 @@ function CloudAccount(props) {
                   <Button
                     type="primary"
                     style={{float: 'right', marginRight: 15}}
+                    disabled={accountModify ? true: false}
                     onClick={() => validation()}
                   >
                     Commit
