@@ -237,8 +237,6 @@ function CloudAccount(props) {
             item.network = item.network ? item.network : '';
             item.network_container = item.network_container ? item.network_container : '';
             item.Region = item?.extattrs?.City?.value ? item.extattrs.City.value : '';
-            //
-            item.comment = ''
             item.existent = true
             item.subnetMaskCidr = sm[1]
             item.id = ++i
@@ -586,9 +584,6 @@ function CloudAccount(props) {
         "provider": provider,
         "checkpoint_datacenter_account_put": {
           "asset": cpAsset,
-          "tags": [
-            "testone", "acquazzone"
-          ]
         }
       }
 
@@ -634,7 +629,7 @@ function CloudAccount(props) {
       if (cloudNet.toDelete) {
         toDelete.push(cloudNet)
       }
-      else {
+      else if (!cloudNet.existent){
         toPut.push(cloudNet)
       }
     }
@@ -672,25 +667,21 @@ function CloudAccount(props) {
       }
     }
 
-    let body = {}
-      body.data = {
-        "change-request-id": changeRequestId,
-        "Account ID": cloudAccountCopy.accountId,
-        "Reference": cloudAccountCopy.ITSM,
-        "provider": provider,
-        "checkpoint_datacenter_account_put": {
-          "asset": cpAsset,
-          "tags": [
-            "testone", "acquazzone"
-          ]
+    if (toPut.length > 0) {
+      let body = {}
+        body.data = {
+          "change-request-id": changeRequestId,
+          "Account ID": cloudAccountCopy.accountId,
+          "Reference": cloudAccountCopy.ITSM,
+          "provider": provider,
+          "checkpoint_datacenter_account_put": {
+            "asset": cpAsset,
+          }
         }
-      }
 
-      let list = cloudAccountCopy.cloudNetworks.map((n,i) => { 
+      let list = toPut.map((n,i) => { 
         let o = {}
-        //!!!!!!!!1
         o.asset = props.asset.id
-        o.comment = cloudAccountCopy.ITSM
         o.subnetMaskCidr = n.subnetMaskCidr
         o.region = n.Region
         return o
@@ -707,8 +698,8 @@ function CloudAccount(props) {
         })
         props.dispatch(err(error))
       }
+    }
       
-
       setAccountModify(false);
       setCloudAccount({});
       setCloudAccountModify({});
@@ -928,6 +919,7 @@ function CloudAccount(props) {
             rows={7}
             value={obj[key]}
             //ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
+            disabled={true}
             ref={ref => {
               if (ref) {
                 textAreaRefs.current[`${obj.id}_${key}`] = ref;
@@ -1337,7 +1329,7 @@ function CloudAccount(props) {
 
                   <Row>
                     <Col span={3}>
-                      <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Check Point asset:</p>
+                      <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Check Point asset:</p>
                     </Col>
                     <Col span={6}>
                       <Radio.Group 
