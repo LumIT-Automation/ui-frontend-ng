@@ -205,6 +205,7 @@ class ItemsView extends React.Component {
       }
       else {
         let items = fetched.data.items.map(item => {
+          console.log(item)
           item.existent = true
           item.isModified = {}
           item.id = id

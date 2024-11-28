@@ -17,8 +17,7 @@ import AssetSelector from '../../concerto/assetSelector'
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import { Space, Modal, Row, Col, Divider, Table, Radio, Input, Select, Button, Checkbox, Spin, Alert, Result, Popover } from 'antd'
-import Highlighter from 'react-highlight-words';
-import { LoadingOutlined, SearchOutlined } from '@ant-design/icons'
+import { LoadingOutlined } from '@ant-design/icons'
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const cloudNetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
