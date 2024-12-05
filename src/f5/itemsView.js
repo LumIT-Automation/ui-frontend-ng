@@ -1,11 +1,8 @@
-import React from 'react'
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
-import '../App.css'
-import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio, Card } from 'antd';
-import Highlighter from 'react-highlight-words';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
+//import '../App.css'
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import CommonFunctions from '../_helpers/commonFunctions'
@@ -14,240 +11,156 @@ import Error from '../concerto/error'
 import {
   err
 } from '../concerto/store'
-  
+
+import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
+
+import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio } from 'antd';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
+
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
+function ItemsView(props) {
 
-class ItemsView extends React.Component {
+  let [visible, setVisible] = useState(false);
+  let [loading, setLoading] = useState(false);
 
-  constructor(props) {
-    super(props);
+  let [disableCommit, setDisableCommit] = useState(false);
+  let [routeDomains, setRouteDomains] = useState([]);
+  let [originitems, setOriginitems] = useState([]);
+  let [items, setItems] = useState([]);
+  let [monitorTypes, setMonitorTypes] = useState([]);
+  let [loadBalancingModes, setLoadBalancingModes] = useState(['round-robin', 'least-connections-member', 'observed-member', 'predictive-member']);
+  let [profileTypes, setProfileTypes] = useState([]);
+  let [expandedKeys, setExpandedKeys] = useState([]);
+  let [states, setStates] = useState(['enabled', 'disabled', 'forced offline']);
+  let [nodeSessions, setNodeSessions] = useState(['user-enabled', 'user-disabled']);
+  let [nodeStates, setNodeStates] = useState(['unchecked', 'user-down']);
+  let [errors, setErrors] = useState([]);
 
-    this.myRefs = {};
-    this.textAreaRefs = {};
+  let [searchText, setSearchText] = useState('');
+  let [searchedColumn, setSearchedColumn] = useState('');
+  let searchInput = useRef(null);
 
-    this.state = {
-      searchText: '',
-      searchedColumn: '',
-      disableCommit: false,
-      routeDomains: [],
-      originitems: [],
-      items: [],
-      monitorTypes: [],
-      loadBalancingModes: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
-      profileTypes: [],
-      expandedKeys: [],
-      states: ['enabled', 'disabled', 'forced offline'],
-      nodeSessions: ['user-enabled', 'user-disabled'],
-      nodeStates: ['unchecked', 'user-down'],
-      errors: {}
-    };
-  }
+  let [response, setResponse] = useState(false);
 
-  componentDidMount() {
-    if (this.props.items) {
-      this.main()
-    }
-  }
-  
-  shouldComponentUpdate(newProps, newState) {
-    return true;
-  }
+  //if use useRef the object is not accessible directly. you have to create a "current" property
+  let myRefs = useRef({});
+  let textAreaRefs = useRef({});
 
-  componentDidUpdate(prevProps, prevState) {
-    if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
-      this.main()
-    }
-    if (this.props.items !== prevProps.items) {
-      this.main()
-    }
-  }
-
-  componentWillUnmount() {
-  }
+  useEffect(() => {
+    start()
+  }, [props.items, props.asset, props.partition]);
 
   /*
     Antd Table methods for search, filter and order data
   */
 
-  getColumnSearchProps = dataIndex => ({
-    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
-      <div style={{ padding: 8 }}>
-        <Input
-          ref={node => {
-            this.searchInput = node;
-          }}
-          placeholder={`Search ${dataIndex}`}
-          value={selectedKeys[0]}
-          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
-          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-          style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />
-        <Space>
-          <Button
-            type="primary"
-            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
-            icon={<SearchOutlined />}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Search
-          </Button>
-          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
-            Reset
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
-    onFilter: (value, record) => {
-      try {
-        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
-          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else if ( Array.isArray(dataIndex) ) {
-          let r = record[dataIndex[0]]
-          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
-        }
-        else {
-          return ''
-        }
-      }
-      catch (error){
-
-      }
-    },
-    onFilterDropdownVisibleChange: visible => {
-      if (visible) {
-        setTimeout(() => this.searchInput.select(), 100);
-      }
-    },
-    render: text => {
-      return this.state.searchedColumn === dataIndex ? (
-        <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
-          searchWords={[this.state.searchText]}
-          autoEscape
-          textToHighlight={text ? text.toString() : ''}
-        />
-      ) : (
-        text
-      )
-    }
-  });
-
-  handleSearch = (selectedKeys, confirm, dataIndex) => {
-    confirm();
-    this.setState({
-      searchText: selectedKeys[0],
-      searchedColumn: dataIndex,
-    });
-  };
-
-  handleReset = (clearFilters, confirm) => {
-    clearFilters();
-    confirm();
-    this.setState({ searchText: '' });
-  };
-
-  onTableRowExpand = (expanded, record) => {
+  let onTableRowExpand = (expanded, record) => {
     console.log(expanded)
     console.log(record)
-    let keys = Object.assign([], this.state.expandedKeys);
+    let expandedKeysCopy = JSON.parse(JSON.stringify(expandedKeys))
 
     if(expanded){
-      keys.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
+      expandedKeysCopy.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
     }
     else {
-      keys = keys.filter(k => k !== record.id)
+      expandedKeysCopy = expandedKeysCopy.filter(k => k !== record.id)
     }
-    this.setState({expandedKeys: keys});
+    setExpandedKeys(expandedKeysCopy)
   }
 
   /*
     Fetching Data, Rendering in a table, Add/Remove items
   */
 
-  main = async () => {
-    await this.setState({items: [], originitems: [], expandedKeys: [], loading: true})
-    let id = 1
+  let start = async () => {
+    setItems([])
+    setOriginitems([])
+    setExpandedKeys([])
+    setLoading(true)
 
-    let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
-    if (routeDomains.status && routeDomains.status !== 200 ) {
-      let error = Object.assign(routeDomains, {
+    let id = 1
+    let routeDomainsLocal = []
+
+    let data = await dataGet(props.asset.id, 'routedomains')
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
         component: 'itemsView',
         vendor: 'f5',
         errorType: 'routeDomainsError'
       })
-      this.props.dispatch(err(error))
-      await this.setState({loading: false})
+      props.dispatch(err(error))
+      setLoading(false)
       return
     }
     else {
-      await this.setState({routeDomains: routeDomains.data.items})
+      routeDomainsLocal = data.data.items
+      setRouteDomains(routeDomainsLocal)
     }
     
-    if (this.props.items === 'nodes') {
+    if (props.items === 'nodes') {
 
-      let fetched = await this.dataGet(this.props.asset.id)
+      let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'nodesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        let items = fetched.data.items.map(item => {
-          console.log(item)
+        let itemsCopy = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
           item.id = id
+          id++
           if (item.address.includes('%')) {
             let list = item.address.split('%')
-            item.routeDomain = list[1]
             item.address = list[0]
-            let rd = this.state.routeDomains.find(r => r.id == item.routeDomain)
+            item.routeDomain = list[1]
+            let rd = routeDomainsLocal.find(r => r.id == item.routeDomain)
             item.routeDomainName = rd.name
           }
-          id++
           return item
         })
-        await this.setState({items: items, originitems: items, loading: false})
+
+        setItems(itemsCopy)
+        setOriginitems(itemsCopy)
+        setLoading(false)
       }
     }
 
-    else if (this.props.items === 'monitors') {
-      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
+    else if (props.items === 'monitors') {
+      let fetched = await dataGet(props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorTypesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        await this.setState({monitorTypes: fetched.data.items})
+        setMonitorTypes(fetched.data.items)
       }
     
-      fetched = await this.dataGet(this.props.asset.id)
+      fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
@@ -271,25 +184,27 @@ class ItemsView extends React.Component {
             })
           })
         }
-        await this.setState({items: list, originitems: list, loading: false})
+        setItems(list)
+        setOriginitems(list)
+        setLoading(false)
       }
     }
 
-    else if (this.props.items === 'snatpools') {
+    else if (props.items === 'snatpools') {
       
-      let fetched = await this.dataGet(this.props.asset.id)
+      let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'snatpoolsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        let items = fetched.data.items.map(item => {
+        let itemsCopy = fetched.data.items.map(item => {
           let mid = 1
           item.existent = true
           item.isModified = {}
@@ -304,7 +219,7 @@ class ItemsView extends React.Component {
               let list = o.address.split('%')
               o.routeDomain = list[1]
               o.address = list[0]
-              let rd = this.state.routeDomains.find(r => r.id == o.routeDomain)
+              let rd = routeDomainsLocal.find(r => r.id == o.routeDomain)
               o.routeDomainName = rd.name
             }
             o.id = mid
@@ -316,39 +231,41 @@ class ItemsView extends React.Component {
           id++
           return item
         })
-        await this.setState({items: items, originitems: items, loading: false})
+        setItems(itemsCopy)
+        setOriginitems(itemsCopy)
+        setLoading(false)
       }
     }
 
-    else if (this.props.items === 'pools') {
-      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
+    else if (props.items === 'pools') {
+      let fetched = await dataGet(props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorTypesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        await this.setState({monitorTypes: fetched.data.items})
+        setMonitorTypes(fetched.data.items)
       }
 
-      fetched = await this.dataGet(this.props.asset.id)
+      fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'poolsError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        let items = fetched.data.items.map(item => {
+        let itemsCopy = fetched.data.items.map(item => {
           let mid = 1
           item.existent = true
           item.isModified = {}
@@ -356,59 +273,63 @@ class ItemsView extends React.Component {
           id++
           return item
         })
-        await this.setState({items: items, originitems: items, loading: false})
+        setItems(itemsCopy)
+        setOriginitems(itemsCopy)
+        setLoading(false)
       }
     }
 
-    else if (this.props.items === 'irules') {
-      let fetched = await this.dataGet(this.props.asset.id)
+    else if (props.items === 'irules') {
+      let fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'irulesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        let items = fetched.data.items.map(item => {
+        let itemsCopy = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
           item.id = id
           id++
           return item
         })
-        await this.setState({items: items, originitems: items, loading: false})
+        setItems(itemsCopy)
+        setOriginitems(itemsCopy)
+        setLoading(false)
       }
     }
 
-    else if (this.props.items === 'profiles') {
-      let fetched = await this.dataGet(this.props.asset.id, 'profileTypes')
+    else if (props.items === 'profiles') {
+      let fetched = await dataGet(props.asset.id, 'profileTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'profileTypesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
-        await this.setState({profileTypes: fetched.data.items})
+        setProfileTypes(fetched.data.items)
       }
     
-      fetched = await this.dataGet(this.props.asset.id)
+      fetched = await dataGet(props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'profilesError'
         })
-        this.props.dispatch(err(error))
-        await this.setState({loading: false})
+        props.dispatch(err(error))
+        setLoading(false)
         return
       }
       else {
@@ -426,32 +347,34 @@ class ItemsView extends React.Component {
             })
           })
         }
-        await this.setState({items: list, originitems: list, loading: false})
+        setItems(list)
+        setOriginitems(list)
+        setLoading(false)
       }
     }
   }
 
-  dataGet = async (assetId, entities) => {
+  let dataGet = async (assetId, entities) => {
     let endpoint
     let r
 
     if (entities === 'routedomains') {
-      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
+      endpoint = `${props.vendor}/${assetId}/${entities}/`
     }
     else if (entities === 'monitorTypes') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/monitors/`
+      endpoint = `${props.vendor}/${assetId}/${props.partition}/monitors/`
     }
     else if (entities === 'profileTypes') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/profiles/`
+      endpoint = `${props.vendor}/${assetId}/${props.partition}/profiles/`
     }
-    else if (this.props.items === 'monitors') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
+    else if (props.items === 'monitors') {
+      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/ANY/`
     }
-    else if (this.props.items === 'profiles') {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
+    else if (props.items === 'profiles') {
+      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/ANY/`
     }
     else {
-      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/`
+      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/`
     }
     let rest = new Rest(
       "GET",
@@ -462,18 +385,19 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token)
+    await rest.doXHR(endpoint, props.token)
     return r
   }
 
-  getPoolmembers = async(pool) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let p = items.find(item => item.id === pool.id)
-    let origItems = JSON.parse(JSON.stringify(this.state.originitems))
+  let getPoolmembers = async(pool) => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
+    let p = itemsCopy.find(item => item.id === pool.id)
+    let origItems = JSON.parse(JSON.stringify(originitems))
     let origP = origItems.find(item => item.id === pool.id)
     p.loading = true
-    await this.setState({items: items})
-    let endpoint = `${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${pool.name}/members/`
+    setItems(itemsCopy)
+
+    let endpoint = `${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${pool.name}/members/`
     let r
     let rest = new Rest(
       "GET",
@@ -484,7 +408,7 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(endpoint, this.props.token)
+    await rest.doXHR(endpoint, props.token)
 
     if (r.status && r.status !== 200 ) {
       let error = Object.assign(r, {
@@ -492,7 +416,7 @@ class ItemsView extends React.Component {
         vendor: 'f5',
         errorType: 'getPoolmembersError'
       })
-      this.props.dispatch(err(error))
+      props.dispatch(err(error))
       return
     }
     else {
@@ -556,24 +480,25 @@ class ItemsView extends React.Component {
     p.loading = false
     origP.members = p.members 
 
-    await this.setState({items: items, originitems: origItems})
+    setItems(itemsCopy)
+    setOriginitems(origItems)
   }
 
-  itemAdd = async (items, type) => {
+  let itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemAdd(items, type)
-    await this.setState({items: list})
+    setItems(list)
   }
 
-  itemRemove = async (item, items) => {
+  let itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(item, items)
-    await this.setState({items: list})
+    setItems(list)
   }
 
-  subItemAdd = async (obj) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let item = items.find(item => item.id === obj.id)
+  let subItemAdd = async (obj) => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
+    let item = itemsCopy.find(item => item.id === obj.id)
 
     if (item < 1) {
       item.members.push({id:1})
@@ -592,19 +517,19 @@ class ItemsView extends React.Component {
       item.isModified.members = true
     }
 
-    await this.setState({items: items})
+    setItems(itemsCopy)
   }
 
-  subItemRemove = async (subItem, father) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let item = items.find(item => item.id === father.id)
+  let subItemRemove = async (subItem, father) => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
+    let item = itemsCopy.find(item => item.id === father.id)
     let member = item.members.find(m => m.id === subItem.id)
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(member, father.members)
     item.members = list
 
     if (item.existent) {
-      let origItems = JSON.parse(JSON.stringify(this.state.originitems))
+      let origItems = JSON.parse(JSON.stringify(originitems))
       let origItem = origItems.find(item => item.id === father.id)
       if (JSON.stringify(item.members) === JSON.stringify(origItem.members)) {
         delete item.isModified.members
@@ -614,14 +539,14 @@ class ItemsView extends React.Component {
       }
     }
     
-    await this.setState({items: items})
+    setItems(itemsCopy)
   }
 
   /*
     Setting item's values
   */
 
-  readFile = (file) => {
+  let readFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
   
@@ -634,19 +559,20 @@ class ItemsView extends React.Component {
     });
   }
 
-  set = async (key, value, record, father) => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
+  let set = async (key, value, record, father) => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
+    let originitemsCopy  = JSON.parse(JSON.stringify(originitems))
 
     if (father) {
       
-      let fath = items.find(item => item.id === father.id)
-      let origFather = this.state.originitems.find(item => item.id === father.id)
+      let fath = itemsCopy.find(item => item.id === father.id)
+      let origFather = originitemsCopy.find(item => item.id === father.id)
       let m = fath.members.find(m => m.id === record.id)
       
       if (key === 'name'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
+        let ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -663,8 +589,8 @@ class ItemsView extends React.Component {
         }
 
         delete m[`${key}Error`]
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
+        setItems(itemsCopy)
+        ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -677,7 +603,7 @@ class ItemsView extends React.Component {
       else if (key === 'address'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
+        let ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -694,8 +620,8 @@ class ItemsView extends React.Component {
         }
 
         delete m[`${key}Error`]
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
+        setItems(itemsCopy)
+        ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -708,7 +634,7 @@ class ItemsView extends React.Component {
       else if (key === 'routeDomain') {
         //value could be 0
         value = value.toString()
-        let rd = this.state.routeDomains.find(r => r.id == value)
+        let rd = routeDomains.find(r => r.id == value)
 
         if (fath.existent) {
           let originM = origFather.members.find(m => m.id === record.id)
@@ -740,13 +666,13 @@ class ItemsView extends React.Component {
         }
         delete m[`${key}Error`]
 
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       else if (key === 'port'){
         let start = 0
         let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
+        let ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -763,8 +689,8 @@ class ItemsView extends React.Component {
         }
 
         delete m[`${key}Error`]
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
+        setItems(itemsCopy)
+        ref = myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -781,7 +707,7 @@ class ItemsView extends React.Component {
         else {
           delete m.toDelete
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (JSON.stringify(fath.members) === JSON.stringify(origFather.members)) {
@@ -790,23 +716,23 @@ class ItemsView extends React.Component {
       else {
         fath.isModified.members = true
       }
-      await this.setState({items: items})
+      setItems(itemsCopy)
     }
 
     else if (record) {
-      let origEl = this.state.originitems.find(item => item.id === record.id)
-      let e = items.find(item => item.id === record.id)
+      let origEl = originitemsCopy.find(item => item.id === record.id)
+      let e = itemsCopy.find(item => item.id === record.id)      
 
       if (key === 'name'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
         }
-  
+        let ref = myRefs.current[`${record.id}_${key}`]
         if (value) {
           e[key] = value
           delete e[`${key}Error`]
@@ -816,27 +742,23 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
+        setItems(itemsCopy)
+        ref = myRefs.current[`${record.id}_${key}`]
+        if (ref?.current?.[`${record.id}_${key}`]?.input) {
+          ref.current[`${record.id}_${key}`].input.focus();
         }
-  
-        ref.focus()
       }
 
       if (key === 'address'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
         }
-
+        let ref = myRefs.current[`${record.id}_${key}`]
         if (value) {
           e[key] = value
           delete e[`${key}Error`]
@@ -846,119 +768,94 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
+        setItems(itemsCopy)
+        ref = myRefs.current[`${record.id}_${key}`]
+        if (ref?.current?.[`${record.id}_${key}`]?.input) {
+          ref.current[`${record.id}_${key}`].input.focus();
         }
-  
-        ref.focus()
-      }
-
-      if (key === 'interval'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-  
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
-      }
-
-      if (key === 'timeout'){
-        let start = 0
-        let end = 0
-        let ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          start = ref.input.selectionStart
-          end = ref.input.selectionEnd
-        }
-  
-        if (value) {
-          if (e.existent) {
-            if (origEl[key] !== value) {
-              e.isModified[key] = true
-              e[key] = value
-            }
-            else {
-              delete e.isModified[key]
-              e[key] = value
-            }
-          }
-          else {
-            e[key] = value
-          }
-          delete e[`${key}Error`]
-        }
-        else {
-          //blank value while typing.
-          e[key] = ''
-        }
-
-        await this.setState({items: items})
-        ref = this.myRefs[`${record.id}_${key}`]
-  
-        if (ref && ref.input) {
-          ref.input.selectionStart = start
-          ref.input.selectionEnd = end
-        }
-  
-        ref.focus()
       }
 
       if (key === 'routeDomain') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
+        let rd = routeDomains.find(r => r.id == value)
+
+        e[key] = value
+        e.routeDomainName = rd.name
+
+        delete e[`${key}Error`]
+        
+        setItems(itemsCopy)
+      }
+
+      if (key === 'interval'){
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+            console.log(e.isModified[key])
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
+        let ref = myRefs.current[`${record.id}_${key}`]
         if (value) {
-          value = value.toString()
-          let rd = this.state.routeDomains.find(r => r.id == value)
-
           e[key] = value
-          e.routeDomainName = rd.name
-
           delete e[`${key}Error`]
         }
         else {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+
+        setItems(itemsCopy)
+        ref = myRefs.current[`${record.id}_${key}`]
+        if (ref?.current?.[`${record.id}_${key}`]?.input) {
+          ref.current[`${record.id}_${key}`].input.focus();
+        }
       }
 
+      if (key === 'timeout'){
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
+        let ref = myRefs.current[`${record.id}_${key}`]
+        if (value) {
+          e[key] = value
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+
+        setItems(itemsCopy)
+        ref = myRefs.current[`${record.id}_${key}`]
+        if (ref?.current?.[`${record.id}_${key}`]?.input) {
+          ref.current[`${record.id}_${key}`].input.focus();
+        }
+      }   
+
       if (key === 'session') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -968,10 +865,18 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'monitor') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -981,10 +886,18 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'loadBalancingMode') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -994,10 +907,18 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'state') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -1007,10 +928,18 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'type') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -1020,13 +949,21 @@ class ItemsView extends React.Component {
           //blank value while typing.
           e[key] = ''
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'apiAnonymous') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         let start = 0
         let end = 0
-        let ref = this.textAreaRefs[`${record.id}_${key}`]
+        let ref = textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -1054,8 +991,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: items})
-        ref = this.textAreaRefs[`${record.id}_${key}`]
+        setItems(itemsCopy)
+        ref = textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -1066,12 +1003,28 @@ class ItemsView extends React.Component {
       }
 
       if (key === 'sourceType') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         e.sourceType = value
         delete e[`${key}Error`]
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'upload') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
 
         if (value) {
           if (e.existent) {
@@ -1081,7 +1034,7 @@ class ItemsView extends React.Component {
               e.fileName = value.name
               e.size = value.size
               e.type = value.type
-              let t = await this.readFile(value)
+              let t = await readFile(value)
               e.text = t
             }
             else {
@@ -1090,7 +1043,7 @@ class ItemsView extends React.Component {
               e.fileName = value.name
               e.size = value.size
               e.type = value.type
-              let t = await this.readFile(value)
+              let t = await readFile(value)
               e.text = t
             }
           }
@@ -1099,7 +1052,7 @@ class ItemsView extends React.Component {
             e.fileName = value.name
             e.size = value.size
             e.type = value.type
-            let t = await this.readFile(value)
+            let t = await readFile(value)
             e.text = t
           }
           delete e[`textError`]
@@ -1109,13 +1062,21 @@ class ItemsView extends React.Component {
           e.text = ''
         }
 
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
 
       if (key === 'text') {
+        if (e.existent) {
+          if (origEl[key] !== e[key]) {
+            e.isModified[key] = true
+          }
+          else {
+            delete e.isModified[key]
+          }
+        }
         let start = 0
         let end = 0
-        let ref = this.textAreaRefs[`${record.id}_${key}`]
+        let ref = textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -1143,8 +1104,8 @@ class ItemsView extends React.Component {
           e[key] = ''
         }
 
-        await this.setState({items: items})
-        ref = this.textAreaRefs[`${record.id}_${key}`]
+        setItems(itemsCopy)
+        ref = textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -1161,8 +1122,9 @@ class ItemsView extends React.Component {
         else {
           delete e.toDelete
         }
-        await this.setState({items: items})
+        setItems(itemsCopy)
       }
+
     }
     
   }
@@ -1171,168 +1133,168 @@ class ItemsView extends React.Component {
     Validate data before send them to backend
   */
 
-  validationCheck = async () => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
-    let errors = 0
+  let validationCheck = async () => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
+    let errorsLocal = 0
     let validators = new Validators()
 
-    if (this.props.items === 'nodes') {
+    if (props.items === 'nodes') {
 
-      for (const item of Object.values(items)) {
+      for (const item of Object.values(itemsCopy)) {
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
           item.addressError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.session) {
           item.sessionError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.state) {
           item.stateError = true
-          ++errors
+          ++errorsLocal
         }
 
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
 
-    else if (this.props.items === 'monitors') {
+    else if (props.items === 'monitors') {
 
-      for (const item of Object.values(items)) {
+      for (const item of Object.values(itemsCopy)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.type) {
           item.typeError = true
-          ++errors
+          ++errorsLocal
         }
         if ((item.type === 'inband')) {
           continue
         }
         if (!item.interval) {
           item.intervalError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.timeout) {
           item.timeoutError = true
-          ++errors
+          ++errorsLocal
         }
 
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
 
-    else if (this.props.items === 'snatpools') {
-      for (const item of Object.values(items)) {
+    else if (props.items === 'snatpools') {
+      for (const item of Object.values(itemsCopy)) {
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.members || item.members.length < 1) {
           item.membersError = true
-          ++errors
+          ++errorsLocal
         }
         else {
           item.members.forEach(e => {
             if (!(validators.ipv4(e.address) || validators.ipv6(e.address)) ) {
               e.addressError = true
-              ++errors
-              this.setState({errors: errors})
+              ++errorsLocal
+              setErrors(errorsLocal)
             }
             
           });
         }
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
 
-    else if (this.props.items === 'irules') {
+    else if (props.items === 'irules') {
 
-      for (const item of Object.values(items)) {
+      for (const item of Object.values(itemsCopy)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.apiAnonymous) {
           item.apiAnonymousError = true
-          ++errors
+          ++errorsLocal
         }
 
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
 
-    else if (this.props.items === 'profiles') {
+    else if (props.items === 'profiles') {
 
-      for (const item of Object.values(items)) {
+      for (const item of Object.values(itemsCopy)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.type) {
           item.typeError = true
-          ++errors
+          ++errorsLocal
         }
 
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
 
-    else if (this.props.items === 'pools') {
-      for (const item of Object.values(items)) {
+    else if (props.items === 'pools') {
+      for (const item of Object.values(itemsCopy)) {
         if (!item.name) {
           item.nameError = true
-          ++errors
+          ++errorsLocal
         }
         if (!item.loadBalancingMode) {
           item.loadBalancingModeError = true
-          ++errors
+          ++errorsLocal
         }
         if (item.members && item.members.length > 0) {
           item.members.forEach(m => {
             if (!m.name) {
               m.nameError = true
-              ++errors
+              ++errorsLocal
             }
             if ( !(validators.ipv4(m.address) || validators.ipv6(m.address) || m.address === 'any6') ) {
               m.addressError = true
-              ++errors
+              ++errorsLocal
             }
             if (!m.port || !validators.port(m.port)) {
               m.portError = true
-              ++errors
+              ++errorsLocal
             }
           });
         }
 
         //pool members
       }
-      await this.setState({items: items})
-      return errors
+      setItems(itemsCopy)
+      return errorsLocal
     }
   }
 
-  validation = async () => {
-    this.setState({disableCommit: true})
-    let errors = await this.validationCheck()
-    this.setState({disableCommit: false})
+  let validation = async () => {
+    setDisableCommit(true)
+    let errorsLocal = await validationCheck()
+    setDisableCommit(false)
 
-    if (errors === 0) {
-      this.setState({disableCommit: true})
-      this.cudManager()
+    if (errorsLocal === 0) {
+      setDisableCommit(true)
+      cudManager()
     }
   }
 
@@ -1340,13 +1302,13 @@ class ItemsView extends React.Component {
     Send Data to backend
   */
  
-  cudManager = async () => {
-    let items = JSON.parse(JSON.stringify(this.state.items))
+  let cudManager = async () => {
+    let itemsCopy = JSON.parse(JSON.stringify(items))
     let toPost = []
     let toDelete = []
     let toPatch = []
 
-    for (const item of Object.values(items)) {
+    for (const item of Object.values(itemsCopy)) {
       if (!item.existent) {
         toPost.push(item)
       }
@@ -1354,6 +1316,7 @@ class ItemsView extends React.Component {
         toDelete.push(item)
       }
       if (item.isModified && Object.keys(item.isModified).length > 0) {
+        console.log(item)
         toPatch.push(item)
       }
       
@@ -1362,24 +1325,19 @@ class ItemsView extends React.Component {
     if (toDelete.length > 0) {
       for (const item of toDelete) {
         item.loading = true
-        await this.setState({items: items})
+        setItems(itemsCopy)
 
-        let e = await this.itemDelete(item.name, item.type ? item.type : null )
+        let e = await itemDelete(item.name, item.type ? item.type : null )
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'deleteError'
           })
-          this.props.dispatch(err(error))
-          item.loading = false
-          await this.setState({items: items})
+          props.dispatch(err(error))
         }
-        else {
-          item.loading = false
-          await this.setState({items: items})
-        }
-
+        item.loading = false
+        setItems(itemsCopy)
       }
     }
 
@@ -1387,7 +1345,7 @@ class ItemsView extends React.Component {
       for (const item of toPost) {
         let body = {}
 
-        if (this.props.items === 'nodes') {
+        if (props.items === 'nodes') {
           body.data = {
             "address": item.address,
             "name": item.name,
@@ -1400,7 +1358,7 @@ class ItemsView extends React.Component {
           }
         }
 
-        if (this.props.items === 'monitors') {
+        if (props.items === 'monitors') {
           body.data = {
             "name": item.name,
             "type": item.type,
@@ -1409,9 +1367,9 @@ class ItemsView extends React.Component {
           }
         }
 
-        if (this.props.items === 'snatpools') {
+        if (props.items === 'snatpools') {
           let members = item.members.map(m => {
-            let str = `/${this.props.partition}/${m.address}`
+            let str = `/${props.partition}/${m.address}`
             if (m.routeDomain) {
               str = `${str}%${m.routeDomain}`
             }
@@ -1423,57 +1381,53 @@ class ItemsView extends React.Component {
           }
         }
 
-        if (this.props.items === 'irules') {
+        if (props.items === 'irules') {
           body.data = {
             "name": item.name,
             "apiAnonymous": item.apiAnonymous
           }
         }
 
-        if (this.props.items === 'profiles') {
+        if (props.items === 'profiles') {
           body.data = {
             "name": item.name,
             "type": item.type
           }
         }
 
-        if (this.props.items === 'pools') {
+        if (props.items === 'pools') {
           body.data = {
             "name": item.name,
-            "monitor": `/${this.props.partition}/${item.monitor}`,
+            "monitor": `/${props.partition}/${item.monitor}`,
             "loadBalancingMode": item.loadBalancingMode
           }
         }
 
         item.loading = true
-        await this.setState({items: items})
+        setItems(itemsCopy)
 
-        let e = await this.itemPost(body)
+        let e = await itemPost(body)
         if (e.status && e.status !== 201 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'postError'
           })
-          this.props.dispatch(err(error))
-          item.loading = false
-          await this.setState({items: items})
+          props.dispatch(err(error))
         }
-        else {
-          item.loading = false
-          await this.setState({items: items})
-        }
+        item.loading = false
+        setItems(itemsCopy)
       }
     }
 
     if (toPatch.length > 0) {
       for (const item of toPatch) {
-        if (this.props.items === 'pools') {
+        if (props.items === 'pools') {
           continue
         }
         let body = {}
 
-        if (this.props.items === 'monitors') {
+        if (props.items === 'monitors') {
           body.data = {
             "destination": "*:*",
             "interval": +item.interval,
@@ -1485,9 +1439,9 @@ class ItemsView extends React.Component {
           }
         }
 
-        if (this.props.items === 'snatpools') {
+        if (props.items === 'snatpools') {
           let members = item.members.map(m => {
-            let str = `/${this.props.partition}/${m.address}`
+            let str = `/${props.partition}/${m.address}`
             if (m.routeDomain) {
               str = `${str}%${m.routeDomain}`
             }
@@ -1498,7 +1452,7 @@ class ItemsView extends React.Component {
           }
         }
 
-        if (this.props.items === 'irules') {
+        if (props.items === 'irules') {
           body.data = {
             "name": item.name,
             "apiAnonymous": item.apiAnonymous
@@ -1506,53 +1460,45 @@ class ItemsView extends React.Component {
         }
 
         item.loading = true
-        await this.setState({items: items})
+        setItems(itemsCopy)
+        console.log(body)
 
-        let e = await this.itemPatch(item.name, item.type ? item.type : null, body)
+        let e = await itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'patchError'
           })
-          this.props.dispatch(err(error))
-          item.loading = false
-          await this.setState({items: items})
+          props.dispatch(err(error))
         }
-        else {
-          item.loading = false
-          await this.setState({items: items})
-        }
+        item.loading = false
+        setItems(itemsCopy)
       }
 
-      if (this.props.items === 'pools') {
+      if (props.items === 'pools') {
         for (const item of toPatch) {
           if (item.isModified.members) {
             for (const m of item.members) {
               if (m.toDelete) {
                 item.loading = true
-                await this.setState({items: items})
-                let e = await this.memberDelete(m.name, item.name )
+                setItems(itemsCopy)
+                let e = await memberDelete(m.name, item.name )
                 if (e.status && e.status !== 200 ) {
                   let error = Object.assign(e, {
                     component: 'itemsView',
                     vendor: 'f5',
                     errorType: 'deleteError'
                   })
-                  this.props.dispatch(err(error))
-                  item.loading = false
-                  await this.setState({items: items})
+                  props.dispatch(err(error))
                 }
-                else {
-                  item.loading = false
-                  await this.setState({items: items})
-                }
-                
+                item.loading = false
+                setItems(itemsCopy)                
               }
               if (!m.existent) {
                 let body = {}
                 body.data = {
-                  "name": `/${this.props.partition}/${m.name}:${m.port}`,
+                  "name": `/${props.partition}/${m.name}:${m.port}`,
                   "address": m.address,
                   "connectionLimit": 0,
                   "dynamicRatio": 1,
@@ -1570,26 +1516,20 @@ class ItemsView extends React.Component {
                 }
 
                 item.loading = true
-                await this.setState({items: items})
+                setItems(itemsCopy)  
 
-                let e = await this.memberAdd(body, item.name)
+                let e = await memberAdd(body, item.name)
                 if (e.status && e.status !== 201 ) {
                   let error = Object.assign(e, {
                     component: 'itemsView',
                     vendor: 'f5',
                     errorType: 'postError'
                   })
-                  this.props.dispatch(err(error))
-                  item.loading = false
-                  await this.setState({items: items})
+                  props.dispatch(err(error))
                 }
-                else {
-                  item.loading = false
-                  await this.setState({items: items})
-                }
-
+                item.loading = false
+                setItems(itemsCopy)  
               }              
-
             }
           }
         }
@@ -1597,34 +1537,11 @@ class ItemsView extends React.Component {
 
     }
 
-    this.setState({disableCommit: false})
-    this.main()
+    setDisableCommit(false)
+    start()
   }
 
-  /*
-  
-    let b = {}
-    b.data = {
-        "name": `/${this.props.partition}/${m.address}:${m.port}`,
-        "connectionLimit": 0,
-        "dynamicRatio": 1,
-        "ephemeral": "false",
-        "inheritProfile": "enabled",
-        "logging": "disabled",
-        "monitor": "default",
-        "priorityGroup": 0,
-        "rateLimit": "disabled",
-        "ratio": 1,
-        "state": m.state,
-        "session": m.session, 
-        "fqdn": {
-            "autopopulate": "disabled"
-        }
-      }
-  
-  */
-
-  memberAdd = async (body, data) => {
+  let memberAdd = async (body, data) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1636,11 +1553,11 @@ class ItemsView extends React.Component {
       }
     )
       
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${data}/members/`, this.props.token, body )
+    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/pool/${data}/members/`, props.token, body )
     return r
   }
 
-  memberDelete = async (name, poolName) => {
+  let memberDelete = async (name, poolName) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1651,11 +1568,11 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${poolName}/member/${name}/`, this.props.token )
+    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/pool/${poolName}/member/${name}/`, props.token )
     return r
   }
 
-  itemPost = async (body, type) => {
+  let itemPost = async (body, type) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1666,20 +1583,20 @@ class ItemsView extends React.Component {
         r = error
       }
     )
-    if (this.props.items === 'monitors') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
+    if (props.items === 'monitors') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/${body.data.type}/`, props.token, body )
     }
-    else if (this.props.items === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
+    else if (props.items === 'profiles') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/${body.data.type}/`, props.token, body )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/`, props.token, body )
     }
     
     return r
   }
 
-  itemDelete = async (name, type) => {
+  let itemDelete = async (name, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1691,19 +1608,19 @@ class ItemsView extends React.Component {
       }
     )
     //@todo: items as a prop
-    if (this.props.items === 'monitors') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
+    if (props.items === 'monitors') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/monitor/${type}/${name}/`, props.token )
     }
-    else if (this.props.items === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
+    else if (props.items === 'profiles') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/profile/${type}/${name}/`, props.token )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token )
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${name}/`, props.token )
     }
     return r
   }
 
-  itemPatch = async (name, type, body) => {
+  let itemPatch = async (name, type, body) => {
 
     let r
     let rest = new Rest(
@@ -1716,14 +1633,14 @@ class ItemsView extends React.Component {
       }
     )
 
-    if (this.props.items === 'monitors') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
+    if (props.items === 'monitors') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/monitor/${type}/${name}/`, props.token, body )
     }
-    else if (this.props.items === 'profiles') {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token, body  )
+    else if (props.items === 'profiles') {
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/profile/${type}/${name}/`, props.token, body  )
     }
     else {
-      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token, body )
+      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${name}/`, props.token, body )
     }
     return r
   }
@@ -1732,430 +1649,211 @@ class ItemsView extends React.Component {
     Render Data in DOM
   */
 
-  render() {
-
-    let randomKey = () => {
-      return Math.random().toString()
-    }
-
-    let createElement = (element, key, choices, obj, action, father) => {
-      if (element === 'input') {
-        let width = 200
-        if (key === 'port') {
-          width = 80
-        }
-
-        if (father) {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: width}
-                :
-                  {width: width}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj, father ? father : null)}
-            />          
-          )
-        }
-        else {
-          return (
-            <Input
-              value={obj[key]}
-              style=
-                {obj[`${key}Error`] ?
-                  {borderColor: 'red', width: width}
-                :
-                  {width: width}
-                }
-              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
-              onChange={event => this.set(key, event.target.value, obj)}
-            />          
-          )
-        }
+  let createElement = (element, key, choices, obj, action, father) => {
+    if (element === 'input') {
+      let width = 200
+      if (key === 'port') {
+        width = 80
       }
 
-      else if (element === 'textarea') {
+      if (father) {
         return (
-          <Input.TextArea
-            rows={12}
+          <Input
             value={obj[key]}
-            ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
-            onChange={event => this.set(key, event.target.value, obj)}
             style=
-              { obj[`${key}Error`] ?
-                {borderColor: `red`, width: 350}
+              {obj[`${key}Error`] ?
+                {borderColor: 'red', width: width}
               :
-                {width: 350}
+                {width: width}
               }
-          />
+            ref={ref => myRefs[`${obj.id}_${key}`] = ref}
+            onChange={event => set(key, event.target.value, obj, father ? father : null)}
+          />          
         )
       }
-
-      else if (element === 'select') {
-        if (key === 'routeDomain') {
-          return (
-            <Select
-              value={obj.routeDomainName}
-              showSearch
-              style={{width: 150}}
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set('routeDomain', event, obj, father)}
-            >
-              <React.Fragment>
-                {choices.map((rd, i) => {
-                  return (
-                    <Select.Option key={i} value={rd.id}>{rd.name}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else {
-          return (
-            <Select
-              value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: 120}
-                :
-                  {width: 120}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => this.set(key, event, obj, father)}
-            >
-              <React.Fragment>
-                {choices.map((c, i) => {
-                  return (
-                    <Select.Option key={i} value={c}>{c}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-
-      }
-
-      else if (element === 'checkbox'){
+      else {
         return (
-          <Checkbox 
-            checked={obj.toDelete}
-            onChange={event => this.set(action, event.target.checked, obj, father)}
-          />
+          <Input
+            value={obj[key]}
+            style=
+              {obj[`${key}Error`] ?
+                {borderColor: 'red', width: width}
+              :
+                {width: width}
+              }
+            ref={ref => (myRefs.current[`${obj.id}_${key}`] = ref)}
+            onChange={event => set(key, event.target.value, obj)}
+          />          
+        )
+      }
+    }
+
+    else if (element === 'textarea') {
+      return (
+        <Input.TextArea
+          rows={12}
+          value={obj[key]}
+          ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
+          onChange={event => set(key, event.target.value, obj)}
+          style=
+            { obj[`${key}Error`] ?
+              {borderColor: `red`, width: 350}
+            :
+              {width: 350}
+            }
+        />
+      )
+    }
+
+    else if (element === 'select') {
+      if (key === 'routeDomain') {
+        return (
+          <Select
+            value={obj.routeDomainName}
+            showSearch
+            style={{width: 150}}
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set('routeDomain', event, obj, father)}
+          >
+            <React.Fragment>
+              {choices.map((rd, i) => {
+                return (
+                  <Select.Option key={i} value={rd.id}>{rd.name}</Select.Option>
+                )
+              })
+              }
+            </React.Fragment>
+          </Select>
+        )
+      }
+      else {
+        return (
+          <Select
+            value={obj[key]}
+            showSearch
+            style={
+              obj[`${key}Error`] ?
+                {border: `1px solid red`, width: 120}
+              :
+                {width: 120}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set(key, event, obj, father)}
+          >
+            <React.Fragment>
+              {choices.map((c, i) => {
+                return (
+                  <Select.Option key={i} value={c}>{c}</Select.Option>
+                )
+              })
+              }
+            </React.Fragment>
+          </Select>
         )
       }
 
-      else if (element === 'button'){
-        if (action === 'itemRemove') {
-          return (
-            <Button
-              type='danger'
-              onClick={() => this.itemRemove(obj, this.state.items)}
-            >
-              -
-            </Button>
-          )
-        }
-        else if (action === 'subItemRemove') {
-          return (
-            <Button
-              type='danger'
-              onClick={() => this.subItemRemove(obj, father)}
-            >
-              -
-            </Button>
-          )
-        }
-        else if (action === 'commit') {
-          return (
-            <Button
-              type="primary"
-              disabled={this.state.disableCommit}
-              style={{float: 'right', marginRight: 5, marginBottom: 15}}
-              onClick={() => this.validation()}
-            >
-              Commit
-            </Button>
-          )
-        }
-      }
     }
 
-    let returnCol = () => {
-      if (this.props.items === 'nodes') {
-        return nodesColumns
-      }
-      if (this.props.items === 'monitors') {
-        return monitorsColumns
-      }
-      if (this.props.items === 'snatpools') {
-        return snatpoolsColumns
-      }
-      if (this.props.items === 'pools') {
-        return poolsColumns
-      }
-      if (this.props.items === 'irules') {
-        return irulesColumns
-      }
-      if (this.props.items === 'profiles') {
-        return profilesColumns
-      }
-    }
-
-    const expandedRowRender = (...params) => {
-      const columns = [
-        {
-          title: 'Address',
-          align: 'center',
-          dataIndex: 'address',
-          key: 'address',
-          ...this.getColumnSearchProps('address'),
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('input', 'address', '', obj, '', params[0])
-          )
-        },
-        {
-          title: 'Route domain (optional)',
-          align: 'center',
-          dataIndex: 'routeDomain',
-          key: 'routeDomain',
-          ...this.getColumnSearchProps('routeDomain'),
-          render: (val, obj)  => (
-            createElement('select', 'routeDomain', this.state.routeDomains, obj, '', params[0])
-          )
-        },
-        {
-          title: 'Delete',
-          align: 'center',
-          dataIndex: 'delete',
-          key: 'delete',
-          render: (val, obj)  => (
-            <Space size="small">
-              { obj.existent ? 
-                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
-              :
-                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
-              }
-            </Space>
-          )
-        }
-      ];
-
-      const poolmembersColumn = [
-        {
-          title: 'Loading',
-          align: 'center',
-          dataIndex: 'loading',
-          key: 'loading',
-          render: (name, obj)  => (
-            <Space size="small">
-              {obj.isLoading ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
-            </Space>
-          ),
-        },
-        {
-          title: 'Name',
-          align: 'center',
-          dataIndex: 'name',
-          key: 'name',
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('input', 'name', '', obj, '', params[0])
-          )
-        },
-        {
-          title: 'Address',
-          align: 'center',
-          dataIndex: 'address',
-          key: 'address',
-          ...this.getColumnSearchProps('address'),
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('input', 'address', '', obj, '', params[0])
-          )
-        },
-        {
-          title: 'Port',
-          align: 'center',
-          dataIndex: 'port',
-          key: 'port',
-          ...this.getColumnSearchProps('port'),
-          render: (val, obj)  => (
-            obj.existent ?
-              val
-            :
-              createElement('input', 'port', '', obj, '', params[0])
-          )
-        },
-        {
-          title: 'State',
-          align: 'center',
-          dataIndex: 'state',
-          key: 'state',
-          ...this.getColumnSearchProps('state'),
-        },
-        {
-          title: 'Session',
-          align: 'center',
-          dataIndex: 'session',
-          key: 'session',
-        },
-        {
-          title: 'Node State',
-          align: 'center',
-          dataIndex: 'parentState',
-          key: 'parentState',
-        },
-        {
-          title: 'Status',
-          align: 'center',
-          dataIndex: 'status',
-          key: 'status',
-          render(name, record) {
-            return {
-              props: {
-                style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
-              },
-              children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
-            };
-          }
-        },
-          
-        {
-          title: 'Connections',
-          align: 'center',
-          dataIndex: 'connections',
-          key: 'connections',
-        },
-        {
-          title: '',
-          align: 'center',
-          dataIndex: 'monitoring',
-          key: 'monitoring',
-          render: (name, obj)  => (
-            <Space size="small">
-              {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
-            </Space>
-          ),
-        },
-        {
-          title: 'Delete',
-          align: 'center',
-          dataIndex: 'delete',
-          key: 'delete',
-          render: (val, obj)  => (
-            <Space size="small">
-              { obj.existent ? 
-                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
-              :
-                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
-              }
-          </Space>
-          ),
-        }
-      ]
-
+    else if (element === 'checkbox'){
       return (
-        <React.Fragment>
-          <br/>
+        <Checkbox 
+          checked={obj.toDelete}
+          onChange={event => set(action, event.target.checked, obj, father)}
+        />
+      )
+    }
+
+    else if (element === 'button'){
+      if (action === 'itemRemove') {
+        return (
+          <Button
+            type='danger'
+            onClick={() => itemRemove(obj, items)}
+          >
+            -
+          </Button>
+        )
+      }
+      else if (action === 'subItemRemove') {
+        return (
+          <Button
+            type='danger'
+            onClick={() => subItemRemove(obj, father)}
+          >
+            -
+          </Button>
+        )
+      }
+      else if (action === 'commit') {
+        return (
           <Button
             type="primary"
-            disabled={params[0].members ? false : true}
-            onClick={() => this.subItemAdd(params[0])}
+            disabled={disableCommit}
+            style={{float: 'right', marginRight: 5, marginBottom: 15}}
+            onClick={() => validation()}
           >
-            Add member
+            Commit
           </Button>
-          { this.props.items === 'pools' ? 
-              <Button
-                type="primary"
-                onClick={() => this.getPoolmembers(params[0])}
-              >
-                Get members
-              </Button>
-            :
-              null
-          }
-          
-          <br/>
-          <br/>
-          { params[0].loading ?
-            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-          :
-            <Table
-              columns={this.props.items === 'pools' ? poolmembersColumn : columns}
-              rowKey={record => record.id}
-              //style={{backgroundColor:'black'}}
-              dataSource={params[0].members}
-              pagination={{pageSize: 10}}
-            />
-          }
-          
-        </React.Fragment>
-      )
-    };
-
-    const nodesColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
         )
-      },
+      }
+    }
+  }
+
+  let returnCol = () => {
+    if (props.items === 'nodes') {
+      return nodesColumns
+    }
+    if (props.items === 'monitors') {
+      return monitorsColumns
+    }
+    if (props.items === 'snatpools') {
+      return snatpoolsColumns
+    }
+    if (props.items === 'pools') {
+      return poolsColumns
+    }
+    if (props.items === 'irules') {
+      return irulesColumns
+    }
+    if (props.items === 'profiles') {
+      return profilesColumns
+    }
+  }
+
+  let expandedRowRender = (...params) => {
+    const columns = [
       {
         title: 'Address',
         align: 'center',
         dataIndex: 'address',
         key: 'address',
-        ...this.getColumnSearchProps('address'),
+        ...getColumnSearchProps(
+          'address', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
         render: (val, obj)  => (
           obj.existent ?
             val
           :
-            createElement('input', 'address', '', obj, '')
+            createElement('input', 'address', '', obj, '', params[0])
         )
       },
       {
@@ -2163,22 +1861,103 @@ class ItemsView extends React.Component {
         align: 'center',
         dataIndex: 'routeDomain',
         key: 'routeDomain',
-        ...this.getColumnSearchProps('routeDomain'),
+        ...getColumnSearchProps(
+          'routeDomain', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
         render: (val, obj)  => (
-          createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
+          createElement('select', 'routeDomain', routeDomains, obj, '', params[0])
         )
       },
       {
-        title: 'Session',
+        title: 'Delete',
         align: 'center',
-        dataIndex: 'session',
-        key: 'session',
-        ...this.getColumnSearchProps('session'),
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+            :
+              createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
+            }
+          </Space>
+        )
+      }
+    ];
+
+    const poolmembersColumn = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isLoading ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
         render: (val, obj)  => (
           obj.existent ?
             val
           :
-            createElement('select', 'session', this.state.nodeSessions, obj, '')
+            createElement('input', 'name', '', obj, '', params[0])
+        )
+      },
+      {
+        title: 'Address',
+        align: 'center',
+        dataIndex: 'address',
+        key: 'address',
+        ...getColumnSearchProps(
+          'address', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'address', '', obj, '', params[0])
+        )
+      },
+      {
+        title: 'Port',
+        align: 'center',
+        dataIndex: 'port',
+        key: 'port',
+        ...getColumnSearchProps(
+          'port', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'port', '', obj, '', params[0])
         )
       },
       {
@@ -2186,20 +1965,60 @@ class ItemsView extends React.Component {
         align: 'center',
         dataIndex: 'state',
         key: 'state',
-        ...this.getColumnSearchProps('state'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('select', 'state', this.state.nodeStates, obj, '')
-        )
+        ...getColumnSearchProps(
+          'state', 
+          searchInput, 
+          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+          searchText, 
+          searchedColumn, 
+          setSearchText, 
+          setSearchedColumn
+        ),
       },
       {
-        title: 'Monitor',
+        title: 'Session',
         align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-        ...this.getColumnSearchProps('monitor'),
+        dataIndex: 'session',
+        key: 'session',
+      },
+      {
+        title: 'Node State',
+        align: 'center',
+        dataIndex: 'parentState',
+        key: 'parentState',
+      },
+      {
+        title: 'Status',
+        align: 'center',
+        dataIndex: 'status',
+        key: 'status',
+        render(name, record) {
+          return {
+            props: {
+              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+            },
+            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+          };
+        }
+      },
+        
+      {
+        title: 'Connections',
+        align: 'center',
+        dataIndex: 'connections',
+        key: 'connections',
+      },
+      {
+        title: '',
+        align: 'center',
+        dataIndex: 'monitoring',
+        key: 'monitoring',
+        render: (name, obj)  => (
+          <Space size="small">
+            {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
       },
       {
         title: 'Delete',
@@ -2209,380 +2028,679 @@ class ItemsView extends React.Component {
         render: (val, obj)  => (
           <Space size="small">
             { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
             :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+              createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
             }
-          </Space>
+        </Space>
         ),
       }
-    ];
-
-    const monitorsColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('select', 'type', this.state.monitorTypes, obj, '')
-        )
-      },
-      {
-        title: 'Interval',
-        align: 'center',
-        dataIndex: 'interval',
-        key: 'interval',
-        ...this.getColumnSearchProps('interval'),
-        render: (val, obj)  => (
-          createElement('input', 'interval', '', obj, '')
-        )
-      },
-      {
-        title: 'Timeout',
-        align: 'center',
-        dataIndex: 'timeout',
-        key: 'timeout',
-        ...this.getColumnSearchProps('timeout'),
-        render: (val, obj)  => (
-          createElement('input', 'timeout', '', obj, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-            :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const snatpoolsColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-            :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const poolsColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Monitor',
-        align: 'center',
-        dataIndex: 'monitor',
-        key: 'monitor',
-        ...this.getColumnSearchProps('monitor'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('select', 'monitor', this.state.monitorTypes, obj, '')
-        )
-      },
-      {
-        title: 'Load Balancing Mode',
-        align: 'center',
-        dataIndex: 'loadBalancingMode',
-        key: 'loadBalancingMode',
-        ...this.getColumnSearchProps('loadBalancingMode'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('select', 'loadBalancingMode', this.state.loadBalancingModes, obj, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-            :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const irulesColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Code',
-        align: 'center',
-        dataIndex: 'apiAnonymous',
-        key: 'apiAnonymous',
-        ...this.getColumnSearchProps('apiAnonymous'),
-        render: (val, obj)  => (
-          createElement('textarea', 'apiAnonymous', '', obj, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-            :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    const profilesColumns = [
-      {
-        title: 'Loading',
-        align: 'center',
-        dataIndex: 'loading',
-        key: 'loading',
-        render: (val, obj)  => (
-          <Space size="small">
-            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
-      },
-      {
-        title: 'Name',
-        align: 'center',
-        dataIndex: 'name',
-        key: 'name',
-        ...this.getColumnSearchProps('name'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'name', '', obj, '')
-        )
-      },
-      {
-        title: 'Type',
-        align: 'center',
-        dataIndex: 'type',
-        key: 'type',
-        ...this.getColumnSearchProps('type'),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('select', 'type', this.state.profileTypes, obj, '')
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-            :
-              createElement('button', 'itemRemove', '', obj, 'itemRemove')
-            }
-          </Space>
-        ),
-      }
-    ];
-
-    let errors = () => {
-      if (this.props.error && this.props.error.component === 'itemsView') {
-        return <Error error={[this.props.error]} visible={true}/> 
-      }
-    }
+    ]
 
     return (
       <React.Fragment>
-        {this.state.loading ?
+        <br/>
+        <Button
+          type="primary"
+          disabled={params[0].members ? false : true}
+          onClick={() => subItemAdd(params[0])}
+        >
+          Add member
+        </Button>
+        { props.items === 'pools' ? 
+            <Button
+              type="primary"
+              onClick={() => getPoolmembers(params[0])}
+            >
+              Get members
+            </Button>
+          :
+            null
+        }
+        
+        <br/>
+        <br/>
+        { params[0].loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
-          <React.Fragment>
-            {/*to do: createElement()*/} 
-            <Radio.Group>
-              <Radio.Button
-                style={{marginLeft: 10 }}
-                onClick={() => this.main()}
-              >
-                <ReloadOutlined/>
-              </Radio.Button>
-            </Radio.Group>
-
-            <Radio.Group
-              buttonStyle="solid"
-            >
-              <Radio.Button
-                buttonStyle="solid"
-                style={{marginLeft: 10 }}
-                onClick={() => this.itemAdd(this.state.items, this.props.items)}
-              >
-                +
-              </Radio.Button>
-            </Radio.Group>
-
-            <br/>
-            <br/>
-            { this.props.items === 'snatpools' || this.props.items === 'pools' ?
-              <Table
-                columns={returnCol()}
-                dataSource={this.state.items}
-                bordered
-                scroll={{x: 'auto'}}
-                pagination={{pageSize: 10}}
-                style={{marginBottom: 10}}
-                onExpand={this.onTableRowExpand}
-                expandedRowKeys={this.state.expandedKeys}
-                rowKey={record => record.id}
-                expandedRowRender={ record => expandedRowRender(record)}
-              />
-            :
-              <Table
-                columns={returnCol()}
-                style={{width: '100%', padding: 5}}
-                dataSource={this.state.items}
-                bordered
-                rowKey={randomKey}
-                scroll={{x: 'auto'}}
-                pagination={{ pageSize: 10 }}
-              />
-            }
-            <br/>
-
-            {createElement('button', '', '', '', 'commit')}
-
-          </React.Fragment>
+          <Table
+            columns={props.items === 'pools' ? poolmembersColumn : columns}
+            rowKey={record => record.id}
+            //style={{backgroundColor:'black'}}
+            dataSource={params[0].members}
+            pagination={{pageSize: 10}}
+          />
         }
-
-        {errors()}
-  
+        
       </React.Fragment>
     )
+  };
+
+  let nodesColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Address',
+      align: 'center',
+      dataIndex: 'address',
+      key: 'address',
+      ...getColumnSearchProps(
+        'address', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'address', '', obj, '')
+      )
+    },
+    {
+      title: 'Route domain (optional)',
+      align: 'center',
+      dataIndex: 'routeDomain',
+      key: 'routeDomain',
+      ...getColumnSearchProps(
+        'routeDomain', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        createElement('select', 'routeDomain', routeDomains, obj, '')
+      )
+    },
+    {
+      title: 'Session',
+      align: 'center',
+      dataIndex: 'session',
+      key: 'session',
+      ...getColumnSearchProps(
+        'session', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'session', nodeSessions, obj, '')
+      )
+    },
+    {
+      title: 'State',
+      align: 'center',
+      dataIndex: 'state',
+      key: 'state',
+      ...getColumnSearchProps(
+        'state', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'state', nodeStates, obj, '')
+      )
+    },
+    {
+      title: 'Monitor',
+      align: 'center',
+      dataIndex: 'monitor',
+      key: 'monitor',
+      ...getColumnSearchProps(
+        'monitor', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let monitorsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Type',
+      align: 'center',
+      dataIndex: 'type',
+      key: 'type',
+      ...getColumnSearchProps(
+        'type', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'type', monitorTypes, obj, '')
+      )
+    },
+    {
+      title: 'Interval',
+      align: 'center',
+      dataIndex: 'interval',
+      key: 'interval',
+      ...getColumnSearchProps(
+        'interval', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        createElement('input', 'interval', '', obj, '')
+      )
+    },
+    {
+      title: 'Timeout',
+      align: 'center',
+      dataIndex: 'timeout',
+      key: 'timeout',
+      ...getColumnSearchProps(
+        'timeout', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        createElement('input', 'timeout', '', obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let snatpoolsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let poolsColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Monitor',
+      align: 'center',
+      dataIndex: 'monitor',
+      key: 'monitor',
+      ...getColumnSearchProps(
+        'monitor', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'monitor', monitorTypes, obj, '')
+      )
+    },
+    {
+      title: 'Load Balancing Mode',
+      align: 'center',
+      dataIndex: 'loadBalancingMode',
+      key: 'loadBalancingMode',
+      ...getColumnSearchProps(
+        'loadBalancingMode', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'loadBalancingMode', loadBalancingModes, obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let irulesColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Code',
+      align: 'center',
+      dataIndex: 'apiAnonymous',
+      key: 'apiAnonymous',
+      ...getColumnSearchProps(
+        'apiAnonymous', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        createElement('textarea', 'apiAnonymous', '', obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let profilesColumns = [
+    {
+      title: 'Loading',
+      align: 'center',
+      dataIndex: 'loading',
+      key: 'loading',
+      render: (val, obj)  => (
+        <Space size="small">
+          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+        </Space>
+      ),
+    },
+    {
+      title: 'Name',
+      align: 'center',
+      dataIndex: 'name',
+      key: 'name',
+      ...getColumnSearchProps(
+        'name', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('input', 'name', '', obj, '')
+      )
+    },
+    {
+      title: 'Type',
+      align: 'center',
+      dataIndex: 'type',
+      key: 'type',
+      ...getColumnSearchProps(
+        'type', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (val, obj)  => (
+        obj.existent ?
+          val
+        :
+          createElement('select', 'type', profileTypes, obj, '')
+      )
+    },
+    {
+      title: 'Delete',
+      align: 'center',
+      dataIndex: 'delete',
+      key: 'delete',
+      render: (val, obj)  => (
+        <Space size="small">
+          { obj.existent ? 
+            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+          :
+            createElement('button', 'itemRemove', '', obj, 'itemRemove')
+          }
+        </Space>
+      ),
+    }
+  ];
+
+  let errorsComponent = () => {
+    if (props.error && props.error.component === 'itemsView') {
+      return <Error error={[props.error]} visible={true}/> 
+    }
   }
 
+  return (
+    <React.Fragment>
+      {console.log(items)}
+      {loading ?
+        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+      :
+        <React.Fragment>
+          {/*to do: createElement()*/} 
+          <Radio.Group>
+            <Radio.Button
+              style={{marginLeft: 10 }}
+              onClick={() => start()}
+            >
+              <ReloadOutlined/>
+            </Radio.Button>
+          </Radio.Group>
+
+          <Radio.Group
+            buttonStyle="solid"
+          >
+            <Radio.Button
+              buttonStyle="solid"
+              style={{marginLeft: 10 }}
+              onClick={() => itemAdd(items, props.items)}
+            >
+              +
+            </Radio.Button>
+          </Radio.Group>
+
+          <br/>
+          <br/>
+          { props.items === 'snatpools' || props.items === 'pools' ?
+            <Table
+              columns={returnCol()}
+              dataSource={items}
+              bordered
+              scroll={{x: 'auto'}}
+              pagination={{pageSize: 10}}
+              style={{marginBottom: 10}}
+              onExpand={onTableRowExpand}
+              expandedRowKeys={expandedKeys}
+              rowKey={record => record.id}
+              expandedRowRender={ record => expandedRowRender(record)}
+            />
+          :
+            <Table
+              columns={returnCol()}
+              style={{width: '100%', padding: 5}}
+              dataSource={items}
+              bordered
+              rowKey={record => record.id}
+              scroll={{x: 'auto'}}
+              pagination={{ pageSize: 10 }}
+            />
+          }
+          <br/>
+
+          {createElement('button', '', '', '', 'commit')}
+
+        </React.Fragment>
+      }
+
+      {errorsComponent()}
+
+    </React.Fragment>
+  )
+  
 }
 
 export default connect((state) => ({
