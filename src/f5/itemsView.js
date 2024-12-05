@@ -1,8 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React from 'react'
 import { connect } from 'react-redux'
 import 'antd/dist/antd.css';
+import '../App.css'
+import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio, Card } from 'antd';
+import Highlighter from 'react-highlight-words';
+import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
 
-//import '../App.css'
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'
 import CommonFunctions from '../_helpers/commonFunctions'
@@ -11,156 +14,240 @@ import Error from '../concerto/error'
 import {
   err
 } from '../concerto/store'
-
-import { getColumnSearchProps, handleSearch, handleReset } from '../_helpers/tableUtils';
-
-import { Space, Table, Input, Select, Button, Spin, Checkbox, Radio } from 'antd';
-import { SearchOutlined, LoadingOutlined, ReloadOutlined } from '@ant-design/icons';
-
+  
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />
 const elementLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const memberIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
 
-function ItemsView(props) {
 
-  let [visible, setVisible] = useState(false);
-  let [loading, setLoading] = useState(false);
+class ItemsView extends React.Component {
 
-  let [disableCommit, setDisableCommit] = useState(false);
-  let [routeDomains, setRouteDomains] = useState([]);
-  let [originitems, setOriginitems] = useState([]);
-  let [items, setItems] = useState([]);
-  let [monitorTypes, setMonitorTypes] = useState([]);
-  let [loadBalancingModes, setLoadBalancingModes] = useState(['round-robin', 'least-connections-member', 'observed-member', 'predictive-member']);
-  let [profileTypes, setProfileTypes] = useState([]);
-  let [expandedKeys, setExpandedKeys] = useState([]);
-  let [states, setStates] = useState(['enabled', 'disabled', 'forced offline']);
-  let [nodeSessions, setNodeSessions] = useState(['user-enabled', 'user-disabled']);
-  let [nodeStates, setNodeStates] = useState(['unchecked', 'user-down']);
-  let [errors, setErrors] = useState([]);
+  constructor(props) {
+    super(props);
 
-  let [searchText, setSearchText] = useState('');
-  let [searchedColumn, setSearchedColumn] = useState('');
-  let searchInput = useRef(null);
+    this.myRefs = {};
+    this.textAreaRefs = {};
 
-  let [response, setResponse] = useState(false);
+    this.state = {
+      searchText: '',
+      searchedColumn: '',
+      disableCommit: false,
+      routeDomains: [],
+      originitems: [],
+      items: [],
+      monitorTypes: [],
+      loadBalancingModes: ['round-robin', 'least-connections-member', 'observed-member', 'predictive-member'],
+      profileTypes: [],
+      expandedKeys: [],
+      states: ['enabled', 'disabled', 'forced offline'],
+      nodeSessions: ['user-enabled', 'user-disabled'],
+      nodeStates: ['unchecked', 'user-down'],
+      errors: {}
+    };
+  }
 
-  //if use useRef the object is not accessible directly. you have to create a "current" property
-  let myRefs = useRef({});
-  let textAreaRefs = useRef({});
+  componentDidMount() {
+    if (this.props.items) {
+      this.main()
+    }
+  }
+  
+  shouldComponentUpdate(newProps, newState) {
+    return true;
+  }
 
-  useEffect(() => {
-    start()
-  }, [props.items, props.asset, props.partition]);
+  componentDidUpdate(prevProps, prevState) {
+    if (this.props.asset !== prevProps.asset || this.props.partition !== prevProps.partition) {
+      this.main()
+    }
+    if (this.props.items !== prevProps.items) {
+      this.main()
+    }
+  }
+
+  componentWillUnmount() {
+  }
 
   /*
     Antd Table methods for search, filter and order data
   */
 
-  let onTableRowExpand = (expanded, record) => {
+  getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }) => (
+      <div style={{ padding: 8 }}>
+        <Input
+          ref={node => {
+            this.searchInput = node;
+          }}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+          onPressEnter={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />
+        <Space>
+          <Button
+            type="primary"
+            onClick={() => this.handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size="small"
+            style={{ width: 90 }}
+          >
+            Search
+          </Button>
+          <Button onClick={() => this.handleReset(clearFilters, confirm)} size="small" style={{ width: 90 }}>
+            Reset
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+    onFilter: (value, record) => {
+      try {
+        if (typeof dataIndex === 'string' || dataIndex instanceof String) {
+          return record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else if ( Array.isArray(dataIndex) ) {
+          let r = record[dataIndex[0]]
+          return r[dataIndex[1]].toString().toLowerCase().includes(value.toLowerCase())
+        }
+        else {
+          return ''
+        }
+      }
+      catch (error){
+
+      }
+    },
+    onFilterDropdownVisibleChange: visible => {
+      if (visible) {
+        setTimeout(() => this.searchInput.select(), 100);
+      }
+    },
+    render: text => {
+      return this.state.searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
+          searchWords={[this.state.searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      )
+    }
+  });
+
+  handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    this.setState({
+      searchText: selectedKeys[0],
+      searchedColumn: dataIndex,
+    });
+  };
+
+  handleReset = (clearFilters, confirm) => {
+    clearFilters();
+    confirm();
+    this.setState({ searchText: '' });
+  };
+
+  onTableRowExpand = (expanded, record) => {
     console.log(expanded)
     console.log(record)
-    let expandedKeysCopy = JSON.parse(JSON.stringify(expandedKeys))
+    let keys = Object.assign([], this.state.expandedKeys);
 
     if(expanded){
-      expandedKeysCopy.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
+      keys.push(record.id); // I have set my record.id as row key. Check the documentation for more details.
     }
     else {
-      expandedKeysCopy = expandedKeysCopy.filter(k => k !== record.id)
+      keys = keys.filter(k => k !== record.id)
     }
-    setExpandedKeys(expandedKeysCopy)
+    this.setState({expandedKeys: keys});
   }
 
   /*
     Fetching Data, Rendering in a table, Add/Remove items
   */
 
-  let start = async () => {
-    setItems([])
-    setOriginitems([])
-    setExpandedKeys([])
-    setLoading(true)
-
+  main = async () => {
+    await this.setState({items: [], originitems: [], expandedKeys: [], loading: true})
     let id = 1
-    let routeDomainsLocal = []
 
-    let data = await dataGet(props.asset.id, 'routedomains')
-    if (data.status && data.status !== 200 ) {
-      let error = Object.assign(data, {
+    let routeDomains = await this.dataGet(this.props.asset.id, 'routedomains')
+    if (routeDomains.status && routeDomains.status !== 200 ) {
+      let error = Object.assign(routeDomains, {
         component: 'itemsView',
         vendor: 'f5',
         errorType: 'routeDomainsError'
       })
-      props.dispatch(err(error))
-      setLoading(false)
+      this.props.dispatch(err(error))
+      await this.setState({loading: false})
       return
     }
     else {
-      routeDomainsLocal = data.data.items
-      setRouteDomains(routeDomainsLocal)
+      await this.setState({routeDomains: routeDomains.data.items})
     }
     
-    if (props.items === 'nodes') {
+    if (this.props.items === 'nodes') {
 
-      let fetched = await dataGet(props.asset.id)
+      let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'nodesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        let itemsCopy = fetched.data.items.map(item => {
+        let items = fetched.data.items.map(item => {
+          console.log(item)
           item.existent = true
           item.isModified = {}
           item.id = id
-          id++
           if (item.address.includes('%')) {
             let list = item.address.split('%')
-            item.address = list[0]
             item.routeDomain = list[1]
-            let rd = routeDomainsLocal.find(r => r.id == item.routeDomain)
+            item.address = list[0]
+            let rd = this.state.routeDomains.find(r => r.id == item.routeDomain)
             item.routeDomainName = rd.name
           }
+          id++
           return item
         })
-
-        setItems(itemsCopy)
-        setOriginitems(itemsCopy)
-        setLoading(false)
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
-    else if (props.items === 'monitors') {
-      let fetched = await dataGet(props.asset.id, 'monitorTypes')
+    else if (this.props.items === 'monitors') {
+      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorTypesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        setMonitorTypes(fetched.data.items)
+        await this.setState({monitorTypes: fetched.data.items})
       }
     
-      fetched = await dataGet(props.asset.id)
+      fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorsError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
@@ -184,27 +271,25 @@ function ItemsView(props) {
             })
           })
         }
-        setItems(list)
-        setOriginitems(list)
-        setLoading(false)
+        await this.setState({items: list, originitems: list, loading: false})
       }
     }
 
-    else if (props.items === 'snatpools') {
+    else if (this.props.items === 'snatpools') {
       
-      let fetched = await dataGet(props.asset.id)
+      let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'snatpoolsError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        let itemsCopy = fetched.data.items.map(item => {
+        let items = fetched.data.items.map(item => {
           let mid = 1
           item.existent = true
           item.isModified = {}
@@ -219,7 +304,7 @@ function ItemsView(props) {
               let list = o.address.split('%')
               o.routeDomain = list[1]
               o.address = list[0]
-              let rd = routeDomainsLocal.find(r => r.id == o.routeDomain)
+              let rd = this.state.routeDomains.find(r => r.id == o.routeDomain)
               o.routeDomainName = rd.name
             }
             o.id = mid
@@ -231,41 +316,39 @@ function ItemsView(props) {
           id++
           return item
         })
-        setItems(itemsCopy)
-        setOriginitems(itemsCopy)
-        setLoading(false)
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
-    else if (props.items === 'pools') {
-      let fetched = await dataGet(props.asset.id, 'monitorTypes')
+    else if (this.props.items === 'pools') {
+      let fetched = await this.dataGet(this.props.asset.id, 'monitorTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'monitorTypesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        setMonitorTypes(fetched.data.items)
+        await this.setState({monitorTypes: fetched.data.items})
       }
 
-      fetched = await dataGet(props.asset.id)
+      fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'poolsError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        let itemsCopy = fetched.data.items.map(item => {
+        let items = fetched.data.items.map(item => {
           let mid = 1
           item.existent = true
           item.isModified = {}
@@ -273,63 +356,59 @@ function ItemsView(props) {
           id++
           return item
         })
-        setItems(itemsCopy)
-        setOriginitems(itemsCopy)
-        setLoading(false)
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
-    else if (props.items === 'irules') {
-      let fetched = await dataGet(props.asset.id)
+    else if (this.props.items === 'irules') {
+      let fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'irulesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        let itemsCopy = fetched.data.items.map(item => {
+        let items = fetched.data.items.map(item => {
           item.existent = true
           item.isModified = {}
           item.id = id
           id++
           return item
         })
-        setItems(itemsCopy)
-        setOriginitems(itemsCopy)
-        setLoading(false)
+        await this.setState({items: items, originitems: items, loading: false})
       }
     }
 
-    else if (props.items === 'profiles') {
-      let fetched = await dataGet(props.asset.id, 'profileTypes')
+    else if (this.props.items === 'profiles') {
+      let fetched = await this.dataGet(this.props.asset.id, 'profileTypes')
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'profileTypesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
-        setProfileTypes(fetched.data.items)
+        await this.setState({profileTypes: fetched.data.items})
       }
     
-      fetched = await dataGet(props.asset.id)
+      fetched = await this.dataGet(this.props.asset.id)
       if (fetched.status && fetched.status !== 200 ) {
         let error = Object.assign(fetched, {
           component: 'itemsView',
           vendor: 'f5',
           errorType: 'profilesError'
         })
-        props.dispatch(err(error))
-        setLoading(false)
+        this.props.dispatch(err(error))
+        await this.setState({loading: false})
         return
       }
       else {
@@ -347,34 +426,32 @@ function ItemsView(props) {
             })
           })
         }
-        setItems(list)
-        setOriginitems(list)
-        setLoading(false)
+        await this.setState({items: list, originitems: list, loading: false})
       }
     }
   }
 
-  let dataGet = async (assetId, entities) => {
+  dataGet = async (assetId, entities) => {
     let endpoint
     let r
 
     if (entities === 'routedomains') {
-      endpoint = `${props.vendor}/${assetId}/${entities}/`
+      endpoint = `${this.props.vendor}/${assetId}/${entities}/`
     }
     else if (entities === 'monitorTypes') {
-      endpoint = `${props.vendor}/${assetId}/${props.partition}/monitors/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/monitors/`
     }
     else if (entities === 'profileTypes') {
-      endpoint = `${props.vendor}/${assetId}/${props.partition}/profiles/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/profiles/`
     }
-    else if (props.items === 'monitors') {
-      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/ANY/`
+    else if (this.props.items === 'monitors') {
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
     }
-    else if (props.items === 'profiles') {
-      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/ANY/`
+    else if (this.props.items === 'profiles') {
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/ANY/`
     }
     else {
-      endpoint = `${props.vendor}/${assetId}/${props.partition}/${props.items}/`
+      endpoint = `${this.props.vendor}/${assetId}/${this.props.partition}/${this.props.items}/`
     }
     let rest = new Rest(
       "GET",
@@ -385,19 +462,18 @@ function ItemsView(props) {
         r = error
       }
     )
-    await rest.doXHR(endpoint, props.token)
+    await rest.doXHR(endpoint, this.props.token)
     return r
   }
 
-  let getPoolmembers = async(pool) => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
-    let p = itemsCopy.find(item => item.id === pool.id)
-    let origItems = JSON.parse(JSON.stringify(originitems))
+  getPoolmembers = async(pool) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let p = items.find(item => item.id === pool.id)
+    let origItems = JSON.parse(JSON.stringify(this.state.originitems))
     let origP = origItems.find(item => item.id === pool.id)
     p.loading = true
-    setItems(itemsCopy)
-
-    let endpoint = `${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${pool.name}/members/`
+    await this.setState({items: items})
+    let endpoint = `${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${pool.name}/members/`
     let r
     let rest = new Rest(
       "GET",
@@ -408,7 +484,7 @@ function ItemsView(props) {
         r = error
       }
     )
-    await rest.doXHR(endpoint, props.token)
+    await rest.doXHR(endpoint, this.props.token)
 
     if (r.status && r.status !== 200 ) {
       let error = Object.assign(r, {
@@ -416,7 +492,7 @@ function ItemsView(props) {
         vendor: 'f5',
         errorType: 'getPoolmembersError'
       })
-      props.dispatch(err(error))
+      this.props.dispatch(err(error))
       return
     }
     else {
@@ -480,25 +556,24 @@ function ItemsView(props) {
     p.loading = false
     origP.members = p.members 
 
-    setItems(itemsCopy)
-    setOriginitems(origItems)
+    await this.setState({items: items, originitems: origItems})
   }
 
-  let itemAdd = async (items, type) => {
+  itemAdd = async (items, type) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemAdd(items, type)
-    setItems(list)
+    await this.setState({items: list})
   }
 
-  let itemRemove = async (item, items) => {
+  itemRemove = async (item, items) => {
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(item, items)
-    setItems(list)
+    await this.setState({items: list})
   }
 
-  let subItemAdd = async (obj) => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
-    let item = itemsCopy.find(item => item.id === obj.id)
+  subItemAdd = async (obj) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let item = items.find(item => item.id === obj.id)
 
     if (item < 1) {
       item.members.push({id:1})
@@ -517,19 +592,19 @@ function ItemsView(props) {
       item.isModified.members = true
     }
 
-    setItems(itemsCopy)
+    await this.setState({items: items})
   }
 
-  let subItemRemove = async (subItem, father) => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
-    let item = itemsCopy.find(item => item.id === father.id)
+  subItemRemove = async (subItem, father) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let item = items.find(item => item.id === father.id)
     let member = item.members.find(m => m.id === subItem.id)
     let commonFunctions = new CommonFunctions()
     let list = await commonFunctions.itemRemove(member, father.members)
     item.members = list
 
     if (item.existent) {
-      let origItems = JSON.parse(JSON.stringify(originitems))
+      let origItems = JSON.parse(JSON.stringify(this.state.originitems))
       let origItem = origItems.find(item => item.id === father.id)
       if (JSON.stringify(item.members) === JSON.stringify(origItem.members)) {
         delete item.isModified.members
@@ -539,14 +614,14 @@ function ItemsView(props) {
       }
     }
     
-    setItems(itemsCopy)
+    await this.setState({items: items})
   }
 
   /*
     Setting item's values
   */
 
-  let readFile = (file) => {
+  readFile = (file) => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
   
@@ -559,20 +634,19 @@ function ItemsView(props) {
     });
   }
 
-  let set = async (key, value, record, father) => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
-    let originitemsCopy  = JSON.parse(JSON.stringify(originitems))
+  set = async (key, value, record, father) => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
 
     if (father) {
       
-      let fath = itemsCopy.find(item => item.id === father.id)
-      let origFather = originitemsCopy.find(item => item.id === father.id)
+      let fath = items.find(item => item.id === father.id)
+      let origFather = this.state.originitems.find(item => item.id === father.id)
       let m = fath.members.find(m => m.id === record.id)
       
       if (key === 'name'){
         let start = 0
         let end = 0
-        let ref = myRefs[`${record.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -589,8 +663,8 @@ function ItemsView(props) {
         }
 
         delete m[`${key}Error`]
-        setItems(itemsCopy)
-        ref = myRefs[`${record.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -603,7 +677,7 @@ function ItemsView(props) {
       else if (key === 'address'){
         let start = 0
         let end = 0
-        let ref = myRefs[`${record.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -620,8 +694,8 @@ function ItemsView(props) {
         }
 
         delete m[`${key}Error`]
-        setItems(itemsCopy)
-        ref = myRefs[`${record.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -634,7 +708,7 @@ function ItemsView(props) {
       else if (key === 'routeDomain') {
         //value could be 0
         value = value.toString()
-        let rd = routeDomains.find(r => r.id == value)
+        let rd = this.state.routeDomains.find(r => r.id == value)
 
         if (fath.existent) {
           let originM = origFather.members.find(m => m.id === record.id)
@@ -666,13 +740,13 @@ function ItemsView(props) {
         }
         delete m[`${key}Error`]
 
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       else if (key === 'port'){
         let start = 0
         let end = 0
-        let ref = myRefs[`${record.id}_${key}`]
+        let ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           start = ref.input.selectionStart
@@ -689,8 +763,8 @@ function ItemsView(props) {
         }
 
         delete m[`${key}Error`]
-        setItems(itemsCopy)
-        ref = myRefs[`${record.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
   
         if (ref && ref.input) {
           ref.input.selectionStart = start
@@ -707,7 +781,7 @@ function ItemsView(props) {
         else {
           delete m.toDelete
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (JSON.stringify(fath.members) === JSON.stringify(origFather.members)) {
@@ -716,23 +790,23 @@ function ItemsView(props) {
       else {
         fath.isModified.members = true
       }
-      setItems(itemsCopy)
+      await this.setState({items: items})
     }
 
     else if (record) {
-      let origEl = originitemsCopy.find(item => item.id === record.id)
-      let e = itemsCopy.find(item => item.id === record.id)      
+      let origEl = this.state.originitems.find(item => item.id === record.id)
+      let e = items.find(item => item.id === record.id)
 
       if (key === 'name'){
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
         }
-        let ref = myRefs.current[`${record.id}_${key}`]
+  
         if (value) {
           e[key] = value
           delete e[`${key}Error`]
@@ -742,23 +816,27 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = myRefs.current[`${record.id}_${key}`]
-        if (ref?.current?.[`${record.id}_${key}`]?.input) {
-          ref.current[`${record.id}_${key}`].input.focus();
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
         }
+  
+        ref.focus()
       }
 
       if (key === 'address'){
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
         }
-        let ref = myRefs.current[`${record.id}_${key}`]
+
         if (value) {
           e[key] = value
           delete e[`${key}Error`]
@@ -768,45 +846,41 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = myRefs.current[`${record.id}_${key}`]
-        if (ref?.current?.[`${record.id}_${key}`]?.input) {
-          ref.current[`${record.id}_${key}`].input.focus();
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
         }
-      }
-
-      if (key === 'routeDomain') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
-        let rd = routeDomains.find(r => r.id == value)
-
-        e[key] = value
-        e.routeDomainName = rd.name
-
-        delete e[`${key}Error`]
-        
-        setItems(itemsCopy)
+  
+        ref.focus()
       }
 
       if (key === 'interval'){
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-            console.log(e.isModified[key])
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+  
+        if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
           }
           else {
-            delete e.isModified[key]
+            e[key] = value
           }
-        }
-        let ref = myRefs.current[`${record.id}_${key}`]
-        if (value) {
-          e[key] = value
           delete e[`${key}Error`]
         }
         else {
@@ -814,25 +888,41 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = myRefs.current[`${record.id}_${key}`]
-        if (ref?.current?.[`${record.id}_${key}`]?.input) {
-          ref.current[`${record.id}_${key}`].input.focus();
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
         }
+  
+        ref.focus()
       }
 
       if (key === 'timeout'){
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
+        let start = 0
+        let end = 0
+        let ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          start = ref.input.selectionStart
+          end = ref.input.selectionEnd
+        }
+  
+        if (value) {
+          if (e.existent) {
+            if (origEl[key] !== value) {
+              e.isModified[key] = true
+              e[key] = value
+            }
+            else {
+              delete e.isModified[key]
+              e[key] = value
+            }
           }
           else {
-            delete e.isModified[key]
+            e[key] = value
           }
-        }
-        let ref = myRefs.current[`${record.id}_${key}`]
-        if (value) {
-          e[key] = value
           delete e[`${key}Error`]
         }
         else {
@@ -840,22 +930,35 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = myRefs.current[`${record.id}_${key}`]
-        if (ref?.current?.[`${record.id}_${key}`]?.input) {
-          ref.current[`${record.id}_${key}`].input.focus();
+        await this.setState({items: items})
+        ref = this.myRefs[`${record.id}_${key}`]
+  
+        if (ref && ref.input) {
+          ref.input.selectionStart = start
+          ref.input.selectionEnd = end
         }
-      }   
+  
+        ref.focus()
+      }
+
+      if (key === 'routeDomain') {
+        if (value) {
+          value = value.toString()
+          let rd = this.state.routeDomains.find(r => r.id == value)
+
+          e[key] = value
+          e.routeDomainName = rd.name
+
+          delete e[`${key}Error`]
+        }
+        else {
+          //blank value while typing.
+          e[key] = ''
+        }
+        await this.setState({items: items})
+      }
 
       if (key === 'session') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -865,18 +968,10 @@ function ItemsView(props) {
           //blank value while typing.
           e[key] = ''
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'monitor') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -886,18 +981,10 @@ function ItemsView(props) {
           //blank value while typing.
           e[key] = ''
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'loadBalancingMode') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -907,18 +994,10 @@ function ItemsView(props) {
           //blank value while typing.
           e[key] = ''
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'state') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -928,18 +1007,10 @@ function ItemsView(props) {
           //blank value while typing.
           e[key] = ''
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'type') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         value = value.toString()
         if (value) {
           e[key] = value
@@ -949,21 +1020,13 @@ function ItemsView(props) {
           //blank value while typing.
           e[key] = ''
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'apiAnonymous') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         let start = 0
         let end = 0
-        let ref = textAreaRefs[`${record.id}_${key}`]
+        let ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -991,8 +1054,8 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = textAreaRefs[`${record.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -1003,28 +1066,12 @@ function ItemsView(props) {
       }
 
       if (key === 'sourceType') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         e.sourceType = value
         delete e[`${key}Error`]
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'upload') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
 
         if (value) {
           if (e.existent) {
@@ -1034,7 +1081,7 @@ function ItemsView(props) {
               e.fileName = value.name
               e.size = value.size
               e.type = value.type
-              let t = await readFile(value)
+              let t = await this.readFile(value)
               e.text = t
             }
             else {
@@ -1043,7 +1090,7 @@ function ItemsView(props) {
               e.fileName = value.name
               e.size = value.size
               e.type = value.type
-              let t = await readFile(value)
+              let t = await this.readFile(value)
               e.text = t
             }
           }
@@ -1052,7 +1099,7 @@ function ItemsView(props) {
             e.fileName = value.name
             e.size = value.size
             e.type = value.type
-            let t = await readFile(value)
+            let t = await this.readFile(value)
             e.text = t
           }
           delete e[`textError`]
@@ -1062,21 +1109,13 @@ function ItemsView(props) {
           e.text = ''
         }
 
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
 
       if (key === 'text') {
-        if (e.existent) {
-          if (origEl[key] !== e[key]) {
-            e.isModified[key] = true
-          }
-          else {
-            delete e.isModified[key]
-          }
-        }
         let start = 0
         let end = 0
-        let ref = textAreaRefs[`${record.id}_${key}`]
+        let ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           start = ref.resizableTextArea.textArea.selectionStart
@@ -1104,8 +1143,8 @@ function ItemsView(props) {
           e[key] = ''
         }
 
-        setItems(itemsCopy)
-        ref = textAreaRefs[`${record.id}_${key}`]
+        await this.setState({items: items})
+        ref = this.textAreaRefs[`${record.id}_${key}`]
 
         if (ref && ref.resizableTextArea && ref.resizableTextArea.textArea) {
           ref.resizableTextArea.textArea.selectionStart = start
@@ -1122,9 +1161,8 @@ function ItemsView(props) {
         else {
           delete e.toDelete
         }
-        setItems(itemsCopy)
+        await this.setState({items: items})
       }
-
     }
     
   }
@@ -1133,168 +1171,168 @@ function ItemsView(props) {
     Validate data before send them to backend
   */
 
-  let validationCheck = async () => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
-    let errorsLocal = 0
+  validationCheck = async () => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
+    let errors = 0
     let validators = new Validators()
 
-    if (props.items === 'nodes') {
+    if (this.props.items === 'nodes') {
 
-      for (const item of Object.values(itemsCopy)) {
+      for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if ( !(validators.ipv4(item.address) || validators.ipv6(item.address) || item.address === 'any6') ) {
           item.addressError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.session) {
           item.sessionError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.state) {
           item.stateError = true
-          ++errorsLocal
+          ++errors
         }
 
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
 
-    else if (props.items === 'monitors') {
+    else if (this.props.items === 'monitors') {
 
-      for (const item of Object.values(itemsCopy)) {
+      for (const item of Object.values(items)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.type) {
           item.typeError = true
-          ++errorsLocal
+          ++errors
         }
         if ((item.type === 'inband')) {
           continue
         }
         if (!item.interval) {
           item.intervalError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.timeout) {
           item.timeoutError = true
-          ++errorsLocal
+          ++errors
         }
 
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
 
-    else if (props.items === 'snatpools') {
-      for (const item of Object.values(itemsCopy)) {
+    else if (this.props.items === 'snatpools') {
+      for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.members || item.members.length < 1) {
           item.membersError = true
-          ++errorsLocal
+          ++errors
         }
         else {
           item.members.forEach(e => {
             if (!(validators.ipv4(e.address) || validators.ipv6(e.address)) ) {
               e.addressError = true
-              ++errorsLocal
-              setErrors(errorsLocal)
+              ++errors
+              this.setState({errors: errors})
             }
             
           });
         }
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
 
-    else if (props.items === 'irules') {
+    else if (this.props.items === 'irules') {
 
-      for (const item of Object.values(itemsCopy)) {
+      for (const item of Object.values(items)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.apiAnonymous) {
           item.apiAnonymousError = true
-          ++errorsLocal
+          ++errors
         }
 
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
 
-    else if (props.items === 'profiles') {
+    else if (this.props.items === 'profiles') {
 
-      for (const item of Object.values(itemsCopy)) {
+      for (const item of Object.values(items)) {
 
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.type) {
           item.typeError = true
-          ++errorsLocal
+          ++errors
         }
 
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
 
-    else if (props.items === 'pools') {
-      for (const item of Object.values(itemsCopy)) {
+    else if (this.props.items === 'pools') {
+      for (const item of Object.values(items)) {
         if (!item.name) {
           item.nameError = true
-          ++errorsLocal
+          ++errors
         }
         if (!item.loadBalancingMode) {
           item.loadBalancingModeError = true
-          ++errorsLocal
+          ++errors
         }
         if (item.members && item.members.length > 0) {
           item.members.forEach(m => {
             if (!m.name) {
               m.nameError = true
-              ++errorsLocal
+              ++errors
             }
             if ( !(validators.ipv4(m.address) || validators.ipv6(m.address) || m.address === 'any6') ) {
               m.addressError = true
-              ++errorsLocal
+              ++errors
             }
             if (!m.port || !validators.port(m.port)) {
               m.portError = true
-              ++errorsLocal
+              ++errors
             }
           });
         }
 
         //pool members
       }
-      setItems(itemsCopy)
-      return errorsLocal
+      await this.setState({items: items})
+      return errors
     }
   }
 
-  let validation = async () => {
-    setDisableCommit(true)
-    let errorsLocal = await validationCheck()
-    setDisableCommit(false)
+  validation = async () => {
+    this.setState({disableCommit: true})
+    let errors = await this.validationCheck()
+    this.setState({disableCommit: false})
 
-    if (errorsLocal === 0) {
-      setDisableCommit(true)
-      cudManager()
+    if (errors === 0) {
+      this.setState({disableCommit: true})
+      this.cudManager()
     }
   }
 
@@ -1302,13 +1340,13 @@ function ItemsView(props) {
     Send Data to backend
   */
  
-  let cudManager = async () => {
-    let itemsCopy = JSON.parse(JSON.stringify(items))
+  cudManager = async () => {
+    let items = JSON.parse(JSON.stringify(this.state.items))
     let toPost = []
     let toDelete = []
     let toPatch = []
 
-    for (const item of Object.values(itemsCopy)) {
+    for (const item of Object.values(items)) {
       if (!item.existent) {
         toPost.push(item)
       }
@@ -1316,7 +1354,6 @@ function ItemsView(props) {
         toDelete.push(item)
       }
       if (item.isModified && Object.keys(item.isModified).length > 0) {
-        console.log(item)
         toPatch.push(item)
       }
       
@@ -1325,19 +1362,24 @@ function ItemsView(props) {
     if (toDelete.length > 0) {
       for (const item of toDelete) {
         item.loading = true
-        setItems(itemsCopy)
+        await this.setState({items: items})
 
-        let e = await itemDelete(item.name, item.type ? item.type : null )
+        let e = await this.itemDelete(item.name, item.type ? item.type : null )
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'deleteError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
+          item.loading = false
+          await this.setState({items: items})
         }
-        item.loading = false
-        setItems(itemsCopy)
+        else {
+          item.loading = false
+          await this.setState({items: items})
+        }
+
       }
     }
 
@@ -1345,7 +1387,7 @@ function ItemsView(props) {
       for (const item of toPost) {
         let body = {}
 
-        if (props.items === 'nodes') {
+        if (this.props.items === 'nodes') {
           body.data = {
             "address": item.address,
             "name": item.name,
@@ -1358,7 +1400,7 @@ function ItemsView(props) {
           }
         }
 
-        if (props.items === 'monitors') {
+        if (this.props.items === 'monitors') {
           body.data = {
             "name": item.name,
             "type": item.type,
@@ -1367,9 +1409,9 @@ function ItemsView(props) {
           }
         }
 
-        if (props.items === 'snatpools') {
+        if (this.props.items === 'snatpools') {
           let members = item.members.map(m => {
-            let str = `/${props.partition}/${m.address}`
+            let str = `/${this.props.partition}/${m.address}`
             if (m.routeDomain) {
               str = `${str}%${m.routeDomain}`
             }
@@ -1381,53 +1423,57 @@ function ItemsView(props) {
           }
         }
 
-        if (props.items === 'irules') {
+        if (this.props.items === 'irules') {
           body.data = {
             "name": item.name,
             "apiAnonymous": item.apiAnonymous
           }
         }
 
-        if (props.items === 'profiles') {
+        if (this.props.items === 'profiles') {
           body.data = {
             "name": item.name,
             "type": item.type
           }
         }
 
-        if (props.items === 'pools') {
+        if (this.props.items === 'pools') {
           body.data = {
             "name": item.name,
-            "monitor": `/${props.partition}/${item.monitor}`,
+            "monitor": `/${this.props.partition}/${item.monitor}`,
             "loadBalancingMode": item.loadBalancingMode
           }
         }
 
         item.loading = true
-        setItems(itemsCopy)
+        await this.setState({items: items})
 
-        let e = await itemPost(body)
+        let e = await this.itemPost(body)
         if (e.status && e.status !== 201 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'postError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
+          item.loading = false
+          await this.setState({items: items})
         }
-        item.loading = false
-        setItems(itemsCopy)
+        else {
+          item.loading = false
+          await this.setState({items: items})
+        }
       }
     }
 
     if (toPatch.length > 0) {
       for (const item of toPatch) {
-        if (props.items === 'pools') {
+        if (this.props.items === 'pools') {
           continue
         }
         let body = {}
 
-        if (props.items === 'monitors') {
+        if (this.props.items === 'monitors') {
           body.data = {
             "destination": "*:*",
             "interval": +item.interval,
@@ -1439,9 +1485,9 @@ function ItemsView(props) {
           }
         }
 
-        if (props.items === 'snatpools') {
+        if (this.props.items === 'snatpools') {
           let members = item.members.map(m => {
-            let str = `/${props.partition}/${m.address}`
+            let str = `/${this.props.partition}/${m.address}`
             if (m.routeDomain) {
               str = `${str}%${m.routeDomain}`
             }
@@ -1452,7 +1498,7 @@ function ItemsView(props) {
           }
         }
 
-        if (props.items === 'irules') {
+        if (this.props.items === 'irules') {
           body.data = {
             "name": item.name,
             "apiAnonymous": item.apiAnonymous
@@ -1460,45 +1506,53 @@ function ItemsView(props) {
         }
 
         item.loading = true
-        setItems(itemsCopy)
-        console.log(body)
+        await this.setState({items: items})
 
-        let e = await itemPatch(item.name, item.type ? item.type : null, body)
+        let e = await this.itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {
           let error = Object.assign(e, {
             component: 'itemsView',
             vendor: 'f5',
             errorType: 'patchError'
           })
-          props.dispatch(err(error))
+          this.props.dispatch(err(error))
+          item.loading = false
+          await this.setState({items: items})
         }
-        item.loading = false
-        setItems(itemsCopy)
+        else {
+          item.loading = false
+          await this.setState({items: items})
+        }
       }
 
-      if (props.items === 'pools') {
+      if (this.props.items === 'pools') {
         for (const item of toPatch) {
           if (item.isModified.members) {
             for (const m of item.members) {
               if (m.toDelete) {
                 item.loading = true
-                setItems(itemsCopy)
-                let e = await memberDelete(m.name, item.name )
+                await this.setState({items: items})
+                let e = await this.memberDelete(m.name, item.name )
                 if (e.status && e.status !== 200 ) {
                   let error = Object.assign(e, {
                     component: 'itemsView',
                     vendor: 'f5',
                     errorType: 'deleteError'
                   })
-                  props.dispatch(err(error))
+                  this.props.dispatch(err(error))
+                  item.loading = false
+                  await this.setState({items: items})
                 }
-                item.loading = false
-                setItems(itemsCopy)                
+                else {
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+                
               }
               if (!m.existent) {
                 let body = {}
                 body.data = {
-                  "name": `/${props.partition}/${m.name}:${m.port}`,
+                  "name": `/${this.props.partition}/${m.name}:${m.port}`,
                   "address": m.address,
                   "connectionLimit": 0,
                   "dynamicRatio": 1,
@@ -1516,20 +1570,26 @@ function ItemsView(props) {
                 }
 
                 item.loading = true
-                setItems(itemsCopy)  
+                await this.setState({items: items})
 
-                let e = await memberAdd(body, item.name)
+                let e = await this.memberAdd(body, item.name)
                 if (e.status && e.status !== 201 ) {
                   let error = Object.assign(e, {
                     component: 'itemsView',
                     vendor: 'f5',
                     errorType: 'postError'
                   })
-                  props.dispatch(err(error))
+                  this.props.dispatch(err(error))
+                  item.loading = false
+                  await this.setState({items: items})
                 }
-                item.loading = false
-                setItems(itemsCopy)  
+                else {
+                  item.loading = false
+                  await this.setState({items: items})
+                }
+
               }              
+
             }
           }
         }
@@ -1537,11 +1597,34 @@ function ItemsView(props) {
 
     }
 
-    setDisableCommit(false)
-    start()
+    this.setState({disableCommit: false})
+    this.main()
   }
 
-  let memberAdd = async (body, data) => {
+  /*
+  
+    let b = {}
+    b.data = {
+        "name": `/${this.props.partition}/${m.address}:${m.port}`,
+        "connectionLimit": 0,
+        "dynamicRatio": 1,
+        "ephemeral": "false",
+        "inheritProfile": "enabled",
+        "logging": "disabled",
+        "monitor": "default",
+        "priorityGroup": 0,
+        "rateLimit": "disabled",
+        "ratio": 1,
+        "state": m.state,
+        "session": m.session, 
+        "fqdn": {
+            "autopopulate": "disabled"
+        }
+      }
+  
+  */
+
+  memberAdd = async (body, data) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1553,11 +1636,11 @@ function ItemsView(props) {
       }
     )
       
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/pool/${data}/members/`, props.token, body )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${data}/members/`, this.props.token, body )
     return r
   }
 
-  let memberDelete = async (name, poolName) => {
+  memberDelete = async (name, poolName) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1568,11 +1651,11 @@ function ItemsView(props) {
         r = error
       }
     )
-    await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/pool/${poolName}/member/${name}/`, props.token )
+    await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/pool/${poolName}/member/${name}/`, this.props.token )
     return r
   }
 
-  let itemPost = async (body, type) => {
+  itemPost = async (body, type) => {
     let r
     let rest = new Rest(
       "POST",
@@ -1583,20 +1666,20 @@ function ItemsView(props) {
         r = error
       }
     )
-    if (props.items === 'monitors') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/${body.data.type}/`, props.token, body )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
-    else if (props.items === 'profiles') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/${body.data.type}/`, props.token, body )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/${body.data.type}/`, this.props.token, body )
     }
     else {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.items}/`, props.token, body )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.items}/`, this.props.token, body )
     }
     
     return r
   }
 
-  let itemDelete = async (name, type) => {
+  itemDelete = async (name, type) => {
     let r
     let rest = new Rest(
       "DELETE",
@@ -1608,19 +1691,19 @@ function ItemsView(props) {
       }
     )
     //@todo: items as a prop
-    if (props.items === 'monitors') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/monitor/${type}/${name}/`, props.token )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token )
     }
-    else if (props.items === 'profiles') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/profile/${type}/${name}/`, props.token )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token )
     }
     else {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${name}/`, props.token )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token )
     }
     return r
   }
 
-  let itemPatch = async (name, type, body) => {
+  itemPatch = async (name, type, body) => {
 
     let r
     let rest = new Rest(
@@ -1633,14 +1716,14 @@ function ItemsView(props) {
       }
     )
 
-    if (props.items === 'monitors') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/monitor/${type}/${name}/`, props.token, body )
+    if (this.props.items === 'monitors') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/monitor/${type}/${name}/`, this.props.token, body )
     }
-    else if (props.items === 'profiles') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/profile/${type}/${name}/`, props.token, body  )
+    else if (this.props.items === 'profiles') {
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/profile/${type}/${name}/`, this.props.token, body  )
     }
     else {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/${props.item}/${name}/`, props.token, body )
+      await rest.doXHR(`${this.props.vendor}/${this.props.asset.id}/${this.props.partition}/${this.props.item}/${name}/`, this.props.token, body )
     }
     return r
   }
@@ -1649,258 +1732,403 @@ function ItemsView(props) {
     Render Data in DOM
   */
 
-  let createElement = (element, key, choices, obj, action, father) => {
-    if (element === 'input') {
-      let width = 200
-      if (key === 'port') {
-        width = 80
+  render() {
+
+    let randomKey = () => {
+      return Math.random().toString()
+    }
+
+    let createElement = (element, key, choices, obj, action, father) => {
+      if (element === 'input') {
+        let width = 200
+        if (key === 'port') {
+          width = 80
+        }
+
+        if (father) {
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: width}
+                :
+                  {width: width}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj, father ? father : null)}
+            />          
+          )
+        }
+        else {
+          return (
+            <Input
+              value={obj[key]}
+              style=
+                {obj[`${key}Error`] ?
+                  {borderColor: 'red', width: width}
+                :
+                  {width: width}
+                }
+              ref={ref => this.myRefs[`${obj.id}_${key}`] = ref}
+              onChange={event => this.set(key, event.target.value, obj)}
+            />          
+          )
+        }
       }
 
-      if (father) {
+      else if (element === 'textarea') {
         return (
-          <Input
+          <Input.TextArea
+            rows={12}
             value={obj[key]}
+            ref={ref => this.textAreaRefs[`${obj.id}_${key}`] = ref}
+            onChange={event => this.set(key, event.target.value, obj)}
             style=
-              {obj[`${key}Error`] ?
-                {borderColor: 'red', width: width}
+              { obj[`${key}Error`] ?
+                {borderColor: `red`, width: 350}
               :
-                {width: width}
+                {width: 350}
               }
-            ref={ref => myRefs[`${obj.id}_${key}`] = ref}
-            onChange={event => set(key, event.target.value, obj, father ? father : null)}
-          />          
+          />
         )
       }
-      else {
-        return (
-          <Input
-            value={obj[key]}
-            style=
-              {obj[`${key}Error`] ?
-                {borderColor: 'red', width: width}
-              :
-                {width: width}
+
+      else if (element === 'select') {
+        if (key === 'routeDomain') {
+          return (
+            <Select
+              value={obj.routeDomainName}
+              showSearch
+              style={{width: 150}}
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
-            ref={ref => (myRefs.current[`${obj.id}_${key}`] = ref)}
-            onChange={event => set(key, event.target.value, obj)}
-          />          
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => this.set('routeDomain', event, obj, father)}
+            >
+              <React.Fragment>
+                {choices.map((rd, i) => {
+                  return (
+                    <Select.Option key={i} value={rd.id}>{rd.name}</Select.Option>
+                  )
+                })
+                }
+              </React.Fragment>
+            </Select>
+          )
+        }
+        else {
+          return (
+            <Select
+              value={obj[key]}
+              showSearch
+              style={
+                obj[`${key}Error`] ?
+                  {border: `1px solid red`, width: 120}
+                :
+                  {width: 120}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => this.set(key, event, obj, father)}
+            >
+              <React.Fragment>
+                {choices.map((c, i) => {
+                  return (
+                    <Select.Option key={i} value={c}>{c}</Select.Option>
+                  )
+                })
+                }
+              </React.Fragment>
+            </Select>
+          )
+        }
+
+      }
+
+      else if (element === 'checkbox'){
+        return (
+          <Checkbox 
+            checked={obj.toDelete}
+            onChange={event => this.set(action, event.target.checked, obj, father)}
+          />
         )
+      }
+
+      else if (element === 'button'){
+        if (action === 'itemRemove') {
+          return (
+            <Button
+              type='danger'
+              onClick={() => this.itemRemove(obj, this.state.items)}
+            >
+              -
+            </Button>
+          )
+        }
+        else if (action === 'subItemRemove') {
+          return (
+            <Button
+              type='danger'
+              onClick={() => this.subItemRemove(obj, father)}
+            >
+              -
+            </Button>
+          )
+        }
+        else if (action === 'commit') {
+          return (
+            <Button
+              type="primary"
+              disabled={this.state.disableCommit}
+              style={{float: 'right', marginRight: 5, marginBottom: 15}}
+              onClick={() => this.validation()}
+            >
+              Commit
+            </Button>
+          )
+        }
       }
     }
 
-    else if (element === 'textarea') {
-      return (
-        <Input.TextArea
-          rows={12}
-          value={obj[key]}
-          ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
-          onChange={event => set(key, event.target.value, obj)}
-          style=
-            { obj[`${key}Error`] ?
-              {borderColor: `red`, width: 350}
+    let returnCol = () => {
+      if (this.props.items === 'nodes') {
+        return nodesColumns
+      }
+      if (this.props.items === 'monitors') {
+        return monitorsColumns
+      }
+      if (this.props.items === 'snatpools') {
+        return snatpoolsColumns
+      }
+      if (this.props.items === 'pools') {
+        return poolsColumns
+      }
+      if (this.props.items === 'irules') {
+        return irulesColumns
+      }
+      if (this.props.items === 'profiles') {
+        return profilesColumns
+      }
+    }
+
+    const expandedRowRender = (...params) => {
+      const columns = [
+        {
+          title: 'Address',
+          align: 'center',
+          dataIndex: 'address',
+          key: 'address',
+          ...this.getColumnSearchProps('address'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
             :
-              {width: 350}
-            }
-        />
-      )
-    }
-
-    else if (element === 'select') {
-      if (key === 'routeDomain') {
-        return (
-          <Select
-            value={obj.routeDomainName}
-            showSearch
-            style={{width: 150}}
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={event => set('routeDomain', event, obj, father)}
-          >
-            <React.Fragment>
-              {choices.map((rd, i) => {
-                return (
-                  <Select.Option key={i} value={rd.id}>{rd.name}</Select.Option>
-                )
-              })
-              }
-            </React.Fragment>
-          </Select>
-        )
-      }
-      else {
-        return (
-          <Select
-            value={obj[key]}
-            showSearch
-            style={
-              obj[`${key}Error`] ?
-                {border: `1px solid red`, width: 120}
+              createElement('input', 'address', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'Route domain (optional)',
+          align: 'center',
+          dataIndex: 'routeDomain',
+          key: 'routeDomain',
+          ...this.getColumnSearchProps('routeDomain'),
+          render: (val, obj)  => (
+            createElement('select', 'routeDomain', this.state.routeDomains, obj, '', params[0])
+          )
+        },
+        {
+          title: 'Delete',
+          align: 'center',
+          dataIndex: 'delete',
+          key: 'delete',
+          render: (val, obj)  => (
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
               :
-                {width: 120}
-            }
-            optionFilterProp="children"
-            filterOption={(input, option) =>
-              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-            }
-            filterSort={(optionA, optionB) =>
-              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-            }
-            onSelect={event => set(key, event, obj, father)}
-          >
-            <React.Fragment>
-              {choices.map((c, i) => {
-                return (
-                  <Select.Option key={i} value={c}>{c}</Select.Option>
-                )
-              })
+                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
               }
-            </React.Fragment>
-          </Select>
-        )
-      }
+            </Space>
+          )
+        }
+      ];
 
-    }
+      const poolmembersColumn = [
+        {
+          title: 'Loading',
+          align: 'center',
+          dataIndex: 'loading',
+          key: 'loading',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.isLoading ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
+        {
+          title: 'Name',
+          align: 'center',
+          dataIndex: 'name',
+          key: 'name',
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'name', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'Address',
+          align: 'center',
+          dataIndex: 'address',
+          key: 'address',
+          ...this.getColumnSearchProps('address'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'address', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'Port',
+          align: 'center',
+          dataIndex: 'port',
+          key: 'port',
+          ...this.getColumnSearchProps('port'),
+          render: (val, obj)  => (
+            obj.existent ?
+              val
+            :
+              createElement('input', 'port', '', obj, '', params[0])
+          )
+        },
+        {
+          title: 'State',
+          align: 'center',
+          dataIndex: 'state',
+          key: 'state',
+          ...this.getColumnSearchProps('state'),
+        },
+        {
+          title: 'Session',
+          align: 'center',
+          dataIndex: 'session',
+          key: 'session',
+        },
+        {
+          title: 'Node State',
+          align: 'center',
+          dataIndex: 'parentState',
+          key: 'parentState',
+        },
+        {
+          title: 'Status',
+          align: 'center',
+          dataIndex: 'status',
+          key: 'status',
+          render(name, record) {
+            return {
+              props: {
+                style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
+              },
+              children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
+            };
+          }
+        },
+          
+        {
+          title: 'Connections',
+          align: 'center',
+          dataIndex: 'connections',
+          key: 'connections',
+        },
+        {
+          title: '',
+          align: 'center',
+          dataIndex: 'monitoring',
+          key: 'monitoring',
+          render: (name, obj)  => (
+            <Space size="small">
+              {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+            </Space>
+          ),
+        },
+        {
+          title: 'Delete',
+          align: 'center',
+          dataIndex: 'delete',
+          key: 'delete',
+          render: (val, obj)  => (
+            <Space size="small">
+              { obj.existent ? 
+                createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+              :
+                createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
+              }
+          </Space>
+          ),
+        }
+      ]
 
-    else if (element === 'checkbox'){
       return (
-        <Checkbox 
-          checked={obj.toDelete}
-          onChange={event => set(action, event.target.checked, obj, father)}
-        />
-      )
-    }
-
-    else if (element === 'button'){
-      if (action === 'itemRemove') {
-        return (
-          <Button
-            type='danger'
-            onClick={() => itemRemove(obj, items)}
-          >
-            -
-          </Button>
-        )
-      }
-      else if (action === 'subItemRemove') {
-        return (
-          <Button
-            type='danger'
-            onClick={() => subItemRemove(obj, father)}
-          >
-            -
-          </Button>
-        )
-      }
-      else if (action === 'commit') {
-        return (
+        <React.Fragment>
+          <br/>
           <Button
             type="primary"
-            disabled={disableCommit}
-            style={{float: 'right', marginRight: 5, marginBottom: 15}}
-            onClick={() => validation()}
+            disabled={params[0].members ? false : true}
+            onClick={() => this.subItemAdd(params[0])}
           >
-            Commit
+            Add member
           </Button>
-        )
-      }
-    }
-  }
-
-  let returnCol = () => {
-    if (props.items === 'nodes') {
-      return nodesColumns
-    }
-    if (props.items === 'monitors') {
-      return monitorsColumns
-    }
-    if (props.items === 'snatpools') {
-      return snatpoolsColumns
-    }
-    if (props.items === 'pools') {
-      return poolsColumns
-    }
-    if (props.items === 'irules') {
-      return irulesColumns
-    }
-    if (props.items === 'profiles') {
-      return profilesColumns
-    }
-  }
-
-  let expandedRowRender = (...params) => {
-    const columns = [
-      {
-        title: 'Address',
-        align: 'center',
-        dataIndex: 'address',
-        key: 'address',
-        ...getColumnSearchProps(
-          'address', 
-          searchInput, 
-          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-          searchText, 
-          searchedColumn, 
-          setSearchText, 
-          setSearchedColumn
-        ),
-        render: (val, obj)  => (
-          obj.existent ?
-            val
-          :
-            createElement('input', 'address', '', obj, '', params[0])
-        )
-      },
-      {
-        title: 'Route domain (optional)',
-        align: 'center',
-        dataIndex: 'routeDomain',
-        key: 'routeDomain',
-        ...getColumnSearchProps(
-          'routeDomain', 
-          searchInput, 
-          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-          searchText, 
-          searchedColumn, 
-          setSearchText, 
-          setSearchedColumn
-        ),
-        render: (val, obj)  => (
-          createElement('select', 'routeDomain', routeDomains, obj, '', params[0])
-        )
-      },
-      {
-        title: 'Delete',
-        align: 'center',
-        dataIndex: 'delete',
-        key: 'delete',
-        render: (val, obj)  => (
-          <Space size="small">
-            { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+          { this.props.items === 'pools' ? 
+              <Button
+                type="primary"
+                onClick={() => this.getPoolmembers(params[0])}
+              >
+                Get members
+              </Button>
             :
-              createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
-            }
-          </Space>
-        )
-      }
-    ];
+              null
+          }
+          
+          <br/>
+          <br/>
+          { params[0].loading ?
+            <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
+          :
+            <Table
+              columns={this.props.items === 'pools' ? poolmembersColumn : columns}
+              rowKey={record => record.id}
+              //style={{backgroundColor:'black'}}
+              dataSource={params[0].members}
+              pagination={{pageSize: 10}}
+            />
+          }
+          
+        </React.Fragment>
+      )
+    };
 
-    const poolmembersColumn = [
+    const nodesColumns = [
       {
         title: 'Loading',
         align: 'center',
         dataIndex: 'loading',
         key: 'loading',
-        render: (name, obj)  => (
+        render: (val, obj)  => (
           <Space size="small">
-            {obj.isLoading ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
           </Space>
         ),
       },
@@ -1909,11 +2137,12 @@ function ItemsView(props) {
         align: 'center',
         dataIndex: 'name',
         key: 'name',
+        ...this.getColumnSearchProps('name'),
         render: (val, obj)  => (
           obj.existent ?
             val
           :
-            createElement('input', 'name', '', obj, '', params[0])
+            createElement('input', 'name', '', obj, '')
         )
       },
       {
@@ -1921,43 +2150,35 @@ function ItemsView(props) {
         align: 'center',
         dataIndex: 'address',
         key: 'address',
-        ...getColumnSearchProps(
-          'address', 
-          searchInput, 
-          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-          searchText, 
-          searchedColumn, 
-          setSearchText, 
-          setSearchedColumn
-        ),
+        ...this.getColumnSearchProps('address'),
         render: (val, obj)  => (
           obj.existent ?
             val
           :
-            createElement('input', 'address', '', obj, '', params[0])
+            createElement('input', 'address', '', obj, '')
         )
       },
       {
-        title: 'Port',
+        title: 'Route domain (optional)',
         align: 'center',
-        dataIndex: 'port',
-        key: 'port',
-        ...getColumnSearchProps(
-          'port', 
-          searchInput, 
-          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-          searchText, 
-          searchedColumn, 
-          setSearchText, 
-          setSearchedColumn
-        ),
+        dataIndex: 'routeDomain',
+        key: 'routeDomain',
+        ...this.getColumnSearchProps('routeDomain'),
+        render: (val, obj)  => (
+          createElement('select', 'routeDomain', this.state.routeDomains, obj, '')
+        )
+      },
+      {
+        title: 'Session',
+        align: 'center',
+        dataIndex: 'session',
+        key: 'session',
+        ...this.getColumnSearchProps('session'),
         render: (val, obj)  => (
           obj.existent ?
             val
           :
-            createElement('input', 'port', '', obj, '', params[0])
+            createElement('select', 'session', this.state.nodeSessions, obj, '')
         )
       },
       {
@@ -1965,60 +2186,20 @@ function ItemsView(props) {
         align: 'center',
         dataIndex: 'state',
         key: 'state',
-        ...getColumnSearchProps(
-          'state', 
-          searchInput, 
-          (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-          (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-          searchText, 
-          searchedColumn, 
-          setSearchText, 
-          setSearchedColumn
-        ),
+        ...this.getColumnSearchProps('state'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'state', this.state.nodeStates, obj, '')
+        )
       },
       {
-        title: 'Session',
+        title: 'Monitor',
         align: 'center',
-        dataIndex: 'session',
-        key: 'session',
-      },
-      {
-        title: 'Node State',
-        align: 'center',
-        dataIndex: 'parentState',
-        key: 'parentState',
-      },
-      {
-        title: 'Status',
-        align: 'center',
-        dataIndex: 'status',
-        key: 'status',
-        render(name, record) {
-          return {
-            props: {
-              style: { margin: 0, alignItems: 'center', justifyContent: 'center' }
-            },
-            children: <div title={record.status} style={{ width: '25px', height: '25px', borderRadius: '50%', backgroundColor: record.color, margin: '0 auto', padding: 0}}></div>
-          };
-        }
-      },
-        
-      {
-        title: 'Connections',
-        align: 'center',
-        dataIndex: 'connections',
-        key: 'connections',
-      },
-      {
-        title: '',
-        align: 'center',
-        dataIndex: 'monitoring',
-        key: 'monitoring',
-        render: (name, obj)  => (
-          <Space size="small">
-            {obj.isMonitored ? <Spin indicator={memberIcon} style={{margin: '10% 10%'}}/> : null }
-          </Space>
-        ),
+        dataIndex: 'monitor',
+        key: 'monitor',
+        ...this.getColumnSearchProps('monitor'),
       },
       {
         title: 'Delete',
@@ -2028,679 +2209,380 @@ function ItemsView(props) {
         render: (val, obj)  => (
           <Space size="small">
             { obj.existent ? 
-              createElement('checkbox', 'toDelete', '', obj, 'toDelete', params[0])
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
             :
-              createElement('button', 'subItemRemove', '', obj, 'subItemRemove', params[0])
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
             }
-        </Space>
+          </Space>
         ),
       }
-    ]
+    ];
+
+    const monitorsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.monitorTypes, obj, '')
+        )
+      },
+      {
+        title: 'Interval',
+        align: 'center',
+        dataIndex: 'interval',
+        key: 'interval',
+        ...this.getColumnSearchProps('interval'),
+        render: (val, obj)  => (
+          createElement('input', 'interval', '', obj, '')
+        )
+      },
+      {
+        title: 'Timeout',
+        align: 'center',
+        dataIndex: 'timeout',
+        key: 'timeout',
+        ...this.getColumnSearchProps('timeout'),
+        render: (val, obj)  => (
+          createElement('input', 'timeout', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const snatpoolsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const poolsColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Monitor',
+        align: 'center',
+        dataIndex: 'monitor',
+        key: 'monitor',
+        ...this.getColumnSearchProps('monitor'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'monitor', this.state.monitorTypes, obj, '')
+        )
+      },
+      {
+        title: 'Load Balancing Mode',
+        align: 'center',
+        dataIndex: 'loadBalancingMode',
+        key: 'loadBalancingMode',
+        ...this.getColumnSearchProps('loadBalancingMode'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'loadBalancingMode', this.state.loadBalancingModes, obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const irulesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Code',
+        align: 'center',
+        dataIndex: 'apiAnonymous',
+        key: 'apiAnonymous',
+        ...this.getColumnSearchProps('apiAnonymous'),
+        render: (val, obj)  => (
+          createElement('textarea', 'apiAnonymous', '', obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    const profilesColumns = [
+      {
+        title: 'Loading',
+        align: 'center',
+        dataIndex: 'loading',
+        key: 'loading',
+        render: (val, obj)  => (
+          <Space size="small">
+            {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
+          </Space>
+        ),
+      },
+      {
+        title: 'Name',
+        align: 'center',
+        dataIndex: 'name',
+        key: 'name',
+        ...this.getColumnSearchProps('name'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('input', 'name', '', obj, '')
+        )
+      },
+      {
+        title: 'Type',
+        align: 'center',
+        dataIndex: 'type',
+        key: 'type',
+        ...this.getColumnSearchProps('type'),
+        render: (val, obj)  => (
+          obj.existent ?
+            val
+          :
+            createElement('select', 'type', this.state.profileTypes, obj, '')
+        )
+      },
+      {
+        title: 'Delete',
+        align: 'center',
+        dataIndex: 'delete',
+        key: 'delete',
+        render: (val, obj)  => (
+          <Space size="small">
+            { obj.existent ? 
+              createElement('checkbox', 'toDelete', '', obj, 'toDelete')
+            :
+              createElement('button', 'itemRemove', '', obj, 'itemRemove')
+            }
+          </Space>
+        ),
+      }
+    ];
+
+    let errors = () => {
+      if (this.props.error && this.props.error.component === 'itemsView') {
+        return <Error error={[this.props.error]} visible={true}/> 
+      }
+    }
 
     return (
       <React.Fragment>
-        <br/>
-        <Button
-          type="primary"
-          disabled={params[0].members ? false : true}
-          onClick={() => subItemAdd(params[0])}
-        >
-          Add member
-        </Button>
-        { props.items === 'pools' ? 
-            <Button
-              type="primary"
-              onClick={() => getPoolmembers(params[0])}
-            >
-              Get members
-            </Button>
-          :
-            null
-        }
-        
-        <br/>
-        <br/>
-        { params[0].loading ?
+        {this.state.loading ?
           <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
         :
-          <Table
-            columns={props.items === 'pools' ? poolmembersColumn : columns}
-            rowKey={record => record.id}
-            //style={{backgroundColor:'black'}}
-            dataSource={params[0].members}
-            pagination={{pageSize: 10}}
-          />
+          <React.Fragment>
+            {/*to do: createElement()*/} 
+            <Radio.Group>
+              <Radio.Button
+                style={{marginLeft: 10 }}
+                onClick={() => this.main()}
+              >
+                <ReloadOutlined/>
+              </Radio.Button>
+            </Radio.Group>
+
+            <Radio.Group
+              buttonStyle="solid"
+            >
+              <Radio.Button
+                buttonStyle="solid"
+                style={{marginLeft: 10 }}
+                onClick={() => this.itemAdd(this.state.items, this.props.items)}
+              >
+                +
+              </Radio.Button>
+            </Radio.Group>
+
+            <br/>
+            <br/>
+            { this.props.items === 'snatpools' || this.props.items === 'pools' ?
+              <Table
+                columns={returnCol()}
+                dataSource={this.state.items}
+                bordered
+                scroll={{x: 'auto'}}
+                pagination={{pageSize: 10}}
+                style={{marginBottom: 10}}
+                onExpand={this.onTableRowExpand}
+                expandedRowKeys={this.state.expandedKeys}
+                rowKey={record => record.id}
+                expandedRowRender={ record => expandedRowRender(record)}
+              />
+            :
+              <Table
+                columns={returnCol()}
+                style={{width: '100%', padding: 5}}
+                dataSource={this.state.items}
+                bordered
+                rowKey={randomKey}
+                scroll={{x: 'auto'}}
+                pagination={{ pageSize: 10 }}
+              />
+            }
+            <br/>
+
+            {createElement('button', '', '', '', 'commit')}
+
+          </React.Fragment>
         }
-        
+
+        {errors()}
+  
       </React.Fragment>
     )
-  };
-
-  let nodesColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Address',
-      align: 'center',
-      dataIndex: 'address',
-      key: 'address',
-      ...getColumnSearchProps(
-        'address', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'address', '', obj, '')
-      )
-    },
-    {
-      title: 'Route domain (optional)',
-      align: 'center',
-      dataIndex: 'routeDomain',
-      key: 'routeDomain',
-      ...getColumnSearchProps(
-        'routeDomain', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        createElement('select', 'routeDomain', routeDomains, obj, '')
-      )
-    },
-    {
-      title: 'Session',
-      align: 'center',
-      dataIndex: 'session',
-      key: 'session',
-      ...getColumnSearchProps(
-        'session', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'session', nodeSessions, obj, '')
-      )
-    },
-    {
-      title: 'State',
-      align: 'center',
-      dataIndex: 'state',
-      key: 'state',
-      ...getColumnSearchProps(
-        'state', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'state', nodeStates, obj, '')
-      )
-    },
-    {
-      title: 'Monitor',
-      align: 'center',
-      dataIndex: 'monitor',
-      key: 'monitor',
-      ...getColumnSearchProps(
-        'monitor', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let monitorsColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Type',
-      align: 'center',
-      dataIndex: 'type',
-      key: 'type',
-      ...getColumnSearchProps(
-        'type', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'type', monitorTypes, obj, '')
-      )
-    },
-    {
-      title: 'Interval',
-      align: 'center',
-      dataIndex: 'interval',
-      key: 'interval',
-      ...getColumnSearchProps(
-        'interval', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        createElement('input', 'interval', '', obj, '')
-      )
-    },
-    {
-      title: 'Timeout',
-      align: 'center',
-      dataIndex: 'timeout',
-      key: 'timeout',
-      ...getColumnSearchProps(
-        'timeout', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        createElement('input', 'timeout', '', obj, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let snatpoolsColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let poolsColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Monitor',
-      align: 'center',
-      dataIndex: 'monitor',
-      key: 'monitor',
-      ...getColumnSearchProps(
-        'monitor', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'monitor', monitorTypes, obj, '')
-      )
-    },
-    {
-      title: 'Load Balancing Mode',
-      align: 'center',
-      dataIndex: 'loadBalancingMode',
-      key: 'loadBalancingMode',
-      ...getColumnSearchProps(
-        'loadBalancingMode', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'loadBalancingMode', loadBalancingModes, obj, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let irulesColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Code',
-      align: 'center',
-      dataIndex: 'apiAnonymous',
-      key: 'apiAnonymous',
-      ...getColumnSearchProps(
-        'apiAnonymous', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        createElement('textarea', 'apiAnonymous', '', obj, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let profilesColumns = [
-    {
-      title: 'Loading',
-      align: 'center',
-      dataIndex: 'loading',
-      key: 'loading',
-      render: (val, obj)  => (
-        <Space size="small">
-          {obj.loading ? <Spin indicator={elementLoadIcon} style={{margin: '10% 10%'}}/> : null }
-        </Space>
-      ),
-    },
-    {
-      title: 'Name',
-      align: 'center',
-      dataIndex: 'name',
-      key: 'name',
-      ...getColumnSearchProps(
-        'name', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('input', 'name', '', obj, '')
-      )
-    },
-    {
-      title: 'Type',
-      align: 'center',
-      dataIndex: 'type',
-      key: 'type',
-      ...getColumnSearchProps(
-        'type', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (val, obj)  => (
-        obj.existent ?
-          val
-        :
-          createElement('select', 'type', profileTypes, obj, '')
-      )
-    },
-    {
-      title: 'Delete',
-      align: 'center',
-      dataIndex: 'delete',
-      key: 'delete',
-      render: (val, obj)  => (
-        <Space size="small">
-          { obj.existent ? 
-            createElement('checkbox', 'toDelete', '', obj, 'toDelete')
-          :
-            createElement('button', 'itemRemove', '', obj, 'itemRemove')
-          }
-        </Space>
-      ),
-    }
-  ];
-
-  let errorsComponent = () => {
-    if (props.error && props.error.component === 'itemsView') {
-      return <Error error={[props.error]} visible={true}/> 
-    }
   }
 
-  return (
-    <React.Fragment>
-      {console.log(items)}
-      {loading ?
-        <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
-      :
-        <React.Fragment>
-          {/*to do: createElement()*/} 
-          <Radio.Group>
-            <Radio.Button
-              style={{marginLeft: 10 }}
-              onClick={() => start()}
-            >
-              <ReloadOutlined/>
-            </Radio.Button>
-          </Radio.Group>
-
-          <Radio.Group
-            buttonStyle="solid"
-          >
-            <Radio.Button
-              buttonStyle="solid"
-              style={{marginLeft: 10 }}
-              onClick={() => itemAdd(items, props.items)}
-            >
-              +
-            </Radio.Button>
-          </Radio.Group>
-
-          <br/>
-          <br/>
-          { props.items === 'snatpools' || props.items === 'pools' ?
-            <Table
-              columns={returnCol()}
-              dataSource={items}
-              bordered
-              scroll={{x: 'auto'}}
-              pagination={{pageSize: 10}}
-              style={{marginBottom: 10}}
-              onExpand={onTableRowExpand}
-              expandedRowKeys={expandedKeys}
-              rowKey={record => record.id}
-              expandedRowRender={ record => expandedRowRender(record)}
-            />
-          :
-            <Table
-              columns={returnCol()}
-              style={{width: '100%', padding: 5}}
-              dataSource={items}
-              bordered
-              rowKey={record => record.id}
-              scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
-            />
-          }
-          <br/>
-
-          {createElement('button', '', '', '', 'commit')}
-
-        </React.Fragment>
-      }
-
-      {errorsComponent()}
-
-    </React.Fragment>
-  )
-  
 }
 
 export default connect((state) => ({
