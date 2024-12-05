@@ -421,7 +421,7 @@ function ItemsView(props) {
     }
     else {
       let mid = 1 
-      p.members = r.data.items
+      p.members = r.data.items 
       p.members = p.members.map(m => {
         try {
           let o = {}
@@ -500,7 +500,7 @@ function ItemsView(props) {
     let itemsCopy = JSON.parse(JSON.stringify(items))
     let item = itemsCopy.find(item => item.id === obj.id)
 
-    if (item < 1) {
+    if (obj?.members?.length < 1) {
       item.members.push({id:1})
     }
     else {

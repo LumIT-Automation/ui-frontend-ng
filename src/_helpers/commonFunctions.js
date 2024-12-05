@@ -18,6 +18,9 @@ class CommonFunctions {
       if (type === 'snatpools') {
         e.members = [{id:1}]
       }
+      if (type === 'pools') {
+        e.members = [{id:1}]
+      }
       else if (type === 'workflowRemoveHost') {
         e.assets = []
       }
