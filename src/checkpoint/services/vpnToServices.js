@@ -246,7 +246,7 @@ function VpnToServices(props) {
           maskClosable={false}
         >
 
-          <AssetSelector vendor='checkpoint' domain={domain}/>
+          <AssetSelector vendor='checkpoint' noDomain={true}/>
           <Divider/>
 
           { (( props.asset && props.asset.id ) && domain) ?

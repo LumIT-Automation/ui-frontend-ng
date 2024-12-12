@@ -495,7 +495,7 @@ function DatacenterAccount(props) {
               defaultValue={changeRequestId}
               placeholder={
                 key === 'changeRequestId' ?
-                  "ITIO-6 to 18 numbers"
+                  "Format: ITIO-<number> (where number is min 6 digits and max 18 digits)"
                 :
                   null
                 }
@@ -651,7 +651,7 @@ function DatacenterAccount(props) {
         width={1500}
         maskClosable={false}
       >
-        <AssetSelector vendor={props.vendor} useCase={'datacenterAccount'}/>
+        <AssetSelector vendor={props.vendor} noDomain={true}/>
         <Divider />
 
         {((props.asset && props.asset.id) ) ? (

@@ -493,7 +493,7 @@ function HostInGroup(props) {
                     <Col span={6}>
                       <Input
                         defaultValue={changeRequestId}
-                        placeholder="ITIO-6 to 18 numbers"
+                        placeholder="Format: ITIO-<number> (where number is min 6 digits and max 18 digits)"
                         style={changeRequestIdError ? { borderColor: 'red' } : null}
                         onBlur={e => set(e.target.value, 'change-request-id')}
                       />

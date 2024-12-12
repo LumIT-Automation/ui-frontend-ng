@@ -775,7 +775,7 @@ function CloudAccount(props) {
             ref={ref => (myRefs.current['changeRequestId'] = ref)}
             placeholder={
               key === 'changeRequestId' ?
-                "ITIO-6 to 18 numbers"
+                "Format: ITIO-<number> (where number is min 6 digits and max 18 digits)"
               :
                 null
               }

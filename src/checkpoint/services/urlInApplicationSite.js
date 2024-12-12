@@ -370,7 +370,7 @@ function UrlInApplicationSite(props) {
   */
   let closeModal = () => {
     setVisible(false);
-    setChangeRequestId('ITIO-');
+    setChangeRequestId('');
     setApplicationSites([]);
     setApplicationSite({});
     setToRemove([]);
@@ -459,7 +459,7 @@ function UrlInApplicationSite(props) {
                   <Col span={6}>
                     <Input
                       defaultValue={changeRequestId}
-                      placeholder='ITIO-6 to 18 numbers'
+                      placeholder="Format: ITIO-<number> (where number is min 6 digits and max 18 digits)"
                       style={errors['change-request-idError'] ? { borderColor: 'red' } : null}
                       onBlur={e => set(e.target.value, 'change-request-id')}
                     />
