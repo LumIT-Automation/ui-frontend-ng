@@ -525,7 +525,7 @@ function DatacenterAccount(props) {
             onChange={event => set(event.target.checked, key)}
           />
         )
-      break;
+
 
       case 'checkboxGroup':
         return (
@@ -545,7 +545,7 @@ function DatacenterAccount(props) {
             />
           </React.Fragment>
         )
-        break;
+
       
       case 'textArea':
         return (
@@ -562,7 +562,7 @@ function DatacenterAccount(props) {
             }
           />
         )
-        break;
+
 
       case 'select':
         if (key === 'name') {
@@ -625,9 +625,6 @@ function DatacenterAccount(props) {
             </Select>
           )
         }
-        
-        
-        break;
 
       default:
     }
