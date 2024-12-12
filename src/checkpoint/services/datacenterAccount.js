@@ -122,14 +122,15 @@ function DatacenterAccount(props) {
     else {
       if (data.data.items.length > 0) {
         try {
-          data.data.items.forEach((item, i) => {
+          data?.data?.items.forEach((item, i) => {
             if (item.config_type === 'AWS Regions') {
               let list = []
               item.value.map((n, i) => {
-                return (
-                  //n[1]
-                  list.push(n.regionCode)
-                )
+                if (n.regionCode && typeof n.regionCode === 'string') {
+                  return (
+                    list.push(n.regionCode)
+                  )
+                }
               })
               setAWSRegions(list)
             }
@@ -469,8 +470,6 @@ function DatacenterAccount(props) {
 
   let onCheckAllChange = (e) => {
     setCheckedList((e.target.checked ? AWSRegions : []))
-    //setIndeterminate(false)
-    //setCheckAll()
   };
 
   let createElement = (component, key, choices) => {
@@ -512,13 +511,12 @@ function DatacenterAccount(props) {
         else  {
           return (
             <Input
-              
               onBlur={event => set(event.target.value, key)}
             />
           )
         }
         
-     case 'checkbox':
+      case 'checkbox':
         return (
           <Checkbox
             checked={key}
@@ -526,7 +524,7 @@ function DatacenterAccount(props) {
           />
         )
 
-
+        
       case 'checkboxGroup':
         return (
           <React.Fragment>
@@ -537,7 +535,9 @@ function DatacenterAccount(props) {
             >
               Check all
             </Checkbox>
+
             <Divider />
+
             <Checkbox.Group 
               options={AWSRegions} 
               value={checkedList} 
@@ -546,7 +546,6 @@ function DatacenterAccount(props) {
           </React.Fragment>
         )
 
-      
       case 'textArea':
         return (
           <Input.TextArea
