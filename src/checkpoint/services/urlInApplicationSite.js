@@ -159,8 +159,8 @@ function UrlInApplicationSite(props) {
     let applicationSiteCopy = { ...applicationSite };
     let n = Math.max(...applicationSiteCopy['url-list'].map(o => o.id), 0);
 
-    let urlList = [];
     let list = [];
+    let list2 = [];
     let id = n + 1;
 
     let regexp = new RegExp(/^[*]/g);
@@ -188,27 +188,16 @@ function UrlInApplicationSite(props) {
       */
       input = input.replace(/[\s]{1,}/g, ',');
 
-      let nlist = [];
       list = input.split(',');
       list.forEach(x => {
         if (x.length !== 0) {
-          nlist.push(x);
+          list2.push(x);
         }
       });
 
-      urlList = nlist;
-
-      urlList.forEach(x => {
-        if (regexp.test(x)) {
-          let father = x.replace('*.', '');
-          list.push(father);
-        }
-      });
-
-      urlList = [...new Set(urlList)];
-
-      let newUrls = [];
-      urlList.forEach(url => {
+      list = [...new Set(list2)];
+      list2 = []
+      list.forEach(url => {
         let obj = applicationSiteCopy['url-list'].find(u => u.url === url);
 
         if (!obj) {
@@ -217,12 +206,12 @@ function UrlInApplicationSite(props) {
             url: url,
             toAdd: true
           };
-          newUrls.push(o);
+          list2.push(o);
         }
         id++;
       });
 
-      applicationSiteCopy['url-list'] = applicationSiteCopy['url-list'].concat(newUrls);
+      applicationSiteCopy['url-list'] = applicationSiteCopy['url-list'].concat(list2);
       setApplicationSite(applicationSiteCopy);
     } catch (error) {
       console.log(error);
@@ -257,6 +246,7 @@ function UrlInApplicationSite(props) {
         errorsCopy.urlListError = url.url;
       }
       if (!validators.fqdn(url.url)) {
+        console.log('url erronea: ', url)
         url.urlError = true;
         ok = false;
         errorsCopy.urlListError = url.url;
