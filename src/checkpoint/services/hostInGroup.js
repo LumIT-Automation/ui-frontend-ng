@@ -34,6 +34,8 @@ function HostInGroup(props) {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
 
+  let myRefs = useRef({});
+
   useEffect(() => {
     if (visible && props.asset && props.domain) {
       setGroup(null);
@@ -76,7 +78,9 @@ function HostInGroup(props) {
       setLoading(false);
       return;
     }
-    setHosts(data.data.items);
+    let list = data?.data?.items.map((item, i) => ({...item, existent: true, str: `${item.name} - ${item['ipv4-address']}`}))
+    console.log(list)
+    setHosts(list);
     setLoading(false);
   };
 
@@ -147,18 +151,35 @@ function HostInGroup(props) {
       host.flagged = !host.flagged;
       setGroup(updatedGroup);
     }
-    if (key === 'hostname') {
+    if (key === 'name') {
       let updatedGroup = { ...group };
-      let host = updatedHosts.find(h => h.name === value);
       let member = updatedGroup.members.find(m => m.id === obj.id);
-      member = Object.assign(member, host);
       delete member.nameError;
-      delete member.ipError;
+      member.name = value
       setGroup(updatedGroup);
+      let ref = myRefs.current.name;
+      if (ref?.input && ref.input.value === value) {
+        ref.input.focus();
+      }
     }
     if (key === 'ipv4-address') {
       let updatedGroup = { ...group };
-      let host = updatedHosts.find(h => h['ipv4-address'] === value);
+      let member = updatedGroup.members.find(m => m.id === obj.id);
+      delete member.ipError;
+      member['ipv4-address'] = value
+      setGroup(updatedGroup);
+      let ref = myRefs.current['ipv4-address']
+      if (ref?.input && ref.input.value === value) {
+        ref.input.focus();
+      }
+    }
+    if (key === 'str') {
+      let updatedGroup = { ...group };
+      let [name, ip] = value.split(' - ')
+      console.log(name)
+      console.log(ip) 
+
+      let host = updatedHosts.find(h => h['ipv4-address'] === ip);
       let member = updatedGroup.members.find(m => m.id === obj.id);
       member = Object.assign(member, host);
       delete member.ipError;
@@ -223,7 +244,10 @@ function HostInGroup(props) {
         toRemove.push(member.uid);
       }
       if (!member.groupMember) {
-        toAdd.push(member.uid);
+        if (props.domain === 'Global') {
+          member.name = `${member.name}_G`
+        }
+        toAdd.push({name: member.name, "ipv4-address": member["ipv4-address"]});
       }
     });
 
@@ -334,7 +358,6 @@ function HostInGroup(props) {
       align: 'center',
       dataIndex: 'name',
       key: 'name',
-      //...getColumnSearchProps('name'),
       ...getColumnSearchProps(
         'name', 
         searchInput, 
@@ -350,28 +373,17 @@ function HostInGroup(props) {
           {obj.groupMember ? 
             name
           :
-            <Select
+            <Input
               value={obj.name}
-              showSearch
-              style={obj.nameError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              ref={ref => (myRefs.current['name'] = ref)}
+              style=
+              {obj.nameError ?
+                {borderColor: 'red'}
+              :
+                {}
               }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={n => set(n, 'hostname', obj)}
-            >
-              <React.Fragment>
-                {hosts.map((h, i) => {
-                  return (
-                    <Select.Option key={i} value={h.name}>{h.name}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-            </Select>
+              onChange={event => set(event.target.value, 'name', obj)}
+            />
           }
         </React.Fragment>
       )
@@ -394,11 +406,47 @@ function HostInGroup(props) {
       ),
      render: (name, obj)  => (
       <React.Fragment>
+          {obj.groupMember ? 
+            name
+          :
+            <Input
+              value={obj['ipv4-address']}
+              ref={ref => (myRefs.current['ipv4-address'] = ref)}
+              style=
+              {obj.ipError ?
+                {borderColor: 'red'}
+              :
+                {}
+              }
+              onChange={event => set(event.target.value, 'ipv4-address', obj)}
+            />
+          }
+        </React.Fragment>
+    )
+    },
+    {
+      title: 'Existent Node',
+      align: 'center',
+      dataIndex: 'str',
+      key: 'str',
+      //...getColumnSearchProps('ipv4-address'),
+      ...getColumnSearchProps(
+        'str', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+     render: (name, obj)  => (
+      <React.Fragment>
         {obj.groupMember ? 
-          obj['ipv4-address']
+          obj['str']
         :
           <Select
-            value={obj['ipv4-address']}
+            value={obj['str']}
             showSearch
             style={obj.ipError ? {width: '80%', border: `1px solid red`} : {width: '80%'} }
             optionFilterProp="children"
@@ -408,12 +456,12 @@ function HostInGroup(props) {
             filterSort={(optionA, optionB) =>
               optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
             }
-            onSelect={n => set(n, 'ipv4-address', obj)}
+            onSelect={n => set(n, 'str', obj)}
           >
             <React.Fragment>
               {hosts.map((h, i) => {
                 return (
-                  <Select.Option key={i} value={h['ipv4-address']}>{h['ipv4-address']}</Select.Option>
+                  <Select.Option key={i} value={h['str']}>{h['str']}</Select.Option>
                 )
               })
               }
