@@ -794,12 +794,9 @@ function CloudAccount(props) {
   
     setSearchText('');
     setSearchedColumn('');
-    searchInput = useRef(null);
   
     setResponse('');
-  
-    myRefs = useRef({});
-    textAreaRefs = useRef({});
+
   }
   
   /* RENDER */
