@@ -11,7 +11,7 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox, Radio } from 'antd';
+import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox, Radio, Badge, Card } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -716,6 +716,18 @@ function DatacenterAccount(props) {
                           />
                       }
                     </Col>
+
+                    {console.log(datacenterAccount)}
+                    {(typeof datacenterAccount === "object" && datacenterAccount !== null) ?
+                      <Col offset={1} span={1}>
+                        <Badge.Ribbon text={datacenterAccount?.complete ? 'Complete' : 'Incomplete'} color={datacenterAccount?.complete ? 'green' : 'red'}/>
+                      </Col>
+                    :
+                      null
+                    }
+                    
+                    
+
                   </Row>
 
                   <br />

@@ -68,7 +68,7 @@ function CloudAccount(props) {
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
 
-  let [response, setResponse] = useState(false);
+  let [response, setResponse] = useState('');
 
   let myRefs = useRef({});
   let textAreaRefs = useRef({});
@@ -104,6 +104,15 @@ function CloudAccount(props) {
     }
     
   }, [existent]);
+
+  useEffect(() => {
+    if (response) {
+      setTimeout( () => setResponse(''), 2030)
+    }
+    
+  }, [response]);
+
+
 
   let dataGetHandler = async (entities, assetId) => {
     let data
@@ -230,8 +239,8 @@ function CloudAccount(props) {
         setCloudAccount(cloudAccountCopy)
       }
       else {
-        if (data.data.length > 0) {
-          let list = data.data.map((item, i) => {
+        if (data?.data?.networks.length > 0) {
+          let list = data.data.networks.map((item, i) => {
             let sm = item.network.split('/')
             item.network = item.network ? item.network : '';
             item.network_container = item.network_container ? item.network_container : '';
@@ -243,6 +252,7 @@ function CloudAccount(props) {
           });
           let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
           cloudAccountCopy.cloudNetworks = list
+          cloudAccountCopy.tags = data?.data?.tags ? data.data.tags : [] 
           setCloudAccount(cloudAccountCopy)
         }
       }
@@ -306,7 +316,7 @@ function CloudAccount(props) {
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
     let cloudNet
     let errorsCopy = JSON.parse(JSON.stringify(errors))
-
+    
     if (key === 'changeRequestId') {
       delete errorsCopy.changeRequestIdError
       setChangeRequestId(value);
@@ -559,17 +569,20 @@ function CloudAccount(props) {
           props.dispatch(err(error))
         }
       }
+      setResponse('account deleted')
 
       setAccountModify(false);
       setCloudAccount({});
       setExistent(true)
       setLoading(false)
+      setChangeRequestId('');
+      setCpAsset(null)
     
       dataGetHandler('cloudAccounts', props.asset.id)
     }
   }
 
-  let modifyAccountHandler = async() => {
+  /*let modifyAccountHandler = async() => {
     let localErrors = await validationCheck()
     if (localErrors === 0) {
       setLoading(true)
@@ -617,7 +630,7 @@ function CloudAccount(props) {
     
       dataGetHandler('cloudAccounts', props.asset.id)
     }
-  }
+  }*/
 
   let cudManager = async () => {
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
@@ -698,14 +711,17 @@ function CloudAccount(props) {
         props.dispatch(err(error))
       }
     }
-      
+
+      setResponse('commit succesful')
       setAccountModify(false);
       setCloudAccount({});
       setCloudAccountModify({});
       setExistent(true)
       setLoading(false)
+      setChangeRequestId('');
+      setCpAsset(null)
     
-      dataGetHandler('cloudAccounts', props.asset.id)
+      await dataGetHandler('cloudAccounts', props.asset.id)
 
   }
 
@@ -750,14 +766,40 @@ function CloudAccount(props) {
     ,\s* corrisponde alla virgola seguita da zero o più spazi bianchi.
     */
     setVisible(false);
-    setProviders(['AWS', 'AZURE', 'GCP', 'OCI']);
-    setSubnetMaskCidrs(['23', '24']);
+    setLoading(false);
+  
+    setExistent(true);
+    
+    setProviders(['AWS']);
     setProvider('');
     setRegions([]);
-    setLoading(false);
+    
+    setCpAssets([]);
+    setCpAsset(0);
+  
     setCloudAccountsLoading(false);
     setCloudAccounts([]);
+  
+    setCloudAccountLoading(false);
+    setCloudAccount({});
+    setCloudAccountModify({});
+  
+    setChangeRequestId('');
+  
     setAccountModify(false);
+  
+    setSubnetMaskCidrs(['23', '24']);
+  
+    setErrors({});
+  
+    setSearchText('');
+    setSearchedColumn('');
+    searchInput = useRef(null);
+  
+    setResponse('');
+  
+    myRefs = useRef({});
+    textAreaRefs = useRef({});
   }
   
   /* RENDER */
@@ -1296,7 +1338,7 @@ function CloudAccount(props) {
             { !loading && response &&
               <Result
                   status="success"
-                  title="Cloud Network Assigned"
+                  title={response}
                 />
             }
             { !loading && !response &&
@@ -1440,7 +1482,7 @@ function CloudAccount(props) {
                       </Col>
                     </Row>
 
-                    { accountModify ?
+                    {/* accountModify ?
                       <Row>
                         <Col span={4}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
@@ -1472,7 +1514,7 @@ function CloudAccount(props) {
                       </Row>
                     :
                       null 
-                    }
+                    */}
 
                     
                     </>
@@ -1514,6 +1556,7 @@ function CloudAccount(props) {
                   <Button
                     type="primary"
                     style={{marginLeft: 16 }}
+                    disabled={cloudAccountLoading ? true : false}
                     onClick={() => cloudNetworkAdd()}
                   >
                     Request a Cloud Account
@@ -1524,25 +1567,29 @@ function CloudAccount(props) {
                       <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 48%'}}/>
                     </>
                   :
-                    <Table
-                      columns={columns}
-                      style={{width: '100%', padding: 15}}
-                      dataSource={cloudAccount?.cloudNetworks ? cloudAccount.cloudNetworks : []}
-                      bordered
-                      rowKey={record => record.id}
-                      scroll={{x: 'auto'}}
-                      pagination={{ pageSize: 10 }}
-                    />
+                    <>
+                      <Table
+                        columns={columns}
+                        style={{width: '100%', padding: 15}}
+                        dataSource={cloudAccount?.cloudNetworks ? cloudAccount.cloudNetworks : []}
+                        bordered
+                        rowKey={record => record.id}
+                        scroll={{x: 'auto'}}
+                        pagination={{ pageSize: 10 }}
+                      />
+                        <Button
+                        type="primary"
+                        style={{float: 'right', marginRight: 15}}
+                        disabled={cloudAccountLoading ? true : false}
+                        onClick={() => validation()}
+                      >
+                        Commit
+                      </Button>
+                      <br/>
+                    </>
+                   
                   }
-                  <Button
-                    type="primary"
-                    style={{float: 'right', marginRight: 15}}
-                    disabled={accountModify ? true: false}
-                    onClick={() => validation()}
-                  >
-                    Commit
-                  </Button>
-                  <br/>
+                  
                 </React.Fragment>
               :
                 null
