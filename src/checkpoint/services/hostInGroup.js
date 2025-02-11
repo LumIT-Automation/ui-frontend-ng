@@ -344,6 +344,15 @@ function HostInGroup(props) {
   */
   const closeModal = () => {
     setVisible(false);
+    setChangeRequestId('');
+    setGroups([]);
+    setGroup(null);
+    setIsGroupHostsFetched(false);
+    setHosts([]);
+    setLoading(false);
+    setGhLoading(false);
+    setGroupError('');
+    setChangeRequestIdError('');
   };
 
   let renderError = () => {
