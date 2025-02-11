@@ -162,10 +162,11 @@ function CustomSider(props) {
         }
 
         <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
-        { isAuthorized(props.authorizations, 'infoblox') ||
-          isAuthorized(props.authorizations, 'checkpoint') ||
-          isAuthorized(props.authorizations, 'f5') ||
-          isAuthorized(props.authorizations, 'vmware') ?
+        {
+          isAuthorized(props.authorizations, 'infoblox', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'checkpoint', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'f5', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'vmware', 'full_visibility') ?
           <React.Fragment>
             <Menu.Item key="assets" icon={itemsIcon()}><Link to="/assets/">ASSETS</Link></Menu.Item>
             <Menu.Divider/>
@@ -195,7 +196,11 @@ function CustomSider(props) {
           null
         */}
 
-        { authorizatorsSA(props.authorizations) ?
+        { 
+          isAuthorized(props.authorizations, 'infoblox', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'checkpoint', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'f5', 'full_visibility') ||
+          isAuthorized(props.authorizations, 'vmware', 'full_visibility') ?
           <React.Fragment>
             <Menu.Item key="configurations" icon={<SettingOutlined style={{fontSize:'20px'}}/>}><Link to="/configurations/">CONFIGURATIONS</Link></Menu.Item>
             <Menu.Divider/>
