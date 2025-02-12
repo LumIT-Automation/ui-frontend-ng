@@ -430,7 +430,7 @@ function HostInGroup(props) {
         </React.Fragment>
     )
     },
-    {
+    /*{
       title: 'Existent Node',
       align: 'center',
       dataIndex: 'str',
@@ -476,7 +476,7 @@ function HostInGroup(props) {
         }
       </React.Fragment>
     )
-    },
+    },*/
     {
       title: 'Domain',
       align: 'center',
