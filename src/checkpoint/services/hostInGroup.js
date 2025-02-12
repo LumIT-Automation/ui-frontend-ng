@@ -244,9 +244,6 @@ function HostInGroup(props) {
         toRemove.push(member.uid);
       }
       if (!member.groupMember) {
-        if (props.domain === 'Global') {
-          member.name = `${member.name}_G`
-        }
         toAdd.push({name: member.name, "ipv4-address": member["ipv4-address"]});
       }
     });
