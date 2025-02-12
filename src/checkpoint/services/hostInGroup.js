@@ -521,11 +521,11 @@ function HostInGroup(props) {
   return (
     <Space direction="vertical">
       <Button type="primary" onClick={() => setVisible(true)}>
-        Host in Group
+      Node in Group
       </Button>
 
       <Modal
-        title={<p style={{ textAlign: 'center' }}>Host in Group</p>}
+        title={<p style={{ textAlign: 'center' }}>Node in Group</p>}
         centered
         destroyOnClose
         visible={visible}

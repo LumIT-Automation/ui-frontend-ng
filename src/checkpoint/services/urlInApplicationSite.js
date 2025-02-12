@@ -417,10 +417,10 @@ function UrlInApplicationSite(props) {
 
   return (
     <Space direction='vertical'>
-      <Button type="primary" onClick={() => setVisible(true)}>Url In ApplicationSite</Button>
+      <Button type="primary" onClick={() => setVisible(true)}>URL Filtering</Button>
 
       <Modal
-        title={<p style={{ textAlign: 'center' }}>Url In ApplicationSite</p>}
+        title={<p style={{ textAlign: 'center' }}>URL Filtering</p>}
         centered
         destroyOnClose={true}
         visible={visible}
