@@ -249,7 +249,7 @@ function Permission(props) {
       endpoint = `${props.vendor}/${assetId}/${entities}/`
     }
     if (entities === 'tags') {
-      endpoint = `${props.vendor}/${assetId}/${subAsset}/${entities}/`
+      endpoint = `${props.vendor}/${assetId}/${subAsset}/${entities}/?virtual`
     }
     let rest = new Rest(
       "GET",
