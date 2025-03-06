@@ -56,6 +56,8 @@ function CloudAccount(props) {
   let [cloudAccount, setCloudAccount] = useState({});
   let [cloudAccountModify, setCloudAccountModify] = useState({});
 
+  let [origTags, setOrigTags] = useState([])
+
   let [changeRequestId, setChangeRequestId] = useState('');
 
   let [accountModify, setAccountModify] = useState(false);
@@ -253,6 +255,7 @@ function CloudAccount(props) {
           let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
           cloudAccountCopy.cloudNetworks = list
           cloudAccountCopy.tags = data?.data?.tags ? data.data.tags : [] 
+          setOrigTags(data?.data?.tags ? data.data.tags : [] )
           setCloudAccount(cloudAccountCopy)
         }
       }
@@ -484,6 +487,18 @@ function CloudAccount(props) {
         ref.input.focus();
       }
     }
+
+    if (key === 'tags') {
+      delete errorsCopy.tagsError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.tags = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current.tags;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
     
   }
 
@@ -637,11 +652,30 @@ function CloudAccount(props) {
     let toDelete = []
     let toPut = []
 
+    /*
+    console.log( 'typeof(origTags) ', typeof(origTags) )
+    console.log( 'typeof(cloudAccountCopy.tags) ', typeof(cloudAccountCopy.tags) )
+
+    console.log( 'origTags', origTags )
+    console.log( 'cloudAccountCopy.tags', cloudAccountCopy.tags )
+
+
+    console.log('origTags', Array.isArray(origTags));
+    console.log('cloudAccountCopy', Array.isArray(cloudAccountCopy.tags));
+
+
+    if (JSON.stringify(origTags) != JSON.stringify(cloudAccountCopy.tags)) {
+      console.log('different')
+    }
+    else {
+      console.log('uguali')
+    }*/
+
     for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
       if (cloudNet.toDelete) {
         toDelete.push(cloudNet)
       }
-      else if (!cloudNet.existent){
+      else if (!cloudNet.existent || (JSON.stringify(origTags) != JSON.stringify(cloudAccountCopy.tags))){
         toPut.push(cloudNet)
       }
     }
@@ -679,6 +713,13 @@ function CloudAccount(props) {
       }
     }
 
+    if (!Array.isArray(cloudAccountCopy.tags)) { 
+      let t = cloudAccountCopy.tags.split(',').map((x) => x.trim());
+      cloudAccountCopy.tags = t
+      console.log(t)
+    }
+    
+    
     if (toPut.length > 0) {
       let body = {}
         body.data = {
@@ -688,6 +729,7 @@ function CloudAccount(props) {
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
+            "tags": cloudAccountCopy.tags
           }
         }
 
@@ -800,9 +842,6 @@ function CloudAccount(props) {
   }
   
   /* RENDER */
-  let randomKey = () => {
-    return Math.random().toString()
-  }
 
   let createElement = (element, key, choices, obj, action) => {
 
@@ -921,6 +960,22 @@ function CloudAccount(props) {
             }
             value={cloudAccount?.ITSM}
             ref={ref => (myRefs.current.cloudAccountITSM = ref)}
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+
+      else if (key === 'tags') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccount?.tags}
+            ref={ref => (myRefs.current.tags = ref)}
             onChange={event => set(key, event.target.value)}
           />
         )
@@ -1311,7 +1366,9 @@ function CloudAccount(props) {
   }
 
   return (
+    
     <React.Fragment>
+      {console.log(cloudAccount)}
       <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
 
       <Modal
@@ -1464,6 +1521,17 @@ function CloudAccount(props) {
                           <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
                         </Col>
                       }
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags</p>
+                      </Col>
+                      <Col span={3}>
+                        {cloudAccountLoading ? 
+                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        :
+                          createElement('input', 'tags', 'cloudAccounts', '')
+                        }
+                      </Col>
+
                       {/*<Col offset={1} span={1}>
                         <Checkbox
                           checked={accountModify}
@@ -1535,6 +1603,16 @@ function CloudAccount(props) {
                       </Col>
                       <Col span={2}>
                         {createElement('input', 'cloudAccountITSM', '', '', '')}
+                      </Col>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags</p>
+                      </Col>
+                      <Col span={3}>
+                        {cloudAccountLoading ? 
+                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        :
+                          createElement('input', 'tags', 'cloudAccounts', '')
+                        }
                       </Col>
                       <Col offset={3} span={2}>
                         {createElement('button', '', '', '', 'newAccount')}

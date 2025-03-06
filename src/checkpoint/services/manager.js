@@ -4,6 +4,7 @@ import 'antd/dist/antd.css';
 
 import Rest from '../../_helpers/Rest';
 import Error from '../../concerto/error';
+import Authorizators from '../../_helpers/authorizators'
 
 import {
   err
@@ -48,6 +49,17 @@ function Manager(props) {
     await rest.doXHR("checkpoint/assets/", props.token);
   };
 
+  const authorizatorsSA = a => {
+    let author = new Authorizators()
+    console.log(author.isSuperAdmin(a))
+    return author.isSuperAdmin(a)
+  }
+  
+  const isAuthorized = (authorizations, vendor, key) => {
+    let author = new Authorizators()
+    return author.isAuthorized(authorizations, vendor, key)
+  }
+
   const errors = () => {
     if (props.error && props.error.component === 'cpServiceManager') {
       return <Error error={[props.error]} visible={true} />;
@@ -73,11 +85,13 @@ function Manager(props) {
       
       <br />
 
-      <Row>
-        <Col span={4} offset={2}>
-          <DatacenterAccount vendor={'checkpoint'}/>
-        </Col>
-      </Row>
+        <Row>
+          <Col span={4} offset={2}>
+            <DatacenterAccount vendor={'checkpoint'}/>
+          </Col>
+        </Row>
+
+
       {errors()}
     </React.Fragment>
   );
