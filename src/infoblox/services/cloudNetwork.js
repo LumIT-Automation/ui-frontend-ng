@@ -36,6 +36,7 @@ Reference = ITSM (IT SERVICE MANAGER)
 */
 
 
+
 function CloudNetwork(props) {
 
   let [visible, setVisible] = useState(false);
@@ -68,6 +69,9 @@ function CloudNetwork(props) {
   let [newITSM, setNewITSM] = useState('');
 
   let [subnetMaskCidrs, setSubnetMaskCidrs] = useState(['23', '24']);
+
+  let [modifyIdError, setModifyIdError] = useState(false)
+  let [newAccountIdError, setNewAccountIdError] = useState(false)
 
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
@@ -275,6 +279,26 @@ function CloudNetwork(props) {
   }
 
   let newAccountHandler = async() => {
+    if (provider === 'AWS') {
+      if (newAccountId && newAccountId.length != 12) {
+        setNewAccountIdError(true)
+        return
+      } else {
+        setNewAccountIdError(false)
+      }
+    }
+
+    if (provider === 'AZURE') {
+      let regexp = new RegExp(/[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}$/gm);
+
+      if (newAccountId && !regexp.test(newAccountId)) {
+        setNewAccountIdError(true)
+        return
+      } else {
+        setNewAccountIdError(false)
+      }
+    }
+    
       setLoading(true)
 
       let data = await dataGet('getNetworks', props.asset.id)
@@ -677,10 +701,32 @@ function CloudNetwork(props) {
     let errors = 0
 
     for (let cloudNet of Object.values(cloudNetworksCopy)) {
+
+      if (provider === 'AWS') {      
+        if (modifyId && modifyId.length != 12) {
+          setModifyIdError(true)
+          return
+        } else {
+          setModifyIdError(false)
+        }
+
+      }
+
+      if (provider === 'AZURE') {
+        let regexp = new RegExp(/[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{12}$/gm);
+        if (modifyId && !regexp.test(modifyId)) {
+          setModifyIdError(true)
+          return
+        } else {
+          setModifyIdError(false)
+        }
+      }
+
       if ((provider === 'AWS' || provider === 'AZURE' || provider === 'OCI' ) && !cloudNet.Region) {
         ++errors
         cloudNet.RegionError = true
       }
+
       if (!cloudNet.subnetMaskCidr) {
         ++errors
         cloudNet.subnetMaskCidrError = true
@@ -847,6 +893,8 @@ function CloudNetwork(props) {
       setModifyITSM('')
     }
 
+    setAccountModify(false) 
+
     dataGetHandler('accountsAndProviders', props.asset.id)
     
   }
@@ -991,7 +1039,7 @@ function CloudNetwork(props) {
         return (
           <Input
             style=
-            {obj[`${key}Error`] ?
+            {newAccountIdError ?
               {borderColor: 'red'}
             :
               {}
@@ -1006,7 +1054,7 @@ function CloudNetwork(props) {
         return (
           <Input
             style=
-            {obj[`${key}Error`] ?
+            {modifyIdError ?
               {borderColor: 'red'}
             :
               {}
@@ -1097,7 +1145,7 @@ function CloudNetwork(props) {
           return (
             <Button
               type="primary"
-              disabled={(modifyId && modifyId.length === 12 && modifyName && modifyITSM) ? false : true}
+              disabled={(modifyId && modifyName && modifyITSM) ? false : true}
               onClick={() => accountModifyManager()}
             >
               Modify Account
@@ -1109,7 +1157,7 @@ function CloudNetwork(props) {
           return (
             <Button
               type="primary"
-              disabled={(newAccountId && newAccountId.length === 12 && newAccountName && newITSM) ? false : true}
+              disabled={(newAccountId && newAccountName && newITSM) ? false : true}
               onClick={() => newAccountHandler()}
             >
               Set new Account
@@ -1570,13 +1618,13 @@ function CloudNetwork(props) {
                   {existent ?
                   <>
                     <Row>
-                      <Col span={4}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
                       </Col>
                       {accountsLoading ?
                         <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                       :
-                        <Col span={3}>
+                        <Col span={7}>
                           {createElement('select', 'accountId', 'accounts', '', 'getNetworks')}
                         </Col>
                       }
@@ -1617,10 +1665,10 @@ function CloudNetwork(props) {
 
                     { accountModify ?
                       <Row>
-                        <Col span={4}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID:</p>
                         </Col>
-                        <Col span={3}>
+                        <Col span={7}>
                           {createElement('input', 'modifyId', '', '', '')}
                         </Col>
                         <Col span={3}>
@@ -1648,10 +1696,10 @@ function CloudNetwork(props) {
                   :
 
                     <Row>
-                      <Col span={4}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID:</p>
                       </Col>
-                      <Col span={3}>
+                      <Col span={7}>
                         {createElement('input', 'newAccountId', '', '', '')}
                       </Col>
                       <Col span={3}>
