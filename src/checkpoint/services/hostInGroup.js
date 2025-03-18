@@ -106,6 +106,9 @@ function HostInGroup(props) {
     let r
     let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/`;
 
+    if (entity === 'groups') {
+      endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/?local`;
+    }
     if (id) {
       endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/${id}/`
     }
