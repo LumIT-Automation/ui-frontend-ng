@@ -7,6 +7,7 @@ import Authorizators from '../../_helpers/authorizators'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -1546,7 +1547,15 @@ function CloudNetwork(props) {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Cloud network', 
+          details: 'Manage subnets for different Cloud Providers',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>{props.service.toUpperCase()}</p>}

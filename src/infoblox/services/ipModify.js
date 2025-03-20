@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
 import 'antd/dist/reset.css';
+
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
+import Card from '../../_components/card'
 
 import { err } from '../../concerto/store';
 import AssetSelector from '../../concerto/assetSelector';
@@ -240,9 +242,16 @@ function IpModify(props) {
   /** -------------------- Render -------------------- **/
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>
-        IP MODIFY
-      </Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Modify IP', 
+          details: 'Modify the attributes of an existent ip.',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
+      
       <Modal
         title={<p style={{ textAlign: 'center' }}>IP MODIFY</p>}
         centered

@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -206,7 +207,15 @@ function IpDetails(props) {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>IP DETAILS</Button>
+      
+      <Card 
+        props={{
+          width: 200, 
+          title: 'IP details', 
+          details: 'Search for existent ip details.',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}

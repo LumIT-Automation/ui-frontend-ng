@@ -7,6 +7,7 @@ import Authorizators from '../../_helpers/authorizators'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -1131,7 +1132,15 @@ function RequestIp(props) {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>REQUEST IP</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Request IP', 
+          details: 'Request an ip address.',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>REQUEST IP</p>}

@@ -6,6 +6,7 @@ import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -13,25 +14,10 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Modal, Alert, Divider, Input, Button, Spin, Table, Space, Card } from 'antd'
+import { Modal, Alert, Divider, Input, Button, Spin, Table, Space } from 'antd'
 import { LoadingOutlined } from '@ant-design/icons'
 
-const { Meta } = Card;
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
-
-/*
-
-<Card
-  hoverable
-  style={{
-    width: 240,
-  }}
-  cover={<img alt="example" src="https://os.alipayobjects.com/rmsportal/QBnOOoLaAfKPirc.png" />}
->
-  <Meta title="Europe Street beat" description="www.instagram.com" />
-</Card>
-
-*/
 
 function ReleaseIp(props) {
 
@@ -227,7 +213,14 @@ function ReleaseIp(props) {
   return (
     <React.Fragment>
 
-      <Button type="primary" onClick={() => setVisible(true)}>RELEASE IP</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Release IP', 
+          details: 'Select an existent IP and release it.',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>RELEASE IP</p>}
