@@ -4,6 +4,7 @@ import 'antd/dist/reset.css';
 
 import Rest from '../../_helpers/Rest';
 import Error from '../../concerto/error';
+import Card from '../../_components/card'
 
 import { err } from '../../concerto/store';
 
@@ -428,7 +429,17 @@ function UpdateCert(props) {
 
   return (
     <>
-      <Button type="primary" onClick={() => setVisible(true)}>UPDATE CERT</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Update Cert', 
+          details: 'Update certificate and key.',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
+
       <Modal
         title={<p style={{ textAlign: 'center' }}>UPDATE CERT</p>}
         centered

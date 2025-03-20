@@ -9,6 +9,7 @@ import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -1005,9 +1006,17 @@ function CreateF5Service(props) {
 
   return (
     <React.Fragment>
-      
-      <Button type="primary" onClick={() => setVisible(true)}>{props.type} CREATE</Button>
 
+      <Card 
+        props={{
+          width: 200, 
+          title: `${props.type} CREATE`, 
+          details: `Create a ${props.type} load balancer.`,
+          color: '#5dcc0e',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
+      
       <Modal
         title={<p style={{textAlign: 'center'}}>{props.type} CREATE</p>}
         centered

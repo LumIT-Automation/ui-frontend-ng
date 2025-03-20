@@ -218,6 +218,7 @@ function ReleaseIp(props) {
           width: 200, 
           title: 'Release IP', 
           details: 'Select an existent IP and release it.',
+          color: '#DC3E2F',
           onClick: function () { setVisible(true) } 
         }}
       />

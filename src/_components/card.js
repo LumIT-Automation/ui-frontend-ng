@@ -4,6 +4,7 @@ import { Avatar, Card, Button } from 'antd';
 const { Meta } = Card;
 
 const App = ({props}) => (
+  <>
   
   <Card
     style={{
@@ -16,7 +17,17 @@ const App = ({props}) => (
       />
     }*/
     actions={[
-      <Button type="primary" onClick={props.onClick}>Open</Button>
+      <>
+  {console.log(props.color)}
+      <Button 
+        //type="primary" 
+        //color={props.color}
+        style={{ background: props.color, color: 'white'}}
+        onClick={props.onClick}
+      >
+        Open
+      </Button>
+      </>
     ]}
   >
     <Meta
@@ -25,7 +36,7 @@ const App = ({props}) => (
       description={props.details}
     />
   </Card>
-
+  </>
 );
 
 export default App;

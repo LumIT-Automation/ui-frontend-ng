@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -154,7 +155,15 @@ function DeleteF5Node(props) {
   return (
     <React.Fragment>
 
-      <Button type="primary" onClick={() => setVisible(true)}>DELETE {f5object.toUpperCase()}</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: `DELETE ${f5object}`, 
+          details: `Delete an existent ${f5object}.`,
+          color: '#DC3E2F',
+          onClick: function () { setVisible(true) },
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>DELETE {f5object.toUpperCase()}</p>}

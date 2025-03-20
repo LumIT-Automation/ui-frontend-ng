@@ -1138,6 +1138,7 @@ function RequestIp(props) {
           width: 200, 
           title: 'Request IP', 
           details: 'Request an ip address.',
+          color: '#5dcc0e',
           onClick: function () { setVisible(true) } 
         }}
       />

@@ -211,8 +211,9 @@ function IpDetails(props) {
       <Card 
         props={{
           width: 200, 
-          title: 'IP details', 
+          title: 'Info IP', 
           details: 'Search for existent ip details.',
+          color: '#3ba4f9',
           onClick: function () { setVisible(true) } 
         }}
       />

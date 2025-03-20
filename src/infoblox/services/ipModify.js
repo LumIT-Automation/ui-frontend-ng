@@ -248,6 +248,7 @@ function IpModify(props) {
           width: 200, 
           title: 'Modify IP', 
           details: 'Modify the attributes of an existent ip.',
+          color: '#ffe760',
           onClick: function () { setVisible(true) } 
         }}
       />

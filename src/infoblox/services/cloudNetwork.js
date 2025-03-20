@@ -1553,6 +1553,7 @@ function CloudNetwork(props) {
           width: 200, 
           title: 'Cloud network', 
           details: 'Manage subnets for different Cloud Providers',
+          color: '#3ba4f9',
           onClick: function () { setVisible(true) } 
         }}
       />

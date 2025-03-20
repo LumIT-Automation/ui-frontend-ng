@@ -7,6 +7,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 
 import Rest from '../../../_helpers/Rest'
 import Error from '../../../concerto/error'
+import Card from '../../../_components/card'
 
 import {
   err
@@ -83,7 +84,15 @@ function Manager(props) {
   return (
     <React.Fragment>
 
-      <Button type="primary" onClick={() => setVisible(true)}>POOL MANAGEMENT</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Manage Pool', 
+          details: 'Enable, disable poolmember in a pool.',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>POOL MANAGEMENT</p>}
