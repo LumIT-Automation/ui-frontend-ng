@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
-import 'antd/dist/antd.css';
+import 'antd/dist/reset.css';
 import { Modal, Alert, Input, Select, Button, Divider, Spin, Row, Col, Card } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 

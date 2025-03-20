@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 
 import { Table, Input, Button, Space, Spin } from 'antd'
 import Highlighter from 'react-highlight-words'

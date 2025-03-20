@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import { Modal, Table, List, Spin } from 'antd'
 
 import { QuestionCircleOutlined, LoadingOutlined } from '@ant-design/icons';

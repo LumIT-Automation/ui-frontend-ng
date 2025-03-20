@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import '../App.css'
 
 import Rest from '../_helpers/Rest'

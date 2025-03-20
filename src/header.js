@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {connect} from "react-redux"
 
 import './App.css'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import Error from './concerto/error'
 import JsonModal from './jsonModal'
 

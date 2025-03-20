@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { connect } from 'react-redux'
 import { Radio, Divider } from 'antd'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import '../App.css'
 import Authorizators from '../_helpers/authorizators'
 import Asset from './asset'

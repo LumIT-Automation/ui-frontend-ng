@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 
 import Rest from '../_helpers/Rest'
 import Validators from '../_helpers/validators'

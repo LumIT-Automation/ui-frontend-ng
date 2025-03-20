@@ -2,7 +2,7 @@ import React from 'react';
 import {connect} from "react-redux"
 import {BrowserRouter, Route, Switch} from 'react-router-dom'
 import './App.css'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import { Layout } from 'antd'
 
 import Error from './concerto/error'

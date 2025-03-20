@@ -9,7 +9,7 @@ import HeaderCustom from './header'
 
 import { login } from './_store/store.authentication'
 
-import 'antd/dist/antd.css';
+import 'antd/dist/reset.css';
 
 const { Header } = Layout;
 

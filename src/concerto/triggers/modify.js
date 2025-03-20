@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 import { Button, Modal, Spin, Result, Input, Row, Col, Select, Checkbox } from 'antd'
 import { LoadingOutlined, EditOutlined, UserOutlined } from '@ant-design/icons'
 

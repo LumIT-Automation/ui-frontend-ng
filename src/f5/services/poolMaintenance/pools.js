@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 
 import { getColumnSearchProps, handleSearch, handleReset } from '../../../_helpers/tableUtils';
 

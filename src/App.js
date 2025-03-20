@@ -11,7 +11,7 @@ import { authorizations } from './_store/store.authorizations';
 import { err } from './concerto/store';
 
 import './App.css';
-import 'antd/dist/antd.css';
+import 'antd/dist/reset.css';
 
 const spinIcon = <LoadingOutlined style={{ fontSize: 50 }} spin />;
 

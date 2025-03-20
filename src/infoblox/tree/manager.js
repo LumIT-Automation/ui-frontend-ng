@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
-import 'antd/dist/antd.css'
+//import 'antd/dist/reset.css'
 
 import { LoadingOutlined } from '@ant-design/icons';
 import { Space, Alert, Spin } from 'antd'

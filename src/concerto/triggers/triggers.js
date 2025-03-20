@@ -5,7 +5,7 @@ import { Radio, Divider } from 'antd';
 import Authorizators from '../../_helpers/authorizators'
 import Trigger from './trigger'
 
-import 'antd/dist/antd.css';
+import 'antd/dist/reset.css';
 import '../../App.css'
 
 
