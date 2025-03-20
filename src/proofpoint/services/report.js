@@ -318,7 +318,7 @@ function Report(props) {
         title={<p style={{ textAlign: 'center' }}>{props.type}</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={null}
         onOk={() => setVisible(true)}
         onCancel={closeModal}

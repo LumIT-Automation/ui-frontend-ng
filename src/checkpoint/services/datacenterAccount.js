@@ -641,7 +641,7 @@ function DatacenterAccount(props) {
         title={<p style={{ textAlign: 'center' }}>Datacenter Account</p>}
         centered
         destroyOnClose
-        visible={visible}
+        open={visible}
         footer={null}
         onCancel={closeModal}
         width={1500}

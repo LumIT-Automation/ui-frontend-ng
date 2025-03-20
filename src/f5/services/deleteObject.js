@@ -160,7 +160,7 @@ function DeleteF5Node(props) {
         title={<p style={{textAlign: 'center'}}>DELETE {f5object.toUpperCase()}</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

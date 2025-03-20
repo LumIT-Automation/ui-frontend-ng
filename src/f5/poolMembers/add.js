@@ -407,7 +407,7 @@ function Add(props) {
         title={<p style={{textAlign: 'center'}}>Add Pool Member</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

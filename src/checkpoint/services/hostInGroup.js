@@ -531,7 +531,7 @@ function HostInGroup(props) {
         title={<p style={{ textAlign: 'center' }}>Node in Group</p>}
         centered
         destroyOnClose
-        visible={visible}
+        open={visible}
         footer={null}
         onCancel={closeModal}
         width={1500}

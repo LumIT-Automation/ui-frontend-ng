@@ -537,7 +537,7 @@ function Add(props) {
         title={<p style={{textAlign: 'center'}}>ADD DATACENTER SERVER</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

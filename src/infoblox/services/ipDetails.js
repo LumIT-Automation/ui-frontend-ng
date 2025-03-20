@@ -212,7 +212,7 @@ function IpDetails(props) {
         title={<p style={{textAlign: 'center'}}>IP DETAILS</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

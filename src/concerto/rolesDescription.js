@@ -114,7 +114,7 @@ function RolesDescription(props) {
         title={<p style={{ textAlign: 'center' }}>{props.vendor} {props.title}</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={null}
         onCancel={closeModal}
         width={1000}

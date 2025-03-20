@@ -1552,7 +1552,7 @@ function CloudNetwork(props) {
         title={<p style={{textAlign: 'center'}}>{props.service.toUpperCase()}</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

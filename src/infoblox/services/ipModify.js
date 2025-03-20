@@ -247,7 +247,7 @@ function IpModify(props) {
         title={<p style={{ textAlign: 'center' }}>IP MODIFY</p>}
         centered
         destroyOnClose
-        visible={visible}
+        open={visible}
         footer={null}
         onCancel={resetState}
         width={1500}

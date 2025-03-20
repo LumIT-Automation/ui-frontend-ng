@@ -186,7 +186,7 @@ function VpnToHost(props) {
         title={<p style={{ textAlign: 'center' }}>Get VPN Profiles</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={closeModal}

@@ -365,7 +365,7 @@ function RemoveHost(props) {
         title={<p style={{textAlign: 'center'}}>REMOVE HOST</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

@@ -423,7 +423,7 @@ function UrlInApplicationSite(props) {
         title={<p style={{ textAlign: 'center' }}>URL Filtering</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={null}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

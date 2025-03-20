@@ -433,7 +433,7 @@ function UpdateCert(props) {
         title={<p style={{ textAlign: 'center' }}>UPDATE CERT</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={null}
         onCancel={closeModal}
         width={1500}

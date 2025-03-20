@@ -762,7 +762,7 @@ function PoolDetails(props) {
         title={<p style={{textAlign: 'center'}}>{props.obj.name}</p>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}

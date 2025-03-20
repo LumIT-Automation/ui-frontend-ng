@@ -75,7 +75,7 @@ function Delete(props) {
         title={<div><p style={{textAlign: 'center'}}>DELETE</p> <p style={{textAlign: 'center'}}>{props.obj.name}</p></div>}
         centered
         destroyOnClose={true}
-        visible={visible}
+        open={visible}
         footer={''}
         onOk={null}
         onCancel={() => closeModal()}
