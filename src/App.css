@@ -1,3 +1,10 @@
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400;500;700&display=swap');
+
+body, .ant-typography {
+  font-family: 'Ubuntu' !important;
+}
+
+
 .App {
   text-align: center;
   height: 100vh;

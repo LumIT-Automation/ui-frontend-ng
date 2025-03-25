@@ -213,7 +213,7 @@ function IpDetails(props) {
           width: 200, 
           title: 'Info IP', 
           details: 'Search for existent ip details.',
-          color: '#3ba4f9',
+          color: '#1677FF',
           onClick: function () { setVisible(true) } 
         }}
       />
