@@ -2743,7 +2743,7 @@ class CreateVmService extends React.Component {
           title: 'VM CREATE', 
           details: 'VM CREATE',
           color: '#5dcc0e',
-          onClick: function () { setVisible(true) } 
+          onClick: () => this.setState({ visible: true }) 
         }}
       />
         <Modal
