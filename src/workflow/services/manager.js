@@ -13,38 +13,44 @@ import { Row, Col } from 'antd';
 
 function Manager(props) {
 
-  const authorizatorsSA = a => {
-    let author = new Authorizators()
-    return author.isSuperAdmin(a)
+  const isSuperAdmin = (authorizations) => {
+    let username = localStorage.getItem('username');
+    if (username === 'admin@automation.local') {
+      return true
+    }
   }
 
   const isAuthorized = (authorizations, vendor, key) => {
-    let author = new Authorizators()
-    return author.isAuthorized(authorizations, vendor, key)
+    //console.log(authorizations)
+    //console.log(key)
+    if (authorizations[vendor]?.any && Array.isArray(authorizations[vendor].any)) {
+      return authorizations[vendor].any.find(({ workflow_name }) => workflow_name === key);
+    }
   }
 
   return (
     
     <React.Fragment>
       <Row>
-        {/*authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?*/
+        {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?
           <Col span={2} offset={2}>
             <CloudAccount service='cloud account' vendor='infoblox'/>
-          </Col>/*
+          </Col>
         :
           null
-        */}
+        }
 
-        {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_remove_host') ?
+        {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_remove_host') ?
           <Col span={2} offset={2}>
             <RemoveHost/>
           </Col>
         :
           null
         }
-
-        {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host') ?
+        
+        {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host') ?
           <Col span={2} offset={2}>
+            {console.log(isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host'))}
             <AddHost/>
           </Col>
         :

@@ -18,7 +18,6 @@ const App = ({props}) => (
     }*/
     actions={[
       <>
-  {console.log(props.color)}
       <Button 
         //type="primary" 
         //color={props.color}
