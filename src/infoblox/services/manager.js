@@ -70,19 +70,19 @@ function Manager(props) {
   return (
     <React.Fragment >
       <Row>
-        <Col span={4} offset={2} >
+        <Col span={2} offset={2}>
           <IpDetails/>
         </Col>
 
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <IpRequest/>
         </Col>
 
-        <Col span={4} offset={2} >
+        <Col span={2} offset={2}>
           <IpModify/>
         </Col>
 
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <IpRelease/>
         </Col>
       </Row>
@@ -90,7 +90,7 @@ function Manager(props) {
       <br/>
 
       <Row>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <CloudNetwork vendor='infoblox' service='cloud network'/>
         </Col>
       </Row>

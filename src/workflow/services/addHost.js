@@ -7,6 +7,7 @@ import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
+import Card from '../../_components/card'
 
 import { Modal, Input, Button, Spin, Table, Space, Radio, Select } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -585,7 +586,15 @@ function AddHost(props) {
   return (
     <React.Fragment>
 
-      <Button type="primary" onClick={() => setVisible(true)}>ADD HOST</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Add host', 
+          details: 'Add host in firewall if it exists in ipam.',
+          color: '#5dcc0e',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>ADD HOST</p>}

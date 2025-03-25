@@ -7,6 +7,7 @@ import Authorizators from '../../_helpers/authorizators'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -1368,8 +1369,15 @@ function CloudAccount(props) {
   return (
     
     <React.Fragment>
-      {console.log(cloudAccount)}
-      <Button type="primary" onClick={() => setVisible(true)}>{props.service.toUpperCase()}</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: `${props.service}`, 
+          details: 'Manage cloud account.',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>{props.service.toUpperCase()}</p>}

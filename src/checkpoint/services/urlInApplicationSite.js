@@ -5,6 +5,7 @@ import 'antd/dist/reset.css';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
+import Card from '../../_components/card'
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import { err } from '../../concerto/store';
@@ -417,7 +418,16 @@ function UrlInApplicationSite(props) {
 
   return (
     <Space direction='vertical'>
-      <Button type="primary" onClick={() => setVisible(true)}>URL Filtering</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'URL Filtering', 
+          details: 'URL Filtering',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>URL Filtering</p>}

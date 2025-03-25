@@ -7,6 +7,7 @@ import { LoadingOutlined } from '@ant-design/icons'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -2736,8 +2737,15 @@ class CreateVmService extends React.Component {
     return (
       <React.Fragment>
 
-        <Button type="primary" onClick={() => this.details()}>VM CREATE</Button>
-
+        <Card 
+        props={{
+          width: 200, 
+          title: 'VM CREATE', 
+          details: 'VM CREATE',
+          color: '#5dcc0e',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
         <Modal
           title={<p style={{textAlign: 'center'}}>VM CREATE</p>}
           centered

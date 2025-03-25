@@ -68,15 +68,15 @@ function Manager(props) {
   return (
     <React.Fragment>
       <Row>
-        <Col span={4} offset={2} >
+        <Col span={2} offset={2}>
           <CreateVs vendor='f5' type='L7'/>
         </Col>
 
-        <Col span={4} offset={2} >
+        <Col span={2} offset={2}>
           <CreateVs vendor='f5' type='L4'/>
         </Col>
 
-        <Col span={4} offset={2} >
+        <Col span={2} offset={2}>
           <UpdateCert vendor='f5'/>
         </Col>
       </Row>
@@ -84,7 +84,7 @@ function Manager(props) {
       <br/>
 
       <Row>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <PoolMaintenance/>
         </Col>
       </Row>
@@ -92,11 +92,11 @@ function Manager(props) {
       <br/>
       
       <Row>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <F5ObjectDelete vendor='f5' f5object='virtualserver'/>
         </Col>
 
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <F5ObjectDelete vendor='f5' f5object='node'/>
         </Col>
       </Row>

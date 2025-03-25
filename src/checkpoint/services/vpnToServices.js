@@ -5,6 +5,7 @@ import 'antd/dist/reset.css';
 import Rest from '../../_helpers/Rest';
 import Error from '../../concerto/error';
 import { err } from '../../concerto/store';
+import Card from '../../_components/card'
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import AssetSelector from '../../concerto/assetSelector';
@@ -232,7 +233,15 @@ function VpnToServices(props) {
   return (
     <React.Fragment>
 
-        <Button type="primary" onClick={() => setVisible(true)}>VPN Flows by Profile</Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: 'VPN Flows by Profile', 
+          details: 'VPN Flows by Profile',
+          color: '#1677FF',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
         <Modal
           title={<p style={{textAlign: 'center'}}>VPN Flows by Profile</p>}

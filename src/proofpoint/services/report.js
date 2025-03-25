@@ -7,6 +7,7 @@ import { LoadingOutlined } from '@ant-design/icons';
 import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
+import CustomCard from '../../_components/card'
 
 import {
   err
@@ -312,7 +313,15 @@ function Report(props) {
 
   return (
     <>
-      <Button type="primary" onClick={() => setVisible(true)}>GENERATE REPORT</Button>
+      <CustomCard 
+        props={{
+          width: 200, 
+          title: 'GENERATE REPORT', 
+          details: 'GENERATE REPORT',
+          color: '#1677FF',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
   
       <Modal
         title={<p style={{ textAlign: 'center' }}>{props.type}</p>}

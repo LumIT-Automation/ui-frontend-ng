@@ -28,8 +28,7 @@ function Manager(props) {
     <React.Fragment>
       <Row>
         {/*authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?*/
-          <Col span={6} offset={2}>
-            <p>Manage cloud account</p>
+          <Col span={2} offset={2}>
             <CloudAccount service='cloud account' vendor='infoblox'/>
           </Col>/*
         :
@@ -37,8 +36,7 @@ function Manager(props) {
         */}
 
         {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_remove_host') ?
-          <Col span={6} offset={2}>
-            <p>Remove host from firewall (no for gateway)</p>
+          <Col span={2} offset={2}>
             <RemoveHost/>
           </Col>
         :
@@ -46,8 +44,7 @@ function Manager(props) {
         }
 
         {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host') ?
-          <Col span={6} offset={2}>
-            <p>Add host in firewall if it exists in ipam</p>
+          <Col span={2} offset={2}>
             <AddHost/>
           </Col>
         :

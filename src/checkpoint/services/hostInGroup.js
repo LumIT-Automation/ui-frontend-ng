@@ -5,6 +5,7 @@ import { connect } from 'react-redux'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
@@ -523,9 +524,15 @@ function HostInGroup(props) {
 
   return (
     <Space direction="vertical">
-      <Button type="primary" onClick={() => setVisible(true)}>
-      Node in Group
-      </Button>
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Node in Group', 
+          details: 'Node in Group',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>Node in Group</p>}

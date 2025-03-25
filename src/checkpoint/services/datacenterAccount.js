@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 
 import Rest from '../../_helpers/Rest'
 import Error from '../../concerto/error'
+import Card from '../../_components/card'
 
 import {
   err
@@ -11,7 +12,7 @@ import {
 
 import AssetSelector from '../../concerto/assetSelector'
 
-import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox, Radio, Badge, Card } from 'antd';
+import { Input, Button, Space, Modal, Spin, Alert, Row, Col, Select, Divider, Checkbox, Radio, Badge } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
@@ -633,9 +634,15 @@ function DatacenterAccount(props) {
     
     <>
     <Space direction="vertical">
-      <Button type="primary" onClick={() => setVisible(true)}>
-        Datacenter Account
-      </Button>
+     <Card 
+        props={{
+          width: 200, 
+          title: 'Datacenter Account', 
+          details: 'Datacenter Account',
+          color: '#ffe760',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>Datacenter Account</p>}

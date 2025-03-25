@@ -8,6 +8,7 @@ import Error from '../../concerto/error';
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
 
 import { err } from '../../concerto/store';
+import Card from '../../_components/card'
 
 import AssetSelector from '../../concerto/assetSelector';
 
@@ -180,7 +181,16 @@ function VpnToHost(props) {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>Get VPN Profiles</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Get VPN Profiles', 
+          details: 'Get VPN Profiles.',
+          color: '#1677FF',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{ textAlign: 'center' }}>Get VPN Profiles</p>}

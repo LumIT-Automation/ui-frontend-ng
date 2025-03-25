@@ -69,28 +69,22 @@ function Manager(props) {
   return (
     <React.Fragment>
       <Row>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <VpnToServices />
         </Col>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <VpnToHost />
         </Col>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <HostInGroup />
         </Col>
-        <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
           <UrlInApplicationSite />
         </Col>
-      </Row>
-      
-      <br />
-
-        <Row>
-          <Col span={4} offset={2}>
+        <Col span={2} offset={2}>
             <DatacenterAccount vendor={'checkpoint'}/>
           </Col>
-        </Row>
-
+      </Row>
 
       {errors()}
     </React.Fragment>

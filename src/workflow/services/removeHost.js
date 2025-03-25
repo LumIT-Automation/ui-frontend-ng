@@ -7,6 +7,7 @@ import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { err } from '../../concerto/store';
+import Card from '../../_components/card'
 
 import { Modal, Input, Button, Spin, Table, Space, Checkbox } from 'antd';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -359,7 +360,16 @@ function RemoveHost(props) {
 
   return (
     <React.Fragment>
-      <Button type="primary" onClick={() => setVisible(true)}>REMOVE HOST</Button>
+
+      <Card 
+        props={{
+          width: 200, 
+          title: 'Remove host', 
+          details: 'Remove host from firewall (no for gateway).',
+          color: '#DC3E2F',
+          onClick: function () { setVisible(true) } 
+        }}
+      />
 
       <Modal
         title={<p style={{textAlign: 'center'}}>REMOVE HOST</p>}
