@@ -969,7 +969,7 @@ function CloudAccount(props) {
       else if (key === 'tags') {
         return (
           <Input
-          placeholder={key === 'tags' ? "Insert your tags's list. Example: tag1, tag2, ..., tagN" : ""}
+          placeholder={key === 'tags' ? "tag1, tag2, ..., tagN" : ""}
             style=
             {obj[`${key}Error`] ?
               {borderColor: 'red'}

@@ -103,3 +103,30 @@ body, .ant-typography {
   border-width: 3px;
   border-style: solid;
 }
+
+.ant-card {
+  min-height: 200px; /* Imposta un'altezza minima per tutte le card */
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-card-meta-title {
+  text-align: center;
+  word-wrap: break-word;
+  white-space: normal; /* Permette al testo di andare a capo */
+  max-width: 100%; /* Evita overflow */
+}
+
+.ant-card-body {
+  flex-grow: 1; /* Fa espandere il corpo della card in modo uniforme */
+}
+
+.description-text {
+  display: flex;
+  justify-content: center; /* Centra orizzontalmente */
+  align-items: center; /* Centra verticalmente */
+  text-align: center; /* Per sicurezza */
+  min-height: 40px; /* Mantiene altezza uniforme */
+  word-wrap: break-word;
+  white-space: normal;
+}
