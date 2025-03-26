@@ -4,7 +4,6 @@ body, .ant-typography {
   font-family: 'Ubuntu' !important;
 }
 
-
 .App {
   text-align: center;
   height: 100vh;
@@ -110,11 +109,21 @@ body, .ant-typography {
   flex-direction: column;
 }
 
+.ant-card-head-title {
+  text-overflow: unset;
+  white-space: normal;
+}
+
 .ant-card-meta-title {
+  min-height: auto;
+  display: block;
   text-align: center;
+  text-overflow: unset !important;
   word-wrap: break-word;
-  white-space: normal; /* Permette al testo di andare a capo */
-  max-width: 100%; /* Evita overflow */
+  overflow: visible;
+  white-space: normal !important;
+  max-width: 100%;
+  overflow-wrap: break-word;
 }
 
 .ant-card-body {

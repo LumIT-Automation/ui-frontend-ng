@@ -32,7 +32,10 @@ const App = ({props}) => (
   >
     <Meta
       //avatar={<Avatar src="https://api.dicebear.com/7.x/miniavs/svg?seed=8" />}
-      title={props.title}
+
+      
+      //title={props.title}
+      title={<div className="ant-card-meta-title">{props.title}</div>}
       description={<div className="description-text">{props.details}</div>}
       //description={props.details}
     />

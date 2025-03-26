@@ -158,7 +158,7 @@ function DeleteF5Node(props) {
       <Card 
         props={{
           width: 200, 
-          title: `DELETE ${f5object}`, 
+          title: `Delete ${f5object}`, 
           details: `Delete an existent ${f5object}.`,
           color: '#DC3E2F',
           onClick: function () { setVisible(true) },

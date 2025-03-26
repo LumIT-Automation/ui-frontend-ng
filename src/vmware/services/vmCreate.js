@@ -2740,8 +2740,8 @@ class CreateVmService extends React.Component {
         <Card 
         props={{
           width: 200, 
-          title: 'VM CREATE', 
-          details: 'VM CREATE',
+          title: 'Create VM', 
+          details: 'Create VM',
           color: '#5dcc0e',
           onClick: () => this.setState({ visible: true }) 
         }}

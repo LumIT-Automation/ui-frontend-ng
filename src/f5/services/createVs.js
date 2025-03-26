@@ -1010,7 +1010,7 @@ function CreateF5Service(props) {
       <Card 
         props={{
           width: 200, 
-          title: `${props.type} CREATE`, 
+          title: `Create ${props.type}`, 
           details: `Create a ${props.type} load balancer.`,
           color: '#5dcc0e',
           onClick: function () { setVisible(true) } 

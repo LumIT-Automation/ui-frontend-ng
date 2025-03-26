@@ -316,8 +316,8 @@ function Report(props) {
       <CustomCard 
         props={{
           width: 200, 
-          title: 'GENERATE REPORT', 
-          details: 'GENERATE REPORT',
+          title: 'Generate report', 
+          details: 'Generate report',
           color: '#1677FF',
           onClick: function () { setVisible(true) } 
         }}
