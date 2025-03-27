@@ -14,23 +14,20 @@ import { Row, Col } from 'antd';
 function Manager(props) {
 
   const isSuperAdmin = (authorizations) => {
-    let username = localStorage.getItem('username');
-    if (username === 'admin@automation.local') {
-      return true
-    }
+    let author = new Authorizators()
+    return author.isSuperAdmin(authorizations)
   }
 
   const isAuthorized = (authorizations, vendor, key) => {
-    //console.log(authorizations)
-    //console.log(key)
-    if (authorizations[vendor]?.any && Array.isArray(authorizations[vendor].any)) {
-      return authorizations[vendor].any.find(({ workflow_name }) => workflow_name === key);
+    if (authorizations[vendor]?.workflows && Array.isArray(authorizations[vendor].workflows)) {
+      return authorizations[vendor].workflows.find(({ workflow_name }) => workflow_name === key);
     }
   }
 
   return (
     
     <React.Fragment>
+      {console.log(props.authorizations)}
       <Row>
         {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?
           <Col span={2} offset={2}>
