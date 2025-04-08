@@ -1227,7 +1227,8 @@ function PermissionWorkflow(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => subItemRemove(obj, father, 'f5')}
             >
               -
@@ -1346,7 +1347,8 @@ function PermissionWorkflow(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => subItemRemove(obj, father, 'infoblox')}
             >
               -
@@ -1546,7 +1548,8 @@ function PermissionWorkflow(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => subItemRemove(obj, father, 'checkpoint')}
             >
               -
@@ -1777,7 +1780,8 @@ function PermissionWorkflow(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => itemRemove(obj, permissions)}
             >
               -

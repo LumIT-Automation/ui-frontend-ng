@@ -509,7 +509,8 @@ function HostInGroup(props) {
             <Checkbox checked={obj.flagged} onChange={e => set(e, 'flag', obj)}/>
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={() => itemRemove(obj, group.members)}
             >
               -

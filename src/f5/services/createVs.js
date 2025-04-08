@@ -994,7 +994,8 @@ function CreateF5Service(props) {
       render: (name, obj)  => (
         <Space size="small">
           <Button
-            type='danger'
+            type="primary"
+            danger
             onClick={(e) => nodeRemove(obj)}
           >
             -

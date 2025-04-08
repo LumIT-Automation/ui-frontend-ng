@@ -967,7 +967,11 @@ function RequestIp(props) {
       dataIndex: 'remove',
       key: 'remove',
       render: (name, obj)  => (
-        <Button type="danger" onClick={() => requestRemove(obj)}>
+        <Button 
+          type="primary" 
+          danger 
+          onClick={() => requestRemove(obj)}
+        >
           -
         </Button>
       ),

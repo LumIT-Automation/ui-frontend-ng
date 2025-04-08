@@ -574,7 +574,8 @@ function AddHost(props) {
       key: 'remove',
       render: (name, obj)  => (
         <Button 
-          type="danger" 
+          type="primary" 
+          danger
           onClick={() => itemRemove(obj, requests)}
         >
           -

@@ -999,7 +999,8 @@ function CloudAccount(props) {
             trigger="click"
           >
             <Button 
-              type="danger"
+              type="primary" 
+              danger 
               disabled={(cloudAccount?.accountId) ? false : true}
             >
               Delete Account
@@ -1350,7 +1351,8 @@ function CloudAccount(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => cloudNetworkRemove(obj)}
             >
               -

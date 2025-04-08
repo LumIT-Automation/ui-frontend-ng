@@ -525,7 +525,8 @@ function ItemsView(props) {
       if (action === 'itemRemove') {
         return (
           <Button
-            type='danger'
+            type="primary"
+            danger
             onClick={() => itemRemove(obj, items)}
           >
             -

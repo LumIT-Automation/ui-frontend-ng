@@ -446,7 +446,8 @@ function Manager(props) {
     else if (element === 'button') {
       return (
         <Button
-          type="danger"
+          type="primary"
+          danger
           onClick={() => recordRemove(record)}
         >
           -

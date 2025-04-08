@@ -1807,7 +1807,8 @@ function ItemsView(props) {
       if (action === 'itemRemove') {
         return (
           <Button
-            type='danger'
+            type="primary"
+            danger
             onClick={() => itemRemove(obj, items)}
           >
             -
@@ -1817,7 +1818,8 @@ function ItemsView(props) {
       else if (action === 'subItemRemove') {
         return (
           <Button
-            type='danger'
+            type="primary"
+            danger
             onClick={() => subItemRemove(obj, father)}
           >
             -

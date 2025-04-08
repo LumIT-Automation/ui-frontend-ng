@@ -434,7 +434,11 @@ function AddItem(props) {
     else if (element === 'button'){
       if (action === 'recordRemove') {
         return (
-          <Button type="danger" onClick={() => set('recordRemove', '', record)}>
+          <Button 
+            type="primary"
+            danger
+            onClick={() => set('recordRemove', '', record)}
+          >
           -
           </Button>
         )

@@ -1526,7 +1526,8 @@ function Asset(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => itemRemove(obj, assets)}
             >
               -
@@ -2079,7 +2080,8 @@ function Asset(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => itemRemove(obj, assets)}
             >
               -

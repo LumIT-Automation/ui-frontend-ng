@@ -1310,7 +1310,8 @@ function Permission(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => permissionRemove(obj)}
             >
               -
@@ -1635,7 +1636,8 @@ function Permission(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => permissionRemove(obj)}
             >
               -
@@ -1941,7 +1943,8 @@ function Permission(props) {
             />
           :
             <Button
-              type='danger'
+              type="primary"
+              danger
               onClick={(e) => permissionRemove(obj)}
             >
               -
@@ -2095,7 +2098,8 @@ function Permission(props) {
 
         }
           <Button
-            type='danger'
+            type="primary"
+            danger
             style={{marginLeft: 8}}
             onClick={() => delIdentityGroupHandler()}
           >

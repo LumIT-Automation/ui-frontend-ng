@@ -2104,7 +2104,11 @@ class CreateVmService extends React.Component {
         dataIndex: 'networkDeviceRemove',
         key: 'networkDeviceRemove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.networkDeviceRemove(obj)}>
+          <Button 
+            type="primary" 
+            danger 
+            onClick={() => this.networkDeviceRemove(obj)}
+          >
             -
           </Button>
         ),
@@ -2268,7 +2272,11 @@ class CreateVmService extends React.Component {
         dataIndex: 'diskDeviceRemove',
         key: 'diskDeviceRemove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.diskDeviceRemove(obj)}>
+          <Button 
+            type="primary" 
+            danger
+            onClick={() => this.diskDeviceRemove(obj)}
+          >
             -
           </Button>
         ),
@@ -2713,7 +2721,11 @@ class CreateVmService extends React.Component {
         dataIndex: 'addressRemove',
         key: 'addressRemove',
         render: (name, obj)  => (
-          <Button type="danger" onClick={() => this.addressRemove(obj)}>
+          <Button 
+            type="primary" 
+            danger
+            onClick={() => this.addressRemove(obj)}
+          >
             -
           </Button>
         ),

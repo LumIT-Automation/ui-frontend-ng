@@ -240,7 +240,11 @@ function DeleteF5Node(props) {
                     <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Remove {f5object}:</p>
                   </Col>
                   <Col span={16}>
-                    <Button type="danger" onClick={() => validation()}>
+                    <Button 
+                      type="primary"
+                      danger
+                      onClick={() => validation()}
+                    >
                       Delete {f5object}
                     </Button>
                   </Col>

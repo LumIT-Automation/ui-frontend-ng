@@ -202,7 +202,11 @@ function ReleaseIp(props) {
       width: 50,
       key: 'remove',
       render: (name, obj)  => (
-        <Button type="danger" onClick={() => itemRemove(obj, requests)}>
+        <Button 
+          type="primary" 
+          danger 
+          onClick={() => itemRemove(obj, requests)}
+        >
           -
         </Button>
       ),

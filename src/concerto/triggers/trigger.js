@@ -542,7 +542,8 @@ class Manager extends React.Component {
                 />
               :
                 <Button
-                  type='danger'
+                  type="primary"
+                  danger
                   shape='round'
                   onClick={(e) => this.conditionRemove(params[0], obj)}
                 >
