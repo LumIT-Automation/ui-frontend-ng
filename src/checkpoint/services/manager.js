@@ -81,9 +81,13 @@ function Manager(props) {
         <Col span={2} offset={2}>
           <UrlInApplicationSite />
         </Col>
-        <Col span={2} offset={2}>
+        {authorizatorsSA(props.authorizations) || isAuthorized(props.authorizations, 'checkpoint', 'accounts_datacenter_get') ?
+          <Col span={2} offset={2}>
             <DatacenterAccount vendor={'checkpoint'}/>
           </Col>
+        :
+          null 
+        }
       </Row>
 
       {errors()}
