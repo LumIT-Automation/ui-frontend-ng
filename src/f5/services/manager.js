@@ -79,19 +79,7 @@ function Manager(props) {
         <Col span={2} offset={2}>
           <UpdateCert vendor='f5'/>
         </Col>
-      </Row>
 
-      <br/>
-
-      <Row>
-        <Col span={2} offset={2}>
-          <PoolMaintenance/>
-        </Col>
-      </Row>
-
-      <br/>
-      
-      <Row>
         <Col span={2} offset={2}>
           <F5ObjectDelete vendor='f5' f5object='virtualserver'/>
         </Col>
@@ -100,6 +88,14 @@ function Manager(props) {
           <F5ObjectDelete vendor='f5' f5object='node'/>
         </Col>
       </Row>
+
+      <br/>
+
+      <Row>
+        <Col span={2} offset={2}>
+          <PoolMaintenance/>
+        </Col>
+      </Row>   
 
       {errorsComponent()}
 

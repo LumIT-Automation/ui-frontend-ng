@@ -46,7 +46,9 @@ function CloudAccount(props) {
   let [providers, setProviders] = useState(['AWS']);
   let [provider, setProvider] = useState('');
   let [regions, setRegions] = useState([]);
-  
+
+  let [ibAssets, setIbAssets] = useState([]);
+  let [ibAsset, setIbAsset] = useState(0);  
   let [cpAssets, setCpAssets] = useState([]);
   let [cpAsset, setCpAsset] = useState(0);
 
@@ -1413,18 +1415,18 @@ function CloudAccount(props) {
                 <Col offset={1} span={1}>
                   <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                 </Col>
-                <Col offset={1} span={3}>
+                <Col span={3}>
                   {createElement('select', 'provider', 'providers', '', '')}
                 </Col>
 
               </Row>
               <br/>
-
+              <br/>
 
               {provider ?
                 <React.Fragment>
                   <Row>
-                    <Col span={3}>
+                    <Col span={2}>
                       <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
                     </Col>
                     <Col span={6}>
@@ -1434,7 +1436,7 @@ function CloudAccount(props) {
                   <br />
 
                   <Row>
-                    <Col span={3}>
+                    <Col span={2}>
                       <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Check Point asset:</p>
                     </Col>
                     <Col span={6}>
@@ -1469,6 +1471,7 @@ function CloudAccount(props) {
                     </Col>
                   </Row>
                   <br />
+                  <br/>
 
                   <Row>
                     <Col span={21}>

@@ -30,13 +30,15 @@ class Authorizators {
   }
 
   isSuperAdmin = (a) => {
-    console.log(a)
     if (a) {
       try {
         for (const value of Object.values(a) ) {
           if (Array.isArray(value.any) && value.any.length > 0) {
             return true;
           }
+        }
+        if (a.any){
+          return true
         }
         return false
       }

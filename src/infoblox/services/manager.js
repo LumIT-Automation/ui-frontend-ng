@@ -85,11 +85,7 @@ function Manager(props) {
         <Col span={2} offset={2}>
           <IpRelease/>
         </Col>
-      </Row>
 
-      <br/>
-
-      <Row>
         <Col span={2} offset={2}>
           <CloudNetwork vendor='infoblox' service='cloud network'/>
         </Col>

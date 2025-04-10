@@ -51,7 +51,6 @@ function Manager(props) {
 
   const authorizatorsSA = a => {
     let author = new Authorizators()
-    console.log(author.isSuperAdmin(a))
     return author.isSuperAdmin(a)
   }
   
