@@ -424,7 +424,7 @@ function UrlInApplicationSite(props) {
           width: 200, 
           title: 'URL Filtering', 
           details: 'URL Filtering',
-          color: '#ffe760',
+          color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}
       />

@@ -89,7 +89,7 @@ function Manager(props) {
           width: 200, 
           title: 'Manage Pool', 
           details: 'Enable, disable poolmember in a pool.',
-          color: '#ffe760',
+          color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}
       />

@@ -530,7 +530,7 @@ function HostInGroup(props) {
           width: 200, 
           title: 'Node in Group', 
           details: 'Node in Group',
-          color: '#ffe760',
+          color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}
       />

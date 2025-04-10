@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Ubuntu';
+  src: url('./fonts/Ubuntu-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+
 * {
   font-family: 'Ubuntu' !important;
 }

@@ -1379,7 +1379,7 @@ function CloudAccount(props) {
           width: 200, 
           title: 'Manage cloud account', 
           details: 'Manage cloud account.',
-          color: '#ffe760',
+          color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}
       />

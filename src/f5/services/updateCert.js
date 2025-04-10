@@ -435,7 +435,7 @@ function UpdateCert(props) {
           width: 200, 
           title: 'Update Cert', 
           details: 'Update certificate and key.',
-          color: '#ffe760',
+          color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}
       />
