@@ -118,7 +118,7 @@ function DeleteF5Node(props) {
         setResponse(false)
       }
     )
-    await rest.doXHR(`f5/${props.asset.id}/${props.partition}/workflow/${f5object}/${request.f5objectName}/`, props.token )
+    await rest.doXHR(`f5/usecases/crif/${props.asset.id}/${props.partition}/${f5object}/${request.f5objectName}/`, props.token )
 
   }
 
@@ -140,8 +140,9 @@ function DeleteF5Node(props) {
     setErrors({});  
     setLoading(false);
     setF5objectsLoading(false);
-    setRequest(false);
+    setRequest({});
     setResponse(false);
+
   }
 
   let errorsComponent = () => {
@@ -154,7 +155,7 @@ function DeleteF5Node(props) {
     
   return (
     <React.Fragment>
-
+      {console.log(request)}
       <Card 
         props={{
           width: 200, 

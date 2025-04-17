@@ -320,10 +320,10 @@ function UpdateCert(props) {
       }
     )
     if (type === 'client') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/workflow/profile/client-ssl/${clientProfile.name}/`, props.token, body )
+      await rest.doXHR(`${props.vendor}/usecases/crif/${props.asset.id}/${props.partition}/profile/client-ssl/${clientProfile.name}/`, props.token, body )
     }
     if (type === 'server') {
-      await rest.doXHR(`${props.vendor}/${props.asset.id}/${props.partition}/workflow/profile/server-ssl/${serverProfile.name}/`, props.token, body )
+      await rest.doXHR(`${props.vendor}/usecases/crif/${props.asset.id}/${props.partition}/profile/server-ssl/${serverProfile.name}/`, props.token, body )
     }
     
     return r

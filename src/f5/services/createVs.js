@@ -642,10 +642,10 @@ function CreateF5Service(props) {
 
     setLoading(true)
 
-    let url = `f5/${props.asset.id}/${props.partition}/workflow/virtualservers/`
+    let url = `f5/usecases/crif/${props.asset.id}/${props.partition}/virtualservers/`
 
     if (dr) {
-      url = `f5/${props.asset.id}/${props.partition}/workflow/virtualservers/?drReplica=1`
+      url = `f5/usecases/crif/${props.asset.id}/${props.partition}/virtualservers/?drReplica=1`
     }
 
     let rest = new Rest(
