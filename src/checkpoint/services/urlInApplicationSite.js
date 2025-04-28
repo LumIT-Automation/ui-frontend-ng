@@ -48,7 +48,7 @@ function UrlInApplicationSite(props) {
   let dataGet = async () => {
     setLoading(true);
 
-    let data = await getData('application-sites');
+    let data = await getData('custom-application-sites');
     if (data.status && data.status !== 200) {
       let errorData = Object.assign(data, {
         component: 'urlInApplicationSite',
@@ -88,13 +88,7 @@ function UrlInApplicationSite(props) {
 
   let getData = async (entity) => {
     let r;
-    let endpoint = '';
-
-    if (entity === 'application-sites') {
-      endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/?custom&local`;
-    } else {
-      endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/`;
-    }
+    let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/`;
 
     let rest = new Rest(
       "GET",
