@@ -527,8 +527,6 @@ function PermissionWorkflow(props) {
   }
 
 
-  
-
   let set = async (key, value, permission, child, tech) => { 
     
     let permissionsCopy = JSON.parse(JSON.stringify(permissions))
@@ -604,16 +602,16 @@ function PermissionWorkflow(props) {
     if (key === 'asset') {
       let list = []
       if (tech === 'infoblox') {
-        list = assetsInfoblox
+        list = JSON.parse(JSON.stringify(assetsInfoblox))
       } 
       if (tech === 'checkpoint') {
-        list = assetsCheckpoint
+        list = JSON.parse(JSON.stringify(assetsCheckpoint))
       } 
       if (tech === 'f5') {
-        list = assetsF5
+        list = JSON.parse(JSON.stringify(assetsF5))
       } 
 
-      let asset = list.find(a => a.id = value)
+      let asset = list.find(a => a.id === value)
       let subPerm = perm[tech].find(sp => sp.id === child.id)
       subPerm.asset = asset
       subPerm.assetFqdn = asset.fqdn
@@ -793,6 +791,7 @@ function PermissionWorkflow(props) {
 
     setPermissions([...permissionsCopy]);
   }
+
 
   let refreshTagsHandler = async(permLocal, subPermLocal) => {
     let permissionsCopy = JSON.parse(JSON.stringify(permissions))
