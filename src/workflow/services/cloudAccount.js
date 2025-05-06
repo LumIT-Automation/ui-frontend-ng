@@ -678,7 +678,7 @@ function CloudAccount(props) {
       if (cloudNet.toDelete) {
         toDelete.push(cloudNet)
       }
-      else if (!cloudNet.existent || (JSON.stringify(origTags) != JSON.stringify(cloudAccountCopy.tags))){
+      else if (!cloudNet.existent){
         toPut.push(cloudNet)
       }
     }
@@ -756,6 +756,32 @@ function CloudAccount(props) {
         props.dispatch(err(error))
       }
     }
+    else {
+      let body = {}
+        body.data = {
+          "change-request-id": changeRequestId,
+          "Account ID": cloudAccountCopy.accountId,
+          "Reference": cloudAccountCopy.ITSM,
+          "provider": provider,
+          "checkpoint_datacenter_account_put": {
+            "asset": cpAsset,
+            "tags": cloudAccountCopy.tags
+          }
+        }
+
+      body.data.infoblox_cloud_network_assign = [] 
+      
+      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      if (n.status && n.status !== 200 ) {
+        let error = Object.assign(n, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'CloudAccountPutError'
+        })
+        props.dispatch(err(error))
+      }
+    }
+
 
       setResponse('commit succesful')
       setAccountModify(false);
@@ -856,7 +882,7 @@ function CloudAccount(props) {
             ref={ref => (myRefs.current['changeRequestId'] = ref)}
             placeholder={
               key === 'changeRequestId' ?
-                "Format: ITIO-<number> (where number is min 6 digits and max 18 digits)"
+                "Format: ITIO-<number> (min 6 max 18 digits)"
               :
                 null
               }
