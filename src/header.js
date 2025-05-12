@@ -136,14 +136,18 @@ function HeaderCustom(props) {
   };
 
   const menu = (
-    <Menu>
+    <Menu
+      style={{width: 300}}
+    >
       <Menu.SubMenu title="Documentation">
-        <Menu.Item key="infoblox" onClick={async () => await Documentation('infoblox')}>Infoblox</Menu.Item>
-        <Menu.Item key="f5" onClick={async () => await Documentation('f5')}>F5</Menu.Item>
-        <Menu.Item key="checkpoint" onClick={async () => await Documentation('checkpoint')}>Checkpoint</Menu.Item>
-        <Menu.Item key="vmware" onClick={async () => await Documentation('vmware')}>Vmware</Menu.Item>
+        <Menu.Item style={{width: 200}} key="infoblox" onClick={async () => await Documentation('infoblox')}>Infoblox</Menu.Item>
+        <Menu.Item style={{width: 200}} key="f5" onClick={async () => await Documentation('f5')}>F5</Menu.Item>
+        <Menu.Item style={{width: 200}} key="checkpoint" onClick={async () => await Documentation('checkpoint')}>Checkpoint</Menu.Item>
+        <Menu.Item style={{width: 200}} key="vmware" onClick={async () => await Documentation('vmware')}>Vmware</Menu.Item>
       </Menu.SubMenu>
-      <Divider/>
+
+      <Menu.Item key="version">Version </Menu.Item>
+      
       <Menu.Item key="logout" onClick={async () => await logoutHandler()}>Logout</Menu.Item>
     </Menu>
   )
