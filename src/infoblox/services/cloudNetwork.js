@@ -80,6 +80,8 @@ function CloudNetwork(props) {
 
   let [response, setResponse] = useState(false);
 
+  let [pageSize, setPageSize] = useState(10);
+
   let myRefs = {};
   let textAreaRefs = useRef({});
 
@@ -1754,7 +1756,12 @@ function CloudNetwork(props) {
                     bordered
                     rowKey={randomKey}
                     scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{
+                      pageSize: pageSize,
+                      showSizeChanger: true,
+                      pageSizeOptions: ['5', '10', '20', '50'], 
+                      onShowSizeChange: (current, size) => setPageSize(size), 
+                    }}
                   />
                   <Button
                     type="primary"

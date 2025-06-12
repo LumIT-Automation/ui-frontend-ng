@@ -35,6 +35,8 @@ function HostInGroup(props) {
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
 
+  let [pageSize, setPageSize] = useState(10);
+
   let myRefs = useRef({});
 
   useEffect(() => {
@@ -633,7 +635,12 @@ function HostInGroup(props) {
                               bordered
                               rowKey={r => r.id}
                               scroll={{ x: 'auto' }}
-                              pagination={{ pageSize: 10 }}
+                              pagination={{
+                                pageSize: pageSize,
+                                showSizeChanger: true,
+                                pageSizeOptions: ['5', '10', '20', '50'], 
+                                onShowSizeChange: (current, size) => setPageSize(size), 
+                              }}
                             />
                           </React.Fragment>
                         )}

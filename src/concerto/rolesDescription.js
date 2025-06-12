@@ -22,6 +22,7 @@ function RolesDescription(props) {
   const [request, setRequest] = useState({});
   const [loading, setLoading] = useState(false);
   const [rolesAndPrivileges, setRolesAndPrivileges] = useState([]);
+  let [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     // componentDidMount logic
@@ -129,7 +130,7 @@ function RolesDescription(props) {
             bordered
             rowKey="role"
             scroll={{ x: 'auto' }}
-            pagination={{ pageSize: 10 }}
+            pagination={false}
             style={{ marginBottom: 10 }}
           />
         )}

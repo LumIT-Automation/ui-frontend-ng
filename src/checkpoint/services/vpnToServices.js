@@ -25,6 +25,8 @@ function VpnToServices(props) {
   let [base64, setBase64] = useState(null);
   let [nameloading, setNameloading] = useState(false);
 
+  let [pageSize, setPageSize] = useState(10);
+
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
@@ -223,7 +225,12 @@ function VpnToServices(props) {
           bordered
           scroll={{ x: 'auto' }}
           style={{ marginLeft: -25 }}
-          pagination={{ pageSize: 10 }}
+          pagination={{
+            pageSize: pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'], 
+            onShowSizeChange: (current, size) => setPageSize(size), 
+          }}
           rowKey={(record) => record.uid}
         />
       ),
@@ -309,7 +316,12 @@ function VpnToServices(props) {
                       dataSource={vpnToServices}
                       bordered
                       scroll={{x: 'auto'}}
-                      pagination={{ pageSize: 10 }}
+                      pagination={{
+                        pageSize: pageSize,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['5', '10', '20', '50'], 
+                        onShowSizeChange: (current, size) => setPageSize(size), 
+                      }}
                       style={{marginBottom: 10}}
                       onExpand={onTableRowExpand}
                       expandedRowKeys={expandedKeys}

@@ -62,6 +62,7 @@ function ModifyItem(props) {
   const [domainData, setDomainData] = useState([]);
   const [domainDataPurged, setDomainDataPurged] = useState([]);
   const [request, setRequest] = useState({});
+  let [pageSize, setPageSize] = useState(10);
  
   const handleSearch = (selectedKeys, confirm, dataIndex) => {
     confirm();
@@ -1073,7 +1074,12 @@ function ModifyItem(props) {
                                   bordered
                                   rowKey={randomKey}
                                   scroll={{x: 'auto'}}
-                                  pagination={{ pageSize: 10 }}
+                                  pagination={{
+                                    pageSize: pageSize,
+                                    showSizeChanger: true,
+                                    pageSizeOptions: ['5', '10', '20', '50'], 
+                                    onShowSizeChange: (current, size) => setPageSize(size), 
+                                  }}
                                 />
                               </Col>
                             </Row>

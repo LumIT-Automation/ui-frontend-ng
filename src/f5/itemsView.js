@@ -46,6 +46,8 @@ function ItemsView(props) {
 
   let [response, setResponse] = useState(false);
 
+  let [pageSize, setPageSize] = useState(10);
+
   //if use useRef the object is not accessible directly. you have to create a "current" property
   let myRefs = useRef({});
   let textAreaRefs = useRef({});
@@ -59,8 +61,6 @@ function ItemsView(props) {
   */
 
   let onTableRowExpand = (expanded, record) => {
-    console.log(expanded)
-    console.log(record)
     let expandedKeysCopy = JSON.parse(JSON.stringify(expandedKeys))
 
     if(expanded){
@@ -2666,7 +2666,6 @@ function ItemsView(props) {
 
   return (
     <React.Fragment>
-      {console.log(items)}
       {loading ?
         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
       :
@@ -2716,7 +2715,12 @@ function ItemsView(props) {
               bordered
               rowKey={record => record.id}
               scroll={{x: 'auto'}}
-              pagination={{ pageSize: 10 }}
+              pagination={{
+                pageSize: pageSize,
+                showSizeChanger: true,
+                pageSizeOptions: ['5', '10', '20', '50'], 
+                onShowSizeChange: (current, size) => setPageSize(size), 
+              }}
             />
           }
           <br/>

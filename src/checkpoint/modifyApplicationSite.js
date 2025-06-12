@@ -33,6 +33,7 @@ function ModifyUrlInApplicationSite(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
+  let [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     if (Object.keys(errors).length === 0 && valid) {
@@ -370,7 +371,12 @@ function ModifyUrlInApplicationSite(props) {
                       bordered
                       rowKey="name"
                       scroll={{x: 'auto'}}
-                      pagination={{ pageSize: 10 }}
+                      pagination={{
+                        pageSize: pageSize,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['5', '10', '20', '50'], 
+                        onShowSizeChange: (current, size) => setPageSize(size), 
+                      }}
                       rowClassName={ (record, index) => (record.url === errors.urlListError) ? "rowClassName1" : "" }
                       style={{marginBottom: 10}}
                     />
@@ -390,7 +396,12 @@ function ModifyUrlInApplicationSite(props) {
                     bordered
                     rowKey="name"
                     scroll={{x: 'auto'}}
-                    pagination={{ pageSize: 10 }}
+                    pagination={{
+                      pageSize: pageSize,
+                      showSizeChanger: true,
+                      pageSizeOptions: ['5', '10', '20', '50'], 
+                      onShowSizeChange: (current, size) => setPageSize(size), 
+                    }}
                     style={{marginBottom: 10}}
                   />
                 }

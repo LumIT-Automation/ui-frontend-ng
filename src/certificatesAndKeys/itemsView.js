@@ -34,7 +34,7 @@ function ItemsView(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
-  const [pageSize, setPageSize] = useState(10);
+  let [pageSize, setPageSize] = useState(10);
 
   //let myRefs = useRef(null);
   //let textAreaRefs = useRef(null);

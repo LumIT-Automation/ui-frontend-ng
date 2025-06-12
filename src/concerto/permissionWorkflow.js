@@ -46,6 +46,7 @@ function PermissionWorkflow(props) {
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
   let [errors, setErrors] = useState({})
+  let [pageSize, setPageSize] = useState(10);
 
   useEffect(() => {
     if (props.vendor) {
@@ -1888,7 +1889,12 @@ function PermissionWorkflow(props) {
             expandedRowKeys={expandedRowKeys}
             onExpand={(expanded, record) => onTableRowExpand(expanded, record)}
             expandable={{ expandedRowRender }}
-            pagination={{ pageSize: 10 }}
+            pagination={{
+                pageSize: pageSize,
+                showSizeChanger: true,
+                pageSizeOptions: ['5', '10', '20', '50'], 
+                onShowSizeChange: (current, size) => setPageSize(size), 
+              }}
           />
           <Button
             type="primary"

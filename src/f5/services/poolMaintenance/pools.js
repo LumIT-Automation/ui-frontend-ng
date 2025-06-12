@@ -14,6 +14,7 @@ function Pools(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
+  let [pageSize, setPageSize] = useState(10);
 
   const columns = [
     {
@@ -87,7 +88,12 @@ function Pools(props) {
         bordered
         rowKey="name"
         scroll={{x: 'auto'}}
-        pagination={{ pageSize: 10 }}
+        pagination={{
+          pageSize: pageSize,
+          showSizeChanger: true,
+          pageSizeOptions: ['5', '10', '20', '50'], 
+          onShowSizeChange: (current, size) => setPageSize(size), 
+        }}
         style={{paddig: '200%', marginBottom: 10}}
       />
   )

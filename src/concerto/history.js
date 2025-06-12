@@ -29,6 +29,8 @@ function History(props) {
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
 
+  let [pageSize, setPageSize] = useState(10);
+
   let interval = useRef(null);
 
   useEffect(() => {
@@ -895,7 +897,12 @@ function History(props) {
             bordered
             rowKey={randomKey}
             scroll={{ x: 'auto' }}
-            pagination={{ pageSize: 10 }}
+            pagination={{
+              pageSize: pageSize,
+              showSizeChanger: true,
+              pageSizeOptions: ['5', '10', '20', '50'], 
+              onShowSizeChange: (current, size) => setPageSize(size), 
+            }}
           />
         </Space>
       )}

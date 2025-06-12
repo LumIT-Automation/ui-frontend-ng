@@ -34,6 +34,8 @@ function UrlInApplicationSite(props) {
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
 
+  let [pageSize, setPageSize] = useState(10);
+
   let myRefs = useRef({});
   let prevDomainRef = useRef();
 
@@ -527,7 +529,12 @@ function UrlInApplicationSite(props) {
                           bordered
                           rowKey={record => record.url}
                           scroll={{ x: 'auto' }}
-                          pagination={{ pageSize: 30 }}
+                          pagination={{
+                            pageSize: pageSize,
+                            showSizeChanger: true,
+                            pageSizeOptions: ['5', '10', '20', '50'], 
+                            onShowSizeChange: (current, size) => setPageSize(size), 
+                          }}
                           style={{ marginBottom: 10 }}
                         />
 

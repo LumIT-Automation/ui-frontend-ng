@@ -16,6 +16,7 @@ function List(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
+  let [pageSize, setPageSize] = useState(10);
 
   const columns = [
     {
@@ -108,7 +109,12 @@ function List(props) {
           rowKey="ip_address"
           scroll={{x: 'auto'}}
           //pagination={false}
-          pagination={{ pageSize: 50 }}
+          pagination={{
+            pageSize: pageSize,
+            showSizeChanger: true,
+            pageSizeOptions: ['5', '10', '20', '50'], 
+            onShowSizeChange: (current, size) => setPageSize(size), 
+          }}
           style={{marginBottom: 50}}
         />
       }
