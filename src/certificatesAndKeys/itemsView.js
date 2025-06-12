@@ -34,6 +34,8 @@ function ItemsView(props) {
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
   let searchInput = useRef(null);
+  const [pageSize, setPageSize] = useState(10);
+
   //let myRefs = useRef(null);
   //let textAreaRefs = useRef(null);
 
@@ -789,7 +791,12 @@ function ItemsView(props) {
               bordered
               rowKey={record => record.name}
               scroll={{x: 'auto'}}
-              pagination={{pageSize: 10}}
+              pagination={{
+                pageSize: pageSize,
+                showSizeChanger: true,
+                pageSizeOptions: ['5', '10', '20', '50'], 
+                onShowSizeChange: (current, size) => setPageSize(size), 
+              }}
             />
           <br/>
 
