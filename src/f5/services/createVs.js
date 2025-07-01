@@ -81,6 +81,57 @@ function CreateF5Service(props) {
     }
   }, [nodes]);
 
+  useEffect(() => {
+    const validators = new Validators();
+
+    // La condizione principale:
+    // - snat deve essere 'snat'
+    // - Ci devono essere Data Groups di tipo IP caricati
+    // - Deve esserci un destination IP valido
+    // - Almeno uno dei nodi deve avere un indirizzo IP definito (nodes.some(n => n.address))
+    if (snat === 'snat' && dataGroupsTypeIp.length > 0 && destination && nodes.some(n => n.address)) {
+        let list = []; 
+
+        dataGroupsTypeIp.forEach((dg) => {
+          if (dg.records && Array.isArray(dg.records) && dg.records.length > 0) {
+            // PRIMA CONDIZIONE: L'IP di destinazione è incluso in almeno una delle subnet di questo Data Group?
+            const destinationInSubnet = dg.records.some(record =>
+              record.name && validators.ipInSubnet(record.name, [destination])
+            );
+
+            // Se l'IP di destinazione è nella subnet di questo DG, procediamo a controllare i nodi
+            if (destinationInSubnet) {
+              // SECONDA CONDIZIONE: Almeno uno degli IP dei nodi è incluso in almeno una delle subnet di questo stesso Data Group?
+              const nodeInSubnet = nodes.some(n =>
+              // Controlla che il nodo abbia un indirizzo e che questo indirizzo sia in una delle subnet del DG
+                n.address && dg.records.some(record =>
+                  record.name && validators.ipInSubnet(record.name, [n.address])
+                )
+              );
+
+              // Se entrambe le condizioni sono vere, aggiungi il nome del Data Group alla lista
+              if (nodeInSubnet) {
+                list.push(dg.name);
+              }
+            }
+          }
+        });
+        setDgChoices(list); // Aggiorna lo stato con la lista filtrata
+
+        // Aggiunta utile per la UX: se il Data Group precedentemente selezionato non è più nella nuova lista, resettalo
+        if (dgName && !list.includes(dgName)) {
+            setDgName('');
+            setCode('');
+        }
+
+    } else {
+        // Se la condizione principale non è soddisfatta, resetta tutte le scelte e i campi correlati
+        setDgChoices([]);
+        setDgName('');
+        setCode('');
+    }
+  }, [snat, destination, nodes, dataGroupsTypeIp, dgName]); 
+
   let main = async () => {
     try {
 
@@ -376,30 +427,6 @@ function CreateF5Service(props) {
         setErrors(errorsCopy)
       }
 
-      try {
-        let ips = []
-        let list = []
-
-        ips.push(destination)
-        nodesCopy.forEach((n, i) => {
-          ips.push(n.address)
-        })
-
-        dataGroupsTypeIp.forEach((dg, i) => {
-          dg.records.forEach((record, i) => {
-            if (record.name) {
-              if (validators.ipInSubnet(record.name, ips)) {
-                list.push(dg.name)
-              }
-            }
-          });
-        })
-        setDgChoices(list)
-      }
-      catch (error) {
-        console.log(error)
-      }
-
       if (dgChoices && dgChoices.length > 0) {
         if (!dgName) {
           errorsCopy.dgNameError = true
@@ -497,7 +524,6 @@ function CreateF5Service(props) {
       }
 
       if (!n.port) {
-        console.log('no port')
         n.portError = true
         if (!errorsCopy[n.id]) {
           errorsCopy[n.id] = {}
@@ -507,8 +533,6 @@ function CreateF5Service(props) {
         setErrors(errorsCopy)
       }
       else if (!validators.port(n.port)) {
-        console.log('no valid port')
-        console.log('no port')
         n.portError = true
         if (!errorsCopy[n.id]) {
           errorsCopy[n.id] = {}
@@ -518,7 +542,6 @@ function CreateF5Service(props) {
         setErrors(errorsCopy)
       }
       else {
-        console.log('sì port')
         if (errorsCopy[n.id]) {
           delete errorsCopy[n.id].portError
         } 
@@ -538,7 +561,6 @@ function CreateF5Service(props) {
   let validation = async () => {
     let e = await validationCheck()
 
-    console.log(e)
     if (Object.keys(e).length === 0) {
       createService()
     }

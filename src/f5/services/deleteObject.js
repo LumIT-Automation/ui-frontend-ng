@@ -155,7 +155,6 @@ function DeleteF5Node(props) {
     
   return (
     <React.Fragment>
-      {console.log(request)}
       <Card 
         props={{
           width: 200, 
