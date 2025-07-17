@@ -67,6 +67,8 @@ function CreateF5Service(props) {
 
   let [pageSize, setPageSize] = useState(10);
 
+  let [changeRequestId, setChangeRequestId] = useState('');
+
 
   useEffect(() => {
     if (visible && props.asset && props.partition) {
@@ -244,6 +246,16 @@ function CreateF5Service(props) {
   let set = async (value, key, obj) => {
     let errorsCopy = JSON.parse(JSON.stringify(errors))
 
+    if (key === 'changeRequestId') {
+      delete errorsCopy.changeRequestIdError
+      setChangeRequestId(value);
+      setErrors(errorsCopy);
+      let ref = myRefs.current['changeRequestId'];
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
     if (key === 'address') {
       let nodesCopy = JSON.parse(JSON.stringify(nodes))
       let nodeCopy = nodesCopy.find(n => n.id === obj.id)
@@ -415,6 +427,16 @@ function CreateF5Service(props) {
       errorsCopy.serviceNameError = true
       setErrors(errorsCopy)
     } 
+
+    if (!changeRequestId) {
+      errorsCopy.changeRequestIdError = true
+      setErrors(errorsCopy);
+    }
+    
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
+      errorsCopy.changeRequestIdError = true
+      setErrors(errorsCopy);
+    }
 
     if (!snat) {
       errorsCopy.snatError = true
@@ -590,7 +612,8 @@ function CreateF5Service(props) {
       "monitor": {
         "name": `mon_${serviceName}`,
         "type": monitorType
-      }
+      },
+      "change-request-id": changeRequestId,
     }
 
     if (props.type === 'L4') {
@@ -750,6 +773,7 @@ function CreateF5Service(props) {
     
     setErrors({});
     setResponse(false);
+    setChangeRequestId('');
   }
 
   let errorsComponent = () => {
@@ -769,32 +793,56 @@ function CreateF5Service(props) {
   let createElement = (element, key, choices, obj, action) => {
 
     if (element === 'input') {
-      return (
-        <Input
-          defaultValue={
-            key === 'serviceName' ?
-              serviceName
-            :
-              key === 'destination' ?
-                destination
+      if (key === 'changeRequestId' ) {
+        return (
+          <Input
+            value={changeRequestId}
+            ref={ref => (myRefs.current['changeRequestId'] = ref)}
+            placeholder={
+              key === 'changeRequestId' ?
+                "Format: ITIO-<number> (min 6 max 18 digits)"
               :
-                key === 'destinationPort' ?
-                  destinationPort
+                null
+              }
+            style=
+            {errors[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+      else {
+        return (
+          <Input
+            defaultValue={
+              key === 'serviceName' ?
+                serviceName
+              :
+                key === 'destination' ?
+                  destination
                 :
-                  key === 'snatPoolAddress' ?
-                    snatPoolAddress
+                  key === 'destinationPort' ?
+                    destinationPort
                   :
-                    null
-          }
-          style=
-          {errors[`${key}Error`] ?
-            {borderColor: 'red'}
-          :
-            {}
-          }
-          onBlur={event => set(event.target.value, key)}
-        />
-      )
+                    key === 'snatPoolAddress' ?
+                      snatPoolAddress
+                    :
+                      null
+            }
+            style=
+            {errors[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            onBlur={event => set(event.target.value, key)}
+          />
+        )
+      }
+      
     }
     else if (element === 'textArea') {
       return (
@@ -1069,6 +1117,16 @@ function CreateF5Service(props) {
             }
             { !loading && !response &&
               <React.Fragment>
+
+                <Row>
+                  <Col span={2}>
+                    <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
+                  </Col>
+                  <Col span={6}>
+                    {createElement('input', 'changeRequestId')}
+                  </Col>
+                </Row>
+                <br />
 
                 <Row>
                   <Col offset={6} span={2}>
