@@ -1286,8 +1286,8 @@ function CloudAccount(props) {
       <Card 
         props={{
           width: 200, 
-          title: 'Manage cloud account', 
-          details: 'Manage cloud account.',
+          title: 'Cloud Account Management', 
+          details: 'Cloud Account Management.',
           color: '#e8b21e',
           onClick: function () { setVisible(true) } 
         }}

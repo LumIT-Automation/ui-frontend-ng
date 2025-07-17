@@ -31,7 +31,7 @@ function Manager(props) {
       <Row>
         {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?
           <Col span={2} offset={2}>
-            <CloudAccount service='cloud account' vendor='infoblox'/>
+            <CloudAccount service='Cloud Account Management' vendor='infoblox'/>
           </Col>
         :
           null
