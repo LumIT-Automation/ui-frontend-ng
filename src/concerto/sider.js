@@ -121,23 +121,16 @@ function CustomSider(props) {
           : null
         }
 
-        { isAuthorized(props.authorizations, 'vmware', 'full_visibility') ?
-          <React.Fragment>
-            <Menu.Item key="vmware" icon={vmIcon()}><Link to="/vmware/">VMWARE</Link></Menu.Item>
-            <Menu.Divider/>
-          </React.Fragment>
-          : null
-        }
-
         { isAuthorized(props.authorizations, 'f5', 'full_visibility') ?
           <React.Fragment>
             <Menu.Item key="certificates" icon={certIcon()}><Link to="/certificatesAndKeys/">CERTIFICATES</Link></Menu.Item>
-            <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+            <Menu.Divider/>
           </React.Fragment>
           :
           null
         }
 
+        <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
         { isAuthorized(props.authorizations, 'infoblox') ||
           isAuthorized(props.authorizations, 'checkpoint') ||

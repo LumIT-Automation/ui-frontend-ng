@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'
 import { connect } from 'react-redux'
 //import 'antd/dist/reset.css'
 
@@ -68,6 +68,8 @@ function CreateF5Service(props) {
   let [pageSize, setPageSize] = useState(10);
 
   let [changeRequestId, setChangeRequestId] = useState('');
+
+  let myRefs = useRef({});
 
 
   useEffect(() => {
@@ -810,7 +812,7 @@ function CreateF5Service(props) {
             :
               {}
             }
-            onChange={event => set(key, event.target.value)}
+            onChange={event => set(event.target.value, key)}
           />
         )
       }
@@ -1119,10 +1121,10 @@ function CreateF5Service(props) {
               <React.Fragment>
 
                 <Row>
-                  <Col span={2}>
-                    <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
+                  <Col offset={5} span={3}>
+                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
                   </Col>
-                  <Col span={6}>
+                  <Col span={8}>
                     {createElement('input', 'changeRequestId')}
                   </Col>
                 </Row>
