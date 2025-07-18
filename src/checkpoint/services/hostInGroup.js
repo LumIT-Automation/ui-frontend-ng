@@ -5,6 +5,8 @@ import { connect } from 'react-redux'
 import Rest from '../../_helpers/Rest'
 import Validators from '../../_helpers/validators'
 import Error from '../../concerto/error'
+import JsonToCsv from '../../_helpers/jsonToCsv'
+
 import Card from '../../_components/card'
 import CommonFunctions from '../../_helpers/commonFunctions'
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
@@ -31,6 +33,11 @@ function HostInGroup(props) {
   const [groupError, setGroupError] = useState('');
   const [changeRequestIdError, setChangeRequestIdError] = useState('');
 
+  let [base64, setBase64] = useState(null);
+  let [csvBase64, setCsvBase64] = useState('');
+  let [jsonBeauty, setJsonBeauty] = useState('')
+  let [csvError, setCsvError] = useState(null);
+
   const [searchText, setSearchText] = useState('');
   const [searchedColumn, setSearchedColumn] = useState('');
   const searchInput = useRef(null);
@@ -53,6 +60,49 @@ function HostInGroup(props) {
       setIsGroupHostsFetched(true); // Imposta che è stata chiamata
     }
   }, [group, isGroupHostsFetched]);
+
+  useEffect(() => {
+    // Resetta gli stati all'inizio di ogni esecuzione di useEffect
+    setCsvBase64('');
+    setCsvError(null)
+
+    // Controlla se jsonBeauty è una stringa JSON non vuota
+    // La logica di generazione del CSV ora dipende solo da jsonBeauty
+    if (typeof jsonBeauty === 'string' && jsonBeauty.length > 0) {
+      let parsedData;
+      try {
+        // Tenta di parsare la stringa JSON dal backend in un oggetto JavaScript
+        parsedData = JSON.parse(jsonBeauty);
+
+        // Assicurati che il dato parsato sia un oggetto o un array valido e non vuoto per la conversione
+        if (typeof parsedData !== 'object' || parsedData === null ||
+            (Array.isArray(parsedData) && parsedData.length === 0 && !Object.keys(parsedData).length) ||
+            (!Array.isArray(parsedData) && Object.keys(parsedData).length === 0)) {
+          console.warn("Parsed JSON is empty or not a valid object/array for CSV conversion.");
+          setCsvError("No data.");
+          return; // Esci se i dati parsati non sono validi o sono vuoti
+        }
+
+        const converter = new JsonToCsv();
+        // Converte l'oggetto JavaScript in una stringa CSV
+        const generatedCsv = converter.convertToCsv(parsedData);
+
+        // Codifica la stringa CSV generata in Base64
+        const encodedCsv = btoa(unescape(encodeURIComponent(generatedCsv)));
+        setCsvBase64(encodedCsv); // Imposta lo stato con la stringa CSV Base64
+
+      } catch (e) {
+        // Gestione degli errori durante il parsing JSON o la conversione CSV
+        console.error("Error processing JSON string or converting to CSV:", e);
+        setCsvError(`Error: ${e.message}`);
+        setCsvBase64(''); // In caso di errore, resetta lo stato Base64
+      }
+    }
+    else {
+      // Se jsonBeauty non è una stringa valida o è vuota, resetta tutto
+      setCsvError("Invalid JSON.");
+    }
+  }, [jsonBeauty]);
 
   const dataGet = async () => {
     setLoading(true);
@@ -82,7 +132,7 @@ function HostInGroup(props) {
       return;
     }
     let list = data?.data?.items.map((item, i) => ({...item, existent: true, str: `${item.name} - ${item['ipv4-address']}`}))
-    console.log(list)
+    
     setHosts(list);
     setLoading(false);
   };
@@ -102,6 +152,10 @@ function HostInGroup(props) {
     }
     let updatedGroup = { ...group, members: data.data.items.map((item, i) => ({ ...item, groupMember: true, flagged: true, id: i + 1 })) };
     setGroup(updatedGroup);
+    let beauty = JSON.stringify(updatedGroup, null, 2);
+    let base64Data = btoa(beauty);
+    setBase64(base64Data);
+    setJsonBeauty(beauty)
     setGhLoading(false);
   };
 
@@ -110,16 +164,10 @@ function HostInGroup(props) {
     let endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/`;
 
     if (entity === 'groups') {
-      
       endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/?local&logout`;
-      console.log('groups', entity)
-      console.log('groups', endpoint)
     }
     if (entity === 'hosts') {
-      
       endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/?logout`;
-      console.log('hosts', entity)
-      console.log('hosts', endpoint)
     }
     if (id) {
       endpoint = `checkpoint/${props.asset.id}/${props.domain}/${entity}/${id}/`
@@ -191,8 +239,6 @@ function HostInGroup(props) {
     if (key === 'str') {
       let updatedGroup = { ...group };
       let [name, ip] = value.split(' - ')
-      console.log(name)
-      console.log(ip) 
 
       let host = updatedHosts.find(h => h['ipv4-address'] === ip);
       let member = updatedGroup.members.find(m => m.id === obj.id);
@@ -628,6 +674,20 @@ function HostInGroup(props) {
 
                             <br />
                             <br />
+
+                            {csvError ? 
+                              <p style={{ color: 'red' }}>{csvError}</p>
+                            :
+                              <>
+                              <a download="Node in group.csv" href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
+                              <br/>
+                              <a download='Node in group.json' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
+                              <br/>
+                              <br/>
+                              </>
+                            }
+                            
+
                             <Table
                               columns={returnColumns()}
                               style={{ width: '100%', padding: 15 }}

@@ -724,7 +724,6 @@ function DatacenterAccount(props) {
                       }
                     </Col>
 
-                    {console.log(datacenterAccount)}
                     {(typeof datacenterAccount === "object" && datacenterAccount !== null) ?
                       <Col offset={1} span={1}>
                         <Badge.Ribbon text={datacenterAccount?.complete ? 'Complete' : 'Incomplete'} color={datacenterAccount?.complete ? 'green' : 'red'}/>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 import 'antd/dist/reset.css';
 
@@ -6,6 +6,7 @@ import Rest from '../../_helpers/Rest';
 import Validators from '../../_helpers/validators';
 import Error from '../../concerto/error';
 import { getColumnSearchProps, handleSearch, handleReset } from '../../_helpers/tableUtils';
+import JsonToCsv from '../../_helpers/jsonToCsv'
 
 import { err } from '../../concerto/store';
 import Card from '../../_components/card'
@@ -25,7 +26,11 @@ function VpnToHost(props) {
   let [vpnToHosts, setVpnToHosts] = useState([]);
   let [loading, setLoading] = useState(false);
   let [ipv4Address, setIpv4Address] = useState('');
+  
   let [base64, setBase64] = useState('');
+  let [csvBase64, setCsvBase64] = useState('');
+  let [jsonBeauty, setJsonBeauty] = useState('')
+  let [csvError, setCsvError] = useState(null);
 
   let [searchText, setSearchText] = useState('');
   let [searchedColumn, setSearchedColumn] = useState('');
@@ -42,6 +47,49 @@ function VpnToHost(props) {
     }
     setExpandedKeys(keys);
   };
+
+  useEffect(() => {
+    // Resetta gli stati all'inizio di ogni esecuzione di useEffect
+    setCsvBase64('');
+    setCsvError(null)
+
+    // Controlla se jsonBeauty è una stringa JSON non vuota
+    // La logica di generazione del CSV ora dipende solo da jsonBeauty
+    if (typeof jsonBeauty === 'string' && jsonBeauty.length > 0) {
+      let parsedData;
+      try {
+        // Tenta di parsare la stringa JSON dal backend in un oggetto JavaScript
+        parsedData = JSON.parse(jsonBeauty);
+
+        // Assicurati che il dato parsato sia un oggetto o un array valido e non vuoto per la conversione
+        if (typeof parsedData !== 'object' || parsedData === null ||
+            (Array.isArray(parsedData) && parsedData.length === 0 && !Object.keys(parsedData).length) ||
+            (!Array.isArray(parsedData) && Object.keys(parsedData).length === 0)) {
+
+          setCsvError("No data.");
+          return; // Esci se i dati parsati non sono validi o sono vuoti
+        }
+
+        const converter = new JsonToCsv();
+        // Converte l'oggetto JavaScript in una stringa CSV
+        const generatedCsv = converter.convertToCsv(parsedData);
+
+        // Codifica la stringa CSV generata in Base64
+        const encodedCsv = btoa(unescape(encodeURIComponent(generatedCsv)));
+        setCsvBase64(encodedCsv); // Imposta lo stato con la stringa CSV Base64
+
+      } catch (e) {
+        // Gestione degli errori durante il parsing JSON o la conversione CSV
+        console.error("Error processing JSON string or converting to CSV:", e);
+        setCsvError(`Error: ${e.message}`);
+        setCsvBase64(''); // In caso di errore, resetta lo stato Base64
+      }
+    }
+    else {
+      // Se jsonBeauty non è una stringa valida o è vuota, resetta tutto
+      setCsvError("Invalid JSON.");
+    }
+  }, [jsonBeauty]);
 
   let setKey = (e, kName) => {
     if (kName === 'ipv4-address') {
@@ -87,6 +135,7 @@ function VpnToHost(props) {
         let base64Data = btoa(beauty);
         setVpnToHosts(resp.data.items);
         setBase64(base64Data);
+        setJsonBeauty(beauty)
       },
       error => {
         let errData = Object.assign(error, {
@@ -243,8 +292,18 @@ function VpnToHost(props) {
                 null
                 :
                 <React.Fragment>
-                  <a download='Get VPN Profiles.txt' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download data</a>
-                  <br /><br />
+                  {csvError ? 
+                    <p style={{ color: 'red' }}>{csvError}</p>
+                  :
+                    <>
+                      <a download='Get VPN Profiles.csv' href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
+                      <br/>
+                      <a download='Get VPN Profiles.json' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
+                      <br/>
+                      <br/>
+                    </>
+                  }
+                  
                   <Table
                     columns={columns}
                     dataSource={vpnToHosts}
