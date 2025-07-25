@@ -39,11 +39,23 @@ function CloudAccount(props) {
   let [visible, setVisible] = useState(false);
   let [loading, setLoading] = useState(false);
 
+  let [infobloxConfigurations, setInfobloxConfigurations] = useState([]);
+
+  let [awsRegions, setAwsRegions] = useState([])
+  let [azureRegions, setAzureRegions] = useState([])
+  let [ociRegions, setOciRegions] = useState([])
+
   let [existent, setExistent] = useState(true);
   
-  let [providers, setProviders] = useState(['AWS']);
+  let [providers, setProviders] = useState(['AWS', 'AZURE']);
   let [provider, setProvider] = useState('');
   let [regions, setRegions] = useState([]);
+
+  let [azureScopes, setAzureScopes] = useState([]);
+  let [azureEnvs, setAzureEnvs] = useState([]);
+
+  let [azureScope, setAzureScope] = useState('');
+  let [azureEnv, setAzureEnv] = useState('');
 
   let [ibAssets, setIbAssets] = useState([]);
   let [ibAsset, setIbAsset] = useState(0);  
@@ -52,6 +64,8 @@ function CloudAccount(props) {
 
   let [cloudAccountsLoading, setCloudAccountsLoading] = useState(false);
   let [cloudAccounts, setCloudAccounts] = useState([]);
+  let [awsAccounts, setAwsAccounts] = useState([]);
+  let [azureAccounts, setAzureAccounts] = useState([]);
 
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
   let [cloudAccount, setCloudAccount] = useState({});
@@ -80,17 +94,54 @@ function CloudAccount(props) {
   let indeterminate = checkedTags.length > 0 && checkedTags.length < availableTags.length;
   let checkAll = availableTags.length === checkedTags.length;  
 
+
   //Chiedo configurations e assets
   useEffect(() => {
-    if (provider) {
-      setCloudAccount({});
-
+    if(visible){
       dataGetHandler('ibConfigurations')
       dataGetHandler('cpConfigurations')
       dataGetHandler('ibAssets')
-      dataGetHandler('cpAssets')
-    }    
-  }, [provider]);
+      dataGetHandler('cpAssets')  
+    }  
+  }, [visible]);
+
+
+  //Setto le differenti regions per ogni providers
+  useEffect(() => {
+  if (Array.isArray(infobloxConfigurations) && infobloxConfigurations.length > 0) {
+    let tmp = infobloxConfigurations.find(o => o.config_type === 'AWS Regions');
+    setAwsRegions(tmp ? tmp.value : []); 
+
+    tmp = infobloxConfigurations.find(o => o.config_type === 'AZURE Regions');
+    setAzureRegions(tmp ? tmp.value : []); 
+
+    tmp = infobloxConfigurations.find(o => o.config_type === 'OCI Regions');
+    setOciRegions(tmp ? tmp.value : []); 
+  } else {
+    setAwsRegions([]);
+    setAzureRegions([]);
+    setOciRegions([]);
+  }
+}, [infobloxConfigurations]);
+
+
+  //Setto le regions e i cloudAccounts correnti
+  useEffect(() => {
+  if (provider) {
+    setCloudAccount({});
+    if (provider === 'AWS') {
+      setRegions(awsRegions);
+      setCloudAccounts(awsAccounts); 
+    } else if (provider === 'AZURE') {
+      setRegions(azureRegions);
+      setCloudAccounts(azureAccounts); 
+    } 
+  } else {
+    setRegions([]);
+    setCloudAccounts([]);
+  }
+}, [provider, awsAccounts, azureAccounts, awsRegions, azureRegions]); 
+
 
   //chiedo i cloud accounts
   useEffect(() => {
@@ -99,12 +150,14 @@ function CloudAccount(props) {
     }    
   }, [ibAsset]);
 
+
   //chiedo uno specifico cloudAccount
   useEffect(() => {
     if (cloudAccount.accountName && existent) {
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
+
 
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
@@ -118,7 +171,7 @@ function CloudAccount(props) {
     } 
   }, [existent]);
 
-
+  //Rimuovo il messaggio di risposta dopo due secondi
   useEffect(() => {
     if (response) {
       setTimeout( () => setResponse(''), 2030)
@@ -144,41 +197,13 @@ function CloudAccount(props) {
         }
         else {
           if (data.data.items.length > 0) {
-            let list = []
-            if (provider === 'AWS') {
-              data.data.items.forEach((item, i) => {
-                if (item.config_type === 'AWS Regions') {
-                  item.value.forEach((reg, i) => {
-                    list.push(reg)
-                  });
-                }
-              });
-            }
-            else if (provider === 'AZURE') {
-              data.data.items.forEach((item, i) => {
-                if (item.config_type === 'AZURE Regions') {
-                  item.value.forEach((reg, i) => {
-                    list.push(reg)
-                  });
-                }
-              });
-            }
-            else if (provider === 'OCI') {
-              data.data.items.forEach((item, i) => {
-                if (item.config_type === 'OCI Regions') {
-                  item.value.forEach((reg, i) => {
-                    list.push(reg)
-                  });
-                }
-              });
-            }
+            setInfobloxConfigurations(data.data.items)
             setLoading(false);
-            setRegions(list)
           }
         }
       } catch (error) {
         setLoading(false);
-        setRegions([])
+        setInfobloxConfigurations([])
         console.log(error)
       }
     }
@@ -203,6 +228,17 @@ function CloudAccount(props) {
             const tags = tagMappingObject.value.options.map(t => Object.values(t)[0]);
             setAvailableTags(tags);
           }
+
+          let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
+
+          let tmp = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
+
+          let scope = tmp.find(o => o.key === "crif:scope")
+          let env = tmp.find(o => o.key === "crif:env")
+
+          setAzureScopes(scope?.values)
+          setAzureEnvs(env?.values)
+          
           setLoading(false);
         }
       } catch (error) {
@@ -267,30 +303,60 @@ function CloudAccount(props) {
     }
 
     if (entities === 'cloudAccounts') {
-      setCloudAccountsLoading(true)
-      data = await dataGet(entities, assetId)
-      if (data.status && data.status !== 200 ) {
-        let error = Object.assign(data, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'cloudAccounts'
-        })
-        props.dispatch(err(error))
-        setCloudAccounts([])
-      }
-      else {
-        if (data.data.items.length > 0) {
-          let list = data.data.items.map((item, i) => {
-            item.accountId = item["Account ID"] ? item["Account ID"] : '';
-            item.accountName = item["Account Name"] ? item["Account Name"] : '';
-            item.ITSM = item.Reference ? item.Reference : '';
-            return item
-          });
-          setCloudAccounts(list)
+    setCloudAccountsLoading(true);
+
+    try {
+        const data = await dataGet(entities, assetId);
+
+        if (data.status && data.status !== 200) {
+            const error = Object.assign(data, {
+                component: 'cloudAccount',
+                vendor: 'concerto',
+                errorType: 'cloudAccounts'
+            });
+            props.dispatch(err(error));
+            setAwsAccounts([]);
+            setAzureAccounts([]);
+        } else {
+            if (data?.data?.items && data.data.items.length > 0) {
+                const processedAwsAccounts = [];
+                const processedAzureAccounts = [];
+
+                data.data.items.forEach(item => {
+                    const account = {
+                        accountId: item["Account ID"] || '',
+                        accountName: item["Account Name"] || '',
+                        ITSM: item.Reference || ''
+                    };
+
+                    if (item.Country === 'Cloud-AWS') {
+                        processedAwsAccounts.push(account);
+                    } else if (item.Country === 'Cloud-AZURE') {
+                        processedAzureAccounts.push(account);
+                    }
+                });
+
+                setAwsAccounts(processedAwsAccounts);
+                setAzureAccounts(processedAzureAccounts);
+            } else {
+                setAwsAccounts([]);
+                setAzureAccounts([]);
+            }
         }
-      }
-      setCloudAccountsLoading(false)
+    } catch (apiError) {
+        const error = {
+            message: apiError.message || 'Errore sconosciuto durante il recupero degli account cloud.',
+            component: 'cloudAccount',
+            vendor: 'concerto',
+            errorType: 'cloudAccounts'
+        };
+        props.dispatch(err(error));
+        setAwsAccounts([]);
+        setAzureAccounts([]);
+    } finally {
+        setCloudAccountsLoading(false);
     }
+}
 
     if (entities === 'cloudAccount') {
       setCloudAccountLoading(true)
@@ -401,6 +467,18 @@ function CloudAccount(props) {
       setProvider(value)
     }
 
+    if (key === 'azureEnv') {
+      delete errorsCopy.azureEnvError
+      setErrors(errorsCopy);
+      setAzureEnv(value)
+    }
+
+    if (key === 'azureScope') {
+      delete errorsCopy.azureScopeError
+      setErrors(errorsCopy);
+      setAzureScope(value)
+    }
+
     if (key === 'ibAsset') {
       delete errorsCopy.ibAssetError
       setErrors(errorsCopy);
@@ -439,14 +517,12 @@ function CloudAccount(props) {
       cloudNet = cloudNetworksCopy.find(cn => cn.id === cloudNetwork.id)
 
       if (key === 'Region') {
-        if (provider === 'AWS') {
           if (value) {
             cloudNet.Region = value
             delete cloudNet.RegionError
             setCloudAccount(cloudAccountCopy)
             setErrors(errorsCopy);
           }
-        }
       }
       
       if (key === 'subnetMaskCidr') {
@@ -582,6 +658,25 @@ function CloudAccount(props) {
       }
     }
 
+    if (provider === 'AZURE') {
+      if (!azureEnv) {
+        errorsCopy.azureEnvError = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+
+      if (!azureScope) {
+        errorsCopy.azureScopeError = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+    }
+    else {
+      delete errorsCopy.azureScopeError
+      delete errorsCopy.azureEnvError
+      setErrors(errorsCopy);
+    }
+
     setCloudAccount(cloudAccountCopy)
     return localErrors
   }
@@ -679,12 +774,6 @@ function CloudAccount(props) {
         }
       }
     }
-
-    /*if (!Array.isArray(cloudAccountCopy.tags)) { 
-      let t = cloudAccountCopy.tags.split(',').map((x) => x.trim());
-      cloudAccountCopy.tags = t
-    }*/
-    
     
     if (toPut.length > 0) {
       let body = {}
@@ -695,7 +784,6 @@ function CloudAccount(props) {
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
-            //"tags": cloudAccountCopy.tags
             "tags": checkedTags
           }
         }
@@ -709,6 +797,13 @@ function CloudAccount(props) {
       })
 
       body.data.infoblox_cloud_network_assign = list 
+
+      if (provider === 'AZURE') {
+        body.data.azure_data = {
+            "env": azureEnv,
+            "scope": azureScope
+        }
+      }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
       if (n.status && n.status !== 200 ) {
@@ -730,11 +825,17 @@ function CloudAccount(props) {
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
             "tags": checkedTags
-            //"tags": cloudAccountCopy.tags
           }
         }
 
       body.data.infoblox_cloud_network_assign = [] 
+
+      if (provider === 'AZURE') {
+        body.data.azure_data = {
+            "env": azureEnv,
+            "scope": azureScope
+        }
+      }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
       if (n.status && n.status !== 200 ) {
@@ -806,11 +907,18 @@ function CloudAccount(props) {
     setVisible(false);
     setLoading(false);
 
+    setInfobloxConfigurations([])
+
     setExistent(true);
     
     setProviders(['AWS']);
     setProvider('');
     setRegions([]);
+    setAzureScopes([]);
+    setAzureEnvs([]);
+
+    setAzureScope('');
+    setAzureEnv('');
 
     setIbAssets([]);
     setIbAsset(0);  
@@ -1127,7 +1235,75 @@ function CloudAccount(props) {
               </React.Fragment>
           </Select>
           )
-        }        
+        }
+        else if (key === 'azureEnv') {
+          return (
+            <Select
+              value={azureEnv}
+              showSearch
+              style={
+                errors.azureEnvError ?
+                  {border: `1px solid red`, width: '100%'}
+                :
+                  {width: '100%'}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => set(key, event, '')}
+            >
+              <React.Fragment>
+                {azureEnvs ?
+                  azureEnvs.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                :
+                  []
+                }
+              </React.Fragment>
+          </Select>
+          )
+        }
+        else if (key === 'azureScope') {
+          return (
+            <Select
+              value={azureScope}
+              showSearch
+              style={
+                errors.azureScopeError ?
+                  {border: `1px solid red`, width: '100%'}
+                :
+                  {width: '100%'}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => set(key, event, '')}
+            >
+              <React.Fragment>
+                {azureScopes ?
+                  azureScopes.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                :
+                  []
+                }
+              </React.Fragment>
+          </Select>
+          )
+        }                                
         else {
           return (
             <Select
@@ -1334,8 +1510,8 @@ function CloudAccount(props) {
   }
 
   return (
-    <React.Fragment>
-      
+
+      <React.Fragment>
       <Card 
         props={{
           width: 200, 
@@ -1357,7 +1533,7 @@ function CloudAccount(props) {
         width={1800}
         maskClosable={false}
       >
-
+        
         <React.Fragment>
           { loading && <Spin indicator={spinIcon} style={{margin: 'auto 48%'}}/> }
           { !loading && response &&
@@ -1366,308 +1542,368 @@ function CloudAccount(props) {
                 title={response}
               />
           }
-          { !loading && !response &&
-          <React.Fragment>
+          { !loading && !response && (Array.isArray(infobloxConfigurations) && (infobloxConfigurations.length > 0) ?
+            <React.Fragment>
 
-            <Row>
-              <Col offset={1} span={1}>
-                <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
-              </Col>
-              <Col span={3}>
-                {createElement('select', 'provider', 'providers', '', '')}
-              </Col>
+              <Row>
+                <Col offset={1} span={1}>
+                  <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
+                </Col>
+                <Col span={3}>
+                  {createElement('select', 'provider', 'providers', '', '')}
+                </Col>
 
-            </Row>
-            <br/>
+              </Row>
+              <br/>
 
-            {provider ?
-              <React.Fragment>
+              {provider ?
+                <React.Fragment>
 
-                <Row>
-                  <Col span={2}>
-                    <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Infoblox asset:</p>
-                  </Col>
-                  <Col span={6}>
-                    <Radio.Group 
-                      style={
-                        errors?.ibAssetError ? 
-                          {backgroundColor: 'red'}
-                        :
-                          {}
-                      }
-                      onChange={event => set('ibAsset', event.target.value)} 
-                      value={ibAsset}
-                    >
-                      <Space direction="vertical">
-                        {ibAssets ?
-                          ibAssets.map((r,i) => {
-                            try{
-                              return (
-                                <Radio value={r.id}>{r.fqdn}</Radio>
-                              )
-                            }
-                            catch (error) {
-                              console.log(error)
-                            }
-                          })
-                        :
-                          null
+                  <Row>
+                    <Col span={2}>
+                      <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Infoblox asset:</p>
+                    </Col>
+                    <Col span={6}>
+                      <Radio.Group 
+                        style={
+                          errors?.ibAssetError ? 
+                            {backgroundColor: 'red'}
+                          :
+                            {}
                         }
-                        
-                      </Space>
-                    </Radio.Group>
-                  </Col>
-                </Row>
-                <br/>
+                        onChange={event => set('ibAsset', event.target.value)} 
+                        value={ibAsset}
+                      >
+                        <Space direction="vertical">
+                          {ibAssets ?
+                            ibAssets.map((r,i) => {
+                              try{
+                                return (
+                                  <Radio value={r.id}>{r.fqdn}</Radio>
+                                )
+                              }
+                              catch (error) {
+                                console.log(error)
+                              }
+                            })
+                          :
+                            null
+                          }
+                          
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
+                  <br/>
 
-              </React.Fragment>
-            :
-              null
-            }
+                </React.Fragment>
+              :
+                null
+              }
 
-            {ibAsset > 0 ?
-              <React.Fragment>
+              {ibAsset > 0 ?
+                <React.Fragment>
 
-                <Row>
-                  <Col span={2}>
-                    <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Check Point asset:</p>
-                  </Col>
-                  <Col span={6}>
-                    <Radio.Group 
-                      style={
-                        errors?.cpAssetError ? 
-                          {backgroundColor: 'red'}
-                        :
-                          {}
-                      }
-                      onChange={event => set('cpAsset', event.target.value)} 
-                      value={cpAsset}
-                    >
-                      <Space direction="vertical">
-                        {cpAssets ?
-                          cpAssets.map((r,i) => {
-                            try{
-                              return (
-                                <Radio value={r.id}>{r.fqdn}</Radio>
-                              )
-                            }
-                            catch (error) {
-                              console.log(error)
-                            }
-                          })
-                        :
-                          null
+                  <Row>
+                    <Col span={2}>
+                      <p style={{marginLeft: 10, marginRight: 10, float: 'right'}}>Check Point asset:</p>
+                    </Col>
+                    <Col span={6}>
+                      <Radio.Group 
+                        style={
+                          errors?.cpAssetError ? 
+                            {backgroundColor: 'red'}
+                          :
+                            {}
                         }
-                        
-                      </Space>
-                    </Radio.Group>
-                  </Col>
-                </Row>
-                <br />
-
-                <Row>
-                  <Col span={2}>
-                    <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
-                  </Col>
-                  <Col span={6}>
-                    {createElement('input', 'changeRequestId')}
-                  </Col>
-                </Row>
-                <br />
-
-                <Row>
-                  <Col span={21}>
-                    <Radio.Group
-                      defaultValue="existent"
-                      buttonStyle="solid"
-                      value={existent ? 'existent' : 'new'}
-                      style={{ marginLeft: 25 }} // Spazio a sinistra dei bottoni
-                    >
-                      <Radio.Button
-                        value="existent"
-                        onClick={() => setExistent(true)}
+                        onChange={event => set('cpAsset', event.target.value)} 
+                        value={cpAsset}
                       >
-                        Existent Account
-                      </Radio.Button>
-                      <Radio.Button
-                        value="new"
-                        onClick={() => setExistent(false)}
+                        <Space direction="vertical">
+                          {cpAssets ?
+                            cpAssets.map((r,i) => {
+                              try{
+                                return (
+                                  <Radio value={r.id}>{r.fqdn}</Radio>
+                                )
+                              }
+                              catch (error) {
+                                console.log(error)
+                              }
+                            })
+                          :
+                            null
+                          }
+                          
+                        </Space>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
+                  <br />
+
+                  <Row>
+                    <Col span={2}>
+                      <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
+                    </Col>
+                    <Col span={6}>
+                      {createElement('input', 'changeRequestId')}
+                    </Col>
+                  </Row>
+                  <br />
+
+                  <Row>
+                    <Col span={21}>
+                      <Radio.Group
+                        defaultValue="existent"
+                        buttonStyle="solid"
+                        value={existent ? 'existent' : 'new'}
+                        style={{ marginLeft: 25 }} // Spazio a sinistra dei bottoni
                       >
-                        New Account
-                      </Radio.Button>
-                    </Radio.Group>
-                  </Col>
-                </Row>
+                        <Radio.Button
+                          value="existent"
+                          onClick={() => setExistent(true)}
+                        >
+                          Existent Account
+                        </Radio.Button>
+                        <Radio.Button
+                          value="new"
+                          onClick={() => setExistent(false)}
+                        >
+                          New Account
+                        </Radio.Button>
+                      </Radio.Group>
+                    </Col>
+                  </Row>
 
-                <br />
+                  <br />
 
-                <Divider/>
-                {existent ?
-                  <>
-                    <Row>
-                      <Col span={3}>
-                        <p style={{marginLeft: 20, marginTop: 5}}>Account ID (len 12 numbers):</p>
-                      </Col>
-                      {cloudAccountsLoading ?
-                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                      :
+                  <Divider/>
+                  {existent ?
+                    <>
+                      <Row>
                         <Col span={3}>
-                          {createElement('select', 'accountId', 'cloudAccounts', '')}
+                          <p style={{marginLeft: 20, marginTop: 5}}>Account ID (len 12 numbers):</p>
                         </Col>
-                      }
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
-                      </Col>
-                      {cloudAccountsLoading ?
-                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                      :
-                        <Col span={3}>
-                          {createElement('select', 'accountName', 'cloudAccounts', '')}
-                        </Col>
-                      }
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
-                      </Col>
-                      {cloudAccountsLoading ?
-                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                      :
+                        {cloudAccountsLoading ?
+                          <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                        :
+                          <Col span={3}>
+                            {createElement('select', 'accountId', 'cloudAccounts', '')}
+                          </Col>
+                        }
                         <Col span={2}>
-                          <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                         </Col>
-                      }
-                    </Row>
-
-                    <br/>
-                    <br/>
-
-                    <Row>
-                      <Col span={1}>
-                        <p style={{marginRight: 10, float: 'right'}}>Tags</p>
-                      </Col>
-                     <Col offset={1} span={3}>
-                        {cloudAccountLoading ? 
-                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        {cloudAccountsLoading ?
+                          <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
-                          createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                          <Col span={5}>
+                            {createElement('select', 'accountName', 'cloudAccounts', '')}
+                          </Col>
                         }
-                      </Col>
-                    </Row>
-
-                    <br/>
-                    <br/>
-
-                    <Row>
-                      <Col span={1} style={{marginLeft: 20}}>
-                        {createElement('popOver', '', '', '', 'delAccount')}
-                      </Col>
-                    </Row>
-                  </>
-                :
-                  <>
-                    <Row>
-                      <Col span={4}>
-                        <p style={{marginLeft: 20, marginTop: 5}}>New Account ID (len 12 numbers):</p>
-                      </Col>
-                      <Col span={3}>
-                        {createElement('input', 'cloudAccountId', '', '', '')}
-                      </Col>
-                      <Col span={3}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
-                      </Col>
-                      <Col span={4}>
-                        {createElement('input', 'cloudAccountName', '', '', '')}
-                      </Col>
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
-                      </Col>
-                      <Col span={2}>
-                        {createElement('input', 'cloudAccountITSM', '', '', '')}
-                      </Col>
-                    </Row>
-
-                    <br/>
-                    <br/>
-                      
-                    <Row>
-                      <Col span={1}>
-                        <p style={{marginRight: 10, float: 'right'}}>Tags</p>
-                      </Col>
-                      <Col offset={1} span={3}>
-                        {cloudAccountLoading ? 
-                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                        </Col>
+                        {cloudAccountsLoading ?
+                          <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
-                          createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                          <Col span={2}>
+                            <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
+                          </Col>
                         }
-                      </Col>
                       </Row>
 
-                    <br/>
-                    <br/>
+                      <br/>
+                      <br/>
 
-                    <Row>
-                      <Col span={1} style={{marginLeft: 20}}>
-                        {createElement('popOver', '', '', '', 'delAccount')}
-                      </Col>
-                    </Row>
-                  </>
-                }
-              </React.Fragment>
-            :
-              null
-            }
-            
-            <Divider/>
+                      <Row>
+                        <Col span={1}>
+                          <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                        </Col>
+                      <Col offset={1} span={3}>
+                          {cloudAccountLoading ? 
+                            <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                          :
+                            createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                          }
+                        </Col>
+                      </Row>
 
-            {(cloudAccount?.accountId) ?
-              <React.Fragment>
-                <Button
-                  type="primary"
-                  style={{marginLeft: 16 }}
-                  disabled={cloudAccountLoading ? true : false}
-                  onClick={() => cloudNetworkAdd()}
-                >
-                  Request a Cloud Account
-                </Button>
-                {cloudAccountLoading ? 
-                  <>
-                    <br/>
-                    <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 48%'}}/>
-                  </>
-                :
-                  <>
-                    <Table
-                      columns={columns}
-                      style={{width: '100%', padding: 15}}
-                      dataSource={cloudAccount?.cloudNetworks ? cloudAccount.cloudNetworks : []}
-                      bordered
-                      rowKey={record => record.id}
-                      scroll={{x: 'auto'}}
-                      pagination={{
-                        pageSize: pageSize,
-                        showSizeChanger: true,
-                        pageSizeOptions: ['5', '10', '20', '50'], 
-                        onShowSizeChange: (current, size) => setPageSize(size), 
-                      }}
-                    />
-                      <Button
-                      type="primary"
-                      style={{float: 'right', marginRight: 15}}
-                      disabled={cloudAccountLoading ? true : false}
-                      onClick={() => validation()}
-                    >
-                      Commit
-                    </Button>
-                    <br/>
-                  </>
+                      
+                      <br/>
+
+                      {
+                        provider === 'AZURE' ?
+                        <>
+                          <br/>
+                          
+                          <Row>
+                            <Col offset={1} span={1}>
+                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureScope:</p>
+                            </Col>
+                            
+                            <Col span={2}>
+                              {createElement('select', 'azureScope', 'azureScopes', '')}
+                            </Col>
+                            
+                            <Col offset={1} span={1}>
+                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureEnv:</p>
+                            </Col>
+                            
+                            <Col span={2}>
+                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                            </Col>
+                          </Row>
+                          <br/>
+                          </>
+                        :
+                          null
+                      }
+
+                      <Row>
+                        <Col span={1} style={{marginLeft: 20}}>
+                          {createElement('popOver', '', '', '', 'delAccount')}
+                        </Col>
+                      </Row>
+                    </>
+                  :
+                    <>
+                      <Row>
+                        <Col span={4}>
+                          <p style={{marginLeft: 20, marginTop: 5}}>New Account ID (len 12 numbers):</p>
+                        </Col>
+                        <Col span={3}>
+                          {createElement('input', 'cloudAccountId', '', '', '')}
+                        </Col>
+                        <Col span={3}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
+                        </Col>
+                        <Col span={5}>
+                          {createElement('input', 'cloudAccountName', '', '', '')}
+                        </Col>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                        </Col>
+                        <Col span={2}>
+                          {createElement('input', 'cloudAccountITSM', '', '', '')}
+                        </Col>
+                      </Row>
+
+                      <br/>
+                      <br/>
+                        
+                      <Row>
+                        <Col span={1}>
+                          <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                        </Col>
+                        <Col offset={1} span={3}>
+                          {cloudAccountLoading ? 
+                            <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                          :
+                            createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                          }
+                        </Col>
+                        </Row>
+
+                      <br/>
+                      <br/>
+
+                      {
+                        provider === 'AZURE' ?
+                        <>
+                          <br/>
+                          
+                          <Row>
+                            <Col offset={1} span={1}>
+                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureScope:</p>
+                            </Col>
+                            
+                            <Col span={2}>
+                              {createElement('select', 'azureScope', 'azureScopes', '')}
+                            </Col>
+                            
+                            <Col offset={1} span={1}>
+                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureEnv:</p>
+                            </Col>
+                            
+                            <Col span={2}>
+                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                            </Col>
+                          </Row>
+                          <br/>
+                          </>
+                        :
+                          null
+                      }
+
+                      <Row>
+                        <Col span={1} style={{marginLeft: 20}}>
+                          {createElement('popOver', '', '', '', 'delAccount')}
+                        </Col>
+                      </Row>
+                    </>
+                  }
+                </React.Fragment>
+              :
+                null
+              }
+
+              
+              
+              <Divider/>
+
+              {(cloudAccount?.accountId) ?
+                <React.Fragment>
+                  <Button
+                    type="primary"
+                    style={{marginLeft: 16 }}
+                    disabled={cloudAccountLoading ? true : false}
+                    onClick={() => cloudNetworkAdd()}
+                  >
+                    Request a Cloud Account
+                  </Button>
+                  {cloudAccountLoading ? 
+                    <>
+                      <br/>
+                      <Spin indicator={cloudNetLoadIcon} style={{margin: '10% 48%'}}/>
+                    </>
+                  :
+                    <>
+                      <Table
+                        columns={columns}
+                        style={{width: '100%', padding: 15}}
+                        dataSource={cloudAccount?.cloudNetworks ? cloudAccount.cloudNetworks : []}
+                        bordered
+                        rowKey={record => record.id}
+                        scroll={{x: 'auto'}}
+                        pagination={{
+                          pageSize: pageSize,
+                          showSizeChanger: true,
+                          pageSizeOptions: ['5', '10', '20', '50'], 
+                          onShowSizeChange: (current, size) => setPageSize(size), 
+                        }}
+                      />
+                        <Button
+                        type="primary"
+                        style={{float: 'right', marginRight: 15}}
+                        disabled={cloudAccountLoading ? true : false}
+                        onClick={() => validation()}
+                      >
+                        Commit
+                      </Button>
+                      <br/>
+                    </>
+                    
+                  }
                   
-                }
-                
-              </React.Fragment>
-            :
-              null
-          }
+                </React.Fragment>
+              :
+                null
+            }
 
-          </React.Fragment>
+            </React.Fragment>
+          :
+            <Alert message="No valid Infoblox Configration" type="error" />)
           }
         </React.Fragment>
 
@@ -1682,6 +1918,7 @@ function CloudAccount(props) {
       }
 
     </React.Fragment>
+
   )
   
 }
