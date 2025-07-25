@@ -57,6 +57,7 @@ function CloudAccount(props) {
   let [cloudAccount, setCloudAccount] = useState({});
 
   let [origTags, setOrigTags] = useState([])
+  let [availableTags, setAvailableTags] = useState([]);
 
   let [changeRequestId, setChangeRequestId] = useState('');
 
@@ -75,37 +76,37 @@ function CloudAccount(props) {
 
   let [pageSize, setPageSize] = useState(10);
 
-  /*
-  get accounts
-  set account
-  set checkpoint asset
-  set change req
+  let [checkedTags, setCheckedTags] = useState([]);
+  let indeterminate = checkedTags.length > 0 && checkedTags.length < availableTags.length;
+  let checkAll = availableTags.length === checkedTags.length;  
 
-  edit tags and/or networks
-  */
-
+  //Chiedo configurations e assets
   useEffect(() => {
     if (provider) {
       setCloudAccount({});
 
-      dataGetHandler('configurations')
+      dataGetHandler('ibConfigurations')
+      dataGetHandler('cpConfigurations')
       dataGetHandler('ibAssets')
       dataGetHandler('cpAssets')
     }    
   }, [provider]);
 
+  //chiedo i cloud accounts
   useEffect(() => {
     if (ibAsset) {
       dataGetHandler('cloudAccounts', ibAsset)
     }    
   }, [ibAsset]);
 
+  //chiedo uno specifico cloudAccount
   useEffect(() => {
     if (cloudAccount.accountName && existent) {
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
 
+  //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
       setCloudAccount({
@@ -117,6 +118,7 @@ function CloudAccount(props) {
     } 
   }, [existent]);
 
+
   useEffect(() => {
     if (response) {
       setTimeout( () => setResponse(''), 2030)
@@ -124,19 +126,18 @@ function CloudAccount(props) {
   }, [response]);
 
 
-
   let dataGetHandler = async (entities, assetId) => {
     let data
 
-    if (entities === 'configurations') {
+    if (entities === 'ibConfigurations') {
       setLoading(true);
-      data = await dataGet('configurations')
+      data = await dataGet('ibConfigurations')
       try {
         if (data.status && data.status !== 200 ) {
           let error = Object.assign(data, {
             component: 'cloudAccount',
             vendor: 'concerto',
-            errorType: 'configurationsError'
+            errorType: 'ibConfigurationsError'
           })
           props.dispatch(err(error))
           setLoading(false);
@@ -178,6 +179,35 @@ function CloudAccount(props) {
       } catch (error) {
         setLoading(false);
         setRegions([])
+        console.log(error)
+      }
+    }
+
+    if (entities === 'cpConfigurations') {
+      setLoading(true);
+      data = await dataGet('cpConfigurations')
+      try {
+        if (data.status && data.status !== 200 ) {
+          let error = Object.assign(data, {
+            component: 'cloudAccount',
+            vendor: 'concerto',
+            errorType: 'cpConfigurationsError'
+          })
+          props.dispatch(err(error))
+          setLoading(false);
+        }
+        else {
+          let tagMappingObject = data?.data?.items.find(o => o.config_type === 'tag-mapping');
+
+          if (tagMappingObject && tagMappingObject.value && tagMappingObject.value.options && tagMappingObject.value.options.length > 0) {
+            const tags = tagMappingObject.value.options.map(t => Object.values(t)[0]);
+            setAvailableTags(tags);
+          }
+          setLoading(false);
+        }
+      } catch (error) {
+        setLoading(false);
+        setAvailableTags([])
         console.log(error)
       }
     }
@@ -292,6 +322,9 @@ function CloudAccount(props) {
           cloudAccountCopy.cloudNetworks = list
           cloudAccountCopy.tags = data?.data?.tags ? data.data.tags : [] 
           setOrigTags(data?.data?.tags ? data.data.tags : [] )
+          let cloudAccountTags = cloudAccountCopy.tags.filter(elemento => availableTags.includes(elemento));
+          
+          setCheckedTags(cloudAccountTags)
           setCloudAccount(cloudAccountCopy)
         }
       }
@@ -304,8 +337,12 @@ function CloudAccount(props) {
     let endpoint
     let r
 
-    if (entities === 'configurations') {
-      endpoint = `infoblox/${entities}/`
+    if (entities === 'ibConfigurations') {
+      endpoint = `infoblox/configurations/`
+    }
+
+    if (entities === 'cpConfigurations') {
+      endpoint = `checkpoint/configurations/`
     }
 
     if (entities === 'ibAssets') {
@@ -498,18 +535,6 @@ function CloudAccount(props) {
         ref.input.focus();
       }
     }
-
-    if (key === 'tags') {
-      delete errorsCopy.tagsError
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.tags = value
-      setErrors(errorsCopy);
-      setCloudAccount(accountCopy)
-      let ref = myRefs.current.tags;
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }
     
   }
 
@@ -602,6 +627,7 @@ function CloudAccount(props) {
       setLoading(false)
       setChangeRequestId('');
       setCpAsset(null)
+      setCheckedTags([])
     
       dataGetHandler('cloudAccounts', ibAsset)
     }
@@ -654,10 +680,10 @@ function CloudAccount(props) {
       }
     }
 
-    if (!Array.isArray(cloudAccountCopy.tags)) { 
+    /*if (!Array.isArray(cloudAccountCopy.tags)) { 
       let t = cloudAccountCopy.tags.split(',').map((x) => x.trim());
       cloudAccountCopy.tags = t
-    }
+    }*/
     
     
     if (toPut.length > 0) {
@@ -669,7 +695,8 @@ function CloudAccount(props) {
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
-            "tags": cloudAccountCopy.tags
+            //"tags": cloudAccountCopy.tags
+            "tags": checkedTags
           }
         }
 
@@ -702,7 +729,8 @@ function CloudAccount(props) {
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
-            "tags": cloudAccountCopy.tags
+            "tags": checkedTags
+            //"tags": cloudAccountCopy.tags
           }
         }
 
@@ -719,15 +747,16 @@ function CloudAccount(props) {
       }
     }
 
-
-      setResponse('commit succesful')
-      setCloudAccount({});
-      setExistent(true)
-      setLoading(false)
-      setChangeRequestId('');
-      setCpAsset(null)
+    setResponse('commit succesful')
+    setCloudAccount({});
+    setExistent(true)
+    setLoading(false)
+    setChangeRequestId('');
+    setCpAsset(null)
+    setCheckedTags([])
     
-      await dataGetHandler('cloudAccounts', ibAsset)
+  
+    await dataGetHandler('cloudAccounts', ibAsset)
 
   }
 
@@ -761,6 +790,9 @@ function CloudAccount(props) {
     return r
   }
 
+
+
+
   //Close and Error
   let closeModal = () => {
     //let \[\s*\w+\s*,\s*
@@ -792,6 +824,7 @@ function CloudAccount(props) {
     setCloudAccount({});
 
     setOrigTags([])
+    setAvailableTags([]);
 
     setChangeRequestId('');
 
@@ -801,7 +834,21 @@ function CloudAccount(props) {
 
     setResponse('');
 
+    setCheckedTags([]);
+    let indeterminate = checkedTags.length > 0 && checkedTags.length < availableTags.length;
+    let checkAll = availableTags.length === checkedTags.length; 
+
   }
+
+  let onChangeCustom = (list) => {
+    setCheckedTags(list)
+    //setIndeterminate(!!list.length && list.length < availableTags.length)
+    //setCheckAll(list.length === availableTags.length)
+  };
+
+  let onCheckAllChange = (e) => {
+    setCheckedTags((e.target.checked ? availableTags : []))
+  };
   
   /* RENDER */
 
@@ -878,22 +925,6 @@ function CloudAccount(props) {
         )
       }
 
-      else if (key === 'tags') {
-        return (
-          <Input
-          placeholder={key === 'tags' ? "tag1, tag2, ..., tagN" : ""}
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={cloudAccount?.tags}
-            ref={ref => (myRefs.current.tags = ref)}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
     }
     switch (element) {
       
@@ -1127,7 +1158,29 @@ function CloudAccount(props) {
               </React.Fragment>
           </Select>
           )
-        }        
+        } 
+         
+      case 'checkboxGroup':
+        return (
+          <React.Fragment>
+            <Checkbox 
+              indeterminate={indeterminate} 
+              onChange={onCheckAllChange} 
+              checked={checkAll}
+            >
+              Check all
+            </Checkbox>
+
+            <Divider />
+
+            <Checkbox.Group 
+              options={availableTags} 
+              value={checkedTags} 
+              onChange={onChangeCustom}
+            />
+          </React.Fragment>
+        )
+      
 
       default:
 
@@ -1281,8 +1334,8 @@ function CloudAccount(props) {
   }
 
   return (
-    
     <React.Fragment>
+      
       <Card 
         props={{
           width: 200, 
@@ -1450,90 +1503,113 @@ function CloudAccount(props) {
 
                 <Divider/>
                 {existent ?
-                <>
-                  <Row>
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account ID (len 12 numbers):</p>
-                    </Col>
-                    {cloudAccountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
+                  <>
+                    <Row>
                       <Col span={3}>
-                        {createElement('select', 'accountId', 'cloudAccounts', '')}
+                        <p style={{marginLeft: 20, marginTop: 5}}>Account ID (len 12 numbers):</p>
                       </Col>
-                    }
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
-                    </Col>
-                    {cloudAccountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
-                      <Col span={3}>
-                        {createElement('select', 'accountName', 'cloudAccounts', '')}
-                      </Col>
-                    }
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
-                    </Col>
-                    {cloudAccountsLoading ?
-                      <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
-                    :
-                      <Col span={2}>
-                        <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
-                      </Col>
-                    }
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags</p>
-                    </Col>
-                    <Col span={3}>
-                      {cloudAccountLoading ? 
-                        <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                      {cloudAccountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                       :
-                        createElement('input', 'tags', 'cloudAccounts', '')
+                        <Col span={3}>
+                          {createElement('select', 'accountId', 'cloudAccounts', '')}
+                        </Col>
                       }
-                    </Col>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
+                      </Col>
+                      {cloudAccountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={3}>
+                          {createElement('select', 'accountName', 'cloudAccounts', '')}
+                        </Col>
+                      }
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                      </Col>
+                      {cloudAccountsLoading ?
+                        <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
+                      :
+                        <Col span={2}>
+                          <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
+                        </Col>
+                      }
+                    </Row>
 
-                    <Col offset={1}  span={2}>
-                      {createElement('popOver', '', '', '', 'delAccount')}
-                    </Col>
-                  </Row>
-                  
+                    <br/>
+                    <br/>
+
+                    <Row>
+                      <Col span={1}>
+                        <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                      </Col>
+                     <Col offset={1} span={3}>
+                        {cloudAccountLoading ? 
+                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        :
+                          createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                        }
+                      </Col>
+                    </Row>
+
+                    <br/>
+                    <br/>
+
+                    <Row>
+                      <Col span={1} style={{marginLeft: 20}}>
+                        {createElement('popOver', '', '', '', 'delAccount')}
+                      </Col>
+                    </Row>
                   </>
                 :
+                  <>
+                    <Row>
+                      <Col span={4}>
+                        <p style={{marginLeft: 20, marginTop: 5}}>New Account ID (len 12 numbers):</p>
+                      </Col>
+                      <Col span={3}>
+                        {createElement('input', 'cloudAccountId', '', '', '')}
+                      </Col>
+                      <Col span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
+                      </Col>
+                      <Col span={4}>
+                        {createElement('input', 'cloudAccountName', '', '', '')}
+                      </Col>
+                      <Col span={2}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                      </Col>
+                      <Col span={2}>
+                        {createElement('input', 'cloudAccountITSM', '', '', '')}
+                      </Col>
+                    </Row>
 
-                  <Row>
-                    <Col span={4}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account ID (len 12 numbers):</p>
-                    </Col>
-                    <Col span={3}>
-                      {createElement('input', 'cloudAccountId', '', '', '')}
-                    </Col>
-                    <Col span={3}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
-                    </Col>
-                    <Col span={4}>
-                      {createElement('input', 'cloudAccountName', '', '', '')}
-                    </Col>
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
-                    </Col>
-                    <Col span={2}>
-                      {createElement('input', 'cloudAccountITSM', '', '', '')}
-                    </Col>
-                    <Col span={2}>
-                      <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Tags</p>
-                    </Col>
-                    <Col span={3}>
-                      {cloudAccountLoading ? 
-                        <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
-                      :
-                        createElement('input', 'tags', 'cloudAccounts', '')
-                      }
-                    </Col>
-                    <Col offset={3} span={2}>
-                      {createElement('button', '', '', '', 'newAccount')}
-                    </Col>
-                  </Row>
+                    <br/>
+                    <br/>
+                      
+                    <Row>
+                      <Col span={1}>
+                        <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                      </Col>
+                      <Col offset={1} span={3}>
+                        {cloudAccountLoading ? 
+                          <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
+                        :
+                          createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                        }
+                      </Col>
+                      </Row>
+
+                    <br/>
+                    <br/>
+
+                    <Row>
+                      <Col span={1} style={{marginLeft: 20}}>
+                        {createElement('popOver', '', '', '', 'delAccount')}
+                      </Col>
+                    </Row>
+                  </>
                 }
               </React.Fragment>
             :
@@ -1606,7 +1682,6 @@ function CloudAccount(props) {
       }
 
     </React.Fragment>
-
   )
   
 }
