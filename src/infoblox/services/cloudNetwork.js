@@ -419,28 +419,13 @@ function CloudNetwork(props) {
   }
 
   let cloudNetworkAdd = async () => {
-    let id = 0
-    let n = 0
-    let p = {}
-    let list = JSON.parse(JSON.stringify(cloudNetworks))
+  
+    let cloudNetworksCopy = JSON.parse(JSON.stringify(cloudNetworks))
+    let commonFunctions = new CommonFunctions()
+    let list = await commonFunctions.itemAdd(cloudNetworksCopy)
+    cloudNetworksCopy = list 
+    setCloudNetworks(cloudNetworksCopy)
 
-    cloudNetworks.forEach(p => {
-      if (p.id > id) {
-        id = p.id
-      }
-    });
-
-    n = id + 1
-    p.id = n
-    if (accountId) {
-      p.accountId = accountId
-    }
-    if (accountName) {
-      p.accountName = accountName
-    }
-    list.push(p)
-
-    setCloudNetworks(list)
   }
 
   let cloudNetworkRemove = async p => {
