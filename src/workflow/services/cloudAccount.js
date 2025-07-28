@@ -413,7 +413,7 @@ function CloudAccount(props) {
                 setAzureScope(azureScopes.includes(scope) ? scope : '');
                 setAzureEnv(azureEnvs.includes(env) ? env : '');
               } else {
-                console.warn("'accountName' wrong format:", accountName);
+                console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
                 setAzureScope('');
                 setAzureEnv('');
               }
