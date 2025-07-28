@@ -54,48 +54,78 @@ function UrlInApplicationSite(props) {
     prevDomainRef.current = props.domain;
   }, [visible, props.asset, props.domain]);
 
+
   useEffect(() => {
-    // Resetta gli stati all'inizio di ogni esecuzione di useEffect
+    // Resetta gli stati di errore e output all'inizio di ogni esecuzione per pulizia
+    setJsonBeauty('');
+    setBase64('');
     setCsvBase64('');
-    setCsvError(null)
+    setCsvError('');
+    
 
-    // Controlla se jsonBeauty è una stringa JSON non vuota
-    // La logica di generazione del CSV ora dipende solo da jsonBeauty
-    if (typeof jsonBeauty === 'string' && jsonBeauty.length > 0) {
-      let parsedData;
-      try {
-        // Tenta di parsare la stringa JSON dal backend in un oggetto JavaScript
-        parsedData = JSON.parse(jsonBeauty);
+    // Condizione di "guardia": se i dati base non sono pronti o non c'è una selezione valida, esci.
+    if (!Array.isArray(applicationSites) || applicationSites.length === 0 || !applicationSite?.name) {
+        setCsvError("No selected application"); 
+        return; 
+    }
 
-        // Assicurati che il dato parsato sia un oggetto o un array valido e non vuoto per la conversione
-        if (typeof parsedData !== 'object' || parsedData === null ||
-            (Array.isArray(parsedData) && parsedData.length === 0 && !Object.keys(parsedData).length) ||
-            (!Array.isArray(parsedData) && Object.keys(parsedData).length === 0)) {
+    // --- LOGICA DI GENERAZIONE JSON ---
+    const foundApplicationSite = applicationSites.find(o => o.name === applicationSite.name);
+    
+    let dataForConversion;
 
-          setCsvError("No data.");
-          return; // Esci se i dati parsati non sono validi o sono vuoti
+    // Modifica qui: estrai solo le stringhe 'url' dalla lista
+    if (foundApplicationSite && Array.isArray(foundApplicationSite['url-list'])) {
+        // Mappa l'array per ottenere solo le stringhe URL
+        dataForConversion = foundApplicationSite['url-list'].map(item => item.url);
+    } else {
+        // Se 'url-list' non esiste o non è un array, usiamo un array vuoto.
+        dataForConversion = [];
+        console.log("url-list not found.");
+    }
+
+    let beauty;
+    let base64Data;
+    try {
+        beauty = JSON.stringify(dataForConversion, null, 2);
+        base64Data = btoa(unescape(encodeURIComponent(beauty)));
+        
+        setBase64(base64Data);
+        setJsonBeauty(beauty); 
+    } catch (e) {
+        setCsvError(`Error: ${e.message}`);
+        return;
+    }
+
+
+    // --- LOGICA DI GENERAZIONE CSV ---
+    let parsedData;
+    try {
+        // Parsifica il JSON appena generato, che ora sarà un array di stringhe URL
+        parsedData = JSON.parse(beauty);
+
+        // Ora parsedData dovrebbe essere un array di stringhe, potenzialmente vuoto.
+        if (!Array.isArray(parsedData) || parsedData.length === 0) { 
+            setCsvError("No url available.");
+            return; 
         }
 
-        const converter = new JsonToCsv();
-        // Converte l'oggetto JavaScript in una stringa CSV
-        const generatedCsv = converter.convertToCsv(parsedData);
+        let list = []
+        parsedData.forEach(element => {
+          let o = {url: element}
+          list.push(o)
+        });
+        const converter = new JsonToCsv(); 
+        const generatedCsv = converter.convertToCsv(list); 
 
-        // Codifica la stringa CSV generata in Base64
         const encodedCsv = btoa(unescape(encodeURIComponent(generatedCsv)));
-        setCsvBase64(encodedCsv); // Imposta lo stato con la stringa CSV Base64
+        setCsvBase64(encodedCsv); 
 
-      } catch (e) {
-        // Gestione degli errori durante il parsing JSON o la conversione CSV
-        console.error("Error processing JSON string or converting to CSV:", e);
+    } catch (e) {
         setCsvError(`Error: ${e.message}`);
-        setCsvBase64(''); // In caso di errore, resetta lo stato Base64
-      }
     }
-    else {
-      // Se jsonBeauty non è una stringa valida o è vuota, resetta tutto
-      setCsvError("Invalid JSON.");
-    }
-  }, [jsonBeauty]);
+
+}, [applicationSite?.name, applicationSites, setJsonBeauty, setBase64, setCsvBase64, setCsvError]);
 
   let dataGet = async () => {
     setLoading(true);
@@ -132,11 +162,8 @@ function UrlInApplicationSite(props) {
         }
         return a;
       });
-      let beauty = JSON.stringify(list, null, 2);
-      let base64Data = btoa(beauty);
+
       setApplicationSites(list);
-      setBase64(base64Data);
-      setJsonBeauty(beauty)
     }
 
     setLoading(false);
@@ -572,17 +599,21 @@ function UrlInApplicationSite(props) {
                       </Col>
 
                       <Col offset={1} span={9}>
-                      {csvError ? 
-                        <p style={{ color: 'red' }}>{csvError}</p>
-                      :
-                        <>
-                          <a download="Url filtering.csv" href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
-                          <br/>
-                          <a download='Url filtering.json' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
-                          <br/>
-                          <br/>
-                        </>
-                      }
+                        <div style={{float: 'right'}}>
+                          {csvError ? 
+                          
+                            <p style={{ color: 'red' }}>{csvError}</p>
+                          :
+                            <>
+                              <a download={`Url filtering - ${applicationSite.name}.csv`} href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
+                              <br/>
+                              <a download={`Url filtering - ${applicationSite.name}.json`} href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
+                              <br/>
+                              <br/>
+                            </>
+                            
+                          }
+                        </div>
                         <Table
                           columns={urlColumns}
                           dataSource={

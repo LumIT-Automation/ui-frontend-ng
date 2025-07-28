@@ -70,14 +70,21 @@ function HostInGroup(props) {
     // La logica di generazione del CSV ora dipende solo da jsonBeauty
     if (typeof jsonBeauty === 'string' && jsonBeauty.length > 0) {
       let parsedData;
+
       try {
         // Tenta di parsare la stringa JSON dal backend in un oggetto JavaScript
         parsedData = JSON.parse(jsonBeauty);
 
+        let newArray = parsedData.members.map(obj => {
+          const { name, "ipv4-address": ipv4 } = obj;
+          let o = {name, ipv4}
+          return o;
+        });
+
         // Assicurati che il dato parsato sia un oggetto o un array valido e non vuoto per la conversione
-        if (typeof parsedData !== 'object' || parsedData === null ||
-            (Array.isArray(parsedData) && parsedData.length === 0 && !Object.keys(parsedData).length) ||
-            (!Array.isArray(parsedData) && Object.keys(parsedData).length === 0)) {
+        if (typeof newArray !== 'object' || newArray === null ||
+            (Array.isArray(newArray) && newArray.length === 0 && !Object.keys(newArray).length) ||
+            (!Array.isArray(newArray) && Object.keys(newArray).length === 0)) {
           console.warn("Parsed JSON is empty or not a valid object/array for CSV conversion.");
           setCsvError("No data.");
           return; // Esci se i dati parsati non sono validi o sono vuoti
@@ -85,7 +92,7 @@ function HostInGroup(props) {
 
         const converter = new JsonToCsv();
         // Converte l'oggetto JavaScript in una stringa CSV
-        const generatedCsv = converter.convertToCsv(parsedData);
+        const generatedCsv = converter.convertToCsv(newArray);
 
         // Codifica la stringa CSV generata in Base64
         const encodedCsv = btoa(unescape(encodeURIComponent(generatedCsv)));
@@ -675,19 +682,20 @@ function HostInGroup(props) {
                             <br />
                             <br />
 
-                            {csvError ? 
-                              <p style={{ color: 'red' }}>{csvError}</p>
-                            :
-                              <>
-                              <a download="Node in group.csv" href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
-                              <br/>
-                              <a download='Node in group.json' href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
-                              <br/>
-                              <br/>
-                              </>
-                            }
+                            <div style={{float: 'right'}}>
+                              {csvError ? 
+                                <p style={{ color: 'red' }}>{csvError}</p>
+                              :
+                                <>
+                                <a download={`Node in group - ${group.name}.csv`} href={`data:text/csv;charset=utf-8;base64,${csvBase64}`}>Download CSV</a>
+                                <br/>
+                                <a download={`Node in group - ${group.name}.json`} href={`data:application/octet-stream;charset=utf-8;base64,${base64}`}>Download JSON</a>
+                                <br/>
+                                <br/>
+                                </>
+                              }
+                            </div>
                             
-
                             <Table
                               columns={returnColumns()}
                               style={{ width: '100%', padding: 15 }}
