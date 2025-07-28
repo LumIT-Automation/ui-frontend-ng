@@ -129,6 +129,8 @@ function CloudAccount(props) {
   useEffect(() => {
   if (provider) {
     setCloudAccount({});
+    setAzureScope('');
+    setAzureEnv('');
     if (provider === 'AWS') {
       setRegions(awsRegions);
       setCloudAccounts(awsAccounts); 
@@ -146,6 +148,8 @@ function CloudAccount(props) {
   //chiedo i cloud accounts
   useEffect(() => {
     if (ibAsset) {
+      setAzureScope('');
+      setAzureEnv('');
       dataGetHandler('cloudAccounts', ibAsset)
     }    
   }, [ibAsset]);
@@ -153,7 +157,9 @@ function CloudAccount(props) {
 
   //chiedo uno specifico cloudAccount
   useEffect(() => {
-    if (cloudAccount.accountName && existent) {
+    setAzureScope('');
+    setAzureEnv('');
+    if (cloudAccount.accountName && existent) {   
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
@@ -162,12 +168,16 @@ function CloudAccount(props) {
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
+      setAzureScope('');
+      setAzureEnv('');
       setCloudAccount({
         cloudNetworks: [{id:1}]
       })
     }
     else {
       setCloudAccount({})
+      setAzureScope('');
+      setAzureEnv('');
     } 
   }, [existent]);
 
@@ -391,7 +401,31 @@ function CloudAccount(props) {
           let cloudAccountTags = cloudAccountCopy.tags.filter(elemento => availableTags.includes(elemento));
           
           setCheckedTags(cloudAccountTags)
-          setCloudAccount(cloudAccountCopy)
+
+          if (provider === 'AZURE') {
+            try {
+              const parts = cloudAccountCopy.accountName.split('-');
+
+              if (parts.length >= 4) {
+                const env = parts[2].toUpperCase();
+                const scope = parts[3].toUpperCase();
+
+                setAzureScope(azureScopes.includes(scope) ? scope : '');
+                setAzureEnv(azureEnvs.includes(env) ? env : '');
+              } else {
+                console.warn("'accountName' wrong format:", accountName);
+                setAzureScope('');
+                setAzureEnv('');
+              }
+            } catch (err) {
+              console.error("Error during 'accountName' elaboration:", err);
+              setAzureScope('');
+              setAzureEnv('');
+            }
+          }  
+
+          setCloudAccount(cloudAccountCopy)      
+
         }
       }
       setCloudAccountLoading(false)
