@@ -448,11 +448,11 @@ function CloudAccount(props) {
     }
 
     if (entities === 'ibAssets') {
-      endpoint = `infoblox/assets/`
+      endpoint = `workflow/cloud-accounts/assets/infoblox/`
     }
 
     if (entities === 'cpAssets') {
-      endpoint = `checkpoint/assets/`
+      endpoint = `workflow/cloud-accounts/assets/checkpoint/`
     }
 
     if (entities === 'cloudAccounts') {
@@ -829,6 +829,9 @@ function CloudAccount(props) {
         o.asset = ibAsset
         o.subnetMaskCidr = n.subnetMaskCidr
         o.region = n.Region
+        if (provider === 'AZURE') {
+          o.scope = azureScope
+        }
         return o
       })
 
@@ -837,7 +840,7 @@ function CloudAccount(props) {
       if (provider === 'AZURE') {
         body.data.azure_data = {
             "env": azureEnv,
-            "scope": azureScope
+            //"scope": azureScope
         }
       }
       
@@ -869,8 +872,9 @@ function CloudAccount(props) {
       if (provider === 'AZURE') {
         body.data.azure_data = {
             "env": azureEnv,
-            "scope": azureScope
+            //"scope": azureScope
         }
+        //body.data.infoblox_cloud_network_assign.scope = azureScope
       }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
