@@ -24,7 +24,7 @@ const cloudNetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 /*
 Country = Provider
 City = Region
-Reference = ITSM (IT SERVICE MANAGER)
+Reference = AccountOwner (IT SERVICE MANAGER)
 */
 
 /* 
@@ -52,9 +52,9 @@ function CloudAccount(props) {
   let [regions, setRegions] = useState([]);
 
   let [azureScopes, setAzureScopes] = useState([]);
-  let [azureEnvs, setAzureEnvs] = useState([]);
-
   let [azureScope, setAzureScope] = useState('');
+
+  let [azureEnvs, setAzureEnvs] = useState([]);
   let [azureEnv, setAzureEnv] = useState('');
 
   let [ibAssets, setIbAssets] = useState([]);
@@ -70,8 +70,8 @@ function CloudAccount(props) {
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
   let [cloudAccount, setCloudAccount] = useState({});
 
-  let [origTags, setOrigTags] = useState([])
-  let [availableTags, setAvailableTags] = useState([]);
+  let [origOperationTeams, setOrigOperationTeams] = useState([])
+  let [availableOperationTeams, setAvailableOperationTeams] = useState([]);
 
   let [changeRequestId, setChangeRequestId] = useState('');
 
@@ -90,9 +90,9 @@ function CloudAccount(props) {
 
   let [pageSize, setPageSize] = useState(10);
 
-  let [checkedTags, setCheckedTags] = useState([]);
-  let indeterminate = checkedTags.length > 0 && checkedTags.length < availableTags.length;
-  let checkAll = availableTags.length === checkedTags.length;  
+  let [checkedOperationTeams, setCheckedOperationTeams] = useState([]);
+  let indeterminate = checkedOperationTeams.length > 0 && checkedOperationTeams.length < availableOperationTeams.length;
+  let checkAll = availableOperationTeams.length === checkedOperationTeams.length;  
 
 
   //Chiedo configurations e assets
@@ -106,7 +106,7 @@ function CloudAccount(props) {
   }, [visible]);
 
 
-  //Setto le differenti regions per ogni providers
+  //Quando cambia infobloxConfigurations, setto le differenti regions per ogni providers
   useEffect(() => {
   if (Array.isArray(infobloxConfigurations) && infobloxConfigurations.length > 0) {
     let tmp = infobloxConfigurations.find(o => o.config_type === 'AWS Regions');
@@ -129,7 +129,7 @@ function CloudAccount(props) {
   useEffect(() => {
   if (provider) {
     setCloudAccount({});
-    setAzureScope('');
+    //setAzureScope('');
     setAzureEnv('');
     if (provider === 'AWS') {
       setRegions(awsRegions);
@@ -148,7 +148,7 @@ function CloudAccount(props) {
   //chiedo i cloud accounts
   useEffect(() => {
     if (ibAsset) {
-      setAzureScope('');
+      //setAzureScope('');
       setAzureEnv('');
       dataGetHandler('cloudAccounts', ibAsset)
     }    
@@ -157,9 +157,10 @@ function CloudAccount(props) {
 
   //chiedo uno specifico cloudAccount
   useEffect(() => {
-    setAzureScope('');
-    setAzureEnv('');
+    //setAzureScope('');
+    
     if (cloudAccount.accountName && existent) {   
+      setAzureEnv('');
       dataGetHandler('cloudAccount')
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
@@ -168,7 +169,7 @@ function CloudAccount(props) {
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
-      setAzureScope('');
+      //setAzureScope('');
       setAzureEnv('');
       setCloudAccount({
         cloudNetworks: [{id:1}]
@@ -176,10 +177,29 @@ function CloudAccount(props) {
     }
     else {
       setCloudAccount({})
-      setAzureScope('');
+      //setAzureScope('');
       setAzureEnv('');
     } 
   }, [existent]);
+
+  //setto il nuovo nome composto solo se c'è l'env
+  useEffect(() => {
+    if (azureEnv) {
+      try {
+        let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+        let errorsCopy = JSON.parse(JSON.stringify(errors))
+        if (provider === 'AZURE' && !existent && cloudAccountCopy?.newInputName) {
+          delete errorsCopy.cloudAccountNameError
+          cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv.toLowerCase()}`
+          setCloudAccount(cloudAccountCopy)
+          setErrors(errorsCopy);
+        }
+      }
+      catch (err) {
+        console.log('error')
+      }        
+    }
+  }, [azureEnv]);
 
   //Rimuovo il messaggio di risposta dopo due secondi
   useEffect(() => {
@@ -232,11 +252,11 @@ function CloudAccount(props) {
           setLoading(false);
         }
         else {
-          let tagMappingObject = data?.data?.items.find(o => o.config_type === 'tag-mapping');
+          let operationTeamMappingObject = data?.data?.items.find(o => o.config_type === 'tag-mapping');
 
-          if (tagMappingObject && tagMappingObject.value && tagMappingObject.value.options && tagMappingObject.value.options.length > 0) {
-            const tags = tagMappingObject.value.options.map(t => Object.values(t)[0]);
-            setAvailableTags(tags);
+          if (operationTeamMappingObject && operationTeamMappingObject.value && operationTeamMappingObject.value.options && operationTeamMappingObject.value.options.length > 0) {
+            const operationTeams = operationTeamMappingObject.value.options.map(t => Object.values(t)[0]);
+            setAvailableOperationTeams(operationTeams);
           }
 
           let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
@@ -253,7 +273,7 @@ function CloudAccount(props) {
         }
       } catch (error) {
         setLoading(false);
-        setAvailableTags([])
+        setAvailableOperationTeams([])
         console.log(error)
       }
     }
@@ -336,7 +356,7 @@ function CloudAccount(props) {
                     const account = {
                         accountId: item["Account ID"] || '',
                         accountName: item["Account Name"] || '',
-                        ITSM: item.Reference || ''
+                        AccountOwner: item.Reference || ''
                     };
 
                     if (item.Country === 'Cloud-AWS') {
@@ -389,6 +409,9 @@ function CloudAccount(props) {
             item.network = item.network ? item.network : '';
             item.network_container = item.network_container ? item.network_container : '';
             item.Region = item?.extattrs?.City?.value ? item.extattrs.City.value : '';
+            if (provider === 'AZURE') {
+              item.azureScope = item?.extattrs?.Scope?.value ? item.extattrs.Scope.value : '';
+            }
             item.existent = true
             item.subnetMaskCidr = sm[1]
             item.id = ++i
@@ -396,30 +419,30 @@ function CloudAccount(props) {
           });
           let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
           cloudAccountCopy.cloudNetworks = list
-          cloudAccountCopy.tags = data?.data?.tags ? data.data.tags : [] 
-          setOrigTags(data?.data?.tags ? data.data.tags : [] )
-          let cloudAccountTags = cloudAccountCopy.tags.filter(elemento => availableTags.includes(elemento));
+          cloudAccountCopy.operationTeams = data?.data?.tags ? data.data.tags : [] 
+          setOrigOperationTeams(data?.data?.tags ? data.data.tags : [] )
+          let cloudAccountOperationTeams = cloudAccountCopy.operationTeams.filter(elemento => availableOperationTeams.includes(elemento));
           
-          setCheckedTags(cloudAccountTags)
+          setCheckedOperationTeams(cloudAccountOperationTeams)
 
           if (provider === 'AZURE') {
             try {
               const parts = cloudAccountCopy.accountName.split('-');
 
-              if (parts.length >= 4) {
+              if (parts.length >= 3) {
                 const env = parts[2].toUpperCase();
-                const scope = parts[3].toUpperCase();
+                //const scope = parts[3].toUpperCase();
 
-                setAzureScope(azureScopes.includes(scope) ? scope : '');
+                //setAzureScope(azureScopes.includes(scope) ? scope : '');
                 setAzureEnv(azureEnvs.includes(env) ? env : '');
               } else {
                 console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
-                setAzureScope('');
+                //setAzureScope('');
                 setAzureEnv('');
               }
             } catch (err) {
               console.error("Error during 'accountName' elaboration:", err);
-              setAzureScope('');
+              //setAzureScope('');
               setAzureEnv('');
             }
           }  
@@ -503,14 +526,8 @@ function CloudAccount(props) {
 
     if (key === 'azureEnv') {
       delete errorsCopy.azureEnvError
-      setErrors(errorsCopy);
       setAzureEnv(value)
-    }
-
-    if (key === 'azureScope') {
-      delete errorsCopy.azureScopeError
       setErrors(errorsCopy);
-      setAzureScope(value)
     }
 
     if (key === 'ibAsset') {
@@ -551,17 +568,24 @@ function CloudAccount(props) {
       cloudNet = cloudNetworksCopy.find(cn => cn.id === cloudNetwork.id)
 
       if (key === 'Region') {
-          if (value) {
-            cloudNet.Region = value
-            delete cloudNet.RegionError
-            setCloudAccount(cloudAccountCopy)
-            setErrors(errorsCopy);
-          }
+        if (value) {
+          cloudNet.Region = value
+          delete cloudNet.RegionError
+          setCloudAccount(cloudAccountCopy)
+          setErrors(errorsCopy);
+        }
       }
       
       if (key === 'subnetMaskCidr') {
         cloudNet.subnetMaskCidr = value
         delete cloudNet.subnetMaskCidrError
+        setCloudAccount(cloudAccountCopy)
+        setErrors(errorsCopy);
+      }
+
+      if (key === 'azureScope') {
+        cloudNet.azureScope = value
+        delete cloudNet.azureScopeError
         setCloudAccount(cloudAccountCopy)
         setErrors(errorsCopy);
       }
@@ -634,13 +658,26 @@ function CloudAccount(props) {
       }
     }
 
-    if (key === 'cloudAccountITSM') {
-      delete errorsCopy.cloudAccountITSMError
+    if (key === 'newInputName') {
+      setAzureEnv('')
+      delete errorsCopy.cloudAccountNameError
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.ITSM = value
+      accountCopy.newInputName = value
       setErrors(errorsCopy);
       setCloudAccount(accountCopy)
-      let ref = myRefs.current.cloudAccountITSM;
+      let ref = myRefs.current.newInputName;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
+    if (key === 'cloudAccountAccountOwner') {
+      delete errorsCopy.cloudAccountAccountOwnerError
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.AccountOwner = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current.cloudAccountAccountOwner;
       if (ref && ref.input) {
         ref.input.focus();
       }
@@ -690,6 +727,13 @@ function CloudAccount(props) {
         ++localErrors
         cloudNet.subnetMaskCidrError = true
       }
+      if (provider === 'AZURE') {
+        if (!cloudNet.azureScope) {
+          ++localErrors
+          cloudNet.azureScopeError = true
+        }
+      }
+
     }
 
     if (provider === 'AZURE') {
@@ -699,14 +743,8 @@ function CloudAccount(props) {
         setErrors(errorsCopy);
       }
 
-      if (!azureScope) {
-        errorsCopy.azureScopeError = true
-        ++localErrors
-        setErrors(errorsCopy);
-      }
     }
     else {
-      delete errorsCopy.azureScopeError
       delete errorsCopy.azureEnvError
       setErrors(errorsCopy);
     }
@@ -756,7 +794,7 @@ function CloudAccount(props) {
       setLoading(false)
       setChangeRequestId('');
       setCpAsset(null)
-      setCheckedTags([])
+      setCheckedOperationTeams([])
     
       dataGetHandler('cloudAccounts', ibAsset)
     }
@@ -814,11 +852,11 @@ function CloudAccount(props) {
         body.data = {
           "change-request-id": changeRequestId,
           "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.ITSM,
+          "Reference": cloudAccountCopy.AccountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
-            "tags": checkedTags
+            "tags": checkedOperationTeams
           }
         }
 
@@ -827,6 +865,9 @@ function CloudAccount(props) {
         o.asset = ibAsset
         o.subnetMaskCidr = n.subnetMaskCidr
         o.region = n.Region
+        if (provider === 'AZURE') {
+          o.scope = n.azureScope.toLowerCase()
+        }
         return o
       })
 
@@ -835,7 +876,6 @@ function CloudAccount(props) {
       if (provider === 'AZURE') {
         body.data.azure_data = {
             "env": azureEnv,
-            "scope": azureScope
         }
       }
       
@@ -850,15 +890,16 @@ function CloudAccount(props) {
       }
     }
     else {
+      //per modificare le tags senza aggiungere reti
       let body = {}
         body.data = {
           "change-request-id": changeRequestId,
           "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.ITSM,
+          "Reference": cloudAccountCopy.AccountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
-            "tags": checkedTags
+            "tags": checkedOperationTeams
           }
         }
 
@@ -867,7 +908,6 @@ function CloudAccount(props) {
       if (provider === 'AZURE') {
         body.data.azure_data = {
             "env": azureEnv,
-            "scope": azureScope
         }
       }
       
@@ -883,12 +923,12 @@ function CloudAccount(props) {
     }
 
     setResponse('commit succesful')
-    setCloudAccount({});
-    setExistent(true)
+    //setCloudAccount({});
+    //setExistent(true)
     setLoading(false)
-    setChangeRequestId('');
-    setCpAsset(null)
-    setCheckedTags([])
+    //setChangeRequestId('');
+    //setCpAsset(null)
+    //setCheckedOperationTeams([])
     
   
     await dataGetHandler('cloudAccounts', ibAsset)
@@ -951,7 +991,7 @@ function CloudAccount(props) {
     setAzureScopes([]);
     setAzureEnvs([]);
 
-    setAzureScope('');
+    //setAzureScope('');
     setAzureEnv('');
 
     setIbAssets([]);
@@ -965,8 +1005,8 @@ function CloudAccount(props) {
     setCloudAccountLoading(false);
     setCloudAccount({});
 
-    setOrigTags([])
-    setAvailableTags([]);
+    setOrigOperationTeams([])
+    setAvailableOperationTeams([]);
 
     setChangeRequestId('');
 
@@ -976,20 +1016,20 @@ function CloudAccount(props) {
 
     setResponse('');
 
-    setCheckedTags([]);
-    let indeterminate = checkedTags.length > 0 && checkedTags.length < availableTags.length;
-    let checkAll = availableTags.length === checkedTags.length; 
+    setCheckedOperationTeams([]);
+    let indeterminate = checkedOperationTeams.length > 0 && checkedOperationTeams.length < availableOperationTeams.length;
+    let checkAll = availableOperationTeams.length === checkedOperationTeams.length; 
 
   }
 
   let onChangeCustom = (list) => {
-    setCheckedTags(list)
-    //setIndeterminate(!!list.length && list.length < availableTags.length)
-    //setCheckAll(list.length === availableTags.length)
+    setCheckedOperationTeams(list)
+    //setIndeterminate(!!list.length && list.length < availableOperationTeams.length)
+    //setCheckAll(list.length === availableOperationTeams.length)
   };
 
   let onCheckAllChange = (e) => {
-    setCheckedTags((e.target.checked ? availableTags : []))
+    setCheckedOperationTeams((e.target.checked ? availableOperationTeams : []))
   };
   
   /* RENDER */
@@ -1051,7 +1091,7 @@ function CloudAccount(props) {
         )
       }
 
-      else if (key === 'cloudAccountITSM') {
+      else if (key === 'newInputName') {
         return (
           <Input
             style=
@@ -1060,8 +1100,26 @@ function CloudAccount(props) {
             :
               {}
             }
-            value={cloudAccount?.ITSM}
-            ref={ref => (myRefs.current.cloudAccountITSM = ref)}
+            value={cloudAccount?.newInputName}
+            ref={ref => (myRefs.current.newInputName = ref)}
+            onChange={event => set(key, event.target.value)}
+          />
+        )
+      }
+
+
+
+      else if (key === 'cloudAccountAccountOwner') {
+        return (
+          <Input
+            style=
+            {obj[`${key}Error`] ?
+              {borderColor: 'red'}
+            :
+              {}
+            }
+            value={cloudAccount?.AccountOwner}
+            ref={ref => (myRefs.current.cloudAccountAccountOwner = ref)}
             onChange={event => set(key, event.target.value)}
           />
         )
@@ -1119,9 +1177,9 @@ function CloudAccount(props) {
               showSearch
               style={
                 obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: 180}
+                  {border: `1px solid red`, width: '100%'}
                 :
-                  {width: 180}
+                  {width: '100%'}
               }
               optionFilterProp="children"
               filterOption={(input, option) =>
@@ -1176,6 +1234,40 @@ function CloudAccount(props) {
               <React.Fragment>
                 {subnetMaskCidrs ? 
                   subnetMaskCidrs.map((n, i) => {
+                    return (
+                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                    )
+                  })
+                : 
+                  []
+                }
+              </React.Fragment>
+            </Select>
+          )
+        }
+        else if (key === 'azureScope') {
+          return (
+            <Select
+              value={obj[key]}
+              showSearch
+              style={
+                obj[`${key}Error`] ?
+                  {border: `1px solid red`, width: '100%'}
+                :
+                  {width: '100%'}
+              }
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              filterSort={(optionA, optionB) =>
+                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+              }
+              onSelect={event => set(key, event, obj)}
+            >
+              <React.Fragment>
+                {azureScopes ? 
+                  azureScopes.map((n, i) => {
                     return (
                       <Select.Option key={i} value={n}>{n}</Select.Option>
                     )
@@ -1304,7 +1396,7 @@ function CloudAccount(props) {
           </Select>
           )
         }
-        else if (key === 'azureScope') {
+        /*else if (key === 'azureScope') {
           return (
             <Select
               value={azureScope}
@@ -1337,7 +1429,7 @@ function CloudAccount(props) {
               </React.Fragment>
           </Select>
           )
-        }                                
+        }*/                                
         else {
           return (
             <Select
@@ -1384,8 +1476,8 @@ function CloudAccount(props) {
             <Divider />
 
             <Checkbox.Group 
-              options={availableTags} 
-              value={checkedTags} 
+              options={availableOperationTeams} 
+              value={checkedOperationTeams} 
               onChange={onChangeCustom}
             />
           </React.Fragment>
@@ -1452,6 +1544,7 @@ function CloudAccount(props) {
       title: 'Region',
       align: 'center',
       dataIndex: 'region',
+      width: 300,
       key: 'region',
       ...getColumnSearchProps(
         'region', 
@@ -1474,6 +1567,7 @@ function CloudAccount(props) {
       title: 'Subnet Mask',
       align: 'center',
       dataIndex: 'subnetMaskCidr',
+      width: 20,
       key: 'subnetMaskCidr',
       ...getColumnSearchProps(
         'subnetMaskCidr', 
@@ -1492,6 +1586,30 @@ function CloudAccount(props) {
           createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
       )
     },
+    (provider === 'AZURE' && {
+      title: 'Scope',
+      align: 'center',
+      dataIndex: 'azureScope',
+      width: 200,
+      key: 'azureScope',
+      ...getColumnSearchProps(
+        'azureScope', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, cloudNet)  => (
+        cloudNet.existent ? 
+          cloudNet.azureScope
+        :
+          createElement('select', 'azureScope', '', cloudNet, '')
+      )
+    }),
+    
     {
       title: 'Comment',
       align: 'center',
@@ -1546,6 +1664,8 @@ function CloudAccount(props) {
   return (
 
       <React.Fragment>
+        {console.log('cloudAccount', cloudAccount)}
+        {console.log('azureEnv', azureEnv)}
       <Card 
         props={{
           width: 200, 
@@ -1684,6 +1804,7 @@ function CloudAccount(props) {
                     </Col>
                   </Row>
                   <br />
+                  <br />
 
                   <Row>
                     <Col span={21}>
@@ -1725,7 +1846,7 @@ function CloudAccount(props) {
                             {createElement('select', 'accountId', 'cloudAccounts', '')}
                           </Col>
                         }
-                        <Col span={2}>
+                        <Col offset={1} span={2}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                         </Col>
                         {cloudAccountsLoading ?
@@ -1735,14 +1856,14 @@ function CloudAccount(props) {
                             {createElement('select', 'accountName', 'cloudAccounts', '')}
                           </Col>
                         }
-                        <Col span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>ITSM:</p>
+                        <Col offset={1} span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Owner:</p>
                         </Col>
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
                           <Col span={2}>
-                            <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.ITSM}</p>
+                            <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.AccountOwner}</p>
                           </Col>
                         }
                       </Row>
@@ -1751,14 +1872,14 @@ function CloudAccount(props) {
                       <br/>
 
                       <Row>
-                        <Col span={1}>
-                          <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, float: 'right'}}>Operation Teams</p>
                         </Col>
                       <Col offset={1} span={3}>
                           {cloudAccountLoading ? 
                             <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
                           :
-                            createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                            createElement('checkboxGroup', 'operationTeams', 'cloudAccounts', '')
                           }
                         </Col>
                       </Row>
@@ -1766,12 +1887,13 @@ function CloudAccount(props) {
                       
                       <br/>
 
-                      {
+                      {/*
                         provider === 'AZURE' ?
                         <>
                           <br/>
                           
                           <Row>
+                            
                             <Col offset={1} span={1}>
                               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureScope:</p>
                             </Col>
@@ -1780,6 +1902,7 @@ function CloudAccount(props) {
                               {createElement('select', 'azureScope', 'azureScopes', '')}
                             </Col>
                             
+
                             <Col offset={1} span={1}>
                               <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureEnv:</p>
                             </Col>
@@ -1792,7 +1915,7 @@ function CloudAccount(props) {
                           </>
                         :
                           null
-                      }
+                      */}
 
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
@@ -1803,38 +1926,48 @@ function CloudAccount(props) {
                   :
                     <>
                       <Row>
+
                         <Col span={4}>
                           <p style={{marginLeft: 20, marginTop: 5}}>New Account ID (len 12 numbers):</p>
                         </Col>
                         <Col span={3}>
                           {createElement('input', 'cloudAccountId', '', '', '')}
                         </Col>
-                        <Col span={3}>
+
+                        <Col offset={1} span={3}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Name:</p>
                         </Col>
-                        <Col span={5}>
-                          {createElement('input', 'cloudAccountName', '', '', '')}
+                        <Col offset={0.5} span={5} style={{ marginBottom: 8}}>
+                          <div style={{ display: 'flex', alignItems: 'center'}}>
+                            <span>crif-</span>
+                            {createElement('input', 'newInputName', '', '', '')}
+                            <span>-</span>
+                            {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                          </div>
+                          <p style={{marginTop: 5, float: 'right'}}>{cloudAccount?.accountName || ''}</p>
+                        </Col>
+
+                        <Col offset={1} span={2}>
+                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Owner:</p>
                         </Col>
                         <Col span={2}>
-                          <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New ITSM:</p>
+                          {createElement('input', 'cloudAccountAccountOwner', '', '', '')}
                         </Col>
-                        <Col span={2}>
-                          {createElement('input', 'cloudAccountITSM', '', '', '')}
-                        </Col>
+
                       </Row>
 
                       <br/>
                       <br/>
                         
                       <Row>
-                        <Col span={1}>
-                          <p style={{marginRight: 10, float: 'right'}}>Tags</p>
+                        <Col span={2}>
+                          <p style={{marginRight: 10, float: 'right'}}>Operation Teams</p>
                         </Col>
                         <Col offset={1} span={3}>
                           {cloudAccountLoading ? 
                             <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
                           :
-                            createElement('checkboxGroup', 'tags', 'cloudAccounts', '')
+                            createElement('checkboxGroup', 'operationTeams', 'cloudAccounts', '')
                           }
                         </Col>
                         </Row>
@@ -1842,7 +1975,7 @@ function CloudAccount(props) {
                       <br/>
                       <br/>
 
-                      {
+                      {/*
                         provider === 'AZURE' ?
                         <>
                           <br/>
@@ -1868,7 +2001,7 @@ function CloudAccount(props) {
                           </>
                         :
                           null
-                      }
+                      */}
 
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
