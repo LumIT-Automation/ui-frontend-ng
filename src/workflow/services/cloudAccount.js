@@ -172,7 +172,8 @@ function CloudAccount(props) {
       //setAzureScope('');
       setAzureEnv('');
       setCloudAccount({
-        cloudNetworks: [{id:1}]
+        cloudNetworks: [{id:1}],
+        newInputName: ''
       })
     }
     else {
@@ -660,7 +661,7 @@ function CloudAccount(props) {
 
     if (key === 'newInputName') {
       setAzureEnv('')
-      delete errorsCopy.cloudAccountNameError
+      delete errorsCopy.newInputNameError
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
       accountCopy.newInputName = value
       setErrors(errorsCopy);
@@ -742,12 +743,19 @@ function CloudAccount(props) {
         ++localErrors
         setErrors(errorsCopy);
       }
+      if (!existent && !cloudAccountCopy?.newInputName) {
+        errorsCopy.newInputNameError = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
 
     }
     else {
       delete errorsCopy.azureEnvError
       setErrors(errorsCopy);
     }
+
+    console.log(errorsCopy)
 
     setCloudAccount(cloudAccountCopy)
     return localErrors
@@ -1095,7 +1103,7 @@ function CloudAccount(props) {
         return (
           <Input
             style=
-            {obj[`${key}Error`] ?
+            {errors[`${key}Error`] ?
               {borderColor: 'red'}
             :
               {}
@@ -1113,7 +1121,7 @@ function CloudAccount(props) {
         return (
           <Input
             style=
-            {obj[`${key}Error`] ?
+            {errors[`${key}Error`] ?
               {borderColor: 'red'}
             :
               {}
