@@ -91,13 +91,13 @@ function CustomSider(props) {
           isAuthorized(props.authorizations, 'vmware') ?
           <React.Fragment>
             <Menu.Item key="historys" icon={<ClockCircleOutlined style={{fontSize:'20px'}} />} ><Link to="/historys/">HISTORY</Link></Menu.Item>
-            <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
+            {/*<Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>*/}
           </React.Fragment>
         :
           null
         }
 
-        { isAuthorized(props.authorizations, 'infoblox', 'full_visibility') ?
+        {/* isAuthorized(props.authorizations, 'infoblox', 'full_visibility') ?
           <React.Fragment>
             <Menu.Item key="infoblox" icon={ipIcon()}><Link to="/infoblox/">INFOBLOX</Link></Menu.Item>
             <Menu.Divider/>
@@ -128,7 +128,7 @@ function CustomSider(props) {
           </React.Fragment>
           :
           null
-        }
+        */}
 
         <Menu.Divider style={{border: '1vh solid #f0f2f5'}}/>
 
