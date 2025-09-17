@@ -569,7 +569,7 @@ function UrlInApplicationSite(props) {
                       <>
                         {applicationSites.map((as, i) => (
                           <Select.Option key={i} value={as.name}>
-                            {as.name}
+                            {as.name.replace(/CA_/g,'').replace(/_G/g,'')}
                           </Select.Option>
                         ))}
                       </>

@@ -648,7 +648,7 @@ function HostInGroup(props) {
                         onSelect={g => set(g, 'group')}
                       >
                         {groups.map((g, i) => (
-                          <Select.Option key={i} value={g.name}>{g.name}</Select.Option>
+                          <Select.Option key={i} value={g.name}>{g.name.replace(/GRP_/g,'').replace(/_G/g,'')}</Select.Option>
                         ))}
                       </Select>
                     </Col>
