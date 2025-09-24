@@ -21,18 +21,6 @@ import { LoadingOutlined } from '@ant-design/icons'
 const spinIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 const cloudNetLoadIcon = <LoadingOutlined style={{ fontSize: 25 }} spin />
 
-/*
-Country = Provider
-City = Region
-Reference = AccountOwner (IT SERVICE MANAGER)
-*/
-
-/* 
-@ todo
-- permessi lettura reti e scrittura
-- conferma delete
-*/
-
 
 function CloudAccount(props) {
 
@@ -57,6 +45,8 @@ function CloudAccount(props) {
   let [azureEnvs, setAzureEnvs] = useState([]);
   let [azureEnv, setAzureEnv] = useState('');
 
+  let [composeName, setComposeName] = useState(false)
+
   let [ibAssets, setIbAssets] = useState([]);
   let [ibAsset, setIbAsset] = useState(0);  
   let [cpAssets, setCpAssets] = useState([]);
@@ -69,6 +59,7 @@ function CloudAccount(props) {
 
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
   let [cloudAccount, setCloudAccount] = useState({});
+  let [cloudAccountToCall, setCloudAccountToCall] = useState('')
 
   let [origOperationTeams, setOrigOperationTeams] = useState([])
   let [availableOperationTeams, setAvailableOperationTeams] = useState([]);
@@ -129,7 +120,7 @@ function CloudAccount(props) {
   useEffect(() => {
   if (provider) {
     setCloudAccount({});
-    //setAzureScope('');
+
     setAzureEnv('');
     if (provider === 'AWS') {
       setRegions(awsRegions);
@@ -148,7 +139,6 @@ function CloudAccount(props) {
   //chiedo i cloud accounts
   useEffect(() => {
     if (ibAsset) {
-      //setAzureScope('');
       setAzureEnv('');
       dataGetHandler('cloudAccounts', ibAsset)
     }    
@@ -157,7 +147,6 @@ function CloudAccount(props) {
 
   //chiedo uno specifico cloudAccount
   useEffect(() => {
-    //setAzureScope('');
     
     if (cloudAccount.accountName && existent) {   
       setAzureEnv('');
@@ -169,7 +158,6 @@ function CloudAccount(props) {
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
-      //setAzureScope('');
       setAzureEnv('');
       setCloudAccount({
         cloudNetworks: [{id:1}],
@@ -178,18 +166,18 @@ function CloudAccount(props) {
     }
     else {
       setCloudAccount({})
-      //setAzureScope('');
       setAzureEnv('');
     } 
   }, [existent]);
 
+
   //setto il nuovo nome composto solo se c'è l'env
   useEffect(() => {
-    if (azureEnv) {
+    if (composeName && azureEnv && provider === 'AZURE') {
       try {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
-        if (provider === 'AZURE' && !existent && cloudAccountCopy?.newInputName) {
+        if (!existent && cloudAccountCopy?.newInputName) {
           delete errorsCopy.cloudAccountNameError
           cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv.toLowerCase()}`
           setCloudAccount(cloudAccountCopy)
@@ -200,7 +188,26 @@ function CloudAccount(props) {
         console.err('error')
       }        
     }
-  }, [azureEnv]);
+    else if (composeName && provider === 'AWS') {
+      try {
+        let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+        let errorsCopy = JSON.parse(JSON.stringify(errors))
+        if (!existent && cloudAccountCopy?.newInputName) {
+          delete errorsCopy.cloudAccountNameError
+          cloudAccountCopy.accountName = `CRIF-${cloudAccountCopy.newInputName}`
+          setCloudAccount(cloudAccountCopy)
+          setErrors(errorsCopy);
+        }
+      }
+      catch (err) {
+        console.err('error')
+      }    
+    }
+    else {
+      setComposeName(false)
+    }
+  }, [composeName]);
+
 
   //Rimuovo il messaggio di risposta dopo due secondi
   useEffect(() => {
@@ -386,8 +393,12 @@ function CloudAccount(props) {
         setAzureAccounts([]);
     } finally {
         setCloudAccountsLoading(false);
+
+        if (cloudAccountToCall) {
+          await dataGetHandler('cloudAccount', cloudAccountToCall)
+        }
     }
-}
+  }
 
     if (entities === 'cloudAccount') {
       setCloudAccountLoading(true)
@@ -432,18 +443,16 @@ function CloudAccount(props) {
 
               if (parts.length >= 3) {
                 const env = parts[2].toUpperCase();
-                //const scope = parts[3].toUpperCase();
-
-                //setAzureScope(azureScopes.includes(scope) ? scope : '');
+ 
                 setAzureEnv(azureEnvs.includes(env) ? env : '');
               } else {
                 console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
-                //setAzureScope('');
+
                 setAzureEnv('');
               }
             } catch (err) {
               console.error("Error during 'accountName' elaboration:", err);
-              //setAzureScope('');
+
               setAzureEnv('');
             }
           }  
@@ -528,6 +537,7 @@ function CloudAccount(props) {
     if (key === 'azureEnv') {
       delete errorsCopy.azureEnvError
       setAzureEnv(value)
+      setComposeName(true)
       setErrors(errorsCopy);
     }
 
@@ -660,6 +670,7 @@ function CloudAccount(props) {
     }
 
     if (key === 'newInputName') {
+      setComposeName(false)
       setAzureEnv('')
       delete errorsCopy.newInputNameError
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
@@ -686,12 +697,13 @@ function CloudAccount(props) {
     
   }
 
+
   /* VALIDATION */
 
   let validation = async () => {
     let localErrors = await validationCheck()
     if (localErrors === 0) {
-      cudManager()
+      writeHandler()
     }
   }
 
@@ -759,6 +771,7 @@ function CloudAccount(props) {
     return localErrors
   }
 
+
   /* DISPOSITION */
   let accountDel = async() => {
     let localErrors = await validationCheck()
@@ -798,16 +811,15 @@ function CloudAccount(props) {
       setCloudAccount({});
       setExistent(true)
       setLoading(false)
-      setChangeRequestId('');
-      setCpAsset(null)
       setCheckedOperationTeams([])
     
       dataGetHandler('cloudAccounts', ibAsset)
     }
   }
 
-  let cudManager = async () => {
+  let writeHandler = async () => {
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+    setCloudAccountToCall(cloudAccountCopy?.accountName)
     let toDelete = []
     let toPut = []
 
@@ -929,16 +941,13 @@ function CloudAccount(props) {
     }
 
     setResponse('commit succesful')
-    //setCloudAccount({});
-    //setExistent(true)
-    setLoading(false)
-    //setChangeRequestId('');
-    //setCpAsset(null)
-    //setCheckedOperationTeams([])
-    
+
+    setCloudAccount({});
+    setCheckedOperationTeams([])
+    setExistent(true)
+    setLoading(false)  
   
     await dataGetHandler('cloudAccounts', ibAsset)
-
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
@@ -970,8 +979,6 @@ function CloudAccount(props) {
     await rest.doXHR(`workflow/cloud-account/${accountName}/`, props.token, body )
     return r
   }
-
-
 
 
   //Close and Error
@@ -1010,6 +1017,7 @@ function CloudAccount(props) {
 
     setCloudAccountLoading(false);
     setCloudAccount({});
+    setCloudAccountToCall('')
 
     setOrigOperationTeams([])
     setAvailableOperationTeams([]);
@@ -1038,14 +1046,15 @@ function CloudAccount(props) {
     setCheckedOperationTeams((e.target.checked ? availableOperationTeams : []))
   };
   
-  /* RENDER */
 
+  /* RENDER */
   let createElement = (element, key, choices, obj, action) => {
 
     if (element === 'input') {
       if (key === 'changeRequestId' ) {
         return (
           <Input
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
             value={changeRequestId}
             ref={ref => (myRefs.current['changeRequestId'] = ref)}
             placeholder={
@@ -1068,6 +1077,7 @@ function CloudAccount(props) {
       else if (key === 'cloudAccountId') {
         return (
           <Input
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
             style=
             {obj[`${key}Error`] ?
               {borderColor: 'red'}
@@ -1084,6 +1094,7 @@ function CloudAccount(props) {
       else if (key === 'cloudAccountName') {
         return (
           <Input
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
             style=
             {obj[`${key}Error`] ?
               {borderColor: 'red'}
@@ -1100,6 +1111,7 @@ function CloudAccount(props) {
       else if (key === 'newInputName') {
         return (
           <Input
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
             style=
             {errors[`${key}Error`] ?
               {borderColor: 'red'}
@@ -1109,6 +1121,7 @@ function CloudAccount(props) {
             value={cloudAccount?.newInputName}
             ref={ref => (myRefs.current.newInputName = ref)}
             onChange={event => set(key, event.target.value)}
+            onBlur={() => setComposeName(true)}
           />
         )
       }
@@ -1118,6 +1131,7 @@ function CloudAccount(props) {
       else if (key === 'cloudAccountAccountOwner') {
         return (
           <Input
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
             style=
             {errors[`${key}Error`] ?
               {borderColor: 'red'}
@@ -1148,9 +1162,9 @@ function CloudAccount(props) {
             trigger="click"
           >
             <Button 
+              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               type="primary" 
               danger 
-              disabled={(cloudAccount?.accountId) ? false : true}
             >
               Delete Account
             </Button>
@@ -1163,7 +1177,6 @@ function CloudAccount(props) {
           <Input.TextArea
             rows={7}
             value={obj[key]}
-            //ref={ref => textAreaRefs[`${obj.id}_${key}`] = ref}
             disabled={true}
             ref={ref => {
               if (ref) {
@@ -1288,6 +1301,7 @@ function CloudAccount(props) {
         else if (key === 'accountId' || key === 'accountName') {
           return (
             <Select
+              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               value={
                 key === 'accountId' ?
                   cloudAccount?.accountId ? 
@@ -1337,6 +1351,7 @@ function CloudAccount(props) {
         else if (key === 'provider') {
           return (
             <Select
+              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               value={provider}
               showSearch
               style={
@@ -1371,6 +1386,7 @@ function CloudAccount(props) {
         else if (key === 'azureEnv') {
           return (
             <Select
+              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               value={azureEnv}
               showSearch
               style={
@@ -1401,41 +1417,7 @@ function CloudAccount(props) {
               </React.Fragment>
           </Select>
           )
-        }
-        /*else if (key === 'azureScope') {
-          return (
-            <Select
-              value={azureScope}
-              showSearch
-              style={
-                errors.azureScopeError ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {azureScopes ?
-                  azureScopes.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                :
-                  []
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }*/                                
+        }                              
         else {
           return (
             <Select
@@ -1472,6 +1454,7 @@ function CloudAccount(props) {
         return (
           <React.Fragment>
             <Checkbox 
+              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               indeterminate={indeterminate} 
               onChange={onCheckAllChange} 
               checked={checkAll}
@@ -1482,6 +1465,7 @@ function CloudAccount(props) {
             <Divider />
 
             <Checkbox.Group 
+            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
               options={availableOperationTeams} 
               value={checkedOperationTeams} 
               onChange={onChangeCustom}
@@ -1591,31 +1575,7 @@ function CloudAccount(props) {
         :
           createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
       )
-    },
-    /*(provider === 'AZURE' && {
-      title: 'Scope',
-      align: 'center',
-      dataIndex: 'azureScope',
-      width: 200,
-      key: 'azureScope',
-      ...getColumnSearchProps(
-        'azureScope', 
-        searchInput, 
-        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
-        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
-        searchText, 
-        searchedColumn, 
-        setSearchText, 
-        setSearchedColumn
-      ),
-      render: (name, cloudNet)  => (
-        cloudNet.existent ? 
-          cloudNet.azureScope
-        :
-          createElement('select', 'azureScope', '', cloudNet, '')
-      )
-    }),*/
-    
+    },    
     {
       title: 'Comment',
       align: 'center',
@@ -1698,7 +1658,8 @@ function CloudAccount(props) {
 
   return (
 
-      <React.Fragment>
+    <React.Fragment>
+      {console.log('-----------', cloudAccountToCall)}
       <Card 
         props={{
           width: 200, 
@@ -1836,12 +1797,13 @@ function CloudAccount(props) {
                       {createElement('input', 'changeRequestId')}
                     </Col>
                   </Row>
-                  <br />
-                  <br />
+
+                  <Divider/>
 
                   <Row>
                     <Col span={21}>
                       <Radio.Group
+                        disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                         defaultValue="existent"
                         buttonStyle="solid"
                         value={existent ? 'existent' : 'new'}
@@ -1864,8 +1826,8 @@ function CloudAccount(props) {
                   </Row>
 
                   <br />
+                  <br />
 
-                  <Divider/>
                   {existent ?
                     <>
                       <Row>
@@ -1916,39 +1878,8 @@ function CloudAccount(props) {
                           }
                         </Col>
                       </Row>
-
                       
                       <br/>
-
-                      {/*
-                        provider === 'AZURE' ?
-                        <>
-                          <br/>
-                          
-                          <Row>
-                            
-                            <Col offset={1} span={1}>
-                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureScope:</p>
-                            </Col>
-                            
-                            <Col span={2}>
-                              {createElement('select', 'azureScope', 'azureScopes', '')}
-                            </Col>
-                            
-
-                            <Col offset={1} span={1}>
-                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureEnv:</p>
-                            </Col>
-                            
-                            <Col span={2}>
-                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
-                            </Col>
-                          </Row>
-                          <br/>
-                          </>
-                        :
-                          null
-                      */}
 
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
@@ -2020,34 +1951,6 @@ function CloudAccount(props) {
                       <br/>
                       <br/>
 
-                      {/*
-                        provider === 'AZURE' ?
-                        <>
-                          <br/>
-                          
-                          <Row>
-                            <Col offset={1} span={1}>
-                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureScope:</p>
-                            </Col>
-                            
-                            <Col span={2}>
-                              {createElement('select', 'azureScope', 'azureScopes', '')}
-                            </Col>
-                            
-                            <Col offset={1} span={1}>
-                              <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>azureEnv:</p>
-                            </Col>
-                            
-                            <Col span={2}>
-                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
-                            </Col>
-                          </Row>
-                          <br/>
-                          </>
-                        :
-                          null
-                      */}
-
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
                           {createElement('popOver', '', '', '', 'delAccount')}
@@ -2061,15 +1964,14 @@ function CloudAccount(props) {
               }
 
               
-              
               <Divider/>
 
               {(cloudAccount?.accountId) ?
                 <React.Fragment>
                   <Button
+                    disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                     type="primary"
                     style={{marginLeft: 16 }}
-                    disabled={cloudAccountLoading ? true : false}
                     onClick={() => cloudNetworkAdd()}
                   >
                     Request a Cloud Account
@@ -2096,13 +1998,13 @@ function CloudAccount(props) {
                         }}
                       />
                         <Button
-                        type="primary"
-                        style={{float: 'right', marginRight: 15}}
-                        disabled={cloudAccountLoading ? true : false}
-                        onClick={() => validation()}
-                      >
-                        Commit
-                      </Button>
+                          disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                          type="primary"
+                          style={{float: 'right', marginRight: 15}}
+                          onClick={() => validation()}
+                        >
+                          Commit
+                        </Button>
                       <br/>
                     </>
                     
