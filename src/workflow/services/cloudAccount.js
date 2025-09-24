@@ -173,11 +173,13 @@ function CloudAccount(props) {
 
   //setto il nuovo nome composto solo se c'è l'env
   useEffect(() => {
-    if (composeName && azureEnv && provider === 'AZURE') {
+    console.log('hoooook')
+    if (composeName && provider === 'AZURE') {
+      console.log('lo dovrein cambiare')
       try {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
-        if (!existent && cloudAccountCopy?.newInputName) {
+        if (!existent && cloudAccountCopy?.newInputName && azureEnv) {
           delete errorsCopy.cloudAccountNameError
           cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv.toLowerCase()}`
           setCloudAccount(cloudAccountCopy)
@@ -206,7 +208,7 @@ function CloudAccount(props) {
     else {
       setComposeName(false)
     }
-  }, [composeName]);
+  }, [composeName, azureEnv]);
 
 
   //Rimuovo il messaggio di risposta dopo due secondi
@@ -675,6 +677,7 @@ function CloudAccount(props) {
       delete errorsCopy.newInputNameError
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
       accountCopy.newInputName = value
+      delete accountCopy.accountName
       setErrors(errorsCopy);
       setCloudAccount(accountCopy)
       let ref = myRefs.current.newInputName;
@@ -1868,7 +1871,7 @@ function CloudAccount(props) {
 
                       <Row>
                         <Col span={2}>
-                          <p style={{marginRight: 10, float: 'right'}}>Operation Teams</p>
+                          <p style={{marginLeft: 20}}>Operation Teams:</p>
                         </Col>
                       <Col offset={1} span={3}>
                           {cloudAccountLoading ? 
