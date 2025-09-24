@@ -197,7 +197,7 @@ function CloudAccount(props) {
         }
       }
       catch (err) {
-        console.log('error')
+        console.err('error')
       }        
     }
   }, [azureEnv]);
@@ -235,7 +235,7 @@ function CloudAccount(props) {
       } catch (error) {
         setLoading(false);
         setInfobloxConfigurations([])
-        console.log(error)
+        console.err(error)
       }
     }
 
@@ -275,7 +275,7 @@ function CloudAccount(props) {
       } catch (error) {
         setLoading(false);
         setAvailableOperationTeams([])
-        console.log(error)
+        console.err(error)
       }
     }
 
@@ -302,7 +302,7 @@ function CloudAccount(props) {
       } catch (error) {
         setLoading(false);
         setIbAssets([])
-        console.log(error)
+        console.err(error)
       }
     }
 
@@ -329,7 +329,7 @@ function CloudAccount(props) {
       } catch (error) {
         setLoading(false);
         setCpAssets([])
-        console.log(error)
+        console.err(error)
       }
     }
 
@@ -337,49 +337,49 @@ function CloudAccount(props) {
     setCloudAccountsLoading(true);
 
     try {
-        const data = await dataGet(entities, assetId);
+      const data = await dataGet(entities, assetId);
 
-        if (data.status && data.status !== 200) {
-            const error = Object.assign(data, {
-                component: 'cloudAccount',
-                vendor: 'concerto',
-                errorType: 'cloudAccounts'
+      if (data.status && data.status !== 200) {
+        const error = Object.assign(data, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'cloudAccounts'
+        });
+        props.dispatch(err(error));
+        setAwsAccounts([]);
+        setAzureAccounts([]);
+      } else {
+          if (data?.data?.items && data.data.items.length > 0) {
+            const processedAwsAccounts = [];
+            const processedAzureAccounts = [];
+
+            data.data.items.forEach(item => {
+              const account = {
+                accountId: item["Account ID"] || '',
+                accountName: item["Account Name"] || '',
+                AccountOwner: item.Reference || ''
+              };
+
+              if (item.Country === 'Cloud-AWS') {
+                processedAwsAccounts.push(account);
+              } else if (item.Country === 'Cloud-AZURE') {
+                processedAzureAccounts.push(account);
+              }
             });
-            props.dispatch(err(error));
+
+            setAwsAccounts(processedAwsAccounts);
+            setAzureAccounts(processedAzureAccounts);
+          } else {
             setAwsAccounts([]);
             setAzureAccounts([]);
-        } else {
-            if (data?.data?.items && data.data.items.length > 0) {
-                const processedAwsAccounts = [];
-                const processedAzureAccounts = [];
-
-                data.data.items.forEach(item => {
-                    const account = {
-                        accountId: item["Account ID"] || '',
-                        accountName: item["Account Name"] || '',
-                        AccountOwner: item.Reference || ''
-                    };
-
-                    if (item.Country === 'Cloud-AWS') {
-                        processedAwsAccounts.push(account);
-                    } else if (item.Country === 'Cloud-AZURE') {
-                        processedAzureAccounts.push(account);
-                    }
-                });
-
-                setAwsAccounts(processedAwsAccounts);
-                setAzureAccounts(processedAzureAccounts);
-            } else {
-                setAwsAccounts([]);
-                setAzureAccounts([]);
-            }
-        }
+          }
+      }
     } catch (apiError) {
         const error = {
-            message: apiError.message || 'Errore sconosciuto durante il recupero degli account cloud.',
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'cloudAccounts'
+          message: apiError.message || 'Errore sconosciuto durante il recupero degli account cloud.',
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'cloudAccounts'
         };
         props.dispatch(err(error));
         setAwsAccounts([]);
@@ -754,8 +754,6 @@ function CloudAccount(props) {
       delete errorsCopy.azureEnvError
       setErrors(errorsCopy);
     }
-
-    console.log(errorsCopy)
 
     setCloudAccount(cloudAccountCopy)
     return localErrors
@@ -1209,7 +1207,7 @@ function CloudAccount(props) {
                       )
                       }
                       catch (error) {
-                        console.log(error)
+                        console.err(error)
                       }
                     })
                   :
@@ -1594,7 +1592,7 @@ function CloudAccount(props) {
           createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
       )
     },
-    (provider === 'AZURE' && {
+    /*(provider === 'AZURE' && {
       title: 'Scope',
       align: 'center',
       dataIndex: 'azureScope',
@@ -1616,7 +1614,7 @@ function CloudAccount(props) {
         :
           createElement('select', 'azureScope', '', cloudNet, '')
       )
-    }),
+    }),*/
     
     {
       title: 'Comment',
@@ -1663,6 +1661,35 @@ function CloudAccount(props) {
     }
   ];
 
+  let insertIndex = 6
+
+  if (provider === 'AZURE') {
+    let azureScopeColumn = {
+      title: 'Scope',
+      align: 'center',
+      dataIndex: 'azureScope',
+      width: 200,
+      key: 'azureScope',
+      ...getColumnSearchProps(
+        'azureScope', 
+        searchInput, 
+        (selectedKeys, confirm, dataIndex) => handleSearch(selectedKeys, confirm, dataIndex, setSearchText, setSearchedColumn),
+        (clearFilters, confirm) => handleReset(clearFilters, confirm, setSearchText), 
+        searchText, 
+        searchedColumn, 
+        setSearchText, 
+        setSearchedColumn
+      ),
+      render: (name, cloudNet)  => (
+        cloudNet.existent ? 
+          cloudNet.azureScope
+        :
+          createElement('select', 'azureScope', '', cloudNet, '')
+      )
+    }
+    columns.splice(insertIndex, 0, azureScopeColumn);
+  } 
+
   let errorsComponent = () => {
     if (props.error && props.error.component === 'cloudAccount') {
       return <Error error={[props.error]} visible={true}/> 
@@ -1672,8 +1699,6 @@ function CloudAccount(props) {
   return (
 
       <React.Fragment>
-        {console.log('cloudAccount', cloudAccount)}
-        {console.log('azureEnv', azureEnv)}
       <Card 
         props={{
           width: 200, 
@@ -1745,7 +1770,7 @@ function CloudAccount(props) {
                                 )
                               }
                               catch (error) {
-                                console.log(error)
+                                console.err(error)
                               }
                             })
                           :
@@ -1790,7 +1815,7 @@ function CloudAccount(props) {
                                 )
                               }
                               catch (error) {
-                                console.log(error)
+                                console.err(error)
                               }
                             })
                           :
@@ -1933,6 +1958,7 @@ function CloudAccount(props) {
                     </>
                   :
                     <>
+                    {/* New Account */}
                       <Row>
 
                         <Col span={4}>
@@ -1947,10 +1973,21 @@ function CloudAccount(props) {
                         </Col>
                         <Col offset={0.5} span={5} style={{ marginBottom: 8}}>
                           <div style={{ display: 'flex', alignItems: 'center'}}>
-                            <span>crif-</span>
+                            {provider === 'AWS' ?
+                              <span>CRIF-</span>
+                            : 
+                              <span>crif-</span>                            
+                            }
                             {createElement('input', 'newInputName', '', '', '')}
-                            <span>-</span>
-                            {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                            { provider === 'AZURE' ?
+                              <>
+                              <span>-</span>
+                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                              </>
+                            :
+                              null
+                            }
+                            
                           </div>
                           <p style={{marginTop: 5, float: 'right'}}>{cloudAccount?.accountName || ''}</p>
                         </Col>
