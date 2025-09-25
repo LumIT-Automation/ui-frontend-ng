@@ -779,6 +779,7 @@ function CloudAccount(props) {
 
   /* DISPOSITION */
   let accountDel = async() => {
+    console.log('chiamato delete account')
     let localErrors = await validationCheck()
     if (localErrors === 0) {
       setLoading(true)
@@ -823,6 +824,7 @@ function CloudAccount(props) {
   }
 
   let writeHandler = async () => {
+    console.log('chiamato scrittura account')
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     setCloudAccountToCall(cloudAccountCopy?.accountName)
     let toDelete = []
