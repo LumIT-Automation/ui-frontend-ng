@@ -730,7 +730,7 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     } 
 
-    if (!(changeRequestId.length >= 11)) {
+    if ((changeRequestId.length < 12)) {
       errorsCopy.changeRequestIdError = true
       ++localErrors
       setErrors(errorsCopy);
@@ -1672,6 +1672,7 @@ function CloudAccount(props) {
   return (
 
     <React.Fragment>
+      {console.log(errors)}
       <Card 
         props={{
           width: 200, 
