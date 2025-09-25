@@ -803,6 +803,7 @@ function CloudAccount(props) {
         }
         
         let n = await cloudNetworkDelete(cloudAccount.accountName, body)
+        console.log(n)
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
@@ -861,6 +862,7 @@ function CloudAccount(props) {
         }
         
         let n = await cloudNetworkDelete(cloudAccountCopy.accountName, body)
+        console.log(n)
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
@@ -905,6 +907,7 @@ function CloudAccount(props) {
       }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      console.log(n)
       if (n.status && n.status !== 200 ) {
         let error = Object.assign(n, {
           component: 'cloudAccount',
@@ -937,6 +940,7 @@ function CloudAccount(props) {
       }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+      console.log(n)
       if (n.status && n.status !== 200 ) {
         let error = Object.assign(n, {
           component: 'cloudAccount',
