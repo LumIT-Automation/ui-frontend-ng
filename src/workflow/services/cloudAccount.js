@@ -771,7 +771,7 @@ function CloudAccount(props) {
       delete errorsCopy.azureEnvError
       setErrors(errorsCopy);
     }
-
+    console.log(localErrors)
     setCloudAccount(cloudAccountCopy)
     return localErrors
   }
@@ -781,6 +781,7 @@ function CloudAccount(props) {
   let accountDel = async() => {
     console.log('chiamato delete account')
     let localErrors = await validationCheck()
+    console.log(localErrors)
     if (localErrors === 0) {
       setLoading(true)
       let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
