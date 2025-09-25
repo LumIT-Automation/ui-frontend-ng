@@ -472,7 +472,7 @@ function ItemsView(props) {
           return o
         }
         catch (error) {
-          console.log(error)
+          console.error(error)
         }  
       })
 
@@ -816,11 +816,10 @@ function ItemsView(props) {
         }
 
         if (e.existent) {
-          console.log(origEl[key])
-          console.log(e[key])
+
           if (origEl[key] !== e[key]) {
             e.isModified[key] = true
-            console.log(e.isModified[key])
+
           }
           else {
             delete e.isModified[key]
@@ -1344,7 +1343,6 @@ function ItemsView(props) {
         toDelete.push(item)
       }
       if (item.isModified && Object.keys(item.isModified).length > 0) {
-        console.log(item)
         toPatch.push(item)
       }
       
@@ -1489,7 +1487,6 @@ function ItemsView(props) {
 
         item.loading = true
         setItems(itemsCopy)
-        console.log(body)
 
         let e = await itemPatch(item.name, item.type ? item.type : null, body)
         if (e.status && e.status !== 200 ) {

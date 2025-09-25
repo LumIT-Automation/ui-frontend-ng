@@ -103,7 +103,7 @@ function ReleaseIp(props) {
           setRequests([...requestsCopy])
         }
       } catch(error) {
-        console.log(error)
+        console.error(error)
         r.isReleased = false
         r.isLoading = false
         setRequests([...requestsCopy])

@@ -182,7 +182,7 @@ function Manager(props) {
       }
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -253,7 +253,7 @@ function Manager(props) {
         }
       }
       else {
-        console.log('non è un json', j)
+        //console.log('non è un json', j)
       }
     }
 
@@ -274,7 +274,7 @@ function Manager(props) {
   };
 
   let cudHandler = async () => {
-    console.log(configurations)
+
     let configurationsCopy = [...configurations];
     
     let toDelete = []
@@ -521,7 +521,6 @@ function Manager(props) {
 
   return (
     <React.Fragment>
-      {console.log(configurations)}
       {loading ?
         <Spin indicator={spinIcon} style={{margin: '10% 45%'}}/>
       :

@@ -331,7 +331,7 @@ function Permission(props) {
       };
       setAsswSubAss(true)
     } catch(error) {
-      console.log(error)
+      console.error(error)
       setAsswSubAss(true)
     }
   }
@@ -373,7 +373,7 @@ function Permission(props) {
         });
         return permissions
       } catch(error) {
-        console.log(error)
+        console.error(error)
         return permissions
       }
     }
@@ -385,7 +385,7 @@ function Permission(props) {
       });
       return permissions
     } catch(error) {
-      console.log(error)
+      console.error(error)
       return permissions
     }
   }
@@ -642,7 +642,6 @@ function Permission(props) {
     if (key !== 'details') {
       setPermissions([...permissionsCopy]);
     }
-    console.log(perm)
 
   }
 
@@ -721,7 +720,7 @@ function Permission(props) {
           }
         }
       } catch(error) {
-        console.log(error)
+        console.error(error)
       }
     }
   }

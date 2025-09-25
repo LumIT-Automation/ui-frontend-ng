@@ -213,7 +213,7 @@ function CreateF5Service(props) {
 
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 

@@ -173,9 +173,9 @@ function CloudAccount(props) {
 
   //setto il nuovo nome composto solo se c'è l'env
   useEffect(() => {
-    console.log('hoooook')
+
     if (composeName && provider === 'AZURE') {
-      console.log('lo dovrein cambiare')
+
       try {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
@@ -1662,7 +1662,6 @@ function CloudAccount(props) {
   return (
 
     <React.Fragment>
-      {console.log('-----------', cloudAccountToCall)}
       <Card 
         props={{
           width: 200, 

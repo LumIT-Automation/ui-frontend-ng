@@ -124,7 +124,7 @@ function ModifyUrlInApplicationSite(props) {
 
       requestCopy.urlList = urlsList
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
 
     setRequest(requestCopy)

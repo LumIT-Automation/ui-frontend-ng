@@ -152,7 +152,7 @@ function PermissionWorkflow(props) {
         }
       }
       catch (error) {
-        console.log(error)
+        console.error(error)
       }
     }
     setAssets(list)
@@ -504,7 +504,7 @@ function PermissionWorkflow(props) {
           }
         }
       } catch(error) {
-        console.log(error)
+        console.error(error)
       }
     }
   }
@@ -932,7 +932,7 @@ function PermissionWorkflow(props) {
       return errors
     }
     catch (errors) {
-      console.log(errors)
+      console.error(errors)
     }
     
   }

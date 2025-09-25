@@ -66,7 +66,7 @@ function DeleteF5Node(props) {
       setRequest(requestCopy)
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }

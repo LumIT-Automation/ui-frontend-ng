@@ -34,7 +34,7 @@ const Error = (props) => {
       localStorage.removeItem('token');
       localStorage.removeItem('username');
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
   };
 

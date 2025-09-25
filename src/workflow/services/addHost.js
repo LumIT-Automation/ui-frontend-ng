@@ -73,7 +73,7 @@ function AddHost(props) {
         setAssets(cpAssets.data.items)
       }
     } catch (error) {
-      console.log('main error', error);
+      console.error('main error', error);
     }
     setLoading(false);
   };
@@ -110,7 +110,7 @@ function AddHost(props) {
       }
       setRequests(newRequests);
     } catch (error) {
-      console.log('checkedTheOnlyAsset error', error);
+      console.error('checkedTheOnlyAsset error', error);
     }
   };
 
@@ -145,7 +145,7 @@ function AddHost(props) {
         props.dispatch(err(error));
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -188,7 +188,7 @@ function AddHost(props) {
       setRequests(newRequests);
       await cpDomainsGetHandler(asset);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -268,7 +268,7 @@ function AddHost(props) {
       } catch (error) {
         request.isLoading = false;
         request.created = false;
-        console.log(error);
+        console.error(error);
       }
     }
     setRequests([...newRequests]);

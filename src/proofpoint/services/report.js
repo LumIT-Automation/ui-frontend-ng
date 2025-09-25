@@ -171,7 +171,7 @@ function Report(props) {
           link.click();
         });
       } catch (err) {
-        console.log(err);
+        console.error(err);
       }
     }
     setReportLoading(false);

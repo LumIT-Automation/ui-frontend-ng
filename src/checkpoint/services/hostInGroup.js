@@ -351,7 +351,7 @@ function HostInGroup(props) {
         await getGroupHosts();
       }
     } catch(e) {
-      console.log(e)
+      console.error(e)
     }
     
   };

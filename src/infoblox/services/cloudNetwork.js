@@ -192,7 +192,7 @@ function CloudNetwork(props) {
       } catch (error) {
         setLoading(false);
         setRegions([])
-        console.log(error)
+
       }
     }
 
@@ -1228,7 +1228,7 @@ function CloudNetwork(props) {
                       )
                       }
                       catch (error) {
-                        console.log(error)
+                        console.error(error)
                       }
                     })
                   :

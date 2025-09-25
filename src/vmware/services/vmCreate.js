@@ -200,7 +200,7 @@ class CreateVmService extends React.Component {
       }
       this.setState({jsonEnabled: true })
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
 
   }
@@ -1481,7 +1481,7 @@ class CreateVmService extends React.Component {
               delete errors[diskDevice.id].u01Error
               await this.setState({errors: errors, diskDevices: diskDevices})
             } catch (error) {
-              console.log(error)
+              console.error(error)
             }
 
 

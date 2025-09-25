@@ -209,7 +209,7 @@ function AssetSelector(props) {
       await props.dispatch(assetToken(assToken))
     } 
     catch(e) {
-      console.log(e)
+      console.error(e)
     }
     
   }

@@ -61,7 +61,7 @@ function VpnToHost(props) {
         // Tenta di parsare la stringa JSON dal backend in un oggetto JavaScript
         parsedData = JSON.parse(jsonBeauty);
 
-        console.log(parsedData)
+
 
         let newArray = parsedData.map(obj => {
           // Destruttura l'oggetto, escludendo 'uid'

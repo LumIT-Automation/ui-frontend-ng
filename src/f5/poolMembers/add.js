@@ -95,7 +95,6 @@ function Add(props) {
     if (key === 'existentNode') {
       let nodesCopy = JSON.parse(JSON.stringify(nodes))
       let nodeCopy = nodesCopy.find(n => n.name === value)
-      console.log(nodeCopy)
       setNode(nodeCopy)
       setExistentNode(nodeCopy)
       setExistentNodeError('')
@@ -400,7 +399,7 @@ function Add(props) {
 
   return (
     <Space direction='vertical'>
-      {console.log(name)}
+
       <Button type="primary" onClick={() => setVisible(true)}>Add Member</Button>
 
       <Modal

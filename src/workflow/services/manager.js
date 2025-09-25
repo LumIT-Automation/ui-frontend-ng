@@ -27,7 +27,6 @@ function Manager(props) {
   return (
     
     <React.Fragment>
-      {console.log(props.authorizations)}
       <Row>
         {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'cloud_account') ?
           <Col span={2} offset={2}>
@@ -47,7 +46,6 @@ function Manager(props) {
         
         {isSuperAdmin(props.authorizations) || isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host') ?
           <Col span={2} offset={2}>
-            {console.log(isAuthorized(props.authorizations, 'workflow', 'checkpoint_add_host'))}
             <AddHost/>
           </Col>
         :

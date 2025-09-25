@@ -42,7 +42,7 @@ function HeaderCustom(props) {
       localStorage.removeItem('username');
     }
     catch(e) {
-      console.log(e)
+      console.error(e)
     }
   }
 

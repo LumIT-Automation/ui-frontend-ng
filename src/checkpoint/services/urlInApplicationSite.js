@@ -81,7 +81,6 @@ function UrlInApplicationSite(props) {
     } else {
         // Se 'url-list' non esiste o non è un array, usiamo un array vuoto.
         dataForConversion = [];
-        console.log("url-list not found.");
     }
 
     let beauty;
@@ -228,7 +227,7 @@ function UrlInApplicationSite(props) {
         setToRemove(toRemoveCopy);
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -292,7 +291,7 @@ function UrlInApplicationSite(props) {
       applicationSiteCopy['url-list'] = applicationSiteCopy['url-list'].concat(list2);
       setApplicationSite(applicationSiteCopy);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

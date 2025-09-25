@@ -207,7 +207,7 @@ class Manager extends React.Component {
           hists.push(hist)
         }
         catch(error) {
-          console.log(error)
+          console.error(error)
         }
         
       });

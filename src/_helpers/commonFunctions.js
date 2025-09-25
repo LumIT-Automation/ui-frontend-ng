@@ -29,7 +29,7 @@ class CommonFunctions {
       return list
     }
     catch(e) {
-      console.log(e)
+      console.error(e)
     }
     
   }
@@ -41,7 +41,7 @@ class CommonFunctions {
       return list || []
     }
     catch(e) {
-      console.log(e)
+      console.error(e)
     }
     
   }

@@ -57,7 +57,6 @@ function IpDetails(props) {
       "GET",
       resp => {
         let r = JSON.parse(JSON.stringify(resp.data))
-        //console.log(r)
 
         if (r.extattrs && r.extattrs['Name Server']) {
           r.serverName = r.extattrs['Name Server'].value

@@ -74,7 +74,7 @@ function RemoveHost(props) {
         setAssets(cpAssets.data.items);
       }
     } catch (error) {
-      console.log('main error', error);
+      console.error('main error', error);
     }
     setLoading(false);
   };
@@ -109,7 +109,7 @@ function RemoveHost(props) {
       }
       setRequests(newRequests);
     } catch (error) {
-      console.log('checkedTheOnlyAsset error', error);
+      console.error('checkedTheOnlyAsset error', error);
     }
   };
 
@@ -215,7 +215,7 @@ function RemoveHost(props) {
       } catch (error) {
         delete request.isLoading
         delete request.isReleased
-        console.log(error);
+        console.error(error);
       }
     }
 

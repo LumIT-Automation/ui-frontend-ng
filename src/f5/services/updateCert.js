@@ -80,7 +80,7 @@ function UpdateCert(props) {
       }
       setVirtualServers(vsFetched.data.items);
     } catch (error) {
-      console.log(error);
+      console.error(error);
     }
   };
 

@@ -137,7 +137,7 @@ function DatacenterAccount(props) {
             }
           });
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       }
       setLoading(false)
@@ -256,7 +256,7 @@ function DatacenterAccount(props) {
 
     }
     catch(error) {
-      console.log()
+      console.error()
     }
   }
 
@@ -354,7 +354,7 @@ function DatacenterAccount(props) {
       tags = datacenterAccount.tags.split(',')
     }
     catch (e) {
-      console.log(e)
+      console.error(e)
     }
     
     const body = {
@@ -391,7 +391,7 @@ function DatacenterAccount(props) {
       tags = datacenterAccount.tags.split(',')
     }
     catch (e) {
-      console.log(e)
+      console.error(e)
     }
     
     const body = {

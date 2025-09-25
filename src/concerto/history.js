@@ -34,7 +34,6 @@ function History(props) {
   let interval = useRef(null);
 
   useEffect(() => {
-    console.log(props.vendor)
     if (!props.error) {
         setHistorysRefresh(false);
         props.dispatch(historys([]));
@@ -106,11 +105,9 @@ function History(props) {
           hist.fqdn = asset?.fqdn || '';
           hists.push(hist);
         } catch (error) {
-          console.log(error);
+          console.error(error);
         }
       });
-
-      console.log(hists)
 
       if (props.vendor === 'vmware') {
         interval.current = setInterval(() => refresh(), 5000);
@@ -132,14 +129,13 @@ function History(props) {
 
   let refresh = async () => {
     if (!props.historys || props.historys.length < 1) {
-      console.log('return')
       clearInterval(interval.current);
       return
     }
     else {
       let taskProgress = false;
       let secondStage = false;
-      console.log(props.historys)
+
       try {
         props.historys.forEach((item) => {
           if (item.second_stage_state === 'running') {
@@ -151,7 +147,7 @@ function History(props) {
         });
       }
       catch(error) {
-        console.log(error)
+        console.error(error)
       }
 
 
@@ -185,7 +181,7 @@ function History(props) {
             list.push(item);
           }
           catch(error) {
-            console.log(error)
+            console.error(error)
           }
         });
         props.dispatch(historys({ data: { items: list } }));
@@ -882,7 +878,6 @@ function History(props) {
 
   return (
     <React.Fragment>
-      {console.log(interval)}
       {loading ? (
         <Spin indicator={spinIcon} style={{ margin: '10% 45%' }} />
       ) : (

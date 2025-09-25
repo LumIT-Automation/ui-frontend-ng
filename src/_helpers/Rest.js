@@ -164,7 +164,7 @@ class Rest {
             }
           }
           catch (error) {
-            console.log('GET error')
+            console.error('GET error')
             this.onError({
               message: error.message,
               type: error.name

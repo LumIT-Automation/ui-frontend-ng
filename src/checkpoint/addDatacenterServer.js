@@ -72,7 +72,7 @@ function Add(props) {
             }
           });
         } catch (error) {
-          console.log(error)
+          console.error(error)
         }
       }
       setLoading(false)
@@ -292,7 +292,7 @@ function Add(props) {
       });
     }
     catch (error) {
-      console.log(error)
+      console.error(error)
     }
 
 

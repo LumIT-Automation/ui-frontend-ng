@@ -21,7 +21,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -41,7 +41,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -61,7 +61,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -79,7 +79,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -97,7 +97,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
   }
 
@@ -114,7 +114,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -134,7 +134,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -152,12 +152,12 @@ class Validators {
         return true
   
       } catch(error) {
-        console.log(error)
+        console.error(error)
       }
   
       return false
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -194,7 +194,7 @@ class Validators {
         return false
       }
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
@@ -211,7 +211,7 @@ class Validators {
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
       );
     } catch (error) {
-      console.log(error)
+      console.error(error)
     }
     
   }
