@@ -273,7 +273,7 @@ function DatacenterAccount(props) {
       setErrors(errorsCopy);
     }
 
-    if (!(changeRequestId.length >= 11) ) {
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
       errorsCopy.changeRequestIdError = true
       ok = false;
       setErrors(errorsCopy);

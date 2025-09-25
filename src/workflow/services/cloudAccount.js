@@ -144,17 +144,6 @@ function CloudAccount(props) {
     }    
   }, [ibAsset]);
 
-
-  //chiedo uno specifico cloudAccount
-  useEffect(() => {
-    
-    if (cloudAccount.accountName && existent) {   
-      setAzureEnv('');
-      dataGetHandler('cloudAccount')
-    }    
-  }, [cloudAccount.accountId, cloudAccount.accountName]);
-
-
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
@@ -169,6 +158,16 @@ function CloudAccount(props) {
       setAzureEnv('');
     } 
   }, [existent]);
+
+
+  //chiedo uno specifico cloudAccount
+  useEffect(() => {
+    
+    if (cloudAccount.accountName && existent) {   
+      setAzureEnv('');
+      dataGetHandler('cloudAccount')
+    }    
+  }, [cloudAccount.accountId, cloudAccount.accountName]);
 
 
   //setto il nuovo nome composto solo se c'è l'env
@@ -443,18 +442,24 @@ function CloudAccount(props) {
             try {
               const parts = cloudAccountCopy.accountName.split('-');
 
-              if (parts.length >= 3) {
-                const env = parts[2].toUpperCase();
- 
-                setAzureEnv(azureEnvs.includes(env) ? env : '');
-              } else {
-                console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
+              if (Array.isArray(parts)) {
+                let env = parts[parts.length - 1];
 
+                if (env && azureEnvs.includes(env)) {
+                  setAzureEnv(env)
+                }
+                else {
+                  console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
+                  setAzureEnv('');
+                }
+              }
+              else {
+                console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
                 setAzureEnv('');
               }
+              
             } catch (err) {
               console.error("Error during 'accountName' elaboration:", err);
-
               setAzureEnv('');
             }
           }  
@@ -730,7 +735,7 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     } 
 
-    if ((changeRequestId.length < 12)) {
+    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
       errorsCopy.changeRequestIdError = true
       ++localErrors
       setErrors(errorsCopy);
@@ -771,7 +776,7 @@ function CloudAccount(props) {
       delete errorsCopy.azureEnvError
       setErrors(errorsCopy);
     }
-    console.log(localErrors)
+
     setCloudAccount(cloudAccountCopy)
     return localErrors
   }
@@ -779,9 +784,9 @@ function CloudAccount(props) {
 
   /* DISPOSITION */
   let accountDel = async() => {
-    console.log('chiamato delete account')
+
     let localErrors = await validationCheck()
-    console.log(localErrors)
+
     if (localErrors === 0) {
       setLoading(true)
       let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
@@ -804,7 +809,7 @@ function CloudAccount(props) {
         }
         
         let n = await cloudNetworkDelete(cloudAccount.accountName, body)
-        console.log(n)
+
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
@@ -826,7 +831,7 @@ function CloudAccount(props) {
   }
 
   let writeHandler = async () => {
-    console.log('chiamato scrittura account')
+
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     setCloudAccountToCall(cloudAccountCopy?.accountName)
     let toDelete = []
@@ -863,7 +868,7 @@ function CloudAccount(props) {
         }
         
         let n = await cloudNetworkDelete(cloudAccountCopy.accountName, body)
-        console.log(n)
+
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
@@ -908,7 +913,7 @@ function CloudAccount(props) {
       }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
-      console.log(n)
+
       if (n.status && n.status !== 200 ) {
         let error = Object.assign(n, {
           component: 'cloudAccount',
@@ -941,7 +946,7 @@ function CloudAccount(props) {
       }
       
       let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
-      console.log(n)
+
       if (n.status && n.status !== 200 ) {
         let error = Object.assign(n, {
           component: 'cloudAccount',
@@ -1010,7 +1015,7 @@ function CloudAccount(props) {
 
     setExistent(true);
     
-    setProviders(['AWS']);
+    setProviders(['AWS', 'AZURE']);
     setProvider('');
     setRegions([]);
     setAzureScopes([]);
@@ -1672,7 +1677,6 @@ function CloudAccount(props) {
   return (
 
     <React.Fragment>
-      {console.log(errors)}
       <Card 
         props={{
           width: 200, 
