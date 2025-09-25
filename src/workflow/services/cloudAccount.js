@@ -730,7 +730,7 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     } 
 
-    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
+    if (!(changeRequestId.length >= 11)) {
       errorsCopy.changeRequestIdError = true
       ++localErrors
       setErrors(errorsCopy);
