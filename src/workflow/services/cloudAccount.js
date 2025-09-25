@@ -181,7 +181,7 @@ function CloudAccount(props) {
         let errorsCopy = JSON.parse(JSON.stringify(errors))
         if (!existent && cloudAccountCopy?.newInputName && azureEnv) {
           delete errorsCopy.cloudAccountNameError
-          cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv.toLowerCase()}`
+          cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
         }
@@ -702,6 +702,8 @@ function CloudAccount(props) {
 
 
   /* VALIDATION */
+  //'^[0-9]{12}$|^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
+  //const validRegex = /^[0-9]{12}$|^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'/
 
   let validation = async () => {
     let localErrors = await validationCheck()
@@ -1081,6 +1083,7 @@ function CloudAccount(props) {
         return (
           <Input
             disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+            placeholder={provider === 'AWS' ? "only numbers, len 12" :  "alphanumeric, five groups 8-4-4-4-12"}
             style=
             {obj[`${key}Error`] ?
               {borderColor: 'red'}
@@ -1833,13 +1836,13 @@ function CloudAccount(props) {
                   {existent ?
                     <>
                       <Row>
-                        <Col span={3}>
-                          <p style={{marginLeft: 20, marginTop: 5}}>Account ID (len 12 numbers):</p>
+                        <Col span={2}>
+                          <p style={{marginLeft: 20, marginTop: 5}}>Account ID:</p>
                         </Col>
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
-                          <Col span={3}>
+                          <Col span={5}>
                             {createElement('select', 'accountId', 'cloudAccounts', '')}
                           </Col>
                         }
@@ -1894,10 +1897,10 @@ function CloudAccount(props) {
                     {/* New Account */}
                       <Row>
 
-                        <Col span={4}>
-                          <p style={{marginLeft: 20, marginTop: 5}}>New Account ID (len 12 numbers):</p>
+                        <Col span={2}>
+                          <p style={{marginLeft: 20, marginTop: 5}}>New Account ID:</p>
                         </Col>
-                        <Col span={3}>
+                        <Col span={5}>
                           {createElement('input', 'cloudAccountId', '', '', '')}
                         </Col>
 
@@ -1976,7 +1979,7 @@ function CloudAccount(props) {
                     style={{marginLeft: 16 }}
                     onClick={() => cloudNetworkAdd()}
                   >
-                    Request a Cloud Account
+                    Add a cloud network
                   </Button>
                   {cloudAccountLoading ? 
                     <>

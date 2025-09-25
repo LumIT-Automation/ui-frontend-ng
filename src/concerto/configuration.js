@@ -431,15 +431,15 @@ function Manager(props) {
     else if (element === 'textArea') {
       return (
         <Input.TextArea
-          rows={12}
+          rows={30}
           value={record[key]}
           ref={ref => (textAreaRefs.current[`${record.id}_${key}`] = ref)}
           onChange={event => set(key, event.target.value, record)}
           style=
             { record[`${key}Error`] ?
-              {borderColor: `red`, width: 350}
+              {borderColor: `red`, width: '100%'}
             :
-              {width: 350}
+              {width: '100%'}
             }
         />
       )
@@ -471,6 +471,7 @@ function Manager(props) {
     {
       title: 'Loading',
       align: 'center',
+      width: 100,
       dataIndex: 'loading',
       key: 'loading',
       render: (name, obj)  => (
@@ -482,6 +483,7 @@ function Manager(props) {
     {
       title: 'Config type',
       align: 'center',
+      width: 100,
       dataIndex: 'config_type',
       key: 'config_type',
       render: (name, record)  => (
