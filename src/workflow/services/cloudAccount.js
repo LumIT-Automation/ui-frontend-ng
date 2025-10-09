@@ -419,8 +419,9 @@ function CloudAccount(props) {
       setCloudAccount(cloudAccountCopy)
     }
     else {
+      let list = []
       if (data?.data?.networks.length > 0) {
-        let list = data.data.networks.map((item, i) => {
+        list = data.data.networks.map((item, i) => {
           let sm = item.network.split('/')
           item.network = item.network ? item.network : '';
           item.network_container = item.network_container ? item.network_container : '';
@@ -433,44 +434,47 @@ function CloudAccount(props) {
           item.id = ++i
           return item
         });
-        let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
-        cloudAccountCopy.cloudNetworks = list
-        cloudAccountCopy.operationTeams = data?.data?.tags ? data.data.tags : [] 
-        setOrigOperationTeams(data?.data?.tags ? data.data.tags : [] )
-        let cloudAccountOperationTeams = cloudAccountCopy.operationTeams.filter(elemento => availableOperationTeams.includes(elemento));
-        
-        setCheckedOperationTeams(cloudAccountOperationTeams)
+      }
 
-        if (provider === 'AZURE') {
-          try {
-            const parts = cloudAccountCopy.accountName.split('-');
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
 
-            if (Array.isArray(parts)) {
-              let env = parts[parts.length - 1];
+      cloudAccountCopy.cloudNetworks = list
+      cloudAccountCopy.operationTeams = data?.data?.tags ? data.data.tags : [] 
+      setOrigOperationTeams(data?.data?.tags ? data.data.tags : [] )
+      let cloudAccountOperationTeams = cloudAccountCopy.operationTeams.filter(elemento => availableOperationTeams.includes(elemento));
+      
+      setCheckedOperationTeams(cloudAccountOperationTeams)
 
-              if (env && azureEnvs.includes(env)) {
-                setAzureEnv(env)
-              }
-              else {
-                console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
-                setAzureEnv('');
-              }
+      if (provider === 'AZURE') {
+        try {
+          const parts = cloudAccountCopy.accountName.split('-');
+
+          if (Array.isArray(parts)) {
+            let env = parts[parts.length - 1];
+
+            if (env && azureEnvs.includes(env)) {
+              setAzureEnv(env)
             }
             else {
               console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
               setAzureEnv('');
             }
-            
-          } catch (err) {
-            console.error("Error during 'accountName' elaboration:", err);
+          }
+          else {
+            console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
             setAzureEnv('');
           }
-        }  
-
-        setCloudAccount(cloudAccountCopy)      
-
+          
+        } catch (err) {
+          console.error("Error during 'accountName' elaboration:", err);
+          setAzureEnv('');
         }
-      }
+      }  
+
+      setCloudAccount(cloudAccountCopy)      
+
+    }
+    
     setCloudAccountLoading(false)
   }
   
@@ -743,42 +747,48 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     } 
 
-    for (let cloudNet of Object.values(cloudNetworksCopy)) {
-      if (!cloudNet.Region) {
-        ++localErrors
-        cloudNet.RegionError = true
-      }
-      if (!cloudNet.subnetMaskCidr) {
-        ++localErrors
-        cloudNet.subnetMaskCidrError = true
-      }
-      if (provider === 'AZURE') {
-        if (!cloudNet.azureScope) {
+    try {
+      for (let cloudNet of Object.values(cloudNetworksCopy)) {
+        if (!cloudNet.Region) {
           ++localErrors
-          cloudNet.azureScopeError = true
+          cloudNet.RegionError = true
         }
+        if (!cloudNet.subnetMaskCidr) {
+          ++localErrors
+          cloudNet.subnetMaskCidrError = true
+        }
+        if (provider === 'AZURE') {
+          if (!cloudNet.azureScope) {
+            ++localErrors
+            cloudNet.azureScopeError = true
+          }
+        }
+
       }
 
-    }
+      if (provider === 'AZURE') {
+        if (!azureEnv) {
+          errorsCopy.azureEnvError = true
+          ++localErrors
+          setErrors(errorsCopy);
+        }
+        if (!existent && !cloudAccountCopy?.newInputName) {
+          errorsCopy.newInputNameError = true
+          ++localErrors
+          setErrors(errorsCopy);
+        }
 
-    if (provider === 'AZURE') {
-      if (!azureEnv) {
-        errorsCopy.azureEnvError = true
-        ++localErrors
+      }
+      else {
+        delete errorsCopy.azureEnvError
         setErrors(errorsCopy);
       }
-      if (!existent && !cloudAccountCopy?.newInputName) {
-        errorsCopy.newInputNameError = true
-        ++localErrors
-        setErrors(errorsCopy);
-      }
-
     }
-    else {
-      delete errorsCopy.azureEnvError
-      setErrors(errorsCopy);
+    catch (err) {
+      console.error(err)
     }
 
+    console.log(errorsCopy)
     setCloudAccount(cloudAccountCopy)
     return localErrors
   }
