@@ -59,7 +59,6 @@ function CloudAccount(props) {
 
   let [cloudAccountLoading, setCloudAccountLoading] = useState(false);
   let [cloudAccount, setCloudAccount] = useState({});
-  let [cloudAccountToCall, setCloudAccountToCall] = useState('')
 
   let [origOperationTeams, setOrigOperationTeams] = useState([])
   let [availableOperationTeams, setAvailableOperationTeams] = useState([]);
@@ -89,10 +88,10 @@ function CloudAccount(props) {
   //Chiedo configurations e assets
   useEffect(() => {
     if(visible){
-      dataGetHandler('ibConfigurations')
-      dataGetHandler('cpConfigurations')
-      dataGetHandler('ibAssets')
-      dataGetHandler('cpAssets')  
+      getInfobloxConfigurations()
+      getCheckpointConfigurations()
+      getInfobloxAssets()
+      getCheckpointAssets()
     }  
   }, [visible]);
 
@@ -118,29 +117,29 @@ function CloudAccount(props) {
 
   //Setto le regions e i cloudAccounts correnti
   useEffect(() => {
-  if (provider) {
-    setCloudAccount({});
+    if (provider) {
+      setCloudAccount({});
 
-    setAzureEnv('');
-    if (provider === 'AWS') {
-      setRegions(awsRegions);
-      setCloudAccounts(awsAccounts); 
-    } else if (provider === 'AZURE') {
-      setRegions(azureRegions);
-      setCloudAccounts(azureAccounts); 
-    } 
-  } else {
-    setRegions([]);
-    setCloudAccounts([]);
-  }
-}, [provider, awsAccounts, azureAccounts, awsRegions, azureRegions]); 
+      setAzureEnv('');
+      if (provider === 'AWS') {
+        setRegions(awsRegions);
+        setCloudAccounts(awsAccounts); 
+      } else if (provider === 'AZURE') {
+        setRegions(azureRegions);
+        setCloudAccounts(azureAccounts); 
+      } 
+    } else {
+      setRegions([]);
+      setCloudAccounts([]);
+    }
+  }, [provider, awsAccounts, azureAccounts, awsRegions, azureRegions]); 
 
 
-  //chiedo i cloud accounts
+  //Chiedo i cloud accounts
   useEffect(() => {
     if (ibAsset) {
       setAzureEnv('');
-      dataGetHandler('cloudAccounts', ibAsset)
+      getCloudAccounts(ibAsset)
     }    
   }, [ibAsset]);
 
@@ -165,7 +164,7 @@ function CloudAccount(props) {
     
     if (cloudAccount.accountName && existent) {   
       setAzureEnv('');
-      dataGetHandler('cloudAccount')
+      getCloudAccount(cloudAccount.accountName)
     }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
 
@@ -186,7 +185,7 @@ function CloudAccount(props) {
         }
       }
       catch (err) {
-        console.err('error')
+        console.error('error')
       }        
     }
     else if (composeName && provider === 'AWS') {
@@ -201,7 +200,7 @@ function CloudAccount(props) {
         }
       }
       catch (err) {
-        console.err('error')
+        console.error('error')
       }    
     }
     else {
@@ -218,134 +217,137 @@ function CloudAccount(props) {
   }, [response]);
 
 
-  let dataGetHandler = async (entities, assetId) => {
-    let data
-
-    if (entities === 'ibConfigurations') {
-      setLoading(true);
-      data = await dataGet('ibConfigurations')
-      try {
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'ibConfigurationsError'
-          })
-          props.dispatch(err(error))
-          setLoading(false);
-        }
-        else {
-          if (data.data.items.length > 0) {
-            setInfobloxConfigurations(data.data.items)
-            setLoading(false);
-          }
-        }
-      } catch (error) {
-        setLoading(false);
-        setInfobloxConfigurations([])
-        console.err(error)
-      }
-    }
-
-    if (entities === 'cpConfigurations') {
-      setLoading(true);
-      data = await dataGet('cpConfigurations')
-      try {
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'cpConfigurationsError'
-          })
-          props.dispatch(err(error))
-          setLoading(false);
-        }
-        else {
-          let operationTeamMappingObject = data?.data?.items.find(o => o.config_type === 'tag-mapping');
-
-          if (operationTeamMappingObject && operationTeamMappingObject.value && operationTeamMappingObject.value.options && operationTeamMappingObject.value.options.length > 0) {
-            const operationTeams = operationTeamMappingObject.value.options.map(t => Object.values(t)[0]);
-            setAvailableOperationTeams(operationTeams);
-          }
-
-          let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
-
-          let tmp = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
-
-          let scope = tmp.find(o => o.key === "crif:scope")
-          let env = tmp.find(o => o.key === "crif:env")
-
-          setAzureScopes(scope?.values)
-          setAzureEnvs(env?.values)
-          
-          setLoading(false);
-        }
-      } catch (error) {
-        setLoading(false);
-        setAvailableOperationTeams([])
-        console.err(error)
-      }
-    }
-
-    if (entities === 'ibAssets') {
-      setLoading(true);
-      data = await dataGet('ibAssets')
-      try {
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'ibAssetsError'
-          })
-          props.dispatch(err(error))
-          setLoading(false);
-        }
-        else {
-          if (data.data.items.length > 0) {
-            
-            setLoading(false);
-            setIbAssets(data.data.items)
-          }
-        }
-      } catch (error) {
-        setLoading(false);
-        setIbAssets([])
-        console.err(error)
-      }
-    }
-
-    if (entities === 'cpAssets') {
-      setLoading(true);
-      data = await dataGet('cpAssets')
-      try {
-        if (data.status && data.status !== 200 ) {
-          let error = Object.assign(data, {
-            component: 'cloudAccount',
-            vendor: 'concerto',
-            errorType: 'cpAssetsError'
-          })
-          props.dispatch(err(error))
-          setLoading(false);
-        }
-        else {
-          if (data.data.items.length > 0) {
-            
-            setLoading(false);
-            setCpAssets(data.data.items)
-          }
-        }
-      } catch (error) {
-        setLoading(false);
-        setCpAssets([])
-        console.err(error)
-      }
-    }
-
-    if (entities === 'cloudAccounts') {
-    setCloudAccountsLoading(true);
-
+  let getInfobloxConfigurations = async () => {
+    setLoading(true);
+    let data = await dataGet('ibConfigurations')
     try {
-      const data = await dataGet(entities, assetId);
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'ibConfigurationsError'
+        })
+        props.dispatch(err(error))
+        setInfobloxConfigurations([])
+      }
+      else {
+        if (data.data.items.length > 0) {
+          setInfobloxConfigurations(data.data.items)
+        } else {
+          setInfobloxConfigurations([]) 
+        }
+      }
+    } catch (error) {
+      setInfobloxConfigurations([])
+      console.error(error) 
+    } finally {
+      setLoading(false); // Reset in ogni caso
+    }
+  }
+
+
+  let getCheckpointConfigurations = async () => {
+    setLoading(true);
+    let data = await dataGet('cpConfigurations')
+    try {
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'cpConfigurationsError'
+        })
+        props.dispatch(err(error))
+        setAvailableOperationTeams([])
+      }
+      else {
+        let operationTeamMappingObject = data?.data?.items.find(o => o.config_type === 'tag-mapping');
+
+        if (operationTeamMappingObject && operationTeamMappingObject.value && operationTeamMappingObject.value.options && operationTeamMappingObject.value.options.length > 0) {
+          const operationTeams = operationTeamMappingObject.value.options.map(t => Object.values(t)[0]);
+          setAvailableOperationTeams(operationTeams);
+        }
+
+        let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
+
+        let tmp = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
+
+        let scope = tmp.find(o => o.key === "crif:scope")
+        let env = tmp.find(o => o.key === "crif:env")
+
+        setAzureScopes(scope?.values)
+        setAzureEnvs(env?.values)
+
+      }
+    } catch (error) {
+      setAvailableOperationTeams([])
+      console.error(error)
+    } finally {
+      setLoading(false); // Reset in ogni caso
+    }
+  }
+
+
+  let getInfobloxAssets = async () => {
+    setLoading(true);
+    let data = await dataGet('ibAssets')
+    try {
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'ibAssetsError'
+        })
+        props.dispatch(err(error))
+        setIbAssets([])
+      }
+      else {
+        if (data.data.items.length > 0) {
+          setIbAssets(data.data.items)
+        } else {
+          setIbAssets([]) // Aggiunto per liste vuote
+        }
+      }
+    } catch (error) {
+      setIbAssets([])
+      console.error(error)
+    } finally {
+      setLoading(false); // Reset in ogni caso
+    }
+  }
+
+
+  let getCheckpointAssets = async () => {
+    setLoading(true);
+    let data = await dataGet('cpAssets')
+    try {
+      if (data.status && data.status !== 200 ) {
+        let error = Object.assign(data, {
+          component: 'cloudAccount',
+          vendor: 'concerto',
+          errorType: 'cpAssetsError'
+        })
+        props.dispatch(err(error))
+        setCpAssets([])
+      }
+      else {
+        if (data.data.items.length > 0) {
+          setCpAssets(data.data.items)
+        } else {
+          setCpAssets([]) // Aggiunto per liste vuote
+        }
+      }
+    } catch (error) {
+      setCpAssets([])
+      console.error(error)
+    } finally {
+      setLoading(false); // Reset in ogni caso
+    }
+  }
+
+  let getCloudAccounts = async (assetId, cloudAccountToCall) => {
+    setCloudAccountsLoading(true);
+    try {
+      let data = await dataGet('cloudAccounts', assetId);
 
       if (data.status && data.status !== 200) {
         const error = Object.assign(data, {
@@ -396,82 +398,82 @@ function CloudAccount(props) {
         setCloudAccountsLoading(false);
 
         if (cloudAccountToCall) {
-          await dataGetHandler('cloudAccount', cloudAccountToCall)
+          await getCloudAccount(cloudAccountToCall)
         }
     }
   }
 
-    if (entities === 'cloudAccount') {
-      setCloudAccountLoading(true)
-      data = await dataGet(entities, cloudAccount?.accountName)
-      if (data.status && data.status !== 200 ) {
-        let error = Object.assign(data, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'cloudAccount'
-        })
-        props.dispatch(err(error))
-        let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
-        cloudAccountCopy.cloudNetworks = []
-        setCloudAccount(cloudAccountCopy)
-      }
-      else {
-        if (data?.data?.networks.length > 0) {
-          let list = data.data.networks.map((item, i) => {
-            let sm = item.network.split('/')
-            item.network = item.network ? item.network : '';
-            item.network_container = item.network_container ? item.network_container : '';
-            item.Region = item?.extattrs?.City?.value ? item.extattrs.City.value : '';
-            if (provider === 'AZURE') {
-              item.azureScope = item?.extattrs?.Scope?.value ? item.extattrs.Scope.value : '';
-            }
-            item.existent = true
-            item.subnetMaskCidr = sm[1]
-            item.id = ++i
-            return item
-          });
-          let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
-          cloudAccountCopy.cloudNetworks = list
-          cloudAccountCopy.operationTeams = data?.data?.tags ? data.data.tags : [] 
-          setOrigOperationTeams(data?.data?.tags ? data.data.tags : [] )
-          let cloudAccountOperationTeams = cloudAccountCopy.operationTeams.filter(elemento => availableOperationTeams.includes(elemento));
-          
-          setCheckedOperationTeams(cloudAccountOperationTeams)
 
+  let getCloudAccount = async (name) => {
+    setCloudAccountLoading(true)
+    let data = await dataGet('cloudAccount', name)
+    if (data.status && data.status !== 200 ) {
+      let error = Object.assign(data, {
+        component: 'cloudAccount',
+        vendor: 'concerto',
+        errorType: 'cloudAccount'
+      })
+      props.dispatch(err(error))
+      let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      cloudAccountCopy.cloudNetworks = []
+      setCloudAccount(cloudAccountCopy)
+    }
+    else {
+      if (data?.data?.networks.length > 0) {
+        let list = data.data.networks.map((item, i) => {
+          let sm = item.network.split('/')
+          item.network = item.network ? item.network : '';
+          item.network_container = item.network_container ? item.network_container : '';
+          item.Region = item?.extattrs?.City?.value ? item.extattrs.City.value : '';
           if (provider === 'AZURE') {
-            try {
-              const parts = cloudAccountCopy.accountName.split('-');
+            item.azureScope = item?.extattrs?.Scope?.value ? item.extattrs.Scope.value : '';
+          }
+          item.existent = true
+          item.subnetMaskCidr = sm[1]
+          item.id = ++i
+          return item
+        });
+        let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+        cloudAccountCopy.cloudNetworks = list
+        cloudAccountCopy.operationTeams = data?.data?.tags ? data.data.tags : [] 
+        setOrigOperationTeams(data?.data?.tags ? data.data.tags : [] )
+        let cloudAccountOperationTeams = cloudAccountCopy.operationTeams.filter(elemento => availableOperationTeams.includes(elemento));
+        
+        setCheckedOperationTeams(cloudAccountOperationTeams)
 
-              if (Array.isArray(parts)) {
-                let env = parts[parts.length - 1];
+        if (provider === 'AZURE') {
+          try {
+            const parts = cloudAccountCopy.accountName.split('-');
 
-                if (env && azureEnvs.includes(env)) {
-                  setAzureEnv(env)
-                }
-                else {
-                  console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
-                  setAzureEnv('');
-                }
+            if (Array.isArray(parts)) {
+              let env = parts[parts.length - 1];
+
+              if (env && azureEnvs.includes(env)) {
+                setAzureEnv(env)
               }
               else {
                 console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
                 setAzureEnv('');
               }
-              
-            } catch (err) {
-              console.error("Error during 'accountName' elaboration:", err);
+            }
+            else {
+              console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
               setAzureEnv('');
             }
-          }  
+            
+          } catch (err) {
+            console.error("Error during 'accountName' elaboration:", err);
+            setAzureEnv('');
+          }
+        }  
 
-          setCloudAccount(cloudAccountCopy)      
+        setCloudAccount(cloudAccountCopy)      
 
         }
       }
-      setCloudAccountLoading(false)
-    }
-
+    setCloudAccountLoading(false)
   }
+  
 
   let dataGet = async (entities, accountName) => {
     let endpoint
@@ -826,14 +828,14 @@ function CloudAccount(props) {
       setLoading(false)
       setCheckedOperationTeams([])
     
-      dataGetHandler('cloudAccounts', ibAsset)
+      getCloudAccounts(ibAsset)
     }
   }
 
   let writeHandler = async () => {
 
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
-    setCloudAccountToCall(cloudAccountCopy?.accountName)
+
     let toDelete = []
     let toPut = []
 
@@ -964,7 +966,7 @@ function CloudAccount(props) {
     setExistent(true)
     setLoading(false)  
   
-    await dataGetHandler('cloudAccounts', ibAsset)
+    await getCloudAccounts(ibAsset, cloudAccountCopy.accountName)
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
@@ -1034,7 +1036,6 @@ function CloudAccount(props) {
 
     setCloudAccountLoading(false);
     setCloudAccount({});
-    setCloudAccountToCall('')
 
     setOrigOperationTeams([])
     setAvailableOperationTeams([]);
@@ -1238,7 +1239,7 @@ function CloudAccount(props) {
                       )
                       }
                       catch (error) {
-                        console.err(error)
+                        console.error(error)
                       }
                     })
                   :
@@ -1748,7 +1749,7 @@ function CloudAccount(props) {
                                 )
                               }
                               catch (error) {
-                                console.err(error)
+                                console.error(error)
                               }
                             })
                           :
@@ -1793,7 +1794,7 @@ function CloudAccount(props) {
                                 )
                               }
                               catch (error) {
-                                console.err(error)
+                                console.error(error)
                               }
                             })
                           :
