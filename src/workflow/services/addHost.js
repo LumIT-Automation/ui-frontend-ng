@@ -301,7 +301,7 @@ function AddHost(props) {
         r = error;
       }
     );
-    await rest.doXHR(`workflow/checkpoint-add-host/`, props.token, b);
+    await rest.doXHR(`workflow/crif/checkpoint-add-host/`, props.token, b);
     return r;
   };
 

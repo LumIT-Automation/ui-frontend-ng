@@ -496,11 +496,11 @@ function CloudAccount(props) {
     }
 
     if (entities === 'cloudAccounts') {
-      endpoint = `workflow/cloud-accounts/`
+      endpoint = `workflow/crif/cloud-accounts/`
     }
 
     if (entities === 'cloudAccount') {
-      endpoint = `workflow/cloud-account/${accountName}/`
+      endpoint = `workflow/crif/cloud-account/${accountName}/`
     }
 
     let rest = new Rest(
@@ -999,7 +999,7 @@ function CloudAccount(props) {
         r = error
       }
     )
-    await rest.doXHR(`workflow/cloud-account/${accountName}/`, props.token, body )
+    await rest.doXHR(`workflow/crif/cloud-account/${accountName}/`, props.token, body )
     return r
   }
 
@@ -1014,7 +1014,7 @@ function CloudAccount(props) {
         r = error
       }
     )
-    await rest.doXHR(`workflow/cloud-account/${accountName}/`, props.token, body )
+    await rest.doXHR(`workflow/crif/cloud-account/${accountName}/`, props.token, body )
     return r
   }
 

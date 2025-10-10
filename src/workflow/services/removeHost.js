@@ -245,7 +245,7 @@ function RemoveHost(props) {
         r = error;
       }
     );
-    await rest.doXHR('workflow/checkpoint-remove-host/', props.token, b);
+    await rest.doXHR('workflow/crif/checkpoint-remove-host/', props.token, b);
     return r;
   };
 
