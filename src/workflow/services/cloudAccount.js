@@ -47,10 +47,10 @@ function CloudAccount(props) {
 
   let [composeName, setComposeName] = useState(false)
 
-  let [ibAssets, setIbAssets] = useState([]);
-  let [ibAsset, setIbAsset] = useState(0);  
-  let [cpAssets, setCpAssets] = useState([]);
-  let [cpAsset, setCpAsset] = useState(0);
+  let [infobloxAssets, setInfobloxAssets] = useState([]);
+  let [infobloxAsset, setInfobloxAsset] = useState(0);  
+  let [checkPointAssets, setCheckPointAssets] = useState([]);
+  let [checkPointAsset, setCheckPointAsset] = useState(0);
 
   let [cloudAccountsLoading, setCloudAccountsLoading] = useState(false);
   let [cloudAccounts, setCloudAccounts] = useState([]);
@@ -137,11 +137,11 @@ function CloudAccount(props) {
 
   //Chiedo i cloud accounts
   useEffect(() => {
-    if (ibAsset) {
+    if (infobloxAsset) {
       setAzureEnv('');
-      getCloudAccounts(ibAsset)
+      getCloudAccounts(infobloxAsset)
     }    
-  }, [ibAsset]);
+  }, [infobloxAsset]);
 
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
@@ -178,7 +178,7 @@ function CloudAccount(props) {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
         if (!existent && cloudAccountCopy?.newInputName && azureEnv) {
-          delete errorsCopy.cloudAccountNameError
+          delete errorsCopy.accountName
           cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
@@ -193,7 +193,7 @@ function CloudAccount(props) {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
         if (!existent && cloudAccountCopy?.newInputName) {
-          delete errorsCopy.cloudAccountNameError
+          delete errorsCopy.accountName
           cloudAccountCopy.accountName = `CRIF-${cloudAccountCopy.newInputName}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
@@ -215,7 +215,6 @@ function CloudAccount(props) {
       setTimeout( () => setResponse(''), 2030)
     }
   }, [response]);
-
 
   let getInfobloxConfigurations = async () => {
     setLoading(true);
@@ -244,7 +243,6 @@ function CloudAccount(props) {
       setLoading(false); 
     }
   }
-
 
   let getCheckpointConfigurations = async () => {
     setLoading(true);
@@ -286,58 +284,56 @@ function CloudAccount(props) {
     }
   }
 
-
   let getInfobloxAssets = async () => {
     setLoading(true);
-    let data = await dataGet('ibAssets')
+    let data = await dataGet('infobloxAssets')
     try {
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'cloudAccount',
           vendor: 'concerto',
-          errorType: 'ibAssetsError'
+          errorType: 'infobloxAssetsError'
         })
         props.dispatch(err(error))
-        setIbAssets([])
+        setInfobloxAssets([])
       }
       else {
         if (data.data.items.length > 0) {
-          setIbAssets(data.data.items)
+          setInfobloxAssets(data.data.items)
         } else {
-          setIbAssets([]) 
+          setInfobloxAssets([]) 
         }
       }
     } catch (error) {
-      setIbAssets([])
+      setInfobloxAssets([])
       console.error(error)
     } finally {
       setLoading(false); 
     }
   }
 
-
   let getCheckpointAssets = async () => {
     setLoading(true);
-    let data = await dataGet('cpAssets')
+    let data = await dataGet('checkPointAssets')
     try {
       if (data.status && data.status !== 200 ) {
         let error = Object.assign(data, {
           component: 'cloudAccount',
           vendor: 'concerto',
-          errorType: 'cpAssetsError'
+          errorType: 'checkPointAssetsError'
         })
         props.dispatch(err(error))
-        setCpAssets([])
+        setCheckPointAssets([])
       }
       else {
         if (data.data.items.length > 0) {
-          setCpAssets(data.data.items)
+          setCheckPointAssets(data.data.items)
         } else {
-          setCpAssets([]) 
+          setCheckPointAssets([]) 
         }
       }
     } catch (error) {
-      setCpAssets([])
+      setCheckPointAssets([])
       console.error(error)
     } finally {
       setLoading(false); 
@@ -403,7 +399,6 @@ function CloudAccount(props) {
     }
   }
 
-
   let getCloudAccount = async (name) => {
     setCloudAccountLoading(true)
     let data = await dataGet('cloudAccount', name)
@@ -451,17 +446,19 @@ function CloudAccount(props) {
 
           if (Array.isArray(parts)) {
             let env = parts[parts.length - 1];
-
             if (env && azureEnvs.includes(env)) {
               setAzureEnv(env)
+              let errorsCopy = JSON.parse(JSON.stringify(errors))
+              delete errorsCopy.azureEnv
+              setErrors(errorsCopy);
             }
             else {
-              console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
+              console.warn(`account ${env} not included in azure envs: `, cloudAccountCopy.accountName);
               setAzureEnv('');
             }
           }
           else {
-            console.warn("'accountName' wrong format:", cloudAccountCopy.accountName);
+            console.warn("accountName wrong format:", cloudAccountCopy.accountName);
             setAzureEnv('');
           }
           
@@ -478,7 +475,6 @@ function CloudAccount(props) {
     setCloudAccountLoading(false)
   }
   
-
   let dataGet = async (entities, accountName) => {
     let endpoint
     let r
@@ -491,11 +487,11 @@ function CloudAccount(props) {
       endpoint = `checkpoint/configurations/`
     }
 
-    if (entities === 'ibAssets') {
+    if (entities === 'infobloxAssets') {
       endpoint = `infoblox/assets/`
     }
 
-    if (entities === 'cpAssets') {
+    if (entities === 'checkPointAssets') {
       endpoint = `checkpoint/assets/`
     }
 
@@ -547,27 +543,18 @@ function CloudAccount(props) {
       setProvider(value)
     }
 
-    if (key === 'azureEnv') {
-      delete errorsCopy.azureEnvError
-      setAzureEnv(value)
-      setComposeName(true)
-      setErrors(errorsCopy);
+    if (key === 'infobloxAsset') {
+      setInfobloxAsset(value)
     }
 
-    if (key === 'ibAsset') {
-      delete errorsCopy.ibAssetError
+    if (key === 'checkPointAsset') {
+      delete errorsCopy.checkPointAsset
       setErrors(errorsCopy);
-      setIbAsset(value)
-    }
-
-    if (key === 'cpAsset') {
-      delete errorsCopy.cpAssetError
-      setErrors(errorsCopy);
-      setCpAsset(value)
+      setCheckPointAsset(value)
     }
     
     if (key === 'changeRequestId') {
-      delete errorsCopy.changeRequestIdError
+      delete errorsCopy.changeRequestId
       setChangeRequestId(value);
       setErrors(errorsCopy);
       let ref = myRefs.current['changeRequestId'];
@@ -577,15 +564,75 @@ function CloudAccount(props) {
     }
 
     if (key === 'accountId') {
-      let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
-      let accountCopy = cloudAccountsCopy.find( a => a.accountId === value )
-      setCloudAccount(accountCopy)
+      if (existent) {
+        let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
+        let accountCopy = cloudAccountsCopy.find( a => a.accountId === value )
+        setCloudAccount(accountCopy)
+      }
+      else {
+        delete errorsCopy.accountId
+        let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+        accountCopy.accountId = value
+        setErrors(errorsCopy);
+        setCloudAccount(accountCopy)
+        let ref = myRefs.current['accountId'];
+        if (ref && ref.input) {
+          ref.input.focus();
+        }
+      }
     }
 
     if (key === 'accountName') {
-      let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
-      let accountCopy = cloudAccountsCopy.find( a => a.accountName === value )
+      if (existent) {
+        let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
+        let accountCopy = cloudAccountsCopy.find( a => a.accountName === value )
+        setCloudAccount(accountCopy)  
+      }
+      else {
+        delete errorsCopy.accountName
+        let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+        accountCopy.accountName = value
+        setErrors(errorsCopy);
+        setCloudAccount(accountCopy)
+        let ref = myRefs.current.accountName;
+        if (ref && ref.input) {
+          ref.input.focus();
+        }
+      }
+    }
+
+    if (key === 'newInputName') {
+      setComposeName(false)
+      setAzureEnv('')
+      delete errorsCopy.newInputName
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.newInputName = value
+      delete accountCopy.accountName
+      setErrors(errorsCopy);
       setCloudAccount(accountCopy)
+      let ref = myRefs.current.newInputName;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
+    if (key === 'accountOwner') {
+      delete errorsCopy.accountOwner
+      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
+      accountCopy.accountOwner = value
+      setErrors(errorsCopy);
+      setCloudAccount(accountCopy)
+      let ref = myRefs.current.accountOwner;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
+    if (key === 'azureEnv') {
+      delete errorsCopy.azureEnv
+      setAzureEnv(value)
+      setComposeName(true)
+      setErrors(errorsCopy);
     }
 
     if (cloudNetwork) {
@@ -658,59 +705,7 @@ function CloudAccount(props) {
 
     }
 
-    if (key === 'cloudAccountId') {
-      delete errorsCopy.cloudAccountIdError
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.accountId = value
-      setErrors(errorsCopy);
-      setCloudAccount(accountCopy)
-      let ref = myRefs.current['cloudAccountId'];
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }
-
-    if (key === 'cloudAccountName') {
-      delete errorsCopy.cloudAccountNameError
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.accountName = value
-      setErrors(errorsCopy);
-      setCloudAccount(accountCopy)
-      let ref = myRefs.current.cloudAccountName;
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }
-
-    if (key === 'newInputName') {
-      setComposeName(false)
-      setAzureEnv('')
-      delete errorsCopy.newInputNameError
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.newInputName = value
-      delete accountCopy.accountName
-      setErrors(errorsCopy);
-      setCloudAccount(accountCopy)
-      let ref = myRefs.current.newInputName;
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }
-
-    if (key === 'accountOwner') {
-      delete errorsCopy.accountOwner
-      let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.accountOwner = value
-      setErrors(errorsCopy);
-      setCloudAccount(accountCopy)
-      let ref = myRefs.current.accountOwner;
-      if (ref && ref.input) {
-        ref.input.focus();
-      }
-    }
-    
   }
-
 
   /* VALIDATION */
   //'^[0-9]{12}$|^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
@@ -724,31 +719,39 @@ function CloudAccount(props) {
   }
 
   let validationCheck = async () => {
+
+    //console.log(azureEnv)
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
     let localErrors = 0
     let errorsCopy = JSON.parse(JSON.stringify(errors))
 
-    if (!cpAsset) {
-      errorsCopy.cpAssetError = true
+    if (!checkPointAsset) {
+      errorsCopy.checkPointAsset = true
       ++localErrors
       setErrors(errorsCopy);
     }
 
     if (!changeRequestId) {
-      errorsCopy.changeRequestIdError = true
+      errorsCopy.changeRequestId = true
       ++localErrors
       setErrors(errorsCopy);
     } 
 
     if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
-      errorsCopy.changeRequestIdError = true
+      errorsCopy.changeRequestId = true
       ++localErrors
       setErrors(errorsCopy);
     } 
 
     if (!cloudAccountCopy.accountOwner) {
       errorsCopy.accountOwner = true
+      ++localErrors
+      setErrors(errorsCopy);
+    }
+
+    if (!checkedOperationTeams || checkedOperationTeams.length < 1) {
+      errorsCopy.operationTeams = true
       ++localErrors
       setErrors(errorsCopy);
     }
@@ -774,19 +777,19 @@ function CloudAccount(props) {
 
       if (provider === 'AZURE') {
         if (!azureEnv) {
-          errorsCopy.azureEnvError = true
+          errorsCopy.azureEnv = true
           ++localErrors
           setErrors(errorsCopy);
         }
         if (!existent && !cloudAccountCopy?.newInputName) {
-          errorsCopy.newInputNameError = true
+          errorsCopy.newInputName = true
           ++localErrors
           setErrors(errorsCopy);
         }
 
       }
       else {
-        delete errorsCopy.azureEnvError
+        delete errorsCopy.azureEnv
         setErrors(errorsCopy);
       }
     }
@@ -794,7 +797,7 @@ function CloudAccount(props) {
       console.error(err)
     }
 
-    console.log(errorsCopy)
+    console.log('Errors recap: ', errorsCopy)
     setCloudAccount(cloudAccountCopy)
     return localErrors
   }
@@ -817,12 +820,12 @@ function CloudAccount(props) {
           "provider": provider,
           "infoblox_cloud_network_delete": [
             {
-              "asset": ibAsset? ibAsset : null,
+              "asset": infobloxAsset? infobloxAsset : null,
               "network": net
             }
           ],
           "checkpoint_datacenter_account_delete": {
-            "asset": cpAsset
+            "asset": checkPointAsset
           }
         }
         
@@ -844,7 +847,7 @@ function CloudAccount(props) {
       setLoading(false)
       setCheckedOperationTeams([])
     
-      getCloudAccounts(ibAsset)
+      getCloudAccounts(infobloxAsset)
     }
   }
 
@@ -876,12 +879,12 @@ function CloudAccount(props) {
           "provider": provider,
           "infoblox_cloud_network_delete": [
             {
-              "asset": ibAsset ? ibAsset : null,
+              "asset": infobloxAsset ? infobloxAsset : null,
               "network": net
             }
           ],
           "checkpoint_datacenter_account_delete": {
-            "asset": cpAsset
+            "asset": checkPointAsset
           }
         }
         
@@ -906,14 +909,14 @@ function CloudAccount(props) {
           "Reference": cloudAccountCopy.accountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
-            "asset": cpAsset,
+            "asset": checkPointAsset,
             "tags": checkedOperationTeams
           }
         }
 
       let list = toPut.map((n,i) => { 
         let o = {}
-        o.asset = ibAsset
+        o.asset = infobloxAsset
         o.subnetMaskCidr = n.subnetMaskCidr
         o.region = n.Region
         if (provider === 'AZURE') {
@@ -950,7 +953,7 @@ function CloudAccount(props) {
           "Reference": cloudAccountCopy.accountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
-            "asset": cpAsset,
+            "asset": checkPointAsset,
             "tags": checkedOperationTeams
           }
         }
@@ -982,7 +985,7 @@ function CloudAccount(props) {
     setExistent(true)
     setLoading(false)  
   
-    await getCloudAccounts(ibAsset, cloudAccountCopy.accountName)
+    await getCloudAccounts(infobloxAsset, cloudAccountCopy.accountName)
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
@@ -1042,10 +1045,10 @@ function CloudAccount(props) {
     //setAzureScope('');
     setAzureEnv('');
 
-    setIbAssets([]);
-    setIbAsset(0);  
-    setCpAssets([]);
-    setCpAsset(0);
+    setInfobloxAssets([]);
+    setInfobloxAsset(0);  
+    setCheckPointAssets([]);
+    setCheckPointAsset(0);
 
     setCloudAccountsLoading(false);
     setCloudAccounts([]);
@@ -1071,430 +1074,23 @@ function CloudAccount(props) {
   }
 
   let onChangeCustom = (list) => {
+    let errorsCopy = JSON.parse(JSON.stringify(errors))
+    delete errorsCopy.operationTeams
+    setErrors(errorsCopy);
     setCheckedOperationTeams(list)
     //setIndeterminate(!!list.length && list.length < availableOperationTeams.length)
     //setCheckAll(list.length === availableOperationTeams.length)
   };
 
   let onCheckAllChange = (e) => {
+    let errorsCopy = JSON.parse(JSON.stringify(errors))
+    delete errorsCopy.operationTeams
+    setErrors(errorsCopy);
     setCheckedOperationTeams((e.target.checked ? availableOperationTeams : []))
   };
   
 
   /* RENDER */
-  let createElement = (element, key, choices, obj, action) => {
-
-    if (element === 'input') {
-      if (key === 'changeRequestId' ) {
-        return (
-          <Input
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-            value={changeRequestId}
-            ref={ref => (myRefs.current['changeRequestId'] = ref)}
-            placeholder={
-              key === 'changeRequestId' ?
-                "Format: ITIO-<number> (min 6 max 18 digits)"
-              :
-                null
-              }
-            style=
-            {errors[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'cloudAccountId') {
-        return (
-          <Input
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-            placeholder={provider === 'AWS' ? "only numbers, len 12" :  "alphanumeric, five groups 8-4-4-4-12"}
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={cloudAccount?.accountId}
-            ref={ref => (myRefs.current.cloudAccountId = ref)}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'cloudAccountName') {
-        return (
-          <Input
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-            style=
-            {obj[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={cloudAccount?.accountName}
-            ref={ref => (myRefs.current.cloudAccountName = ref)}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
-      else if (key === 'newInputName') {
-        return (
-          <Input
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-            style=
-            {errors[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={cloudAccount?.newInputName}
-            ref={ref => (myRefs.current.newInputName = ref)}
-            onChange={event => set(key, event.target.value)}
-            onBlur={() => setComposeName(true)}
-          />
-        )
-      }
-
-    }
-    switch (element) {
-      
-      case 'popOver':
-        if (action === 'delAccount') {
-          return (
-            <Popover
-            content={
-              <div>
-                <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
-                <a onClick={() => accountDel()}>DELETE ACCOUNT</a>
-              </div>
-            }
-            title='Attention!'
-            trigger="click"
-          >
-            <Button 
-              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              type="primary" 
-              danger 
-            >
-              Delete Account
-            </Button>
-          </Popover>
-          )
-        }
-
-      case 'textArea':
-        return (
-          <Input.TextArea
-            rows={7}
-            value={obj[key]}
-            disabled={true}
-            ref={ref => {
-              if (ref) {
-                textAreaRefs.current[`${obj.id}_${key}`] = ref;
-              }
-            }}
-            onChange={event => set(key, event.target.value, obj)}
-            style={{width: 350}}
-          />
-        )
-
-      case 'select':          
-        if (key === 'Region') {
-          return (
-            <Select
-              value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, obj)}
-            >
-              <React.Fragment>
-                { 
-                  regions ?
-                    regions.map((r,i) => {
-                      try{
-                        let str = `${r.regionName.toString()} - ${r.regionCode.toString()}`
-                      return (
-                        <Select.Option key={i} value={r.regionCode}>{str}</Select.Option>
-                      )
-                      }
-                      catch (error) {
-                        console.error(error)
-                      }
-                    })
-                  :
-                   []
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else if (key === 'subnetMaskCidr') {
-          return (
-            <Select
-              value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, obj)}
-            >
-              <React.Fragment>
-                {subnetMaskCidrs ? 
-                  subnetMaskCidrs.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                : 
-                  []
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else if (key === 'azureScope') {
-          return (
-            <Select
-              value={obj[key]}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, obj)}
-            >
-              <React.Fragment>
-                {azureScopes ? 
-                  azureScopes.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                : 
-                  []
-                }
-              </React.Fragment>
-            </Select>
-          )
-        }
-        else if (key === 'accountId' || key === 'accountName') {
-          return (
-            <Select
-              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              value={
-                key === 'accountId' ?
-                  cloudAccount?.accountId ? 
-                    cloudAccount.accountId 
-                  :
-                    ''
-                : 
-                  key === 'accountName' ?
-                    cloudAccount?.accountName ? 
-                      cloudAccount.accountName 
-                    :
-                      ''
-                  :
-                    null
-                  
-              }
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {cloudAccounts ?
-                  cloudAccounts.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n[key]}>{n[key]}</Select.Option>
-                    )
-                  })
-                :
-                  []
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }
-        /*else if (key === 'provider') {
-          return (
-            <Select
-              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              value={provider}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {providers ?
-                  providers.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                :
-                  []
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }*/
-        else if (key === 'azureEnv') {
-          return (
-            <Select
-              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              value={azureEnv}
-              showSearch
-              style={
-                errors.azureEnvError ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {azureEnvs ?
-                  azureEnvs.map((n, i) => {
-                    return (
-                      <Select.Option key={i} value={n}>{n}</Select.Option>
-                    )
-                  })
-                :
-                  []
-                }
-              </React.Fragment>
-          </Select>
-          )
-        }                              
-        else {
-          return (
-            <Select
-              value={''}
-              showSearch
-              style={
-                obj[`${key}Error`] ?
-                  {border: `1px solid red`, width: '100%'}
-                :
-                  {width: '100%'}
-              }
-              optionFilterProp="children"
-              filterOption={(input, option) =>
-                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-              }
-              filterSort={(optionA, optionB) =>
-                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
-              }
-              onSelect={event => set(key, event, '')}
-            >
-              <React.Fragment>
-                {[].map((n, i) => {
-                  return (
-                    <Select.Option key={i} value={n}>{n}</Select.Option>
-                  )
-                })
-                }
-              </React.Fragment>
-          </Select>
-          )
-        } 
-         
-      case 'checkboxGroup':
-        return (
-          <React.Fragment>
-            <Checkbox 
-              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              indeterminate={indeterminate} 
-              onChange={onCheckAllChange} 
-              checked={checkAll}
-            >
-              Check all
-            </Checkbox>
-
-            <Divider />
-
-            <Checkbox.Group 
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-              options={availableOperationTeams} 
-              value={checkedOperationTeams} 
-              onChange={onChangeCustom}
-            />
-          </React.Fragment>
-        )
-      
-
-      default:
-
-    }
-
-  }
 
   let columns = [
     {
@@ -1566,7 +1162,43 @@ function CloudAccount(props) {
         cloudNet.existent ? 
           cloudNet.Region
         :
-          createElement('select', 'Region', '', cloudNet, '')
+          <Select
+            value={cloudNet.Region}
+            showSearch
+            style={
+              cloudNet.RegionError ?
+                {border: `1px solid red`, width: '100%'}
+              :
+                {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set('Region', event, cloudNet)}
+          >
+            <React.Fragment>
+              { 
+                regions ?
+                  regions.map((r,i) => {
+                    try{
+                      let str = `${r.regionName.toString()} - ${r.regionCode.toString()}`
+                    return (
+                      <Select.Option key={i} value={r.regionCode}>{str}</Select.Option>
+                    )
+                    }
+                    catch (error) {
+                      console.error(error)
+                    }
+                  })
+                :
+                  []
+              }
+            </React.Fragment>
+          </Select>
       )
     },
     {
@@ -1589,7 +1221,36 @@ function CloudAccount(props) {
         cloudNet.existent ? 
           cloudNet.subnetMaskCidr
         :
-          createElement('select', 'subnetMaskCidr', 'subnetMaskCidrs', cloudNet, '')
+          <Select
+            value={cloudNet.subnetMaskCidr}
+            showSearch
+            style={
+              cloudNet.subnetMaskCidrError ?
+                {border: `1px solid red`, width: '100%'}
+              :
+                {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set('subnetMaskCidr', event, cloudNet)}
+          >
+            <React.Fragment>
+              {subnetMaskCidrs ? 
+                subnetMaskCidrs.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                  )
+                })
+              : 
+                []
+              }
+            </React.Fragment>
+          </Select>
       )
     },    
     {
@@ -1608,7 +1269,18 @@ function CloudAccount(props) {
         setSearchedColumn
       ),
       render: (name, cloudNet)  => (
-        createElement('textArea', 'comment', '', cloudNet, '')
+        <Input.TextArea
+          rows={7}
+          value={cloudNet.comment}
+          disabled={true}
+          ref={ref => {
+            if (ref) {
+              textAreaRefs.current[`${cloudNet.id}_comment`] = ref;
+            }
+          }}
+          onChange={event => set('comment', event.target.value, cloudNet)}
+          style={{width: 350}}
+        />
       )
     },
     {
@@ -1660,7 +1332,36 @@ function CloudAccount(props) {
         cloudNet.existent ? 
           cloudNet.azureScope
         :
-          createElement('select', 'azureScope', '', cloudNet, '')
+          <Select
+            value={cloudNet.azureScope}
+            showSearch
+            style={
+              cloudNet.azureScopeError ?
+                {border: `1px solid red`, width: '100%'}
+              :
+                {width: '100%'}
+            }
+            optionFilterProp="children"
+            filterOption={(input, option) =>
+              option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+            }
+            filterSort={(optionA, optionB) =>
+              optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+            }
+            onSelect={event => set('azureScope', event, cloudNet)}
+          >
+            <React.Fragment>
+              {azureScopes ? 
+                azureScopes.map((n, i) => {
+                  return (
+                    <Select.Option key={i} value={n}>{n}</Select.Option>
+                  )
+                })
+              : 
+                []
+              }
+            </React.Fragment>
+          </Select>
       )
     }
     columns.splice(insertIndex, 0, azureScopeColumn);
@@ -1673,7 +1374,6 @@ function CloudAccount(props) {
   }
 
   return (
-
     <React.Fragment>
       <Card 
         props={{
@@ -1739,9 +1439,6 @@ function CloudAccount(props) {
                       }
                     </React.Fragment>
                   </Select>
-                  {/*
-                  createElement('select', 'provider', 'providers', '', '')
-                  */}
                 </Col>
 
               </Row>
@@ -1756,18 +1453,12 @@ function CloudAccount(props) {
                     </Col>
                     <Col span={6}>
                       <Radio.Group 
-                        style={
-                          errors?.ibAssetError ? 
-                            {backgroundColor: 'red'}
-                          :
-                            {}
-                        }
-                        onChange={event => set('ibAsset', event.target.value)} 
-                        value={ibAsset}
+                        onChange={event => set('infobloxAsset', event.target.value)} 
+                        value={infobloxAsset}
                       >
                         <Space direction="vertical">
-                          {ibAssets ?
-                            ibAssets.map((r,i) => {
+                          {infobloxAssets ?
+                            infobloxAssets.map((r,i) => {
                               try{
                                 return (
                                   <Radio value={r.id}>{r.fqdn}</Radio>
@@ -1792,7 +1483,7 @@ function CloudAccount(props) {
                 null
               }
 
-              {ibAsset > 0 ?
+              {infobloxAsset ?
                 <React.Fragment>
 
                   <Row>
@@ -1802,17 +1493,17 @@ function CloudAccount(props) {
                     <Col span={6}>
                       <Radio.Group 
                         style={
-                          errors?.cpAssetError ? 
+                          errors?.checkPointAsset ? 
                             {backgroundColor: 'red'}
                           :
                             {}
                         }
-                        onChange={event => set('cpAsset', event.target.value)} 
-                        value={cpAsset}
+                        onChange={event => set('checkPointAsset', event.target.value)} 
+                        value={checkPointAsset}
                       >
                         <Space direction="vertical">
-                          {cpAssets ?
-                            cpAssets.map((r,i) => {
+                          {checkPointAssets ?
+                            checkPointAssets.map((r,i) => {
                               try{
                                 return (
                                   <Radio value={r.id}>{r.fqdn}</Radio>
@@ -1837,7 +1528,19 @@ function CloudAccount(props) {
                       <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Change request id:</p>
                     </Col>
                     <Col span={6}>
-                      {createElement('input', 'changeRequestId')}
+                      <Input
+                        disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                        style=
+                        {errors.changeRequestId ?
+                          {borderColor: 'red'}
+                        :
+                          {}
+                        }
+                        value={changeRequestId}
+                        ref={ref => (myRefs.current['changeRequestId'] = ref)}
+                        placeholder={"Format: ITIO-<number> (min 6 max 18 digits)"}
+                        onChange={event => set('changeRequestId', event.target.value)}
+                      />
                     </Col>
                   </Row>
 
@@ -1874,29 +1577,95 @@ function CloudAccount(props) {
                   {existent ?
                     <>
                       <Row>
+
                         <Col span={2}>
                           <p style={{marginLeft: 20, marginTop: 5}}>Account ID:</p>
                         </Col>
+
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
                           <Col span={5}>
-                            {createElement('select', 'accountId', 'cloudAccounts', '')}
+                            <Select
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              style={errors.accountId ?
+                                {border: `1px solid red`, width: '100%'}
+                              :
+                                {width: '100%'}
+                              }
+                              value={cloudAccount.accountId }
+                              showSearch
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={event => set('accountId', event)}
+                            >
+                              <React.Fragment>
+                                {cloudAccounts ?
+                                  cloudAccounts.map((account, i) => {
+                                    return (
+                                      <Select.Option key={i} value={account.accountId}>{account.accountId}</Select.Option>
+                                    )
+                                  })
+                                :
+                                  []
+                                }
+                              </React.Fragment>
+                            </Select>
                           </Col>
                         }
+
+
                         <Col offset={1} span={2}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Name:</p>
                         </Col>
+
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
                           <Col span={5}>
-                            {createElement('select', 'accountName', 'cloudAccounts', '')}
+                            <Select
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              style={errors.accountName ?
+                                {border: `1px solid red`, width: '100%'}
+                              :
+                                {width: '100%'}
+                              }
+                              value={cloudAccount?.accountName}
+                              showSearch
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={event => set('accountName', event)}
+                            >
+                              <React.Fragment>
+                                {cloudAccounts ?
+                                  cloudAccounts.map((account, i) => {
+                                    return (
+                                      <Select.Option key={i} value={account.accountName}>{account.accountName}</Select.Option>
+                                    )
+                                  })
+                                :
+                                  []
+                                }
+                              </React.Fragment>
+                            </Select>
                           </Col>
                         }
+
+
                         <Col offset={1} span={2}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Account Owner:</p>
                         </Col>
+
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
@@ -1928,7 +1697,32 @@ function CloudAccount(props) {
                           {cloudAccountLoading ? 
                             <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
                           :
-                            createElement('checkboxGroup', 'operationTeams', 'cloudAccounts', '')
+                            <React.Fragment>
+                              <Checkbox 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                indeterminate={indeterminate} 
+                                onChange={onCheckAllChange} 
+                                checked={checkAll}
+                              >
+                                Check all
+                              </Checkbox>
+
+                              <Divider />
+
+                              <Checkbox.Group 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                style={errors.operationTeams ?
+                                  {
+                                    backgroundColor: 'red',
+                                  }
+                                :
+                                  {}
+                                }
+                                options={availableOperationTeams} 
+                                value={checkedOperationTeams} 
+                                onChange={onChangeCustom}
+                              />
+                            </React.Fragment>
                           }
                         </Col>
                       </Row>
@@ -1937,7 +1731,24 @@ function CloudAccount(props) {
 
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
-                          {createElement('popOver', '', '', '', 'delAccount')}
+                          <Popover
+                            content={
+                              <div>
+                                <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
+                                <a onClick={() => accountDel()}>DELETE ACCOUNT</a>
+                              </div>
+                            }
+                            title='Attention!'
+                            trigger="click"
+                          >
+                            <Button 
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              type="primary" 
+                              danger 
+                            >
+                              Delete Account
+                            </Button>
+                          </Popover>
                         </Col>
                       </Row>
                     </>
@@ -1950,7 +1761,19 @@ function CloudAccount(props) {
                           <p style={{marginLeft: 20, marginTop: 5}}>New Account ID:</p>
                         </Col>
                         <Col span={5}>
-                          {createElement('input', 'cloudAccountId', '', '', '')}
+                          <Input
+                            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                            placeholder={provider === 'AWS' ? "only numbers, len 12" :  "alphanumeric, five groups 8-4-4-4-12"}
+                            style=
+                            {errors.accountId ?
+                              {borderColor: 'red'}
+                            :
+                              {}
+                            }
+                            value={cloudAccount?.accountId}
+                            ref={ref => (myRefs.current.accountId = ref)}
+                            onChange={event => set('accountId', event.target.value)}
+                          />
                         </Col>
 
                         <Col offset={1} span={3}>
@@ -1963,11 +1786,56 @@ function CloudAccount(props) {
                             : 
                               <span>crif-</span>                            
                             }
-                            {createElement('input', 'newInputName', '', '', '')}
+
+                            <Input
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              style=
+                              {errors.newInputName ?
+                                {borderColor: 'red'}
+                              :
+                                {}
+                              }
+                              value={cloudAccount?.newInputName}
+                              ref={ref => (myRefs.current.newInputName = ref)}
+                              onChange={event => set('newInputName', event.target.value)}
+                              onBlur={() => setComposeName(true)}
+                            />
+
                             { provider === 'AZURE' ?
                               <>
                               <span>-</span>
-                              {createElement('select', 'azureEnv', 'azureEnvs', '')}
+                              <Select
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                value={azureEnv}
+                                showSearch
+                                style={
+                                  errors.azureEnv ?
+                                    {border: `1px solid red`, width: '100%'}
+                                  :
+                                    {width: '100%'}
+                                }
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={event => set('azureEnv', event, '')}
+                              >
+                                <React.Fragment>
+                                  {azureEnvs ?
+                                    azureEnvs.map((env, i) => {
+                                      return (
+                                        <Select.Option key={i} value={env}>{env}</Select.Option>
+                                      )
+                                    })
+                                  :
+                                    []
+                                  }
+                                </React.Fragment>
+                              </Select>
+
                               </>
                             :
                               null
@@ -2008,7 +1876,32 @@ function CloudAccount(props) {
                           {cloudAccountLoading ? 
                             <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
                           :
-                            createElement('checkboxGroup', 'operationTeams', 'cloudAccounts', '')
+                            <React.Fragment>
+                              <Checkbox 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                indeterminate={indeterminate} 
+                                onChange={onCheckAllChange} 
+                                checked={checkAll}
+                              >
+                                Check all
+                              </Checkbox>
+
+                              <Divider />
+
+                              <Checkbox.Group 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                style={errors.operationTeams ?
+                                  {
+                                    backgroundColor: 'red',
+                                  }
+                                :
+                                  {}
+                                }
+                                options={availableOperationTeams} 
+                                value={checkedOperationTeams} 
+                                onChange={onChangeCustom}
+                              />
+                            </React.Fragment>
                           }
                         </Col>
                         </Row>
@@ -2018,7 +1911,24 @@ function CloudAccount(props) {
 
                       <Row>
                         <Col span={1} style={{marginLeft: 20}}>
-                          {createElement('popOver', '', '', '', 'delAccount')}
+                          <Popover
+                            content={
+                              <div>
+                                <p>By clicking on DELETE ACCOUNT, you permanently delete the account and all networks associated with it.</p>
+                                <a onClick={() => accountDel()}>DELETE ACCOUNT</a>
+                              </div>
+                            }
+                            title='Attention!'
+                            trigger="click"
+                          >
+                            <Button 
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              type="primary" 
+                              danger 
+                            >
+                              Delete Account
+                            </Button>
+                          </Popover>
                         </Col>
                       </Row>
                     </>
