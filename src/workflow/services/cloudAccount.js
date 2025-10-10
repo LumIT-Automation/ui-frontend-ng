@@ -1393,6 +1393,21 @@ function CloudAccount(props) {
         onOk={() => setVisible(true)}
         onCancel={() => closeModal()}
         width={1800}
+        style={{
+          //top: 50, // Sposta il modale a 50px dall'alto.
+          //maxHeight: '100vh', // Altezza massima: 100vh meno lo spazio sopra (50px) e sotto (50px).
+          overflow: 'hidden' // Importante per non avere scrollbars sul contenitore principale
+          }}
+          // 2. Imposta l'altezza del *corpo* del modale per gestire lo scorrimento interno.
+        styles={{
+          body: {
+            // Imposta l'altezza fissa del contenuto all'80% della viewport (meno le teste/piedi)
+            height: 'calc(85vh - 0px)', // Potresti dover aggiustare 150px
+            overflowY: 'auto', // ✅ Abilita lo scorrimento interno.
+          },
+        // Se volessi anche lo stile dell'intestazione:
+        // header: { backgroundColor: '#f0f0f0' }, 
+        }}
         maskClosable={false}
       >
         
