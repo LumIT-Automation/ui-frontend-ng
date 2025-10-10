@@ -241,7 +241,7 @@ function CloudAccount(props) {
       setInfobloxConfigurations([])
       console.error(error) 
     } finally {
-      setLoading(false); // Reset in ogni caso
+      setLoading(false); 
     }
   }
 
@@ -282,7 +282,7 @@ function CloudAccount(props) {
       setAvailableOperationTeams([])
       console.error(error)
     } finally {
-      setLoading(false); // Reset in ogni caso
+      setLoading(false); 
     }
   }
 
@@ -304,14 +304,14 @@ function CloudAccount(props) {
         if (data.data.items.length > 0) {
           setIbAssets(data.data.items)
         } else {
-          setIbAssets([]) // Aggiunto per liste vuote
+          setIbAssets([]) 
         }
       }
     } catch (error) {
       setIbAssets([])
       console.error(error)
     } finally {
-      setLoading(false); // Reset in ogni caso
+      setLoading(false); 
     }
   }
 
@@ -333,14 +333,14 @@ function CloudAccount(props) {
         if (data.data.items.length > 0) {
           setCpAssets(data.data.items)
         } else {
-          setCpAssets([]) // Aggiunto per liste vuote
+          setCpAssets([]) 
         }
       }
     } catch (error) {
       setCpAssets([])
       console.error(error)
     } finally {
-      setLoading(false); // Reset in ogni caso
+      setLoading(false); 
     }
   }
 
@@ -367,7 +367,7 @@ function CloudAccount(props) {
               const account = {
                 accountId: item["Account ID"] || '',
                 accountName: item["Account Name"] || '',
-                AccountOwner: item.Reference || ''
+                accountOwner: item.Reference || ''
               };
 
               if (item.Country === 'Cloud-AWS') {
@@ -697,13 +697,13 @@ function CloudAccount(props) {
       }
     }
 
-    if (key === 'cloudAccountAccountOwner') {
-      delete errorsCopy.cloudAccountAccountOwnerError
+    if (key === 'accountOwner') {
+      delete errorsCopy.accountOwner
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.AccountOwner = value
+      accountCopy.accountOwner = value
       setErrors(errorsCopy);
       setCloudAccount(accountCopy)
-      let ref = myRefs.current.cloudAccountAccountOwner;
+      let ref = myRefs.current.accountOwner;
       if (ref && ref.input) {
         ref.input.focus();
       }
@@ -746,6 +746,12 @@ function CloudAccount(props) {
       ++localErrors
       setErrors(errorsCopy);
     } 
+
+    if (!cloudAccountCopy.accountOwner) {
+      errorsCopy.accountOwner = true
+      ++localErrors
+      setErrors(errorsCopy);
+    }
 
     try {
       for (let cloudNet of Object.values(cloudNetworksCopy)) {
@@ -897,7 +903,7 @@ function CloudAccount(props) {
         body.data = {
           "change-request-id": changeRequestId,
           "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.AccountOwner,
+          "Reference": cloudAccountCopy.accountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
@@ -941,7 +947,7 @@ function CloudAccount(props) {
         body.data = {
           "change-request-id": changeRequestId,
           "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.AccountOwner,
+          "Reference": cloudAccountCopy.accountOwner,
           "provider": provider,
           "checkpoint_datacenter_account_put": {
             "asset": cpAsset,
@@ -1155,25 +1161,6 @@ function CloudAccount(props) {
         )
       }
 
-
-
-      else if (key === 'cloudAccountAccountOwner') {
-        return (
-          <Input
-            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-            style=
-            {errors[`${key}Error`] ?
-              {borderColor: 'red'}
-            :
-              {}
-            }
-            value={cloudAccount?.AccountOwner}
-            ref={ref => (myRefs.current.cloudAccountAccountOwner = ref)}
-            onChange={event => set(key, event.target.value)}
-          />
-        )
-      }
-
     }
     switch (element) {
       
@@ -1377,7 +1364,7 @@ function CloudAccount(props) {
           </Select>
           )
         }
-        else if (key === 'provider') {
+        /*else if (key === 'provider') {
           return (
             <Select
               disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
@@ -1411,7 +1398,7 @@ function CloudAccount(props) {
               </React.Fragment>
           </Select>
           )
-        }
+        }*/
         else if (key === 'azureEnv') {
           return (
             <Select
@@ -1725,8 +1712,36 @@ function CloudAccount(props) {
                 <Col offset={1} span={1}>
                   <p style={{marginLeft: 10, marginRight: 10, marginTop: 5, float: 'right'}}>Provider:</p>
                 </Col>
-                <Col span={3}>
-                  {createElement('select', 'provider', 'providers', '', '')}
+                <Col span={2}>
+                  <Select
+                    disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                    value={provider}
+                    showSearch
+                    style={{width: '100%'}}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                    }
+                    filterSort={(optionA, optionB) =>
+                      optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                    }
+                    onSelect={event => set('provider', event)}
+                  >
+                    <React.Fragment>
+                      {providers ?
+                        providers.map((n, i) => {
+                          return (
+                            <Select.Option key={i} value={n}>{n}</Select.Option>
+                          )
+                        })
+                      :
+                        []
+                      }
+                    </React.Fragment>
+                  </Select>
+                  {/*
+                  createElement('select', 'provider', 'providers', '', '')
+                  */}
                 </Col>
 
               </Row>
@@ -1886,7 +1901,18 @@ function CloudAccount(props) {
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
                           <Col span={2}>
-                            <p style={{marginRight: 10, marginTop: 5}}>{cloudAccount.AccountOwner}</p>
+                            <Input
+                            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                            style=
+                            {errors['accountOwner'] ?
+                              {borderColor: 'red'}
+                            :
+                              {}
+                            }
+                            value={cloudAccount?.accountOwner}
+                            ref={ref => (myRefs.current.accountOwner = ref)}
+                            onChange={event => set('accountOwner', event.target.value)}
+                          />
                           </Col>
                         }
                       </Row>
@@ -1955,7 +1981,18 @@ function CloudAccount(props) {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>New Account Owner:</p>
                         </Col>
                         <Col span={2}>
-                          {createElement('input', 'cloudAccountAccountOwner', '', '', '')}
+                          <Input
+                            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                            style=
+                            {errors['accountOwner'] ?
+                              {borderColor: 'red'}
+                            :
+                              {}
+                            }
+                            value={cloudAccount?.accountOwner}
+                            ref={ref => (myRefs.current.accountOwner = ref)}
+                            onChange={event => set('accountOwner', event.target.value)}
+                          />
                         </Col>
 
                       </Row>
