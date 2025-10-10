@@ -119,7 +119,6 @@ function CloudAccount(props) {
   useEffect(() => {
     if (provider) {
       setCloudAccount({});
-
       setAzureEnv('');
       if (provider === 'AWS') {
         setRegions(awsRegions);
@@ -159,13 +158,14 @@ function CloudAccount(props) {
   }, [existent]);
 
 
-  //chiedo uno specifico cloudAccount
+  //chiedo uno specifico cloudAccount esistente
   useEffect(() => {
+    if (existent) {
+      if (cloudAccount.accountName && cloudAccount.accountId) {   
+        getCloudAccount(cloudAccount.accountName)
+      }    
+    }
     
-    if (cloudAccount.accountName && existent) {   
-      setAzureEnv('');
-      getCloudAccount(cloudAccount.accountName)
-    }    
   }, [cloudAccount.accountId, cloudAccount.accountName]);
 
 
@@ -394,7 +394,7 @@ function CloudAccount(props) {
         setCloudAccountsLoading(false);
 
         if (cloudAccountToCall) {
-          await getCloudAccount(cloudAccountToCall)
+          setCloudAccount(cloudAccountToCall)  
         }
     }
   }
@@ -720,7 +720,6 @@ function CloudAccount(props) {
 
   let validationCheck = async () => {
 
-    //console.log(azureEnv)
     let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
     let cloudNetworksCopy = cloudAccountCopy.cloudNetworks
     let localErrors = 0
@@ -985,7 +984,7 @@ function CloudAccount(props) {
     setExistent(true)
     setLoading(false)  
   
-    await getCloudAccounts(infobloxAsset, cloudAccountCopy.accountName)
+    await getCloudAccounts(infobloxAsset, cloudAccountCopy)
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
