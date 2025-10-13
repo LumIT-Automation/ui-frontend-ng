@@ -39,11 +39,14 @@ function CloudAccount(props) {
   let [provider, setProvider] = useState('');
   let [regions, setRegions] = useState([]);
 
-  let [azureScopes, setAzureScopes] = useState([]);
-  let [azureScope, setAzureScope] = useState('');
+  let [awsEnvs, setAwsEnvs] = useState([]);
+  let [awsEnv, setAwsEnv] = useState('');
 
   let [azureEnvs, setAzureEnvs] = useState([]);
   let [azureEnv, setAzureEnv] = useState('');
+
+  let [azureScopes, setAzureScopes] = useState([]);
+  let [azureScope, setAzureScope] = useState('');
 
   let [composeName, setComposeName] = useState(false)
 
@@ -119,7 +122,9 @@ function CloudAccount(props) {
   useEffect(() => {
     if (provider) {
       setCloudAccount({});
+      setAwsEnv('');
       setAzureEnv('');
+
       if (provider === 'AWS') {
         setRegions(awsRegions);
         setCloudAccounts(awsAccounts); 
@@ -137,6 +142,7 @@ function CloudAccount(props) {
   //Chiedo i cloud accounts
   useEffect(() => {
     if (infobloxAsset) {
+      setAwsEnv('');
       setAzureEnv('');
       getCloudAccounts(infobloxAsset)
     }    
@@ -145,6 +151,7 @@ function CloudAccount(props) {
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
     if (!existent) {
+      setAwsEnv('');
       setAzureEnv('');
       setCloudAccount({
         cloudNetworks: [{id:1}],
@@ -153,6 +160,7 @@ function CloudAccount(props) {
     }
     else {
       setCloudAccount({})
+      setAwsEnv('');
       setAzureEnv('');
     } 
   }, [existent]);
@@ -192,9 +200,9 @@ function CloudAccount(props) {
       try {
         let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
         let errorsCopy = JSON.parse(JSON.stringify(errors))
-        if (!existent && cloudAccountCopy?.newInputName) {
+        if (!existent && cloudAccountCopy?.newInputName&& awsEnv) {
           delete errorsCopy.accountName
-          cloudAccountCopy.accountName = `CRIF-${cloudAccountCopy.newInputName}`
+          cloudAccountCopy.accountName = `CRIF-${cloudAccountCopy.newInputName}-${awsEnv}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
         }
@@ -206,7 +214,8 @@ function CloudAccount(props) {
     else {
       setComposeName(false)
     }
-  }, [composeName, azureEnv]);
+//@
+  }, [composeName, awsEnv, azureEnv]);
 
 
   //Rimuovo il messaggio di risposta dopo due secondi
@@ -264,16 +273,21 @@ function CloudAccount(props) {
           const operationTeams = operationTeamMappingObject.value.options.map(t => Object.values(t)[0]);
           setAvailableOperationTeams(operationTeams);
         }
-
+//@
+        let datacenterAccountAWS = data?.data?.items.find(o => o.config_type === 'datacenter-account-AWS')
         let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
 
-        let tmp = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
+        let tmpAWS = datacenterAccountAWS?.value?.['common']?.['env']
+        let tmpAZURE = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
 
-        let scope = tmp.find(o => o.key === "crif:scope")
-        let env = tmp.find(o => o.key === "crif:env")
+        //let envAWS = tmpAAWS.find(o => o.key === "crif:env")
 
-        setAzureScopes(scope?.values)
-        setAzureEnvs(env?.values)
+        let envAZURE = tmpAZURE.find(o => o.key === "crif:env")
+        let scopeAZURE = tmpAZURE.find(o => o.key === "crif:scope")
+
+        setAwsEnvs(tmpAWS)
+        setAzureEnvs(envAZURE?.values)
+        setAzureScopes(scopeAZURE?.values)
 
       }
     } catch (error) {
@@ -440,33 +454,43 @@ function CloudAccount(props) {
       
       setCheckedOperationTeams(cloudAccountOperationTeams)
 
-      if (provider === 'AZURE') {
+      
         try {
           const parts = cloudAccountCopy.accountName.split('-');
 
           if (Array.isArray(parts)) {
             let env = parts[parts.length - 1];
-            if (env && azureEnvs.includes(env)) {
-              setAzureEnv(env)
+            if (env) {
+
+              if (provider === 'AWS'&& awsEnvs.includes(env)) {
+                setAwsEnv(env)
+              }
+              if (provider === 'AZURE' && azureEnvs.includes(env)) {
+                setAzureEnv(env)
+              }
               let errorsCopy = JSON.parse(JSON.stringify(errors))
+              delete errorsCopy.awsEnv
               delete errorsCopy.azureEnv
               setErrors(errorsCopy);
             }
             else {
-              console.warn(`account ${env} not included in azure envs: `, cloudAccountCopy.accountName);
+              console.warn(`account ${env} not included in provider envs: `, cloudAccountCopy.accountName);
+              setAwsEnv('')
               setAzureEnv('');
             }
           }
           else {
             console.warn("accountName wrong format:", cloudAccountCopy.accountName);
+            setAwsEnv('')
             setAzureEnv('');
           }
           
         } catch (err) {
           console.error("Error during 'accountName' elaboration:", err);
+          setAwsEnv('')
           setAzureEnv('');
         }
-      }  
+       
 
       setCloudAccount(cloudAccountCopy)      
 
@@ -603,6 +627,7 @@ function CloudAccount(props) {
 
     if (key === 'newInputName') {
       setComposeName(false)
+      setAwsEnv('')
       setAzureEnv('')
       delete errorsCopy.newInputName
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
@@ -626,6 +651,13 @@ function CloudAccount(props) {
       if (ref && ref.input) {
         ref.input.focus();
       }
+    }
+
+    if (key === 'awsEnv') {
+      delete errorsCopy.awsEnv
+      setAwsEnv(value)
+      setComposeName(true)
+      setErrors(errorsCopy);
     }
 
     if (key === 'azureEnv') {
@@ -755,6 +787,34 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     }
 
+    if (provider === 'AWS') {
+      if (!awsEnv) {
+        errorsCopy.awsEnv = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+      if (!existent && !cloudAccountCopy?.newInputName) {
+        errorsCopy.newInputName = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+    }
+
+    if (provider === 'AZURE') {
+      if (!azureEnv) {
+        errorsCopy.azureEnv = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+      if (!existent && !cloudAccountCopy?.newInputName) {
+        errorsCopy.newInputName = true
+        ++localErrors
+        setErrors(errorsCopy);
+      }
+    }
+
+    
+
     try {
       for (let cloudNet of Object.values(cloudNetworksCopy)) {
         if (!cloudNet.Region) {
@@ -774,23 +834,6 @@ function CloudAccount(props) {
 
       }
 
-      if (provider === 'AZURE') {
-        if (!azureEnv) {
-          errorsCopy.azureEnv = true
-          ++localErrors
-          setErrors(errorsCopy);
-        }
-        if (!existent && !cloudAccountCopy?.newInputName) {
-          errorsCopy.newInputName = true
-          ++localErrors
-          setErrors(errorsCopy);
-        }
-
-      }
-      else {
-        delete errorsCopy.azureEnv
-        setErrors(errorsCopy);
-      }
     }
     catch (err) {
       console.error(err)
@@ -1038,11 +1081,12 @@ function CloudAccount(props) {
     setProviders(['AWS', 'AZURE']);
     setProvider('');
     setRegions([]);
-    setAzureScopes([]);
+    setAwsEnvs([]);
+    setAwsEnv('');
     setAzureEnvs([]);
-
-    //setAzureScope('');
     setAzureEnv('');
+
+    setAzureScopes([]);
 
     setInfobloxAssets([]);
     setInfobloxAsset(0);  
@@ -1815,7 +1859,43 @@ function CloudAccount(props) {
                               onBlur={() => setComposeName(true)}
                             />
 
-                            { provider === 'AZURE' ?
+                            { provider === 'AWS' ?
+                              <>
+                              <span>-</span>
+                              <Select
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                value={awsEnv}
+                                showSearch
+                                style={
+                                  errors.awsEnv ?
+                                    {border: `1px solid red`, width: '100%'}
+                                  :
+                                    {width: '100%'}
+                                }
+                                optionFilterProp="children"
+                                filterOption={(input, option) =>
+                                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                                }
+                                filterSort={(optionA, optionB) =>
+                                  optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                                }
+                                onSelect={event => set('awsEnv', event, '')}
+                              >
+                                <React.Fragment>
+                                  {awsEnvs ?
+                                    awsEnvs.map((env, i) => {
+                                      return (
+                                        <Select.Option key={i} value={env}>{env}</Select.Option>
+                                      )
+                                    })
+                                  :
+                                    []
+                                  }
+                                </React.Fragment>
+                              </Select>
+
+                              </>
+                            :
                               <>
                               <span>-</span>
                               <Select
@@ -1851,8 +1931,6 @@ function CloudAccount(props) {
                               </Select>
 
                               </>
-                            :
-                              null
                             }
                             
                           </div>
