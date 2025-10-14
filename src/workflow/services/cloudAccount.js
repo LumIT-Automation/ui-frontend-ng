@@ -763,17 +763,20 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     }
 
+    /*
     if (!changeRequestId) {
       errorsCopy.changeRequestId = true
       ++localErrors
       setErrors(errorsCopy);
     } 
-
-    if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
-      errorsCopy.changeRequestId = true
-      ++localErrors
-      setErrors(errorsCopy);
-    } 
+    */
+    if (changeRequestId) {
+      if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
+        errorsCopy.changeRequestId = true
+        ++localErrors
+        setErrors(errorsCopy);
+      } 
+    }
 
     if (!cloudAccountCopy.accountOwner) {
       errorsCopy.accountOwner = true
@@ -1596,7 +1599,7 @@ function CloudAccount(props) {
                         }
                         value={changeRequestId}
                         ref={ref => (myRefs.current['changeRequestId'] = ref)}
-                        placeholder={"Format: ITIO-<number> (min 6 max 18 digits)"}
+                        placeholder={"Empty or Format: ITIO-<number> (min 6 max 18 digits)"}
                         onChange={event => set('changeRequestId', event.target.value)}
                       />
                     </Col>
