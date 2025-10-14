@@ -487,7 +487,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason,
+                    reason: json.reason || json.error || json,
                     type: response.type,
                     url: response.url
                   }

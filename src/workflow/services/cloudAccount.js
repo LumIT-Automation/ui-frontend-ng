@@ -1731,18 +1731,23 @@ function CloudAccount(props) {
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
                           <Col span={2}>
-                            <Input
-                            disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-                            style=
-                            {errors['accountOwner'] ?
-                              {borderColor: 'red'}
+                            {existent ?
+                              <p style={{marginTop: 5}}>{cloudAccount?.accountOwner}</p>
                             :
-                              {}
+                              <Input
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                style=
+                                {errors['accountOwner'] ?
+                                  {borderColor: 'red'}
+                                :
+                                  {}
+                                }
+                                value={cloudAccount?.accountOwner}
+                                ref={ref => (myRefs.current.accountOwner = ref)}
+                                onChange={event => set('accountOwner', event.target.value)}
+                              />
                             }
-                            value={cloudAccount?.accountOwner}
-                            ref={ref => (myRefs.current.accountOwner = ref)}
-                            onChange={event => set('accountOwner', event.target.value)}
-                          />
+                            
                           </Col>
                         }
                       </Row>
