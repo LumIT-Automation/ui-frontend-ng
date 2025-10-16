@@ -145,7 +145,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason,
+                    reason: json ? JSON.stringify(json): 'No reason',
                     type: response.type,
                     url: response.url
                   }
@@ -230,7 +230,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason,
+                    reason: json ? JSON.stringify(json): 'No reason',
                     type: response.type,
                     url: response.url
                   }
@@ -311,7 +311,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason,
+                    reason: json ? JSON.stringify(json): 'No reason',
                     type: response.type,
                     url: response.url
                   }
@@ -406,7 +406,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason,
+                    reason: json ? JSON.stringify(json): 'No reason',
                     type: response.type,
                     url: response.url
                   }
@@ -487,7 +487,7 @@ class Rest {
                   {
                     status: response.status,
                     message: response.statusText,
-                    reason: json.reason || json.error || json,
+                    reason: json ? JSON.stringify(json): 'No reason',
                     type: response.type,
                     url: response.url
                   }

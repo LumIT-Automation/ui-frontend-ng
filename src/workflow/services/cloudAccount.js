@@ -903,134 +903,161 @@ function CloudAccount(props) {
     let toDelete = []
     let toPut = []
 
-    for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
-      if (cloudNet.toDelete) {
-        toDelete.push(cloudNet)
+    try {
+      
+      for (const cloudNet of cloudAccountCopy?.cloudNetworks) {
+        if (cloudNet.toDelete) {
+          toDelete.push(cloudNet)
+        }
+        else if (!cloudNet.existent){
+          toPut.push(cloudNet)
+        }
       }
-      else if (!cloudNet.existent){
-        toPut.push(cloudNet)
-      }
-    }
 
-    setLoading(true)
-
-    if (toDelete.length > 0) {
-      for (const cloudNet of toDelete) {
-        let net = cloudNet.network.split('/')
-        net = net[0]
-        let body = {}
-        body.data = {
-          "change-request-id": changeRequestId,
-          "provider": provider,
-          "infoblox_cloud_network_delete": [
-            {
-              "asset": infobloxAsset ? infobloxAsset : null,
-              "network": net
+      if (toDelete.length > 0) {
+        for (const cloudNet of toDelete) {
+          setLoading(true)
+          let net = cloudNet.network.split('/')
+          net = net[0]
+          let body = {}
+          body.data = {
+            "change-request-id": changeRequestId,
+            "provider": provider,
+            "infoblox_cloud_network_delete": [
+              {
+                "asset": infobloxAsset ? infobloxAsset : null,
+                "network": net
+              }
+            ],
+            "checkpoint_datacenter_account_delete": {
+              "asset": checkPointAsset
             }
-          ],
-          "checkpoint_datacenter_account_delete": {
-            "asset": checkPointAsset
+          }
+          let n = await cloudNetworkDelete(cloudAccountCopy.accountName, body)
+          if (n.status && n.status !== 200 ) {
+            let error = Object.assign(n, {
+              component: 'cloudAccount',
+              vendor: 'concerto',
+              errorType: 'CloudNetwork or AccountDelete Error'
+            })
+            props.dispatch(err(error))
+          }
+          setLoading(false)
+        }
+      }
+     
+      if (toPut.length > 0) {
+        setLoading(true)
+        let body = {}
+          body.data = {
+            "change-request-id": changeRequestId,
+            "Account ID": cloudAccountCopy.accountId,
+            "Reference": cloudAccountCopy.accountOwner,
+            "provider": provider,
+            "checkpoint_datacenter_account_put": {
+              "asset": checkPointAsset,
+              "tags": checkedOperationTeams
+            }
+          }
+
+        let list = toPut.map((n,i) => { 
+          let o = {}
+          o.asset = infobloxAsset
+          o.subnetMaskCidr = n.subnetMaskCidr
+          o.region = n.Region
+          if (provider === 'AZURE') {
+            o.scope = n.azureScope.toLowerCase()
+          }
+          return o
+        })
+
+        body.data.infoblox_cloud_network_assign = list 
+
+        if (provider === 'AZURE') {
+          body.data.azure_data = {
+              "env": azureEnv,
           }
         }
         
-        let n = await cloudNetworkDelete(cloudAccountCopy.accountName, body)
+        let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
 
         if (n.status && n.status !== 200 ) {
           let error = Object.assign(n, {
             component: 'cloudAccount',
             vendor: 'concerto',
-            errorType: 'CloudNetworkOrAccountDeleteError'
+            errorType: 'CloudAccountPutError'
           })
           props.dispatch(err(error))
         }
+        setLoading(false)
       }
+      else {
+        //per modificare le tags senza aggiungere reti
+        let areArraysContentEqual = (arrA, arrB) => {
+          // 1. Devono avere la stessa lunghezza
+          if (arrA.length !== arrB.length) {
+              return false;
+          }
+          
+          // 2. Copia e ordina entrambi gli array per un confronto "posizione per posizione"
+          const sortedArrA = [...arrA].sort();
+          const sortedArrB = [...arrB].sort();
+
+          // 3. Controlla che gli elementi ordinati siano identici
+          return sortedArrA.every((value, index) => value === sortedArrB[index]);
+        };
+
+        if (!areArraysContentEqual(origOperationTeams, checkedOperationTeams)) {
+          setLoading(true)
+          let body = {}
+          body.data = {
+            "change-request-id": changeRequestId,
+            "Account ID": cloudAccountCopy.accountId,
+            "Reference": cloudAccountCopy.accountOwner,
+            "provider": provider,
+            "checkpoint_datacenter_account_put": {
+              "asset": checkPointAsset,
+              "tags": checkedOperationTeams
+            }
+          }
+
+          body.data.infoblox_cloud_network_assign = [] 
+
+          if (provider === 'AZURE') {
+            body.data.azure_data = {
+                "env": azureEnv,
+            }
+          }
+          
+          let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
+          if (n.status && n.status !== 200 ) {
+            let error = Object.assign(n, {
+              component: 'cloudAccount',
+              vendor: 'concerto',
+              errorType: 'CloudAccountPutError'
+            })
+            props.dispatch(err(error))
+          }
+          setLoading(false)
+        }
+      }
+
+      setResponse('commit completed')
+
     }
+    catch (err) {
+      console.error(err)
+    }
+    finally {
+      setCloudAccount({});
+      setCheckedOperationTeams([])
+      setExistent(true)
+      setLoading(false)  
     
-    if (toPut.length > 0) {
-      let body = {}
-        body.data = {
-          "change-request-id": changeRequestId,
-          "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.accountOwner,
-          "provider": provider,
-          "checkpoint_datacenter_account_put": {
-            "asset": checkPointAsset,
-            "tags": checkedOperationTeams
-          }
-        }
-
-      let list = toPut.map((n,i) => { 
-        let o = {}
-        o.asset = infobloxAsset
-        o.subnetMaskCidr = n.subnetMaskCidr
-        o.region = n.Region
-        if (provider === 'AZURE') {
-          o.scope = n.azureScope.toLowerCase()
-        }
-        return o
-      })
-
-      body.data.infoblox_cloud_network_assign = list 
-
-      if (provider === 'AZURE') {
-        body.data.azure_data = {
-            "env": azureEnv,
-        }
-      }
-      
-      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
-
-      if (n.status && n.status !== 200 ) {
-        let error = Object.assign(n, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'CloudAccountPutError'
-        })
-        props.dispatch(err(error))
-      }
-    }
-    else {
-      //per modificare le tags senza aggiungere reti
-      let body = {}
-        body.data = {
-          "change-request-id": changeRequestId,
-          "Account ID": cloudAccountCopy.accountId,
-          "Reference": cloudAccountCopy.accountOwner,
-          "provider": provider,
-          "checkpoint_datacenter_account_put": {
-            "asset": checkPointAsset,
-            "tags": checkedOperationTeams
-          }
-        }
-
-      body.data.infoblox_cloud_network_assign = [] 
-
-      if (provider === 'AZURE') {
-        body.data.azure_data = {
-            "env": azureEnv,
-        }
-      }
-      
-      let n = await cloudAccountPut(cloudAccountCopy.accountName, body)
-
-      if (n.status && n.status !== 200 ) {
-        let error = Object.assign(n, {
-          component: 'cloudAccount',
-          vendor: 'concerto',
-          errorType: 'CloudAccountPutError'
-        })
-        props.dispatch(err(error))
-      }
+      await getCloudAccounts(infobloxAsset, cloudAccountCopy)
     }
 
-    setResponse('commit succesful')
-
-    setCloudAccount({});
-    setCheckedOperationTeams([])
-    setExistent(true)
-    setLoading(false)  
-  
-    await getCloudAccounts(infobloxAsset, cloudAccountCopy)
+    
   }
 
   let cloudNetworkDelete = async (accountName, body) => {
