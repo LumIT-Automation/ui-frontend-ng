@@ -68,6 +68,9 @@ function CloudAccount(props) {
 
   let [changeRequestId, setChangeRequestId] = useState('');
 
+  let [aoToEdit, setAoToEdit] = useState(false);
+  let [newAccountOwner, setNewAccountOwner] = useState('');
+
   let [subnetMaskCidrs, setSubnetMaskCidrs] = useState(['23', '24']);
 
   let [errors, setErrors] = useState({});
@@ -653,6 +656,16 @@ function CloudAccount(props) {
       }
     }
 
+    if (key === 'newAccountOwner') {
+      delete errorsCopy.newAccountOwner
+      setErrors(errorsCopy);
+      setNewAccountOwner(value)
+      let ref = myRefs.current.newAccountOwner;
+      if (ref && ref.input) {
+        ref.input.focus();
+      }
+    }
+
     if (key === 'awsEnv') {
       delete errorsCopy.awsEnv
       setAwsEnv(value)
@@ -816,7 +829,11 @@ function CloudAccount(props) {
       }
     }
 
-    
+    if (aoToEdit && !newAccountOwner) {
+      errorsCopy.newAccountOwner = true
+      ++localErrors
+      setErrors(errorsCopy);
+    }
 
     try {
       for (let cloudNet of Object.values(cloudNetworksCopy)) {
@@ -847,6 +864,48 @@ function CloudAccount(props) {
     return localErrors
   }
 
+  let modifyAccountOwner = async() => {
+    let cloudAccountCopy = JSON.parse(JSON.stringify(cloudAccount))
+    let localErrors = await validationCheck()
+
+    try {
+      
+      if (localErrors === 0) {
+        let body = {
+          "data": {
+            "Reference": newAccountOwner
+          }
+        }
+        
+        setLoading(true)
+
+        let n = await aoModify(cloudAccountCopy.accountName, body)
+
+        if (n.status && n.status !== 200 ) {
+          let error = Object.assign(n, {
+            component: 'cloudAccount',
+            vendor: 'concerto',
+            errorType: 'Account Owner modify Error'
+          })
+          props.dispatch(err(error))
+        }
+        else {
+          setResponse('Account Owner modified')
+          cloudAccountCopy.accountOwner = newAccountOwner
+        }        
+        
+      }
+    }
+    catch (err) {
+      console.error(err)
+    }
+    finally {
+      setLoading(false)
+      setAoToEdit(false)
+      await getCloudAccounts(infobloxAsset, cloudAccountCopy)
+    }
+    
+  }
 
   /* DISPOSITION */
   let accountDel = async() => {
@@ -1087,6 +1146,21 @@ function CloudAccount(props) {
       }
     )
     await rest.doXHR(`workflow/crif/cloud-account/${accountName}/`, props.token, body )
+    return r
+  }
+
+  let aoModify = async (accountName, body) => {
+    let r
+    let rest = new Rest(
+      "PUT",
+      resp => {
+        r = resp
+      },
+      error => {
+        r = error
+      }
+    )
+    await rest.doXHR(`workflow/crif/cloud-account/${accountName}/modify/`, props.token, body )
     return r
   }
 
@@ -1715,7 +1789,7 @@ function CloudAccount(props) {
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
-                          <Col span={5}>
+                          <Col span={4}>
                             <Select
                               disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                               style={errors.accountName ?
@@ -1757,9 +1831,57 @@ function CloudAccount(props) {
                         {cloudAccountsLoading ?
                           <Spin indicator={spinIcon} style={{marginLeft: '3%'}}/>
                         :
-                          <Col span={2}>
+                          <Col span={4}>
                             {existent ?
-                              <p style={{marginTop: 5}}>{cloudAccount?.accountOwner}</p>
+                            <Row>
+                              <Col span={12}>
+                                {aoToEdit ? 
+                                  <>
+                                    <Input
+                                      disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                      style=
+                                      {errors['newAccountOwner'] ?
+                                        {borderColor: 'red'}
+                                      :
+                                        {}
+                                      }
+                                      value={newAccountOwner}
+                                      ref={ref => (myRefs.current.accountOwner = ref)}
+                                      onChange={event => set('newAccountOwner', event.target.value)}
+                                    />
+                                    <br/>
+                                    <br/>
+                                    <Button
+                                      //disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                      type="primary"
+                                      //style={{marginLeft: 16 }}
+                                      onClick={() => modifyAccountOwner()}
+                                    >
+                                      Modify owner
+                                    </Button>
+                                  </>
+                                :
+                                  <p style={{marginTop: 5}}>{cloudAccount?.accountOwner}</p>
+                                }
+                                
+                              </Col>
+                              
+                              { cloudAccount?.accountName ?
+                                <Col offset={1} span={11}>
+                                  <Checkbox
+                                    checked={aoToEdit}
+                                    disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                    style={{marginTop: 5}}
+                                    onChange={e => setAoToEdit(!aoToEdit)}
+                                  >
+                                    Modify account Owner
+                                  </Checkbox>
+                                </Col>
+                              :
+                                null
+                              }
+                              
+                            </Row>
                             :
                               <Input
                                 disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
