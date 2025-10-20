@@ -752,6 +752,20 @@ function CloudAccount(props) {
 
   }
 
+  let areArraysContentEqual = (arrA, arrB) => {
+    // 1. Devono avere la stessa lunghezza
+    if (arrA.length !== arrB.length) {
+        return false;
+    }
+    
+    // 2. Copia e ordina entrambi gli array per un confronto "posizione per posizione"
+    const sortedArrA = [...arrA].sort();
+    const sortedArrB = [...arrB].sort();
+
+    // 3. Controlla che gli elementi ordinati siano identici
+    return sortedArrA.every((value, index) => value === sortedArrB[index]);
+  };
+
   /* VALIDATION */
   //'^[0-9]{12}$|^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'
   //const validRegex = /^[0-9]{12}$|^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$'/
@@ -783,6 +797,15 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     } 
     */
+
+    if (!areArraysContentEqual(origOperationTeams, checkedOperationTeams)) {
+      if (!changeRequestId) {
+        errorsCopy.changeRequestId = true
+        ++localErrors
+        setErrors(errorsCopy);
+      } 
+    }
+
     if (changeRequestId) {
       if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
         errorsCopy.changeRequestId = true
@@ -1052,19 +1075,7 @@ function CloudAccount(props) {
       }
       else {
         //per modificare le tags senza aggiungere reti
-        let areArraysContentEqual = (arrA, arrB) => {
-          // 1. Devono avere la stessa lunghezza
-          if (arrA.length !== arrB.length) {
-              return false;
-          }
-          
-          // 2. Copia e ordina entrambi gli array per un confronto "posizione per posizione"
-          const sortedArrA = [...arrA].sort();
-          const sortedArrB = [...arrB].sort();
-
-          // 3. Controlla che gli elementi ordinati siano identici
-          return sortedArrA.every((value, index) => value === sortedArrB[index]);
-        };
+        
 
         if (!areArraysContentEqual(origOperationTeams, checkedOperationTeams)) {
           setLoading(true)
