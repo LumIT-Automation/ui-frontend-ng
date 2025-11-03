@@ -153,9 +153,11 @@ function CloudAccount(props) {
 
   //Se è un nuovo cloudAccount setto il primo item network
   useEffect(() => {
+    setAwsEnv('');
+    setAzureEnv('');
+    setErrors({})
+
     if (!existent) {
-      setAwsEnv('');
-      setAzureEnv('');
       setCloudAccount({
         cloudNetworks: [{id:1}],
         newInputName: ''
@@ -163,9 +165,8 @@ function CloudAccount(props) {
     }
     else {
       setCloudAccount({})
-      setAwsEnv('');
-      setAzureEnv('');
     } 
+    
   }, [existent]);
 
 
