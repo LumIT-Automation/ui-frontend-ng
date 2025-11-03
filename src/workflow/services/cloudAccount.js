@@ -156,6 +156,7 @@ function CloudAccount(props) {
     setAwsEnv('');
     setAzureEnv('');
     setErrors({})
+    setCheckedOperationTeams([])
 
     if (!existent) {
       setCloudAccount({
