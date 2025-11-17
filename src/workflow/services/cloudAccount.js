@@ -282,17 +282,19 @@ function CloudAccount(props) {
         let datacenterAccountAWS = data?.data?.items.find(o => o.config_type === 'datacenter-account-AWS')
         let datacenterAccountAZURE = data?.data?.items.find(o => o.config_type === 'datacenter-account-AZURE')
 
-        let tmpAWS = datacenterAccountAWS?.value?.['common']?.['env']
-        let tmpAZURE = datacenterAccountAZURE?.value?.['datacenter-query']?.['query-rules']
+        let tmpAWS = datacenterAccountAWS?.value?.['datacenter-query']?.['env-maps']
+        let tmpAZURE = datacenterAccountAZURE?.value?.['datacenter-query']
 
-        //let envAWS = tmpAAWS.find(o => o.key === "crif:env")
+        let envAWS = Object.keys(tmpAWS)
+        let envAZURE1 = tmpAZURE?.['env-maps']
+        let scopeAZURE1 = tmpAZURE?.['scope-maps']
 
-        let envAZURE = tmpAZURE.find(o => o.key === "crif:env")
-        let scopeAZURE = tmpAZURE.find(o => o.key === "crif:scope")
+        let envAZURE = Object.keys(envAZURE1)
+        let scopeAZURE =  Object.keys(scopeAZURE1)
 
-        setAwsEnvs(tmpAWS)
-        setAzureEnvs(envAZURE?.values)
-        setAzureScopes(scopeAZURE?.values)
+        setAwsEnvs(envAWS)
+        setAzureEnvs(envAZURE)
+        setAzureScopes(scopeAZURE)
 
       }
     } catch (error) {
