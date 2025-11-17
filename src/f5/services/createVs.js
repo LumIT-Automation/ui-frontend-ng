@@ -310,6 +310,8 @@ function CreateF5Service(props) {
     }
 
     else if (key === 'routeDomain') {
+      delete errorsCopy.routeDomainError
+      setErrors(errorsCopy)
       setRouteDomain(value)
     }
 
@@ -438,6 +440,13 @@ function CreateF5Service(props) {
     if (!((changeRequestId.length >= 11) && (changeRequestId.length <= 23))) {
       errorsCopy.changeRequestIdError = true
       setErrors(errorsCopy);
+    }
+
+    if (routeDomains && routeDomain.length > 1 ) {
+      if (!routeDomain) {
+        errorsCopy.routeDomainError = true
+        setErrors(errorsCopy)
+      }
     }
 
     if (!snat) {
@@ -1153,21 +1162,27 @@ function CreateF5Service(props) {
                 </Row>
                 <br/>
 
-                <Row>
-                  <Col offset={5} span={3}>
-                    <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Route Domain (optional):</p>
-                  </Col>
-                  <Col span={8}>
-                    { routeDomainsLoading ?
-                      <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
-                    :
-                      <Col span={24}>
-                        {createElement('select', 'routeDomain', 'routeDomains')}
+                {routeDomains && routeDomain.length > 1 ?      
+                  <>      
+                    <Row>
+                      <Col offset={5} span={3}>
+                        <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Route Domain:</p>
                       </Col>
-                    }
-                  </Col>
-                </Row>
-                <br/>
+                      <Col span={8}>
+                        { routeDomainsLoading ?
+                          <Spin indicator={spinIcon} style={{ margin: '0 10%'}}/>
+                        :
+                          <Col span={24}>
+                            {createElement('select', 'routeDomain', 'routeDomains')}
+                          </Col>
+                        }
+                      </Col>
+                    </Row>
+                    <br/>
+                  </> 
+                : 
+                  null
+                }
 
                 <React.Fragment>
                   <Row>
@@ -1203,7 +1218,7 @@ function CreateF5Service(props) {
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snatpool Datagroup:</p>
                         </Col>
 
-                        <Col span={6}>
+                        <Col span={7}>
                         { errors.dgNameError ?
                           <React.Fragment>
                             <Select
@@ -1265,7 +1280,7 @@ function CreateF5Service(props) {
                         <Col offset={3} span={6}>
                           <p style={{marginRight: 10, marginTop: 5, float: 'right'}}>Snat irule:</p>
                         </Col>
-                        <Col span={6}>
+                        <Col span={7}>
                           { errors.codeError ?
                             <TextArea
                               rows={5}
