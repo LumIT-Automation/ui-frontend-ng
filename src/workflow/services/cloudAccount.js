@@ -596,8 +596,10 @@ function CloudAccount(props) {
 
     if (key === 'accountId') {
       if (existent) {
+        delete errorsCopy.operationTeams
         let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
         let accountCopy = cloudAccountsCopy.find( a => a.accountId === value )
+        setErrors(errorsCopy);
         setCloudAccount(accountCopy)
       }
       else {
@@ -615,8 +617,10 @@ function CloudAccount(props) {
 
     if (key === 'accountName') {
       if (existent) {
+        delete errorsCopy.operationTeams
         let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
         let accountCopy = cloudAccountsCopy.find( a => a.accountName === value )
+        setErrors(errorsCopy);
         setCloudAccount(accountCopy)  
       }
       else {
