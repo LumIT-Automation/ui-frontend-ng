@@ -188,7 +188,7 @@ function CreateF5Service(props) {
         setDataGroupsTypeIp(list)
       }
 
-      if (props.partition !== 'Common') {
+      /*if (props.partition !== 'Common') {
         setDataGroupsLoading(true)
         let dataGroupsPartition = await dataGet('datagroups', props.partition)
         setDataGroupsLoading(false)
@@ -209,7 +209,7 @@ function CreateF5Service(props) {
           });
           setDataGroupsTypeIp(dgCommon)
         }
-      }
+      }*/
 
     }
     catch (error) {
