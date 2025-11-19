@@ -638,7 +638,14 @@ function CloudAccount(props) {
       setAzureEnv('')
       delete errorsCopy.newInputName
       let accountCopy = JSON.parse(JSON.stringify(cloudAccount))
-      accountCopy.newInputName = value
+
+      if (provider === 'AWS') {
+        accountCopy.newInputName = value.toUpperCase()
+      }
+      if (provider === 'AZURE') {
+        accountCopy.newInputName = value.toLowerCase()
+      }
+      
       delete accountCopy.accountName
       setErrors(errorsCopy);
       setCloudAccount(accountCopy)
