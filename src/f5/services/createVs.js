@@ -86,6 +86,12 @@ function CreateF5Service(props) {
   }, [nodes]);
 
   useEffect(() => {
+    if (routeDomains && routeDomains < 2) {
+      setRouteDomain('')
+    }
+  }, [routeDomain, routeDomains]);
+
+  useEffect(() => {
     const validators = new Validators();
 
     // La condizione principale:
