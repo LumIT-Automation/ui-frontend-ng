@@ -442,7 +442,7 @@ function CreateF5Service(props) {
       setErrors(errorsCopy);
     }
 
-    if (routeDomains && routeDomain.length > 1 ) {
+    if (routeDomains && routeDomains.length > 1 ) {
       if (!routeDomain) {
         errorsCopy.routeDomainError = true
         setErrors(errorsCopy)
@@ -1162,7 +1162,7 @@ function CreateF5Service(props) {
                 </Row>
                 <br/>
 
-                {routeDomains && routeDomain.length > 1 ?      
+                {routeDomains && routeDomains.length > 1 ?      
                   <>      
                     <Row>
                       <Col offset={5} span={3}>
