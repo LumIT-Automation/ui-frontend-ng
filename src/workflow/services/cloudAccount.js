@@ -144,6 +144,7 @@ function CloudAccount(props) {
         list = JSON.parse(JSON.stringify(azureAccountNamePrefixs))
       } 
       setAccountNamePrefixs(list)
+      setAccountNamePrefix('')
     } else {
       setRegions([]);
       setCloudAccounts([]);
