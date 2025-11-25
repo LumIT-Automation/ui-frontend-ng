@@ -471,6 +471,7 @@ function UrlInApplicationSite(props) {
         <Input
           value={obj.url}
           ref={ref => (myRefs.current[`${obj.id}_url`] = ref)}
+          disabled={true}
           style={
             obj.urlError
               ? { borderColor: 'red', textAlign: 'center', width: 200 }

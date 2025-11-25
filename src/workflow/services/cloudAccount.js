@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'react-redux'
-//import 'antd/dist/reset.css'
 
 import Rest from '../../_helpers/Rest'
 import Authorizators from '../../_helpers/authorizators'
@@ -38,6 +37,12 @@ function CloudAccount(props) {
   let [providers, setProviders] = useState(['AWS', 'AZURE']);
   let [provider, setProvider] = useState('');
   let [regions, setRegions] = useState([]);
+
+  let [awsAccountNamePrefixs, setAwsAccountNamePrefixs] = useState([])
+  let [azureAccountNamePrefixs, setAzureAccountNamePrefixs] = useState([])
+
+  let [accountNamePrefixs, setAccountNamePrefixs] = useState([])
+  let [accountNamePrefix, setAccountNamePrefix] = useState('')
 
   let [awsEnvs, setAwsEnvs] = useState([]);
   let [awsEnv, setAwsEnv] = useState('');
@@ -127,14 +132,18 @@ function CloudAccount(props) {
       setCloudAccount({});
       setAwsEnv('');
       setAzureEnv('');
+      let list = []
 
       if (provider === 'AWS') {
         setRegions(awsRegions);
         setCloudAccounts(awsAccounts); 
+        list = JSON.parse(JSON.stringify(awsAccountNamePrefixs))
       } else if (provider === 'AZURE') {
         setRegions(azureRegions);
         setCloudAccounts(azureAccounts); 
+        list = JSON.parse(JSON.stringify(azureAccountNamePrefixs))
       } 
+      setAccountNamePrefixs(list)
     } else {
       setRegions([]);
       setCloudAccounts([]);
@@ -192,7 +201,7 @@ function CloudAccount(props) {
         let errorsCopy = JSON.parse(JSON.stringify(errors))
         if (!existent && cloudAccountCopy?.newInputName && azureEnv) {
           delete errorsCopy.accountName
-          cloudAccountCopy.accountName = `crif-${cloudAccountCopy.newInputName}-${azureEnv}`
+          cloudAccountCopy.accountName = `${accountNamePrefix}${cloudAccountCopy.newInputName}-${azureEnv}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
         }
@@ -207,7 +216,7 @@ function CloudAccount(props) {
         let errorsCopy = JSON.parse(JSON.stringify(errors))
         if (!existent && cloudAccountCopy?.newInputName&& awsEnv) {
           delete errorsCopy.accountName
-          cloudAccountCopy.accountName = `CRIF-${cloudAccountCopy.newInputName}-${awsEnv}`
+          cloudAccountCopy.accountName = `${accountNamePrefix}${cloudAccountCopy.newInputName}-${awsEnv}`
           setCloudAccount(cloudAccountCopy)
           setErrors(errorsCopy);
         }
@@ -220,7 +229,7 @@ function CloudAccount(props) {
       setComposeName(false)
     }
 //@
-  }, [composeName, awsEnv, azureEnv]);
+  }, [composeName, awsEnv, azureEnv, accountNamePrefix]);
 
 
   //Rimuovo il messaggio di risposta dopo due secondi
@@ -295,6 +304,9 @@ function CloudAccount(props) {
         setAwsEnvs(envAWS)
         setAzureEnvs(envAZURE)
         setAzureScopes(scopeAZURE)
+
+        setAwsAccountNamePrefixs(datacenterAccountAWS?.value?.common?.['account-name-prefix'] || [''])
+        setAzureAccountNamePrefixs(datacenterAccountAZURE?.value?.common?.['account-name-prefix'] || [''])
 
       }
     } catch (error) {
@@ -681,6 +693,13 @@ function CloudAccount(props) {
       }
     }
 
+    if (key === 'accountNamePrefix') {
+      delete errorsCopy.accountNamePrefix
+      setAccountNamePrefix(value)
+      setComposeName(true)
+      setErrors(errorsCopy);
+    }
+
     if (key === 'awsEnv') {
       delete errorsCopy.awsEnv
       setAwsEnv(value)
@@ -827,6 +846,12 @@ function CloudAccount(props) {
         ++localErrors
         setErrors(errorsCopy);
       } 
+    }
+
+    if (!existent && !accountNamePrefix) {
+      errorsCopy.accountNamePrefix = true
+      ++localErrors
+      setErrors(errorsCopy);
     }
 
     if (!cloudAccountCopy.accountOwner) {
@@ -1934,7 +1959,7 @@ function CloudAccount(props) {
                         <Col span={2}>
                           <p style={{marginLeft: 20}}>Operation Teams:</p>
                         </Col>
-                      <Col offset={1} span={3}>
+                        <Col offset={1} span={3}>
                           {cloudAccountLoading ? 
                             <Spin indicator={cloudNetLoadIcon} style={{margin: 'auto 48%'}}/>
                           :
@@ -1950,6 +1975,7 @@ function CloudAccount(props) {
 
                               <Divider />
 
+                            {/*
                               <Checkbox.Group 
                                 disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                                 style={errors.operationTeams ?
@@ -1963,6 +1989,29 @@ function CloudAccount(props) {
                                 value={checkedOperationTeams} 
                                 onChange={onChangeCustom}
                               />
+                              */}
+                              <Checkbox.Group 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                style={errors.operationTeams ? 
+                                  { 
+                                    backgroundColor: 'red', 
+                                  } 
+                                  : 
+                                  {}
+                                }
+                                value={checkedOperationTeams} 
+                                onChange={onChangeCustom}
+                              >
+                                <Row>
+                                  {availableOperationTeams.map((team) => (                                   
+                                    <Col span={24} key={team}>
+                                      <Checkbox value={team}> 
+                                        {team}
+                                      </Checkbox>
+                                    </Col>
+                                  ))}
+                                </Row>
+                              </Checkbox.Group>
                             </React.Fragment>
                           }
                         </Col>
@@ -2022,12 +2071,38 @@ function CloudAccount(props) {
                         </Col>
                         <Col offset={0.5} span={5} style={{ marginBottom: 8}}>
                           <div style={{ display: 'flex', alignItems: 'center'}}>
-                            {provider === 'AWS' ?
-                              <span>CRIF-</span>
-                            : 
-                              <span>crif-</span>                            
-                            }
-
+                            <Select
+                              disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                              value={accountNamePrefix}
+                              showSearch
+                              style={
+                                errors.accountNamePrefix ?
+                                  {border: `1px solid red`, width: '100%'}
+                                :
+                                  {width: '100%'}
+                              }
+                              optionFilterProp="children"
+                              filterOption={(input, option) =>
+                                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                              }
+                              filterSort={(optionA, optionB) =>
+                                optionA.children.toLowerCase().localeCompare(optionB.children.toLowerCase())
+                              }
+                              onSelect={event => set('accountNamePrefix', event, '')}
+                            >
+                              <React.Fragment>
+                                {accountNamePrefixs ?
+                                  accountNamePrefixs.map((n, i) => {
+                                    return (
+                                      <Select.Option key={i} value={n}>{n}</Select.Option>
+                                    )
+                                  })
+                                :
+                                  []
+                                }
+                              </React.Fragment>
+                            </Select>
+                            
                             <Input
                               disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                               style=
@@ -2163,6 +2238,7 @@ function CloudAccount(props) {
 
                               <Divider />
 
+                               {/*
                               <Checkbox.Group 
                                 disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
                                 style={errors.operationTeams ?
@@ -2176,6 +2252,29 @@ function CloudAccount(props) {
                                 value={checkedOperationTeams} 
                                 onChange={onChangeCustom}
                               />
+                              */}
+                              <Checkbox.Group 
+                                disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
+                                style={errors.operationTeams ? 
+                                  { 
+                                    backgroundColor: 'red', 
+                                  } 
+                                  : 
+                                  {}
+                                }
+                                value={checkedOperationTeams} 
+                                onChange={onChangeCustom}
+                              >
+                                <Row>
+                                  {availableOperationTeams.map((team) => (                                   
+                                    <Col span={24} key={team}>
+                                      <Checkbox value={team}> 
+                                        {team}
+                                      </Checkbox>
+                                    </Col>
+                                  ))}
+                                </Row>
+                              </Checkbox.Group>
                             </React.Fragment>
                           }
                         </Col>
