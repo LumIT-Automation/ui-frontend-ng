@@ -103,6 +103,7 @@ function CloudAccount(props) {
       getCheckpointConfigurations()
       getInfobloxAssets()
       getCheckpointAssets()
+      setNewAccountOwner('')
     }  
   }, [visible]);
 
@@ -132,6 +133,9 @@ function CloudAccount(props) {
       setCloudAccount({});
       setAwsEnv('');
       setAzureEnv('');
+      setNewAccountOwner('')
+      setCheckedOperationTeams([])
+      setAccountNamePrefix('')
       let list = []
 
       if (provider === 'AWS') {
@@ -144,7 +148,6 @@ function CloudAccount(props) {
         list = JSON.parse(JSON.stringify(azureAccountNamePrefixs))
       } 
       setAccountNamePrefixs(list)
-      setAccountNamePrefix('')
     } else {
       setRegions([]);
       setCloudAccounts([]);
@@ -166,7 +169,9 @@ function CloudAccount(props) {
     setAwsEnv('');
     setAzureEnv('');
     setErrors({})
+    setNewAccountOwner('')
     setCheckedOperationTeams([])
+    setAccountNamePrefix('')
 
     if (!existent) {
       setCloudAccount({
@@ -184,6 +189,9 @@ function CloudAccount(props) {
   //chiedo uno specifico cloudAccount esistente
   useEffect(() => {
     if (existent) {
+      setNewAccountOwner('')
+      setCheckedOperationTeams([])
+      setAccountNamePrefix('')
       if (cloudAccount.accountName && cloudAccount.accountId) {   
         getCloudAccount(cloudAccount.accountName)
       }    
