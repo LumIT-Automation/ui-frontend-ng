@@ -617,7 +617,7 @@ function CloudAccount(props) {
 
     if (key === 'accountId') {
       if (existent) {
-        delete errorsCopy.operationTeams
+        //delete errorsCopy.operationTeams
         let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
         let accountCopy = cloudAccountsCopy.find( a => a.accountId === value )
         setErrors(errorsCopy);
@@ -638,7 +638,7 @@ function CloudAccount(props) {
 
     if (key === 'accountName') {
       if (existent) {
-        delete errorsCopy.operationTeams
+        //delete errorsCopy.operationTeams
         let cloudAccountsCopy = JSON.parse(JSON.stringify(cloudAccounts))
         let accountCopy = cloudAccountsCopy.find( a => a.accountName === value )
         setErrors(errorsCopy);
@@ -869,11 +869,11 @@ function CloudAccount(props) {
       setErrors(errorsCopy);
     }
 
-    if (!checkedOperationTeams || checkedOperationTeams.length < 1) {
+    /*if (!checkedOperationTeams || checkedOperationTeams.length < 1) {
       errorsCopy.operationTeams = true
       ++localErrors
       setErrors(errorsCopy);
-    }
+    }*/
 
     if (provider === 'AWS') {
       if (!awsEnv) {
@@ -1281,18 +1281,18 @@ function CloudAccount(props) {
   }
 
   let onChangeCustom = (list) => {
-    let errorsCopy = JSON.parse(JSON.stringify(errors))
+    /*let errorsCopy = JSON.parse(JSON.stringify(errors))
     delete errorsCopy.operationTeams
-    setErrors(errorsCopy);
+    setErrors(errorsCopy);*/
     setCheckedOperationTeams(list)
     //setIndeterminate(!!list.length && list.length < availableOperationTeams.length)
     //setCheckAll(list.length === availableOperationTeams.length)
   };
 
   let onCheckAllChange = (e) => {
-    let errorsCopy = JSON.parse(JSON.stringify(errors))
+    /*let errorsCopy = JSON.parse(JSON.stringify(errors))
     delete errorsCopy.operationTeams
-    setErrors(errorsCopy);
+    setErrors(errorsCopy);*/
     setCheckedOperationTeams((e.target.checked ? availableOperationTeams : []))
   };
   
@@ -2001,13 +2001,15 @@ function CloudAccount(props) {
                               */}
                               <Checkbox.Group 
                                 disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-                                style={errors.operationTeams ? 
+                                
+                                /*style={errors.operationTeams ? 
                                   { 
                                     backgroundColor: 'red', 
                                   } 
                                   : 
                                   {}
-                                }
+                                }*/
+                                
                                 value={checkedOperationTeams} 
                                 onChange={onChangeCustom}
                               >
@@ -2264,13 +2266,13 @@ function CloudAccount(props) {
                               */}
                               <Checkbox.Group 
                                 disabled={loading || cloudAccountsLoading || cloudAccountLoading || false}
-                                style={errors.operationTeams ? 
+                                /*style={errors.operationTeams ? 
                                   { 
                                     backgroundColor: 'red', 
                                   } 
                                   : 
                                   {}
-                                }
+                                }*/
                                 value={checkedOperationTeams} 
                                 onChange={onChangeCustom}
                               >
